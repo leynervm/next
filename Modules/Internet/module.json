@@ -1,0 +1,13 @@
+{
+    "name": "Internet",
+    "alias": "internet",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Internet\\Providers\\InternetServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

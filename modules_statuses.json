@@ -1,0 +1,12 @@
+{
+    "Soporte": true,
+    "Internet": true,
+    "Almacen": true,
+    "Caja": true,
+    "Ventas": true,
+    "Facturacion": true,
+    "Empleados": true,
+    "Marketplace": true,
+    "Themes": true,
+    "Negocios": true
+}

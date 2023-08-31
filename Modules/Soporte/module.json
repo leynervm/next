@@ -1,0 +1,13 @@
+{
+    "name": "Soporte",
+    "alias": "soporte",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Soporte\\Providers\\SoporteServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

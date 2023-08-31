@@ -1,0 +1,13 @@
+{
+    "name": "Caja",
+    "alias": "caja",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Caja\\Providers\\CajaServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

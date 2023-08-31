@@ -1,0 +1,13 @@
+{
+    "name": "Almacen",
+    "alias": "almacen",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Almacen\\Providers\\AlmacenServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}

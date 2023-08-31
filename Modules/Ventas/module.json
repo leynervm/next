@@ -1,0 +1,13 @@
+{
+    "name": "Ventas",
+    "alias": "ventas",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Ventas\\Providers\\VentasServiceProvider"
+    ],
+    "aliases": {},
+    "files": [],
+    "requires": []
+}
