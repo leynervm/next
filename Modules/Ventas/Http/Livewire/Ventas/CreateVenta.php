@@ -2,15 +2,13 @@
 
 namespace Modules\Ventas\Http\Livewire\Ventas;
 
+use App\Helpers\GetClient;
 use App\Helpers\GetPrice;
-use App\Models\Caja;
 use App\Models\Cajamovimiento;
 use App\Models\Carshoop;
 use App\Models\Category;
-use App\Models\Channelsale;
 use App\Models\Client;
 use App\Models\Concept;
-use App\Models\Direccion;
 use App\Models\Empresa;
 use App\Models\Methodpayment;
 use App\Models\Moneda;
@@ -18,10 +16,6 @@ use App\Models\Opencaja;
 use App\Models\Pricetype;
 use App\Models\Serie;
 use App\Models\Tribute;
-use App\Models\Ubigeo;
-use App\Rules\CampoUnique;
-use App\Rules\ValidateDocument;
-use App\Rules\ValidateNacimiento;
 use App\Rules\ValidateSerieRequerida;
 use App\Rules\ValidateStock;
 use Carbon\Carbon;
@@ -33,21 +27,29 @@ use Modules\Almacen\Entities\Almacen;
 use Modules\Almacen\Entities\Producto;
 use Modules\Facturacion\Entities\Comprobante;
 use Modules\Facturacion\Entities\Typecomprobante;
-use Modules\Facturacion\Entities\Typepayment;
+use App\Models\Typepayment;
 use Modules\Ventas\Entities\Venta;
+use Illuminate\Support\Str;
+
+use Livewire\WithPagination;
 
 class CreateVenta extends Component
 {
 
+    use WithPagination;
+
     public $client;
     public $typepayment;
     public $methodpayment;
+    public $empresa;
+    public $pricetype;
 
     public $open = false;
     public $disponibles = 1;
+    public $readyToLoad = false;
 
     public $cotizacion_id, $moneda_id;
-    public $clients = [];
+    // public $clients = [];
     public $client_id, $direccion_id, $producto_id, $serie_id,
         $almacen_id, $pricetype_id;
     public $mensaje;
@@ -60,20 +62,11 @@ class CreateVenta extends Component
     public $typepayment_id;
     public $increment = 0;
     public $countcuotas = 1;
-    public $stepDecimal = "0.01";
-    public $decimal = 2;
     public $opencaja_id, $methodpayment_id, $detallepago, $concept_id, $cuenta_id;
     public $tribute_id, $empresa_id;
 
-    public $document, $nameclient, $sexo, $email, $nacimiento,
-        $direccion, $ubigeo_id, $pricetypeclient_id, $channelsale_id, $telefono;
+    public $document, $name, $direccion, $pricetypeasigned;
 
-    protected $queryString = [
-        // 'search' => ['except' => ''],
-        // 'searchserie' => ['except' => ''],
-        // 'searchalmacen' => ['except' => ''],
-        // 'searchcategory' => ['except' => ''],
-    ];
 
     public $cart = [];
     public $cuotas = [];
@@ -88,128 +81,155 @@ class CreateVenta extends Component
     public $total = 0;
     public $totalIncrement = 0;
 
+    // protected $listeners = ['updatepricetypeid'];
 
     protected function rules()
     {
         return [
             // 'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
+
+            'document' => ['required', 'numeric', 'min_digits:8'],
+            'name' => ['required', 'string', 'min:3'],
+            'direccion' => ['required', 'string', 'min:3'],
+
             'client_id' => ['required', 'integer', 'exists:clients,id'],
-            'direccion_id' => ['required', 'integer', 'exists:direccions,id'],
+            'direccion' => ['required', 'min:3'],
             'typecomprobante_id' => ['required', 'integer', 'exists:typecomprobantes,id'],
             'moneda_id' => ['required', 'integer', 'exists:monedas,id'],
             'typepayment_id' => ['required', 'integer', 'exists:typepayments,id'],
             'tribute_id' => ['required', 'integer', 'exists:tributes,id'],
             'increment' => [
-                'nullable',
+                'nullable', 'numeric',  'min:0', 'decimal:0,2',
                 Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'numeric', 'decimal:0,2', 'min:0'
+
             ],
             'countcuotas' => [
-                'nullable',
+                'nullable', 'integer', 'min:1',
                 Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'integer', 'min:1'
+
             ],
             'concept_id' => [
-                'nullable',
+                'required', 'integer', 'exists:concepts,id',
                 Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'exists:concepts,id'
+
             ],
             'opencaja_id' => [
-                'nullable',
+                'nullable', 'integer', 'exists:opencajas,id',
                 Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'exists:opencajas,id'
+
             ],
             'methodpayment_id' => [
-                'nullable',
+                'nullable', 'integer', 'exists:methodpayments,id',
                 Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'exists:methodpayments,id'
+
             ],
             'cuenta_id' => [
-                'nullable',
+                'nullable', 'integer', 'exists:cuentas,id',
                 Rule::requiredIf($this->methodpayment->cuentas->count() > 1),
-                'integer', 'exists:cuentas,id'
+
             ],
             'detallepago' => ['nullable'],
-            'cotizacion_id' => ['nullable', 'exists:cotizacions,id']
+            'cotizacion_id' => ['nullable', 'exists:cotizacions,id'],
+            'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
+            // 'carrito' => ['required', 'array', 'min:1'],
         ];
     }
 
+
+    protected $messages = [
+        'cart.*.almacen_id.required' => 'Almacen del producto requerido',
+        'cart.*.price.required' => 'Precio del producto requerido',
+        'cart.*.price.min' => 'Precio del producto deber se mayor a 0.0001',
+        'cart.*.cantidad.required' => 'Cantidad del producto requerido',
+        'cart.*.cantidad.min' => 'Cantidad del producto debe ser mayor a 0',
+        'cart.*.serie.required' => 'Serie del producto requerido',
+    ];
+
     public function mount()
     {
+        $this->empresa = Empresa::DefaultEmpresa()->first() ?? new Empresa();
         $this->client = new Client();
         $this->typepayment = new Typepayment();
         $this->methodpayment = new Methodpayment();
-        $this->clients = Client::orderBy('name', 'asc')->get();
+        $pricetype = Pricetype::defaultPricetype()->first();
+        $typepayment = Typepayment::defaultTypepayment()->first();
+
+        $this->pricetype = $pricetype ?? new Pricetype();
+        $this->pricetype_id = $pricetype->id ?? null;
+        $this->typepayment = $typepayment ?? null;
+        $this->typepayment_id = $typepayment->id ?? null;
         $this->moneda_id = Moneda::defaultMoneda()->first()->id ?? null;
-        $this->pricetype_id = Pricetype::defaultPricetype()->first()->id ?? null;
-        $this->typepayment = Typepayment::defaultTypepayment()->first();
-        $this->typepayment_id = Typepayment::defaultTypepayment()->first()->id ?? null;
         $this->methodpayment_id = Methodpayment::defaultMethodPayment()->first()->id ?? null;
         $this->typecomprobante_id = Typecomprobante::defaultTypecomprobante()->first()->id ?? null;
-        $this->opencaja_id =  Opencaja::CajasAbiertas()->CajasUser()->orderBy('startdate', 'desc')->first()->id ?? null;
-        $this->total = Carshoop::where('user_id', Auth::user()->id)->sum('total');
+        $this->total = Carshoop::Micarrito()->sum('total');
         $this->totalIncrement = $this->total;
-        $this->decimal = Pricetype::defaultPricetype()->first()->decimalrounded ?? 2;
-
-        $stepDecimal = Pricetype::defaultPricetype()->first()->decimalrounded ?? 2;
-        $step = "";
-        for ($i = 0; $i < $stepDecimal; $i++) {
-            $step .= '0';
-        }
-        $this->stepDecimal = "0." . substr($step . "1", -$stepDecimal);
     }
 
     public function render()
     {
-        $productos = Producto::select('id', 'name', 'pricebuy', 'priceusbuy', 'category_id')->orderBy('name', 'asc');
-        // $categories = Category::orderBy('name', 'asc')->get();
+        $productos = Producto::select('id', 'name', 'pricebuy', 'priceusbuy', 'pricesale', 'category_id')->orderBy('name', 'asc');
+        $categories = Category::orderBy('name', 'asc')->get();
         $pricetypes = Pricetype::orderBy('name', 'asc')->get();
         $almacens = Almacen::orderBy('name', 'asc')->get();
-        $carrito = Carshoop::where('user_id', Auth::user()->id)->get();
+        $carrito = Carshoop::Micarrito()->with(['carshoopseries', 'producto', 'almacen'])->get();
         $typecomprobantes = Typecomprobante::orderBy('code', 'asc')->get();
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
-        $opencajas = Opencaja::CajasAbiertas()->CajasUser()->orderBy('startdate', 'desc')->get();
+        // $opencajas = Opencaja::CajasAbiertas()->CajasUser()->orderBy('startdate', 'desc')->get();
         $monedas = Moneda::orderBy('currency', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
 
-        $pricetypes = Pricetype::orderBy('name', 'asc')->get();
-        $ubigeos = Ubigeo::all();
-        $channelsales = Channelsale::orderBy('name', 'asc')->get();
+        // if (trim($this->searchalmacen) !== "") {
+        //     $productos->whereHas('almacens', function ($query) {
+        //         $query->where('almacen_id', $this->searchalmacen);
+        //     })->with(['almacens' => function ($query) {
+        //         $query->where('almacen_id', $this->searchalmacen);
+        //     }]);
+        // }
 
-        if (trim($this->searchalmacen) !== "") {
-            $productos->whereHas('almacens', function ($query) {
-                $query->where('almacen_id', $this->searchalmacen);
-            })->with(['almacens' => function ($query) {
-                $query->where('almacen_id', $this->searchalmacen);
-            }]);
+        $relations = ['almacens', 'category', 'images', 'seriesdisponibles', 'ofertasdisponibles', 'existStock'];
+
+        if (trim($this->searchcategory) !== "") {
+            $productos->where('category_id', $this->searchcategory);
         }
 
-        // if (trim($this->searchcategory) !== "") {
-        //     $productos->where('category_id', $this->searchcategory);
-        // }
+        if ($this->disponibles) {
+            array_push($relations, 'disponiblealmacens');
+            $productos->whereHas('disponiblealmacens');
+            // ->with($relations);
+        } else {
+            array_push($relations, 'almacens');
+        }
 
         if (trim($this->search) !== "") {
             $productos->where('name', 'ilike',  $this->search . '%');
         }
 
-        if ($this->disponibles) {
-            $productos->whereHas('disponiblealmacens', function ($query) {
-            })->with(['disponiblealmacens' => function ($query) {
-            }]);
+
+        if ($this->readyToLoad) {
+            $productos = $productos->with($relations)->paginate();
+        } else {
+            $productos = [];
         }
 
-        // if (trim($this->searchserie) !== "") {
-        //     $productos->whereHas('series', function ($query) {
-        //         $query->where('serie', $this->searchserie);
-        //     })
-        //         ->with(['series' => function ($query) {
-        //             $query->where('serie', $this->searchserie);
-        //         }]);
-        // }
+        return view('ventas::livewire.ventas.create-venta', compact('productos', 'pricetypes', 'categories', 'almacens', 'carrito', 'typecomprobantes', 'typepayments', 'methodpayments', 'monedas'));
+    }
 
 
-        $productos = $productos->paginate();
-        return view('ventas::livewire.ventas.create-venta', compact('productos', 'pricetypes', 'almacens', 'carrito', 'typecomprobantes', 'typepayments', 'opencajas', 'methodpayments', 'monedas', 'pricetypes', 'ubigeos', 'channelsales'));
+    public function loadProductos()
+    {
+        $this->readyToLoad = true;
+    }
+
+
+    public function loadprice(Pricetype $pricetype)
+    {
+        $this->pricetype = $pricetype;
+        $this->pricetype_id = $pricetype->id;
+    }
+
+    public function loadbycategory($value)
+    {
+        $this->searchcategory = $value;
     }
 
     public function getProductoBySerie($value)
@@ -237,8 +257,8 @@ class CreateVenta extends Component
 
                         if (($stock - 1) >= 0) {
 
-                            $carrito = Carshoop::where('producto_id',  $serie->producto->id)
-                                ->where('almacen_id',  $serie->almacen_id)->where('status', 0)->first();
+                            $carrito = Carshoop::Micarrito()->where('producto_id',  $serie->producto->id)
+                                ->where('almacen_id',  $serie->almacen_id)->first();
 
                             if ($carrito) {
                                 $carrito->cantidad = $carrito->cantidad + 1;
@@ -273,19 +293,17 @@ class CreateVenta extends Component
                             ]);
 
                             $serie->producto->almacens()->updateExistingPivot($serie->almacen_id, [
-                                'updated_at' => now('America/Lima'),
                                 'cantidad' => $stock - 1,
-                                'user_id' => Auth::user()->id
                             ]);
 
                             DB::commit();
                             $this->resetValidation();
                             $this->dispatchBrowserEvent('created');
                             $this->reset(['searchserie']);
-                            $this->total = Carshoop::where('user_id', Auth::user()->id)->sum('total');
-                            if ($this->typepayment->paycuotas) {
-                                $this->calcular_cuotas();
-                            }
+                            $this->total = Carshoop::Micarrito()->sum('total');
+                            // if ($this->typepayment->paycuotas) {
+                            //     $this->calcular_cuotas();
+                            // }
                         } else {
                             $this->addError('searchserie', 'Cantidad supera al stock disponible.');
                         }
@@ -306,51 +324,35 @@ class CreateVenta extends Component
         }
     }
 
-    public function updatedClientId($value)
-    {
-        $this->reset(['direccion_id', 'stepDecimal']);
-        $this->client = Client::find($value);
-
-        if (count($this->client->direccions)) {
-            $this->direccion_id = $this->client->direccions->first()->id ?? null;
-        }
-
-        if ($this->client->nacimiento) {
-            $nacimiento = Carbon::parse($this->client->nacimiento)->format("d-m");
-            $hoy = Carbon::now('America/Lima')->format("d-m");
-
-            if ($nacimiento ==  $hoy) {
-                $this->mensaje = "FELÍZ CUMPLEAÑOS";
-            }
-        }
-
-        if ($this->client->pricetype_id) {
-            $this->pricetype_id = $this->client->pricetype_id;
-            $this->decimal = $this->client->pricetype->decimalrounded ?? 2;
-
-            $stepDecimal = $this->client->pricetype->decimalrounded ?? 2;
-            $step = "";
-            for ($i = 0; $i < $stepDecimal; $i++) {
-                $step .= '0';
-            }
-            $this->stepDecimal = "0." . substr($step . "1", -$stepDecimal);
-        }
-    }
-
     public function updatedTypepaymentId($value)
     {
 
         $this->reset(['typepayment', 'increment', 'countcuotas', 'cuotas', 'methodpayment_id', 'accounts', 'cuenta_id']);
         $this->typepayment_id = !empty(trim($value)) ? trim($value) : null;
         $this->typepayment = Typepayment::findOrFail($value);
-        if ($this->typepayment->paycuotas) {
-            $this->calcular_cuotas();
-        }
+        // if ($this->typepayment->paycuotas) {
+        //     $this->calcular_cuotas();
+        // }
 
 
         // if ($this->client->pricetype_id) {
         //     $this->pricetype_id = $this->client->pricetype_id;
         // }
+    }
+
+    public function updatedIncrement($value)
+    {
+
+        $totalAmount = number_format($this->total, 2, '.', '');
+
+        if ((!empty(trim($value))) || $value > 0) {
+            $incremento = ($totalAmount * trim($value)) / 100;
+            $totalAmount = number_format($totalAmount + $incremento, 2, '.', '');
+            $this->totalIncrement = number_format($totalAmount, 2, '.', '');
+        } else {
+            $this->reset(['increment', 'totalIncrement']);
+            $this->resetValidation(['increment']);
+        }
     }
 
     public function updatedMethodpaymentId($value)
@@ -371,7 +373,8 @@ class CreateVenta extends Component
     {
 
         $this->resetValidation(["errorstocart.*"]);
-        $price = trim($formData["price"]);
+        // $price = trim($formData["price"]);
+        $price = isset($formData["price"]) ? trim($formData["price"]) : "";
         $almacen_id = isset($formData["almacen_$producto->id[]"]) ? trim($formData["almacen_$producto->id[]"]) : null;
         $serie = isset($formData["serie"]) ? trim($formData["serie"]) : "";
         $cantidad = isset($formData["cantidad"]) ? trim($formData["cantidad"]) : 1;
@@ -382,7 +385,7 @@ class CreateVenta extends Component
         $this->cart[$producto->id]["cantidad"] = $cantidad;
 
         $validateDate = $this->validate([
-            "cart.$producto->id.price" => ['required', 'numeric', 'decimal:0,4'],
+            "cart.$producto->id.price" => ['required', 'numeric', 'decimal:0,4', 'min:0.0001',],
             "cart.$producto->id.almacen_id" => [
                 'required', 'integer', 'exists:almacens,id',
                 new ValidateStock($producto->id, $almacen_id)
@@ -403,8 +406,8 @@ class CreateVenta extends Component
             if ($stock > 0) {
                 if (($stock - $cantidad) >= 0) {
 
-                    $carrito = Carshoop::where('producto_id',  $producto->id)
-                        ->where('almacen_id',  $almacen_id)->where('status', 0)->first();
+                    $carrito = Carshoop::Micarrito()->where('producto_id',  $producto->id)
+                        ->where('almacen_id',  $almacen_id)->first();
 
                     if ($carrito) {
                         $carrito->cantidad = $carrito->cantidad + $cantidad;
@@ -449,19 +452,17 @@ class CreateVenta extends Component
                     }
 
                     $producto->almacens()->updateExistingPivot($almacen_id, [
-                        'updated_at' => now('America/Lima'),
                         'cantidad' => $stock - $cantidad,
-                        'user_id' => Auth::user()->id
                     ]);
 
                     DB::commit();
                     $this->resetValidation();
                     $this->dispatchBrowserEvent('reset-form', $producto->id);
                     $this->dispatchBrowserEvent('created');
-                    $this->total = Carshoop::where('user_id', Auth::user()->id)->sum('total');
-                    if ($this->typepayment->paycuotas) {
-                        $this->calcular_cuotas();
-                    }
+                    $this->total = Carshoop::Micarrito()->sum('total');
+                    // if ($this->typepayment->paycuotas) {
+                    //     $this->calcular_cuotas();
+                    // }
                 } else {
                     $this->addError("cart.$producto->id.cantidad", 'Cantidad supera al stock disponible.');
                 }
@@ -478,43 +479,87 @@ class CreateVenta extends Component
     public function save()
     {
 
+        $this->direccion = trim($this->direccion);
         $this->concept_id = Concept::defaultConceptVentas()->first()->id ?? null;
         $this->tribute_id = Tribute::defaultTribute()->first()->id ?? null;
         $this->empresa_id = Empresa::defaultEmpresa()->first()->id ?? null;
+        $this->opencaja_id =  Opencaja::CajasAbiertas()->CajasUser()->first()->id ?? null;
 
-        $carrito = Carshoop::where('user_id', Auth::user()->id)->get();
-        $serie = Typecomprobante::findOrFail($this->typecomprobante_id);
-
+        $carrito = Carshoop::Micarrito()->get();
+        $serie = Typecomprobante::find($this->typecomprobante_id);
         $totalAmount = number_format($this->total, 2, '.', '');
         $incremento = ($totalAmount * $this->increment) / 100;
         $this->totalIncrement = number_format($totalAmount + $incremento, 2, '.', '');
 
         if (count($carrito)) {
+
+            $this->validate([
+                'document' => [
+                    'required', 'numeric', 'min_digits:8',
+                ],
+                'name' => [
+                    'required', 'string', 'min:3',
+                ],
+                'direccion' => ['required', 'string', 'min:3']
+            ]);
+
+            $client = Client::where('document', $this->document)->first();
+
+            if ($client) {
+                $this->client_id  = $client->id;
+            } else {
+
+                DB::beginTransaction();
+                try {
+                    $client = Client::create([
+                        'document' => $this->document,
+                        'name' => $this->name,
+                        'sexo' => strlen(trim($this->document)) == 11 ? 'E' : null,
+                        'pricetype_id' => Pricetype::DefaultPricetype()->first()->id ?? null,
+                    ]);
+
+                    $client->direccions()->create([
+                        'name' => $this->direccion,
+                    ]);
+                    DB::commit();
+                    $this->client_id  = $client->id;
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    throw $e;
+                } catch (\Throwable $e) {
+                    DB::rollBack();
+                    throw $e;
+                }
+            }
+
             if ($serie) {
 
                 $validateData = $this->validate();
                 DB::beginTransaction();
 
                 try {
-                    $cajamovimiento = null;
 
-                    if ($this->typepayment) {
-                        if ($this->typepayment->paycuotas == 0) {
-                            $cajamovimiento = Cajamovimiento::create([
-                                'date' => now('America/Lima'),
-                                'amount' => number_format($this->total, 2, '.', ''),
-                                'referencia' => null,
-                                'detalle' => null,
-                                'moneda_id' => $this->moneda_id,
-                                'methodpayment_id' => $this->methodpayment_id,
-                                'typemovement' => '+',
-                                'cuenta_id' => $this->cuenta_id,
-                                'concept_id' => $this->concept_id,
-                                'opencaja_id' => $this->opencaja_id,
-                                'user_id' => Auth::user()->id,
-                            ]);
-                        }
+                    $cajamovimiento = null;
+                    $numeracion = Comprobante::where('typecomprobante_id', $this->typecomprobante_id)
+                        ->count();
+
+                    // if ($this->typepayment) {
+                    if (!$this->typepayment->paycuotas) {
+                        $cajamovimiento = Cajamovimiento::create([
+                            'date' => now('America/Lima'),
+                            'amount' => number_format($this->total, 2, '.', ''),
+                            'referencia' => $serie->serie . '-' . $numeracion + 1,
+                            'detalle' => trim($this->detallepago),
+                            'moneda_id' => $this->moneda_id,
+                            'methodpayment_id' => $this->methodpayment_id,
+                            'typemovement' => '+',
+                            'cuenta_id' => $this->cuenta_id,
+                            'concept_id' => $this->concept_id,
+                            'opencaja_id' => $this->opencaja_id,
+                            'user_id' => Auth::user()->id,
+                        ]);
                     }
+                    // }
 
                     $venta = Venta::create([
                         'date' => now('America/Lima'),
@@ -533,14 +578,11 @@ class CreateVenta extends Component
                         'user_id' => Auth::user()->id,
                     ]);
 
-                    $numeracion = Comprobante::where('typecomprobante_id', $this->typecomprobante_id)
-                        ->count();
-
                     $comprobante = $venta->comprobante()->create([
                         'seriecompleta' => $serie->serie . '-' . $numeracion + 1,
                         'date' => now('America/Lima'),
                         'expire' => Carbon::now('America/Lima')->addDay(),
-                        'direccion' => Direccion::findOrFail($this->direccion_id)->name ?? null,
+                        'direccion' => $this->direccion,
                         'exonerado' => number_format($this->totalIncrement, 2, '.', ''),
                         'gravado' => number_format($this->gravado, 2, '.', ''),
                         'descuento' => number_format($this->descuentos, 2, '.', ''),
@@ -560,31 +602,71 @@ class CreateVenta extends Component
                         'user_id' => Auth::user()->id,
                     ]);
 
-                    if (count($this->cuotas)) {
-                        $amountCuotas = number_format(0, 2);
-                        $totalCuotas = number_format($this->totalIncrement, 2, '.', '');
-                        foreach ($this->cuotas as $cuota) {
-                            $amountCuotas = number_format($amountCuotas + $cuota["amount"], 2, '.', '');
-                            $venta->cuotas()->create([
-                                'cuota' => $cuota["cuota"],
-                                'amount' => $cuota["amount"],
-                                'expiredate' => $cuota["date"],
-                                'datepayment' => $cuota["date"],
-                                'user_id' => Auth::user()->id,
-                            ]);
-                        }
+                    if ($this->typepayment->paycuotas) {
+                        if ((!empty(trim($this->countcuotas))) || $this->countcuotas > 0) {
+
+                            $totalAmount = number_format($this->total, 2, '.', '');
+
+                            if ((!empty(trim($this->increment))) || $this->increment > 0) {
+                                $incremento = ($totalAmount * $this->increment) / 100;
+                                $totalAmount = number_format($totalAmount + $incremento, 2, '.', '');
+                                // $this->totalIncrement = number_format($totalAmount, 2, '.', '');
+                            }
+
+                            $amountCuota = number_format($totalAmount / $this->countcuotas, 2, '.', '');
+                            $date = Carbon::now('America/Lima')->format('Y-m-d');
+
+                            $sumaCuotas = 0.00;
+                            for ($i = 1; $i <= $this->countcuotas; $i++) {
+                                $sumaCuotas = number_format($sumaCuotas + $amountCuota, 2, '.', '');
+                                if ($i == $this->countcuotas) {
+                                    $result =  number_format($totalAmount - $sumaCuotas, 2, '.', '');
+                                    $amountCuota = number_format($amountCuota + ($result), 2, '.', '');
+                                }
+
+                                // $this->cuotas[] = [
+                                //     'cuota' => $i,
+                                //     'date' => $date,
+                                //     'amount' => $amountCuota,
+                                //     'suma' => $sumaCuotas,
+                                // ];
+
+                                $venta->cuotas()->create([
+                                    'cuota' => $i,
+                                    'amount' => $amountCuota,
+                                    'expiredate' => $date,
+                                    'user_id' => Auth::user()->id,
+                                ]);
+                                $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
+                            }
 
 
-                        if ($amountCuotas !== $totalCuotas) {
-                            // dd($amountCuotas . " -" . $totalCuotas);
-                            $this->addError('cuotas', "Monto total de cuotas($amountCuotas) no coincide con monto total de venta($totalCuotas)");
-                            return false;
+
+                            // $amountCuotas = number_format(0, 2);
+                            // $totalCuotas = number_format($this->totalIncrement, 2, '.', '');
+                            // foreach ($this->cuotas as $cuota) {
+                            //     $amountCuotas = number_format($amountCuotas + $cuota["amount"], 2, '.', '');
+                            //     $venta->cuotas()->create([
+                            //         'cuota' => $cuota["cuota"],
+                            //         'amount' => $cuota["amount"],
+                            //         'expiredate' => $cuota["date"],
+                            //         'datepayment' => $cuota["date"],
+                            //         'user_id' => Auth::user()->id,
+                            //     ]);
+                            // }
+
+                            // if ($totalAmount !== $sumaCuotas) {
+                            //     $this->addError('cuotas', "Monto total de cuotas($sumaCuotas) no coincide con monto total de venta($totalAmount)");
+                            //     return false;
+                            // }
+                        } else {
+                            $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
                         }
                     }
 
                     foreach ($carrito as $car) {
 
-                        $priceunitincr = number_format(($car->price * $this->increment) / 100, $this->decimal, '.', '');
+                        $priceunitincr = number_format(($car->price * $this->increment) / 100, 2, '.', '');
                         $pricesale = $car->price + $priceunitincr;
 
                         $tvitem = $venta->tvitems()->create([
@@ -648,7 +730,7 @@ class CreateVenta extends Component
                     throw $e;
                 }
             } else {
-                $this->addError('carrito', 'Error al obtener serie del comprobante.');
+                $this->addError('typecomprobante_id', 'Error al obtener serie del comprobante.');
             }
         } else {
             $this->addError('carrito', 'Carrito de compras vacío.');
@@ -675,17 +757,15 @@ class CreateVenta extends Component
             }
 
             $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
-                'updated_at' => now('America/Lima'),
                 'cantidad' => $stock + $carshoop->cantidad,
-                'user_id' => Auth::user()->id
             ]);
 
             $carshoop->delete();
             DB::commit();
-            $this->total = Carshoop::where('user_id', Auth::user()->id)->sum('total');
-            if ($this->typepayment->paycuotas) {
-                $this->calcular_cuotas();
-            }
+            $this->total = Carshoop::Micarrito()->sum('total');
+            // if ($this->typepayment->paycuotas) {
+            //     $this->calcular_cuotas();
+            // }
             $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -696,152 +776,87 @@ class CreateVenta extends Component
         }
     }
 
-    public function calcular_cuotas()
+    // public function calcular_cuotas()
+    // {
+    //     $this->reset(['cuotas']);
+    //     $this->resetValidation(['increment', 'countcuotas']);
+
+    //     if ((!empty(trim($this->countcuotas))) || $this->countcuotas > 0) {
+
+    //         $totalAmount = number_format($this->total, 2, '.', '');
+
+    //         if ((!empty(trim($this->increment))) || $this->increment > 0) {
+    //             $incremento = ($totalAmount * $this->increment) / 100;
+    //             $totalAmount = number_format($totalAmount + $incremento, 2, '.', '');
+    //             $this->totalIncrement = number_format($totalAmount, 2, '.', '');
+    //         }
+    //         // $this->total = $totalAmount;
+
+    //         $amountCuota = number_format($totalAmount / $this->countcuotas, 2, '.', '');
+    //         $date = Carbon::now('America/Lima')->format('Y-m-d');
+
+    //         $sumaCuotas = 0.00;
+    //         for ($i = 1; $i <= $this->countcuotas; $i++) {
+    //             $cuota = "00000" . $i;
+    //             $sumaCuotas = number_format($sumaCuotas + $amountCuota, 2, '.', '');
+
+    //             if ($i == $this->countcuotas) {
+    //                 $result =  number_format($totalAmount - $sumaCuotas, 2, '.', '');
+    //                 $amountCuota = number_format($amountCuota + ($result), 2, '.', '');
+    //             }
+
+    //             $this->cuotas[] = [
+    //                 // 'cuota' => "Cuota" . substr($cuota, -3),
+    //                 'cuota' => $i,
+    //                 'date' => $date,
+    //                 'amount' => $amountCuota,
+    //                 'suma' => $sumaCuotas,
+    //             ];
+    //             $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
+    //         }
+    //     } else {
+    //         $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
+    //     }
+    // }
+
+    public function getClient()
     {
-        $this->reset(['cuotas']);
-        $this->resetValidation(['increment', 'countcuotas']);
+        if (strlen(trim($this->document)) == 8 || strlen(trim($this->document)) == 11) {
+            $client = new GetClient();
+            $response = $client->getClient(trim($this->document));
+            if ($response->getData()) {
+                if ($response->getData()->success) {
+                    $this->resetValidation(['document', 'name', 'direccion']);
+                    $this->name = $response->getData()->name;
+                    $this->direccion = $response->getData()->direccion;
+                    $this->pricetype_id = $response->getData()->pricetype_id;
+                    $this->pricetypeasigned = $response->getData()->pricetypeasigned;
 
-        if ((!empty(trim($this->countcuotas))) || $this->countcuotas > 0) {
+                    // if ($this->client->nacimiento) {
+                    //     $nacimiento = Carbon::parse($this->client->nacimiento)->format("d-m");
+                    //     $hoy = Carbon::now('America/Lima')->format("d-m");
 
-            $totalAmount = number_format($this->total, 2, '.', '');
+                    //     if ($nacimiento ==  $hoy) {
+                    //         $this->mensaje = "FELÍZ CUMPLEAÑOS";
+                    //     }
+                    // }
 
-            if ((!empty(trim($this->increment))) || $this->increment > 0) {
-                $incremento = ($totalAmount * $this->increment) / 100;
-                $totalAmount = number_format($totalAmount + $incremento, 2, '.', '');
-                $this->totalIncrement = number_format($totalAmount, 2, '.', '');
-            }
-            // $this->total = $totalAmount;
-
-            $amountCuota = number_format($totalAmount / $this->countcuotas, 2, '.', '');
-            $date = Carbon::now('America/Lima')->format('Y-m-d');
-
-            $sumaCuotas = 0.00;
-            for ($i = 1; $i <= $this->countcuotas; $i++) {
-                $cuota = "00000" . $i;
-                $sumaCuotas = number_format($sumaCuotas + $amountCuota, 2, '.', '');
-
-                if ($i == $this->countcuotas) {
-                    $result =  number_format($totalAmount - $sumaCuotas, 2, '.', '');
-                    $amountCuota = number_format($amountCuota + ($result), 2, '.', '');
+                } else {
+                    // dd($response);
+                    $this->resetValidation(['document']);
+                    $this->addError('document', $response->getData()->message);
                 }
-
-                $this->cuotas[] = [
-                    // 'cuota' => "Cuota" . substr($cuota, -3),
-                    'cuota' => $i,
-                    'date' => $date,
-                    'amount' => $amountCuota,
-                    'suma' => $sumaCuotas,
-                ];
-                $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
+            } else {
+                dd($response);
             }
         } else {
-            $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
-        }
-    }
-
-    public function updatingOpen()
-    {
-        $this->resetValidation();
-        $this->reset([
-            'document', 'nameclient', 'email',
-            'nacimiento', 'sexo', 'pricetypeclient_id', 'channelsale_id',
-            'direccion', 'ubigeo_id', 'telefono'
-        ]);
-    }
-
-    public function savecliente()
-    {
-
-        $this->document = trim($this->document);
-        $this->nameclient = trim($this->nameclient);
-        $this->direccion = trim($this->direccion);
-        $this->email = trim($this->email);
-        $this->telefono = trim($this->telefono);
-
-        $this->validate([
-            'document' => [
-                'required', 'numeric', 'min_digits:8',
-                new ValidateDocument, 'unique:clients,document',
-                new CampoUnique('clients', 'document', null, true)
-            ],
-            'nameclient' => [
-                'required', 'string', 'min:3',
-                new CampoUnique('clients', 'name', null, true)
-            ],
-            'sexo' => ['required', 'string', 'min:1', 'max:1'],
-            'email' => ['nullable', 'email'],
-            'nacimiento' => ['nullable', new ValidateNacimiento()],
-            'direccion' => ['required', 'string', 'min:3'],
-            'ubigeo_id' => ['nullable', 'integer', 'exists:ubigeos,id'],
-            'pricetypeclient_id' => ['required', 'integer', 'exists:pricetypes,id'],
-            'channelsale_id' => ['required', 'integer', 'exists:channelsales,id'],
-            'telefono' => ['required', 'numeric', 'min_digits:7', 'digits_between:7,9'],
-        ]);
-
-        DB::beginTransaction();
-        try {
-
-            $client = Client::withTrashed()
-                ->where('name', mb_strtoupper($this->nameclient, "UTF-8"))->first();
-
-            if ($client) {
-                $client->document = $this->document;
-                $client->name = $this->nameclient;
-                $client->email = $this->email;
-                $client->nacimiento = $this->nacimiento;
-                $client->sexo = $this->sexo;
-                $client->pricetype_id = $this->pricetypeclient_id;
-                $client->channelsale_id = $this->channelsale_id;
-                $client->restore();
-            } else {
-                $client = Client::create([
-                    'date' => now('America/Lima'),
-                    'document' => $this->document,
-                    'name' => $this->nameclient,
-                    'email' => $this->email,
-                    'nacimiento' => $this->nacimiento,
-                    'sexo' => $this->sexo,
-                    'pricetype_id' => $this->pricetypeclient_id,
-                    'channelsale_id' => $this->channelsale_id,
-                    // 'user_id' => Auth::user()->id,
-                ]);
-            }
-
-            $direccion = $client->direccions()->create([
-                'name' => $this->direccion,
-                'ubigeo_id' => $this->ubigeo_id,
-                'user_id' => Auth::user()->id,
-            ]);
-
-            $client->telephones()->create([
-                'phone' => $this->telefono,
-                'user_id' => Auth::user()->id,
-            ]);
-
-            DB::commit();
-            $this->resetValidation();
-            $this->reset([
-                'open', 'document', 'nameclient', 'email',
-                'nacimiento', 'sexo', 'pricetypeclient_id', 'channelsale_id',
-                'direccion', 'ubigeo_id', 'telefono'
-            ]);
-            $this->clients = Client::orderBy('name', 'asc')->get();
-            $this->client = $client;
-            $this->client_id = $client->id;
-            $this->pricetype_id = $client->pricetype_id;
-            $this->direccion_id = $direccion->id;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
+            $this->resetValidation(['document']);
+            $this->addError('document', 'Documento inválido.');
         }
     }
 
     public function hydrate()
     {
-        $this->clients = Client::orderBy('name', 'asc')->get();
         $this->dispatchBrowserEvent('render-ventas-select2');
     }
 }

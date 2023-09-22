@@ -3,14 +3,26 @@
 
 <head>
     <meta charset="utf-8">
+
+    @php
+        $empresa = \App\Models\Empresa::first();
+    @endphp
+
+    @if ($empresa)
+        @if ($empresa->icono)
+            <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
+        @endif
+    @endif
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
+
     <!-- Fonts -->
     {{-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap"> --}}
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap">
+    {{-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap"> --}}
 
     <!-- Styles -->
     @livewireStyles
@@ -21,8 +33,6 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
 
     <!-- Scripts -->
-    
-    <script defer src="{{ asset('js/app.js') }}"></script>
 </head>
 
 <body class="{{ config('app.theme') }}">
@@ -49,8 +59,16 @@
                     {{-- <h2 id="title-sidebar" class="text-lg font-semibold text-white"> --}}
                     {{-- </h2> --}}
                     <div class="h-12 w-32 hidden ease-in-out duration-100" id="logo-sidebar">
-                        <img class="w-full h-full object-scale-down object-center"
-                            src="{{ asset('assets/settings/login.png') }}" alt="">
+                        {{-- <img class="w-full h-full object-scale-down object-center"
+                            src="{{ asset('assets/settings/login.png') }}" alt=""> --}}
+
+                        @if ($empresa)
+                            @if ($empresa->image)
+                                <img class="w-full h-full object-scale-down object-center"
+                                    src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+                            @endif
+                        @endif
+
                     </div>
                     <button type="button" id="sidebar-toggle"
                         class="hidden md:block text-iconmenu shadow focus:outline-none rounded-xs p-1.5 rounded-lg hover:shadow focus:shadow hover:bg-hoverlinknav hover:text-hovercolorlinknav focus:bg-hoverlinknav focus:text-hovercolorlinknav transition-colors ease-in-out duration-100">
@@ -169,151 +187,155 @@
 
     @stack('modals')
 
+    @livewireScripts
+
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
     {{-- <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script> --}}
     {{-- <script src="https://cdn.ckeditor.com/ckeditor5/38.1.1/super-build/ckeditor.js"></script> --}}
     {{-- Translation español super-build CKEditor5 --}}
     {{-- <script src="https://cdn.ckeditor.com/ckeditor5/38.1.1/super-build/translations/es.js"></script> --}}
 
-    @livewireScripts
+
+    @yield('scripts')
 
 </body>
 
 <script>
-    document.addEventListener('Livewire:load', function() {
+    // document.addEventListener('Livewire:load', function() {
 
-        var toastMixin = Swal.mixin({
-            toast: true,
-            icon: "success",
-            title: "Mensaje",
-            position: "top-right",
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener("mouseenter", Swal.stopTimer);
-                toast.addEventListener("mouseleave", Swal.resumeTimer);
-            },
+    var toastMixin = Swal.mixin({
+        toast: true,
+        icon: "success",
+        title: "Mensaje",
+        position: "top-right",
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+    });
+
+    window.addEventListener('created', event => {
+        toastMixin.fire({
+            title: 'Registrado correctamente'
+        });
+    })
+
+    window.addEventListener('updated', event => {
+        toastMixin.fire({
+            title: 'Actualizado correctamente'
+        });
+    })
+
+    window.addEventListener('deleted', event => {
+        toastMixin.fire({
+            title: 'Eliminado correctamente'
+        });
+    })
+
+    window.addEventListener('validation', data => {
+        swal.fire({
+            title: data.detail,
+            text: "",
+            icon: 'info',
+
+            confirmButtonColor: '#0FB9B9',
+            confirmButtonText: 'Cerrar',
+        })
+    })
+
+    // window.addEventListener('validation', event => {
+    //     toastMixin.fire({
+    //         title: event.detail,
+    //         icon: "warning",
+    //         timer: 3000,
+    //     });
+    // })
+
+
+    const sidebar = document.getElementById('menu');
+    const header_sidebar = document.getElementById('sidebar-header');
+    const logo_sidebar = document.getElementById('logo-sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const buttonMobileToggle = document.getElementById('sidebar-close-toggle');
+    // const navigation = document.getElementById('navigation');
+    // const menu_nav = document.getElementById('menu_navigation');
+    const isSidebarOpen = localStorage.getItem('isSidebarOpen') === 'true';
+    const itemLinks = sidebar.querySelectorAll('li a');
+    const spanLinks = sidebar.querySelectorAll('li a span');
+    const iconLinks = sidebar.querySelectorAll('li a svg');
+
+    const isSidebarMobileOpen = localStorage.getItem('isSidebarMobileOpen') === 'true';
+
+    console.log(isSidebarOpen);
+
+    if (isSidebarOpen) {
+        sidebar.classList.toggle('md:w-16');
+        sidebar.classList.toggle('md:w-48');
+        header_sidebar.classList.toggle('justify-between');
+        header_sidebar.classList.toggle('justify-center');
+        logo_sidebar.classList.toggle('md:block');
+        itemLinks.forEach(element => {
+            element.classList.toggle('md:flex');
+            element.classList.toggle('group');
+        });
+        spanLinks.forEach(element => {
+            element.classList.toggle('md:block');
+        });
+        iconLinks.forEach(element => {
+            // element.classList.toggle('mx-auto');
+        });
+    }
+
+
+    // if (isSidebarMobileOpen) {
+    //     sidebar.classList.toggle('-translate-x-full');
+    //     sidebar.classList.toggle('md:flex');
+    //     sidebar.classList.toggle('transition-all');
+    // }
+
+    // console.log("Contiene clase w-16 : " + sidebar.classList.contains('w-16'));
+    // console.log("Contiene clase w-64 : " + sidebar.classList.contains('w-64'));
+
+    sidebarToggle.addEventListener('click', () => {
+
+        // console.log("Contiene clase w-16 Negacion: " + !sidebar.classList.contains('w-16'))
+        sidebar.classList.toggle('md:w-16');
+        sidebar.classList.toggle('md:w-48');
+        header_sidebar.classList.toggle('justify-between');
+        header_sidebar.classList.toggle('justify-center');
+        logo_sidebar.classList.toggle('md:block');
+        logo_sidebar.classList.toggle('transition-all');
+        itemLinks.forEach(element => {
+            element.classList.toggle('md:flex');
+            element.classList.toggle('group');
+        });
+        spanLinks.forEach(element => {
+            element.classList.toggle('md:block');
+        });
+        iconLinks.forEach(element => {
+            // element.classList.toggle('mx-auto');
         });
 
-        window.addEventListener('created', event => {
-            toastMixin.fire({
-                title: 'Registrado correctamente'
-            });
-        })
+        localStorage.setItem('isSidebarOpen', !sidebar.classList.contains('md:w-16'));
+    });
 
-        window.addEventListener('updated', event => {
-            toastMixin.fire({
-                title: 'Actualizado correctamente'
-            });
-        })
+    buttonMobileToggle.addEventListener('click', () => {
+        sidebar.classList.toggle('-translate-x-full');
+        sidebar.classList.toggle('md:flex');
+        sidebar.classList.toggle('transition-all');
 
-        window.addEventListener('deleted', event => {
-            toastMixin.fire({
-                title: 'Eliminado correctamente'
-            });
-        })
-
-        window.addEventListener('validation', data => {
-            swal.fire({
-                title: data.detail,
-                text: "",
-                icon: 'info',
-
-                confirmButtonColor: '#0FB9B9',
-                confirmButtonText: 'Cerrar',
-            })
-        })
-
-        // window.addEventListener('validation', event => {
-        //     toastMixin.fire({
-        //         title: event.detail,
-        //         icon: "warning",
-        //         timer: 3000,
-        //     });
-        // })
-
-
-        const sidebar = document.getElementById('menu');
-        const header_sidebar = document.getElementById('sidebar-header');
-        const logo_sidebar = document.getElementById('logo-sidebar');
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const buttonMobileToggle = document.getElementById('sidebar-close-toggle');
-        // const navigation = document.getElementById('navigation');
-        // const menu_nav = document.getElementById('menu_navigation');
-        const isSidebarOpen = localStorage.getItem('isSidebarOpen') === 'true';
-        const itemLinks = sidebar.querySelectorAll('li a');
-        const spanLinks = sidebar.querySelectorAll('li a span');
-        const iconLinks = sidebar.querySelectorAll('li a svg');
-
-        const isSidebarMobileOpen = localStorage.getItem('isSidebarMobileOpen') === 'true';
-
-        console.log(isSidebarOpen);
-
-        if (isSidebarOpen) {
-            sidebar.classList.toggle('md:w-16');
-            sidebar.classList.toggle('md:w-64');
-            header_sidebar.classList.toggle('justify-between');
-            header_sidebar.classList.toggle('justify-center');
-            logo_sidebar.classList.toggle('md:block');
-            itemLinks.forEach(element => {
-                element.classList.toggle('md:flex');
-                element.classList.toggle('group');
-            });
-            spanLinks.forEach(element => {
-                element.classList.toggle('md:block');
-            });
-            iconLinks.forEach(element => {
-                element.classList.toggle('mx-auto');
-            });
-        }
-
-
-        // if (isSidebarMobileOpen) {
-        //     sidebar.classList.toggle('-translate-x-full');
-        //     sidebar.classList.toggle('md:flex');
-        //     sidebar.classList.toggle('transition-all');
-        // }
-
-        // console.log("Contiene clase w-16 : " + sidebar.classList.contains('w-16'));
-        // console.log("Contiene clase w-64 : " + sidebar.classList.contains('w-64'));
-
-        sidebarToggle.addEventListener('click', () => {
-
-            console.log("Contiene clase w-16 Negacion: " + !sidebar.classList.contains('w-16'))
-            sidebar.classList.toggle('md:w-16');
-            sidebar.classList.toggle('md:w-64');
-            header_sidebar.classList.toggle('justify-between');
-            header_sidebar.classList.toggle('justify-center');
-            logo_sidebar.classList.toggle('md:block');
-            logo_sidebar.classList.toggle('transition-all');
-            itemLinks.forEach(element => {
-                element.classList.toggle('md:flex');
-                element.classList.toggle('group');
-            });
-            spanLinks.forEach(element => {
-                element.classList.toggle('md:block');
-            });
-            iconLinks.forEach(element => {
-                element.classList.toggle('mx-auto');
-            });
-
-            localStorage.setItem('isSidebarOpen', !sidebar.classList.contains('md:w-16'));
-        });
-
-        buttonMobileToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-            sidebar.classList.toggle('md:flex');
-            sidebar.classList.toggle('transition-all');
-
-            localStorage.setItem('isSidebarMobileOpen', !sidebar.classList.contains(
-                '-translate-x-full'));
-
-        })
+        localStorage.setItem('isSidebarMobileOpen', !sidebar.classList.contains(
+            '-translate-x-full'));
 
     })
+
+    // })
 </script>
 
 </html>

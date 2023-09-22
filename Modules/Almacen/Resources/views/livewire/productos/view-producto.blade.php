@@ -402,39 +402,42 @@
         </div>
     </x-card-next>
 
-    <x-card-next titulo="Incrementar precio venta(%)" class="w-full mt-3 border border-next-500">
-        <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-2/6">
-                <form wire:submit.prevent="add_incremento">
-                    <x-label value="Lista precios disponibles :" />
-                    <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id">
-                        <x-slot name="options">
-                            @if (count($pricetypes))
-                                @foreach ($pricetypes as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-jet-input-error for="pricetype_id" />
 
-                    <x-label value="Incremento (%) :" class="mt-2" />
-                    <x-input class="block w-full" wire:model.defer="increment" type="number" />
-                    <x-jet-input-error for="increment" />
-                    <x-jet-input-error for="producto.id" />
+    @if (count($pricetypes))
+        <x-card-next titulo="Incrementar precio venta(%)" class="w-full mt-3 border border-next-500">
+            <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
+                <div class="w-full lg:w-2/6">
+                    <form wire:submit.prevent="add_incremento">
+                        <x-label value="Lista precios disponibles :" />
+                        <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id">
+                            <x-slot name="options">
+                                @if (count($pricetypes))
+                                    @foreach ($pricetypes as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-jet-input-error for="pricetype_id" />
 
-                    <div class="mt-3 flex justify-end">
-                        <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
-                            REGISTRAR
-                        </x-button>
-                    </div>
-                </form>
+                        <x-label value="Incremento (%) :" class="mt-2" />
+                        <x-input class="block w-full" wire:model.defer="increment" type="number" />
+                        <x-jet-input-error for="increment" />
+                        <x-jet-input-error for="producto.id" />
+
+                        <div class="mt-3 flex justify-end">
+                            <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
+                                REGISTRAR
+                            </x-button>
+                        </div>
+                    </form>
+                </div>
+                <div class="w-full lg:w-4/6">
+
+                </div>
             </div>
-            <div class="w-full lg:w-4/6">
-
-            </div>
-        </div>
-    </x-card-next>
+        </x-card-next>
+    @endif
 
     <x-card-next titulo="Detalles del producto" class="w-full mt-3 border border-next-500">
         <div class="w-full">

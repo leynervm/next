@@ -16,7 +16,6 @@ class CreateAlmacensTable extends Migration
         Schema::create('almacens', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->integer('delete')->default(0);
             $table->timestamps();
             $table->softDeletes();
         });

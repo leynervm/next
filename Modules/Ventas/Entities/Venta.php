@@ -5,7 +5,6 @@ namespace Modules\Ventas\Entities;
 use App\Models\Cajamovimiento;
 use App\Models\Client;
 use App\Models\Moneda;
-use App\Models\Tribute;
 use App\Models\Tvitem;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Modules\Facturacion\Entities\Comprobante;
-use Modules\Facturacion\Entities\Typepayment;
+use App\Models\Typepayment;
 
 class Venta extends Model
 {
@@ -30,7 +29,8 @@ class Venta extends Model
 
     public function cuotas()
     {
-        return $this->hasMany(Cuota::class)->orderBy('id', 'asc');
+        return $this->hasMany(Cuota::class)->orderBy('id', 'asc')
+            ->orderBy('cuota', 'asc');
     }
 
     public function tvitems(): MorphMany

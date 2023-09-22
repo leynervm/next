@@ -10,7 +10,9 @@ class Telephone extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    public $timestamps = false;
+
+    protected $fillable = ['phone', 'telephoneable_id', 'telephoneable_type'];
 
     public function telephoneable(): MorphTo
     {

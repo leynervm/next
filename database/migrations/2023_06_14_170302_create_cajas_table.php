@@ -14,12 +14,11 @@ class CreateCajasTable extends Migration
     public function up()
     {
         Schema::create('cajas', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('name', 100);
             $table->integer('status')->default(0);
             $table->bigInteger('user_id')->nullable();
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
             $table->softDeletes();
         });
     }

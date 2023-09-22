@@ -52,7 +52,7 @@
                 <form wire:submit.prevent="save">
 
                     <div class="w-full">
-                        <x-label value="Lista precio :" />
+                        <x-label value="Seleccionar caja :" />
                         <x-select class="block w-full" wire:model.defer="caja_id" id="aperturacaja_id"
                             data-placeholder="Seleccionar..." data-minimum-results-for-search="Infinity">
                             <x-slot name="options">

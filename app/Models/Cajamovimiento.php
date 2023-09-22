@@ -38,13 +38,18 @@ class Cajamovimiento extends Model
         return $this->belongsTo(Concept::class);
     }
 
-    public function caja(): BelongsTo
+    public function opencaja(): BelongsTo
     {
-        return $this->belongsTo(Caja::class);
+        return $this->belongsTo(Opencaja::class);
     }
 
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function cuenta(): BelongsTo
+    {
+        return $this->belongsTo(Cuenta::class);
     }
 }

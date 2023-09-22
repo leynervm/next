@@ -26,6 +26,7 @@ module.exports = {
                 ringlinknav: "var(--ring-link-nav)",
 
                 fondodropdown: "var(--fondo-dropdown)",
+                colordropdown: "var(--color-dropdown)",
                 primary: "var(--color-primary)",
 
                 colortitle: "var(--color-title)",
@@ -33,6 +34,7 @@ module.exports = {
                 fondominicard: "var(--fondo-minicard)",
                 colorminicard: "var(--color-minicard)",
                 shadowminicard: "var(--shadow-minicard)",
+                borderminicard: "var(--border-minicard)",
 
                 fondotitlecardnext: "var(--fondo-titlecardnext)",
                 colortitlecardnext: "var(--color-titlecardnext)",
@@ -48,6 +50,21 @@ module.exports = {
                 textselect2: "var(--color-select2)",
                 fondoselect2: "var(--fondo-select2)",
                 shadowselect2: "var(--shadow-select2)",
+
+                textheadertable: "var(--text-header-table)",
+                fondoheadertable: "var(--fondo-header-table)",
+                textbodytable: "var(--text-body-table)",
+                fondobodytable: "var(--fondo-body-table)",
+                dividetable: "var(--divide-table)",
+                textspantable: "var(--text-span-table)",
+                fondospantable: "var(--fondo-span-table)",
+                linktable: "var(--link-table)",
+                hoverlinktable: "var(--hover-link-table)",
+
+                fondoinputdisabled: "var(--fondo-input-disabled)",
+                colorinputdisabled: "var(--color-input-disabled)",
+
+                colorerror: "var(--color-error)",
 
                 next: {
                     50: "f0f9f9",

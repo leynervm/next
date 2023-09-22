@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Image extends Model
 {
     use HasFactory;
+    public $timestamps = false;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['url', 'default', 'imageable_id', 'imageable_type'];
 
     public function imageable(): MorphTo
     {

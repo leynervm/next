@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\GetClient;
+use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Modules\Almacen\Entities\Producto;
 
@@ -10,7 +12,8 @@ class HomeController extends Controller
 
     public function index()
     {
-        return view('dashboard');
+        $empresa = Empresa::first();
+        return view('dashboard', compact('empresa'));
     }
 
     public function administracion()
@@ -37,5 +40,13 @@ class HomeController extends Controller
     {
         return view('admin.channelsales.index');
     }
+
+    public function tipocambio()
+    {
+        $http = new GetClient();
+        $response = $http->getTipoCambio();
+        return response()->json($response); 
+    }
+
 
 }

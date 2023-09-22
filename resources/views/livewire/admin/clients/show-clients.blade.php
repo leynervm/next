@@ -107,9 +107,6 @@
                 </th>
 
                 <th scope="col" class="p-2 font-medium">
-                    ORIGEN</th>
-
-                <th scope="col" class="p-2 font-medium">
                     LISTA PRECIO</th>
 
                 <th scope="col" class="p-2 font-medium">
@@ -156,9 +153,9 @@
                                 @endif
                             </div> --}}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        {{-- <td class="p-2 text-xs text-center">
                             {{ $item->channelsale->name }}
-                        </td>
+                        </td> --}}
                         <td class="p-2 text-xs text-center">
                             {{ $item->pricetype->name }}
                         </td>

@@ -2,10 +2,12 @@
 
 namespace Modules\Almacen\Http\Livewire\Productos;
 
+use App\Helpers\GetPrice;
 use App\Models\Caracteristica;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Pricetype;
+use App\Models\Rango;
 use App\Models\Serie;
 use App\Rules\CampoUnique;
 use Illuminate\Support\Facades\Auth;
@@ -31,6 +33,7 @@ class ShowProducto extends Component
 
     public $isUploading = false;
     public $openalmacen = false;
+    public $openprice = false;
     public $open = false;
     public $openespecificacion = false;
 
@@ -50,6 +53,9 @@ class ShowProducto extends Component
     public $updateFormAlmacen = 0;
     public $newalmacen_id;
     public $newcantidad = 0;
+
+    public $pricetype;
+    public $newprice, $priceold;
 
     protected $listeners = ['delete', 'delete_almacen'];
 
@@ -76,6 +82,7 @@ class ShowProducto extends Component
 
     public function mount(Producto $producto)
     {
+        $this->pricetype = new Pricetype();
         $this->producto = $producto;
         $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
             ->orderBy('name', 'asc')->get();
@@ -86,10 +93,11 @@ class ShowProducto extends Component
     public function render()
     {
         $typegarantias = Typegarantia::orderBy('name', 'asc')->get();
-        $pricetypes = Pricetype::orderBy('name', 'asc')->get();
+        $pricetypes = Pricetype::orderBy('ganancia', 'desc')->orderBy('name', 'asc')->get();
         $caracteristicas = Caracteristica::orderBy('name', 'asc')->get();
+        $rangos = Rango::orderBy('desde', 'asc')->get();
 
-        return view('almacen::livewire.productos.show-producto', compact('typegarantias', 'pricetypes', 'caracteristicas'));
+        return view('almacen::livewire.productos.show-producto', compact('typegarantias', 'pricetypes', 'caracteristicas', 'rangos'));
     }
 
     public function updatedProductoPublicado($value)
@@ -460,6 +468,46 @@ class ShowProducto extends Component
         $this->reset(['imagen']);
         $this->resetValidation(['imagen']);
         $this->identificador = rand();
+    }
+
+    public function cambiarprecioventa(Pricetype $pricetype)
+    {
+        $this->reset(['newprice', 'priceold', 'pricetype']);
+        $this->resetValidation(['newprice', 'pricetype']);
+        $this->pricetype = $pricetype;
+        $this->pricetype_id = $pricetype->id;
+        $prices = GetPrice::getPriceProducto($this->producto, $pricetype->id)->getData();
+        // dd($newprice);
+        $this->priceold = $prices->oldPrice;
+        $this->newprice = $prices->pricemanual ?? $prices->pricesale;
+        $this->openprice = true;
+    }
+
+    public function saveprecioventa()
+    {
+
+        // dd($this->producto->pricetypes());
+        $this->validate([
+            'pricetype_id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
+            'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
+            'newprice' => ['required', 'decimal:0,2', 'min:0.1']
+        ]);
+
+        if ($this->priceold !== $this->newprice) {
+            // $this->producto->pricetypes()->toggle([
+            //     $this->pricetype->id => [
+            //         'price' => $this->newprice,
+            //     ]
+            // ])
+            $this->producto->pricetypes()->syncWithoutDetaching([
+                $this->pricetype->id => [
+                    'price' => $this->newprice,
+                ]
+            ]);
+        }
+
+        $this->reset(['openprice', 'newprice', 'priceold', 'pricetype_id']);
+        $this->resetValidation(['newprice', 'pricetype_id', 'priceold']);
     }
 
     public function hydrate()

@@ -18,7 +18,6 @@ class CreateLeyendasTable extends Migration
             $table->integer('code');
             $table->string('descripcion', 255);
             $table->integer('default')->default(0);
-            $table->timestamps();
         });
     }
 

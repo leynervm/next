@@ -16,11 +16,8 @@ class CreateTelephonesTable extends Migration
         Schema::create('telephones', function (Blueprint $table) {
             $table->id();
             $table->string('phone', 12);
-            $table->bigInteger('user_id')->nullable();
             $table->integer('telephoneable_id');
             $table->string('telephoneable_type');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
             $table->softDeletes();
         });
     }

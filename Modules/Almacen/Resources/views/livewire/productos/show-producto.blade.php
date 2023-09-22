@@ -61,13 +61,11 @@
             </div>
             <div class="w-full mt-3 flex flex-wrap justify-between">
 
-                <x-label textSize="[10px]"
-                    class="inline-flex leading-3 items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                    for="publicado_dit">
-                    <x-input wire:model="producto.publicado" name="publicado" type="checkbox" id="publicado_dit"
-                        value="1" />
-                    DISPONIBLE TIENDA WEB
-                </x-label>
+                <x-label-check for="publicado_dit">
+                    <x-input wire:model="producto.publicado" name="publicado" value="1" type="checkbox"
+                        id="publicado_dit" />
+                        DISPONIBLE TIENDA WEB
+                </x-label-check>
 
                 <div>
                     <x-button-delete wire:click="confirm_delete({{ $producto->id }})" wire:loading.attr="disabled"
@@ -124,12 +122,12 @@
 
     <x-card-next titulo="Especificaciones" class="w-full mt-3 border border-next-500">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-2/6 flex justify-center items-start">
+            <div class="w-full flex justify-center items-start lg:w-80 xl:w-96 lg:flex-shrink-0">
                 <x-button wire:click="modalespefificacion" wire:target="modalespefificacion"
                     wire:loading.attr="disabled">AÑADIR ESPECIFICACIÓN
                 </x-button>
             </div>
-            <div class="w-full lg:w-4/6">
+            <div class="w-full">
                 @if (count($producto->especificaciones))
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->especificaciones as $item)
@@ -151,7 +149,7 @@
 
     <x-card-next titulo="Imágenes relacionadas" class="w-full mt-3 border border-next-500">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-2/6 relative">
+            <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 relative">
                 <form wire:submit.prevent="add_image" class="relative">
                     <div x-data="{ isUploading: @entangle('isUploading'), progress: 0 }" x-on:livewire-upload-start="isUploading = true"
                         x-on:livewire-upload-finish="isUploading = false"
@@ -159,7 +157,8 @@
                         x-on:livewire-upload-progress="progress = $event.detail.progress">
 
                         @if (isset($imagen))
-                            <div class="w-full h-60 md:max-w-md mx-auto mb-1 duration-300">
+                            <div
+                                class="w-full h-60 md:max-w-md mx-auto mb-1 duration-300 rounded shadow-md shadow-shadowminicard border">
                                 <img class="w-full h-full object-scale-down" src="{{ $imagen->temporaryUrl() }}"
                                     alt="">
                             </div>
@@ -176,11 +175,11 @@
 
                             @if (isset($imagen))
                                 <x-slot name="clear">
-                                    <x-button class="inline-flex px-6" wire:loading.attr="disabled"
+                                    <x-button class="inline-flex" wire:loading.attr="disabled"
                                         wire:target="add_image" type="submit">
                                         REGISTRAR
                                     </x-button>
-                                    <x-button class="inline-flex px-6" wire:loading.attr="disabled"
+                                    <x-button class="inline-flex" wire:loading.attr="disabled"
                                         wire:target="clearImage" wire:click="clearImage">
                                         LIMPIAR
                                     </x-button>
@@ -192,7 +191,7 @@
                     <x-jet-input-error for="producto.id" />
                 </form>
             </div>
-            <div class="w-full lg:w-4/6">
+            <div class="w-full">
                 @if (count($producto->images))
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->images as $item)
@@ -238,39 +237,42 @@
 
     <x-card-next titulo="Series" class="w-full mt-3 border border-next-500">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-2/6">
+            <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
                 <form wire:submit.prevent="add_serie">
-                    <x-label value="Almacén :" />
-                    <div id="parent">
-                        <x-select class="block w-full" id="almacenproducto_id" wire:model="almacen_id"
-                            data-dropdown-parent="#parent" data-placeholder="Seleccionar"
-                            data-minimum-results-for-search="Infinity">
-                            <x-slot name="options">
-                                @if (count($producto->almacens))
-                                    @foreach ($producto->almacens as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
+                    <div class="flex gap-2 flex-wrap md:flex-nowrap lg:flex-wrap">
+                        <div class="w-full">
+                            <x-label value="Almacén :" />
+                            <div id="parent">
+                                <x-select class="block w-full" id="almacenproducto_id" wire:model="almacen_id"
+                                    data-dropdown-parent="#parent" data-placeholder="Seleccionar"
+                                    data-minimum-results-for-search="Infinity">
+                                    <x-slot name="options">
+                                        @if (count($producto->almacens))
+                                            @foreach ($producto->almacens as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                            </div>
+                            <x-jet-input-error for="almacen_id" />
+                        </div>
+                        <div class="w-full">
+                            <x-label value="Serie :" />
+                            <x-input class="block w-full" wire:model.defer="serie" />
+                            <x-jet-input-error for="serie" />
+                            <x-jet-input-error for="producto.id" />
+                        </div>
                     </div>
-
-                    <x-jet-input-error for="almacen_id" />
-
-                    <x-label value="Serie :" class="mt-2" />
-                    <x-input class="block w-full" wire:model.defer="serie" />
-                    <x-jet-input-error for="serie" />
-                    <x-jet-input-error for="producto.id" />
-
-                    <div class="mt-3 flex justify-end">
+                    <div class="w-full mt-3 flex justify-end">
                         <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
                             REGISTRAR
                         </x-button>
                     </div>
                 </form>
             </div>
-            <div class="w-full lg:w-4/6">
-                @if (count($producto->series))
+            @if (count($producto->series))
+                <div class="w-full">
                     <div class="w-full flex mb-2">
                         @if (count($producto->almacens) > 1)
                             <div class="relative" x-data="{ open: false }">
@@ -329,112 +331,149 @@
                             @endforeach
                         @endif
                     </div>
-                @endif
-            </div>
+                </div>
+            @endif
         </div>
     </x-card-next>
 
     <x-card-next titulo="Garantías" class="w-full mt-3 border border-next-500">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-2/6">
+            <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
                 <form wire:submit.prevent="add_garantia">
-                    <x-label value="Garantías disponibles :" />
-                    <div id="parent1">
-                        <x-select class="block w-full" id="typegarantia_id" wire:model="typegarantia_id"
-                            data-dropdown-parent="#parent1" data-placeholder="Seleccionar"
-                            data-minimum-results-for-search="Infinity">
-                            <x-slot name="options">
-                                @if (count($typegarantias))
-                                    @foreach ($typegarantias as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
+                    <div class="flex gap-2 flex-wrap md:flex-nowrap lg:flex-wrap">
+                        <div class="w-full">
+                            <x-label value="Garantías disponibles :" />
+                            <div id="parent1">
+                                <x-select class="block w-full" id="typegarantia_id" wire:model="typegarantia_id"
+                                    data-dropdown-parent="#parent1" data-placeholder="Seleccionar"
+                                    data-minimum-results-for-search="Infinity">
+                                    <x-slot name="options">
+                                        @if (count($typegarantias))
+                                            @foreach ($typegarantias as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                            </div>
+                            <x-jet-input-error for="typegarantia_id" />
+                        </div>
+                        <div class="w-full">
+                            <x-label value="Tiempo garantía (Meses) :" />
+                            <x-input class="block w-full" wire:model.defer="time" type="number" />
+                            <x-jet-input-error for="time" />
+                            <x-jet-input-error for="producto.id" />
+                        </div>
                     </div>
-                    <x-jet-input-error for="typegarantia_id" />
-
-                    <x-label value="Tiempo garantía (Meses) :" class="mt-2" />
-                    <x-input class="block w-full" wire:model.defer="time" type="number" />
-                    <x-jet-input-error for="time" />
-                    <x-jet-input-error for="producto.id" />
-
-                    <div class="mt-3 flex justify-end">
+                    <div class="w-full mt-3 flex justify-end">
                         <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
                             REGISTRAR
                         </x-button>
                     </div>
                 </form>
             </div>
-            <div class="w-full lg:w-4/6">
-                @if (count($producto->garantiaproductos))
-                    <div class="w-full flex flex-wrap gap-1">
-                        @foreach ($producto->garantiaproductos as $item)
-                            <div
-                                class="relative inline-flex mt-7 flex-col justify-between items-center w-36 border gap-1 p-1 font-semibold rounded-md cursor-pointer shadow hover:shadow-lg">
-                                <span
-                                    class="text-[10px] p-1 rounded-lg bg-fondospancardproduct text-textspancardproduct">{{ $item->typegarantia->name }}</span>
+            @if (count($producto->garantiaproductos))
+                <div class="w-full flex flex-wrap gap-1">
+                    @foreach ($producto->garantiaproductos as $item)
+                        <div
+                            class="relative inline-flex mt-7 flex-col justify-between items-center w-36 border gap-1 p-1 font-semibold rounded-md cursor-pointer shadow hover:shadow-lg">
+                            <span
+                                class="text-[10px] p-1 rounded-lg bg-fondospancardproduct text-textspancardproduct">{{ $item->typegarantia->name }}</span>
 
-                                <div class="w-full flex justify-end">
-                                    <x-button-delete wire:click="delete_garantia({{ $item->id }})"
-                                        wire:loading.attr="disabled" wire:target="delete_garantia"></x-button-delete>
-                                </div>
-                                <span class="absolute right-2 -top-3 w-4 h-4 block text-red-500 ml-2">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
-                                        viewBox="0 0 320 512" fill="currentColor" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
-                                    </svg>
-                                </span>
-                                <span
-                                    class="absolute right-0 -top-8 bg-red-500 text-white text-[10px] font-semibold tracking-widest p-1.5 px-2 rounded-sm">
-                                    {{ $item->time }}{{ $item->time > 1 ? 'MESES' : 'MES' }}</span>
-
+                            <div class="w-full flex justify-end">
+                                <x-button-delete wire:click="delete_garantia({{ $item->id }})"
+                                    wire:loading.attr="disabled" wire:target="delete_garantia"></x-button-delete>
                             </div>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
+                            <span class="absolute right-2 -top-3 w-4 h-4 block text-red-500 ml-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 320 512"
+                                    fill="currentColor" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
+                                </svg>
+                            </span>
+                            <span
+                                class="absolute right-0 -top-8 bg-red-500 text-white text-[10px] font-semibold tracking-widest p-1.5 px-2 rounded-sm">
+                                {{ $item->time }}{{ $item->time > 1 ? 'MESES' : 'MES' }}</span>
+
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
     </x-card-next>
 
-    <x-card-next titulo="Incrementar precio venta(%)" class="w-full mt-3 border border-next-500">
-        <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-2/6">
-                <form wire:submit.prevent="add_incremento">
-                    <x-label value="Lista precios disponibles :" />
-                    <div id="parent2">
-                        <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id"
-                            data-dropdown-parent="#parent2" data-placeholder="Seleccionar"
-                            data-minimum-results-for-search="Infinity">
-                            <x-slot name="options">
-                                @if (count($pricetypes))
-                                    @foreach ($pricetypes as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                    </div>
-                    <x-jet-input-error for="pricetype_id" />
+    <x-card-next titulo="Cambiar precio venta predeterminados" class="w-full mt-3 border border-next-500">
+        @if (count($pricetypes))
+            {{-- <div class="w-full flex flex-wrap lg:flex-nowrap gap-3"> --}}
+            {{-- <div class="w-full lg:w-2/6">
+                    <form wire:submit.prevent="add_incremento">
+                        <x-label value="Lista precios disponibles :" />
+                        <div id="parent2">
+                            <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id"
+                                data-dropdown-parent="#parent2" data-placeholder="Seleccionar"
+                                data-minimum-results-for-search="Infinity">
+                                <x-slot name="options">
+                                    @if (count($pricetypes))
+                                        @foreach ($pricetypes as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                        </div>
+                        <x-jet-input-error for="pricetype_id" />
 
-                    <x-label value="Incremento (%) :" class="mt-2" />
-                    <x-input class="block w-full" wire:model.defer="increment" type="number" />
-                    <x-jet-input-error for="increment" />
-                    <x-jet-input-error for="producto.id" />
+                        <x-label value="Incremento (%) :" class="mt-2" />
+                        <x-input class="block w-full" wire:model.defer="increment" type="number" />
+                        <x-jet-input-error for="increment" />
+                        <x-jet-input-error for="producto.id" />
 
-                    <div class="mt-3 flex justify-end">
-                        <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
-                            REGISTRAR
-                        </x-button>
-                    </div>
-                </form>
-            </div>
-            <div class="w-full lg:w-4/6">
+                        <div class="mt-3 flex justify-end">
+                            <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
+                                REGISTRAR
+                            </x-button>
+                        </div>
+                    </form>
+                </div> --}}
+            <x-table>
+                <tbody class="divide-y divide-gray-200 text-gray-700">
+                    <tr>
+                        @foreach ($pricetypes as $lista)
+                            @php
+                                $precios = \App\Helpers\GetPrice::getPriceProducto($producto, $lista->id)->getData();
+                            @endphp
 
-            </div>
-        </div>
+                            <td class="p-2 text-xs text-center align-text-top">
+                                <p
+                                    class="text-textspancardproduct bg-fondospancardproduct inline-block p-1 rounded font-semibold text-[10px]">
+                                    {{ $lista->name }}</p>
+
+                                {{-- <p>{{ var_dump($precios) }}</p> --}}
+
+                                <div class="text-center relative pt-1">
+                                    @if ($precios->pricemanual)
+                                        <small class="text-red-500 font-semibold text-[10px] p-0.5 bg-red-100 inline-block rounded">
+                                            SUGERIDO : S/. {{ $precios->oldPrice }}</small>
+                                    @endif
+                                    <p class="text-next-500">
+                                        S/. {{ $precios->pricesale }}</p>
+                                </div>
+                                <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
+                                    wire:loading.attr="disabled"></x-button-edit>
+
+                            </td>
+                        @endforeach
+                    </tr>
+                </tbody>
+            </x-table>
+            {{-- </div> --}}
+        @else
+            <small class="text-red-500 bg-red-50 text-xs p-0.5 rounded font-semibold inline-block mt-1">
+                Configurar lista de precios
+                <a class="underline px-1" href="#">REGISTRAR</a>
+            </small>
+        @endif
     </x-card-next>
 
     <x-card-next titulo="Detalles del producto" class="w-full mt-3 border border-next-500">
@@ -577,9 +616,46 @@
         </x-slot>
     </x-jet-dialog-modal>
 
+    <x-jet-dialog-modal wire:model="openprice" maxWidth="lg" footerAlign="justify-end">
+        <x-slot name="title">
+            {{ __('Cambiar precio venta') }}
+            <x-button-add wire:click="$toggle('openprice')" wire:loading.attr="disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </x-button-add>
+        </x-slot>
 
-    <script>
-        document.addEventListener("livewire:load", () => {
+        <x-slot name="content">
+            <form wire:submit.prevent="saveprecioventa">
+                <x-label value="Lista precio :" />
+                <x-disabled-text :text="$pricetype->name" />
+                <x-jet-input-error for="pricetype_id" />
+
+                <x-label value="Precio venta sugerido :" class="mt-2" />
+                <x-disabled-text :text="$priceold" />
+
+                <x-label value="Precio venta manual :" class="mt-2" />
+                <x-input class="block w-full" wire:model.defer="newprice" type="number" min="0"
+                    step="0.01" />
+                <x-jet-input-error for="newprice" />
+                <x-jet-input-error for="producto.id" />
+
+                <div class="mt-3 flex justify-end">
+                    <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
+                        REGISTRAR
+                    </x-button>
+                </div>
+            </form>
+        </x-slot>
+    </x-jet-dialog-modal>
+
+    <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
+    @section('scripts')
+        <script>
+            // document.addEventListener("livewire:load", () => {
 
             $("#newalmacen_id").select2({}).on("change", function(e) {
                 e.target.setAttribute("disabled", true);
@@ -868,7 +944,9 @@
                 })
             });
 
-        })
-    </script>
+            // })
+        </script>
+    @endsection
+
 
 </div>

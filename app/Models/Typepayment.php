@@ -1,13 +1,19 @@
 <?php
 
-namespace Modules\Facturacion\Entities;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Typepayment extends Model
 {
     use HasFactory;
+    use SoftDeletes;
+
+    public $timestamps = false;
+
+    protected $fillable = ['name', 'paycuotas', 'default'];
 
     public function isDefault()
     {

@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Marca;
+use App\Models\Pricetype;
 use App\Models\Serie;
 use App\Models\Unit;
 use Carbon\Carbon;
@@ -25,6 +26,11 @@ class Producto extends Model
     use HasFactory;
     use SoftDeletes;
     use Sluggable;
+
+    protected static function newFactory()
+    {
+        return \Modules\Almacen\Database\factories\ProductoFactory::new();
+    }
 
     protected $guarded = ['created_at', 'updated_at'];
 
@@ -47,6 +53,11 @@ class Producto extends Model
         $this->attributes['sku'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function setCodefabricanteAttribute($value)
+    {
+        $this->attributes['codefabricante'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
@@ -59,13 +70,13 @@ class Producto extends Model
 
     public function almacens(): BelongsToMany
     {
-        return $this->belongsToMany(Almacen::class)->withPivot('user_id', 'cantidad');
+        return $this->belongsToMany(Almacen::class)->withPivot('cantidad');
     }
 
     public function disponiblealmacens(): BelongsToMany
     {
         return $this->belongsToMany(Almacen::class)
-            ->withPivot('user_id', 'cantidad')
+            ->withPivot('cantidad')
             ->wherePivot('cantidad', '>', 0);
     }
 
@@ -151,7 +162,14 @@ class Producto extends Model
     public function existStock(): BelongsToMany
     {
         return $this->belongsToMany(Almacen::class)
-            ->withPivot('user_id', 'cantidad')
+            ->withPivot('cantidad')
             ->wherePivot('cantidad', '>', 0);
     }
+
+    public function pricetypes(): BelongsToMany
+    {
+        return $this->belongsToMany(Pricetype::class)->withPivot('price');
+    }
+
+
 }

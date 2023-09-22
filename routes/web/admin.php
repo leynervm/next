@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\HomeController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,9 @@ Route::get('/', [HomeController::class, 'index'])->name('admin');
 Route::get('/administracion', [HomeController::class, 'administracion'])->name('admin.administracion');
 Route::get('/areas', [HomeController::class, 'areas'])->name('admin.areas');
 
+Route::get('/administracion/empresa', [EmpresaController::class, 'index'])->name('admin.administracion.empresa');
+Route::get('/administracion/empresa/create', [EmpresaController::class, 'create'])->name('admin.administracion.empresa.create');
+
 Route::get('/clientes', [ClientController::class, 'index'])->name('admin.clientes');
 Route::get('/clientes/{client:document}', [ClientController::class, 'show'])->name('admin.clientes.show');
 
@@ -43,6 +47,16 @@ Route::get('/cajas/movimientos', [CajaController::class, 'movimientos'])->name('
 Route::get('/cajas/resumen', [CajaController::class, 'resumen'])->name('admin.cajas.resumen');
 Route::get('/cajas/cuentas', [CajaController::class, 'cuentas'])->name('admin.cajas.cuentas');
 Route::get('/cajas/forma-pago', [CajaController::class, 'methodpayments'])->name('admin.cajas.methodpayments');
+
+
+
+
+
+
+
+Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('tipocambio');
+
+
 
 // });
 

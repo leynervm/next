@@ -64,5 +64,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'opencaja' => \App\Http\Middleware\RegistrarVentaMiddleware::class,
+        'verifycompany' => \App\Http\Middleware\VerifyCompany::class,
     ];
 }

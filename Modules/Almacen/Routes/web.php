@@ -11,6 +11,7 @@
 |
 */
 
+use Illuminate\Support\Facades\Route;
 use Modules\Almacen\Http\Controllers\AlmacenController;
 use Modules\Almacen\Http\Controllers\ProductoController;
 
@@ -19,7 +20,7 @@ use Modules\Almacen\Http\Controllers\ProductoController;
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
-    'verified'
+    // 'verified'
 ])->prefix('admin/almacen')->group(function () {
     Route::get('/', [AlmacenController::class, 'index'])->name('admin.almacen');
     Route::get('/tipo-garantias', [AlmacenController::class, 'typegarantias'])->name('admin.almacen.typegarantias');

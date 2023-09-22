@@ -223,6 +223,10 @@
                         </div>
                     @endforeach
                 </div>
+                <div class="mt-2">
+                    <x-button wire:click="editcuotas" wire:loading.attr="disable" wire:target="editcuotas">EDITAR
+                        CUOTAS</x-button>
+                </div>
             @endif
         </x-card-next>
     @endif
@@ -293,7 +297,7 @@
                                 <x-label value="Caja pago :" textSize="xs" />
                                 <p
                                     class="text-xs inline-block p-1 rounded bg-fondospancardproduct text-textspancardproduct">
-                                    {{ $venta->cajamovimiento->caja->name }}</p>
+                                    {{ $venta->cajamovimiento->opencaja->caja->name }}</p>
                             </div>
                             <div class="w-full">
                                 <x-label value="Usuario :" textSize="xs" />
@@ -301,6 +305,17 @@
                                     {{ $venta->cajamovimiento->user->name }}</span>
                             </div>
                         </div>
+
+                        @if ($venta->cajamovimiento->cuenta)
+                            <div class="w-full">
+                                <x-label value="Cuenta pago :" textSize="xs" />
+                                <span class="text-xs p-1 rounded bg-fondospancardproduct text-textspancardproduct">
+                                    {{ $venta->cajamovimiento->cuenta->account }} -
+                                    {{ $venta->cajamovimiento->cuenta->descripcion }}
+                                    ({{ $venta->cajamovimiento->cuenta->banco->name }})
+                                </span>
+                            </div>
+                        @endif
 
                         @if ($venta->cajamovimiento->detalle)
                             <div class="w-full">
@@ -407,6 +422,71 @@
                         wire:target="savepayment">
                         {{ __('REGISTRAR') }}
                     </x-button>
+                </div>
+            </form>
+        </x-slot>
+    </x-jet-dialog-modal>
+
+
+    <x-jet-dialog-modal wire:model="opencuotas" maxWidth="2xl" footerAlign="justify-end">
+        <x-slot name="title">
+            {{ __('Editar cuotas pago') }}
+            <x-button-add wire:click="$toggle('opencuotas')" wire:loading.attr="disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 6 6 18" />
+                    <path d="m6 6 12 12" />
+                </svg>
+            </x-button-add>
+        </x-slot>
+
+        <x-slot name="content">
+            <form wire:submit.prevent="updatecuotas" class="w-full flex flex-wrap justify-around gap-2">
+                @if (count($cuotas))
+                    @foreach ($cuotas as $item)
+                        <div class="w-48 rounded p-1 border relative shadow-md hover:shadow-lg">
+                            @if (!is_null($item['cajamovimiento']))
+                                <span class="absolute right-1 top-1 w-5 h-5 block rounded-full p-1 bg-green-100 text-next-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path
+                                            d="M20.9953 6.96425C21.387 6.57492 21.3889 5.94176 20.9996 5.55005C20.6102 5.15834 19.9771 5.15642 19.5854 5.54575L8.97661 16.0903L4.41377 11.5573C4.02196 11.1681 3.3888 11.1702 2.99956 11.562C2.61032 11.9538 2.6124 12.5869 3.0042 12.9762L8.27201 18.2095C8.66206 18.597 9.29179 18.5969 9.68175 18.2093L20.9953 6.96425Z"
+                                            fill="black" />
+                                    </svg>
+                                </span>
+                            @endif
+                            <h1 class="text-xs font-semibold text-center">
+                                Cuota{{ substr('000' . $item['cuota'], -3) }}</h1>
+                            <x-label value="Fecha pago :" textSize="xs" class="mt-1" />
+                            @if (is_null($item['cajamovimiento']))
+                                <x-input class="block w-full" type="date"
+                                    wire:model="cuotas.{{ $item['cuota'] - 1 }}.date" />
+                            @else
+                                <x-disabled-text :text="\Carbon\Carbon::parse($item['date'])->format('d/m/Y')" />
+                            @endif
+                            <x-jet-input-error for="cuotas.{{ $item['cuota'] - 1 }}.date" />
+
+                            <x-label value="Monto Cuota :" textSize="xs" class="mt-1" />
+                            @if (is_null($item['cajamovimiento']))
+                                <x-input class="block w-full" type="number" min="1" step="0.01"
+                                    wire:model="cuotas.{{ $item['cuota'] - 1 }}.amount" />
+                            @else
+                                <x-disabled-text :text="$item['amount']" />
+                            @endif
+                            <x-jet-input-error for="cuotas.{{ $item['cuota'] - 1 }}.amount" />
+
+                            <x-jet-input-error for="cuotas.{{ $item['cuota'] - 1 }}.cuota" />
+
+                        </div>
+                    @endforeach
+                @endif
+
+                <x-jet-input-error for="cuotas" />
+
+                <div class="w-full mt-3 flex items-center justify-center">
+                    <x-button type="submit" wire:loading.attr="disable" wire:target="updatecuotas">CONFIRMAR
+                        CUOTAS</x-button>
                 </div>
             </form>
         </x-slot>

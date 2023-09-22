@@ -17,5 +17,6 @@ class FacturacionDatabaseSeeder extends Seeder
         Model::unguard();
 
         // $this->call("OthersTableSeeder");
+        $this->call(SeedTypecomprobantesTableSeeder::class);
     }
 }

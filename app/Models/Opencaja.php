@@ -26,7 +26,7 @@ class Opencaja extends Model
 
     public function scopeCajasUser($query)
     {
-        return $query->where('user_id', Auth::user()->id);
+        return $query->where('user_id', Auth::user()->id)->orderBy('startdate', 'desc');
     }
 
     public function user(): BelongsTo

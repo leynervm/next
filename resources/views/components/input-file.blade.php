@@ -10,7 +10,7 @@
         {{ $slot }}
 
         @if (isset($titulo))
-            <span>{{ $titulo }}</span>
+            <span class="text-center">{{ $titulo }}</span>
         @endif
     </label>
 

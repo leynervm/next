@@ -19,23 +19,35 @@ class SeedEstantesTableSeeder extends Seeder
         Model::unguard();
 
         Estante::create([
-            'name' => 'ESTANTE A'
+            'name' => 'ESTANTE 1'
         ]);
+
         Estante::create([
-            'name' => 'ESTANTE C'
+            'name' => 'ESTANTE 2'
         ]);
+
         Estante::create([
-            'name' => 'ESTANTE C'
+            'name' => 'ESTANTE 3'
         ]);
 
         Almacenarea::create([
-            'name' => 'AREA MOUSE'
+            'name' => 'AREA A'
         ]);
+
         Almacenarea::create([
-            'name' => 'AREA ACCESORIOS'
+            'name' => 'AREA B'
         ]);
+
         Almacenarea::create([
-            'name' => 'AREA CAMARAS SEGURIDAD'
+            'name' => 'AREA C'
+        ]);
+
+        Almacenarea::create([
+            'name' => 'AREA D'
+        ]);
+
+        Almacenarea::create([
+            'name' => 'AREA E'
         ]);
     }
 }

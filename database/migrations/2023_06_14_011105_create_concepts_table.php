@@ -17,8 +17,6 @@ class CreateConceptsTable extends Migration
             $table->id();
             $table->string('name', 100);
             $table->integer('default')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
             $table->softDeletes();
         });
     }

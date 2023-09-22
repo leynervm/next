@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Typecomprobante extends Model
 {
     use HasFactory;
-    // use SoftDeletes;
+    use SoftDeletes;
+
+    public $timestamps = false;
 
     public function isDefault()
     {

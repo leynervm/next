@@ -20,7 +20,6 @@ class CreateTypecomprobantesTable extends Migration
             $table->string('descripcion', 100);
             $table->integer('default')->default(0);
             $table->softDeletes();
-            $table->timestamps();
         });
     }
 

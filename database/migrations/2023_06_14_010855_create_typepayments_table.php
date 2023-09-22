@@ -14,12 +14,10 @@ class CreateTypepaymentsTable extends Migration
     public function up()
     {
         Schema::create('typepayments', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('name', 50);
             $table->integer('paycuotas')->default(0);
             $table->integer('default')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
             $table->softDeletes();
         });
     }

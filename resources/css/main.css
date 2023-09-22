@@ -23,6 +23,7 @@
     --ring-link-nav: theme("colors.next.300");
 
     --fondo-dropdown: theme("colors.white");
+    --color-dropdown: theme("colors.next.500");
     --color-primary: theme("colors.next.600");
 
     --color-title: theme("colors.next.400");
@@ -30,6 +31,7 @@
     --fondo-minicard: theme("colors.transparent");
     --color-minicard: theme("colors.next.500");
     --shadow-minicard: theme("colors.gray.300");
+    --border-minicard: theme("colors.gray.300");
 
     --fondo-titlecardnext: theme("colors.next.500");
     --color-titlecardnext: theme("colors.white");
@@ -47,6 +49,21 @@
     --fondo-select2: theme("colors.white");
     --color-select2: theme("colors.next.500");
 
+    --text-header-table: theme("colors.neutral.100");
+    --fondo-header-table: theme("colors.next.500");
+    --text-body-table: theme("colors.neutral.700");
+    --fondo-body-table: theme("colors.transparent");
+    --divide-table: theme("colors.next.300");
+    --text-span-table: theme("colors.white");
+    --fondo-span-table: theme("colors.next.500");
+    --link-table: theme("colors.next.500");
+    --hover-link-table: theme("colors.next.700");
+
+    --fondo-input-disabled: theme("colors.gray.100");
+    --color-input-disabled: theme("colors.next.500");
+
+    --color-error: theme("colors.red.600");
+
 }
 
 .theme-darknext {
@@ -60,7 +77,8 @@
     --hover-color-link-nav: theme("colors.white");
     --ring-link-nav: theme("colors.next.300");
 
-    --fondo-dropdown: theme("colors.neutral.800");
+    --fondo-dropdown: theme("colors.neutral.600");
+    --color-dropdown: theme("colors.white");
     --color-primary: theme("colors.next.600");
 
     --color-title: theme("colors.next.400");
@@ -68,6 +86,7 @@
     --fondo-minicard: theme("colors.neutral.600");
     --color-minicard: theme("colors.white");
     --shadow-minicard: theme("colors.neutral.500");
+    --border-minicard: theme("colors.neutral.500");
 
     --fondo-titlecardnext: theme("colors.next.500");
     --color-titlecardnext: theme("colors.white");
@@ -83,6 +102,21 @@
     --shadow-select2: theme("colors.neutral.500");
     --fondo-select2: theme("colors.neutral.500");
     --color-select2: theme("colors.white");
+
+    --text-header-table: theme("colors.neutral.100");
+    --fondo-header-table: theme("colors.neutral.500");
+    --text-body-table: theme("colors.white");
+    --fondo-body-table: theme("colors.transparent");
+    --divide-table: theme("colors.neutral.300");
+    --text-span-table: theme("colors.white");
+    --fondo-span-table: theme("colors.next.500");
+    --link-table: theme("colors.next.500");
+    --hover-link-table: theme("colors.next.700");
+
+    --fondo-input-disabled: theme("colors.neutral.500");
+    --color-input-disabled: theme("colors.next.500");
+
+    --color-error: theme("colors.red.400");
 }
 
 .theme-dark {

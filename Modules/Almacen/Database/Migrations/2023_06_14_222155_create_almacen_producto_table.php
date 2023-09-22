@@ -15,15 +15,11 @@ class CreateAlmacenProductoTable extends Migration
     {
         Schema::create('almacen_producto', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('date');
             $table->decimal('cantidad', 10, 2);
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('almacen_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
             $table->foreign('producto_id')->on('productos')->references('id');
             $table->foreign('almacen_id')->on('almacens')->references('id');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

@@ -1,42 +1,52 @@
 <?php
 
-namespace Database\Factories;
+namespace Modules\Almacen\Database\factories;
 
+use App\Models\Category;
+use App\Models\Marca;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Modules\Almacen\Entities\Almacenarea;
+use Modules\Almacen\Entities\Estante;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Model>
- */
 class ProductoFactory extends Factory
 {
     /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = \Modules\Almacen\Entities\Producto::class;
+
+    /**
      * Define the model's default state.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function definition()
     {
 
+        $tipocambio = 3.75;
+        $priceusbuy = $this->faker->randomFloat(2, 0.10, 1000);
+        $ganancia = number_format($priceusbuy * 0.10, 2, '.', '');
+        $category = Category::all()->random();
 
         return [
-            'name' => $this->faker->name(),
+            'name' => $this->faker->text(90),
             'modelo' => $this->faker->word(),
-            'pricebuy' => $this->faker->numerify('####.##'),
-            'priceusbuy' => 0,
-            'pricesale' => 0,
-            'percent' => 18,
+            'pricebuy' => number_format($priceusbuy * $tipocambio, 2, '.', ''),
+            'priceusbuy' => $priceusbuy,
+            'pricesale' => number_format(($priceusbuy + $ganancia) * $tipocambio, 2, '.', ''),
             'igv' => 0,
             'publicado' => $this->faker->randomElement([0, 1]),
-            'sku' => $this->faker->randomKey([$this->faker->randomLetter(), $this->faker->randomNumber()]),
+            'sku' => $this->faker->bothify('##??####??##??##'),
             'views' => 0,
-            'almacenarea_id' => $this->faker->randomElement([1, 2]),
-            'estante_id' => $this->faker->randomElement([1, 2]),
-            'marca_id' =>  $this->faker->randomElement([1, 2, 3]),
-            'category_id' =>  $this->faker->randomElement([1, 2, 3]),
-            'subcategory_id' =>  $this->faker->randomElement([1, 2, 3]),
-            'tribute_id' => 1,
+            'codefabricante' => $this->faker->bothify('????-########'),
+            'almacenarea_id' => Almacenarea::all()->random()->id,
+            'estante_id' => Estante::all()->random()->id,
+            'marca_id' =>  Marca::all()->random()->id,
+            'category_id' =>  $category->id,
+            'subcategory_id' =>  $category->subcategories->random()->id,
             'unit_id' => 1,
-            'user_id' => 1,
         ];
     }
 }

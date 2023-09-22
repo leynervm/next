@@ -5,7 +5,6 @@ namespace Modules\Almacen\Entities;
 use App\Models\Serie;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -17,6 +16,11 @@ class Almacen extends Model
 
     protected $guarded = ['created_at', 'updated_at'];
 
+    protected static function newFactory()
+    {
+        return \Modules\Almacen\Database\factories\AlmacenFactory::new();
+    }
+
 
     public function setNameAttribute($value)
     {
@@ -25,7 +29,7 @@ class Almacen extends Model
 
     public function productos(): BelongsToMany
     {
-        return $this->belongsToMany(Producto::class)->withPivot('user_id', 'cantidad');
+        return $this->belongsToMany(Producto::class)->withPivot('cantidad');
     }
 
     public function series(): HasMany

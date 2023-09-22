@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
+use Modules\Almacen\Database\Seeders\AlmacenDatabaseSeeder;
+use Modules\Almacen\Database\Seeders\ProductoSeederTableSeeder;
+use Modules\Facturacion\Database\Seeders\FacturacionDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -23,18 +25,26 @@ class DatabaseSeeder extends Seeder
         Storage::deleteDirectory('equipos');
         Storage::makeDirectory('equipos');
 
-        User::create([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
-
-        User::create([
-            'name' => 'Demo',
-            'email' => 'demo@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
-
+        $this->call(UbigeoSeeder::class);
+        $this->call(UserSeeder::class);
+        $this->call(AreaSeeder::class);
         $this->call(MonedaSeeder::class);
+        $this->call(EquipoSeeder::class);
+        $this->call(MarcaSeeder::class);
+        $this->call(UnitSeeder::class);
+        $this->call(RangoSeeder::class);
+        $this->call(PricetypeSeeder::class);
+        $this->call(CajaSeeder::class);
+        $this->call(TypepaymentSeeder::class);
+
+        $this->call(ConceptSeeder::class);
+        $this->call(MethodpaymentSeeder::class);
+        
+        $this->call(FacturacionDatabaseSeeder::class);
+        $this->call(AlmacenDatabaseSeeder::class);
+        
+
+        
+
     }
 }

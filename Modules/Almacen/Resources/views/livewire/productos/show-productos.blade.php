@@ -32,9 +32,9 @@
                                 <input id="searchmarca_{{ $item->marca_id }}" type="checkbox"
                                     value="{{ $item->marca_id }}" wire:loading.attr="disabled" wire:model="searchmarca"
                                     name="searchmarca[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
+                                    class="w-4 h-4 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
                                 <label for="searchmarca_{{ $item->marca_id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->marca->name }}</label>
+                                    class="pl-2 text-xs font-medium  cursor-pointer break-keep">{{ $item->marca->name }}</label>
                             </div>
                         </li>
                     @endforeach
@@ -51,9 +51,9 @@
                                 <input id="searchcategory_{{ $item->category_id }}" type="checkbox"
                                     value="{{ $item->category_id }}" wire:loading.attr="disabled"
                                     wire:model="searchcategory" name="searchcategory[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
+                                    class="w-4 h-4 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
                                 <label for="searchcategory_{{ $item->category_id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->category->name }}</label>
+                                    class="pl-2 text-xs font-medium cursor-pointer break-keep">{{ $item->category->name }}</label>
                             </div>
                         </li>
                     @endforeach
@@ -70,9 +70,9 @@
                                 <input id="searchsubcategory_{{ $item->subcategory_id }}" type="checkbox"
                                     value="{{ $item->subcategory_id }}" wire:loading.attr="disabled"
                                     wire:model="searchsubcategory" name="searchsubcategory[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
+                                    class="w-4 h-4 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
                                 <label for="searchsubcategory_{{ $item->subcategory_id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->subcategory->name }}</label>
+                                    class="pl-2 text-xs font-medium cursor-pointer break-keep">{{ $item->subcategory->name }}</label>
                             </div>
                         </li>
                     @endforeach
@@ -89,9 +89,9 @@
                                 <input id="searchalmacen_{{ $item->id }}" type="checkbox"
                                     value="{{ $item->id }}" wire:loading.attr="disabled" wire:model="searchalmacen"
                                     name="almacenSearch[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
+                                    class="w-4 h-4 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
                                 <label for="searchalmacen_{{ $item->id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->name }}</label>
+                                    class="pl-2 text-xs font-medium cursor-pointer break-keep">{{ $item->name }}</label>
                             </div>
                         </li>
                     @endforeach
@@ -101,7 +101,7 @@
     </div>
 
     <x-table>
-        <thead class="bg-gray-50 text-gray-400 text-xs">
+        <thead class="bg-fondoheadertable text-textheadertable text-xs">
             <tr>
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
@@ -119,6 +119,14 @@
                                 fill="currentColor" stroke="currentColor" stroke-width="0.3" />
                         </svg>
                     </button>
+                </th>
+
+                <th scope="col" class="p-2 font-medium">
+                    MINICÓDIGO
+                </th>
+
+                <th scope="col" class="p-2 font-medium">
+                    COD. FABRIC
                 </th>
 
                 <th scope="col" class="p-2 font-medium">
@@ -152,7 +160,7 @@
                 </th>
             </tr>
         </thead>
-        <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
+        <tbody class="bg-fondobodytable divide-y divide-dividetable text-textbodytable">
             @if (count($productos))
                 @foreach ($productos as $item)
                     <tr>
@@ -172,15 +180,15 @@
 
                                         @if (count($item->images) > 1)
                                             <p
-                                                class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-xs text-blue-600 bg-blue-100 rounded-full">
+                                                class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-xs text-textspantable bg-fondospantable rounded-full">
                                                 +{{ count($item->images) - 1 }}</p>
                                         @endif
                                     </button>
                                 @endif
                                 <div class="flex-shrink-1">
                                     <a href="{{ route('admin.almacen.productos.show', $item) }}"
-                                    class="font-medium break-words underline text-blue-500 cursor-pointer hover:text-indigo-800 transition-all ease-in-out duration-150">
-                                    {{ $item->name }}</a>
+                                        class="font-medium break-words underline text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                        {{ $item->name }}</a>
 
                                     {{-- <a href="{{ route('admin.almacen.productos.show', $item) }}"
                                         class="font-medium break-words underline text-blue-500 cursor-pointer hover:text-indigo-800 transition-all ease-in-out duration-150">
@@ -190,14 +198,20 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="p-2 text-xs">
+                        <td class="p-2 text-xs text-center">
+                            {{ $item->id }}
+                        </td>
+                        <td class="p-2 text-xs text-center">
+                            {{ $item->codefabricante }}
+                        </td>
+                        <td class="p-2 text-xs text-center">
                             {{ $item->sku }}
                         </td>
                         <td class="p-2 text-xs">
                             <div>
-                                <h4 class="text-gray-700 ">{{ $item->category->name }}</h4>
+                                <h4>{{ $item->category->name }}</h4>
                                 @if ($item->subcategory)
-                                    <p class="text-gray-500 text-[10px]">{{ $item->subcategory->name }}</p>
+                                    <p class="text-linktable text-[10px]">{{ $item->subcategory->name }}</p>
                                 @endif
                             </div>
                         </td>
@@ -205,10 +219,10 @@
                             @if (count($item->almacens))
                                 @foreach ($item->almacens as $almacen)
                                     <span
-                                        class="whitespace-nowrap p-1 pr-0 text-[10px] font-medium text-next-600 bg-next-100 rounded-lg">
+                                        class="whitespace-nowrap p-1 pr-0 text-[10px] font-medium text-textspancardproduct bg-fondospancardproduct rounded-lg">
                                         {{ $almacen->name }}
                                         <span
-                                            class="bg-next-500 p-1 text-white rounded-full ml-1">{{ floatval($almacen->pivot->cantidad) }}</span>
+                                            class="bg-fondospantable p-1 text-textspantable rounded-full ml-1">{{ floatval($almacen->pivot->cantidad) }}</span>
                                     </span>
                                     {{-- <p
                                             class="flex items-center justify-center w-6 h-6 -mx-1 text-xs text-blue-600 bg-blue-100 border-2 border-white rounded-full">
@@ -218,7 +232,8 @@
                         </td>
                         <td class="p-2">
                             @if ($item->publicado)
-                                <span class="p-1 text-[10px] font-medium text-next-600 bg-next-100 rounded-full">
+                                <span
+                                    class="inline-block whitespace-nowrap p-1 text-[10px] font-medium text-textspancardproduct bg-fondospancardproduct rounded-full">
                                     DISPONIBLE WEB
                                 </span>
                             @endif
@@ -312,18 +327,25 @@
                     <div class="w-full">
                         <x-label value="PRECIO COMPRA:" textSize="[10px]" class="font-semibold" />
                         <x-input class="block w-full" wire:model.defer="producto.pricebuy" type="number"
-                            min="0" step="0.1" />
+                            min="0" step="0.0001" />
                         <x-jet-input-error for="producto.pricebuy" />
                     </div>
+
                     <div class="w-full">
-                        <x-label value="IGV:" textSize="[10px]" class="font-semibold" />
-                        <x-input class="block w-full" wire:model.defer="producto.igv" type="number" min="0"
-                            step="0.1" />
-                        <x-jet-input-error for="producto.igv" />
+                        <x-label value="PRECIO VENTA:" textSize="[10px]" class="font-semibold" />
+                        <x-input class="block w-full" wire:model.defer="producto.pricesale" type="number"
+                            min="0" step="0.0001" />
+                        <x-jet-input-error for="producto.pricesale" />
                     </div>
                 </div>
 
                 <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-2">
+                    <div class="w-full">
+                        <x-label value="IGV:" textSize="[10px]" class="font-semibold" />
+                        <x-input class="block w-full" wire:model.defer="producto.igv" type="number" min="0"
+                            step="0.0001" />
+                        <x-jet-input-error for="producto.igv" />
+                    </div>
                     <div class="w-full">
                         <x-label value="MARCA:" textSize="[10px]" class="font-semibold" />
                         <x-select class="block w-full" id="editcategoryproducto" wire:model.defer="producto.marca_id"
@@ -338,6 +360,9 @@
                         </x-select>
                         <x-jet-input-error for="producto.marca_id" />
                     </div>
+                </div>
+
+                <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-2">
                     <div class="w-full">
                         <x-label value="UNIDAD MEDIDA:" textSize="[10px]" class="font-semibold" />
                         <x-select class="block w-full" id="editunitproducto" wire:model.defer="producto.unit_id"
@@ -352,9 +377,6 @@
                         </x-select>
                         <x-jet-input-error for="producto.unit_id" />
                     </div>
-                </div>
-
-                <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-2">
                     <div class="w-full">
                         <x-label value="AREA:" textSize="[10px]" class="font-semibold"
                             id="almacenareaproducto_id" />
@@ -370,6 +392,9 @@
                         </x-select>
                         <x-jet-input-error for="producto.almacenarea_id" />
                     </div>
+                </div>
+
+                <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-2">
                     <div class="w-full">
                         <x-label value="ESTANTE:" textSize="[10px]" class="font-semibold" />
                         <x-select class="block w-full" id="editestanteproducto"
@@ -384,9 +409,6 @@
                         </x-select>
                         <x-jet-input-error for="producto.estante_id" />
                     </div>
-                </div>
-
-                <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-2">
                     <div class="w-full">
                         <x-label value="CATEGORÍA:" textSize="[10px]" class="font-semibold" />
                         <x-select class="block w-full" id="editcategoryprocto"
@@ -401,7 +423,10 @@
                         </x-select>
                         <x-jet-input-error for="producto.category_id" />
                     </div>
-                    <div class="w-full">
+                </div>
+
+                <div class="flex flex-wrap sm:flex-nowrap gap-2 mt-2">
+                    <div class="w-1/2">
                         <x-label value="SUBCATEGORÍA:" textSize="[10px]" class="font-semibold" />
                         <x-select class="block w-full" id="editsubcategoryproducto"
                             wire:model.defer="producto.subcategory_id" id="subcategoryproducto_id">

@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Rango extends Model
 {
     use HasFactory;
+    public $timestamps = false;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['desde', 'hasta', 'incremento'];
 
     public function pricetypes(): BelongsToMany
     {
         return $this->belongsToMany(Pricetype::class)
-            ->withPivot('id', 'ganancia', 'user_id')->orderBy('ganancia', 'desc');
+            ->withPivot('id', 'ganancia')->orderBy('ganancia', 'desc');
     }
 }

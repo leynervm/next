@@ -17,8 +17,6 @@ class SeedCaractecteristicasTableSeeder extends Seeder
     {
         Model::unguard();
 
-        // $this->call("OthersTableSeeder");
-
         $pantalla = Caracteristica::create([
             'name' => 'PANTALLA'
         ]);

@@ -26,7 +26,7 @@ class CreateVentasTable extends Migration
             $table->decimal('total', 10, 2);
             $table->integer('delete')->default(0);
             $table->bigInteger('moneda_id')->nullable();
-            $table->bigInteger('typepayment_id')->nullable();
+            $table->unsignedTinyInteger('typepayment_id')->nullable();
             $table->bigInteger('client_id')->nullable();
             $table->bigInteger('cajamovimiento_id')->nullable();
             $table->bigInteger('user_id')->nullable();

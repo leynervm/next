@@ -13,8 +13,9 @@ class Client extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    public $timestamps = false;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['document', 'name', 'email', 'nacimiento', 'sexo', 'pricetype_id', 'user_id'];
 
     public function setNameAttribute($value)
     {
