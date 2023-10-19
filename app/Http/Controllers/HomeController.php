@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\GetClient;
 use App\Models\Empresa;
+use Exception;
 use Illuminate\Http\Request;
 use Modules\Almacen\Entities\Producto;
 
@@ -45,8 +46,18 @@ class HomeController extends Controller
     {
         $http = new GetClient();
         $response = $http->getTipoCambio();
-        return response()->json($response); 
+        return response()->json($response);
     }
 
+    public function consultasunat($document = null)
+    {
 
+        try {
+            $http = new GetClient();
+            $response = $http->getClient($document);
+            return response()->json($response);
+        } catch (Exception $e) {
+            return response()->json($e->getMessage(), 400);
+        }
+    }
 }

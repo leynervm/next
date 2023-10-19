@@ -2,8 +2,10 @@
 
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CompraController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProveedorController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -34,6 +36,12 @@ Route::get('/administracion/empresa/create', [EmpresaController::class, 'create'
 Route::get('/clientes', [ClientController::class, 'index'])->name('admin.clientes');
 Route::get('/clientes/{client:document}', [ClientController::class, 'show'])->name('admin.clientes.show');
 
+Route::get('/proveedores', [ProveedorController::class, 'index'])->name('admin.proveedores');
+Route::get('/proveedores/create', [ProveedorController::class, 'create'])->name('admin.proveedores.create');
+Route::get('/proveedores/edit/{proveedor:document}', [ProveedorController::class, 'show'])->name('admin.proveedores.show');
+Route::get('/proveedores/tipos', [ProveedorController::class, 'proveedortypes'])->name('admin.proveedores.tipos');
+
+
 Route::get('/lista-precios', [HomeController::class, 'pricetypes'])->name('admin.pricetypes');
 Route::get('/canales-venta', [HomeController::class, 'channelsales'])->name('admin.channelsales');
 
@@ -55,6 +63,7 @@ Route::get('/cajas/forma-pago', [CajaController::class, 'methodpayments'])->name
 
 
 Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('tipocambio');
+Route::get('consulta-sunat/{document?}', [HomeController::class, 'consultasunat'])->name('consultasunat');
 
 
 

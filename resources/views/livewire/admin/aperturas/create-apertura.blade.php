@@ -26,7 +26,8 @@
 
                         <div class="ml-3">
                             <h2 class=" text-sm text-yellow-500">Mensaje</h2>
-                            <p class="mt-2 font-semibold text-sm text-gray-500 leading-relaxed">{{ session('message') }}</p>
+                            <p class="mt-2 font-semibold text-sm text-gray-500 leading-relaxed">{{ session('message') }}
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -54,7 +55,7 @@
                     <div class="w-full">
                         <x-label value="Seleccionar caja :" />
                         <x-select class="block w-full" wire:model.defer="caja_id" id="aperturacaja_id"
-                            data-placeholder="Seleccionar..." data-minimum-results-for-search="Infinity">
+                            data-dropdown-parent="">
                             <x-slot name="options">
                                 @if (count($cajas))
                                     @foreach ($cajas as $item)

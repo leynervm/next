@@ -6,6 +6,9 @@
     </div> --}}
 
     @if ($productos->hasPages())
+        {{-- <div class="w-full py-2">
+            {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
+        </div> --}}
         <div class="pb-2">
             {{ $productos->links() }}
         </div>
@@ -101,7 +104,7 @@
     </div>
 
     <x-table>
-        <thead class="bg-fondoheadertable text-textheadertable text-xs">
+        <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
@@ -134,6 +137,14 @@
                 </th>
 
                 <th scope="col" class="p-2 font-medium">
+                    PRECIO COMPRA
+                </th>
+
+                <th scope="col" class="p-2 font-medium">
+                    PRECIO VENTA
+                </th>
+
+                <th scope="col" class="p-2 font-medium">
                     CATEGORÍA
                 </th>
 
@@ -159,9 +170,10 @@
                     <span class="sr-only">OPCIONES</span>
                 </th>
             </tr>
-        </thead>
-        <tbody class="bg-fondobodytable divide-y divide-dividetable text-textbodytable">
-            @if (count($productos))
+        </x-slot>
+
+        @if (count($productos))
+            <x-slot name="body">
                 @foreach ($productos as $item)
                     <tr>
                         <td class="p-2 text-xs">
@@ -206,6 +218,12 @@
                         </td>
                         <td class="p-2 text-xs text-center">
                             {{ $item->sku }}
+                        </td>
+                        <td class="p-2 text-xs text-center">
+                            {{ $item->pricebuy }}
+                        </td>
+                        <td class="p-2 text-xs text-center">
+                            {{ $item->pricesale }}
                         </td>
                         <td class="p-2 text-xs">
                             <div>
@@ -285,8 +303,7 @@
                         </td>
                     </tr>
                 @endforeach
-            @endif
-            {{-- <tr>
+                {{-- <tr>
                 <td class="px-4 py-4 text-sm whitespace-nowrap">
                     <div class="flex items-center">
                         <p
@@ -300,7 +317,8 @@
                     </div>
                 </td>
             </tr> --}}
-        </tbody>
+            </x-slot>
+        @endif
     </x-table>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
@@ -349,7 +367,7 @@
                     <div class="w-full">
                         <x-label value="MARCA:" textSize="[10px]" class="font-semibold" />
                         <x-select class="block w-full" id="editcategoryproducto" wire:model.defer="producto.marca_id"
-                            id="marcaproducto_id">
+                            id="marcaproducto_id" data-dropdown-parent="">
                             <x-slot name="options">
                                 @if (count($marcas))
                                     @foreach ($marcas as $item)

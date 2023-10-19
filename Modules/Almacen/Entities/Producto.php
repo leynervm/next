@@ -80,7 +80,6 @@ class Producto extends Model
             ->wherePivot('cantidad', '>', 0);
     }
 
-
     public function series(): HasMany
     {
         return $this->hasMany(Serie::class,);
@@ -170,6 +169,4 @@ class Producto extends Model
     {
         return $this->belongsToMany(Pricetype::class)->withPivot('price');
     }
-
-
 }

@@ -94,10 +94,12 @@
                     {{-- <span class="hidden md:block">Caja Chica</span> --}}
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="8" cy="8" r="6" />
-                        <path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
-                        <path d="M7 6h1v4" />
-                        <path d="m16.71 13.88.7.71-2.82 2.82" />
+                        <path
+                            d="m14,18c4.4183,0 8,-3.5817 8,-8c0,-4.41828 -3.5817,-8 -8,-8c-4.41828,0 -8,3.58172 -8,8c0,4.4183 3.58172,8 8,8z" />
+                        <path
+                            d="m3.15657,11c-0.73134,1.1176 -1.15657,2.4535 -1.15657,3.8888c0,3.9274 3.18378,7.1112 7.11116,7.1112c1.43534,0 2.77124,-0.4252 3.88884,-1.1566" />
+                        <path
+                            d="m14,7c-1.1046,0 -2,0.67157 -2,1.5c0,0.82843 0.8954,1.5 2,1.5c1.1046,0 2,0.6716 2,1.5c0,0.8284 -0.8954,1.5 -2,1.5m0,-6c0.8708,0 1.6116,0.4174 1.8862,1m-1.8862,5c-0.8708,0 -1.6116,-0.4174 -1.8862,-1m1.8862,1" />
                     </svg>
                 </x-nav-link>
             </li>
@@ -151,7 +153,7 @@
                 </x-nav-link>
             </li>
             <li>
-                <x-nav-link href="#" class="">
+                <x-nav-link href="{{ route('admin.proveedores') }}" :active="request()->routeIs('admin.proveedores*') || request()->routeIs('admin.proveedores*')">
                     <x-slot name="titulo">Proveedores</x-slot>
                     {{-- <span class="hidden md:block">Proveedores</span> --}}
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"

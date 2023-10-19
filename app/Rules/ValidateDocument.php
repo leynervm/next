@@ -39,6 +39,6 @@ class ValidateDocument implements Rule
      */
     public function message()
     {
-        return 'Documento del cliente incorrectos.';
+        return 'Documento del cliente incorrecto.';
     }
 }

@@ -2,14 +2,14 @@
 
     @if (count($rangos))
         <div class="pb-2">
-            {{ $rangos->links() }}
+            {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
     <div class="block w-full">
         @if (count($rangos))
             <x-table>
-                <thead class="bg-gray-50 text-gray-400 text-xs">
+                <x-slot name="header">
                     <tr>
                         <th scope="col" class="p-2 font-medium">
                             <button class="flex items-center gap-x-3 focus:outline-none">
@@ -56,8 +56,8 @@
                             <span class="sr-only">OPCIONES</span>
                         </th>
                     </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
+                </x-slot>
+                <x-slot name="body">
                     @foreach ($rangos as $item)
                         <tr>
                             <td class="p-2 text-xs">
@@ -90,7 +90,7 @@
                             </td>
                         </tr>
                     @endforeach
-                </tbody>
+                </x-slot>
             </x-table>
         @endif
     </div>

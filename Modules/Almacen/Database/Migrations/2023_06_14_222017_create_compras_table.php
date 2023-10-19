@@ -15,27 +15,27 @@ class CreateComprasTable extends Migration
     {
         Schema::create('compras', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('date', 255);
-            $table->string('referencia', 50);
-            $table->string('descripcion', 255)->nullable();
-            $table->decimal('pricedolar', 10, 2);
-            $table->decimal('totalpayus', 10, 2);
-            $table->decimal('totalpay', 10, 2);
-            $table->decimal('otros', 10, 2);
-            $table->integer('statuspay')->default(0);
-            $table->integer('delete')->default(0);
+            $table->date('date');
+            $table->string('referencia', 32);
+            $table->string('guia', 32);
+            $table->string('detalle', 255)->nullable();
+            $table->decimal('tipocambio', 7, 4)->nullable();
+            $table->decimal('gravado', 10, 4)->default(0);
+            $table->decimal('exonerado', 10, 4)->default(0);
+            $table->decimal('igv', 10, 4)->default(0);
+            $table->decimal('otros', 10, 4)->default(0);
+            $table->decimal('total', 10, 4)->default(0);
+            $table->decimal('counter', 10, 2)->default(0);
             $table->bigInteger('moneda_id')->nullable();
             $table->bigInteger('typepayment_id')->nullable();
-            $table->bigInteger('typemovement_id')->nullable();
             $table->bigInteger('proveedor_id')->nullable();
-            $table->bigInteger('cajamovimiento_id')->nullable();
+            // $table->bigInteger('cajamovimiento_id')->nullable();
             $table->bigInteger('user_id')->nullable();
 
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('typepayment_id')->on('typepayments')->references('id');
-            $table->foreign('typemovement_id')->on('typemovements')->references('id');
             $table->foreign('proveedor_id')->on('proveedors')->references('id');
-            $table->foreign('cajamovimiento_id')->on('cajamovimientos')->references('id');
+            // $table->foreign('cajamovimiento_id')->on('cajamovimientos')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->timestamps();
             $table->softDeletes();

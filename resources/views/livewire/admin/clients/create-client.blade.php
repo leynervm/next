@@ -19,20 +19,20 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" id="form_create_client">
+            <form wire:submit.prevent="save" id="form_create_client" class="relative" x-data="{ searchingclient: @entangle('searchingclient') }">
                 <div class="w-full sm:grid grid-cols-3 gap-2">
                     <div class="w-full">
                         <x-label value="DNI / RUC :" />
-                        <div class="w-full inline-flex">
-                            <x-input class="block w-full" wire:model="document" />
-                            <x-button-add class="px-2" wire:click="">
+                        <div class="w-full inline-flex gap-1">
+                            <x-input class="block w-full prevent" wire:model="document"
+                                wire:keydown.enter="searchclient" />
+                            <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
+                                wire:target="searchclient">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round">
-                                    <path d="M14 19a6 6 0 0 0-12 0" />
-                                    <circle cx="8" cy="9" r="4" />
-                                    <line x1="19" x2="19" y1="8" y2="14" />
-                                    <line x1="22" x2="16" y1="11" y2="11" />
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.3-4.3" />
                                 </svg>
                             </x-button-add>
                         </div>
@@ -44,21 +44,31 @@
                             placeholder="Nombres / razón social del cliente" />
                         <x-jet-input-error for="name" />
                     </div>
-                    <div class="w-full mt-2 sm:mt-0">
-                        <x-label value="Ubigeo :" />
-                        <x-select class="block w-full" wire:model.defer="ubigeo_id" id="ubigeo_id">
-                            <x-slot name="options">
 
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="ubigeo_id" />
-                    </div>
-                    <div class="w-full sm:col-span-2 mt-2 sm:mt-0">
-                        <x-label value="Dirección :" />
+                    <div class="w-full sm:col-span-3 mt-2 sm:mt-0">
+                        <x-label value="Dirección, calle, avenida :" />
                         <x-input class="block w-full" wire:model.defer="direccion"
                             placeholder="Dirección del cliente..." />
                         <x-jet-input-error for="direccion" />
                     </div>
+
+                    <div class="w-full sm:col-span-2 mt-2 sm:mt-0">
+                        <x-label value="Ubigeo :" />
+                        <x-select class="block w-full" wire:model.defer="ubigeo_id" id="ubigeoclient_id"
+                            data-placeholder="Seleccionar" data-minimum-results-for-search="3">
+                            <x-slot name="options">
+                                @if (count($ubigeos))
+                                    @foreach ($ubigeos as $item)
+                                        <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }}
+                                            /
+                                            {{ $item->distrito }}</option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-jet-input-error for="ubigeo_id" />
+                    </div>
+
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Correo :" />
                         <x-input class="block w-full" wire:model.defer="email" placeholder="Correo del cliente..." />
@@ -66,7 +76,8 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Género :" />
-                        <x-select class="block w-full" wire:model.defer="sexo" id="sexo">
+                        <x-select class="block w-full" wire:model.defer="sexo" id="sexoclient_id"
+                            data-placeholder="Seleccionar" data-minimum-results-for-search="Infinity">
                             <x-slot name="options">
                                 <option value="E">EMPRESARIAL</option>
                                 <option value="M">MASCULINO</option>
@@ -83,7 +94,8 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Lista precio :" />
-                        <x-select class="block w-full" wire:model.defer="pricetype_id" id="pricetype_id">
+                        <x-select class="block w-full" wire:model.defer="pricetype_id" id="pricetype_id"
+                            data-placeholder="Seleccionar" data-minimum-results-for-search="Infinity">
                             <x-slot name="options">
                                 @if (count($pricetypes))
                                     @foreach ($pricetypes as $item)
@@ -93,19 +105,6 @@
                             </x-slot>
                         </x-select>
                         <x-jet-input-error for="pricetype_id" />
-                    </div>
-                    <div class="w-full mt-2 sm:mt-0">
-                        <x-label value="Canal registro :" />
-                        <x-select class="block w-full" wire:model.defer="channelsale_id" id="channelsale_id">
-                            <x-slot name="options">
-                                @if (count($channelsales))
-                                    @foreach ($channelsales as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="channelsale_id" />
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Teléfono :" />
@@ -122,17 +121,16 @@
                         <div class="w-full sm:grid grid-cols-3 gap-2">
                             <div class="w-full">
                                 <x-label value="DNI :" />
-                                <div class="w-full inline-flex">
+                                <div class="w-full inline-flex gap-1">
                                     <x-input class="block w-full" wire:model.defer="documentContact"
                                         maxlength="8" />
-                                    <x-button-add class="px-2" wire:click="">
+                                    <x-button-add class="px-2" wire:click="searchcontacto"
+                                        wire:loading.attr="disabled" wire:target="searchcontacto">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M14 19a6 6 0 0 0-12 0" />
-                                            <circle cx="8" cy="9" r="4" />
-                                            <line x1="19" x2="19" y1="8" y2="14" />
-                                            <line x1="22" x2="16" y1="11" y2="11" />
+                                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="m21 21-4.3-4.3" />
                                         </svg>
                                     </x-button-add>
                                 </div>
@@ -154,13 +152,18 @@
                     </div>
                 @endif
 
-
                 <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
                     <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
                         wire:target="save">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>
+
+                <div x-show="searchingclient" wire:loading wire:loading.flex wire:target="searchclient,searchcontacto"
+                    class="loading-overlay rounded">
+                    <x-loading-next />
+                </div>
+
             </form>
         </x-slot>
     </x-jet-dialog-modal>
@@ -181,9 +184,9 @@
                 @this.pricetype_id = e.target.value;
             });
 
-            $("#channelsale_id").on("change", (e) => {
+            $("#sexoclient_id").on("change", (e) => {
                 deshabilitarSelects();
-                @this.channelsale_id = e.target.value;
+                @this.sexo = e.target.value;
             });
 
             window.addEventListener('render-client-select2', () => {
@@ -196,10 +199,7 @@
 
                 for (var i = 0; i < selects.length; i++) {
                     if (selects[i].id !== "") {
-                        $("#" + selects[i].id).select2({
-                            placeholder: "Seleccionar...",
-                            minimumResultsForSearch: Infinity
-                        });
+                        $("#" + selects[i].id).select2();
                     }
                 }
             }

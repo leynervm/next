@@ -2,36 +2,48 @@
 
 namespace Modules\Ventas\Http\Livewire\Ventas;
 
-use App\Models\Caja;
-use App\Models\Cajamovimiento;
 use App\Models\Concept;
+use App\Models\Cuota;
 use App\Models\Methodpayment;
 use App\Models\Opencaja;
+use App\Rules\ValidateNumericEquals;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Modules\Ventas\Entities\Cuota;
 use Modules\Ventas\Entities\Venta;
 
 class ShowVenta extends Component
 {
 
-    public $venta;
-    public $cuota;
-
     public $open = false;
     public $opencuotas = false;
-
-    public $methodpayment_id, $detalle, $caja_id, $concept_id;
+    public $venta, $cuota, $methodpayment, $typepayment;
+    public $opencaja, $concept;
+    public $methodpayment_id, $methodpaymentventa_id, $detalle, $cuentaventa_id, $cuenta_id;
+    public $cuentas = [];
     public $cuotas = [];
+    public $amountcuotas = 0;
+
+    protected $listeners = ['delete', 'deletepaycuota', 'deletecuota'];
 
     protected function rules()
     {
         return [
-            'cuota.id' => ['required', 'integer', 'exists:cuotas,id'],
-            'caja_id' => ['required', 'integer', 'exists:cajas,id'],
-            'concept_id' => ['required', 'integer', 'exists:concepts,id'],
-            'methodpayment_id' => ['required', 'integer', 'exists:methodpayments,id'],
+            'venta.id' => [
+                'required', 'integer', 'min:1', 'exists:ventas,id'
+            ],
+            'methodpaymentventa_id' => [
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'integer', 'min:1', 'exists:methodpayments,id'
+            ],
+            'cuentaventa_id' => [
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'integer', 'min:1', 'exists:cuentas,id'
+            ],
             'detalle' => ['nullable'],
         ];
     }
@@ -43,13 +55,21 @@ class ShowVenta extends Component
         'cuotas.*.amount.required' => 'Monto de cuota requerido',
     ];
 
-    public function mount(Venta $venta)
+    public function mount(Venta $venta, Concept $concept, Methodpayment $methodpayment, Opencaja $opencaja)
     {
         $this->venta = $venta;
+        $this->concept = $concept;
+        $this->opencaja = $opencaja;
+        $this->methodpayment_id = $methodpayment->id ?? null;
+        $this->typepayment = $venta->typepayment;
         $this->cuota = new Cuota();
-        $this->methodpayment_id = Methodpayment::defaultMethodpayment()->first()->id ?? null;
-        $this->concept_id = Concept::defaultConceptPaycuota()->first()->id ?? null;
-        $this->caja_id = Opencaja::CajasAbiertas()->CajasUser()->first()->id ?? null;
+        if ($this->venta->cajamovimiento) {
+            $this->methodpayment = $venta->cajamovimiento->methodpayment;
+            $this->methodpaymentventa_id = $venta->cajamovimiento->methodpayment_id ?? null;
+            $this->detalle = $venta->cajamovimiento->detalle;
+            $this->cuentaventa_id = $venta->cajamovimiento->cuenta_id;
+            $this->cuentas = $this->methodpayment->cuentas;
+        }
     }
 
     public function render()
@@ -58,45 +78,186 @@ class ShowVenta extends Component
         return view('ventas::livewire.ventas.show-venta', compact('methodpayments'));
     }
 
+    public function update()
+    {
+        $this->validate();
+        $this->venta->cajamovimiento->methodpayment_id = $this->methodpaymentventa_id;
+        $this->venta->cajamovimiento->cuenta_id = $this->cuentaventa_id;
+        $this->venta->cajamovimiento->save();
+        $this->dispatchBrowserEvent('updated');
+    }
+
     public function pay(Cuota $cuota)
     {
-        $this->cuota = $cuota;
+        $this->reset(['cuentas', 'cuenta_id']);
         $this->resetValidation();
+        $this->cuota = $cuota;
+
+        $this->methodpayment = Methodpayment::DefaultMethodpayment()->first() ?? new Methodpayment();
+        $this->cuentas = $this->methodpayment->cuentas ?? [];
+        if (count($this->cuentas) == 1) {
+            $this->cuenta_id = $this->methodpayment->cuentas->first()->id;
+        }
         $this->open = true;
     }
 
     public function savepayment()
     {
-        $this->validate();
+
+        $this->validate([
+            'cuota.id' => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
+            'opencaja.id' => ['required', 'integer', 'min:1', 'exists:opencajas,id'],
+            'concept.id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
+            'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
+            'cuenta_id' => [
+                'nullable',
+                Rule::requiredIf(count($this->cuentas) > 1),
+                'integer', 'min:1', 'exists:cuentas,id'
+            ],
+            'detalle' => ['nullable'],
+        ]);
 
         DB::beginTransaction();
         try {
-
-            $cajamovimiento = Cajamovimiento::create([
+            $this->cuota->cajamovimiento()->create([
                 'date' => now('America/Lima'),
-                'amount' => $this->cuota->amount,
-                'referencia' => null,
-                'detalle' => $this->detalle,
-                'moneda_id' => $this->cuota->venta->moneda_id,
+                'amount' => number_format($this->cuota->amount, 2, '.', ''),
+                'referencia' => $this->venta->comprobante->seriecompleta,
+                'detalle' => trim($this->detalle),
+                'moneda_id' => $this->venta->moneda_id,
                 'methodpayment_id' => $this->methodpayment_id,
                 'typemovement' => '+',
-                'concept_id' => $this->concept_id,
-                'caja_id' => $this->caja_id,
+                'cuenta_id' => $this->cuenta_id,
+                'concept_id' => $this->concept->id,
+                'opencaja_id' => $this->opencaja->id,
                 'user_id' => Auth::user()->id,
             ]);
 
             DB::commit();
-
-            $this->cuota->update([
-                'datepayment' => now('America/Lima'),
-                'userpayment_id' => Auth::user()->id,
-                'cajamovimiento_id' => $cajamovimiento->id
-            ]);
-
-            $this->dispatchBrowserEvent('created');
-            $this->venta->refresh();
             $this->resetValidation();
-            $this->reset(['open']);
+            $this->reset(['open', 'methodpayment_id', 'cuenta_id', 'cuentas']);
+            $this->venta->refresh();
+            $this->dispatchBrowserEvent('created');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+
+    public function updatedMethodpaymentventaId($value)
+    {
+
+        $this->reset(['cuentas', 'cuentaventa_id']);
+        $this->methodpaymentventa_id = !empty(trim($value)) ? trim($value) : null;
+        if ($this->methodpaymentventa_id) {
+            $this->methodpayment = Methodpayment::findOrFail($value);
+            $this->cuentas = $this->methodpayment->cuentas;
+            if ($this->methodpayment->cuentas->count() == 1) {
+                $this->cuentaventa_id = $this->methodpayment->cuentas->first()->id;
+            }
+        }
+    }
+
+    public function updatedMethodpaymentId($value)
+    {
+
+        $this->reset(['cuentas', 'cuenta_id']);
+        $this->methodpaymentventa_id = !empty(trim($value)) ? trim($value) : null;
+        if ($this->methodpaymentventa_id) {
+            $this->methodpayment = Methodpayment::findOrFail($value);
+            $this->cuentas = $this->methodpayment->cuentas;
+            if ($this->methodpayment->cuentas->count() == 1) {
+                $this->cuenta_id = $this->methodpayment->cuentas->first()->id;
+            }
+        }
+    }
+
+    public function deletepaycuota(Cuota $cuota)
+    {
+
+        DB::beginTransaction();
+        try {
+            $cuota->cajamovimiento->delete();
+            DB::commit();
+            $this->venta->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function delete(Venta $venta)
+    {
+
+        DB::beginTransaction();
+
+        try {
+            if ($venta->cajamovimiento) {
+                $venta->cajamovimiento->delete();
+            }
+
+            $venta->cuotas()->each(function ($cuota) {
+                $cuota->cajamovimiento->delete();
+                $cuota->forceDelete();
+            });
+
+            $venta->tvitems()->each(function ($item) {
+                $stockPivot = $item->producto->almacens()
+                    ->where('almacen_id', $item->almacen_id)->first();
+
+                $item->producto->almacens()->updateExistingPivot($item->almacen_id, [
+                    'cantidad' =>  $stockPivot->pivot->cantidad + $item->cantidad,
+                ]);
+
+                $item->itemseries()->each(function ($itemserie) {
+                    $itemserie->serie->dateout = null;
+                    $itemserie->serie->status = 0;
+                    $itemserie->serie->save();
+                    $itemserie->forceDelete();
+                });
+                // $item->series()->forceDelete();
+                $item->forceDelete();
+            });
+
+            if ($venta->comprobante->codesunat == 0) {
+                dd("#GENERAR NOTA CREDITO");
+            }
+            else {
+                $venta->comprobante->delete = 1;
+                $venta->comprobante->save();
+            }
+            $venta->forceDelete();
+
+            DB::commit();
+            $this->resetValidation();
+            $this->dispatchBrowserEvent('deleted');
+            return redirect()->route('admin.ventas');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function deletecuota(Cuota $cuota)
+    {
+
+        DB::beginTransaction();
+        try {
+            $cuota->delete();
+            DB::commit();
+            $this->venta->refresh();
+            $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -118,7 +279,7 @@ class ShowVenta extends Component
                     'id' => $cuota->id,
                     'cuota' => $cuota->cuota,
                     'date' => $cuota->expiredate,
-                    'cajamovimiento' => $cuota->cajamovimiento_id,
+                    'cajamovimiento_id' => $cuota->cajamovimiento->id ?? null,
                     'amount' => $cuota->amount,
                 ];
             }
@@ -126,48 +287,81 @@ class ShowVenta extends Component
         $this->opencuotas = true;
     }
 
+    public function addnewcuota()
+    {
+        $this->cuotas[] = [
+            'id' => null,
+            'cuota' => count($this->cuotas) + 1,
+            'date' => Carbon::now('America/Lima')->format('Y-m-d'),
+            'cajamovimiento_id' =>  null,
+            'amount' => '0.00',
+        ];
+    }
+
     public function updatecuotas()
     {
 
+        $arrayamountcuotas = array_column($this->cuotas, 'amount');
         $this->resetValidation(['cuotas']);
-        $amountCuotas = number_format(0, 2);
+        $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 2, '.', '');
         $totalAmount = number_format($this->venta->total, 2, '.', '');
 
+        $this->validate([
+            'venta.id' => ['required', 'integer', 'min:1', 'exists:ventas,id'],
+            'cuotas' => ['required', 'array', 'min:1'],
+            'cuotas.*.id' => ['nullable', 'integer', 'min:1', 'exists:cuotas,id'],
+            'cuotas.*.cuota' => ['required', 'integer', 'min:1'],
+            'cuotas.*.date' => ['required', 'date'],
+            'cuotas.*.amount' => ['required', 'numeric', 'min:1', 'decimal:0,4'],
+            'cuotas.*.cajamovimiento_id' => ['nullable', 'integer', 'min:1', 'exists:cajamovimientos,id'],
+            'amountcuotas' => ['required', 'numeric', 'min:1', 'decimal:0,4', new ValidateNumericEquals($totalAmount)]
+        ]);
+
+        $responseCuotas = response()->json($this->cuotas)->getData();
         DB::beginTransaction();
 
-        foreach ($this->cuotas as $item => $cuota) {
+        try {
 
-            $amountCuotas = number_format($amountCuotas + ($cuota["amount"] == "" ? 0 : $cuota["amount"]), 2, '.', '');
-
-            $validateDate = $this->validate([
-                "cuotas.$item.id" => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
-                "cuotas.$item.cuota" => ['required', 'integer', 'min:1'],
-                "cuotas.$item.date" => ['required', 'date', is_null($cuota["cajamovimiento"]) ? 'after_or_equal:today' : 'before_or_equal:today'],
-                "cuotas.$item.amount" => ['required', 'numeric', 'min:1', 'decimal:0,2'],
-                "cuotas.$item.cajamovimiento" => ['nullable'],
-            ]);
-
-            if (is_null($cuota["cajamovimiento"])) {
-                $this->venta->cuotas[$item]->expiredate = $cuota["date"];
-                $this->venta->cuotas[$item]->amount = $cuota["amount"];
-                $this->venta->cuotas[$item]->save();
+            foreach ($responseCuotas as $key => $item) {
+                if (!$item->cajamovimiento_id) {
+                    if (Carbon::parse($item->date)->isBefore(Carbon::now()->format('Y-m-d'))) {
+                        $this->addError("cuotas.$key.date", 'La fecha debe ser mayor a la fecha actual.');
+                        return false;
+                    }
+                }
+                if ($item->id) {
+                    if (!$item->cajamovimiento_id) {
+                        $cuota = Cuota::find($item->id);
+                        $cuota->expiredate = $item->date;
+                        $cuota->amount = $item->amount;
+                        $cuota->update();
+                    }
+                } else {
+                    $this->venta->cuotas()->create([
+                        "cuota" => $item->cuota,
+                        "expiredate" => $item->date,
+                        "amount" => $item->amount,
+                        "user_id" => Auth::user()->id
+                    ]);
+                }
             }
-        }
 
-        if ($totalAmount !== $amountCuotas) {
-            $this->addError('cuotas', "Monto total de cuotas($amountCuotas) no coincide con monto total de venta($totalAmount)");
+            DB::commit();
+            $this->resetValidation();
+            $this->reset(['opencuotas', 'cuotas']);
+            $this->venta->refresh();
+            $this->dispatchBrowserEvent('updated');
+        } catch (\Exception $e) {
             DB::rollBack();
-            return false;
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        DB::commit();
-        $this->resetValidation(['cuotas']);
-        $this->reset(['cuotas', 'opencuotas']);
-        $this->dispatchBrowserEvent('updated');
     }
 
     public function hydrate()
     {
-        $this->dispatchBrowserEvent('render-showventa-select2');
+        $this->dispatchBrowserEvent('render-show-venta');
     }
 }

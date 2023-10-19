@@ -101,16 +101,15 @@
                                             {{-- <p>{{ $rango->pivot->ganancia }} </p> --}}
 
                                             @php
-                                                $pricesale = number_format($item->producto->pricebuy + ($item->producto->pricebuy * $rango->pivot->ganancia) / 100, $lista->decimalrounded, '.', ',');
+                                                $pricesale = number_format($item->producto->pricebuy + ($item->producto->pricebuy * $rango->pivot->ganancia) / 100, $lista->decimals, '.', '');
                                             @endphp
-
                                             <div class="w-full flex gap-1 items-center justify-start">
                                                 <span
                                                     class="text-[9px] font-semibold leading-3 p-1 bg-fondospancardproduct rounded uppercase">
                                                     {{ $lista->name }} ({{$rango->pivot->ganancia}} %)</span>
                                                 <p
                                                     class="text-[10px] font-semibold leading-3 p-1 text-red-500 rounded line-through">
-                                                    S/. {{ number_format($pricesale, $lista->decimalrounded) }}
+                                                    S/. {{ number_format($pricesale, $lista->decimals) }}
                                                 </p>
                                             </div>
 

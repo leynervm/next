@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Admin\Clients;
 
+use App\Helpers\GetClient;
 use App\Models\Channelsale;
 use App\Models\Client;
 use App\Models\Contact;
@@ -12,45 +13,40 @@ use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateContactClient;
 use App\Rules\ValidateDireccion;
+use App\Rules\ValidateDocument;
 use App\Rules\ValidateNacimiento;
 use App\Rules\ValidatePhoneClient;
 use App\Rules\ValidatePhoneContact;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ViewClient extends Component
 {
 
-    public $client;
-    public $contact;
-    public $open = false;
-    public $opencontact = false;
-    public $opendireccion = false;
-    public $openphone = false;
-    public $openphonecontacto = false;
-
+    public $client, $contact;
     public $telephone, $direccion;
 
-    public $newtelefono, $newdireccion, $ubigeo_id,
-        $newtelefonocontacto, $documentcontacto, $namecontacto, $telefonocontacto;
+    public $opencontacto = false;
+    public $openphone = false;
+    public $document2, $name2, $telefono2, $newtelefono;
 
-    protected $listeners = ['delete', 'deletecontacto', 'deletephone', 'deletedireccion'];
+    protected $listeners = ['delete', 'deletecontacto', 'deletephone'];
 
 
     protected function rules()
     {
         return [
             'client.document' => [
-                'required', 'integer', 'numeric', 'digits_between:8,11',
+                'required', 'integer', 'numeric', 'digits_between:8,11', new ValidateDocument,
                 new CampoUnique('clients', 'document', $this->client->id, true)
             ],
             'client.name' => ['required', 'min:3'],
-            'client.email' => ['nullable', 'email'],
-            'client.sexo' => ['nullable'],
+            'client.email' => ['nullable', 'min:6', 'email'],
+            'client.sexo' => ['nullable', 'string', 'min:1'],
             'client.nacimiento' => ['nullable', new ValidateNacimiento()],
-            'client.pricetype_id' => ['required', 'integer', 'exists:pricetypes,id'],
-            'client.channelsale_id' => ['required', 'integer', 'exists:channelsales,id'],
+            'client.pricetype_id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
+            'direccion.name' => ['required', 'string', 'min:3'],
+            'direccion.ubigeo_id' => ['nullable', 'integer', 'min:1', 'exists:ubigeos,id'],
         ];
     }
 
@@ -58,205 +54,41 @@ class ViewClient extends Component
     {
         $this->client = $client;
         $this->contact = new Contact();
+        $this->direccion = $client->direccion;
     }
 
     public function render()
     {
         $pricetypes = Pricetype::orderBy('name', 'asc')->get();
-        $ubigeos = Ubigeo::all();
+        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $channelsales = Channelsale::orderBy('name', 'asc')->get();
         return view('livewire.admin.clients.view-client', compact('pricetypes', 'ubigeos', 'channelsales'));
     }
 
-    public function edit()
-    {
-        $this->resetValidation();
-        $this->open = true;
-    }
+    // public function edit()
+    // {
+    //     $this->resetValidation();
+    //     $this->open = true;
+    // }
 
     public function update()
     {
         $this->validate();
-        $this->client->save();
-        $this->open = false;
-        $this->dispatchBrowserEvent('updated');
-        $this->resetValidation();
-        $this->client->refresh();
-    }
-
-    public function openmodalphone()
-    {
-        $this->reset(['newtelefono', 'telephone']);
-        $this->openphone = true;
-    }
-
-    public function savetelefono()
-    {
-
-        $this->newtelefono = trim($this->newtelefono);
-        $validateData = $this->validate([
-            'newtelefono' => [
-                'required', 'numeric', 'digits_between:6,9',
-                new ValidatePhoneClient($this->client->id, $this->newtelefono, $this->telephone->id ?? null)
-            ],
-            'client.id' => 'required|exists:clients,id'
-        ]);
-
-        $event = 'created';
 
         DB::beginTransaction();
         try {
-            if ($this->client) {
-                if ($this->telephone) {
-                    $event = 'updated';
-                    $this->telephone->phone = $this->newtelefono;
-                    $this->telephone->user_id = Auth::user()->id;
-                    $this->telephone->save();
-                } else {
-                    $this->client->telephones()->create([
-                        'phone' => $this->newtelefono,
-                        'user_id' => Auth::user()->id,
-                    ]);
-                }
-            }
+            $this->client->save();
+            $this->client->direccion()->updateOrCreate([
+                'id' => $this->direccion->id ?? null
+            ], [
+                'name' => $this->direccion->name,
+                'ubigeo_id' => $this->direccion->ubigeo_id
+            ]);
 
             DB::commit();
+            // $this->open = false;
+            $this->dispatchBrowserEvent('updated');
             $this->resetValidation();
-            $this->dispatchBrowserEvent($event);
-            $this->client->refresh();
-            $this->reset(['telephone', 'newtelefono', 'openphone']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    public function editTelefono(Telephone $telephone)
-    {
-        $this->telephone = $telephone;
-        $this->newtelefono = $telephone->phone;
-        $this->openphone = true;
-    }
-
-    public function deleteTelefono(Telephone $telephone)
-    {
-        $telephone->delete();
-        $this->dispatchBrowserEvent('deleted');
-        $this->client->refresh();
-    }
-
-
-    public function openmodaldireccion()
-    {
-        $this->reset(['direccion', 'ubigeo_id', 'newdireccion']);
-        $this->opendireccion = true;
-    }
-
-    public function editDireccion(Direccion $direccion)
-    {
-        $this->direccion = $direccion;
-        $this->newdireccion = $direccion->name;
-        // $this->ubigeo_id = $direccion->ubigeo_id;
-        $this->opendireccion = true;
-    }
-
-    public function saveDireccion()
-    {
-        $this->newdireccion = trim($this->newdireccion);
-        $validateData = $this->validate([
-            'newdireccion' => [
-                'required', 'min:3', new ValidateDireccion($this->client->id, $this->newdireccion, $this->direccion->id ?? null)
-            ],
-            'ubigeo_id' => ['nullable'],
-            'client.id' => 'required|exists:clients,id'
-        ]);
-        $event = 'created';
-
-        DB::beginTransaction();
-        try {
-            if ($this->client) {
-                if ($this->direccion) {
-                    $event = 'updated';
-                    $this->direccion->name = $this->newdireccion;
-                    // $this->ubigeo_id->ubigeo_id = $this->ubigeo_id;
-                    $this->direccion->user_id = Auth::user()->id;
-                    $this->direccion->save();
-                } else {
-                    $this->client->direccions()->create([
-                        'name' => $this->newdireccion,
-                        'ubigeo_id' => $this->ubigeo_id,
-                        'user_id' => Auth::user()->id,
-                    ]);
-                }
-            }
-
-            DB::commit();
-            $this->reset(['direccion', 'ubigeo_id', 'newdireccion', 'opendireccion']);
-            $this->dispatchBrowserEvent($event);
-            $this->client->refresh();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    public function openmodalphonecontacto(Contact $contact)
-    {
-        $this->resetValidation();
-        $this->reset(['contact', 'newtelefono', 'newtelefonocontacto', 'telephone']);
-        $this->contact = $contact;
-        $this->openphonecontacto = true;
-    }
-
-    public function editphonecontacto(Contact $contact, Telephone $telephone)
-    {
-        $this->telephone = $telephone;
-        $this->contact = $contact;
-        $this->newtelefonocontacto = $telephone->phone;
-        $this->resetValidation();
-        $this->openphonecontacto = true;
-    }
-
-    public function savetelefonocontacto()
-    {
-
-        $this->newtelefonocontacto = trim($this->newtelefonocontacto);
-        $validateData = $this->validate([
-            'newtelefonocontacto' => [
-                'required', 'numeric', 'digits_between:6,9',
-                new ValidatePhoneContact($this->contact->id, $this->newtelefonocontacto, $this->telephone->id ?? null)
-            ],
-            'contact.id' => 'required|exists:contacts,id'
-        ]);
-
-        $event = 'created';
-
-        DB::beginTransaction();
-        try {
-            if ($this->telephone) {
-                $event = 'updated';
-                $this->telephone->phone = $this->newtelefonocontacto;
-                $this->telephone->user_id = Auth::user()->id;
-                $this->telephone->save();
-            } else {
-                if ($this->contact) {
-                    $this->contact->telephones()->create([
-                        'phone' => $this->newtelefonocontacto,
-                        'user_id' => Auth::user()->id,
-                    ]);
-                }
-            }
-
-            DB::commit();
-            $this->resetValidation();
-            $this->reset(['contact', 'telephone', 'newtelefonocontacto', 'openphonecontacto']);
-            $this->dispatchBrowserEvent($event);
             $this->client->refresh();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -269,65 +101,56 @@ class ViewClient extends Component
 
     public function openmodalcontacto()
     {
-        $this->reset(['contact', 'documentcontacto', 'namecontacto', 'telefonocontacto']);
-        $this->resetValidation();
-        $this->opencontact = true;
+        $this->reset(['contact', 'document2', 'name2', 'telefono2']);
+        $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+        $this->opencontacto = true;
     }
 
     public function editcontacto(Contact $contact)
     {
-        $this->resetValidation();
         $this->contact = $contact;
-        $this->documentcontacto = trim($this->contact->document);
-        $this->namecontacto = trim($this->contact->name);
-        $this->opencontact = true;
+        $this->reset(['document2', 'name2', 'telefono2']);
+        $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+        $this->document2 = trim($contact->document);
+        $this->name2 = trim($contact->name);
+        if ($contact->telephone) {
+            $this->telefono2 = trim($contact->telephone->phone);
+        }
+        $this->opencontacto = true;
     }
 
     public function savecontacto()
     {
 
-        $this->documentcontacto = trim($this->documentcontacto);
-        $this->namecontacto = trim($this->namecontacto);
-        $this->telefonocontacto = trim($this->telefonocontacto);
-        $validateData = $this->validate([
-            'documentcontacto' => [
-                'required', 'numeric', 'digits:8',
-                new ValidateContactClient($this->client->id, $this->documentcontacto, $this->contact->id ?? null)
-            ],
-            'namecontacto' => ['required', 'string'],
-            'telefonocontacto' => [$this->contact ? 'nullable' : 'required', 'numeric', 'digits_between:6,9'],
-            'client.id' => ['required', 'exists:clients,id'],
+        $this->document2 = trim($this->document2);
+        $this->name2 = trim($this->name2);
+        $this->validate([
+            'document2' => ['required', 'numeric', 'digits:8'],
+            'name2' => ['required', 'string', 'min:3'],
+            'telefono2' => ['required', 'numeric'],
         ]);
 
         try {
 
-            $event = 'created';
             DB::beginTransaction();
+            $contact = $this->client->contacts()->updateOrCreate([
+                'id' => $this->contact->id ?? null
+            ], [
+                'document' => $this->document2,
+                'name' => $this->name2
+            ]);
 
-            if ($this->client) {
-                if ($this->contact) {
-                    $event = 'updated';
-                    $this->contact->document = trim($this->documentcontacto);
-                    $this->contact->name = trim($this->namecontacto);
-                    $this->contact->user_id = Auth::user()->id;
-                    $this->contact->save();
-                } else {
-                    $contact = $this->client->contacts()->create([
-                        'document' => trim($this->documentcontacto),
-                        'name' => trim($this->namecontacto),
-                        'user_id' => Auth::user()->id,
-                    ]);
+            $contact->telephone()->updateOrCreate([
+                'id' => $this->contact->telephone->id ?? null
+            ], [
+                'phone' => $this->telefono2
+            ]);
 
-                    $contact->telephones()->create([
-                        'phone' => $this->telefonocontacto,
-                        'user_id' => Auth::user()->id,
-                    ]);
-                }
-            }
             DB::commit();
+            $this->dispatchBrowserEvent('created');
+            $this->reset(['opencontacto', 'document2', 'name2', 'telefono2', 'contact']);
+            $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
             $this->client->refresh();
-            $this->dispatchBrowserEvent($event);
-            $this->reset(['opencontact', 'contact', 'documentcontacto', 'namecontacto', 'telefonocontacto']);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -337,10 +160,52 @@ class ViewClient extends Component
         }
     }
 
-    public function confirmdelete(Client $client)
+    public function editphone(Telephone $telephone)
     {
-        $this->dispatchBrowserEvent('client.confirmDelete', $client);
+        $this->reset(['newtelefono']);
+        $this->resetValidation(['telephone', 'newtelefono']);
+        $this->telephone = $telephone;
+        $this->newtelefono = trim($telephone->phone);
+        $this->openphone = true;
     }
+
+    public function openmodalphone()
+    {
+        $this->reset(['newtelefono', 'telephone']);
+        $this->resetValidation(['telephone', 'newtelefono']);
+        $this->openphone = true;
+    }
+
+    public function savephone()
+    {
+        $this->telefono2 = trim($this->telefono2);
+        $this->validate([
+            'newtelefono' => ['required', 'numeric', 'digits_between:7,9']
+        ]);
+        try {
+
+            DB::beginTransaction();
+
+            $this->client->telephones()->updateOrCreate([
+                'id' => $this->telephone->id ?? null
+            ], [
+                'phone' => $this->newtelefono
+            ]);
+
+            DB::commit();
+            $this->dispatchBrowserEvent('created');
+            $this->reset(['openphone', 'newtelefono', 'telephone']);
+            $this->resetValidation(['telephone', 'newtelefono']);
+            $this->client->refresh();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
 
     public function delete(Client $client)
     {
@@ -362,41 +227,76 @@ class ViewClient extends Component
         }
     }
 
-    public function confirmdeletephone(Telephone $telephone)
-    {
-        $this->dispatchBrowserEvent('client.confirmDeletephone', $telephone);
-    }
-
     public function deletephone(Telephone $telephone)
     {
         $telephone->deleteOrFail();
-        $this->dispatchBrowserEvent('deleted');
         $this->client->refresh();
-    }
-
-    public function confirmdeletecontacto(Contact $contact)
-    {
-        $this->dispatchBrowserEvent('client.confirmDeletecontacto', $contact);
+        $this->dispatchBrowserEvent('deleted');
     }
 
     public function deletecontacto(Contact $contact)
     {
+        $contact->telephone->delete();
         $contact->deleteOrFail();
-        $this->dispatchBrowserEvent('deleted');
         $this->client->refresh();
+        $this->dispatchBrowserEvent('deleted');
     }
 
-    public function confirmdeletedireccion(Direccion $direccion)
+    public function searchclient()
     {
-        $this->dispatchBrowserEvent('client.confirmDeletedireccion', $direccion);
+
+        $this->client->document = trim($this->client->document);
+        $this->validate([
+            'client.document' => ['required', 'numeric', new ValidateDocument]
+        ]);
+
+        $this->client->name = null;
+        // $this->client->pricetype_id = null;
+
+        $this->resetValidation(['client.document', 'client.name', 'client.pricetype_id']);
+
+        $http = new GetClient();
+        $response = $http->getClient($this->client->document);
+
+        if ($response->getData()) {
+            if ($response->getData()->success) {
+                $this->client->name = $response->getData()->name;
+                $this->client->pricetype_id = $response->getData()->pricetype_id;
+            } else {
+                $this->addError('client.document', $response->getData()->message);
+            }
+        } else {
+            $this->addError('client.document', 'Error al buscar cliente.');
+        }
     }
 
-    public function deletedireccion(Direccion $direccion)
+    public function searchcontacto()
     {
-        $direccion->deleteOrFail();
-        $this->dispatchBrowserEvent('deleted');
-        $this->client->refresh();
+
+        $this->document2 = trim($this->document2);
+        $this->validate([
+            'document2' => ['required', 'numeric', 'digits:8']
+        ]);
+
+        $this->name2 = null;
+        $this->telefono2 = null;
+        $this->resetValidation(['document2', 'name2', 'telefono2']);
+
+        $http = new GetClient();
+        $response = $http->getClient($this->document2);
+
+        if ($response->getData()) {
+            if ($response->getData()->success) {
+                $this->name2= $response->getData()->name;
+                $this->telefono2 = $response->getData()->telefono;
+            } else {
+                $this->addError('document2', $response->getData()->message);
+            }
+        } else {
+            $this->addError('document2', 'Error al buscar datos del contacto.');
+        }
     }
+
 
     public function hydrate()
     {

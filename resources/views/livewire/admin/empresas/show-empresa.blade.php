@@ -3,7 +3,6 @@
     @if (session('message'))
         <div class="animate-pulse">
             <div class="flex items-end max-w-md p-5 rounded-lg shadow bg-amber-50">
-
                 {{-- <svg class="w-6 h-6 fill-current text-yellow-500" xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24">
                                 <path d="M0 0h24v24H0V0z" fill="none" />
@@ -56,9 +55,8 @@
                 <div class="w-full">
                     <x-label value="Ubigeo :" />
                     {{-- 20201987297 --}}
-                    <div id="parentUbigeo">
+                    <div id="parentubigeoempresa_id">
                         <x-select class="block w-full" wire:model.defer="empresa.ubigeo_id" id="ubigeoempresa_id"
-                            data-dropdown-parent="#parentUbigeo" data-placeholder="Seleccionar"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)
@@ -150,8 +148,8 @@
 
         <x-card-next titulo="Logos empresa" class="block w-full mt-3">
             <div class="w-full flex gap-2 flex-wrap">
-                <div class="relative w-full sm:w-72 text-center shadow-md rounded p-1" x-data="{ isUploadingLogo: @entangle('isUploadingLogo'), progress: 0 }"
-                    x-on:livewire-upload-start="isUploadingLogo = true"
+                <div class="relative w-full sm:w-72 text-center shadow-md shadow-shadowminicard rounded p-1"
+                    x-data="{ isUploadingLogo: @entangle('isUploadingLogo'), progress: 0 }" x-on:livewire-upload-start="isUploadingLogo = true"
                     x-on:livewire-upload-finish="isUploadingLogo = false"
                     x-on:livewire-upload-error="$wire.emit('errorImage'), isUploadingLogo = false"
                     x-on:livewire-upload-progress="progress = $event.detail.progress">
@@ -298,8 +296,8 @@
                     </div>
                 </div>
                 <div class="w-full flex flex-wrap sm:flex-nowrap md:flex-wrap xl:flex-nowrap gap-2 mt-2">
-                    <div class="relative w-full text-center shadow-md rounded p-1" x-data="{ isUploadingPublicKey: @entangle('isUploadingPublicKey'), progress: 0 }"
-                        x-on:livewire-upload-start="isUploadingPublicKey = true"
+                    <div class="relative w-full text-center shadow-md shadow-shadowminicard rounded p-1"
+                        x-data="{ isUploadingPublicKey: @entangle('isUploadingPublicKey'), progress: 0 }" x-on:livewire-upload-start="isUploadingPublicKey = true"
                         x-on:livewire-upload-finish="isUploadingPublicKey = false"
                         x-on:livewire-upload-error="$wire.emit('publickey'), isUploadingPublicKey = false"
                         x-on:livewire-upload-progress="progress = $event.detail.progress">
@@ -359,8 +357,8 @@
                             class="text-center" />
                     </div>
 
-                    <div class="relative w-full text-center shadow-md rounded p-1" x-data="{ isUploadingPrivateKey: @entangle('isUploadingPrivateKey'), progress: 0 }"
-                        x-on:livewire-upload-start="isUploadingPrivateKey = true"
+                    <div class="relative w-full text-center shadow-md shadow-shadowminicard rounded p-1"
+                        x-data="{ isUploadingPrivateKey: @entangle('isUploadingPrivateKey'), progress: 0 }" x-on:livewire-upload-start="isUploadingPrivateKey = true"
                         x-on:livewire-upload-finish="isUploadingPrivateKey = false"
                         x-on:livewire-upload-error="$wire.emit('privatekey'), isUploadingPrivateKey = false"
                         x-on:livewire-upload-progress="progress = $event.detail.progress">
@@ -443,8 +441,10 @@
                         </x-label-check>
                         <x-jet-input-error for="empresa.usepricedolar" />
 
+                        <div wire:loading wire:loading.block wire:target="searchpricedolar" class="w-full">
+                            <x-loading-next />
+                        </div>
 
-                        <x-loading-next wire:loading wire:target="searchpricedolar" />
 
                         <div class="hidden" id="parentusepricedolar" wire:loading.remove
                             wire:target="searchpricedolar" wire:ignore>
@@ -490,8 +490,9 @@
             </x-card-next>
         </div>
 
-        <x-loading-next wire:loading wire:target="save" />
-
+        <div wire:loading wire:target="save" class="relative">
+            <x-loading-next />
+        </div>
         {{-- <div class="w-full">
             @if ($errors->any())
                 <div class="flex flex-col gap-1 my-3">

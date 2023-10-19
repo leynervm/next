@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Cuenta;
 use App\Models\Methodpayment;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -44,5 +45,11 @@ class MethodpaymentSeeder extends Seeder
             'type' => 1,
             'default' => 0,
         ]);
+
+        $cuentas = Cuenta::all();
+        $transferencia->cuentas()->attach($cuentas->random());
+        $paypal->cuentas()->attach($cuentas->random());
+        $yape->cuentas()->attach(Cuenta::first());
+        $yape->cuentas()->attach(Cuenta::orderBy('id', 'desc')->first());
     }
 }

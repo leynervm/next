@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(AreaSeeder::class);
         $this->call(MonedaSeeder::class);
+        $this->call(CuentaSeeder::class);
         $this->call(EquipoSeeder::class);
         $this->call(MarcaSeeder::class);
         $this->call(UnitSeeder::class);
@@ -36,15 +37,13 @@ class DatabaseSeeder extends Seeder
         $this->call(PricetypeSeeder::class);
         $this->call(CajaSeeder::class);
         $this->call(TypepaymentSeeder::class);
+        $this->call(ProveedortypeSeeder::class);
 
         $this->call(ConceptSeeder::class);
         $this->call(MethodpaymentSeeder::class);
         
         $this->call(FacturacionDatabaseSeeder::class);
         $this->call(AlmacenDatabaseSeeder::class);
-        
-
-        
 
     }
 }

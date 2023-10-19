@@ -22,7 +22,6 @@ return new class extends Migration
             $table->enum('status', [Cuenta::ACTIVO, Cuenta::INACTIVO])->default(Cuenta::ACTIVO);
             $table->bigInteger('banco_id')->nullable();
             $table->foreign('banco_id')->on('bancos')->references('id');
-            $table->timestamps();
             $table->softDeletes();
         });
     }

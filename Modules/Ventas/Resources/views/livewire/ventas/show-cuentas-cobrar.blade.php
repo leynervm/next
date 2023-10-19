@@ -1,9 +1,9 @@
 <div class="mt-3">
     <div class="w-full flex md:flex-row-reverse flex-wrap items-end justify-between gap-2 flex-col">
-        
-        <x-minicard :title="'S/.' . number_format($amountdeuda, 2, '.', ', ')" size="md" class="text-gray-500">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" stroke-width="1"
-                stroke="currentColor" class="w-8 h-8 mx-auto">
+
+        <x-minicard :title="'S/.' . number_format($amountdeuda, 2, '.', ', ')" size="md" class="text-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14" stroke-width="1" stroke="currentColor"
+                class="w-8 h-8 mx-auto">
                 <path
                     d="M6.50 5.166s-0.458 -0.511 -1.201 -0.447c-0.743 0.064 -1.1 0.52 -1.1 0.978 0 1.334 2.301 0.409 2.301 1.777 0 0.706 -1.527 1.203 -2.436 0.373" />
                 <path d="m8.98 4.20 -1.5 4.5" />
@@ -17,7 +17,7 @@
             <div class="relative flex items-center w-full md:w-auto">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-4 h-4 mx-3 text-next-300">
+                        stroke="currentColor" class="w-4 h-4 mx-3 text-primary">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                     </svg>
@@ -29,12 +29,12 @@
             <x-input type="date" class="uppercase" wire:model="datepay" />
         </div>
 
-       
+
     </div>
 
     {{-- <div class="flex items-center justify-end gap-2 mt-4 "> --}}
 
-        {{-- @if (count($marcaGroup))
+    {{-- @if (count($marcaGroup))
             <x-dropdown titulo="Marca">
                 <x-slot name="items">
                     @foreach ($marcaGroup as $item)
@@ -112,7 +112,7 @@
     {{-- </div> --}}
 
     <x-table class="table-auto">
-        <thead class="bg-gray-50 text-gray-400 text-xs">
+        <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
@@ -152,9 +152,9 @@
                 <th scope="col" class="p-2 font-medium">
                     PAGAR</th>
             </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
-            @if (count($cuotas))
+        </x-slot>
+        @if (count($cuotas))
+            <x-slot name="body">
                 @foreach ($cuotas as $item)
                     <tr>
 
@@ -174,8 +174,8 @@
                         </td> --}}
                         <td class="p-2 text-xs">
                             <div>
-                                <h4 class="text-gray-700 ">{{ $item->client->document }}</h4>
-                                <p class="text-gray-500 text-[10px]">{{ $item->client->name }}</p>
+                                <h4>{{ $item->client->document }}</h4>
+                                <p class="text-[10px]">{{ $item->client->name }}</p>
                             </div>
                         </td>
                         <td class="p-2 text-xs text-center uppercase">
@@ -251,8 +251,8 @@
                         </td> --}}
                     </tr>
                 @endforeach
-            @endif
-        </tbody>
+            </x-slot>
+        @endif
     </x-table>
 
     @if ($cuotas->hasPages())

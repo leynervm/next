@@ -20,6 +20,6 @@ class Carshoopserie extends Model
 
     public function carshoop(): BelongsTo
     {
-        return $this->belongsTo(Serie::class);
+        return $this->belongsTo(Carshoop::class);
     }
 }

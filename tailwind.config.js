@@ -46,6 +46,7 @@ module.exports = {
 
                 fondoheadermodal: "var(--fondo-header-modal)",
                 colorheadermodal: "var(--color-header-modal)",
+                fondobodymodal: "var(--fondo-body-modal)",
 
                 textselect2: "var(--color-select2)",
                 fondoselect2: "var(--fondo-select2)",
@@ -66,6 +67,20 @@ module.exports = {
 
                 colorerror: "var(--color-error)",
 
+                fondopagination: "var(--fondo-pagination)",
+                colorpagination: "var(--color-pagination)",
+                fondoactivepagination: "var(--fondo-active-pagination)",
+                coloractivepagination: "var(--color-active-pagination)",
+                shadowpagination: "var(--shadow-pagination)",
+
+                fondoloading: "var(--fondo-loading)",
+                colorloading: "var(--color-loading)",
+
+                fondoform: "var(--fondo-form)",
+                colortitleform: "var(--color-title-form)",
+                colorsubtitleform: "var(--color-subtitle-form)",
+                shadowform: "var(--shadow-form)",
+
                 next: {
                     50: "f0f9f9",
                     100: "#ebf5f5",
@@ -84,6 +99,13 @@ module.exports = {
             fontFamily: {
                 sans: ["Ubuntu", ...defaultTheme.fontFamily.sans],
             },
+            screens: {
+                "3xl": "1600px",
+            },
+        },
+        screens: {
+            xs: "475px",
+            ...defaultTheme.screens,
         },
     },
     plugins: [

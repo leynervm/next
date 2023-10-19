@@ -17,12 +17,8 @@ class CreateContactsTable extends Migration
             $table->id();
             $table->string('document', 8);
             $table->string('name', 255);
-            $table->integer('delete')->default(0);
-            $table->bigInteger('user_id')->nullable();
             $table->integer('contactable_id');
             $table->string('contactable_type');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
             $table->softDeletes();
         });
     }

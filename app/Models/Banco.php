@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Banco extends Model
@@ -14,11 +15,17 @@ class Banco extends Model
     const ACTIVO = "0";
     const INACTIVO = "1";
 
-    protected $guarded = ['created_at', 'updated_at'];
+    public $timestamps = false;
+
+    protected $fillable = ['name', 'status'];
 
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function cuentas(): HasMany
+    {
+        return $this->hasMany(Cuenta::class);
+    }
 }

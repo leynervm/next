@@ -32,9 +32,8 @@
                 </div>
                 <div class="w-full">
                     <x-label value="Ubigeo :" />
-                    <div id="parentUbigeo">
-                        <x-select class="block w-full" wire:model.defer="ubigeo_id" id="ubigeoempresa_id"
-                            data-dropdown-parent="#parentUbigeo" data-placeholder="Seleccionar"
+                    <div id="parentubigeoempresa_id">
+                        <x-select class="block w-full" id="ubigeoempresa_id" wire:model.defer="ubigeo_id"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Almacen\Entities\Almacen;
+use Modules\Almacen\Entities\Compraitem;
 use Modules\Almacen\Entities\Producto;
 
 class Serie extends Model
@@ -31,9 +32,9 @@ class Serie extends Model
         return $this->belongsTo(Producto::class);
     }
 
-    public function compra():BelongsTo
+    public function compraitem():BelongsTo
     {
-        return $this->belongsTo(Compra::class);
+        return $this->belongsTo(Compraitem::class);
     }
 
     public function user():BelongsTo

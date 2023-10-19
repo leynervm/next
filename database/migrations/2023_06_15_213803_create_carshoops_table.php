@@ -29,9 +29,11 @@ class CreateCarshoopsTable extends Migration
             $table->integer('status')->default(0);
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('producto_id')->nullable();
+            $table->bigInteger('moneda_id')->nullable();
             $table->bigInteger('user_id')->nullable();
             // $table->foreign('producto_id')->on('productos')->references('id');
             // $table->foreign('almacen_id')->on('almacens')->references('id');
+            $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->timestamps();
         });

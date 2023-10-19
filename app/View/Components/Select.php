@@ -12,11 +12,11 @@ class Select extends Component
      * @return void
      */
 
-    // public $options;
+    public $id;
 
-    public function __construct()
+    public function __construct($id)
     {
-        // $this->options = $options;
+        $this->id = $id;
     }
 
     /**

@@ -29,7 +29,9 @@ class GetClient
                 'name' => $cliente->name,
                 'pricetype_id' => $cliente->pricetype_id,
                 'pricetypeasigned' => $cliente->pricetype->name ?? '',
-                'direccion' => $cliente->direccions()->first()->name ?? ''
+                'direccion' => $cliente->direccions()->first()->name ?? '',
+                'ubigeo' => $cliente->direccions()->first()->ubigeo->ubigeo_reniec ?? null,
+                'telefono' => $cliente->telephones()->first()->phone ?? null
             ];
         } else {
 
@@ -70,6 +72,7 @@ class GetClient
                         'pricetypeasigned' => $pricetypeDefault->name ?? '',
                         'direccion' => isset($result->direccion) ? $result->direccion : null,
                         'ubigeo' => isset($result->ubigeo) ? $result->ubigeo : null,
+                        'telefono' => null,
                         'estado' => isset($result->estado) ? $result->estado : null,
                         'condicion' => isset($result->condicion) ? $result->condicion : null,
                     ];

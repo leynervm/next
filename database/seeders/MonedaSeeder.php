@@ -18,12 +18,14 @@ class MonedaSeeder extends Seeder
         Moneda::create([
             'currency' => 'SOLES',
             'code' => 'PEN',
+            'simbolo' => 'S/.',
             'default' => 1,
         ]);
 
         Moneda::create([
             'currency' => 'DÓLARES',
             'code' => 'USD',
+            'simbolo' => '$.',
         ]);
        
         Tribute::create([

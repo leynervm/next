@@ -12,8 +12,13 @@ class Concept extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-
     protected $fillable = ['name', 'default'];
+
+    const VENTAS = "1";
+    const INTERNET = "2";
+    const PAYCUOTA = "3";
+    const COMPRA = "4";
+    const PAYCUOTACOMPRA = "5";
 
     public function setNameAttribute($value)
     {
@@ -22,16 +27,26 @@ class Concept extends Model
 
     public function scopeDefaultConceptVentas($query)
     {
-        return $query->where('default', 1);
+        return $query->where('default', $this::VENTAS);
     }
 
     public function scopeDefaultConceptInternet($query)
     {
-        return $query->where('default', 2);
+        return $query->where('default', $this::INTERNET);
     }
 
     public function scopeDefaultConceptPaycuota($query)
     {
-        return $query->where('default', 3);
+        return $query->where('default', $this::PAYCUOTA);
+    }
+
+    public function scopeDefaultConceptCompra($query)
+    {
+        return $query->where('default', $this::COMPRA);
+    }
+
+    public function scopeDefaultConceptPaycuotaCompra($query)
+    {
+        return $query->where('default', $this::PAYCUOTACOMPRA);
     }
 }

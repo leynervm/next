@@ -11,7 +11,6 @@
                 <path d="m9 12 2 2 4-4" />
             </svg>
         </x-link-next>
-
     </div>
 
     <x-title-next titulo="Categorías" class="mt-5" />

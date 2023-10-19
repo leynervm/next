@@ -37,7 +37,7 @@
                 @endif
 
                 <x-label value="Almacén :" />
-                <x-select wire:model.defer="almacen_id" class="block w-full" id="almacen_id">
+                <x-select wire:model.defer="almacen_id" class="block w-full" id="almacen_id" data-dropdown-parent="">
                     @if (count($almacens))
                         <x-slot name="options">
                             @foreach ($almacens as $item)
@@ -49,7 +49,8 @@
                 <x-jet-input-error for="almacen_id" />
 
                 <x-label value="Producto :" class="mt-2" />
-                <x-select wire:model.defer="producto_id" class="block w-full" id="producto_id">
+                <x-select wire:model.defer="producto_id" class="block w-full" id="producto_id" data-dropdown-parent=""
+                    data-minimum-results-for-search="3">
                     @if (count($productos))
                         <x-slot name="options">
                             @foreach ($productos as $item)

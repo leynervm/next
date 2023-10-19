@@ -18,7 +18,6 @@ class CreateItemseriesTable extends Migration
             $table->id();
             $table->dateTime('date');
             $table->integer('status')->default(0);
-            $table->integer('delete')->default(0);
             $table->bigInteger('serie_id')->nullable();
             $table->bigInteger('tvitem_id')->nullable();
             $table->bigInteger('user_id')->nullable();

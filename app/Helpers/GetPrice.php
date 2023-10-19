@@ -23,7 +23,7 @@ class GetPrice
     }
 
 
-    public static function getPriceProducto($producto, $priceSelected = null, $usePriceDolar = false, $priceTipoCambio = null)
+    public static function getPriceProducto($producto, $priceSelected = null, $priceTipoCambio = null)
     {
 
         try {
@@ -151,7 +151,6 @@ class GetPrice
                 'pricemanual' => $precioManual,
                 'amountDescuento' => $amountDescuento,
                 'decimal' => $decimal,
-                'usePriceDolar' => $usePriceDolar,
                 'priceDolar' => $tipoCambio == 1 ? '0.00' : $precioVentaDolar,
                 'amountDescuentoDolar' => $tipoCambio == 1 ? '0.00' : $amountDescuentoDolar,
                 'pricewithdescountDolar' => $tipoCambio == 1 ? '0.00' : $precioDescuentoDolar,

@@ -15,19 +15,29 @@ class ConceptSeeder extends Seeder
      */
     public function run()
     {
-       Concept::create([
-            'name' => 'VENTAS',
-            'default' => 1,
+        Concept::create([
+            'name' => 'VENTA DIRECTA',
+            'default' => Concept::VENTAS,
         ]);
 
         Concept::create([
-            'name' => 'INTERNET',
-            'default' => 2,
+            'name' => 'PAGO INTERNET',
+            'default' => Concept::INTERNET,
         ]);
 
         Concept::create([
             'name' => 'PAGO CUOTA',
-            'default' => 3,
+            'default' => Concept::PAYCUOTA,
+        ]);
+
+        Concept::create([
+            'name' => 'PAGO COMPRA',
+            'default' => Concept::COMPRA,
+        ]);
+
+        Concept::create([
+            'name' => 'PAGO CUOTA COMPRA',
+            'default' => Concept::PAYCUOTACOMPRA,
         ]);
     }
 }

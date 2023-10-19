@@ -51,7 +51,7 @@ class CreateChannelsale extends Component
 
         if ($channelsale) {
             $channelsale->default =  $this->default;
-            $channelsale->save();
+            $channelsale->restore();
         } else {
             Channelsale::create([
                 'name' => $this->name,

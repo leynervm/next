@@ -66,6 +66,6 @@
 
     <x-title-next titulo="Resumen ventas" class="mt-5" />
 
-    @livewire('ventas::ventas.show-ventas')
+    @livewire('ventas.ventas.show-ventas')
 
 </x-app-layout>

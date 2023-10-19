@@ -2,6 +2,14 @@
 
 namespace Modules\Ventas\Http\Controllers;
 
+use App\Models\Concept;
+use App\Models\Empresa;
+use App\Models\Methodpayment;
+use App\Models\Moneda;
+use App\Models\Opencaja;
+use App\Models\Pricetype;
+use App\Models\Typepayment;
+use App\Models\Typecomprobante;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -34,7 +42,15 @@ class VentasController extends Controller
      */
     public function create()
     {
-        return view('ventas::ventas.create');
+        $empresa = Empresa::DefaultEmpresa()->first();
+        $methodpayment = Methodpayment::defaultMethodPayment()->first();
+        $typecomprobante = Typecomprobante::defaultTypecomprobante()->first();
+        $typepayment = Typepayment::defaultTypepayment()->first();
+        $moneda = Moneda::defaultMoneda()->first();
+        $concept = Concept::defaultConceptVentas()->first();
+        $opencaja =  Opencaja::CajasAbiertas()->CajasUser()->first();
+        $pricetype = Pricetype::defaultPricetype()->first();
+        return view('ventas::ventas.create', compact('empresa', 'methodpayment', 'typecomprobante', 'typepayment', 'moneda', 'concept', 'opencaja', 'pricetype'));
     }
 
     /**
@@ -54,7 +70,11 @@ class VentasController extends Controller
      */
     public function show(Venta $venta)
     {
-        return view('ventas::ventas.show', compact('venta'));
+
+        $concept = Concept::DefaultConceptPaycuota()->first();
+        $methodpayment = Methodpayment::defaultMethodpayment()->first();
+        $opencaja =  Opencaja::CajasAbiertas()->CajasUser()->first();
+        return view('ventas::ventas.show', compact('venta', 'concept', 'methodpayment', 'opencaja'));
     }
 
     /**

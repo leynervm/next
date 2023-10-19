@@ -24,7 +24,7 @@ class CreateTvitemsTable extends Migration
             $table->decimal('subtotal', 10, 2);
             $table->decimal('total', 10, 2);
             $table->integer('status')->default(0);
-            $table->decimal('increment', 10, 2)->default(0);
+            $table->decimal('increment', 4, 2)->default(0);
             $table->integer('delete')->default(0);
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('producto_id')->nullable();

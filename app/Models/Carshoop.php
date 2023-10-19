@@ -31,6 +31,11 @@ class Carshoop extends Model
         return $this->belongsTo(Almacen::class);
     }
 
+    public function moneda(): BelongsTo
+    {
+        return $this->belongsTo(Moneda::class);
+    }
+
     public function scopeMicarrito($query)
     {
         return $query->where('user_id', Auth::user()->id)->where('status', 0);

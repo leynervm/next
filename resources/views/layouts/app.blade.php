@@ -93,8 +93,7 @@
                     <div class="relative flex items-center justify-end">
                         <button type="button"
                             class="relative inline-flex p-1.5 justify-center items-center text-colorlinknav rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                class="h-8 w-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-8 w-8">
                                 <path fill-rule="evenodd"
                                     d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
                                     clip-rule="evenodd" />
@@ -106,8 +105,7 @@
                                     <button disabled
                                         class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
                                         <img class="h-8 w-8 rounded-full object-cover"
-                                            src="{{ Auth::user()->profile_photo_url }}"
-                                            alt="{{ Auth::user()->name }}" />
+                                            src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
                                     </button>
                                 @else
                                     <span class="inline-flex rounded-md">
@@ -239,15 +237,28 @@
     })
 
     window.addEventListener('validation', data => {
+        console.log(data.detail);
         swal.fire({
-            title: data.detail,
-            text: "",
+            title: data.detail.title,
+            text: data.detail.text,
             icon: 'info',
-
             confirmButtonColor: '#0FB9B9',
             confirmButtonText: 'Cerrar',
         })
     })
+
+    // window.addEventListener('validation-deleted', data => {
+    //     swal.fire({
+    //         title: data.detail,
+    //         text: "",
+    //         icon: 'question',
+    //         showCancelButton: false,
+    //         cancelButtonColor: '#d33',
+    //         confirmButtonText: 'Confirmar',
+    //         confirmButtonColor: '#0FB9B9',
+    //         confirmButtonText: 'Cerrar',
+    //     })
+    // });
 
     // window.addEventListener('validation', event => {
     //     toastMixin.fire({
@@ -334,6 +345,70 @@
             '-translate-x-full'));
 
     })
+
+
+    const elementos = document.querySelectorAll(".prevent");
+
+    elementos.forEach(elemento => {
+        elemento.addEventListener("keydown", (e) => {
+            if (e.key == "Enter") {
+                // console.log(e.key);
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+
+    const numericInputs = document.querySelectorAll(".numeric");
+
+    numericInputs.forEach(elemento => {
+        elemento.addEventListener("keydown", function(event) {
+            if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
+                event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
+            }
+        });
+
+        elemento.addEventListener("input", function(event) {
+            let valor = event.target.value;
+            valor = valor.replace(/[e\+\-]/gi, '');
+            // valor = valor.replace(/e|\+|\-/g, '');
+            event.target.value = valor;
+        });
+    })
+
+    function valid(e) {
+        let code = (e.which) ? e.which : e.keyCode;
+        if (code == 8 || code == 13) {
+            return true;
+        } else if (code >= 48 && code <= 57) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    function numeric(event) {
+        if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
+            event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
+        }
+    }
+
+    function notsimbols(event) {
+        let valor = event.target.value;
+        valor = valor.replace(/[e\+\-]/gi, '');
+        // valor = valor.replace(/e|\+|\-/g, '');
+        event.target.value = valor;
+
+        // if (event.key === '+' || event.key === '-') {
+        //     event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
+        // }
+    }
+
+    // $('.numeric').on('keydown', function(event) {
+    //     if (event.key === 'e' || event.key === 'E') {
+    //         event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
+    //     }
+    // })
 
     // })
 </script>

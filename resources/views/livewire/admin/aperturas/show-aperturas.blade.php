@@ -9,7 +9,7 @@
     <div class="block w-full">
         @if (count($aperturas))
             <x-table>
-                <thead class="bg-gray-50 text-gray-400 text-xs">
+                <x-slot name="header">
                     <tr>
                         <th scope="col" class="p-2 font-medium text-left">CAJA</th>
                         <th scope="col" class="p-2 font-medium text-center">FECHA APERTURA</th>
@@ -22,8 +22,8 @@
                         <th scope="col" class="p-2 font-medium">CERRAR CAJA</th>
                         <th scope="col" class="p-2 font-medium">OPCIONES</th>
                     </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
+                </x-slot>
+                <x-slot name="body">
                     @if (count($aperturas))
                         @foreach ($aperturas as $item)
                             <tr>
@@ -72,7 +72,7 @@
                             </tr>
                         @endforeach
                     @endif
-                </tbody>
+                </x-slot>
             </x-table>
         @endif
     </div>

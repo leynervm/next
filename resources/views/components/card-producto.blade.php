@@ -1,83 +1,94 @@
 <div
-    class="relative w-64 cursor-pointer rounded-lg p-1 bg-fondominicard text-textcardnext shadow shadow-shadowminicard hover:shadow-md">
+    {{ $attributes->merge([
+        'class' =>
+            'w-full lg:w-52 bg-fondominicard flex flex-col justify-between p-1 text-xs relative group rounded shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
+    ]) }}>
 
-    @if (isset($imagen))
-        <div class="w-full h-32">
-            <img src="https://www.proshop.dk/Images/915x900/3125677_4437a7fd5160.jpg" alt=""
-                class="w-full h-full object-scale-down object-center">
+    <div class="w-full flex flex-col xs:flex-row lg:flex-col gap-2">
+        <div class="w-full xs:w-36 flex-shrink-0 lg:w-full relative">
+
+            @if (isset($category))
+                <div
+                    class="absolute bottom-1 left-1 bg-next-500 text-white p-1 rounded transition-all ease-in-out duration-150">
+                    <p class="font-semibold leading-3 text-[9px]">
+                        {{ $category }}</p>
+                </div>
+            @endif
+
+            @if (isset($image))
+                <div
+                    class="w-full h-36 xs:h-full lg:h-32 rounded shadow shadow-shadowminicard border border-borderminicard">
+                    <img src="{{ $image }}" alt="" class="w-full h-full object-scale-down">
+                </div>
+            @else
+                <div class="w-full h-24 lg:h-32 rounded shadow shadow-shadowminicard border border-borderminicard">
+                    <img src="" alt="" class="w-full h-full object-scale-down">
+                </div>
+            @endif
         </div>
-    @endif
 
-    <p class="font-bold text-sm text-textcardproduct text-center mt-1">{{ $name }}</p>
-    <p class="font-bold text-sm text-textcardproduct text-center mt-1">{{ $price }}</p>
+        <div class="w-full">
+            <h1 class="text-colortitleform text-[10px] font-semibold leading-3 text-justify lg:text-center mt-1">
+                {{ $name }}</h1>
 
-    {{-- {{ print_r($almacens) }} --}}
+            {{ $slot }}
 
+            @if (isset($series))
+                {{-- <h1 class="w-full block text-[10px] mt-2">SERIES</h1> --}}
+                <div class="w-full flex flex-wrap gap-1">
+                    {{ $series }}
+                </div>
+            @endif
 
+            @if (isset($pricetypes))
+                <div class="w-full">
+                    {{ $pricetypes }}
+                </div>
+            @endif
 
-    <div class="flex justify-between gap-1">
-        <div class="inline-block bg-fondospancardproduct rounded text-textcardproduct text-xs p-1 font-semibold">
-            {{ $cantidad }}
         </div>
-
-        @if (count($almacens))
-            @foreach ($almacens as $almacen)
-                <span class="inline-block bg-green-500 rounded text-white text-xs p-1 font-semibold">
-                    {{ $almacen['name'] }}
-                </span>
-            @endforeach
-        @endif
-
     </div>
-    <p class="mt-1 bg-fondospancardproduct rounded text-textcardproduct text-xs p-1 font-semibold">Precio Unitario : S/.
-        100.00
-    </p>
 
-    @if (count($series))
-        <h1 class="mt-3 mb-1 text-sm font-semibold underline text-textcardproduct">Series Registradas</h1>
+    @if (isset($footer))
+        <div class="w-full flex flex-col gap-0.5">
+            <div class="w-full flex items-end gap-1 justify-end mt-2">
+                {{ $footer }}
 
-        <div class="flex flex-wrap justify-start gap-1">
-            @foreach ($series as $serie)
-                <span
-                    class="p-1 px-2 bg-fondospancardproduct rounded font-semibold inline-flex text-[10px] items-center gap-2 text-textspancardproduct">
-                    <p class="">{{ $serie['serie'] }}</p>
-                    <form action="#">
-                        <button type="button" class="text-red-600 ring-1 ring-red-300 rounded p-1">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 6h18" />
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                <line x1="10" x2="10" y1="11" y2="17" />
-                                <line x1="14" x2="14" y1="11" y2="17" />
-                            </svg>
-                        </button>
-                    </form>
-                </span>
-            @endforeach
+            </div>
+            @if (isset($messages))
+                {{ $messages }}
+            @endif
         </div>
     @endif
 
+    @if (isset($discount))
+        <div
+            class="absolute top-1 left-1 w-10 h-10 group-hover:shadow group-hover:shadow-red-500 flex flex-col items-center justify-center rounded-full bg-red-500 text-white bg-opacity-80 group-hover:bg-opacity-100 transition-all ease-in-out duration-150">
+            <h1 class="font-semibold leading-3 text-[9px]">
+                {{ \App\Helpers\FormatoPersonalizado::getValue($discount) }}%</h1>
+            <p class="leading-3 text-[7px]">DSCT</p>
+        </div>
+        {{-- <h1
+            class="absolute w-8 h-8 top-1 left-1 flex flex-col items-center justify-center p-1 rounded-full bg-green-500 text-white transition-all ease-in-out duration-150">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2 h-2 block" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 11l6-6 6 6M6 19l6-6 6 6" />
+            </svg>
+            <p class="font-semibold text-[8px]">
+                {{ \App\Helpers\FormatoPersonalizado::getValue($discount) }} %</p>
+        </h1> --}}
+    @endif
 
     @if (isset($increment))
-        <div
-            class="absolute left-0 top-1 rounded-full p-1 w-8 h-8 bg-green-200 text-green-600 text-center text-[9px] font-bold">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-4 mx-auto" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
-                <polyline points="16 7 22 7 22 13" />
+        <h1
+            class="absolute top-1 left-1 w-8 h-8 flex flex-col items-center justify-center p-1 rounded-full bg-green-500 text-white transition-all ease-in-out duration-150">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-2 h-2 block" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 11l6-6 6 6M6 19l6-6 6 6" />
             </svg>
-            <span>{{ $increment }}</span>
-        </div>
+            <p class="text-[9px]">
+                {{ \App\Helpers\FormatoPersonalizado::getValue($increment) }} %
+            </p>
+        </h1>
     @endif
-
-    @if (isset($cotizacion))
-        <span
-            class="absolute left-0 top-10 rounded-lg p-1 bg-amber-200 text-amber-600 text-center text-[9px] font-bold">
-            {{ $cotizacion }}
-        </span>
-    @endif
-
-
-
 </div>

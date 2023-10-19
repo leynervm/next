@@ -3,6 +3,7 @@
 namespace Modules\Facturacion\Entities;
 
 use App\Models\Tribute;
+use App\Models\Typecomprobante;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

@@ -64,7 +64,7 @@
                 <x-label-check for="publicado_dit">
                     <x-input wire:model="producto.publicado" name="publicado" value="1" type="checkbox"
                         id="publicado_dit" />
-                        DISPONIBLE TIENDA WEB
+                    DISPONIBLE TIENDA WEB
                 </x-label-check>
 
                 <div>
@@ -405,69 +405,40 @@
 
     <x-card-next titulo="Cambiar precio venta predeterminados" class="w-full mt-3 border border-next-500">
         @if (count($pricetypes))
-            {{-- <div class="w-full flex flex-wrap lg:flex-nowrap gap-3"> --}}
-            {{-- <div class="w-full lg:w-2/6">
-                    <form wire:submit.prevent="add_incremento">
-                        <x-label value="Lista precios disponibles :" />
-                        <div id="parent2">
-                            <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id"
-                                data-dropdown-parent="#parent2" data-placeholder="Seleccionar"
-                                data-minimum-results-for-search="Infinity">
-                                <x-slot name="options">
-                                    @if (count($pricetypes))
-                                        @foreach ($pricetypes as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                        </div>
-                        <x-jet-input-error for="pricetype_id" />
-
-                        <x-label value="Incremento (%) :" class="mt-2" />
-                        <x-input class="block w-full" wire:model.defer="increment" type="number" />
-                        <x-jet-input-error for="increment" />
-                        <x-jet-input-error for="producto.id" />
-
-                        <div class="mt-3 flex justify-end">
-                            <x-button type="submit" wire:loading.atrr="disabled" wire:target="add_especificacion">
-                                REGISTRAR
-                            </x-button>
-                        </div>
-                    </form>
-                </div> --}}
             <x-table>
-                <tbody class="divide-y divide-gray-200 text-gray-700">
-                    <tr>
-                        @foreach ($pricetypes as $lista)
-                            @php
-                                $precios = \App\Helpers\GetPrice::getPriceProducto($producto, $lista->id)->getData();
-                            @endphp
+                <x-slot name="body">
+                    <tbody class="divide-y divide-gray-200 text-gray-700">
+                        <tr>
+                            @foreach ($pricetypes as $lista)
+                                @php
+                                    $precios = \App\Helpers\GetPrice::getPriceProducto($producto, $lista->id)->getData();
+                                @endphp
 
-                            <td class="p-2 text-xs text-center align-text-top">
-                                <p
-                                    class="text-textspancardproduct bg-fondospancardproduct inline-block p-1 rounded font-semibold text-[10px]">
-                                    {{ $lista->name }}</p>
+                                <td class="p-2 text-xs text-center align-text-top">
+                                    <p
+                                        class="text-textspancardproduct bg-fondospancardproduct inline-block p-1 rounded font-semibold text-[10px]">
+                                        {{ $lista->name }}</p>
 
-                                {{-- <p>{{ var_dump($precios) }}</p> --}}
+                                    {{-- <p>{{ var_dump($precios) }}</p> --}}
 
-                                <div class="text-center relative pt-1">
-                                    @if ($precios->pricemanual)
-                                        <small class="text-red-500 font-semibold text-[10px] p-0.5 bg-red-100 inline-block rounded">
-                                            SUGERIDO : S/. {{ $precios->oldPrice }}</small>
-                                    @endif
-                                    <p class="text-next-500">
-                                        S/. {{ $precios->pricesale }}</p>
-                                </div>
-                                <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
-                                    wire:loading.attr="disabled"></x-button-edit>
+                                    <div class="text-center relative pt-1">
+                                        @if ($precios->pricemanual)
+                                            <small
+                                                class="text-red-500 font-semibold text-[10px] p-0.5 bg-red-100 inline-block rounded">
+                                                SUGERIDO : S/. {{ $precios->oldPrice }}</small>
+                                        @endif
+                                        <p class="text-next-500">
+                                            S/. {{ $precios->pricesale }}</p>
+                                    </div>
+                                    <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
+                                        wire:loading.attr="disabled"></x-button-edit>
 
-                            </td>
-                        @endforeach
-                    </tr>
-                </tbody>
+                                </td>
+                            @endforeach
+                        </tr>
+                    </tbody>
+                </x-slot>
             </x-table>
-            {{-- </div> --}}
         @else
             <small class="text-red-500 bg-red-50 text-xs p-0.5 rounded font-semibold inline-block mt-1">
                 Configurar lista de precios
@@ -541,9 +512,8 @@
             <form wire:submit.prevent="add_almacen">
                 <div class="w-full">
                     <x-label value="Nombre :" />
-                    <div id="parent3">
-                        <x-select class="block w-full relative" id="newalmacen_id" wire:model="newalmacen_id"
-                            data-placeholder="Seleccionar" data-minimum-results-for-search="Infinity">
+                    <div id="parentnewalmacen_id">
+                        <x-select class="block w-full relative" id="newalmacen_id" wire:model="newalmacen_id">
                             <x-slot name="options">
                                 @if (count($almacens))
                                     @foreach ($almacens as $item)

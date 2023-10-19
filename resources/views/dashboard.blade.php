@@ -241,7 +241,7 @@
         @php
             $options = [['id' => '1', 'value' => 'Item 1'], ['id' => '1', 'value' => 'Item 2']];
         @endphp
-        <x-select>
+        <x-select id="selectprueba">
             <x-slot name="options">
                 @foreach ($options as $item)
                     <option value="{{ $item['id'] }}">{{ $item['value'] }}</option>
@@ -275,30 +275,30 @@
             ];
         @endphp
 
-        <x-card-producto :almacens="$almacens" :series="$series">
+        <x-form-card-product :almacens="$almacens" :series="$series">
             <x-slot name="imagen"></x-slot>
             <x-slot name="name">Lorem ipsum dolor sit</x-slot>
             <x-slot name="price">S/. 100.00</x-slot>
             <x-slot name="cantidad">02 UND</x-slot>
             <x-slot name="increment">11%</x-slot>
             <x-slot name="cotizacion">COT 123</x-slot>
-        </x-card-producto>
-        <x-card-producto :almacens="$almacens" :series="$series">
+        </x-form-card-product>
+        <x-form-card-product :almacens="$almacens" :series="$series">
             <x-slot name="imagen"></x-slot>
             <x-slot name="name">Lorem ipsum dolor sit</x-slot>
             <x-slot name="price">S/. 100.00</x-slot>
             <x-slot name="cantidad">02 UND</x-slot>
             <x-slot name="increment">11%</x-slot>
             <x-slot name="cotizacion">COT 123</x-slot>
-        </x-card-producto>
-        <x-card-producto :almacens="$almacens" :series="$series">
+        </x-form-card-product>
+        <x-form-card-product :almacens="$almacens" :series="$series">
             <x-slot name="imagen"></x-slot>
             <x-slot name="name">Lorem ipsum dolor sit</x-slot>
             <x-slot name="price">S/. 100.00</x-slot>
             <x-slot name="cantidad">02 UND</x-slot>
             <x-slot name="increment">11%</x-slot>
             <x-slot name="cotizacion">COT 123</x-slot>
-        </x-card-producto>
+        </x-form-card-product>
 
     </div>
 

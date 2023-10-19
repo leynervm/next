@@ -1,3 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+
+* {
+    font-family: 'Ubuntu';
+}
+
 .theme-light {
     --body: theme("colors.gray.100");
     --icon-menu: theme("colors.gray.800");
@@ -44,6 +50,7 @@
 
     --fondo-header-modal: theme("colors.next.600");
     --color-header-modal: theme("colors.white");
+    --fondo-body-modal: theme("colors.white");
 
     --shadow-select2: theme("colors.gray.300");
     --fondo-select2: theme("colors.white");
@@ -63,6 +70,20 @@
     --color-input-disabled: theme("colors.next.500");
 
     --color-error: theme("colors.red.600");
+
+    --fondo-pagination: theme("colors.transparent");
+    --color-pagination: theme("colors.next.500");
+    --fondo-active-pagination: theme("colors.next.500");
+    --color-active-pagination: theme("colors.white");
+    --shadow-pagination: theme("colors.next.200");
+
+    --fondo-loading: theme("colors.white");
+    --color-loading: theme("colors.next.500");
+
+    --fondo-form: theme("colors.gray.100");
+    --color-title-form: theme("colors.next.500");
+    --color-subtitle-form: theme("colors.gray.400");
+    --shadow-form: theme("colors.gray.200");
 
 }
 
@@ -98,6 +119,7 @@
 
     --fondo-header-modal: theme("colors.next.500");
     --color-header-modal: theme("colors.white");
+    --fondo-body-modal: theme("colors.white");
 
     --shadow-select2: theme("colors.neutral.500");
     --fondo-select2: theme("colors.neutral.500");
@@ -117,6 +139,20 @@
     --color-input-disabled: theme("colors.next.500");
 
     --color-error: theme("colors.red.400");
+
+    --fondo-pagination: theme("colors.neutral.500");
+    --color-pagination: theme("colors.white");
+    --fondo-active-pagination: theme("colors.next.500");
+    --color-active-pagination: theme("colors.white");
+    --shadow-pagination: theme("colors.neutral.700");
+
+    --fondo-loading: theme("colors.neutral.600");
+    --color-loading: theme("colors.next.500");
+
+    --fondo-form: theme("colors.neutral.600");
+    --color-title-form: theme("colors.white");
+    --color-subtitle-form: theme("colors.neutral.300");
+    --shadow-form: theme("colors.neutral.500");
 }
 
 .theme-dark {
@@ -143,6 +179,19 @@
  } */
 
 
+ .soft-scrollbar::-webkit-scrollbar {
+    @apply cursor-pointer h-[6px] w-[6px] rounded;
+}
+
+.soft-scrollbar::-webkit-scrollbar-track {
+    @apply bg-[#e2e8f0] cursor-pointer rounded;
+}
+
+.soft-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-[#94a3b8] cursor-pointer rounded;
+}
+
+
 
 
 .ck-content .table {
@@ -150,16 +199,10 @@
 }
 
 .loading-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: center;
-    /* align-items: center; */
-    z-index: 9999;
+    @apply absolute top-0 left-0 w-full h-full bg-fondoloading opacity-90 flex flex-wrap justify-center items-center z-50;
+
+    /* background-color: rgba(255, 255, 255, 0.8);
+    z-index: 9999; */
 }
 
 .spinner {

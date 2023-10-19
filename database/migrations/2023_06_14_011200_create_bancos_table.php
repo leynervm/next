@@ -18,7 +18,6 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->enum('status', [Banco::ACTIVO, Banco::INACTIVO])->default(Banco::ACTIVO);
-            $table->timestamps();
             $table->softDeletes();
         });
     }

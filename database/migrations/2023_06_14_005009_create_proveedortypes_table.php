@@ -14,10 +14,9 @@ class CreateProveedortypesTable extends Migration
     public function up()
     {
         Schema::create('proveedortypes', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id');
             $table->string('name', 255);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
+            $table->softDeletes();
         });
     }
 

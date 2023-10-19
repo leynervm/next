@@ -13,9 +13,9 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Almacen\Http\Controllers\AlmacenController;
+use Modules\Almacen\Http\Controllers\CompraController;
 use Modules\Almacen\Http\Controllers\ProductoController;
-
-
+use Modules\Almacen\Http\Livewire\Compras\ShowCompras;
 
 Route::middleware([
     'auth:sanctum',
@@ -31,6 +31,10 @@ Route::middleware([
     Route::get('/productos/{producto:slug}', [ProductoController::class, 'edit'])->name('admin.almacen.productos.show');
 
 
+    Route::get('/compras', [CompraController::class, 'index'])->name('admin.almacen.compras');
+    // Route::get('/compras', ShowCompras::class)->name('admin.almacen.compras');
+    Route::get('/compras/create', [CompraController::class, 'create'])->name('admin.almacen.compras.create')->middleware(['verifycompany', 'opencaja']);
+    Route::get('/compras/edit/{compra:id}', [CompraController::class, 'show'])->name('admin.almacen.compras.show')->middleware(['verifycompany', 'opencaja']);
 
 
     Route::get('/ofertas', [AlmacenController::class, 'ofertas'])->name('admin.almacen.ofertas');

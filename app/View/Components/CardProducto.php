@@ -12,13 +12,15 @@ class CardProducto extends Component
      * @return void
      */
 
-    public $almacens;
-    public $series;
+    public  $name, $image, $category, $discount, $increment;
 
-    public function __construct($almacens, $series = [])
+    public function __construct($name, $image = null, $category = null, $discount = null, $increment = null)
     {
-        $this->almacens = $almacens;
-        $this->series = $series;
+        $this->name = $name;
+        $this->image = $image;
+        $this->category = $category;
+        $this->discount = $discount;
+        $this->increment = $increment;
     }
 
     /**

@@ -409,15 +409,19 @@
                 <div class="w-full lg:w-2/6">
                     <form wire:submit.prevent="add_incremento">
                         <x-label value="Lista precios disponibles :" />
-                        <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id">
-                            <x-slot name="options">
-                                @if (count($pricetypes))
-                                    @foreach ($pricetypes as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
+                        <div id="parent2">
+                            <x-select class="block w-full" id="pricetypeproducto_id" wire:model="pricetype_id"
+                                data-dropdown-parent="#parent2" data-placeholder="Seleccionar"
+                                data-minimum-results-for-search="Infinity">
+                                <x-slot name="options">
+                                    @if (count($pricetypes))
+                                        @foreach ($pricetypes as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                        </div>
                         <x-jet-input-error for="pricetype_id" />
 
                         <x-label value="Incremento (%) :" class="mt-2" />

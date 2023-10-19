@@ -1,4 +1,4 @@
-<div {{ $attributes->merge(['class' => 'w-full text-center py-2']) }}>
+<div {{ $attributes->merge(['class' => 'w-full text-center py-2 ']) }}>
     <svg class="w-24 h-16 block mx-auto text-next-600" xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 24 30" stroke="currentColor"
         xml:space="preserve">
