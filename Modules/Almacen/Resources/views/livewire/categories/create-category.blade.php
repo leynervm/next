@@ -24,24 +24,8 @@
                 <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese nombre categoría..." />
                 <x-jet-input-error for="name" />
 
-                <x-label class="mt-6 mb-1 underline" value="Asignar categorías" />
-                @if (count($subcategories))
-                    <div class="flex flex-wrap gap-1">
-                        @foreach ($subcategories as $item)
-                            <x-label class="flex items-center gap-1 cursor-pointer bg-next-100 rounded-lg p-1"
-                                for="subcategory_{{ $item->id }}">
-                                <x-input wire:model.defer="selectedSubcategories" name="subcategories[]" type="checkbox"
-                                    id="subcategory_{{ $item->id }}" value="{{ $item->id }}" />
-                                {{ $item->name }}
-                            </x-label>
-                        @endforeach
-                    </div>
-                @endif
-                <x-jet-input-error for="selectedSubcategories" />
-
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="save">
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>

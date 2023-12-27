@@ -20,16 +20,24 @@ class GetClient
     public function getClient($document)
     {
 
-        $cliente = Client::where('document', $document)->first();
+        $cliente = Client::withTrashed()->where('document', $document)->first();
         $response = array();
 
         if ($cliente) {
+            if ($cliente->trashed()) {
+                $cliente->pricetype_id = Pricetype::DefaultPricetype()->first()->id ?? null;
+                $cliente->restore();
+                $cliente->direccions()->restore();
+                $cliente->telephones()->restore();
+            }
+
+            $direccion = $cliente->direccions()->first()->name ?? '';
             $response = [
                 'success' => true,
                 'name' => $cliente->name,
                 'pricetype_id' => $cliente->pricetype_id,
                 'pricetypeasigned' => $cliente->pricetype->name ?? '',
-                'direccion' => $cliente->direccions()->first()->name ?? '',
+                'direccion' => strlen(trim($direccion)) < 3 ? '' : $direccion,
                 'ubigeo' => $cliente->direccions()->first()->ubigeo->ubigeo_reniec ?? null,
                 'telefono' => $cliente->telephones()->first()->phone ?? null
             ];
@@ -65,12 +73,14 @@ class GetClient
                         $name = $result->razonSocial;
                     }
 
+                    $direccion = isset($result->direccion) ? $result->direccion : '';
+
                     $response = [
                         'success' => true,
                         'name' => $name,
                         'pricetype_id' => $pricetypeDefault->id ?? null,
                         'pricetypeasigned' => $pricetypeDefault->name ?? '',
-                        'direccion' => isset($result->direccion) ? $result->direccion : null,
+                        'direccion' => strlen(trim($direccion)) < 3 ? null : $direccion,
                         'ubigeo' => isset($result->ubigeo) ? $result->ubigeo : null,
                         'telefono' => null,
                         'estado' => isset($result->estado) ? $result->estado : null,

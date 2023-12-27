@@ -13,6 +13,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Modules\Facturacion\Entities\Comprobante;
+use Modules\Ventas\Entities\Venta;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -35,6 +37,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'role_id',
+        'theme_id'
     ];
 
     /**
@@ -81,5 +85,35 @@ class User extends Authenticatable implements MustVerifyEmail
     public function carshoop()
     {
         return $this->hasMany(Carshoop::class);
+    }
+
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class);
+    }
+
+    public function cajamovimientos()
+    {
+        return $this->hasMany(Cajamovimiento::class);
+    }
+
+    public function sucursals(): BelongsToMany
+    {
+        return $this->belongsToMany(Sucursal::class)->withPivot('default', 'almacen_id');
+    }
+
+    public function sucursalDefault()
+    {
+        return $this->sucursals()->wherePivot('default', Sucursal::DEFAULT );
+    }
+
+    public function almacenDefault()
+    {
+        return $this->sucursalDefault()->wherePivotNotNull('almacen_id');
+    }
+
+    public function comprobantes(): HasMany
+    {
+        return $this->hasMany(Comprobante::class);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -41,5 +42,10 @@ class Empresa extends Model
     public function ubigeo()
     {
         return $this->belongsTo(Ubigeo::class);
+    }
+
+    public function sucursals(): HasMany
+    {
+        return $this->hasMany(Sucursal::class);
     }
 }

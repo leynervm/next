@@ -2,10 +2,12 @@
 
 namespace Modules\Almacen\Http\Livewire\Garantias;
 
+use App\Helpers\FormatoPersonalizado;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
-use Modules\Almacen\Entities\Typegarantia;
+use App\Models\Typegarantia;
 use Livewire\WithPagination;
 
 class ShowTypeGarantias extends Component
@@ -22,14 +24,22 @@ class ShowTypeGarantias extends Component
     {
         return [
             'typegarantia.name' => [
-                'required', 'min:3', 'max:100', new Letter,
+                'required',
+                'min:3',
+                'max:100',
+                new Letter,
                 new CampoUnique('typegarantias', 'name', $this->typegarantia->id, true),
             ],
             'typegarantia.timestring' => [
-                'required', 'min:3', 'max:100', 'string'
+                'required',
+                'min:3',
+                'max:100',
+                'string'
             ],
             'typegarantia.time' => [
-                'required', 'integer', 'min:1'
+                'required',
+                'integer',
+                'min:1'
             ]
         ];
     }
@@ -61,14 +71,32 @@ class ShowTypeGarantias extends Component
         $this->reset(['open']);
     }
 
-    public function confirmDelete(Typegarantia $typegarantia)
-    {
-        $this->dispatchBrowserEvent('typegarantias.confirmDelete', $typegarantia);
-    }
-
     public function delete(Typegarantia $typegarantia)
     {
-        $typegarantia->deleteOrFail();
-        $this->dispatchBrowserEvent('deleted');
+        $productos = $typegarantia->garantiaproductos()->count();
+        $cadena = FormatoPersonalizado::extraerMensaje([
+            'Garantia_Productos' => $productos
+        ]);
+
+        if ($productos > 0) {
+            $mensaje = response()->json([
+                'title' => 'No se puede eliminar tipo garantía, ' . $typegarantia->name,
+                'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+        } else {
+            DB::beginTransaction();
+            try {
+                $typegarantia->deleteOrFail();
+                DB::commit();
+                $this->dispatchBrowserEvent('deleted');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
+            }
+        }
     }
 }

@@ -21,8 +21,7 @@
         <x-slot name="content">
             <form wire:submit.prevent="save">
                 <x-label value="Descripción concepto :" />
-                <x-input class="block w-full" wire:model.defer="name"
-                    placeholder="Descripción del concepto pago..." />
+                <x-input class="block w-full" wire:model.defer="name" placeholder="Descripción del concepto pago..." />
                 <x-jet-input-error for="name" />
 
                 <fieldset class="border border-solid border-next-300 mt-2">
@@ -30,40 +29,36 @@
 
                     <div class="w-full flex gap-1 items-start p-1">
 
-                        <div class="">
-                            <x-label textSize="[10px]"
-                                class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                                for="ninguno">
-                                <x-input wire:model.defer="default" name="default" type="radio" value="0" id="ninguno" />
+                        <div class="block">
+                            <x-label-check for="ninguno">
+                                <x-input wire:model.defer="default" name="default" type="radio" value="0"
+                                    id="ninguno" class="checked:rounded-full" />
                                 NINGUNO
-                            </x-label>
+                            </x-label-check>
                         </div>
 
-                        <div class="">
-                            <x-label textSize="[10px]"
-                                class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                                for="ventas">
-                                <x-input wire:model.defer="default" name="default" type="radio" value="1" id="ventas" />
+                        <div class="block">
+                            <x-label-check for="ventas">
+                                <x-input wire:model.defer="default" name="default" type="radio" value="1"
+                                    id="ventas" class="checked:rounded-full" />
                                 PAGO VENTAS
-                            </x-label>
+                            </x-label-check>
                         </div>
 
-                        <div class="">
-                            <x-label textSize="[10px]"
-                                class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                                for="internet">
-                                <x-input wire:model.defer="default" name="default" type="radio" value="2" id="internet" />
+                        <div class="block">
+                            <x-label-check for="internet">
+                                <x-input wire:model.defer="default" name="default" type="radio" value="2"
+                                    id="internet" class="checked:rounded-full" />
                                 PAGO INTERNET
-                            </x-label>
+                            </x-label-check>
                         </div>
 
-                        <div class="">
-                            <x-label textSize="[10px]"
-                                class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                                for="cuota">
-                                <x-input wire:model.defer="default" name="default" type="radio" value="3" id="cuota" />
+                        <div class="block">
+                            <x-label-check for="cuota">
+                                <x-input wire:model.defer="default" name="default" type="radio" value="3"
+                                    id="cuota" class="checked:rounded-full" />
                                 PAGO CUOTA
-                            </x-label>
+                            </x-label-check>
                         </div>
                     </div>
                 </fieldset>

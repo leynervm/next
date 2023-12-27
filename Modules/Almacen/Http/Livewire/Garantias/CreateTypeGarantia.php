@@ -5,7 +5,7 @@ namespace Modules\Almacen\Http\Livewire\Garantias;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Livewire\Component;
-use Modules\Almacen\Entities\Typegarantia;
+use App\Models\Typegarantia;
 
 class CreateTypeGarantia extends Component
 {

@@ -2,6 +2,8 @@
 
 namespace Modules\Almacen\Entities;
 
+use App\Models\Almacen;
+use App\Models\Producto;
 use App\Models\Serie;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +16,7 @@ class Compraitem extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    
+
     protected $guarded = ['created_at', 'updated_at'];
 
     public function producto(): BelongsTo

@@ -63,16 +63,14 @@ class ShowAccountpayments extends Component
     {
         $this->cuenta->account = trim($this->cuenta->account);
         $this->cuenta->descripcion = trim($this->cuenta->descripcion);
-        $this->cuenta->default = $this->cuenta->default == 1 ? 1 : 0;
+        // $this->cuenta->default = $this->cuenta->default == 1 ? 1 : 0;
         $this->validate();
         $this->cuenta->save();
-        $this->reset();
+        $this->resetValidation();
+        $this->open = false;
+        $this->dispatchBrowserEvent('updated');
     }
 
-    public function confirmDelete(Cuenta $cuenta)
-    {
-        $this->dispatchBrowserEvent('accountpayments.confirmDelete', $cuenta);
-    }
 
     public function delete(Cuenta $cuenta)
     {

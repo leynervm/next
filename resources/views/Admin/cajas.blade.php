@@ -1,34 +1,83 @@
 <x-app-layout>
 
+    <x-slot name="breadcrumb">
+        <x-link-breadcrumb text="CAJAS" route="admin.cajas">
+            <x-slot name="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="m14,18c4.4183,0 8,-3.5817 8,-8c0,-4.41828 -3.5817,-8 -8,-8c-4.41828,0 -8,3.58172 -8,8c0,4.4183 3.58172,8 8,8z" />
+                    <path
+                        d="m3.15657,11c-0.73134,1.1176 -1.15657,2.4535 -1.15657,3.8888c0,3.9274 3.18378,7.1112 7.11116,7.1112c1.43534,0 2.77124,-0.4252 3.88884,-1.1566" />
+                    <path
+                        d="m14,7c-1.1046,0 -2,0.67157 -2,1.5c0,0.82843 0.8954,1.5 2,1.5c1.1046,0 2,0.6716 2,1.5c0,0.8284 -0.8954,1.5 -2,1.5m0,-6c0.8708,0 1.6116,0.4174 1.8862,1m-1.8862,5c-0.8708,0 -1.6116,-0.4174 -1.8862,-1m1.8862,1" />
+                </svg>
+            </x-slot>
+        </x-link-breadcrumb>
+
+        <x-link-breadcrumb text="MOVIMIENTOS" active>
+            <x-slot name="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 21H10C6.70017 21 5.05025 21 4.02513 19.9749C3 18.9497 3 17.2998 3 14V3" />
+                    <path d="M10 7L12 7" />
+                    <path d="M18 7L20 7" />
+                    <path d="M8 15L10 15" />
+                    <path d="M16 15L18 15" />
+                    <path d="M10 5L10 17" />
+                    <path d="M18 5L18 17" />
+                </svg>
+            </x-slot>
+        </x-link-breadcrumb>
+    </x-slot>
+
+    @if (session('message'))
+        <x-alert :titulo="session('message')->getData()->title" :mensaje="session('message')->getData()->text" type="warning">
+            <x-slot name="icono">
+                <svg class="w-6 h-6 p-0.5 animate-bounce" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M5.32171 9.68293C7.73539 5.41199 8.94222 3.27651 10.5983 2.72681C11.5093 2.4244 12.4907 2.4244 13.4017 2.72681C15.0578 3.27651 16.2646 5.41199 18.6783 9.68293C21.092 13.9539 22.2988 16.0893 21.9368 17.8293C21.7376 18.7866 21.2469 19.6549 20.535 20.3097C19.241 21.5 16.8274 21.5 12 21.5C7.17265 21.5 4.75897 21.5 3.46496 20.3097C2.75308 19.6549 2.26239 18.7866 2.06322 17.8293C1.70119 16.0893 2.90803 13.9539 5.32171 9.68293Z" />
+                    <path
+                        d="M12.2422 17V13C12.2422 12.5286 12.2422 12.2929 12.0957 12.1464C11.9493 12 11.7136 12 11.2422 12" />
+                    <path d="M11.992 9H12.001" />
+                </svg>
+            </x-slot>
+        </x-alert>
+    @endif
+
     <div class="flex flex-wrap gap-2 mt-3">
 
-        <x-link-next href="{{ route('admin.cajas.aperturas') }}" titulo="Aperturas">
+        <x-link-next href="{{ route('admin.cajas.aperturas') }}" titulo="Apertura Cajas">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
-                    d="M14 20H6a2 2 0 01-2-2V6a2 2 0 012-2h12a2 2 0 012 2v6M12 9V4M21.167 18.5h.233a.6.6 0 01.6.6v2.3a.6.6 0 01-.6.6h-3.8a.6.6 0 01-.6-.6v-2.3a.6.6 0 01.6-.6h.233m3.334 0v-1.75c0-.583-.334-1.75-1.667-1.75s-1.667 1.167-1.667 1.75v1.75m3.334 0h-3.334" />
+                    d="M16.6667 14L7.33333 14C5.14718 14 4.0541 14 3.27927 14.5425C2.99261 14.7433 2.74327 14.9926 2.54254 15.2793C2 16.0541 2 17.1472 2 19.3333C2 20.4264 2 20.9729 2.27127 21.3604C2.37164 21.5037 2.4963 21.6284 2.63963 21.7287C3.02705 22 3.57359 22 4.66667 22L19.3333 22C20.4264 22 20.9729 22 21.3604 21.7287C21.5037 21.6284 21.6284 21.5037 21.7287 21.3604C22 20.9729 22 20.4264 22 19.3333C22 17.1472 22 16.0541 21.4575 15.2793C21.2567 14.9926 21.0074 14.7433 20.7207 14.5425C19.9459 14 18.8528 14 16.6667 14Z" />
+                <path
+                    d="M20 14L19.593 10.3374C19.311 7.79863 19.1699 6.52923 18.3156 5.76462C17.4614 5 16.1842 5 13.6297 5L10.3703 5C7.81585 5 6.53864 5 5.68436 5.76462C4.83009 6.52923 4.68904 7.79862 4.40695 10.3374L4 14" />
+                <path d="M11.5 2H14M16.5 2H14M14 2V5" />
+                <path
+                    d="M9 17.5L9.99615 18.1641C10.3247 18.3831 10.7107 18.5 11.1056 18.5H12.8944C13.2893 18.5 13.6753 18.3831 14.0038 18.1641L15 17.5" />
+                <path d="M8 8H10" />
             </svg>
+
         </x-link-next>
 
         <x-link-next href="{{ route('admin.cajas.administrar') }}" titulo="Administrar Cajas">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 17 2 2 4-4" />
-                <path d="m3 7 2 2 4-4" />
-                <path d="M13 6h8" />
-                <path d="M13 12h8" />
-                <path d="M13 18h8" />
+                <path d="M14.5 22L14.1845 21.5811C13.4733 20.6369 13.2969 19.1944 13.7468 18" />
+                <path d="M9.5 22L9.8155 21.5811C10.5267 20.6369 10.7031 19.1944 10.2532 18" />
+                <path d="M7 22H17" />
+                <path
+                    d="M12 7C10.8954 7 10 7.67157 10 8.5C10 9.32843 10.8954 10 12 10C13.1046 10 14 10.6716 14 11.5C14 12.3284 13.1046 13 12 13M12 7C12.8708 7 13.6116 7.4174 13.8862 8M12 7V6M12 13C11.1292 13 10.3884 12.5826 10.1138 12M12 13V14" />
+                <path
+                    d="M14 2H10C6.72077 2 5.08116 2 3.91891 2.81382C3.48891 3.1149 3.1149 3.48891 2.81382 3.91891C2 5.08116 2 6.72077 2 10C2 13.2792 2 14.9188 2.81382 16.0811C3.1149 16.5111 3.48891 16.8851 3.91891 17.1862C5.08116 18 6.72077 18 10 18H14C17.2792 18 18.9188 18 20.0811 17.1862C20.5111 16.8851 20.8851 16.5111 21.1862 16.0811C22 14.9188 22 13.2792 22 10C22 6.72077 22 5.08116 21.1862 3.91891C20.8851 3.48891 20.5111 3.1149 20.0811 2.81382C18.9188 2 17.2792 2 14 2Z" />
             </svg>
         </x-link-next>
 
-        <x-link-next href="#" titulo="Movimientos">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 19l3 3 5-5M17 14V4m0 0l3 3m-3-3l-3 3M7 4v16m0 0l3-3m-3 3l-3-3" />
-            </svg>
-        </x-link-next>
-
-        <x-link-next href="{{ route('admin.cajas.conceptos') }}" titulo="Concepto Cajas">
+        <x-link-next href="{{ route('admin.cajas.conceptos') }}" titulo="Concepto Pagos">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
@@ -36,51 +85,32 @@
             </svg>
         </x-link-next>
 
-        <x-link-next href="{{ route('admin.ventas.cobranzas') }}" titulo="Cuentas Cobrar">
+        <x-link-next href="{{ route('admin.cajas.methodpayments') }}" titulo="Formas Pago">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
-                    d="M16 13c-2.761 0-5-1.12-5-2.5S13.239 8 16 8s5 1.12 5 2.5-2.239 2.5-5 2.5zM11 14.5c0 1.38 2.239 2.5 5 2.5s5-1.12 5-2.5M3 9.5C3 10.88 5.239 12 8 12c1.126 0 2.165-.186 3-.5M3 13c0 1.38 2.239 2.5 5 2.5 1.126 0 2.164-.186 3-.5" />
+                    d="M16 14C16 14.8284 16.6716 15.5 17.5 15.5C18.3284 15.5 19 14.8284 19 14C19 13.1716 18.3284 12.5 17.5 12.5C16.6716 12.5 16 13.1716 16 14Z" />
                 <path
-                    d="M3 5.5v11C3 17.88 5.239 19 8 19c1.126 0 2.164-.186 3-.5M13 8.5v-3M11 10.5v8c0 1.38 2.239 2.5 5 2.5s5-1.12 5-2.5v-8" />
-                <path d="M8 8C5.239 8 3 6.88 3 5.5S5.239 3 8 3s5 1.12 5 2.5S10.761 8 8 8z" />
-            </svg>
-        </x-link-next>
-
-        <x-link-next href="{{ route('admin.cajas.methodpayments') }}" titulo="Método Pagos">
-            {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path
-                    d="M17 15V17.8C17 18.9201 17 19.4802 16.782 19.908C16.5903 20.2843 16.2843 20.5903 15.908 20.782C15.4802 21 14.9201 21 13.8 21H8.2C7.0799 21 6.51984 21 6.09202 20.782C5.71569 20.5903 5.40973 20.2843 5.21799 19.908C5 19.4802 5 18.9201 5 17.8V5.57143C5 5.04025 5 4.77465 5.05014 4.55496C5.2211 3.80597 5.80597 3.2211 6.55496 3.05014C6.77465 3 7.04025 3 7.57143 3H11M10 18H12M19 4.50003C18.5 4.37601 17.6851 4.37145 17 4.37601M17 4.37601C16.7709 4.37754 16.9094 4.3678 16.6 4.37601C15.7926 4.4012 15.0016 4.73678 15 5.68753C14.9982 6.70037 16 7.00003 17 7.00003C18 7.00003 19 7.23123 19 8.31253C19 9.12512 18.1925 9.48118 17.1861 9.59908C16.3861 9.59908 16 9.62503 15 9.50003M17 4.37601L17 3M17 9.5995V11" />
-            </svg> --}}
-            <svg xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                viewBox="0 0 481.8 481.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                fill="currentColor">
-                <path
-                    d="M384.759,213.6c-4.7-3.7-46.2-49.4-69.7-70.7c-0.1-0.1-0.1-0.1-0.1-0.2V44.3c0-24.4-19.9-44.3-44.3-44.3h-145.1 c-22.7,0-41.2,18.6-41.2,41.2V272c0,24.4,19.9,44.3,44.3,44.3h42.2h10.7c1.8,0,3.3-1.6,3.1-3.4l-2.3-19.6 c-0.2-1.6-1.5-2.7-3.1-2.7h-3.9h-2.4c-1.7,0-3.1-1.4-3.1-3.1V25.3c0-1.7,1.4-3.1,3.1-3.1h98c9.9,0,18,8.1,18,18v214.2v21.1 c0,6.8-4.7,12.6-11,14.4c-0.1,0-0.1,0-0.2,0c-10.7-5.8-23.3-30.6-25.2-34.5c-0.2-0.3-0.3-0.7-0.3-1c-0.7-6.3-7.8-67.3-40.3-67.3 c-0.9,0-1.8,0-2.7,0.1c0,0-26,2.2-4.5,76.3c0,0.2,0.1,0.3,0.1,0.5l9.5,82.1c0,0.1,0,0.2,0.1,0.4c0.8,3.1,11.6,45,39.5,74.7 c0.5,0.6,0.8,1.3,0.8,2.1v7.1c0,0.2-0.1,0.3-0.3,0.3h-2.5c-6.1,0-11.1,5-11.1,11.1v28.9c0,6.1,5,11.1,11.1,11.1h117.7 c6.1,0,11.1-5,11.1-11.1V442c0-6.1-5-11.1-11.1-11.1c-0.2,0-0.3-0.1-0.3-0.3c3.9-36.2,17.9-160,25.4-169.7c0.2-0.3,0.4-0.6,0.5-1 C396.559,255.4,403.059,227.9,384.759,213.6z M130.659,287.7c0,1.6-1.3,2.8-2.8,2.8c-9.8,0-17.8-8-17.8-17.8V40 c0-9.8,8-17.8,17.8-17.8c1.6,0,2.8,1.3,2.8,2.8V287.7z" />
+                    d="M10 7H16C18.8284 7 20.2426 7 21.1213 7.87868C22 8.75736 22 10.1716 22 13V15C22 17.8284 22 19.2426 21.1213 20.1213C20.2426 21 18.8284 21 16 21H10C6.22876 21 4.34315 21 3.17157 19.8284C2 18.6569 2 16.7712 2 13V11C2 7.22876 2 5.34315 3.17157 4.17157C4.34315 3 6.22876 3 10 3H14C14.93 3 15.395 3 15.7765 3.10222C16.8117 3.37962 17.6204 4.18827 17.8978 5.22354C18 5.60504 18 6.07003 18 7" />
             </svg>
         </x-link-next>
 
         <x-link-next href="{{ route('admin.cajas.cuentas') }}" titulo="Cuentas pago">
-            {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 9V7a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h8M22 9H6m16 0v2" />
-                <path
-                    d="M18.992 14.125l2.556.649c.266.068.453.31.445.584C21.821 21.116 18.5 22 18.5 22s-3.321-.884-3.493-6.642a.588.588 0 01.445-.584l2.556-.649c.323-.082.661-.082.984 0z" />
-            </svg> --}}
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
-                    d="M22 9v8a2 2 0 01-2 2H4a2 2 0 01-2-2V7a2 2 0 012-2h16a2 2 0 012 2v2zm0 0H6M16.5 13.382a1.5 1.5 0 110 2.236M16.5 13.382a1.5 1.5 0 100 2.236" />
+                    d="M12.5 20H10.5C6.74142 20 4.86213 20 3.60746 19.0091C3.40678 18.8506 3.22119 18.676 3.0528 18.4871C2 17.3062 2 15.5375 2 12C2 8.46252 2 6.69377 3.0528 5.5129C3.22119 5.32403 3.40678 5.14935 3.60746 4.99087C4.86213 4 6.74142 4 10.5 4H13.5C17.2586 4 19.1379 4 20.3925 4.99087C20.5932 5.14935 20.7788 5.32403 20.9472 5.5129C21.8394 6.51358 21.9755 7.93642 21.9963 10.5" />
+                <path d="M18.5 20L18.5 13M15 16.5H22" />
+                <path d="M2 9H22" />
             </svg>
         </x-link-next>
 
     </div>
 
-    <x-title-next titulo="Resumen caja" class="mt-5" />
+    {{-- <x-title-next titulo="Resumen movimientos" class="mt-5" /> --}}
 
     <div class="mt-3">
-        {{-- @livewire('almacen::almacens.show-almacens') --}}
+        @livewire('admin.cajas.show-movimientos')
     </div>
 
 </x-app-layout>

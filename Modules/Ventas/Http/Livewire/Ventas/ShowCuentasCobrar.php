@@ -2,10 +2,11 @@
 
 namespace Modules\Ventas\Http\Livewire\Ventas;
 
+use App\Models\Cuota;
 use Livewire\Component;
-use Modules\Ventas\Entities\Cuota;
 use Livewire\WithPagination;
 use Modules\Ventas\Entities\Venta;
+use Nwidart\Modules\Facades\Module;
 
 class ShowCuentasCobrar extends Component
 {
@@ -25,36 +26,34 @@ class ShowCuentasCobrar extends Component
 
     public function mount()
     {
-        $this->amountdeuda = Cuota::whereNull('cajamovimiento_id')->sum('amount');
+        $this->amountdeuda = Cuota::doesntHave('cajamovimiento')->sum('amount');
     }
 
     public function render()
     {
 
-        $this->amountdeuda = Cuota::whereNull('cajamovimiento_id')->sum('amount');
-        $cuotas = Venta::whereNull('cajamovimiento_id')
-            ->whereHas('nextpagos')->with('nextpagos');
+        $cuotas = Venta::withWhereHas('cuotas', function ($query) {
+            $query->whereDoesntHave('cajamovimiento')
+                ->orderBy('expiredate', 'asc');
+            if (trim($this->datepay) !== '') {
+                $query->where('expiredate', $this->datepay);
+            }
+        });
 
         if (trim($this->search) !== '') {
-            $cuotas->whereHas('comprobante', function ($query) {
-                $query->where('seriecompleta', 'ilike', '%' . $this->search . '%');
-            });
+            if (Module::isEnabled('Facturacion')) {
+                $cuotas->withWhereHas('comprobante', function ($query) {
+                    if (trim($this->search) !== '') {
+                        $query->where('seriecompleta', 'ilike', '%' . $this->search . '%');
+                    }
+                });
+            } else {
+                $cuotas->whereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
+                // ->orWhereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
+            }
         }
 
-        if (trim($this->datepay) !== '') {
-            $cuotas->whereHas('nextpagos', function ($query) {
-                $query->where('expiredate', $this->datepay);
-            })
-                ->with(['nextpagos' => function ($query) {
-                    $query->where('expiredate', $this->datepay);
-                }]);
-
-            $this->amountdeuda = $cuotas->get()->sum(function ($venta) {
-                return $venta->nextpagos->sum('amount');
-            });
-        }
-
-        $cuotas = $cuotas->orderBy('date', 'desc')->orderBy('total', 'desc')->paginate();
+        $cuotas = $cuotas->orderBy('date', 'desc')->paginate();
 
         return view('ventas::livewire.ventas.show-cuentas-cobrar', compact('cuotas'));
     }

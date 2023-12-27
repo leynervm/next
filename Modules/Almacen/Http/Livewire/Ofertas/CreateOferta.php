@@ -2,22 +2,21 @@
 
 namespace Modules\Almacen\Http\Livewire\Ofertas;
 
+use App\Helpers\FormatoPersonalizado;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Modules\Almacen\Entities\Almacen;
-use Modules\Almacen\Entities\Oferta;
-use Modules\Almacen\Entities\Producto;
+use App\Models\Almacen;
+use App\Models\Oferta;
+use App\Models\Producto;
 
 class CreateOferta extends Component
 {
 
     public $open = false;
-    public $productos = [];
     public $producto;
     public $max = 0;
-    public $maxlimit = 0;
 
     public $almacen_id, $producto_id, $descuento, $datestart, $dateexpire, $limit;
 
@@ -25,23 +24,41 @@ class CreateOferta extends Component
     {
         return [
             'almacen_id' => [
-                'required', 'integer', 'exists:almacens,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:almacens,id',
             ],
             'producto_id' => [
-                'required', 'integer', 'exists:productos,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:productos,id',
                 Rule::unique('ofertas', 'producto_id')->where('status', 0)->whereNull('deleted_at')
             ],
             'descuento' => [
-                'required', 'decimal:0,2', 'min:1',
+                'required',
+                'decimal:0,2',
+                'min:1',
             ],
             'datestart' => [
-                'required', 'date', 'date_format:Y-m-d', 'after_or_equal:today',
+                'required',
+                'date',
+                'date_format:Y-m-d',
+                'after_or_equal:today',
             ],
             'dateexpire' => [
-                'required', 'date', 'date_format:Y-m-d', 'after_or_equal:today', 'after_or_equal:datestart',
+                'required',
+                'date',
+                'date_format:Y-m-d',
+                'after_or_equal:today',
+                'after_or_equal:datestart',
             ],
             'limit' => [
-                'required', 'decimal:0,2', 'min:1', 'max:' . $this->maxlimit
+                'required',
+                'integer',
+                'min:1',
+                'max:' . $this->limit
             ]
         ];
     }
@@ -54,63 +71,50 @@ class CreateOferta extends Component
 
     public function render()
     {
-        $almacens = Almacen::orderBy('name', 'asc')->get();
-        // $productos = Producto::all();
-        return view('almacen::livewire.ofertas.create-oferta', compact('almacens'));
+        // $almacens = Almacen::orderBy('name', 'asc')->get();
+        $productos = Producto::with('almacens')->orderBy('name', 'asc')->get();
+        return view('almacen::livewire.ofertas.create-oferta', compact('productos'));
     }
 
     public function updatingOpen()
     {
         if ($this->open == false) {
             $this->resetValidation();
-            $this->resetExcept('open');
-        }
-    }
-
-    public function updatedAlmacenId($value)
-    {
-
-        $this->resetValidation(['max']);
-        $this->reset(['producto_id', 'productos', 'max', 'producto', 'maxlimit']);
-        if ($value) {
-            $this->productos = Almacen::findOrFail($value)->productos()->orderBy('name', 'asc')->get();
+            $this->resetExcept(['open']);
         }
     }
 
     public function updatedProductoId($value)
     {
-        $this->reset(['producto']);
+        $this->reset(['almacen_id', 'limit', 'max']);
         if ($value) {
-
             $this->producto = Producto::findOrFail($value);
-            $this->maxlimit = Producto::findOrFail($this->producto_id)->almacens
-                ->find($this->almacen_id)->pivot->cantidad;
-
-            if ($this->max) {
-                $this->limit =  $this->maxlimit;
-                $this->resetValidation(['max']);
-            }
         }
+    }
+
+    public function updatedAlmacenId($value)
+    {
+        $this->resetValidation();
+        $this->reset(['limit', 'max']);
     }
 
     public function updatedMax($value)
     {
 
-        $this->resetValidation(['max']);
+        $this->resetValidation();
         $this->reset(['max']);
 
         if ($value == 1) {
-            if ($this->almacen_id) {
-                if ($this->producto_id) {
-                    $this->limit =  Producto::findOrFail($this->producto_id)->almacens
-                        ->find($this->almacen_id)->pivot->cantidad;
-                    $this->resetValidation(['max']);
-                    $this->max = 1;
-                } else {
-                    $this->addError('max', 'Seleccione el campo producto');
-                }
-            } else {
-                $this->addError('max', 'seleccione el campo almacén');
+            $this->validate([
+                'producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
+                'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id']
+            ]);
+            $this->max = 1;
+            $maxstock = Producto::findOrFail($this->producto_id)->almacens
+                ->find($this->almacen_id)->pivot->cantidad;
+
+            if ($maxstock) {
+                $this->limit = FormatoPersonalizado::getValue($maxstock);
             }
         }
     }
@@ -119,7 +123,6 @@ class CreateOferta extends Component
     {
 
         $this->validate();
-
         DB::beginTransaction();
 
         try {
@@ -130,7 +133,7 @@ class CreateOferta extends Component
                 'dateexpire' => $this->dateexpire,
                 'limit' => $this->limit,
                 'disponible' => $this->limit,
-                'vendidos' => 0, //default = 0 Borrar despues de migrar
+                'vendidos' => 0,
                 'almacen_id' => $this->almacen_id,
                 'producto_id' => $this->producto_id,
                 'user_id' => Auth::user()->id

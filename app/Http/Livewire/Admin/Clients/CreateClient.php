@@ -19,11 +19,9 @@ class CreateClient extends Component
 {
 
     public $open = false;
-    public $mostrarcontacto = false;
-    public $searchingclient = false;
 
     public $document, $name, $ubigeo_id, $direccion, $email,
-        $sexo, $nacimiento, $pricetype_id, $telefono;
+    $sexo, $nacimiento, $pricetype_id, $telefono;
 
     public $documentContact, $nameContact, $telefonoContact;
 
@@ -31,7 +29,7 @@ class CreateClient extends Component
     {
         return [
             'document' => [
-                'required', 'integer', 'numeric', 'digits_between:8,11',
+                'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
                 new CampoUnique('clients', 'document', null, true)
             ],
             'name' => ['required', 'string', 'min:8'],
@@ -63,25 +61,17 @@ class CreateClient extends Component
         }
     }
 
-    public function updatedDocument($value)
+    public function save()
     {
 
         if (strlen(trim($this->document)) == 11) {
-            $this->mostrarcontacto = true;
             $this->sexo = 'E';
-        } else {
-            $this->mostrarcontacto = false;
-            $this->sexo = null;
         }
-        // $this->mostrarcontacto = strlen(trim($this->document)) == 11 ? true : false;
-    }
 
-    public function save()
-    {
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
-        $this->email = $this->email;
+        $this->email = trim($this->email);
         $this->validate();
 
 
@@ -148,7 +138,10 @@ class CreateClient extends Component
 
         $this->document = trim($this->document);
         $this->validate([
-            'document' => ['required', 'numeric', new ValidateDocument]
+            'document' => [
+                'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
+                new ValidateDocument
+            ]
         ]);
 
         $this->name = null;
@@ -185,7 +178,7 @@ class CreateClient extends Component
 
         $this->documentContact = trim($this->documentContact);
         $this->validate([
-            'documentContact' => ['required', 'numeric', 'digits:8']
+            'documentContact' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/']
         ]);
 
         $this->nameContact = null;

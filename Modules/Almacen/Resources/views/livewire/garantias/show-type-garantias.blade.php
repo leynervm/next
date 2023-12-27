@@ -1,4 +1,4 @@
-<div class="">
+<div class="relative">
 
     @if (count($typegarantias))
         <div class="pb-2">
@@ -15,11 +15,9 @@
                 <x-minicard :title="$item->name" :content="$item->timestring . $timemes" size="lg">
                     <x-slot name="buttons">
                         <div class="ml-auto">
-                            <x-button-edit wire:loading.attr="disabled" wire:target="edit({{ $item->id }})"
-                                wire:click="edit({{ $item->id }})"></x-button-edit>
-                            <x-button-delete wire:loading.attr="disabled"
-                                wire:target="confirmDelete({{ $item->id }})"
-                                wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
+                            <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
+                            <x-button-delete wire:click="$emit('typegarantias.confirmDelete',{{ $item }})"
+                                wire:loading.attr="disabled" />
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -27,16 +25,14 @@
         @endif
     </div>
 
+    <div wire:loading.flex class="loading-overlay rounded hidden">
+        <x-loading-next />
+    </div>
+
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar garantía producto') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -57,9 +53,8 @@
                     min="1" />
                 <x-jet-input-error for="typegarantia.time" />
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
@@ -68,9 +63,9 @@
     </x-jet-dialog-modal>
     <script>
         document.addEventListener('livewire:load', function() {
-            window.addEventListener('typegarantias.confirmDelete', data => {
+            Livewire.on('typegarantias.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
+                    title: 'Eliminar registro con nombre: ' + data.name,
                     text: "Se eliminará un registro de la base de datos",
                     icon: 'question',
                     showCancelButton: true,
@@ -82,7 +77,7 @@
                     if (result.isConfirmed) {
                         // console.log(data.detail.id);
                         Livewire.emitTo('almacen::garantias.show-type-garantias', 'delete', data
-                            .detail.id);
+                            .id);
                     }
                 })
             })

@@ -1,4 +1,6 @@
-<div class="w-full flex gap-1 flex-wrap items-center justify-center">
+@props(['align' => null])
+
+<div class="w-full flex gap-1 flex-wrap items-center justify-center {{ $align }}">
     <label {{ $attributes->merge(['class' => $classes]) }}>
         <span class="w-3 h-3 block">
             <svg class="w-full h-full" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">

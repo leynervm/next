@@ -28,14 +28,5 @@ class MonedaSeeder extends Seeder
             'simbolo' => '$.',
         ]);
        
-        Tribute::create([
-            'tribute' => 'EXO',
-            'name' => 'VAT',
-            'code' => 9999,
-            'abreviature' => 'E',
-            'default' => '1'
-        ]);
-
-
     }
 }

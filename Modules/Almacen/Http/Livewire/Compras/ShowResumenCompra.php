@@ -13,7 +13,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Almacen\Entities\Compra;
 use Modules\Almacen\Entities\Compraitem;
-use Modules\Almacen\Entities\Producto;
+use App\Models\Producto;
 
 class ShowResumenCompra extends Component
 {
@@ -25,9 +25,11 @@ class ShowResumenCompra extends Component
     public $empresa;
     public $serie;
     public $pricebuy = 0;
+    public $pricebuysoles = 0;
+    public $tipocambio = 0;
     public $pricesale;
 
-    protected $listeners = ['updatecompraitem', 'deleteitemcompra', 'deleteserie'];
+    protected $listeners = ['updatecompraitem'];
 
     public function mount(Compra $compra, Empresa $empresa)
     {
@@ -36,6 +38,7 @@ class ShowResumenCompra extends Component
         $this->producto = new Producto();
         // $this->compraitem = new Compraitem();
         $this->pricetype = new Pricetype();
+        $this->tipocambio = $compra->tipocambio ?? 0;
     }
 
     public function render()
@@ -45,10 +48,10 @@ class ShowResumenCompra extends Component
         return view('almacen::livewire.compras.show-resumen-compra', compact('productos', 'pricetypes'));
     }
 
-    public function updatedPricebuy($value)
-    {
-        $this->pricebuy = number_format(trim($value) == "" ? 0 : $value, 4, '.', '');
-    }
+    // public function updatedPricebuy($value)
+    // {
+    //     $this->pricebuy = number_format(trim($value) == "" ? 0 : $value, 4, '.', '');
+    // }
 
     public function loadproducto($value)
     {
@@ -67,7 +70,8 @@ class ShowResumenCompra extends Component
             'pricebuy' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'pricesale' => [
                 'nullable',
-                Rule::requiredIf($this->empresa->uselistprice == 0), 'numeric', 'decimal:0,4', 'gt:0'
+                Rule::requiredIf($this->empresa->uselistprice == 0),
+                'numeric', 'decimal:0,4', 'gt:0'
             ],
             'cantidad' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
         ]);
@@ -133,7 +137,7 @@ class ShowResumenCompra extends Component
 
             $producto->save();
             $producto->almacens()->updateExistingPivot($this->almacen_id, [
-                'cantidad' =>  $productoAlmacen->pivot->cantidad + $this->cantidad,
+                'cantidad' => $productoAlmacen->pivot->cantidad + $this->cantidad,
             ]);
 
             $this->compra->counter = $this->compra->compraitems()->sum('cantidad') ?? 0;
@@ -144,7 +148,7 @@ class ShowResumenCompra extends Component
             $this->emitTo('almacen::compras.show-compra', 'refresh');
             $this->dispatchBrowserEvent('created');
             $this->resetValidation();
-            $this->reset(['producto_id', 'almacen_id', 'pricebuy', 'pricesale', 'cantidad', 'serie']);
+            $this->reset(['producto_id', 'almacen_id', 'pricebuy', 'pricebuysoles', 'pricesale', 'cantidad', 'serie']);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -163,7 +167,7 @@ class ShowResumenCompra extends Component
 
         try {
 
-            $compraitem->pricebuy  = $this->pricebuy;
+            $compraitem->pricebuy = $this->pricebuy;
             $compraitem->cantidad = $compraitem->cantidad + $this->cantidad;
             $compraitem->subtotal = number_format($compraitem->pricebuy * $compraitem->cantidad, 2, '.', '');
             $compraitem->save();
@@ -187,7 +191,7 @@ class ShowResumenCompra extends Component
             }
 
             $compraitem->producto->almacens()->updateExistingPivot($compraitem->almacen_id, [
-                'cantidad' =>  $productoAlmacen->pivot->cantidad + $this->cantidad,
+                'cantidad' => $productoAlmacen->pivot->cantidad + $this->cantidad,
             ]);
 
             $this->compra->counter = $this->compra->compraitems()->sum('cantidad') ?? 0;
@@ -198,7 +202,7 @@ class ShowResumenCompra extends Component
             $this->emitTo('almacen::compras.show-compra', 'refresh');
             $this->dispatchBrowserEvent('updated');
             $this->resetValidation();
-            $this->reset(['producto_id', 'almacen_id', 'pricebuy', 'pricesale', 'cantidad', 'serie']);
+            $this->reset(['producto_id', 'almacen_id', 'pricebuy', 'pricebuysoles', 'pricesale', 'cantidad', 'serie']);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -227,7 +231,7 @@ class ShowResumenCompra extends Component
                     ->where('almacen_id', $compraitem->almacen_id)->first();
 
                 $compraitem->producto->almacens()->updateExistingPivot($compraitem->almacen_id, [
-                    'cantidad' =>  $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
+                    'cantidad' => $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
                 ]);
 
                 $this->compra->counter = $this->compra->counter - $compraitem->cantidad;
@@ -352,7 +356,6 @@ class ShowResumenCompra extends Component
 
     public function deletepricemanual()
     {
-
         if ($this->pricemanual) {
             $this->producto->pricetypes()->detach($this->pricetype->id);
             $this->resetValidation();

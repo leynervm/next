@@ -23,27 +23,14 @@ Route::middleware([
     // 'verified'
 ])->prefix('admin/almacen')->group(function () {
     Route::get('/', [AlmacenController::class, 'index'])->name('admin.almacen');
+    Route::get('/almacenes', [AlmacenController::class, 'almacenes'])->name('admin.almacen.almacenes')->middleware(['registercompany']);
     Route::get('/tipo-garantias', [AlmacenController::class, 'typegarantias'])->name('admin.almacen.typegarantias');
-    Route::get('/productos', [ProductoController::class, 'index'])->name('admin.almacen.productos');
-    Route::get('/productos/create', [ProductoController::class, 'create'])->name('admin.almacen.productos.create');
-    // Route::get('/productos/{producto:slug}', [ProductoController::class, 'show'])->name('admin.almacen.productos.show');
-
-    Route::get('/productos/{producto:slug}', [ProductoController::class, 'edit'])->name('admin.almacen.productos.show');
-
 
     Route::get('/compras', [CompraController::class, 'index'])->name('admin.almacen.compras');
     // Route::get('/compras', ShowCompras::class)->name('admin.almacen.compras');
-    Route::get('/compras/create', [CompraController::class, 'create'])->name('admin.almacen.compras.create')->middleware(['verifycompany', 'opencaja']);
-    Route::get('/compras/edit/{compra:id}', [CompraController::class, 'show'])->name('admin.almacen.compras.show')->middleware(['verifycompany', 'opencaja']);
-
-
-    Route::get('/ofertas', [AlmacenController::class, 'ofertas'])->name('admin.almacen.ofertas');
-
-    Route::get('/especificaciones', [AlmacenController::class, 'especificaciones'])->name('admin.almacen.especificaciones');
-
+    Route::get('/compras/create', [CompraController::class, 'create'])->name('admin.almacen.compras.create')->middleware(['registercompany', 'verifysucursal', 'opencaja']);
+    Route::get('/compras/{compra:id}/edit', [CompraController::class, 'show'])->name('admin.almacen.compras.show')->middleware(['registercompany', 'opencaja']);
 
     Route::get('/areas-&-estantes', [AlmacenController::class, 'almacenareas'])->name('admin.almacen.almacenareas');
-    Route::get('/categorias', [AlmacenController::class, 'categorias'])->name('admin.almacen.categorias');
-    Route::get('/subcategorias', [AlmacenController::class, 'subcategorias'])->name('admin.almacen.subcategorias');
-    Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('admin.almacen.units');
+
 });

@@ -24,7 +24,7 @@ class ViewClient extends Component
 {
 
     public $client, $contact;
-    public $telephone, $direccion;
+    public $telephone, $direccion, $ubigeo_id;
 
     public $opencontacto = false;
     public $openphone = false;
@@ -46,7 +46,7 @@ class ViewClient extends Component
             'client.nacimiento' => ['nullable', new ValidateNacimiento()],
             'client.pricetype_id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
             'direccion.name' => ['required', 'string', 'min:3'],
-            'direccion.ubigeo_id' => ['nullable', 'integer', 'min:1', 'exists:ubigeos,id'],
+            'ubigeo_id' => ['nullable', 'integer', 'min:1', 'exists:ubigeos,id'],
         ];
     }
 
@@ -54,7 +54,11 @@ class ViewClient extends Component
     {
         $this->client = $client;
         $this->contact = new Contact();
-        $this->direccion = $client->direccion;
+
+        if ($client->direccion) {
+            $this->direccion = $client->direccion;
+            $this->ubigeo_id = $client->direccion->ubigeo_id;
+        }
     }
 
     public function render()
@@ -82,7 +86,7 @@ class ViewClient extends Component
                 'id' => $this->direccion->id ?? null
             ], [
                 'name' => $this->direccion->name,
-                'ubigeo_id' => $this->direccion->ubigeo_id
+                'ubigeo_id' => $this->ubigeo_id
             ]);
 
             DB::commit();
@@ -102,7 +106,7 @@ class ViewClient extends Component
     public function openmodalcontacto()
     {
         $this->reset(['contact', 'document2', 'name2', 'telefono2']);
-        $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+        $this->resetValidation();
         $this->opencontacto = true;
     }
 
@@ -110,7 +114,7 @@ class ViewClient extends Component
     {
         $this->contact = $contact;
         $this->reset(['document2', 'name2', 'telefono2']);
-        $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+        $this->resetValidation();
         $this->document2 = trim($contact->document);
         $this->name2 = trim($contact->name);
         if ($contact->telephone) {
@@ -149,7 +153,7 @@ class ViewClient extends Component
             DB::commit();
             $this->dispatchBrowserEvent('created');
             $this->reset(['opencontacto', 'document2', 'name2', 'telefono2', 'contact']);
-            $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+            $this->resetValidation();
             $this->client->refresh();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -180,7 +184,10 @@ class ViewClient extends Component
     {
         $this->telefono2 = trim($this->telefono2);
         $this->validate([
-            'newtelefono' => ['required', 'numeric', 'digits_between:7,9']
+            'newtelefono' => [
+                'required', 'numeric', 'digits_between:7,9',
+                new ValidatePhoneClient('clients', $this->client->id, $this->telephone->id ?? null)
+            ]
         ]);
         try {
 
@@ -287,7 +294,7 @@ class ViewClient extends Component
 
         if ($response->getData()) {
             if ($response->getData()->success) {
-                $this->name2= $response->getData()->name;
+                $this->name2 = $response->getData()->name;
                 $this->telefono2 = $response->getData()->telefono;
             } else {
                 $this->addError('document2', $response->getData()->message);

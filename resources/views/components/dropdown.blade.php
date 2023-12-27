@@ -13,9 +13,17 @@
     <div :class="{ 'block': open, 'hidden': !open }" x-show="open" x-on:click.away="open = !open"
         x-transition:enter="transition ease-out duration-200" x-transition:enter-start="transform opacity-0 scale-95"
         x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95"
-        class="absolute hidden z-10 w-auto max-w-xs bg-fondodropdown rounded-lg shadow-md">
-        <ul class="p-2 space-y-1 text-colordropdown" aria-labelledby="dropdownCheckboxButton">
+        class="absolute hidden z-10 w-auto max-w-xs bg-fondodropdown rounded-lg shadow-md shadow-shadowminicard">
+        @if (isset($pages))
+            {{ $pages }}
+        @endif
+
+        <ul aria-labelledby="dropdownCheckboxButton">
             {{ $items }}
         </ul>
+
+        @if (isset($loading))
+            {{ $loading }}
+        @endif
     </div>
 </div>

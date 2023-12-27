@@ -17,10 +17,9 @@ class VerifyCompany
      */
     public function handle(Request $request, Closure $next)
     {
-        $empresa = Empresa::DefaultEmpresa()->first();
-        if (!$empresa) {
-
-            return redirect()->route('admin.administracion.empresa')->with('message', 'Configurar datos de la empresa por favor !');
+        $empresa = Empresa::all()->count();
+        if ($empresa) {
+            return redirect()->route('admin.administracion.empresa');
         }
 
         return $next($request);

@@ -14,15 +14,26 @@ class ShowCajas extends Component
 
     public $open = false;
     public $caja;
+    public $searchsucursal = '';
+
+    protected $queryString = [
+        'searchsucursal' => [
+            'except' => '',
+            'as' => 'sucursal'
+        ]
+    ];
 
     protected $listeners = ['render', 'delete'];
 
     protected function rules()
     {
         return [
+            'caja.sucursal_id' => [
+                'required', 'integer', 'min:1', 'exists:sucursals,id'
+            ],
             'caja.name' => [
                 'required', 'min:3', 'max:100',
-                new CampoUnique('cajas', 'name', $this->caja->id, true),
+                new CampoUnique('cajas', 'name', $this->caja->id, true, 'sucursal_id', $this->caja->sucursal_id),
             ],
         ];
     }
@@ -34,8 +45,15 @@ class ShowCajas extends Component
 
     public function render()
     {
-        $cajas = Caja::orderBy('name', 'asc')->paginate();
-        return view('livewire.admin.cajas.show-cajas', compact('cajas'));
+
+        $cajas = Caja::with('sucursal');
+        if (trim($this->searchsucursal) !== '') {
+            $cajas->where('sucursal_id', $this->searchsucursal);
+        }
+
+        $cajas = $cajas->orderBy('name', 'asc')->paginate();
+        $sucursals = auth()->user()->sucursals;
+        return view('livewire.admin.cajas.show-cajas', compact('cajas', 'sucursals'));
     }
 
     public function edit(Caja $caja)
@@ -50,18 +68,19 @@ class ShowCajas extends Component
         $this->caja->name = trim($this->caja->name);
         $this->validate();
         $this->caja->save();
+        $this->resetValidation();
+        $this->reset(['open']);
         $this->dispatchBrowserEvent('updated');
-        $this->reset();
-    }
-
-    public function confirmDelete(Caja $caja)
-    {
-        $this->dispatchBrowserEvent('cajas.confirmDelete', $caja);
     }
 
     public function delete(Caja $caja)
     {
         $caja->deleteOrFail();
         $this->dispatchBrowserEvent('deleted');
+    }
+
+    public function hydrate()
+    {
+        $this->dispatchBrowserEvent('render-show-cajas');
     }
 }

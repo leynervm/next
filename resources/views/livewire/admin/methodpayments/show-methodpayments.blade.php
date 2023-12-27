@@ -1,76 +1,38 @@
 <div class="">
 
-    @if (count($methodpayments))
+    @if ($methodpayments->hasPages())
         <div class="pb-2">
-            {{ $methodpayments->links() }}
+            {{ $methodpayments->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
-    <div class="flex gap-2 flex-wrap justify-start">
-        @if (count($methodpayments))
+    @if (count($methodpayments))
+        <div class="flex gap-3 flex-wrap justify-start mt-3">
             @foreach ($methodpayments as $item)
-                <div class="w-60">
-                    <x-card-next :titulo="$item->name" class="h-full" :alignFooter="$item->default ? 'justify-between' : 'justify-end'">
-                        @if (count($item->cuentas))
-                            <div class="w-full flex flex-wrap gap-1">
-                                @foreach ($item->cuentas as $account)
-                                    <p
-                                        class="inline-block text-[8px] font-semibold p-1 rounded-lg bg-fondospancardproduct text-textspancardproduct">
-                                        {{ $account->account }}
-                                        ({{ $account->descripcion }})</p>
-                                @endforeach
-                            </div>
-                        @endif
-                        <x-slot name="footer">
-
-                            @if ($item->default)
-                                <span class="bg-green-100 text-green-500 p-1 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </span>
-                            @endif
-                            <div>
-                                <x-button-edit wire:loading.attr="disabled" wire:target="edit"
-                                    wire:click="edit({{ $item->id }})"></x-button-edit>
-                                <x-button-delete wire:loading.attr="disabled" wire:target="confirmDelete"
-                                    wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
-                            </div>
-                        </x-slot>
-                    </x-card-next>
+                <div
+                    class="w-60 flex flex-col items-center justify-center bg-fondominicard p-2 rounded-md shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard">
+                    <h1 class="text-xs text-colorlinknav">{{ $item->name }}</h1>
+                    @if (count($item->cuentas))
+                        <div class="space-y-1 mt-3">
+                            <h1
+                                class="text-[10px] text-colorsubtitleform font-semibold tracking-widest relative before:absolute before:bottom-0 before:w-12 before:h-0.5 before:bg-colorsubtitleform">
+                                CUENTAS</h1>
+                            @foreach ($item->cuentas as $account)
+                                <p class="text-[10px] text-colorminicard leading-3">
+                                    [ {{ $account->account }}] - {{ $account->descripcion }}
+                                </p>
+                            @endforeach
+                        </div>
+                    @endif
                 </div>
-
-                {{-- <x-minicard :title="$item->name" :alignFooter="$item->default == 1 ? 'justify-between' : 'justify-end'" size="lg">
-                    <x-slot name="buttons">
-                        <div class="inline-flex">
-                            @if ($item->default)
-                                <span class="bg-green-100 text-green-500 p-1 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </span>
-                            @endif
-                        </div>
-
-                        <div class="">
-                            <x-button-edit wire:loading.attr="disabled" wire:target="edit"
-                                wire:click="edit({{ $item->id }})"></x-button-edit>
-                            <x-button-delete wire:loading.attr="disabled" wire:target="confirmDelete"
-                                wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
-                        </div>
-                    </x-slot>
-                </x-minicard> --}}
             @endforeach
-        @endif
-    </div>
+        </div>
+    @endif
+
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
-            {{ __('Actualizar área') }}
+            {{ __('Actualizar forma pago') }}
             <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">

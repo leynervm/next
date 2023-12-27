@@ -20,11 +20,12 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
-            $table->integer('delete')->default(0);
             $table->integer('status')->default(0);
             $table->bigInteger('role_id')->nullable();
+            $table->tinyInteger('theme_id')->nullable();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
+            $table->foreign('theme_id')->on('themes')->references('id');
             $table->timestamps();
             $table->softDeletes();
         });

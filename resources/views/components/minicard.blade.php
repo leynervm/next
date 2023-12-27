@@ -17,10 +17,7 @@
         {{ $slot }}
 
         @if (isset($content))
-            <p class="text-center">
-                <span
-                    class="bg-fondospancardproduct text-textspancardproduct p-1 text-[10px] rounded-lg text-center font-semibold">{{ $content }}</span>
-            </p>
+            <p class="text-center"><x-span-text :text="$content" /></p>
         @endif
     </div>
 

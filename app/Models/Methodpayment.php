@@ -28,4 +28,9 @@ class Methodpayment extends Model
     {
         return $this->belongsToMany(Cuenta::class);
     }
+
+    public function cajamovimientos()
+    {
+        return $this->hasMany(Cajamovimiento::class);
+    }
 }

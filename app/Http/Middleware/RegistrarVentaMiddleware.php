@@ -22,7 +22,12 @@ class RegistrarVentaMiddleware
         $caja = Opencaja::CajasAbiertas()->CajasUser()->orderBy('startdate', 'desc')->first();
         if (!$caja) {
 
-            return redirect()->route('admin.cajas.aperturas')->with('message', 'Aperture nueva caja por favor !');
+            $mensaje = response()->json([
+                'title' => 'APERTURAR CAJA DE USUARIO',
+                'text' => 'Aperturtar nueva caja para el usuario logueado para registrar movimientos !',
+                'type' => 'warning'
+            ]);
+            return redirect()->route('admin.cajas.aperturas')->with('message', $mensaje);
         }
 
         return $next($request);

@@ -86,51 +86,58 @@
                 @livewire('navigation-menu')
 
             </div>
-            <div class="flex-1 p-3 md:px-5 overflow-y-auto bg-body">
-                <main class="shadow">
+            <div class="flex-1 p-1 lg:px-3 overflow-y-auto bg-body h-screen">
+                <main class="shadow relative">
+                    <div class="relative flex flex-col-reverse gap-2 md:flex-row items-end md:justify-between pb-2">
 
-                    <!-- Settings Dropdown -->
-                    <div class="relative flex items-center justify-end">
-                        <button type="button"
-                            class="relative inline-flex p-1.5 justify-center items-center text-colorlinknav rounded-lg">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-8 w-8">
-                                <path fill-rule="evenodd"
-                                    d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                        </button>
+                        <div class="w-full md:w-auto">
+                            <x-breadcrumb-next>
+                                @if (isset($breadcrumb))
+                                    {{ $breadcrumb }}
+                                @endif
+                            </x-breadcrumb-next>
+                        </div>
+
                         <x-jet-dropdown align="right" width="48" contentClasses="py-1 bg-fondodropdown">
                             <x-slot name="trigger">
-                                @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                    <button disabled
-                                        class="flex text-sm border-2 border-transparent rounded-full focus:outline-none focus:border-gray-300 transition">
+                                <button type="button"
+                                    class="bg-fondodropdown shadow shadow-shadowminicard relative inline-flex p-1.5 justify-center items-center text-textspancardproduct cursor-pointer font-semibold rounded-lg hover:shadow-md hover:shadow-shadowminicard focus:shadow-md focus:shadow-shadowminicard transition-all ease-in-out duration-150">
+                                    <div class="text-xs px-3">
+                                        <p class="text-right">{{ Auth::user()->name }}</p>
+
+                                        @if (count(Auth::user()->sucursals))
+                                            @if (Auth::user()->SucursalDefault()->first())
+                                                <small
+                                                    class="font-medium text-[10px]">[{{ Auth::user()->SucursalDefault()->first()->name }}]</small>
+                                            @else
+                                                <small class="font-medium text-[10px] text-next-500">[SELECCIONAR
+                                                    SUCURSAL PREDETERMINADA]</small>
+                                            @endif
+                                        @else
+                                            <small class="font-medium text-[10px] text-next-500">[NO EXISTEN
+                                                SUCURSALES]</small>
+                                        @endif
+
+                                    </div>
+
+                                    @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
                                         <img class="h-8 w-8 rounded-full object-cover"
                                             src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
-                                    </button>
-                                @else
-                                    <span class="inline-flex rounded-md">
-                                        <button type="button"
-                                            class="shadow-colorlinknav relative inline-flex md:flex p-1.5 justify-center md:justify-start items-center text-colorlinknav cursor-pointer font-semibold rounded-lg shadow hover:text-hovercolorlinknav hover:bg-hoverlinknav focus:bg-hoverlinknav focus:text-hovercolorlinknav transition-all ease-in-out duration-150">
-                                            <span class="text-xs p-1.5">{{ Auth::user()->name }}</span>
-                                            <svg class="h-8 w-8 p-1.5" xmlns="http://www.w3.org/2000/svg"
-                                                viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd"
-                                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                                    clip-rule="evenodd" />
-                                            </svg>
-                                            {{-- <svg xmlns="http://www.w3.org/2000/svg" class="bg-colorlinknav text-white ml-2 -mr-0.5 h-4 w-4"
-                                                viewBox="0 0 512 512">
-                                                <path
-                                                    d="M98 190.06l139.78 163.12a24 24 0 0036.44 0L414 190.06c13.34-15.57 2.28-39.62-18.22-39.62h-279.6c-20.5 0-31.56 24.05-18.18 39.62z" />
-                                            </svg> --}}
-                                        </button>
-                                    </span>
-                                @endif
+                                    @else
+                                        <svg class="h-8 w-8 p-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                            fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    @endif
+
+                                </button>
                             </x-slot>
 
                             <x-slot name="content">
                                 <!-- Account Management -->
-                                <div class="block px-4 py-2 text-xs text-colorlinknav">
+                                <div class="block px-4 py-2 text-xs text-textspancardproduct">
                                     {{ __('Manage Account') }}
                                 </div>
 
@@ -138,14 +145,19 @@
                                 {{ __('Profile') }}
                             </x-jet-dropdown-link> --}}
 
-                                <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full justify-stretch"
+                                <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full text-textspancardproduct"
                                     href="{{ route('profile.show') }}">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                            d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round">
+                                        <path
+                                            d="M10.5 22H6.59087C5.04549 22 3.81631 21.248 2.71266 20.1966C0.453365 18.0441 4.1628 16.324 5.57757 15.4816C8.12805 13.9629 11.2057 13.6118 14 14.4281" />
+                                        <path
+                                            d="M16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2C14.4853 2 16.5 4.01472 16.5 6.5Z" />
+                                        <path
+                                            d="M18.4332 13.8485C18.7685 13.4851 18.9362 13.3035 19.1143 13.1975C19.5442 12.9418 20.0736 12.9339 20.5107 13.1765C20.6918 13.2771 20.8646 13.4537 21.2103 13.8067C21.5559 14.1598 21.7287 14.3364 21.8272 14.5214C22.0647 14.9679 22.0569 15.5087 21.8066 15.9478C21.7029 16.1298 21.5251 16.3011 21.1694 16.6437L16.9378 20.7194C16.2638 21.3686 15.9268 21.6932 15.5056 21.8577C15.0845 22.0222 14.6214 22.0101 13.6954 21.9859L13.5694 21.9826C13.2875 21.9752 13.1466 21.9715 13.0646 21.8785C12.9827 21.7855 12.9939 21.6419 13.0162 21.3548L13.0284 21.1988C13.0914 20.3906 13.1228 19.9865 13.2807 19.6232C13.4385 19.2599 13.7107 18.965 14.2552 18.375L18.4332 13.8485Z" />
                                     </svg>
-                                    <span>{{ __('Profile') }}</span>
+                                    <span class="font-medium">{{ __('Profile') }}</span>
                                 </x-nav-link>
 
                                 @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
@@ -159,14 +171,17 @@
                                 <!-- Authentication -->
                                 <form method="POST" action="{{ route('logout') }}" x-data>
                                     @csrf
-                                    <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full justify-stretch"
+                                    <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full text-textspancardproduct"
                                         href="{{ route('logout') }}" @click.prevent="$root.submit();">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                            stroke-width="2" stroke="currentColor" class="h-4 w-4">
-                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            fill="currentColor" stroke="currentColor" stroke-width=".5"
+                                            fill-rule="evenodd" clip-rule="evenodd">
+                                            <path
+                                                d="M7.95964 5.18436C8.25778 5.63184 8.13597 6.23577 7.68756 6.53329C5.58339 7.92941 4.2 10.3139 4.2 13.0203C4.2 17.3192 7.69218 20.8041 12 20.8041C16.3078 20.8041 19.8 17.3192 19.8 13.0203C19.8 10.3139 18.4166 7.92941 16.3124 6.53329C15.864 6.23577 15.7422 5.63184 16.0404 5.18436C16.3385 4.73689 16.9437 4.61533 17.3921 4.91285C20.0168 6.65432 21.75 9.63513 21.75 13.0203C21.75 18.3939 17.3848 22.75 12 22.75C6.61522 22.75 2.25 18.3939 2.25 13.0203C2.25 9.63513 3.98323 6.65432 6.60789 4.91285C7.0563 4.61533 7.6615 4.73689 7.95964 5.18436Z" />
+                                            <path
+                                                d="M12 1.25C12.5523 1.25 13 1.69772 13 2.25V10.25C13 10.8023 12.5523 11.25 12 11.25C11.4477 11.25 11 10.8023 11 10.25V2.25C11 1.69772 11.4477 1.25 12 1.25Z" />
                                         </svg>
-                                        <span>{{ __('Log Out') }}</span>
+                                        <span class="font-medium">{{ __('Log Out') }}</span>
                                         {{-- <x-jet-dropdown-link href="{{ route('logout') }}"
                                         @click.prevent="$root.submit();">
                                         {{ __('Log Out') }}
@@ -218,6 +233,15 @@
         },
     });
 
+    window.addEventListener('toast', event => {
+        // console.log(event);
+        toastMixin.fire({
+            title: event.detail.title,
+            icon: event.detail.icon,
+            timer: 2000,
+        });
+    })
+
     window.addEventListener('created', event => {
         toastMixin.fire({
             title: 'Registrado correctamente'
@@ -241,11 +265,18 @@
         swal.fire({
             title: data.detail.title,
             text: data.detail.text,
+            html: data.detail.text,
             icon: 'info',
             confirmButtonColor: '#0FB9B9',
             confirmButtonText: 'Cerrar',
         })
     })
+
+    document.addEventListener("DOMContentLoaded", () => {
+        Livewire.hook('element.updated', (el, component) => {
+            $('.select2').attr('disabled', false);
+        });
+    });
 
     // window.addEventListener('validation-deleted', data => {
     //     swal.fire({
@@ -368,12 +399,12 @@
             }
         });
 
-        elemento.addEventListener("input", function(event) {
-            let valor = event.target.value;
-            valor = valor.replace(/[e\+\-]/gi, '');
-            // valor = valor.replace(/e|\+|\-/g, '');
-            event.target.value = valor;
-        });
+        // elemento.addEventListener("input", function(event) {
+        //     let valor = event.target.value;
+        //     valor = valor.replace(/[e\+\-]/gi, '');
+        //     // valor = valor.replace(/e|\+|\-/g, '');
+        //     event.target.value = valor;
+        // });
     })
 
     function valid(e) {

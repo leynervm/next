@@ -16,25 +16,35 @@ class CreateVentasTable extends Migration
         Schema::create('ventas', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->integer('code');
-            $table->decimal('exonerado', 10, 2);
-            $table->decimal('gravado', 10, 2);
-            $table->decimal('descuento', 10, 2);
-            $table->decimal('otros', 10, 2);
-            $table->decimal('igv', 10, 2);
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('total', 10, 2);
+            $table->string('code', 12);
+            $table->string('direccion', 255);
+            $table->decimal('exonerado', 12, 4);
+            $table->decimal('gravado', 12, 4);
+            $table->decimal('inafecto', 12, 4)->default(0);
+            $table->decimal('gratuito', 12, 4)->default(0);
+            $table->decimal('descuento', 12, 4)->default(0);
+            $table->decimal('otros', 12, 4)->default(0);
+            $table->decimal('igv', 12, 4)->default(0);
+            $table->decimal('igvgratuito', 12, 4)->default(0);
+            $table->decimal('subtotal', 10, 4);
+            $table->decimal('total', 12, 4);
             $table->decimal('tipocambio', 7, 4)->nullable();
             $table->decimal('increment', 4, 2)->default(0);
-            $table->bigInteger('moneda_id')->nullable();
-            $table->unsignedTinyInteger('typepayment_id')->nullable();
+            $table->decimal('paymentactual', 12, 4);
+            $table->bigInteger('moneda_id');
+            $table->unsignedTinyInteger('typepayment_id');
+            $table->bigInteger('seriecomprobante_id');
             $table->bigInteger('client_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->bigInteger('user_id');
+            $table->unsignedTinyInteger('sucursal_id')->nullable();
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('typepayment_id')->on('typepayments')->references('id');
+            $table->foreign('seriecomprobante_id')->on('seriecomprobantes')->references('id');
             $table->foreign('client_id')->on('clients')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
+            $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -14,7 +14,7 @@ class CreateEmpresasTable extends Migration
     public function up()
     {
         Schema::create('empresas', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('document', 11);
             $table->string('name', 255);
             $table->string('estado', 20);
@@ -34,6 +34,7 @@ class CreateEmpresasTable extends Migration
             $table->integer('viewpricedolar')->default(0);
             $table->decimal('tipocambio', 10, 4)->nullable();
             $table->integer('tipocambioauto')->default(0);
+            $table->decimal('igv', 5, 2);
             $table->integer('status')->default(0);
             $table->integer('default')->default(1);
             $table->bigInteger('ubigeo_id')->nullable();

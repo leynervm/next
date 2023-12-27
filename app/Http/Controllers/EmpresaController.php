@@ -17,8 +17,10 @@ class EmpresaController extends Controller
         return view('admin.empresas.create');
     }
 
-    public function show(Empresa $empresa)
+    public function show()
     {
+        $empresa = Empresa::first();
         return view('admin.empresas.show', compact('empresa'));
     }
+
 }

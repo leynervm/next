@@ -38,13 +38,13 @@ return [
     // ],
 
     'custom_modules' => [
-        'Almacen' => [
-            'path' => base_path('libraries/Almacen'),
-            'module_namespace' => 'Libraries\\Almacen',
-            'namespace' => 'Livewire',
-            'view' => 'Resources/views/livewire',
-            'name_lower' => 'almacen',
-        ],
+        // 'Almacen' => [
+        //     'path' => base_path('libraries/Almacen'),
+        //     'module_namespace' => 'Libraries\\Almacen',
+        //     'namespace' => 'Livewire',
+        //     'view' => 'Resources/views/livewire',
+        //     'name_lower' => 'almacen',
+        // ],
     ],
 
 ];

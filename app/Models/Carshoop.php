@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Auth;
-use Modules\Almacen\Entities\Almacen;
-use Modules\Almacen\Entities\Producto;
+use App\Models\Almacen;
+use App\Models\Producto;
 
 class Carshoop extends Model
 {

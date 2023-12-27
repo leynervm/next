@@ -5,7 +5,7 @@ namespace Modules\Almacen\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Modules\Almacen\Entities\Producto;
+
 
 class AlmacenDatabaseSeeder extends Seeder
 {
@@ -19,14 +19,11 @@ class AlmacenDatabaseSeeder extends Seeder
         Model::unguard();
 
         // $this->call("OthersTableSeeder");
-        $this->call(SeedCaractecteristicasTableSeeder::class);
-        $this->call(SeedCategoriesTableSeeder::class);
-        $this->call(SeedEstantesTableSeeder::class);
-        $this->call(SeedAlmacenTableSeeder::class);
+        // $this->call(SeedEstantesTableSeeder::class);
 
-        Storage::deleteDirectory('productos');
-        Storage::makeDirectory('productos');
-        Producto::factory(50)->create();
-        $this->call(SeedProductoTableSeeder::class);
+        // Storage::deleteDirectory('productos');
+        // Storage::makeDirectory('productos');
+        // Producto::factory(5)->create();
+        // $this->call(SeedProductoTableSeeder::class);
     }
 }

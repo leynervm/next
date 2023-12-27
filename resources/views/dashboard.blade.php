@@ -6,11 +6,252 @@
     </x-slot> --}}
 
     <div
-        class="h-24 h-28 h-32 h-36 h-40 w-24 w-28 w-32 w-36 w-40 text-nowrap disabled:opacity-25 rounded-xl w-40 p-8 p-5 px-5 py-12 px-8 m-1">
+        class="h-24 h-28 h-32 h-36 h-40 w-24 w-28 w-32 w-36 w-40 text-nowrap disabled:opacity-25 rounded-xl w-40 p-8 p-5 px-5 py-12 px-8 m-1 md:justify-start">
     </div>
     {{-- <div class="text-hovercolorlinknav bg-hoverlinknav">
 
     </div> --}}
+
+
+    <div class="max-w-xs relative" x-data="{ selectedCity: '' }" x-init="select2Alpine" id="parentdemo">
+        <x-select x-ref="select" id="demo" data-placeholder="Please Select" data-minimum-results-for-search="3">
+            <x-slot name="options">
+                <option></option>
+                <option value="1">London</option>
+                <option value="2">New York</option>
+                <option value="3">London</option>
+                <option value="4">New York</option>
+                <option value="5">London</option>
+                <option value="6">New York</option>
+            </x-slot>
+        </x-select>
+        <x-icon-select />
+        {{-- <p>Selected value (bound in Alpine.js): <code x-text="selectedCity"></code></p>
+        <p><button @click="selectedCity = ''">Reset selectedCity</button></p>
+        <p><button @click="selectedCity = 'London'">Trigger selection of London</button></p>
+        <p><button @click="selectedCity = 'New York'">Trigger selection of New York</button></p> --}}
+    </div>
+
+
+
+
+
+    <div class="my-6 max-w-xs">
+        <div class="relative text-gray-400" x-data="selectmenu(datalist())" @click.outside="close()">
+            <input type="text" x-model="selectedkey" name="selectfield" id="selectfield" class="hidden">
+            <span class="inline-block w-full rounded-md shadow-sm"
+                @click="toggle(); $nextTick(() => $refs.filterinput.focus());">
+                <button
+                    class="relative z-0 w-full py-2 pl-3 pr-10 text-left transition duration-150 ease-in-out bg-transparent border border-next-300 rounded-xs cursor-default focus:outline-none focus:shadow-outline-blue focus:border-next-300 sm:text-sm sm:leading-5">
+                    <span class="block truncate" x-text="selectedlabel ?? 'Please Select'"></span>
+                    <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-400" viewBox="0 0 20 20" fill="none" stroke="currentColor">
+                            <path d="M7 7l3-3 3 3m0 6l-3 3-3-3" stroke-width="1.5" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </span>
+                </button>
+            </span>
+
+            <div x-show="state" class="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg p-2">
+                <input type="text" class="w-full rounded-md py-1 px-2 mb-1 border border-gray-400" x-model="filter"
+                    x-ref="filterinput" @keydown.enter.stop.prevent="selectOption()"
+                    @keydown.arrow-up.prevent="focusPreviousOption()" @keydown.arrow-down.prevent="focusNextOption()"
+                    @keydown.up.prevent="focusPreviousOption()" @keydown.down.prevent="focusNextOption()">
+                <ul x-ref="listbox" @keydown.enter.stop.prevent="selectOption()"
+                    @keydown.space.stop.prevent="selectOption()" @keydown.escape="onEscape()" role="listbox"
+                    :aria-activedescendant="focusedOptionIndex ? name + 'Option' + focusedOptionIndex : null"
+                    tabindex="-1"
+                    class="py-1 overflow-auto text-base leading-6 rounded-md shadow-xs max-h-60 focus:outline-none sm:text-sm sm:leading-5">
+
+                    <template x-for="(value, key) in getlist()" :key="key">
+                        <li @click="select(value, key)"
+                            :class="{ 'bg-gray-100': isselected(key), 'text-white bg-gray-300': focusedOptionIndex == key }"
+                            class="relative py-1 pl-3 mb-1 text-gray-900 select-none pr-9 hover:bg-gray-100 cursor-pointer rounded-md">
+                            <span x-text="value" class="block font-normal truncate"></span>
+                            <span x-text="key" class="block font-normal truncate"></span>
+                            <span x-show="isselected(key)"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-700">
+                                <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                            </span>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function selectmenu(datalist) {
+            return {
+                state: false,
+                filter: '',
+                list: datalist,
+                selectedkey: null,
+                selectedlabel: null,
+                focusedOptionIndex: null,
+                toggle: function() {
+                    this.state = !this.state;
+                    this.filter = '';
+                },
+                close: function() {
+                    this.state = false;
+                },
+                select: function(value, key) {
+                    if (this.selectedkey == key) {
+                        this.selectedlabel = null;
+                        this.selectedkey = null;
+                    } else {
+                        this.selectedlabel = value;
+                        this.selectedkey = key;
+                        this.state = false;
+                    }
+
+                    this.focusedOptionIndex = Object.keys(this.list).indexOf(key);
+                    console.log("Value : " + value + ", Key :" + key + ", Index : " + this.focusedOptionIndex);
+                },
+                isselected: function(key) {
+                    return this.selectedkey == key;
+                },
+                getlist: function() {
+                    if (this.filter == '') {
+                        return this.list;
+                    }
+                    var filtered = Object.entries(this.list).filter(([key, value]) => value.toLowerCase().includes(this
+                        .filter.toLowerCase()));
+
+                    var result = Object.fromEntries(filtered);
+                    return result;
+                },
+                focusNextOption: function() {
+                    if (this.focusedOptionIndex === null) return this.focusedOptionIndex = Object.keys(this.list)
+                        .length - 1;
+                    if (this.focusedOptionIndex + 1 >= Object.keys(this.list).length) return;
+                    this.focusedOptionIndex++;
+                    this.$refs.listbox.children[this.focusedOptionIndex].scrollIntoView({
+                        block: "center",
+                    });
+
+                    console.log(this.focusedOptionIndex);
+                },
+                focusPreviousOption: function() {
+                    if (this.focusedOptionIndex === null) return this.focusedOptionIndex = 0;
+                    if (this.focusedOptionIndex <= 0) return;
+                    this.focusedOptionIndex--;
+                    this.$refs.listbox.children[this.focusedOptionIndex].scrollIntoView({
+                        block: "center",
+                    });
+                },
+                onEscape: function() {
+                    this.close();
+                    this.$refs.filterinput.focus();
+                },
+                selectOption: function() {
+                    if (!this.state) return this.toggle();
+                    this.selectedkey = Object.keys(this.list)[this.focusedOptionIndex];
+                    this.selectedlabel = this.list[this.selectedkey];
+                    this.state = false;
+                },
+            };
+        }
+
+        function datalist() {
+            return {
+                AF: 'Afghanistan',
+                AX: 'Aland Islands',
+                AL: 'Albania',
+                DZ: 'Algeria',
+                AS: 'American Samoa',
+                AD: 'Andorra',
+                AO: 'Angola',
+                AI: 'Anguilla',
+            };
+        }
+    </script>
+
+
+    <div class="w-full max-w-xs mt-6">
+        <div class="space-y-1" x-data="Components.customSelect({ open: false, value: 1, selected: 1 })" x-init="init()">
+            <label class="block text-sm leading-5 font-medium text-gray-100">Assigned
+                to</label>
+            <div class="relative">
+                <span class="inline-block w-full rounded-md shadow-sm">
+                    <button x-ref="button" @click="onButtonClick()" type="button" aria-haspopup="listbox"
+                        :aria-expanded="open"
+                        class="cursor-default relative w-full rounded-xs border border-gray-300 bg-white pl-3 pr-10 py-2 text-left focus:outline-none focus:shadow-outline-blue focus:border-blue-300 transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+                        <div class="flex items-center space-x-3">
+                            <span class="block truncate text-gray-300">Seleccionar user</span>
+                        </div>
+                        <span class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L10 5.414 7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-3.707 9.293a1 1 0 011.414 0L10 14.586l2.293-2.293a1 1 0 011.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                    clip-rule="evenodd" fill-rule="evenodd"></path>
+                            </svg>
+                        </span>
+                    </button>
+                </span>
+                <div x-show="open" @focusout="onEscape()" @click.away="open = false"
+                    x-description="Select popover, show/hide based on select state."
+                    x-transition:leave="transition ease-in duration-100" x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0" class="absolute mt-1 w-full rounded-md bg-white shadow-lg z-50"
+                    style="display: none;">
+                    <ul @keydown.enter.stop.prevent="onOptionSelect()" @keydown.space.stop.prevent="onOptionSelect()"
+                        @keydown.escape="onEscape()" @keydown.arrow-up.prevent="onArrowUp()"
+                        @keydown.arrow-down.prevent="onArrowDown()" x-ref="listbox" tabindex="-1" role="listbox"
+                        aria-labelledby="assigned-to-label" :aria-activedescendant="activeDescendant"
+                        class="max-h-56 rounded-md py-1 text-base leading-6 shadow-xs overflow-auto focus:outline-none sm:text-sm sm:leading-5">
+                        <li id="assigned-to-option-1" role="option" @click="choose(1)" @mouseenter="selected = 1"
+                            @mouseleave="selected = null"
+                            :class="{ 'text-white bg-next-600': selected === 1, 'text-gray-900': !(selected === 1) }"
+                            class="text-gray-900 cursor-default select-none relative py-2 pl-4 pr-9">
+                            <div class="flex items-center space-x-3">
+                                <span :class="{ 'font-semibold': value === 1, 'font-normal': !(value === 1) }"
+                                    class="font-normal block truncate">
+                                    Devon Webb
+                                </span>
+                            </div>
+                            <span x-show="value === 1"
+                                :class="{ 'text-white': selected === 1, 'text-next-600': !(selected === 1) }"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600"
+                                style="display: none;">
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                        </li>
+                        <li id="assigned-to-option-2" role="option" @click="choose(2)" @mouseenter="selected = 2"
+                            @mouseleave="selected = null"
+                            :class="{ 'text-white bg-next-600': selected === 2, 'text-gray-900': !(selected === 2) }"
+                            class="bg-next-600 text-white cursor-default select-none relative py-2 pl-4 pr-9">
+                            <div class="flex items-center space-x-3">
+                                <span :class="{ 'font-semibold': value === 2, 'font-normal': !(value === 2) }"
+                                    class="font-semibold block truncate">
+                                    Tom Cook
+                                </span>
+                            </div>
+                            <span x-show="value === 2"
+                                :class="{ 'text-white': selected === 2, 'text-next-600': !(selected === 2) }"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-white">
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
 
     <x-title-next titulo="Titulo Prueba" />
@@ -267,7 +508,7 @@
                 0 => ['id' => 1, 'name' => 'Almacen Jaén'],
                 1 => ['id' => 2, 'name' => 'Almacen Trujilio'],
             ];
-            
+
             $series = [
                 0 => ['id' => 1, 'serie' => 'XXX-XXX'],
                 1 => ['id' => 2, 'serie' => 'AAA-AAA'],
@@ -313,6 +554,98 @@
 
 
     <script>
+        document.addEventListener("alpine:init", () => {
+            Alpine.data("select", () => ({
+                open: false,
+                language: "",
+
+                toggle() {
+                    this.open = !this.open;
+                },
+
+                setLanguage(val) {
+                    this.language = val;
+                    this.open = false;
+                },
+            }));
+        });
+
+
+        function select2Alpine() {
+            this.select2 = $(this.$refs.select).select2();
+            this.select2.on("select2:select", (event) => {
+                this.selectedCity = event.target.value;
+            });
+            this.$watch("selectedCity", (value) => {
+                this.select2.val(value).trigger("change");
+            });
+        }
+
+        window.Components = {
+            customSelect(options) {
+                return {
+                    init() {
+                        this.$refs.listbox.focus()
+                        this.optionCount = this.$refs.listbox.children.length
+                        this.$watch('selected', value => {
+                            if (!this.open) return
+
+                            if (this.selected === null) {
+                                this.activeDescendant = ''
+                                return
+                            }
+
+                            this.activeDescendant = this.$refs.listbox.children[this.selected - 1].id
+                        })
+                    },
+                    activeDescendant: null,
+                    optionCount: null,
+                    open: false,
+                    selected: null,
+                    value: 1,
+                    choose(option) {
+                        this.value = option
+                        this.open = false
+                    },
+                    onButtonClick() {
+                        if (this.open) return
+                        this.selected = this.value
+                        this.open = true
+                        this.$nextTick(() => {
+                            this.$refs.listbox.focus()
+                            this.$refs.listbox.children[this.selected - 1].scrollIntoView({
+                                block: 'nearest'
+                            })
+                        })
+                    },
+                    onOptionSelect() {
+                        if (this.selected !== null) {
+                            this.value = this.selected
+                        }
+                        this.open = false
+                        this.$refs.button.focus()
+                    },
+                    onEscape() {
+                        this.open = false
+                        this.$refs.button.focus()
+                    },
+                    onArrowUp() {
+                        this.selected = this.selected - 1 < 1 ? this.optionCount : this.selected - 1
+                        this.$refs.listbox.children[this.selected - 1].scrollIntoView({
+                            block: 'nearest'
+                        })
+                    },
+                    onArrowDown() {
+                        this.selected = this.selected + 1 > this.optionCount ? 1 : this.selected + 1
+                        this.$refs.listbox.children[this.selected - 1].scrollIntoView({
+                            block: 'nearest'
+                        })
+                    },
+                    ...options,
+                }
+            },
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOMContent Loaded');
             $('#select2').select2();

@@ -17,13 +17,18 @@ class CampoUnique implements Rule
     protected $column;
     protected $softDeleted;
     protected $ignoreId;
+    protected $columnOptional;
+    protected $valueOptional;
 
-    public function __construct($table, $column, $ignoreId = null, $softDeleted = false)
+
+    public function __construct($table, $column, $ignoreId = null, $softDeleted = false, $columnOptional = null, $valueOptional = null)
     {
         $this->table = $table;
         $this->column = $column;
         $this->ignoreId = $ignoreId;
         $this->softDeleted = $softDeleted;
+        $this->columnOptional = $columnOptional;
+        $this->valueOptional = $valueOptional;
     }
 
     /**
@@ -37,6 +42,10 @@ class CampoUnique implements Rule
     {
         $query = DB::table($this->table)
             ->whereRaw('UPPER(' . $this->column . ') = ?', [mb_strtoupper($value, "UTF-8")]);
+
+        if (!is_null($this->columnOptional)) {
+            $query->where($this->columnOptional, mb_strtoupper($this->valueOptional, "UTF-8"));
+        }
 
         if ($this->softDeleted) {
             $query->whereNull('deleted_at');

@@ -25,6 +25,11 @@ class Concept extends Model
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function cajamovimientos()
+    {
+        return $this->hasMany(Cajamovimiento::class);
+    }
+
     public function scopeDefaultConceptVentas($query)
     {
         return $query->where('default', $this::VENTAS);

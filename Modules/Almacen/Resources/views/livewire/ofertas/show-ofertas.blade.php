@@ -6,132 +6,140 @@
         </div>
     @endif
 
-    <div class="flex gap-2 flex-wrap justify-start">
-
+    <div class="w-full flex gap-2 flex-wrap justify-start">
         @if (count($ofertas))
             @foreach ($ofertas as $item)
-                <div class="w-60 group rounded shadow p-1 text-xs relative hover:shadow-lg cursor-pointer">
-                    <div
-                        class="absolute top-1 left-1 w-10 h-10 group-hover:shadow group-hover:shadow-red-500 flex flex-col items-center justify-center rounded-full bg-red-500 text-white bg-opacity-80 group-hover:bg-opacity-100 transition-all ease-in-out duration-150">
-                        <h1 class="font-semibold leading-3 text-[9px]">{{ $item->descuento }}%</h1>
-                        <p class="leading-3 text-[7px]">DSCT</p>
+                @php
+                    $image = null;
+                    if (count($item->producto->images)) {
+                        if (count($item->producto->defaultImage)) {
+                            $image = asset('storage/productos/' . $item->producto->defaultImage->first()->url);
+                        } else {
+                            $image = asset('storage/productos/' . $item->producto->images->first()->url);
+                        }
+                    }
+
+                @endphp
+                <x-card-producto :image="$image" :name="$item->producto->name" :discount="$item->descuento" x-data="{ loadingproducto: false }">
+                    <div class="w-full flex flex-wrap gap-1 items-start mt-2 text-[10px]">
+                        @php
+                            $priceCompra = number_format($moneda->code == 'USD' ? $item->producto->pricebuy / $empresa->tipocambio : $item->producto->pricebuy, 4, '.', ', ');
+                            $unitsMax = \App\Helpers\FormatoPersonalizado::getValue($item->limit);
+                            $unitsDisponibles = \App\Helpers\FormatoPersonalizado::getValue($item->disponible);
+                            $datestart = \Carbon\Carbon::parse($item->datestart)
+                                ->locale('es')
+                                ->isoFormat('D MMMM YYYY h:mm A');
+                            $dateexpire = \Carbon\Carbon::parse($item->dateexpire)
+                                ->locale('es')
+                                ->isoFormat('D MMMM YYYY h:mm A');
+
+                        @endphp
+
+                        <x-span-text :text="'P.C UNIT : ' . $moneda->simbolo . ' ' . $priceCompra . ' ' . $moneda->currency" class="leading-3" />
+                        <x-span-text :text="'STOCK MÁXIMO : ' . $unitsMax . ' ' . $item->producto->unit->name" class="leading-3" />
+                        <x-span-text :text="'STOCK DISPONIBLES : ' . $unitsDisponibles . ' ' . $item->producto->unit->name" class="leading-3" />
+                        <x-span-text :text="$item->almacen->name" class="leading-3" />
+                        <x-span-text :text="'INICIO : ' . $datestart" class="leading-3 uppercase" />
+                        <x-span-text :text="'FIN : ' . $dateexpire" class="leading-3 uppercase" />
+
+                        @if ($item->status)
+                            <small class="text-[10px] font-medium leading-3 p-1 text-white bg-red-500 rounded">
+                                FINALIZADO</small>
+                        @else
+                            <small class="text-[10px] font-medium leading-3 p-1 text-white bg-green-500 rounded">
+                                ACTIVO</small>
+                        @endif
+
                     </div>
 
-                    @if ($item->disponible == 0)
-                        <span
-                            class="absolute top-12 left-1 text-[10px] font-semibold leading-3 p-1 rounded-r-lg bg-red-500 text-white bg-opacity-80 group-hover:bg-opacity-100 transition-all ease-in-out duration-150">
-                            Agotado</span>
-                    @endif
+                    <div class="w-full mt-2" x-data="{ showForm: false, showPrices: false }">
+                        <x-button @click="showPrices = !showPrices" class="whitespace-nowrap">
+                            {{ __('VER PRECIOS') }}
+                        </x-button>
 
-                    @if (count($item->producto->images))
-                        <div class="w-full h-32 rounded shadow border">
-                            @if ($item->producto->defaultImage)
-                                <img src="{{ asset('storage/productos/' . $item->producto->defaultImage->first()->url) }}"
-                                    alt="" class="w-full h-full object-scale-down">
+                        <div x-show="showPrices" x-transition:enter="transition ease-out duration-300 transform"
+                            x-transition:enter-start="opacity-0 translate-y-[-10%]"
+                            x-transition:enter-end="opacity-100 translate-y-0"
+                            x-transition:leave="transition ease-in duration-300 transform"
+                            x-transition:leave-start="opacity-100 translate-y-0"
+                            x-transition:leave-end="opacity-0 translate-y-[-10%]" class="block w-full rounded mt-1">
+                            @if ($empresa->uselistprice)
+                                @if (count($pricetypes))
+                                    <div class="w-full grid xs:grid-cols-2 lg:grid-cols-1 gap-1">
+                                        @foreach ($pricetypes as $lista)
+                                            @php
+                                                $precios = \App\Helpers\GetPrice::getPriceProducto($item->producto, $empresa->uselistprice ? $lista->id : null, $empresa->usepricedolar, $empresa->tipocambio)->getData();
+                                            @endphp
+
+                                            <x-prices-card-product :name="$lista->name">
+                                                <x-slot name="buttonpricemanual">
+                                                    <p
+                                                        class="inline-block font-semibold text-[9px] leading-3 bg-red-100 p-1 rounded text-red-500">
+                                                        ANTES : {{ $moneda->simbolo }}
+                                                        {{ number_format($moneda->code == 'USD' ? $precios->priceDolar : $precios->pricesale, $precios->decimal, '.', ', ') }}
+                                                    </p>
+                                                </x-slot>
+
+                                                <x-label-price>
+                                                    {{ $moneda->simbolo }}
+                                                    {{ number_format($moneda->code == 'USD' ? $precios->pricewithdescountDolar : $precios->pricewithdescount, $precios->decimal, '.', ', ') }}
+                                                    {{ $moneda->currency }}
+                                                </x-label-price>
+
+                                                @if ($empresa->uselistprice)
+                                                    @if (!$precios->existsrango)
+                                                        <small
+                                                            class="text-red-500 bg-red-50 p-0.5 rounded font-semibold inline-block mt-1">
+                                                            Rango de precio no disponible <a class="underline px-1"
+                                                                href="#">REGISTRAR</a></small>
+                                                    @endif
+                                                @endif
+                                            </x-prices-card-product>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <small
+                                        class="text-red-500 bg-red-50 text-xs p-0.5 rounded font-semibold inline-block mt-1">
+                                        Configurar lista de precios
+                                        <a class="underline px-1" href="#">REGISTRAR</a>
+                                    </small>
+                                @endif
                             @else
-                                <img src="{{ asset('storage/productos/' . $item->producto->images->first()->url) }}"
-                                    alt="" class="w-full h-full object-scale-down">
+                                <div class="w-full flex flex-col">
+                                    @php
+                                        $precios = \App\Helpers\GetPrice::getPriceProducto($item->producto, null, $empresa->usepricedolar, $empresa->tipocambio)->getData();
+                                    @endphp
+
+                                    <x-prices-card-product name="PRECIO VENTA">
+                                        <x-slot name="buttonpricemanual">
+                                            <p
+                                                class="inline-block font-semibold text-[9px] leading-3 bg-red-100 p-1 rounded text-red-500">
+                                                ANTES : {{ $moneda->simbolo }}
+                                                {{ number_format($moneda->code == 'USD' ? $precios->priceDolar : $precios->pricesale, $precios->decimal, '.', ', ') }}
+                                            </p>
+                                        </x-slot>
+
+                                        <x-label-price>
+                                            {{ $moneda->simbolo }}
+                                            {{ number_format($moneda->code == 'USD' ? $precios->pricewithdescountDolar : $precios->pricewithdescount, $precios->decimal, '.', ', ') }}
+                                            {{ $moneda->currency }}
+                                        </x-label-price>
+                                    </x-prices-card-product>
+                                </div>
                             @endif
                         </div>
-                    @endif
-
-                    <h1 class="text-[10px] font-semibold leading-3 text-center mt-1">{{ $item->producto->name }}</h1>
-
-                    {{-- <h1 class="mt-2">
-                        <span class="text-[10px] font-semibold leading-3 p-1 text-red-500 rounded line-through">
-                            S/. 50.00</span>
-                    </h1>
-
-                    <h1 class="text-sm font-semibold leading-3 text-green-500">
-                        <span class="text-[10px]">OFERTA : </span> S/. {{ $item->descuento }}
-                    </h1> --}}
-
-                    <h1 class="mt-2">
-                        <span class="text-[10px] font-semibold leading-3 p-1 text-green-500 bg-green-100 rounded">
-                            {{ $item->almacen->name }}</span>
-                        <span class="text-[10px] font-semibold leading-3 p-1 text-blue-500 bg-blue-100 rounded">
-                            STOCK MÁXIMO :{{ $item->limit }}</span>
-                    </h1>
-
-                    <h1 class="mt-2">
-
-                    </h1>
-
-                    <h1 class="mt-2">
-                        <span class="text-[10px] font-semibold leading-3 p-1 bg-fondospancardproduct rounded">
-                            DISPONIBLES :{{ $item->disponible }}</span>
-                    </h1>
-
-                    <h1 class="mt-2">
-                        <span class="text-[10px] font-semibold leading-3 p-1 bg-fondospancardproduct rounded">
-                            PRECIO COMPRA : S/. {{ $item->producto->pricebuy }}</span>
-                    </h1>
-
-
-                    <h1 class="mt-2">
-                        <span class="text-[10px] font-semibold leading-3 p-1 bg-fondospancardproduct rounded uppercase">
-                            INICIO :
-                            {{ \Carbon\Carbon::parse($item->datestart)->locale('es')->isoFormat('D MMMM YYYY h:mm:ss A') }}</span>
-                    </h1>
-
-                    <h1 class="mt-2">
-                        <span class="text-[10px] font-semibold leading-3 p-1 bg-fondospancardproduct rounded uppercase">
-                            FIN :
-                            {{ \Carbon\Carbon::parse($item->dateexpire)->locale('es')->isoFormat('D MMMM YYYY h:mm:ss A') }}</span>
-                    </h1>
-
-                    <h1 class="mt-2">
-                        @if ($item->status)
-                            <span class="text-[10px] font-semibold leading-3 p-1 text-red-500 bg-red-100 rounded">
-                                Finalizado</span>
-                        @else
-                            <span class="text-[10px] font-semibold leading-3 p-1 text-green-500 bg-green-100 rounded">
-                                Oferta activa</span>
-                        @endif
-                    </h1>
-
-                    <h1 class="mt-3 mb-1 underline text-[10px] font-semibold text-center">PRECIOS DE OFERTA</h1>
-                    
-                    @if (count($pricetypes))
-                        @foreach ($pricetypes as $lista)
-                            <div class="w-full bg-white rounded shadow-md p-1 mt-1">
-                                @if (count($lista->rangos))
-                                    @foreach ($lista->rangos as $rango)
-                                        @if ($item->producto->pricebuy >= $rango->desde && $item->producto->pricebuy <= $rango->hasta)
-                                            {{-- <p>{{ $rango->pivot->ganancia }} </p> --}}
-
-                                            @php
-                                                $pricesale = number_format($item->producto->pricebuy + ($item->producto->pricebuy * $rango->pivot->ganancia) / 100, $lista->decimals, '.', '');
-                                            @endphp
-                                            <div class="w-full flex gap-1 items-center justify-start">
-                                                <span
-                                                    class="text-[9px] font-semibold leading-3 p-1 bg-fondospancardproduct rounded uppercase">
-                                                    {{ $lista->name }} ({{$rango->pivot->ganancia}} %)</span>
-                                                <p
-                                                    class="text-[10px] font-semibold leading-3 p-1 text-red-500 rounded line-through">
-                                                    S/. {{ number_format($pricesale, $lista->decimals) }}
-                                                </p>
-                                            </div>
-
-                                            <h1 class="mt-1 text-xs font-semibold leading-3 text-green-500">
-                                                <span class="text-[10px]">OFERTA : </span> S/.
-                                                {{ number_format($pricesale - ($pricesale * $item->descuento) / 100, $lista->decimalrounded) }}
-                                            </h1>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            </div>
-                        @endforeach
-                    @endif
-                    
-
-                    <div class="w-full flex gap-1 justify-end mt-3">
-                        <x-button-edit wire:loading.attr="disabled" wire:target="edit"
-                            wire:click="edit({{ $item->id }})"></x-button-edit>
-                        <x-button-delete wire:loading.attr="disabled" wire:target="confirmDelete"
-                            wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
                     </div>
-                </div>
+
+                    <x-slot name="footer">
+                        <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
+                        <x-button-delete wire:click="$emit('ofertas.confirmDelete',{{ $item }})"
+                            wire:loading.attr="disabled" />
+                    </x-slot>
+
+                    <div x-show="loadingproducto" wire:loading.flex class="loading-overlay rounded">
+                        <x-loading-next />
+                    </div>
+                </x-card-producto>
             @endforeach
         @endif
     </div>
@@ -149,87 +157,100 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update" class="block w-full" id="form_create_oferta">
-                @if ($oferta->producto)
-                    <div class="w-60 mx-auto">
+            <form wire:submit.prevent="update" class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
+                <div class="w-full xs:max-w-xs mx-auto xs:col-span-2">
+                    @if ($oferta->producto)
                         @if (count($oferta->producto->images))
-                            <div class="w-full h-32 rounded shadow border">
-                                @if ($oferta->producto->defaultImage)
-                                    <img src="{{ asset('storage/productos/' . $oferta->producto->defaultImage->first()->url) }}"
-                                        alt="" class="w-full h-full object-scale-down">
-                                @else
-                                    <img src="{{ asset('storage/productos/' . $oferta->producto->images->first()->url) }}"
-                                        alt="" class="w-full h-full object-scale-down">
-                                @endif
-                            </div>
+                            @if ($oferta->producto->defaultImage)
+                                <div
+                                    class="w-full h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
+                                    @if ($oferta->producto->defaultImage)
+                                        <img src="{{ asset('storage/productos/' . $oferta->producto->defaultImage->first()->url) }}"
+                                            alt="" class="w-full h-full object-scale-down">
+                                    @else
+                                        <img src="{{ asset('storage/productos/' . $oferta->producto->images->first()->url) }}"
+                                            alt="" class="w-full h-full object-scale-down">
+                                    @endif
+                                </div>
+                            @endif
                         @endif
-                    </div>
-                @endif
-
-                <x-label value="Almacén :" />
-                <x-input class="block w-full" value="{{ $oferta->almacen->name ?? '' }}" disabled readonly />
-                <x-jet-input-error for="oferta.almacen_id" />
-
-                <x-label value="Producto :" class="mt-2" />
-                <x-input class="block w-full" value="{{ $oferta->producto->name ?? '' }}" disabled readonly />
-                <x-jet-input-error for="oferta.producto_id" />
-
-                <div class="flex flex-wrap md:flex-nowrap gap-2 mt-2">
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Fecha inicio :" />
-                        <x-input class="block w-full"
-                            value="{{ \Carbon\Carbon::parse($oferta->datestart)->format('Y-m-d') ?? '' }}"
-                            type="date" disabled readonly />
-                        <x-jet-input-error for="oferta.datestart" />
-                    </div>
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Fecha finalización :" />
-                        <x-input class="block w-full" wire:model.defer="oferta.dateexpire" type="date" />
-                        <x-jet-input-error for="oferta.dateexpire" />
-                    </div>
+                    @else
+                        <div
+                            class="w-full flex items-center justify-center h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard mb-1">
+                            <svg class="text-neutral-500 w-24 h-24" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M13 3.00231C12.5299 3 12.0307 3 11.5 3C7.02166 3 4.78249 3 3.39124 4.39124C2 5.78249 2 8.02166 2 12.5C2 16.9783 2 19.2175 3.39124 20.6088C4.78249 22 7.02166 22 11.5 22C15.9783 22 18.2175 22 19.6088 20.6088C20.9472 19.2703 20.998 17.147 20.9999 13" />
+                                <path
+                                    d="M2 14.1354C2.61902 14.0455 3.24484 14.0011 3.87171 14.0027C6.52365 13.9466 9.11064 14.7729 11.1711 16.3342C13.082 17.7821 14.4247 19.7749 15 22" />
+                                <path
+                                    d="M21 16.8962C19.8246 16.3009 18.6088 15.9988 17.3862 16.0001C15.5345 15.9928 13.7015 16.6733 12 18" />
+                                <path
+                                    d="M17 4.5C17.4915 3.9943 18.7998 2 19.5 2M22 4.5C21.5085 3.9943 20.2002 2 19.5 2M19.5 2V10" />
+                            </svg>
+                        </div>
+                    @endif
                 </div>
 
-                <div class="flex flex-wrap md:flex-nowrap gap-2 mt-2">
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Descuento (%) :" />
-                        <x-input class="block w-full" wire:model.defer="oferta.descuento" type="number" min="0"
-                            step="0.1" />
-                        <x-jet-input-error for="oferta.descuento" />
-                    </div>
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Vendidos :" />
-                        <x-input class="block w-full" value="{{ $oferta->vendidos }}" type="number" disabled
-                            readonly />
-                    </div>
+                <div class="xs:col-span-2">
+                    <x-label value="Producto :" />
+                    <x-disabled-text :text="$oferta->producto->name ?? '-'" />
+                    <x-jet-input-error for="oferta.producto_id" />
                 </div>
 
-                <div class="flex flex-wrap md:flex-nowrap gap-2 mt-2">
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Máximo stock :" />
-                        <x-input class="block w-full" wire:model.defer="oferta.limit" type="number" min="0"
-                            step="1" :disabled="$max == 1 ? true : false" />
-                        <x-jet-input-error for="oferta.limit" />
-                    </div>
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Stock disponible :" />
-                        <x-input class="block w-full" value="{{ $oferta->disponible }}" type="number" disabled
-                            readonly />
-                    </div>
+                <div>
+                    <x-label value="Almacén :" />
+                    <x-disabled-text :text="$oferta->almacen->name ?? '-'" />
+                    <x-jet-input-error for="oferta.almacen_id" />
                 </div>
 
-                <div class="mt-3 mb-1">
-                    <x-label textSize="[10px]"
-                        class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                        for="edit_max">
-                        <x-input wire:model="max" name="max" type="checkbox" id="edit_max" />
-                        SELECCIONAR MÁXIMO DISPONIBLE
-                    </x-label>
+                <div class="w-full">
+                    <x-label value="Descuento (%) :" />
+                    <x-input class="block w-full" wire:model.defer="oferta.descuento" type="number" min="0"
+                        step="0.1" />
+                    <x-jet-input-error for="oferta.descuento" />
                 </div>
-                <x-jet-input-error for="max" />
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="w-full">
+                    <x-label value="Fecha inicio :" />
+                    <x-disabled-text :text="\Carbon\Carbon::parse($oferta->datestart)->format('d/m/Y') ?? '-'" />
+                    <x-jet-input-error for="oferta.datestart" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Fecha finalización :" />
+                    <x-input class="block w-full" wire:model.defer="oferta.dateexpire" type="date" />
+                    <x-jet-input-error for="oferta.dateexpire" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Vendidos :" />
+                    <x-disabled-text :text="$oferta->vendidos" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Máximo stock :" />
+                    <x-input class="block w-full" wire:model.defer="oferta.limit" type="number" min="0"
+                        step="1" :disabled="$max == 1 ? true : false" />
+                    <x-jet-input-error for="oferta.limit" />
+                </div>
+
+                <div class="w-full ">
+                    <x-label value="Stock disponible :" />
+                    <x-disabled-text :text="$oferta->disponible" />
+                </div>
+
+                <div class="xs:col-span-2">
+                    <x-label-check for="edit_max">
+                        <x-input wire:model.lazy="max" name="max" value="1" type="checkbox"
+                            id="edit_max" />
+                        SELECCIONAR STOCK MÁXIMO DISPONIBLE
+                    </x-label-check>
+                    <x-jet-input-error for="max" />
+                </div>
+
+                <div class="w-full xs:col-span-2 flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
@@ -238,11 +259,11 @@
     </x-jet-dialog-modal>
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            window.addEventListener('ofertas.confirmDelete', data => {
+        document.addEventListener("livewire:load", () => {
+            Livewire.on("ofertas.confirmDelete", data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
-                    text: "Se eliminará un registro de la base de datos",
+                    title: 'Eliminar oferta del producto con nombre: ' + data.producto.name,
+                    text: "Se eliminará un registro de la base de datos.",
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#0FB9B9',
@@ -251,11 +272,10 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // console.log(data.detail.id);
-                        Livewire.emitTo('almacen::ofertas.show-ofertas', 'delete', data.detail.id);
+                        Livewire.emitTo('almacen::ofertas.show-ofertas', 'delete', data.id);
                     }
                 })
-            })
+            });
         })
     </script>
 </div>

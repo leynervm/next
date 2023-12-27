@@ -1,11 +1,11 @@
 <div>
     @if ($clients->hasPages())
         <div class="pb-2">
-            {{ $clients->links() }}
+            {{ $clients->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
-    <div class="flex items-center gap-2  mt-4 ">
+    <div class="flex items-center gap-2 mt-4 mb-1">
         <div class="relative flex items-center">
             <span class="absolute">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -17,64 +17,6 @@
             <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model="search">
             </x-input>
         </div>
-
-        {{-- @if (count($marcaGroup))
-            <x-dropdown titulo="Marca">
-                <x-slot name="items">
-                    @foreach ($marcaGroup as $item)
-                        <li>
-                            <div class="flex flex-nowrap items-center hover:bg-next-50 rounded-lg p-1 break-keep">
-                                <input id="searchmarca_{{ $item->marca_id }}" type="checkbox"
-                                    value="{{ $item->marca_id }}" wire:loading.attr="disabled" wire:model="searchmarca"
-                                    name="searchmarca[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                <label for="searchmarca_{{ $item->marca_id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->marca->name }}</label>
-                            </div>
-                        </li>
-                    @endforeach
-                </x-slot>
-            </x-dropdown>
-        @endif
-
-        @if (count($categoriaGroup))
-            <x-dropdown titulo="Categoría">
-                <x-slot name="items">
-                    @foreach ($categoriaGroup as $item)
-                        <li>
-                            <div class="flex flex-nowrap items-center hover:bg-next-50 rounded-lg p-1 break-keep">
-                                <input id="searchcategory_{{ $item->category_id }}" type="checkbox"
-                                    value="{{ $item->category_id }}" wire:loading.attr="disabled"
-                                    wire:model="searchcategory" name="searchcategory[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                <label for="searchcategory_{{ $item->category_id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->category->name }}</label>
-                            </div>
-                        </li>
-                    @endforeach
-                </x-slot>
-            </x-dropdown>
-        @endif
-
-        @if (count($subcategoriaGroup))
-            <x-dropdown titulo="Subcategoría">
-                <x-slot name="items">
-                    @foreach ($subcategoriaGroup as $item)
-                        <li>
-                            <div class="flex flex-nowrap items-center hover:bg-next-50 rounded-lg p-1 break-keep">
-                                <input id="searchsubcategory_{{ $item->subcategory_id }}" type="checkbox"
-                                    value="{{ $item->subcategory_id }}" wire:loading.attr="disabled"
-                                    wire:model="searchsubcategory" name="searchsubcategory[]"
-                                    class="w-4 h-4 text-next-600 border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                <label for="searchsubcategory_{{ $item->subcategory_id }}"
-                                    class="pl-2 text-xs font-medium text-next-900 cursor-pointer break-keep">{{ $item->subcategory->name }}</label>
-                            </div>
-                        </li>
-                    @endforeach
-                </x-slot>
-            </x-dropdown>
-        @endif --}}
-
     </div>
 
     <x-table>
@@ -112,7 +54,7 @@
                 <th scope="col" class="p-2 font-medium">
                     SEXO</th>
 
-                <th scope="col" class="p-2 font-medium text-left">
+                <th scope="col" class="p-2 font-medium text-center">
                     TELEFONOS</th>
 
                 {{-- <th scope="col" class="p-2 relative">
@@ -176,7 +118,7 @@
 
                         <td class="p-2 text-xs">
                             @if (count($item->telephones))
-                                <div class="flex flex-wrap gap-1">
+                                <div class="flex flex-wrap gap-1 justify-center">
                                     @foreach ($item->telephones as $telef)
                                         <div
                                             class="inline-flex items-center justify-center gap-1 bg-fondospancardproduct text-textspancardproduct p-1 rounded">

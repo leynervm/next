@@ -55,10 +55,9 @@
                         </div>
 
                         <div class="">
-                            <x-button-edit wire:loading.attr="disabled" wire:target="edit"
-                                wire:click="edit({{ $item->id }})"></x-button-edit>
+                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
                             <x-button-delete wire:click="$emit('proveedortypes.confirmDelete', {{ $item }})"
-                                wire:loading.attr="disabled" wire:target="confirmDelete,delete"></x-button-delete>
+                                wire:loading.attr="disabled" />
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -69,13 +68,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar tipo proveedor') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -85,9 +78,8 @@
                     placeholder="Descripción del concepto pago..." />
                 <x-jet-input-error for="proveedortype.name" />
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="w-full flex pt-4 gap-2 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>

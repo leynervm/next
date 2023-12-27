@@ -30,12 +30,13 @@ class CompraController extends Controller
      */
     public function create()
     {
+        $sucursal = auth()->user()->sucursalDefault()->with('almacens')->first();
         $moneda = Moneda::defaultMoneda()->first();
         $typepayment = Typepayment::defaultTypepayment()->first();
         $concept = Concept::DefaultConceptCompra()->first();
         $methodpayment = Methodpayment::with('cuentas')->DefaultMethodpayment()->first();
-        $opencaja =  Opencaja::CajasAbiertas()->CajasUser()->first();
-        return view('almacen::compras.create', compact('typepayment', 'methodpayment', 'moneda', 'concept', 'opencaja'));
+        $opencaja = Opencaja::CajasAbiertas()->CajasUser()->first();
+        return view('almacen::compras.create', compact('sucursal', 'typepayment', 'methodpayment', 'moneda', 'concept', 'opencaja'));
     }
 
     /**
@@ -56,8 +57,9 @@ class CompraController extends Controller
     public function show(Compra $compra)
     {
         $empresa = Empresa::DefaultEmpresa()->first();
-        $opencaja =  Opencaja::CajasAbiertas()->CajasUser()->first();
-        return view('almacen::compras.show', compact('compra', 'empresa', 'opencaja'));
+        $opencaja = Opencaja::CajasAbiertas()->CajasUser()->first();
+        $concept = Concept::DefaultConceptPaycuotaCompra()->first();
+        return view('almacen::compras.show', compact('compra', 'empresa', 'opencaja', 'concept'));
     }
 
     /**

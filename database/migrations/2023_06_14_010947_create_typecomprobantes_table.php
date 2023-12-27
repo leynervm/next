@@ -14,13 +14,11 @@ class CreateTypecomprobantesTable extends Migration
     public function up()
     {
         Schema::create('typecomprobantes', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('code', 2);
-            $table->string('serie', 4);
+            $table->string('name', 100);
             $table->string('descripcion', 100);
-            $table->integer('contador')->default(1);
             $table->integer('sendsunat')->default(0);
-            $table->integer('default')->default(0);
             $table->softDeletes();
         });
     }

@@ -15,7 +15,8 @@ class ProductoFactory extends Factory
      *
      * @var string
      */
-    protected $model = \Modules\Almacen\Entities\Producto::class;
+    // protected $model = \Modules\Almacen\Entities\Producto::class;
+    protected $model = \App\Models\Producto::class;
 
     /**
      * Define the model's default state.
@@ -40,12 +41,13 @@ class ProductoFactory extends Factory
             'publicado' => $this->faker->randomElement([0, 1]),
             'sku' => $this->faker->bothify('##??####??##??##'),
             'views' => 0,
+            'minstock' => 5,
             'codefabricante' => $this->faker->bothify('????-########'),
             'almacenarea_id' => Almacenarea::all()->random()->id,
             'estante_id' => Estante::all()->random()->id,
-            'marca_id' =>  Marca::all()->random()->id,
-            'category_id' =>  $category->id,
-            'subcategory_id' =>  $category->subcategories->random()->id,
+            'marca_id' => Marca::all()->random()->id,
+            'category_id' => $category->id,
+            'subcategory_id' => $category->subcategories->random()->id,
             'unit_id' => 1,
         ];
     }

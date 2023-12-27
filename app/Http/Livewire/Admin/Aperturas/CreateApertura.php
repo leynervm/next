@@ -16,7 +16,7 @@ class CreateApertura extends Component
     public $open = false;
     public $caja_id;
     public $startmount = 0;
-    
+
     protected $listeners = ['render'];
 
     protected function rules()
@@ -27,14 +27,20 @@ class CreateApertura extends Component
                 new ValidateCaja()
             ],
             'startmount' => [
-                'required', 'integer', 'min:0', 'decimal:0,2'
+                'required', 'numeric', 'min:0', 'decimal:0,2'
             ],
         ];
     }
 
     public function render()
     {
-        $cajas = Caja::Disponibles()->orderBy('name', 'asc')->get();
+
+        $sucursals = auth()->user()->sucursalDefault()->select('sucursals.id')->pluck('sucursals.id');
+        $cajas = Caja::whereDoesntHave('opencajas')->whereIn('sucursal_id', $sucursals)
+            ->orWhereHas('opencajas', function ($query) {
+                $query->whereNotNull('expiredate');
+            })->whereIn('sucursal_id', $sucursals)->orderBy('name', 'asc')->get();
+
         return view('livewire.admin.aperturas.create-apertura', compact('cajas'));
     }
 
@@ -63,15 +69,9 @@ class CreateApertura extends Component
                 'status' => 0
             ]);
 
-            $caja = Caja::findOrFail($this->caja_id);
-            if ($caja) {
-                $caja->status = Caja::INACTIVO;
-                $caja->user_id = Auth::user()->id;
-                $caja->save();
-            }
-
             DB::commit();
             $this->emitTo('admin.aperturas.show-aperturas', 'render');
+            $this->dispatchBrowserEvent('created');
             $this->reset();
         } catch (\Exception $e) {
             DB::rollBack();

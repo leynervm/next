@@ -19,6 +19,8 @@ module.exports = {
                 sidebar: "var(--sidebar)",
                 iconmenu: "var(--icon-menu)",
 
+                colorlabel: "var(--color-label)",
+
                 fondolinknav: "var(--fondo-link-nav)",
                 colorlinknav: "var(--color-link-nav)",
                 hoverlinknav: "var(--hover-link-nav)",
@@ -27,9 +29,23 @@ module.exports = {
 
                 fondodropdown: "var(--fondo-dropdown)",
                 colordropdown: "var(--color-dropdown)",
+                fondohoverdropdown: "var(--fondo-hover-dropdown)",
                 primary: "var(--color-primary)",
 
                 colortitle: "var(--color-title)",
+
+                colorbuttonclose: "var(--color-button-close)",
+                fondobuttonclose: "var(--fondo-button-close)",
+                colorhoverbuttonclose: "var(--color-hover-button-close)",
+                fondohoverbuttonclose: "var(--fondo-hover-button-close)",
+                ringbuttonclose: "var(--ring-button-close)",
+
+
+                colorbutton: "var(--color-button)",
+                fondobutton: "var(--fondo-button)",
+                colorhoverbutton: "var(--color-hover-button)",
+                fondohoverbutton: "var(--fondo-hover-button)",
+                ringbutton: "var(--ring-button)",
 
                 fondominicard: "var(--fondo-minicard)",
                 colorminicard: "var(--color-minicard)",
@@ -50,6 +66,10 @@ module.exports = {
 
                 textselect2: "var(--color-select2)",
                 fondoselect2: "var(--fondo-select2)",
+                texthoverselect2: "var(--color-hover-select2)",
+                fondohoverselect2: "var(--fondo-hover-select2)",
+                textactiveselect2: "var(--color-active-select2)",
+                fondoactiveselect2: "var(--fondo-active-select2)",
                 shadowselect2: "var(--shadow-select2)",
 
                 textheadertable: "var(--text-header-table)",

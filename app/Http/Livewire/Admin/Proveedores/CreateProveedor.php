@@ -15,20 +15,20 @@ class CreateProveedor extends Component
 {
 
     public $document, $name, $direccion, $ubigeo_id,
-        $proveedortype_id, $telefono, $email, $document2, $name2, $telefono2;
+    $proveedortype_id, $telefono, $email, $document2, $name2, $telefono2;
 
 
     protected function rules()
     {
         return [
-            'document' => ['required', 'numeric', 'digits:11', new CampoUnique('proveedors', 'document', null, true)],
+            'document' => ['required', 'numeric', 'digits:11', 'regex:/^\d{11}$/', new CampoUnique('proveedors', 'document', null, true)],
             'name' => ['required', 'string', 'min:3'],
             'direccion' => ['required', 'string', 'min:3'],
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'proveedortype_id' => ['required', 'integer', 'min:1', 'exists:proveedortypes,id'],
             'telefono' => ['required', 'numeric', 'digits_between:7,9'],
             'email' => ['nullable', 'email', 'min:6'],
-            'document2' => ['required', 'numeric', 'digits:8'],
+            'document2' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/'],
             'name2' => ['required', 'string', 'min:3'],
             'telefono2' => ['required', 'numeric', 'digits_between:7,9'],
         ];

@@ -3,7 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use Modules\Almacen\Entities\Producto;
+use App\Models\Producto;
 
 class ValidateStock implements Rule
 {
@@ -13,12 +13,14 @@ class ValidateStock implements Rule
      * @return void
      */
 
-    protected $producto_id, $almacen_id;
+    protected $producto_id, $almacen_id, $cantidad, $mensaje;
 
-    public function __construct($producto_id, $almacen_id)
+    public function __construct($producto_id, $almacen_id, $cantidad = null)
     {
         $this->producto_id = $producto_id;
         $this->almacen_id = $almacen_id;
+        $this->cantidad = $cantidad;
+        $this->mensaje = 'Stock no disponible en almacén seleccionado.';
     }
 
     /**
@@ -31,9 +33,22 @@ class ValidateStock implements Rule
     public function passes($attribute, $value)
     {
         $query = Producto::find($this->producto_id)->almacens()
-            ->find($this->almacen_id)->pivot->cantidad;;
+            ->find($this->almacen_id)->pivot->cantidad;
 
-        return $query > 0;
+        $this->mensaje = $this->cantidad > 0
+            ? "Cantidad supera al stock disponible [" . formatDecimalOrInteger($query) . "]."
+            : "Stock no disponible en almacén seleccionado [" . formatDecimalOrInteger($query) . "].";
+        $query = $this->cantidad > 0 ? $query - $this->cantidad : $query;
+        return $this->cantidad > 0 ? $query >= 0 : $query > 0;
+
+        // if ($this->cantidad > 0) {
+        //     $query = $query - $this->cantidad;
+        //     $this->mensaje = "Cantidad supera al stock disponible [].";
+        //     return $query >= 0;
+        // } else {
+        //     return $query > 0;
+        // }
+
     }
 
     /**
@@ -43,6 +58,6 @@ class ValidateStock implements Rule
      */
     public function message()
     {
-        return 'Stock no disponible en almacén seleccionado.';
+        return $this->mensaje;
     }
 }

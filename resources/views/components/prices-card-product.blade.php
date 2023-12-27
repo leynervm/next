@@ -1,4 +1,4 @@
-<div {{ $attributes->merge(['class' => 'w-full bg-body rounded shadow-md shadow-shadowform p-1 flex flex-col gap-1']) }}>
+<div {{ $attributes->merge(['class' => 'w-full flex flex-col gap-1 mt-2']) }}>
 
     @if (isset($name) || isset($buttonpricemanual))
         <div class="w-full flex flex-wrap gap-1 items-start justify-between">

@@ -2,6 +2,18 @@
     @apply w-full overflow-hidden !important;
 }
 
+.select2-search--dropdown {
+    @apply p-0;
+}
+
+.select2-container .select2-dropdown {
+    @apply bg-fondoselect2 shadow-shadowselect2 shadow-lg border-0 rounded-md mt-1 p-2 !important;
+}
+
+.select2-container--open .select2-dropdown--below {
+    @apply border-solid border-t-0 border-shadowselect2 !important;
+}
+
 .select2.select2-container .select2-selection {
     @apply p-2.5 px-4 border border-next-300 rounded-sm outline-none transition-all duration-150;
 }
@@ -15,11 +27,7 @@
 }
 
 .select2.select2-container .select2-selection .select2-selection__arrow {
-    @apply bg-transparent border-next-300 rounded-sm w-[40px] h-full;
-}
-
-.select2.select2-container.select2-container--open .select2-selection.select2-selection--single .select2-selection__arrow {
-    @apply rounded-sm;
+    @apply hidden;
 }
 
 .select2.select2-container.select2-container--open .select2-selection.select2-selection--multiple {
@@ -42,14 +50,6 @@
     @apply absolute top-0 left-0 m-0 text-center font-bold text-red-600 text-sm;
 }
 
-.select2-container .select2-dropdown {
-    @apply bg-fondoselect2 shadow shadow-shadowselect2 border-0 rounded-xl mt-1 p-0 !important;
-}
-
-.select2-container--open .select2-dropdown--below {
-    @apply border-solid border-t-0 border-shadowselect2 !important;
-}
-
 .select2-container .select2-dropdown .select2-search {}
 
 .select2-container .select2-dropdown .select2-search input {
@@ -57,15 +57,15 @@
 }
 
 .select2-container .select2-dropdown .select2-search input:focus {
-    @apply shadow shadow-next-300 border-next-500 ring-0 !important;
+    @apply border-next-400 ring-0 !important;
 }
 
 .select2-container .select2-dropdown .select2-results {
-    @apply p-0 overflow-hidden shadow-md shadow-shadowselect2 rounded-xl text-sm;
+    @apply mt-2 p-0 overflow-hidden text-sm;
 }
 
 .select2-container .select2-dropdown .select2-results ul {
-    @apply bg-fondoselect2 text-textselect2 rounded-xl;
+    @apply bg-fondoselect2 text-textselect2;
 }
 
 .select2-container--default.select2-container--disabled .select2-selection--single,
@@ -74,20 +74,21 @@
 }
 
 .select2-results__option {
-    @apply p-2.5 ease-in-out duration-150 !important;
+    @apply p-2.5 rounded-md ease-in-out duration-150 !important;
 }
 
 .select2-container--default .select2-results>.select2-results__options::-webkit-scrollbar {
-    @apply cursor-pointer h-[4px] w-[4px];
+    @apply cursor-pointer h-[4px] w-[6px] rounded-md;
 }
 
 .select2-container--default .select2-results>.select2-results__options::-webkit-scrollbar-track {
-    @apply bg-[#e2e8f0] cursor-pointer;
+    @apply bg-gray-300 cursor-pointer rounded-md;
 }
 
 .select2-container--default .select2-results>.select2-results__options::-webkit-scrollbar-thumb {
-    @apply bg-[#94a3b8] cursor-pointer;
+    @apply bg-gray-400 cursor-pointer rounded-md;
 }
+
 
 
 /* .soft-scrollbar::-webkit-scrollbar {
@@ -114,25 +115,10 @@
     border-color: transparent transparent #3b82f6 transparent;
 } */
 
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    @apply bg-fondohoverselect2 text-texthoverselect2;
+}
+
 .select2-container--default .select2-results__option[aria-selected=true] {
-    @apply bg-next-400 text-white;
-}
-
-.select2.select2-container .select2-selection:focus,
-/* .select2-container--default.select2-container--open.select2.select2-container .select2-selection .select2-selection__arrow, */
-.select2-container--default.select2-container--open.select2.select2-container .select2-selection {
-    @apply shadow shadow-next-300 rounded-sm border-next-500;
-}
-
-.select2-container--default.select2-container--open.select2-container--below .select2-selection--single,
-.select2-container--default.select2-container--open.select2-container--below .select2-selection--multiple {
-    @apply rounded-b-sm;
-}
-
-.select2-container--default .select2-results__option--selected {
-    @apply bg-next-500 text-white !important;
-}
-
-.select2-container .select2-dropdown .select2-results ul .select2-results__option--highlighted[aria-selected] {
-    @apply bg-next-500;
+    @apply bg-fondoactiveselect2 text-textactiveselect2;
 }

@@ -20,25 +20,19 @@ class ShowEmpresa extends Component
 
     use WithFileUploads;
 
+    public $openphone = false;
     public $empresa, $telephone;
-
     public $isUploadingLogo = false;
     public $isUploadingIcono = false;
     public $isUploadingPublicKey = false;
     public $isUploadingPrivateKey = false;
 
-    public $openphone = false;
-    public $phone;
-
-    public $icono;
-    public $logo;
+    public $phone, $telefono, $iconobase64;
+    public $icono, $logo;
     public $idlogo, $idicono, $idpublickey, $publickey, $idprivatekey, $privatekey;
-    public $telefono;
-
-    public $iconobase64;
+    public $validatemail;
 
     protected $listeners = ['erroricono', 'iconloaded'];
-
 
     protected function rules()
     {
@@ -51,16 +45,13 @@ class ShowEmpresa extends Component
             'empresa.condicion' => ['required', 'string'],
             'empresa.email' => ['nullable'],
             'empresa.web' => ['nullable'],
-            'empresa.telefono' => ['nullable', 'numeric', 'digits_between:9,12'],
             'empresa.montoadelanto' => ['nullable', 'decimal:0,2'],
             'empresa.usuariosol' => ['nullable'],
             'empresa.clavesol' => ['nullable'],
-            'empresa.logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
             'publickey' => ['nullable', 'file', new ValidateFileKey("pem")],
             'privatekey' => ['nullable', 'file',  new ValidateFileKey("pem")],
-            'empresa.validatemail' => ['integer', 'min:0', 'max:1'],
-            'empresa.dominiocorreo' => ['nullable', 'required_if:validatemail,1'],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
             'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1'],
@@ -69,11 +60,10 @@ class ShowEmpresa extends Component
         ];
     }
 
-    public function mount()
+    public function mount(Empresa $empresa)
     {
-        $this->empresa = new Empresa();
+        $this->empresa = $empresa;
         $this->telephone = new Telephone();
-        $this->empresa = Empresa::first() ?? new Empresa();
         $this->idlogo = rand();
         $this->idicono = rand();
         $this->idpublickey = rand();
@@ -86,10 +76,9 @@ class ShowEmpresa extends Component
         return view('livewire.admin.empresas.show-empresa', compact('ubigeos'));
     }
 
-    public function save()
+    public function update()
     {
 
-        $this->empresa->validatemail = $this->empresa->validatemail == 1 ?  1 : 0;
         $this->empresa->uselistprice = $this->empresa->uselistprice == 1 ?  1 : 0;
         $this->empresa->usepricedolar = $this->empresa->usepricedolar == 1 ?  1 : 0;
         $this->empresa->viewpricedolar = $this->empresa->viewpricedolar == 1 ?  1 : 0;
@@ -99,7 +88,6 @@ class ShowEmpresa extends Component
         $this->empresa->direccion = trim($this->empresa->direccion);
         $this->empresa->estado = trim($this->empresa->estado);
         $this->validate();
-        $event = isset($this->empresa->id) ? 'updated' : 'created';
 
         try {
             DB::beginTransaction();
@@ -142,42 +130,33 @@ class ShowEmpresa extends Component
                 $this->privatekey->storeAs('company/pem/', $urlprivatekey, 'local');
             }
 
-            $empresa = Empresa::updateOrCreate(
-                ['document' => $this->empresa->document],
-                [
-                    'name' => $this->empresa->name,
-                    'estado' => $this->empresa->estado,
-                    'condicion' => $this->empresa->condicion,
-                    'direccion' => $this->empresa->direccion,
-                    'email' => $this->empresa->email,
-                    'web' => $this->empresa->web,
-                    'icono' => $urlicono,
-                    'privatekey' => $urlprivatekey,
-                    'publickey' => $urlpublickey,
-                    'usuariosol' => $this->empresa->usuariosol,
-                    'clavesol' => $this->empresa->clavesol,
-                    'montoadelanto' => $this->empresa->montoadelanto,
-                    'uselistprice' => $this->empresa->uselistprice,
-                    'usepricedolar' => $this->empresa->usepricedolar,
-                    'viewpricedolar' => $this->empresa->viewpricedolar,
-                    'tipocambio' => $this->empresa->tipocambio,
-                    'tipocambioauto' => $this->empresa->tipocambioauto,
-                    'default' => 1,
-                    'ubigeo_id' => $this->empresa->ubigeo_id,
-                ]
-            );
-
-            if ($this->empresa->telefono) {
-                $empresa->telephones()->create([
-                    'phone' => trim($this->empresa->telefono)
-                ]);
-            }
+            $this->empresa->document = $this->empresa->document;
+            $this->empresa->name = $this->empresa->name;
+            $this->empresa->estado = $this->empresa->estado;
+            $this->empresa->condicion = $this->empresa->condicion;
+            $this->empresa->direccion = $this->empresa->direccion;
+            $this->empresa->email = $this->empresa->email;
+            $this->empresa->web = $this->empresa->web;
+            $this->empresa->icono = $urlicono;
+            $this->empresa->privatekey = $urlprivatekey;
+            $this->empresa->publickey = $urlpublickey;
+            $this->empresa->usuariosol = $this->empresa->usuariosol;
+            $this->empresa->clavesol = $this->empresa->clavesol;
+            $this->empresa->montoadelanto = $this->empresa->montoadelanto;
+            $this->empresa->uselistprice = $this->empresa->uselistprice;
+            $this->empresa->usepricedolar = $this->empresa->usepricedolar;
+            $this->empresa->viewpricedolar = $this->empresa->viewpricedolar;
+            $this->empresa->tipocambio = $this->empresa->tipocambio;
+            $this->empresa->tipocambioauto = $this->empresa->tipocambioauto;
+            $this->empresa->default = 1;
+            $this->empresa->ubigeo_id = $this->empresa->ubigeo_id;
+            $this->empresa->save();
 
 
             if ($this->logo) {
-                if ($empresa->image) {
-                    $empresa->image->deleteOrFail();
-                    Storage::delete('images/company/' . $empresa->image->url);
+                if ($this->empresa->image) {
+                    $this->empresa->image->deleteOrFail();
+                    Storage::delete('images/company/' . $this->empresa->image->url);
                 }
 
                 $compressedImage = Image::make($this->logo->getRealPath())
@@ -197,7 +176,7 @@ class ShowEmpresa extends Component
                     $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
                 }
 
-                $empresa->image()->create([
+                $this->empresa->image()->create([
                     'url' => $urlLogo,
                     'default' => 1
                 ]);
@@ -211,8 +190,8 @@ class ShowEmpresa extends Component
                 'publickey', 'privatekey', 'idpublickey', 'idprivatekey'
             ]);
 
-            $this->dispatchBrowserEvent($event);
-            return redirect()->route('admin.administracion.empresa');
+            $this->dispatchBrowserEvent('updated');
+            $this->empresa->refresh();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -221,6 +200,13 @@ class ShowEmpresa extends Component
             throw $e;
         }
     }
+
+    // public function updatedEmpresaUsepricedolar($value)
+    // {
+    //     if ($value) {
+    //         $this->searchpricedolar();
+    //     }
+    // }
 
     public function openmodalphone()
     {
@@ -242,8 +228,7 @@ class ShowEmpresa extends Component
     {
 
         $this->phone = trim($this->phone);
-
-        $validate = $this->validate([
+        $this->validate([
             'phone' => ['required', 'numeric', 'digits_between:7,9']
         ]);
 
@@ -318,7 +303,6 @@ class ShowEmpresa extends Component
             $this->empresa->refresh();
         }
     }
-
 
     public function searchclient()
     {
@@ -416,6 +400,5 @@ class ShowEmpresa extends Component
     public function hydrate()
     {
         $this->dispatchBrowserEvent('render-select-empresa');
-        // $this->emit('iconload');
     }
 }

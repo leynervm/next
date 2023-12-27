@@ -19,90 +19,112 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" class="block w-full" id="form_create_oferta">
-                @if ($producto)
-                    <div class="w-60 mx-auto">
+            <form wire:submit.prevent="save" class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
+                <div class="w-full xs:max-w-xs mx-auto xs:col-span-2">
+                    @if ($producto)
                         @if (count($producto->images))
-                            <div class="w-full h-32 rounded shadow border">
-                                @if ($producto->defaultImage)
-                                    <img src="{{ asset('storage/productos/' . $producto->defaultImage->first()->url) }}"
-                                        alt="" class="w-full h-full object-scale-down">
-                                @else
-                                    <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
-                                        alt="" class="w-full h-full object-scale-down">
-                                @endif
-                            </div>
+                            @if ($producto->defaultImage)
+                                <div
+                                    class="w-full h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
+                                    @if ($producto->defaultImage)
+                                        <img src="{{ asset('storage/productos/' . $producto->defaultImage->first()->url) }}"
+                                            alt="" class="w-full h-full object-scale-down">
+                                    @else
+                                        <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
+                                            alt="" class="w-full h-full object-scale-down">
+                                    @endif
+
+                                </div>
+                            @endif
                         @endif
-                    </div>
-                @endif
-
-                <x-label value="Almacén :" />
-                <x-select wire:model.defer="almacen_id" class="block w-full" id="almacen_id" data-dropdown-parent="">
-                    @if (count($almacens))
-                        <x-slot name="options">
-                            @foreach ($almacens as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </x-slot>
+                    @else
+                        <div
+                            class="w-full flex items-center justify-center h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard mb-1">
+                            <svg class="text-neutral-500 w-24 h-24" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M13 3.00231C12.5299 3 12.0307 3 11.5 3C7.02166 3 4.78249 3 3.39124 4.39124C2 5.78249 2 8.02166 2 12.5C2 16.9783 2 19.2175 3.39124 20.6088C4.78249 22 7.02166 22 11.5 22C15.9783 22 18.2175 22 19.6088 20.6088C20.9472 19.2703 20.998 17.147 20.9999 13" />
+                                <path
+                                    d="M2 14.1354C2.61902 14.0455 3.24484 14.0011 3.87171 14.0027C6.52365 13.9466 9.11064 14.7729 11.1711 16.3342C13.082 17.7821 14.4247 19.7749 15 22" />
+                                <path
+                                    d="M21 16.8962C19.8246 16.3009 18.6088 15.9988 17.3862 16.0001C15.5345 15.9928 13.7015 16.6733 12 18" />
+                                <path
+                                    d="M17 4.5C17.4915 3.9943 18.7998 2 19.5 2M22 4.5C21.5085 3.9943 20.2002 2 19.5 2M19.5 2V10" />
+                            </svg>
+                        </div>
                     @endif
-                </x-select>
-                <x-jet-input-error for="almacen_id" />
-
-                <x-label value="Producto :" class="mt-2" />
-                <x-select wire:model.defer="producto_id" class="block w-full" id="producto_id" data-dropdown-parent=""
-                    data-minimum-results-for-search="3">
-                    @if (count($productos))
-                        <x-slot name="options">
-                            @foreach ($productos as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </x-slot>
-                    @endif
-                </x-select>
-                <x-jet-input-error for="producto_id" />
-
-                <div class="flex flex-wrap md:flex-nowrap gap-2 mt-2">
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Fecha inicio :" />
-                        <x-input class="block w-full" wire:model.defer="datestart" type="date" />
-                        <x-jet-input-error for="datestart" />
-                    </div>
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Fecha finalización :" />
-                        <x-input class="block w-full" wire:model.defer="dateexpire" type="date" />
-                        <x-jet-input-error for="dateexpire" />
-                    </div>
                 </div>
 
-                <div class="flex flex-wrap md:flex-nowrap gap-2 mt-2">
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Máximo stock :" class="mt-2" />
-                        <x-input class="block w-full" wire:model.defer="limit" type="number" min="0"
-                            step="1" :disabled="$max == 1 ? true : false" />
-                        <x-jet-input-error for="limit" />
+                <div class="xs:col-span-2" x-data="{ producto_id: @entangle('producto_id') }" x-init="select2ProductoAlpine" wire:ignore>
+                    <x-label value="Producto :" />
+                    <div class="relative">
+                        <x-select class="block w-full select2" x-ref="select" id="producto_id" data-dropdown-parent=""
+                            data-minimum-results-for-search="3">
+                            @if (count($productos))
+                                <x-slot name="options">
+                                    @foreach ($productos as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
+                                </x-slot>
+                            @endif
+                        </x-select>
+                        <x-icon-select />
                     </div>
-                    <div class="w-full md:w-1/2">
-                        <x-label value="Descuento (%) :" class="mt-2" />
-                        <x-input class="block w-full" wire:model.defer="descuento" type="number" min="0"
-                            step="0.1" />
-                        <x-jet-input-error for="descuento" />
-                    </div>
+                    <x-jet-input-error for="producto_id" />
                 </div>
 
-                <div class="mt-3 mb-1">
-                    <x-label textSize="[10px]"
-                        class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                        for="max">
-                        <x-input wire:model="max" name="max" type="checkbox" id="max" />
-                        SELECCIONAR MÁXIMO DISPONIBLE
-                    </x-label>
+                <div class="">
+                    <x-label value="Almacén :" />
+                    <x-select wire:model.defer="almacen_id" class="block w-full" id="almacen_id"
+                        data-dropdown-parent="">
+                        @if ($producto)
+                            <x-slot name="options">
+                                @foreach ($producto->almacens as $item)
+                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @endforeach
+                            </x-slot>
+                        @endif
+                    </x-select>
+                    <x-jet-input-error for="almacen_id" />
                 </div>
-                <x-jet-input-error for="max" />
 
+                <div class="w-full">
+                    <x-label value="Descuento (%) :" />
+                    <x-input class="block w-full" wire:model.defer="descuento" type="number" min="0"
+                        step="0.1" />
+                    <x-jet-input-error for="descuento" />
+                </div>
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="save">
+                <div class="w-full">
+                    <x-label value="Fecha inicio :" />
+                    <x-input class="block w-full" wire:model.defer="datestart" type="date" />
+                    <x-jet-input-error for="datestart" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Fecha finalización :" />
+                    <x-input class="block w-full" wire:model.defer="dateexpire" type="date" />
+                    <x-jet-input-error for="dateexpire" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Máximo stock :" />
+                    <x-input class="block w-full" wire:model.defer="limit" type="number" min="0" step="1"
+                        :disabled="$max == 1 ? true : false" />
+                    <x-jet-input-error for="limit" />
+                </div>
+
+                <div class="xs:col-span-2">
+                    <x-label-check for="max">
+                        <x-input wire:model.lazy="max" name="max" value="1" type="checkbox"
+                            id="max" />
+                        SELECCIONAR STOCK MÁXIMO DISPONIBLE
+                    </x-label-check>
+                    <x-jet-input-error for="max" />
+                </div>
+
+                <div class="w-full xs:col-span-2 flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>
@@ -110,69 +132,21 @@
         </x-slot>
     </x-jet-dialog-modal>
 
-
     <script>
-        document.addEventListener("livewire:load", () => {
-
-            renderSelect2();
-
-            $("#almacen_id").on("change", (e) => {
-                deshabilitarSelects();
-                @this.almacen_id = e.target.value;
+        function select2ProductoAlpine() {
+            this.select2 = $(this.$refs.select).select2();
+            this.select2.val(this.producto_id).trigger("change");
+            this.select2.on("select2:select", (event) => {
+                this.select2.attr('disabled', true);
+                this.producto_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
             });
-
-            $("#producto_id").on("change", (e) => {
-                deshabilitarSelects();
-                @this.producto_id = e.target.value;
+            this.$watch('producto_id', (value) => {
+                this.select2.val(value).trigger("change");
             });
-
-            window.addEventListener('render-oferta-select2', () => {
-                renderSelect2();
-            });
-
-            function renderSelect2() {
-                var formulario = document.getElementById("form_create_oferta");
-                var selects = formulario.getElementsByTagName("select");
-
-                for (var i = 0; i < selects.length; i++) {
-                    if (selects[i].id !== "") {
-                        $("#" + selects[i].id).select2({
-                            placeholder: "Seleccionar...",
-                        });
-                    }
-                }
-            }
-
-            function deshabilitarSelects() {
-                var formulario = document.getElementById("form_create_oferta");
-                var selects = formulario.getElementsByTagName("select");
-
-                for (var i = 0; i < selects.length; i++) {
-                    selects[i].disabled = true;
-                }
-            }
-
-
-            window.addEventListener("producto.confirmDelete", data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
-                    text: "Se eliminará un registro de la base de datos, incluyendo todos los datos relacionados.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // console.log(data.detail);
-                        Livewire.emitTo('almacen::productos.view-producto', 'delete', data
-                            .detail.id);
-                    }
-                })
-            });
-
-        })
+        }
     </script>
-
 </div>

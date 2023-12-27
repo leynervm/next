@@ -17,13 +17,17 @@ class DefaultValue implements Rule
     protected $column;
     protected $softDeleted;
     protected $ignoreId;
+    protected $columnOptional;
+    protected $valueOptional;
 
-    public function __construct($table, $column, $ignoreId = null, $softDeleted = false,)
+    public function __construct($table, $column, $ignoreId = null, $softDeleted = false, $columnOptional = null, $valueOptional = null)
     {
         $this->table = $table;
         $this->column = $column;
         $this->ignoreId = $ignoreId;
         $this->softDeleted = $softDeleted;
+        $this->columnOptional = $columnOptional;
+        $this->valueOptional = $valueOptional;
     }
 
     /**
@@ -40,6 +44,10 @@ class DefaultValue implements Rule
 
             $query = DB::table($this->table)
                 ->where($this->column, $value);
+
+            if (!is_null($this->columnOptional)) {
+                $query->where($this->columnOptional, $this->valueOptional);
+            }
 
             if ($this->softDeleted) {
                 $query->whereNull('deleted_at');

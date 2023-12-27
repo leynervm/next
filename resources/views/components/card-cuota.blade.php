@@ -2,9 +2,7 @@
     <div class="w-full">
         @if (isset($titulo))
             <div class="text-center">
-                <span
-                    class="text-xs text-center bg-fondospancardproduct text-textspancardproduct p-0.5 px-1 rounded-lg">
-                    Cuota{{ $titulo }}</span>
+                <x-span-text :text="'Cuota' . $titulo" />
             </div>
         @endif
 
@@ -16,20 +14,16 @@
                 DETALLES DEL PAGO</h1>
 
             <div class="w-full flex flex-wrap gap-1 text-[10px]">
-                <p
-                    class="inline-block uppercase bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
+                <p class="inline-block uppercase bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
                     {{ \Carbon\Carbon::parse($detallepago->date)->locale('es')->isoformat('DD MMMM Y') }}
                 </p>
-                <p
-                    class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
+                <p class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
                     {{ $detallepago->methodpayment->name }} </p>
-                <p
-                    class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
+                <p class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
                     USUARIO : {{ $detallepago->user->name }} </p>
 
                 @if ($detallepago->detalle)
-                    <p
-                        class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
+                    <p class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
                         {{ $detallepago->detalle }} </p>
                 @endif
             </div>

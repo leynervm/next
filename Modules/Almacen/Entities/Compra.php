@@ -24,8 +24,9 @@ class Compra extends Model
 
     protected $fillable = [
         'date', 'referencia', 'guia', 'detalle', 'tipocambio', 'gravado',
-        'exonerado', 'igv', 'otros', 'total', 'moneda_id', 'typepayment_id',
-        'proveedor_id', 'user_id'
+        'exonerado', 'igv', 'descuento', 'otros', 'total', 'moneda_id',
+        'typepayment_id', 'proveedor_id', 'user_id',
+        'sucursal_id'
     ];
 
     public static function boot()

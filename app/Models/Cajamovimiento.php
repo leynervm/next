@@ -14,10 +14,13 @@ class Cajamovimiento extends Model
     use HasFactory;
     use SoftDeletes;
 
+    const INGRESO = "INGRESO";
+    const EGRESO = "EGRESO";
+
     protected $fillable = [
         'date', 'amount', 'typemovement', 'referencia', 'detalle',
         'moneda_id', 'methodpayment_id', 'cuenta_id', 'concept_id', 'opencaja_id',
-        'user_id', 'cajamovimientable_id', 'cajamovimientable_type'
+        'sucursal_id', 'user_id', 'cajamovimientable_id', 'cajamovimientable_type'
     ];
 
     public function typepayment(): BelongsTo
@@ -28,6 +31,11 @@ class Cajamovimiento extends Model
     public function methodpayment(): BelongsTo
     {
         return $this->belongsTo(methodpayment::class);
+    }
+
+    public function sucursal(): BelongsTo
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 
     public function typemovement(): BelongsTo
@@ -63,5 +71,10 @@ class Cajamovimiento extends Model
     public function cajamovimientable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
+    {
+        return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
     }
 }

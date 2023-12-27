@@ -23,16 +23,15 @@ class CreateEmpresa extends Component
     public $isUploadingPublicKey = false;
     public $isUploadingPrivateKey = false;
 
-    public $icono;
-    public $logo;
-
+    public $icono, $logo, $iconobase64;
+    protected $listeners = ['erroricono', 'iconloaded'];
 
     public $idlogo, $idicono, $idpublickey, $publickey, $idprivatekey, $privatekey;
     public $document, $name, $direccion, $telefono, $ubigeo_id,
         $estado, $condicion, $email, $web, $montoadelanto;
     public $usuariosol, $clavesol;
 
-    public $validatemail = 0;
+    public $validatemail;
     public $dominiocorreo;
     public $uselistprice = 0;
     public $usepricedolar = 0;
@@ -42,6 +41,7 @@ class CreateEmpresa extends Component
 
     protected function rules()
     {
+
         return [
             'document' => ['required', 'numeric', 'digits:11'],
             'name' => ['required'],
@@ -51,7 +51,7 @@ class CreateEmpresa extends Component
             'condicion' => ['required', 'string'],
             'email' => ['nullable'],
             'web' => ['nullable'],
-            'telefono' => ['required', 'numeric', 'digits_between:9,12'],
+            'telefono' => ['nullable', 'numeric', 'digits_between:9,12'],
             'montoadelanto' => ['nullable', 'decimal:0,2'],
             'usuariosol' => ['nullable'],
             'clavesol' => ['nullable'],
@@ -59,8 +59,8 @@ class CreateEmpresa extends Component
             'icono' => ['nullable', 'file', 'mimes:ico'],
             'publickey' => ['nullable', 'file', new ValidateFileKey("pem")],
             'privatekey' => ['nullable', 'file',  new ValidateFileKey("pem")],
-            'validatemail' => ['integer', 'min:0', 'max:1'],
-            'dominiocorreo' => ['nullable', 'required_if:validatemail,1'],
+            // 'validatemail' => ['integer', 'min:0', 'max:1'],
+            // 'dominiocorreo' => ['nullable', 'required_if:validatemail,1'],
             'uselistprice' => ['integer', 'min:0', 'max:1'],
             'usepricedolar' => ['integer', 'min:0', 'max:1'],
             'tipocambio' => ['nullable', 'required_if:usepricedolar,1'],
@@ -86,9 +86,6 @@ class CreateEmpresa extends Component
     public function save()
     {
 
-        // dd(($this->publickey));
-
-        $this->validatemail = $this->validatemail == 1 ?  1 : 0;
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
         $this->usepricedolar = $this->usepricedolar == 1 ?  1 : 0;
         $this->viewpricedolar = $this->viewpricedolar == 1 ?  1 : 0;
@@ -96,7 +93,6 @@ class CreateEmpresa extends Component
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
-        $this->estado = trim($this->estado);
         $this->validate();
 
         try {
@@ -110,25 +106,19 @@ class CreateEmpresa extends Component
                 Storage::disk('local')->makeDirectory('company/pem');
             }
 
-            $urlicono = null;
-            $urlpublickey = null;
-            $urlprivatekey = null;
+            $urlicono = $this->icono ?? null;
+            $urlpublickey = $this->publickey ?? null;
+            $urlprivatekey = $this->privatekey ?? null;
 
             if ($this->icono) {
-                $compressedImage = Image::make($this->icono->getRealPath())
-                    ->resize(300, 300, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->orientate()
-                    ->encode('jpg', 30);
 
-                $urlicono = uniqid() . '.' . $this->icono->getClientOriginalExtension();
-                $compressedImage->save(public_path('storage/images/company/' . $urlicono));
-
-                if ($compressedImage->filesize() > 1048576) { //1MB
-                    $compressedImage->destroy();
-                    $compressedImage->delete();
+                $extpublic = FormatoPersonalizado::getExtencionFile($this->icono->getClientOriginalName());
+                $urlicono = uniqid() . '.' . $extpublic;
+                // $this->icono->store(public_path('storage/images/company/' . $urlicono));
+                Storage::putFileAs('images/company', $this->icono, $urlicono);
+                if ($this->icono->getSize() > 1048576) { //1MB
+                    // $compressedImage->destroy();
+                    // $compressedImage->delete();
                     $this->addError('icono', 'La imagen excede el tamaño máximo permitido.');
                 }
             }
@@ -169,9 +159,18 @@ class CreateEmpresa extends Component
                 'ubigeo_id' => $this->ubigeo_id,
             ]);
 
-            $empresa->telephones()->create([
-                'phone' => trim($this->telefono)
+            $empresa->sucursals()->create([
+                'name' => $this->name,
+                'direccion' => $this->direccion,
+                'default' => 1,
+                'ubigeo_id' => $this->ubigeo_id,
             ]);
+
+            if ($this->telefono) {
+                $empresa->telephones()->create([
+                    'phone' => trim($this->telefono)
+                ]);
+            }
 
             if ($this->logo) {
                 $compressedImage = Image::make($this->logo->getRealPath())
@@ -197,11 +196,17 @@ class CreateEmpresa extends Component
                 ]);
             }
 
-
             DB::commit();
             $this->resetValidation();
             $this->reset();
             $this->dispatchBrowserEvent('created');
+            if (session('redirect_url')) {
+                $url = session('redirect_url');
+                session()->forget('intended_url');
+                return redirect()->to($url);
+            } else {
+                return redirect()->route('admin.administracion.empresa');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -211,41 +216,29 @@ class CreateEmpresa extends Component
         }
     }
 
-    public function clearIcono()
-    {
-        $this->reset(['icono']);
-        $this->idicono = rand();
-    }
-
-    public function clearLogo()
-    {
-        $this->reset(['logo']);
-        $this->idicono = rand();
-    }
 
     public function clearInput($input)
     {
         $this->reset([$input]);
     }
 
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-select-empresa');
-    }
-
     public function searchclient()
     {
-
         $this->document = trim($this->document);
-        $validate = $this->validate([
+        $this->validate([
             'document' => 'required|numeric|digits:11'
         ]);
 
+        $this->name = null;
+        $this->direccion = null;
+        $this->telefono = null;
+        $this->ubigeo_id = null;
+        $this->estado = null;
+        $this->condicion = null;
+        $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'ubigeo_id', 'estado', 'condicion']);
+
         $http = new GetClient();
         $response = $http->getClient($this->document);
-
-        $this->reset(['name', 'direccion', 'telefono', 'ubigeo_id', 'estado', 'condicion']);
-        $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'ubigeo_id', 'estado', 'condicion']);
 
         if ($response->getData()) {
             if ($response->getData()->success) {
@@ -265,34 +258,53 @@ class CreateEmpresa extends Component
         }
     }
 
-    // public function updatedUsepricedolar($value)
-    // {
-    //     $this->reset(['tipocambio']);
-    //     $this->resetValidation(['tipocambio']);
-
-    //     if ($value) {
-    //         $this->reset(['tipocambio']);
-    //         $http = new GetClient();
-    //         $response = $http->getTipoCambio();
-
-    //         if ($response->precioVenta) {
-    //             $this->tipocambio = $response->precioVenta;
-    //         }
-    //     }
-    // }
-
     public function searchpricedolar()
     {
-        $this->reset(['tipocambio']);
+
         $this->resetValidation(['tipocambio']);
 
-        // if ($value) {
         $http = new GetClient();
         $response = $http->getTipoCambio();
 
         if ($response->precioVenta) {
             $this->tipocambio = $response->precioVenta;
         }
-        // }
+    }
+
+    public function clearLogo()
+    {
+        $this->reset(['logo']);
+        $this->idlogo = rand();
+    }
+
+    public function clearIcono()
+    {
+        $this->reset(['icono']);
+        $this->idicono = rand();
+    }
+
+    public function clearPublickey()
+    {
+        $this->idpublickey = rand();
+        $this->reset(['publickey']);
+    }
+
+    public function clearPrivatekey()
+    {
+        $this->idprivatekey = rand();
+        $this->reset(['privatekey']);
+    }
+
+    public function erroricono()
+    {
+        $this->isUploadingIcono = false;
+        $this->reset(['icono']);
+        $this->idicono = rand();
+        $this->addError('icono', 'Error al cargar ícono');
+    }
+
+    public function hydrate()
+    {
+        $this->dispatchBrowserEvent('render-select-empresa');
     }
 }

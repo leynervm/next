@@ -42,6 +42,15 @@ class HomeController extends Controller
         return view('admin.channelsales.index');
     }
 
+    public function typecomprobantes()
+    {
+        return view('admin.typecomprobantes.index');
+    }
+
+
+
+
+
     public function tipocambio()
     {
         $http = new GetClient();

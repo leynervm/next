@@ -19,12 +19,10 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" id="form_create_accountpayment">
-
-                <x-label value="Tipo banco :" />
-                <div id="parent_accountbanco_id">
-                    <x-select class="block w-full" wire:model.defer="banco_id" id="banco_id"
-                        data-placeholder="Seleccionar..." data-minimum-results-for-search="Infinity">
+            <form wire:submit.prevent="save">
+                <div x-data="{ banco_id: @entangle('banco_id') }" x-init="select2BancoAlpine" wire:ignore>
+                    <x-label value="Tipo banco :" />
+                    <x-select class="block w-full" x-ref="select" id="banco_id" data-dropdown-parent="null">
                         @if (count($bancos))
                             <x-slot name="options">
                                 @foreach ($bancos as $item)
@@ -36,28 +34,31 @@
                     <x-jet-input-error for="banco_id" />
                 </div>
 
-                <x-label value="N° Cuenta :" class="mt-2" />
-                <x-input class="block w-full" wire:model.defer="account" placeholder="N° cuenta pago..." type="number" maxlength="15"/>
-                <x-jet-input-error for="account" />
-
-                <x-label value="Descripción cuenta :" class="mt-2" />
-                <x-input class="block w-full" wire:model.defer="descripcion"
-                    placeholder="Descripción de cuenta pago..." />
-                <x-jet-input-error for="descripcion" />
+                <div class="mt-2">
+                    <x-label value="N° Cuenta :" class="mt-2" />
+                    <x-input class="block w-full" wire:model.defer="account" placeholder="N° cuenta pago..."
+                        type="number" maxlength="15" />
+                    <x-jet-input-error for="account" />
+                </div>
 
                 <div class="mt-2">
-                    <x-label textSize="[10px]"
-                        class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                        for="default">
-                        <x-input wire:model.defer="default" name="default" type="checkbox" id="default" />
-                        SELECCIONAR COMO PREDETERMINADO
-                    </x-label>
+                    <x-label value="Descripción cuenta :" />
+                    <x-input class="block w-full" wire:model.defer="descripcion"
+                        placeholder="Descripción de cuenta pago..." />
+                    <x-jet-input-error for="descripcion" />
                 </div>
-                <x-jet-input-error for="default" />
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="save">
+                {{-- <div class="block mt-2">
+                    <x-label-check for="default">
+                        <x-input wire:model.defer="default" name="default" type="checkbox" value="1"
+                            id="default" />
+                        SELECCIONAR COMO PREDETERMINADO
+                    </x-label-check>
+                    <x-jet-input-error for="default" />
+                </div> --}}
+
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>
@@ -67,39 +68,15 @@
 
 
     <script>
-        document.addEventListener("livewire:load", () => {
-
-            renderSelect2();
-
-            $("#banco_id").on("change", (e) => {
-                deshabilitarSelects();
-                @this.banco_id = e.target.value;
+        function select2BancoAlpine() {
+            this.select2 = $(this.$refs.select).select2();
+            this.select2.val(this.banco_id).trigger("change");
+            this.select2.on("select2:select", (event) => {
+                this.banco_id = event.target.value;
+            })
+            this.$watch('banco_id', (value) => {
+                this.select2.val(value).trigger("change");
             });
-
-            window.addEventListener('render-createaccount-select2', () => {
-                renderSelect2();
-            });
-
-            function renderSelect2() {
-                var formulario = document.getElementById("form_create_accountpayment");
-                var selects = formulario.getElementsByTagName("select");
-
-                for (var i = 0; i < selects.length; i++) {
-                    if (selects[i].id !== "") {
-                        $("#" + selects[i].id).select2();
-                    }
-                }
-            }
-
-            function deshabilitarSelects() {
-                var formulario = document.getElementById("form_create_accountpayment");
-                var selects = formulario.getElementsByTagName("select");
-
-                for (var i = 0; i < selects.length; i++) {
-                    selects[i].disabled = true;
-                }
-            }
-
-        })
+        }
     </script>
 </div>

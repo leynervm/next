@@ -6,13 +6,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
-use Modules\Almacen\Entities\Almacen;
-use Modules\Almacen\Entities\Producto;
-use Modules\Facturacion\Entities\Typepayment;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Almacen;
+use App\Models\Producto;
+use App\Models\Typepayment;
 
 class Tvitem extends Model
 {
     use HasFactory;
+    use SoftDeletes;
 
     protected $guarded = ['created_at', 'updated_at'];
 

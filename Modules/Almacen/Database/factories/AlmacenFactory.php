@@ -10,7 +10,8 @@ class AlmacenFactory extends Factory
      *
      * @var string
      */
-    protected $model = \Modules\Almacen\Entities\Almacen::class;
+    // protected $model = \Modules\Almacen\Entities\Almacen::class;
+    protected $model = \App\Models\Almacen::class;
 
     /**
      * Define the model's default state.

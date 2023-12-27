@@ -2,6 +2,8 @@
 
 namespace Modules\Almacen\Http\Controllers;
 
+use App\Models\Empresa;
+use App\Models\Moneda;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -17,6 +19,11 @@ class AlmacenController extends Controller
         return view('almacen::index');
     }
 
+    public function almacenes()
+    {
+        return view('almacen::almacenes');
+    }
+
     public function typegarantias()
     {
         return view('almacen::garantias');
@@ -25,31 +32,6 @@ class AlmacenController extends Controller
     public function almacenareas()
     {
         return view('almacen::almacenareas');
-    }
-
-    public function categorias()
-    {
-        return view('almacen::categorias');
-    }
-
-    public function subcategorias()
-    {
-        return view('almacen::subcategorias');
-    }
-
-    public function units()
-    {
-        return view('almacen::units');
-    }
-
-    public function especificaciones()
-    {
-        return view('almacen::especificaciones');
-    }
-
-    public function ofertas()
-    {
-        return view('almacen::ofertas');
     }
 
     /**

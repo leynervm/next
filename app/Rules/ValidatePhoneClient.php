@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Models\Client;
+use App\Models\Proveedor;
 use Illuminate\Contracts\Validation\Rule;
 
 class ValidatePhoneClient implements Rule
@@ -15,14 +16,12 @@ class ValidatePhoneClient implements Rule
      * @param string $phone
      * @param integer $ignoreId
      */
-    protected $client_id;
-    protected $phone;
-    protected $ignoreId;
+    protected $table, $id, $ignoreId;
 
-    public function __construct($client_id, $phone, $ignoreId = null)
+    public function __construct($table, $id, $ignoreId = null)
     {
-        $this->client_id = $client_id;
-        $this->phone = $phone;
+        $this->table = $table;
+        $this->id = $id;
         $this->ignoreId = $ignoreId;
     }
 
@@ -35,7 +34,12 @@ class ValidatePhoneClient implements Rule
      */
     public function passes($attribute, $value)
     {
-        $query = Client::find($this->client_id)->telephones()->where('phone', $this->phone);
+        if ($this->table == 'clients') {
+            $query = Client::find($this->id)->telephones()->where('phone', trim($value));
+        } else {
+            $query = Proveedor::find($this->id)->telephones()->where('phone', trim($value));
+        }
+
         if (!is_null($this->ignoreId)) {
             $query->where('id', '<>', $this->ignoreId);
         }
@@ -49,6 +53,7 @@ class ValidatePhoneClient implements Rule
      */
     public function message()
     {
-        return 'El número telefónico ya está registrado para este cliente.';
+        $table = $this->table == 'clients' ? 'cliente' : 'proveedor';
+        return "Teléfono del $table ya está existe.";
     }
 }

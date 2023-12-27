@@ -1,14 +1,13 @@
 <div>
-    <x-form-card titulo="RESUMEN COMPRA" widthBefore="before:w-28"
-        subtitulo="Resumen de productos adquiridos en la compra.">
+    <x-form-card titulo="RESUMEN COMPRA" subtitulo="Resumen de productos adquiridos en la compra.">
         <div class="w-full flex flex-wrap xl:flex-nowrap gap-2 xl:items-start">
-            <form wire:submit.prevent="verifyproducto" x-data="{ searchingalmacens: false }"
+            <form wire:submit.prevent="verifyproducto" x-data="converter"
                 class="w-full xl:w-1/3 relative flex flex-col gap-2 bg-body p-3 rounded">
 
                 <div class="w-full flex flex-col xs:grid xs:grid-cols-2 xl:flex gap-2">
                     <div class="w-full xs:col-span-2">
                         <x-label value="Producto :" />
-                        <div id="parenteditproductocompra_id">
+                        <div id="parenteditproductocompra_id" class="relative">
                             <x-select class="block w-full" wire:model.defer="producto_id" id="editproductocompra_id"
                                 data-minimum-results-for-search="3">
                                 <x-slot name="options">
@@ -21,6 +20,7 @@
                                     @endif
                                 </x-slot>
                             </x-select>
+                            <x-icon-select />
                         </div>
                         <x-jet-input-error for="producto_id" />
                     </div>
@@ -51,8 +51,8 @@
 
                     <div class="w-full">
                         <x-label value="P.C Unitario ({{ $compra->moneda->currency }}) :" />
-                        <x-input class="block w-full numeric" wire:model.lazy="pricebuy" placeholder="0.00"
-                            type="number" min="0" step="0.0001"
+                        <x-input class="block w-full numeric" wire:model.defer="pricebuy" x-model="pricebuy"
+                            @change="calcular" placeholder="0.00" type="number" min="0" step="0.001"
                             wire:key="pricebuy-{{ count($compra->compraitems) }}" />
                         <x-jet-input-error for="pricebuy" />
                     </div>
@@ -60,7 +60,7 @@
                     @if ($compra->moneda->code == 'USD')
                         <div class="w-full">
                             <x-label value="P.C Unitario (SOLES) :" />
-                            <x-disabled-text :text="number_format($compra->tipocambio * $pricebuy, 4)" />
+                            <x-disabled-text :text="number_format($compra->tipocambio * $pricebuy, 3)" x-text="pricebuysoles" />
                             <x-jet-input-error for="pricebuy" />
                         </div>
                     @endif
@@ -69,7 +69,7 @@
                         <div class="w-full">
                             <x-label value="Precio venta unitario (SOLES):" />
                             <x-input class="block w-full" wire:model.defer="pricesale" placeholder="0.00" type="number"
-                                min="0" step="0.0001" />
+                                min="0" step="0.001" />
                             <x-jet-input-error for="pricesale" />
                         </div>
                     @endif
@@ -90,7 +90,7 @@
                     <x-loading-next />
                 </div>
             </form>
-            <div class="w-full xl:w-2/3 bg-body relative" x-data="{ loadingitems: false }">
+            <div class="w-full xl:w-2/3 relative">
                 @if (count($compra->compraitems))
                     <div class="w-full flex gap-2 flex-wrap justify-around">
                         @foreach ($compra->compraitems as $item)
@@ -114,7 +114,7 @@
                                     <x-label-price>
                                         <span>
                                             {{ $item->compra->moneda->simbolo }}
-                                            {{ number_format($item->subtotal + $item->igv, 4, '.', ', ') }}
+                                            {{ number_format($item->subtotal + $item->igv, 3, '.', ', ') }}
                                             {{ $item->compra->moneda->currency }}
                                         </span>
                                     </x-label-price>
@@ -133,41 +133,24 @@
                                 </div>
 
                                 <div class="w-full flex flex-wrap gap-1 items-start mt-2 text-[10px]">
-                                    <span
-                                        class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                        P.C UNIT: {{ $item->compra->moneda->simbolo }}
-                                        {{ number_format($item->pricebuy, 4, '.', ', ') }}
-                                    </span>
+                                    <x-span-text :text="'P.C UNIT: ' .
+                                        $item->compra->moneda->simbolo .
+                                        number_format($item->pricebuy, 3, '.', ', ')" class="leading-3" />
 
-                                    @if ($empresa->viewpricedolar)
-                                        @if ($item->compra->moneda->code == 'USD')
-                                            <span
-                                                class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                                P.C UNIT: S/.
-                                                {{ number_format($item->pricebuy * $item->compra->tipocambio, 4, '.', ', ') }}
-                                                SOLES
-                                            </span>
-                                        @endif
+                                    @if ($item->compra->moneda->code == 'USD')
+                                        <x-span-text :text="'P.C UNIT: S/. ' .
+                                            number_format($item->pricebuy * $item->compra->tipocambio, 3, '.', ', ') .
+                                            ' SOLES'" class="leading-3" />
                                     @endif
 
-                                    <span
-                                        class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                        {{ \App\Helpers\FormatoPersonalizado::getValue($item->cantidad) }}
-                                        {{ $item->producto->unit->name }}
-                                    </span>
-                                    <span
-                                        class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                        {{ $item->almacen->name }}
-                                    </span>
+                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) .
+                                        ' ' .
+                                        $item->producto->unit->name" class="leading-3" />
+                                    <x-span-text :text="$item->almacen->name" class="leading-3" />
 
                                     @if (count($item->series) == 1)
-                                        <span
-                                            class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                            SERIE: {{ $item->series->first()->serie }}
-                                        </span>
+                                        <x-span-text :text="'SERIE: ' . $item->series->first()->serie" class="leading-3" />
                                     @endif
-
-
                                 </div>
 
                                 <div class="w-full">
@@ -396,13 +379,7 @@
     <x-jet-dialog-modal wire:model="openprice" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Cambiar precio venta') }}
-            <x-button-add wire:click="$toggle('openprice')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('openprice')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -436,6 +413,33 @@
     </x-jet-dialog-modal>
 
     <script>
+        function toDecimal(valor, decimals = 3) {
+            let numero = parseFloat(valor);
+
+            if (isNaN(numero)) {
+                return 0;
+            } else {
+                return parseFloat(numero).toFixed(decimals);
+            }
+        }
+
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('converter', () => ({
+                searchingalmacens: false,
+                pricebuysoles: @entangle('pricebuysoles').defer,
+                tipocambio: @this.get('tipocambio'),
+                pricebuy: @entangle('pricebuy').defer,
+
+                calcular() {
+                    this.pricebuy = toDecimal(this.pricebuy);
+                    this.pricebuysoles = toDecimal(this.pricebuy * parseFloat(this.tipocambio));
+                    // console.log(this.pricebuysoles);
+                }
+            }))
+        })
+
+
         document.addEventListener("livewire:load", () => {
             $('#editproductocompra_id').select2()
                 .on("change", function(e) {
@@ -459,9 +463,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('almacen::compras.show-resumen-compra', 'updatecompraitem',
-                            data
-                            .detail);
+                        @this.updatecompraitem(data.detail);
                     }
                 })
             });
@@ -478,8 +480,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('almacen::compras.show-resumen-compra', 'deleteitemcompra',
-                            data);
+                        @this.deleteitemcompra(data);
                     }
                 })
             });
@@ -496,8 +497,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('almacen::compras.show-resumen-compra', 'deleteserie', data
-                            .id);
+                        @this.deleteserie(data.id);
                     }
                 })
             });

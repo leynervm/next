@@ -1,4 +1,6 @@
 <?php
+use Modules\Facturacion\Http\Controllers\FacturacionController;
+use Modules\Facturacion\Http\Controllers\GuiaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,6 +13,16 @@
 |
 */
 
-Route::prefix('facturacion')->group(function() {
-    Route::get('/', 'FacturacionController@index');
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    // 'verified'
+])->prefix('admin/facturacion')->name('admin.')->group(function () {
+    Route::get('/', [FacturacionController::class, 'index'])->name('facturacion');
+    Route::get('/{comprobante}/show', [FacturacionController::class, 'show'])->name('facturacion.show');
+
+
+    Route::get('/guias', [GuiaController::class, 'index'])->name('facturacion.guias');
+    Route::get('/guias/create', [GuiaController::class, 'create'])->name('facturacion.guias.create')->middleware(['registercompany', 'verifysucursal']);
+    Route::get('/guias/{guia:seriecompleta}/edit', [GuiaController::class, 'show'])->name('facturacion.guias.show');
 });

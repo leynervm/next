@@ -1,12 +1,56 @@
 <div class="w-full flex flex-col gap-8" x-data="{ loadingventa: false }">
 
-    <x-form-card titulo="DATOS VENTA" widthBefore="before:w-20" x-data="{ updatingventa: false }">
+    <x-form-card titulo="DATOS VENTA" x-data="{ updatingventa: false }">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2 bg-body p-3 rounded">
             <div class="w-full flex flex-col xs:grid xs:grid-cols-2 xl:grid-cols-3 gap-2">
+
+                <div class="w-full">
+                    <x-label value="Fecha venta :" />
+                    <x-disabled-text :text="\Carbon\Carbon::parse($venta->date)->format('d/m/Y')" />
+                </div>
+
+                @if (Module::isEnabled('Facturacion'))
+                    @if ($venta->comprobante)
+                        <div class="w-full">
+                            <x-label value="Tipo comprobante :" />
+                            <x-disabled-text :text="$venta->comprobante->seriecompleta .
+                                ' (' .
+                                $venta->seriecomprobante->typecomprobante->descripcion .
+                                ')'" />
+                        </div>
+                    @else
+                        <div class="w-full">
+                            <x-label value="Codigo venta :" />
+                            <x-disabled-text :text="$venta->code .
+                                '-' .
+                                $venta->id .
+                                ' (' .
+                                $venta->seriecomprobante->typecomprobante->descripcion .
+                                ')'" />
+                        </div>
+                    @endif
+                @else
+                    <div class="w-full">
+                        <x-label value="Codigo venta :" />
+                        <x-disabled-text :text="$venta->code .
+                            '-' .
+                            $venta->id .
+                            ' (' .
+                            $venta->seriecomprobante->typecomprobante->descripcion .
+                            ')'" />
+                    </div>
+                @endif
+
+                <div class="w-full">
+                    <x-label value="Moneda :" />
+                    <x-disabled-text :text="$venta->moneda->currency" />
+                </div>
+
                 <div class="w-full">
                     <x-label value="DNI /RUC :" />
                     <x-disabled-text :text="$venta->client->document ?? '-'" />
                 </div>
+
                 <div class="w-full xs:col-span-2">
                     <x-label value="Cliente / Razón Social :" />
                     <x-disabled-text :text="$venta->client->name ?? '-'" />
@@ -14,21 +58,20 @@
 
                 <div class="w-full xs:col-span-2">
                     <x-label value="Dirección :" />
-                    <x-disabled-text :text="$venta->comprobante->direccion ?? '-'" />
+                    <x-disabled-text :text="$venta->direccion ?? '-'" />
                 </div>
 
-                <div class="w-full">
-                    <x-label value="Fecha venta :" />
-                    <x-disabled-text :text="\Carbon\Carbon::parse($venta->date)->format('d/m/Y')" />
-                </div>
-
-                <div class="w-full">
-                    <x-label value="Tipo comprobante :" />
-                    <x-disabled-text :text="$venta->comprobante->seriecompleta .
-                        ' (' .
-                        $venta->comprobante->typecomprobante->descripcion .
-                        ')'" />
-                </div>
+                @if (Module::isEnabled('Facturacion'))
+                    @if ($venta->comprobante)
+                        <div class="w-full">
+                            <x-label value="Tipo comprobante :" />
+                            <x-disabled-text :text="$venta->comprobante->seriecompleta .
+                                ' (' .
+                                $venta->comprobante->seriecomprobante->typecomprobante->descripcion .
+                                ')'" />
+                        </div>
+                    @endif
+                @endif
 
                 <div class="w-full">
                     <x-label value="Tipo pago :" />
@@ -37,6 +80,11 @@
 
                 @if ($venta->cajamovimiento)
                     <div class="w-full">
+                        <x-label value="Método pago :" />
+                        <x-disabled-text :text="$venta->cajamovimiento->methodpayment->name" />
+                    </div>
+
+                    {{-- <div class="w-full">
                         <x-label value="Método pago :" />
                         <div id="parentventamethodpayment_id">
                             <x-select class="block w-full" id="ventamethodpayment_id"
@@ -52,7 +100,7 @@
                             </x-select>
                         </div>
                         <x-jet-input-error for="methodpaymentventa_id" />
-                    </div>
+                    </div> --}}
 
                     @if (count($cuentas))
                         <div class="w-full">
@@ -98,11 +146,6 @@
                     </div>
                 @endif
 
-                <div class="w-full">
-                    <x-label value="Moneda :" />
-                    <x-disabled-text :text="$venta->moneda->currency" />
-                </div>
-
                 @if ($venta->moneda->code == 'USD')
                     <div class="w-full">
                         <x-label value="Tipo Cambio :" />
@@ -113,6 +156,11 @@
                 <div class="w-full">
                     <x-label value="Cotización vinculada :" />
                     <x-disabled-text text="****" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Sucursal venta :" />
+                    <x-disabled-text :text="$venta->sucursal->name ?? '-'" />
                 </div>
 
                 <div class="w-full">
@@ -131,16 +179,16 @@
 
             <div class="w-full flex gap-2 pt-4 justify-end">
                 <x-button-secondary wire:click="$emit('venta.confirmDelete', {{ $venta }})"
-                    wire:loading.attr="disabled" wire:target="delete">
+                    wire:loading.attr="disabled">
                     {{ __('ELIMINAR') }}
                 </x-button-secondary>
 
-                <x-button type="submit" wire:loading.attr="disabled" wire:target="update">
+                <x-button type="submit" wire:loading.attr="disabled">
                     {{ __('ACTUALIZAR') }}
                 </x-button>
             </div>
         </form>
-        <div x-show="updatingventa" wire:loading wire:loading.flex wire:target="update" class="loading-overlay rounded">
+        <div x-show="updatingventa" wire:loading.flex wire:target="update, delete" class="loading-overlay rounded">
             <x-loading-next />
         </div>
     </x-form-card>
@@ -261,7 +309,7 @@
                 @endif
 
                 <div x-show="loadingcuotas" wire:loading wire:loading.flex
-                    wire:target="calcularcuotas, deletecuota, deletepaycuota, savepayment, savecuotas"
+                    wire:target="calcularcuotas, deletecuota, deletepaycuota, savepayment, savecuotas, delete"
                     class="loading-overlay rounded">
                     <x-loading-next />
                 </div>
@@ -269,7 +317,7 @@
         @endif
     @endif
 
-    <x-form-card titulo="RESUMEN DE VENTA" widthBefore="before:w-28">
+    <x-form-card titulo="RESUMEN DE VENTA">
         <div class="w-full text-colortitleform bg-body p-3 rounded-md">
             <p class="text-[10px]">
                 TOTAL EXONERADO : {{ $venta->moneda->simbolo }}
@@ -281,8 +329,18 @@
             </p>
 
             <p class="text-[10px]">
+                TOTAL INAFECTO : {{ $venta->moneda->simbolo }}
+                <span class="font-bold text-xs">{{ number_format($venta->inafecto, 3, '.', ', ') }}</span>
+            </p>
+
+            <p class="text-[10px]">
                 TOTAL IGV : {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xs">{{ number_format($venta->igv, 3, '.', ', ') }}</span>
+            </p>
+
+            <p class="text-[10px]">TOTAL GRATUITOS : {{ $venta->moneda->simbolo }}
+                <span
+                    class="font-bold text-xs">{{ number_format($venta->gratuito + $venta->igvgratuito, 3, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">TOTAL DESCUENTOS : {{ $venta->moneda->simbolo }}
@@ -290,28 +348,25 @@
             </p>
 
             <p class="text-[10px]">
+                @php
+                    $amountIncr = number_format((($venta->total - $venta->paymentactual) * $venta->increment) / (100 + $venta->increment), 4, '.', ', ');
+                @endphp
+
                 @if ($venta->increment > 0)
-                    IMPORTE TOTAL :
+                    IMPORTE TOTAL + INCREMENTO({{ $venta->moneda->simbolo }}
+                    {{ number_format($amountIncr, 2, '.', ', ') }}) :
                 @else
-                    TOTAL PAGAR :
+                    IMPORTE TOTAL :
                 @endif
                 {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xs">{{ number_format($venta->total, 3, '.', ', ') }}</span>
             </p>
 
-            @if ($venta->increment > 0)
-                <p class="text-[10px]">TOTAL PAGAR
-                    (+ {{ \App\Helpers\FormatoPersonalizado::getValue($venta->increment) }}% INCREMENTO) :
-                    {{ $venta->moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($venta->total, 3, '.', ', ') }}</span>
-                </p>
-            @endif
         </div>
     </x-form-card>
 
-    <x-form-card titulo="RESUMEN PRODUCTOS" widthBefore="before:w-32">
+    <x-form-card titulo="RESUMEN PRODUCTOS">
         <div class="w-full">
-
             @if (count($venta->tvitems))
                 <div class="flex gap-2 flex-wrap justify-start mt-1">
                     @foreach ($venta->tvitems as $item)
@@ -324,52 +379,40 @@
                                     $image = asset('storage/productos/' . $item->producto->images->first()->url);
                                 }
                             }
-
-                            $discount = count($item->producto->ofertasdisponibles) ? $item->producto->ofertasdisponibles()->first()->descuento : null;
                         @endphp
-                        <x-card-producto :image="$image" :name="$item->producto->name" :increment="$item->increment > 0 ? $item->increment : null"
+                        <x-card-producto :image="$image" :name="$item->producto->name" :increment="$item->increment ?? null"
                             x-data="{ loadingproducto: false }">
                             <div class="w-full flex flex-wrap gap-1 justify-center mt-1">
                                 <x-label-price>
                                     <span>
                                         {{ $venta->moneda->simbolo }}
-                                        {{ number_format($item->total, 3, '.', ', ') }}
+                                        {{ number_format($item->subtotal + $item->subtotaligv, 3, '.', ', ') }}
                                         {{ $venta->moneda->currency }}
                                     </span>
                                 </x-label-price>
                             </div>
 
                             <div class="w-full flex flex-wrap gap-1 items-start mt-2 text-[10px]">
-                                <span
-                                    class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                    P.V UNIT: {{ $venta->moneda->simbolo }}
-                                    {{ number_format($item->price, 3, '.', ', ') }}
-                                </span>
+                                <x-span-text :text="'P.V UNIT : ' .
+                                    $venta->moneda->simbolo .
+                                    ' ' .
+                                    number_format($item->price, 3, '.', ', ')" class="leading-3" />
 
                                 @if ($item->igv > 0)
-                                    <span
-                                        class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                        IGV UNIT: {{ $venta->moneda->simbolo }}
-                                        {{ number_format($item->igv, 3, '.', ', ') }}
-                                    </span>
+                                    <x-span-text :text="'IGV UNIT : ' .
+                                        $venta->moneda->simbolo .
+                                        ' ' .
+                                        number_format($item->igv, 3, '.', ', ')" class="leading-3" />
                                 @endif
 
-                                <span
-                                    class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                    {{ \App\Helpers\FormatoPersonalizado::getValue($item->cantidad) }}
-                                    {{ $item->producto->unit->name }}
-                                </span>
+                                <x-span-text :text="\App\Helpers\FormatoPersonalizado::getValue($item->cantidad) .
+                                    ' ' .
+                                    $item->producto->unit->name" class="leading-3" />
 
-                                <span
-                                    class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                    {{ $item->almacen->name }}
-                                </span>
+                                <x-span-text :text="$item->almacen->name" class="leading-3" />
 
                                 @if (count($item->itemseries) == 1)
-                                    <span
-                                        class="leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                                        SERIE: {{ $item->itemseries->first()->serie->serie }}
-                                    </span>
+                                    <x-span-text :text="$item->itemseries->first()->serie->serie" class="leading-3" />
                                 @endif
                             </div>
 
@@ -391,6 +434,10 @@
                                     <div class="w-full flex flex-wrap gap-1">
                                         @if (count($item->itemseries) > 1)
                                             @foreach ($item->itemseries as $itemserie)
+                                                {{-- <x-label-check>
+                                                    MI SERIE
+                                                    <x-button-delete />
+                                                </x-label-check> --}}
                                                 <span
                                                     class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
                                                     {{ $itemserie->serie->serie }}
@@ -404,12 +451,12 @@
                                 </div>
                             </div>
 
-                            <x-slot name="footer">
+                            {{-- <x-slot name="footer">
                                 <x-button-delete
                                     wire:click="$emit('compra.confirmDeleteItemCompra',({{ $item->id }}))"
                                     wire:loading.attr="disabled"
                                     wire:target="compra.confirmDeleteItemCompra, deleteitemcompra" />
-                            </x-slot>
+                            </x-slot> --}}
 
                             <div x-show="loadingproducto" wire:loading.flex class="loading-overlay rounded">
                                 <x-loading-next />
@@ -418,11 +465,21 @@
                     @endforeach
                 </div>
             @endif
-
         </div>
 
-        <div x-show="loadingventa" wire:loading.flex wire:target="loadProductos" class="loading-overlay rounded">
+        <div x-show="loadingventa" wire:loading.flex wire:target="loadProductos, delete"
+            class="loading-overlay rounded">
             <x-loading-next />
+        </div>
+    </x-form-card>
+
+    <x-form-card titulo="OPCIONES">
+        <div class="w-full flex gap-2 items-start justify-end">
+            <x-button>IMPRIMIR A4</x-button>
+            <x-button>IMPRIMIR TICKET</x-button>
+            @if (Module::isEnabled('Facturacion'))
+                <x-button>ENVIAR</x-button>
+            @endif
         </div>
     </x-form-card>
 
@@ -520,13 +577,15 @@
         </x-slot>
 
         <x-slot name="content">
-            <div class="w-full flex flex-col gap-3 relative" x-data="{ updatingcuotas: false }">
+            <div class="w-full relative" x-data="{ updatingcuotas: false }">
+                <x-span-text :text="'MONTO CUOTAS A CALCULAR : ' .
+                    $venta->moneda->simbolo .
+                    number_format($venta->total - $venta->paymentactual, 2, '.', ', ')" class="mb-2" />
                 <form wire:submit.prevent="updatecuotas" class="w-full flex flex-wrap justify-around gap-2">
                     @if (count($cuotas))
                         <div class="w-full flex flex-wrap gap-1">
                             @foreach ($cuotas as $item)
-                                <x-card-cuota :titulo="substr('000' . $item['cuota'], -3)"
-                                    class="w-full sm:w-48 bg-white border shadow shadow-gray-300 hover:shadow-gray-300">
+                                <x-card-cuota :titulo="substr('000' . $item['cuota'], -3)" class="w-full sm:w-48">
                                     @if (!is_null($item['cajamovimiento_id']))
                                         <span
                                             class="absolute right-1 top-1 w-5 h-5 block rounded-full p-1 bg-green-100 text-next-600">
@@ -617,10 +676,13 @@
             });
 
             Livewire.on('venta.confirmDelete', data => {
+                let seriecompleta = data.comprobante !== undefined ? data.comprobante.seriecompleta :
+                    undefined;
+                let mensaje = seriecompleta ? ', incluyendo el comprobante ' +
+                    seriecompleta + ' y todos sus datos contenidos.' : '';
                 swal.fire({
-                    title: 'Desea anular la venta VT-' + data.id + ' ?',
-                    text: "Se eliminará un registro de la base de datos, incluyendo el comprobante " +
-                        data.comprobante.seriecompleta + ' y todos sus datos contenidos.',
+                    title: 'Desea anular la venta ' + data.code + '-' + data.id + ' ?',
+                    text: "Se eliminará un registro de la base de datos" + mensaje,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#0FB9B9',
@@ -629,7 +691,8 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('ventas::ventas.show-venta', 'delete', data.id);
+                        @this.delete(data.id);
+                        // Livewire.emitTo('ventas::ventas.show-venta', 'delete', data.id);
                     }
                 })
             });

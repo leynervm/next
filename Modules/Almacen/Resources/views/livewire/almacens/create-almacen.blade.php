@@ -19,18 +19,60 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save">
-                <x-label value="Nombre :" />
-                <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese nombre almacén..." />
-                <x-jet-input-error for="name" />
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-1">
+                <div class="w-full">
+                    <x-label value="Nombre :" />
+                    <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese nombre almacén..." />
+                    <x-jet-input-error for="name" />
+                </div>
+                <div class="w-full">
+                    <x-label value="Sucursal :" />
+                    <x-select class="block w-full" wire:model.defer="sucursal_id" id="sucursalalmacen_id"
+                        data-dropdown-parent="null">
+                        <x-slot name="options">
+                            @if (count($sucursales))
+                                @foreach ($sucursales as $item)
+                                    <option value="{{ $item->id }}">
+                                        {{ $item->name }} - {{ $item->direccion }}
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="save">
+                                        @if ($item->default)
+                                            (PRINCIPAL)
+                                        @endif
+                                    </option>
+                                @endforeach
+                            @endif
+                        </x-slot>
+                    </x-select>
+                    <x-jet-input-error for="sucursal_id" />
+                </div>
+
+                <div class="block">
+                    <x-label-check for="default">
+                        <x-input wire:model.defer="default" value="1" type="checkbox" id="default" />
+                        DEFINIR COMO PREDETERMINADO
+                    </x-label-check>
+                    <x-jet-input-error for="default" />
+                </div>
+
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>
             </form>
         </x-slot>
     </x-jet-dialog-modal>
+
+    @section('scripts')
+        <script>
+            $('#sucursalalmacen_id').select2().on("change", function(e) {
+                $('#sucursalalmacen_id').attr("disabled", true);
+                @this.sucursal_id = e.target.value;
+            });
+
+            document.addEventListener('render-create-almacen', () => {
+                $('#sucursalalmacen_id').select2();
+            });
+        </script>
+    @endsection
 </div>

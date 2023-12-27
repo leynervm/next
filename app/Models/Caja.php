@@ -5,6 +5,8 @@ namespace App\Models;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Caja extends Model
@@ -17,7 +19,7 @@ class Caja extends Model
     const ACTIVO = "0";
     const INACTIVO = "1";
 
-    protected $fillable = ['name', 'status', 'user_id'];
+    protected $fillable = ['name', 'status', 'sucursal_id'];
 
     public function setNameAttribute($value)
     {
@@ -31,13 +33,30 @@ class Caja extends Model
     //         ->where('expiredate', '>', Carbon::now('America/Lima')->format('Y-m-d H:i:s'));
     // }
 
-    public function scopeDisponibles($query)
+    public function sucursal(): BelongsTo
     {
-        return $query->where('status', 0)->whereNull('user_id');
+        return $this->belongsTo(Sucursal::class);
     }
 
-    public function scopeAbiertas($query)
+    public function opencajas(): HasMany
     {
-        return $query->where('status', 1);
+        return $this->hasMany(Opencaja::class);
+    }
+
+    public function scopeOpencajasdisponibles()
+    {
+        return $this->opencajas()->whereNull('expiredate');
+    }
+
+    public function scopeOpencajasdisponiblesuser()
+    {
+        return $this->opencajasdisponibles()
+            ->where('user_id', auth()->user()->id);
+    }
+
+
+    public function isUsing()
+    {
+        return $this->sucursal_id ==  auth()->user()->sucursalDefault()->first()->id;
     }
 }

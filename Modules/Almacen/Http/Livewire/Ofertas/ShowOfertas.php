@@ -2,20 +2,22 @@
 
 namespace Modules\Almacen\Http\Livewire\Ofertas;
 
+use App\Models\Empresa;
+use App\Models\Moneda;
 use App\Models\Pricetype;
 use App\Models\Rango;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Almacen\Entities\Oferta;
-use Modules\Almacen\Entities\Producto;
+use App\Models\Oferta;
+use App\Models\Producto;
 
 class ShowOfertas extends Component
 {
 
     use WithPagination;
 
-    public $oferta;
+    public $empresa, $moneda, $oferta;
     public $open = false;
     public $max = 0;
     public $minlimit = 0;
@@ -27,49 +29,38 @@ class ShowOfertas extends Component
     {
         return [
             'oferta.descuento' => [
-                'required', 'decimal:0,2', 'min:1',
+                'required',
+                'decimal:0,2',
+                'min:1',
             ],
             'oferta.dateexpire' => [
-                'required', 'date', 'date_format:Y-m-d', 'after_or_equal:datestart',
+                'required',
+                'date',
+                'date_format:Y-m-d',
+                'after_or_equal:datestart',
             ],
             'oferta.limit' => [
-                'required', 'decimal:0,2', 'min:' . $this->minlimit, 'max:' . $this->maxlimit
+                'required',
+                'decimal:0,2',
+                'min:' . $this->minlimit,
+                'max:' . $this->maxlimit
             ]
         ];
     }
 
-    public function mount()
+    public function mount(Empresa $empresa, Moneda $moneda)
     {
         $this->oferta = new Oferta();
+        $this->empresa = $empresa;
+        $this->moneda = $moneda;
     }
 
     public function render()
     {
-        $ofertas = Oferta::orderBy('datestart', 'asc')->orderBy('status', 'asc')
-            ->orderBy('id', 'asc')->paginate();
-        $pricetypes = Pricetype::orderBy('ganancia', 'asc')->get();
-
-        foreach ($ofertas as $item) {
-
-            $pricebuy = $item->producto->pricebuy;
-            $gananciaRango = Rango::where('desde', '<=', $pricebuy)
-                ->where('hasta', '>=', $pricebuy)
-                ->first();
-
-            if ($gananciaRango) {
-                $porcentajeGanancia = $gananciaRango->incremento;
-                $precioVenta = $pricebuy + ($pricebuy * $porcentajeGanancia / 100);
-                // Asignar el precio de venta al producto
-                $item->priceventa = $precioVenta;
-            } else {
-
-                $item->priceventa = $pricebuy;
-                // Si no se encuentra un rango de ganancia para el precio de compra dado,
-                // $product->precio_venta = $precioCompra; // Asignar el mismo precio de compra como precio de venta.
-            }
-        }
-
-        return view('almacen::livewire.ofertas.show-ofertas', compact('ofertas', 'pricetypes'));
+        $ofertas = Oferta::OfertasDisponibles()->paginate();
+        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
+        $monedas = Moneda::orderBy('id', 'asc')->get();
+        return view('almacen::livewire.ofertas.show-ofertas', compact('ofertas', 'pricetypes', 'monedas'));
     }
 
     public function updatedMax($value)
@@ -82,7 +73,7 @@ class ShowOfertas extends Component
             if ($this->oferta->almacen_id) {
                 if ($this->oferta->producto_id) {
 
-                    $this->oferta->limit =  Producto::findOrFail($this->oferta->producto_id)->almacens
+                    $this->oferta->limit = Producto::findOrFail($this->oferta->producto_id)->almacens
                         ->find($this->oferta->almacen_id)->pivot->cantidad;
                     $this->resetValidation(['max']);
                     $this->max = 1;
@@ -100,7 +91,7 @@ class ShowOfertas extends Component
         $this->oferta = $oferta;
         $this->minlimit = $oferta->vendidos == 0 ? 1 : $oferta->vendidos;
         $this->oferta->dateexpire = Carbon::parse($this->oferta->dateexpire)->format('Y-m-d');
-        $this->maxlimit =  Producto::findOrFail($oferta->producto_id)->almacens
+        $this->maxlimit = Producto::findOrFail($oferta->producto_id)->almacens
             ->find($oferta->almacen_id)->pivot->cantidad;
         $this->resetValidation();
         $this->open = true;
@@ -111,12 +102,9 @@ class ShowOfertas extends Component
         $this->validate();
         $this->oferta->disponible = $this->oferta->limit - $this->oferta->vendidos;
         $this->oferta->save();
+        $this->resetValidation();
         $this->reset(['open', 'max']);
-    }
-
-    public function confirmDelete(Oferta $oferta)
-    {
-        $this->dispatchBrowserEvent('ofertas.confirmDelete', $oferta);
+        $this->dispatchBrowserEvent('updated');
     }
 
     public function delete(Oferta $oferta)

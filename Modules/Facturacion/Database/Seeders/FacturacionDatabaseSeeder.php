@@ -18,5 +18,7 @@ class FacturacionDatabaseSeeder extends Seeder
 
         // $this->call("OthersTableSeeder");
         $this->call(SeedTypecomprobantesTableSeeder::class);
+        $this->call(SeedMotivotrasladosTableSeeder::class);
+
     }
 }

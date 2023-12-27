@@ -16,14 +16,14 @@ class ShowCompras extends Component
     public $search = '';
     public $date = '';
 
-    protected $queryString  = [
+    protected $queryString = [
         'search' => ['except' => '', 'as' => 'buscar'],
         'date' => ['except' => '', 'as' => 'fecha-compra'],
     ];
 
     public function render()
     {
-        $compras = Compra::orderBy('created_at', 'desc');
+        $compras = Compra::with('cuotas')->orderBy('created_at', 'desc');
 
         if (trim($this->search) !== '') {
             $compras->whereHas('proveedor', function ($query) {

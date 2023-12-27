@@ -9,7 +9,9 @@ use App\Models\Proveedortype;
 use App\Models\Telephone;
 use App\Models\Ubigeo;
 use App\Rules\ValidateDocument;
+use App\Rules\ValidatePhoneClient;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class ShowProveedor extends Component
@@ -19,8 +21,6 @@ class ShowProveedor extends Component
     public $document2, $name2, $telefono2, $newtelefono;
     public $openrepresentante = false;
     public $openphone = false;
-
-    protected $listeners = ['delete', 'deletephone', 'deleterepresentante'];
 
     protected function rules()
     {
@@ -84,7 +84,7 @@ class ShowProveedor extends Component
     public function openmodalrepresentante()
     {
         $this->reset(['contact', 'document2', 'name2', 'telefono2']);
-        $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+        $this->resetValidation();
         $this->openrepresentante = true;
     }
 
@@ -92,7 +92,7 @@ class ShowProveedor extends Component
     {
         $this->contact = $contact;
         $this->reset(['document2', 'name2', 'telefono2']);
-        $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+        $this->resetValidation();
         $this->document2 = trim($contact->document);
         $this->name2 = trim($contact->name);
         if ($contact->telephone) {
@@ -131,7 +131,7 @@ class ShowProveedor extends Component
             DB::commit();
             $this->dispatchBrowserEvent('created');
             $this->reset(['openrepresentante', 'document2', 'name2', 'telefono2', 'contact']);
-            $this->resetValidation(['contact', 'document2', 'name2', 'telefono2']);
+            $this->resetValidation();
             $this->proveedor->refresh();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -162,12 +162,14 @@ class ShowProveedor extends Component
     {
         $this->telefono2 = trim($this->telefono2);
         $this->validate([
-            'newtelefono' => ['required', 'numeric', 'digits_between:7,9']
+            'newtelefono' => [
+                'required', 'numeric', 'digits_between:7,9',
+                new ValidatePhoneClient('proveedors', $this->proveedor->id, $this->telephone->id ?? null)
+            ]
         ]);
         try {
 
             DB::beginTransaction();
-
             $this->proveedor->telephones()->updateOrCreate([
                 'id' => $this->telephone->id ?? null
             ], [
@@ -265,8 +267,4 @@ class ShowProveedor extends Component
         }
     }
 
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-select2-editproveedores');
-    }
 }

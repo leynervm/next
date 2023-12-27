@@ -12,7 +12,7 @@ class GetPrice
         $priceCompra = number_format($preciocompra + ($preciocompra * $incremento) / 100, $decimal, '.', '');
 
         $price = number_format($priceCompra + ($priceCompra * $ganancia) / 100, $decimal, '.', '');
-        $amountDescuento = number_format(($price * $descuento) / 100,  $decimal, '.', '');
+        $amountDescuento = number_format(($price * $descuento) / 100, $decimal, '.', '');
 
         if ($default) {
             $priceRounded = self::round_up($price - $amountDescuento, 0);
@@ -36,7 +36,7 @@ class GetPrice
             $precioCompra = number_format($producto->pricebuy, $decimal, '.', '');
             $descuento = number_format(0, 2);
             $amountDescuento = number_format(0, 2);
-            $tipoCambio = empty($priceTipoCambio) ? 1 : (float)$priceTipoCambio;
+            $tipoCambio = empty($priceTipoCambio) ? 1 : (float) $priceTipoCambio;
 
             $precioVenta = number_format($producto->pricebuy, $decimal, '.', '');
             $precioDescuento = number_format($producto->pricebuy, $decimal, '.', '');
@@ -63,14 +63,14 @@ class GetPrice
                     if ($priceManual) {
                         $precioManual = number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
 
-                        $amountDescuento = number_format(($priceManual->pivot->price * $descuento) / 100,  $pricetype->decimals, '.', '');
+                        $amountDescuento = number_format(($priceManual->pivot->price * $descuento) / 100, $pricetype->decimals, '.', '');
                         $precioVenta = number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
                         $precioDescuento = number_format($priceManual->pivot->price - $amountDescuento, $pricetype->decimals, '.', '');
 
                         $amountDescuentoDolar = number_format((($precioVenta / $tipoCambio) * $descuento) / 100, $pricetype->decimals, '.', '');
                         $precioVentaDolar = number_format($precioVenta / $tipoCambio, $pricetype->decimals, '.', '');
                         $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $pricetype->decimals, '.', '');
-                        $oldPrecioSalida =  number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
+                        $oldPrecioSalida = number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
                     }
                     // else {
 
@@ -88,12 +88,12 @@ class GetPrice
                                 $priceSelect = $priceManual->pivot->price ?? $precioCompra + ($precioCompra * $rango->pivot->ganancia) / 100;
 
                                 $precioVenta = number_format($priceSelect, $pricetype->decimals, '.', '');
-                                $amountDescuento = number_format(($precioVenta * $descuento) / 100,  $pricetype->decimals, '.', '');
+                                $amountDescuento = number_format(($precioVenta * $descuento) / 100, $pricetype->decimals, '.', '');
                                 $rangoexists = true;
                                 $datosRango = $rango;
                                 $oldPrecioSalida = number_format($precioCompra + ($precioCompra * $rango->pivot->ganancia) / 100, $pricetype->decimals, '.', '');
 
-                                if ((bool)$pricetype->decimalrounded) {
+                                if ((bool) $pricetype->decimalrounded) {
                                     $precioVenta = self::round_decimal($precioVenta);
                                     $oldPrecioSalida = self::round_decimal($oldPrecioSalida);
                                 }
@@ -103,7 +103,11 @@ class GetPrice
                                 $amountDescuentoDolar = number_format((($precioVenta / $tipoCambio) * $descuento) / 100, $pricetype->decimals, '.', '');
                                 $precioVentaDolar = number_format($precioVenta / $tipoCambio, $pricetype->decimals, '.', '');
                                 $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $pricetype->decimals, '.', '');
-                                $oldPrecioSalida =  number_format($oldPrecioSalida, $pricetype->decimals, '.', '');
+                                $oldPrecioSalida = number_format($oldPrecioSalida, $pricetype->decimals, '.', '');
+
+                                if ((bool) $pricetype->decimalrounded) {
+                                    // $precioDescuento = number_format(self::round_decimal($precioDescuento), $pricetype->decimals, '.', '');
+                                }
                             } else {
 
                                 // $priceSelect = $priceManual->pivot->price ?? 0;
@@ -114,7 +118,7 @@ class GetPrice
                                 $amountDescuentoDolar = number_format(0, $pricetype->decimals, '.', '');
                                 $precioVentaDolar = number_format(0, $pricetype->decimals, '.', '');
                                 $precioDescuentoDolar = number_format(0, $pricetype->decimals, '.', '');
-                                $oldPrecioSalida =  number_format(0, $pricetype->decimals, '.', '');
+                                $oldPrecioSalida = number_format(0, $pricetype->decimals, '.', '');
                             }
                         }
                     } else {
@@ -125,15 +129,15 @@ class GetPrice
                         $precioVenta = number_format($priceSelect, $pricetype->decimals, '.', '');
                         $precioDescuento = number_format($priceSelect - $amountDescuento, $pricetype->decimals, '.', '');
 
-                        $amountDescuentoDolar = number_format((($precioVenta /  $tipoCambio) * $descuento) / 100, $pricetype->decimals, '.', '');
+                        $amountDescuentoDolar = number_format((($precioVenta / $tipoCambio) * $descuento) / 100, $pricetype->decimals, '.', '');
                         $precioVentaDolar = number_format($precioVenta / $tipoCambio, $pricetype->decimals, '.', '');
                         $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $pricetype->decimals, '.', '');
-                        $oldPrecioSalida =  number_format(0, $pricetype->decimals, '.', '');
+                        $oldPrecioSalida = number_format(0, $pricetype->decimals, '.', '');
                         // }
                     }
                 }
             } else {
-                $amountDescuento = number_format(($producto->pricesale * $descuento) / 100,  $decimal, '.', '');
+                $amountDescuento = number_format(($producto->pricesale * $descuento) / 100, $decimal, '.', '');
                 $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
                 $precioDescuento = number_format($producto->pricesale - $amountDescuento, $decimal, '.', '');
                 $amountDescuentoDolar = number_format((($producto->pricesale / $tipoCambio) * $descuento) / 100, $decimal, '.', '');
@@ -180,7 +184,7 @@ class GetPrice
 
         $result = $value - floor($value);
         if ($result > 0) {
-            return ($result < 0.5) ? (float)(floor($value) + 0.5) : round($value);
+            return ($result < 0.5) ? (float) (floor($value) + 0.5) : round($value);
         } else {
             return (float) $value;
         }
