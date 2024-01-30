@@ -20,6 +20,15 @@ class Opencaja extends Model
 
     protected $guarded = ['created_at', 'updated_at'];
 
+    public function getExpiredateAttribute($value)
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        return Carbon::parse($value)->format('Y-m-d H:i');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -37,7 +46,7 @@ class Opencaja extends Model
 
     public function scopeCajasAbiertas($query)
     {
-        return $query->whereNull('expiredate');
+        return $query->where('status', self::ACTIVO);
     }
 
     public function scopeCajasUser($query)
@@ -62,7 +71,17 @@ class Opencaja extends Model
     //         ->sucursalDefault()->select('sucursals.id')->pluck('sucursals.id'));
     // }
 
-    public function isUsing()
+    public function isExpired()
+    {
+        return $this->status == 0 && now('America/Lima') > $this->expiredate;
+    }
+
+    public function isActivo()
+    {
+        return $this->status == 0 && now('America/Lima') <= $this->expiredate;
+    }
+
+    public function isUsingUser()
     {
         return $this->user_id == auth()->user()->id;
     }

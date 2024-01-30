@@ -11,20 +11,19 @@ class CreateTypeGarantia extends Component
 {
 
     public $open = false;
-    public $name, $timestring, $time;
+    public $name, $datecode, $time;
 
     protected function rules()
     {
         return [
             'name' => [
-                'required', 'min:3', 'max:100', new Letter,
-                new CampoUnique('typegarantias', 'name', null, true),
+                'required', 'min:3', 'max:100', new CampoUnique('typegarantias', 'name', null, false),
             ],
-            'timestring' => [
-                'required', 'min:3', 'max:100', 'string'
+            'datecode' => [
+                'required', 'string', 'min:2', 'max:4',
             ],
             'time' => [
-                'required', 'integer', 'min:1'
+                'required', 'integer', 'min:1', 'max:100'
             ]
         ];
     }
@@ -39,34 +38,24 @@ class CreateTypeGarantia extends Component
     {
         if ($this->open == false) {
             $this->resetValidation();
-            $this->reset('name', 'timestring', 'time', 'open');
+            $this->reset('name', 'datecode', 'time', 'open');
         }
     }
 
     public function save()
     {
         $this->name = trim($this->name);
-        $this->timestring = trim($this->timestring);
+        $this->datecode = trim($this->datecode);
         $this->time = trim($this->time);
         $this->validate();
 
-        $typegarantia = Typegarantia::withTrashed()
-            ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
-
-        if ($typegarantia) {
-            $typegarantia->timestring =  $this->timestring;
-            $typegarantia->time =  $this->time;
-            $typegarantia->restore();
-        } else {
-            Typegarantia::create([
-                'name' => $this->name,
-                'timestring' => $this->timestring,
-                'time' => $this->time,
-                'datecode' => 'MM'
-            ]);
-        }
+        Typegarantia::create([
+            'name' => $this->name,
+            'datecode' => $this->datecode,
+            'time' => $this->time
+        ]);
 
         $this->emitTo('almacen::garantias.show-type-garantias', 'render');
-        $this->reset('name', 'timestring', 'time', 'open');
+        $this->reset('name', 'datecode', 'time', 'open');
     }
 }

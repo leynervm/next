@@ -4,8 +4,8 @@ namespace Modules\Almacen\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
-use Modules\Almacen\Entities\Almacenarea;
-use Modules\Almacen\Entities\Estante;
+use App\Models\Almacenarea;
+use App\Models\Estante;
 
 class SeedEstantesTableSeeder extends Seeder
 {

@@ -17,7 +17,7 @@ class ShowGarantias extends Component
     public $typegarantia_id, $time;
     public $open = false;
     public $newprice, $priceold, $pricemanual;
-    public $titulo, $descripcion;
+    public $descripcion = '';
 
     protected $listeners = ['delete'];
 
@@ -26,24 +26,18 @@ class ShowGarantias extends Component
         $this->producto = $producto;
         $this->typegarantia = new Typegarantia();
         $this->pricetype = new Pricetype();
+        if ($producto->detalleproducto) {
+            $this->descripcion =  $producto->detalleproducto->descripcion;
+        }
     }
 
     public function render()
     {
 
         $typegarantias = Typegarantia::orderBy('name', 'asc')->get();
-        $pricetypes = Pricetype::orderBy('ganancia', 'desc')->orderBy('name', 'asc')->get();
+        $pricetypes = Pricetype::orderBy('id', 'asc')->orderBy('name', 'asc')->get();
 
         return view('livewire.modules.almacen.productos.show-garantias', compact('typegarantias', 'pricetypes'));
-    }
-
-    public function updatedTypegarantiaId($value)
-    {
-        $this->reset(['typegarantia', 'time']);
-        if ($value) {
-            $this->typegarantia = Typegarantia::find($value);
-            $this->time = $this->typegarantia->time;
-        }
     }
 
     public function save()
@@ -120,22 +114,26 @@ class ShowGarantias extends Component
 
     public function savedetalle()
     {
-        $this->validate([
+        $validateData = $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'titulo' => ['required', 'string', 'min:3'],
-            'descripcion' => ['required', 'string', 'min:3']
+            'descripcion' => ['required', 'string']
         ]);
 
-        $this->producto->detalleproductos()->create([
-            'title' => $this->titulo,
-            'descripcion' => $this->descripcion,
-            'created_at' => now('America/Lima')
-        ]);
-
-        $this->reset(['titulo', 'descripcion']);
+        $this->producto->detalleproducto()->updateOrCreate(
+            ['id' => $this->producto->detalleproducto->id ?? null],
+            ['descripcion' => $this->descripcion]
+        );
+        // $this->reset(['descripcion']);
         $this->resetValidation();
-        $this->emit("resetCKEditor");
+        // $this->emit("resetCKEditor");
         $this->producto->refresh();
-        $this->dispatchBrowserEvent('created');
+        $this->dispatchBrowserEvent('updated');
     }
+
+    // public function deletedescripcion(Detalleproducto $detalleproducto)
+    // {
+    //     $detalleproducto->delete();
+    //     $this->producto->refresh();
+    //     $this->dispatchBrowserEvent('deleted');
+    // }
 }

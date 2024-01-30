@@ -51,19 +51,27 @@ class ShowCajas extends Component
     {
         $this->name = trim($this->name);
         $validateData = $this->validate([
-            'sucursal.id' => [
-                'required', 'integer', 'min:1', 'exists:sucursals,id'
-            ],
+            'sucursal.id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'name' => [
                 'required', 'min:3', 'max:100',
                 new CampoUnique('cajas', 'name', null, true, 'sucursal_id', $this->sucursal->id),
             ],
         ]);
-        $this->sucursal->cajas()->create($validateData);
-        $this->sucursal->refresh();
-        $this->resetValidation();
-        $this->reset(['name']);
-        $this->dispatchBrowserEvent('created');
+
+        $caja = $this->sucursal->cajas()->withTrashed()
+            ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])->first();
+
+        if ($caja) {
+            if ($caja->trashed()) {
+                $this->emit('confirmRestorecaja', $caja);
+            }
+        } else {
+            $this->sucursal->cajas()->create($validateData);
+            $this->sucursal->refresh();
+            $this->resetValidation();
+            $this->reset(['name']);
+            $this->dispatchBrowserEvent('created');
+        }
     }
 
     public function update()
@@ -86,16 +94,15 @@ class ShowCajas extends Component
     public function delete(Caja $caja)
     {
 
-        $opencajas = $this->sucursal->cajas()->withWhereHas('opencajas', function ($query) use ($caja) {
-            $query->whereNull('expiredate')
-                ->where('caja_id', $caja->id);
-        })->exists();
-
+        $opencajas = $this->sucursal->cajas()
+            ->withWhereHas('opencajas', function ($query) use ($caja) {
+                $query->whereNull('closedate')->where('caja_id', $caja->id);
+            })->exists();
 
         if ($opencajas) {
             $mensaje = response()->json([
-                'title' => 'No se puede eliminar registro con nombre ' . $caja->name,
-                'text' => "La caja seleccionada se encuentra aperturada y activa, cierre la apertura de caja e inténtelo nuevamente."
+                'title' => 'Existen cajas aperturadas con la registro a eliminar, ' . $caja->name,
+                'text' => "La caja seleccionada se encuentra en uso, cierre la apertura de caja e inténtelo nuevamente."
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
         } else {
@@ -107,12 +114,13 @@ class ShowCajas extends Component
 
     public function restorecaja($id)
     {
-
         $caja = Caja::onlyTrashed()->find($id);
         if ($caja) {
             $caja->restore();
             $this->sucursal->refresh();
-            $this->dispatchBrowserEvent('toast', toastJSON('Caja activada correctamente'));
+            $this->resetValidation();
+            $this->reset(['name']);
+            $this->dispatchBrowserEvent('toast', toastJSON('Caja habilitada correctamente'));
         }
     }
 }

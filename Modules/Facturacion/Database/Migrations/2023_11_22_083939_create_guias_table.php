@@ -27,7 +27,7 @@ return new class extends Migration {
             $table->string('namedestinatario', 255);
             $table->decimal('peso', 12, 4);
             $table->string('unit', 5);
-            $table->tinyInteger('packages');
+            $table->tinyInteger('packages')->nullable();
             $table->string('direccionorigen', 255)->nullable();
             $table->string('anexoorigen', 4)->nullable();
             $table->string('direcciondestino', 255)->nullable();
@@ -40,8 +40,8 @@ return new class extends Migration {
             $table->string('indicadorvehretorvacio', 1)->default(0);
             $table->string('indicadorvehretorenvacios', 1)->default(0);
             $table->string('hash', 32)->nullable();
-            $table->tinyInteger('codesunat')->nullable();
-            $table->string('descripcion', 255)->nullable();
+            $table->string('codesunat', 4)->nullable();
+            $table->text('descripcion')->nullable();
             $table->text('notasunat')->nullable();
             $table->tinyInteger('motivotraslado_id');
             $table->tinyInteger('modalidadtransporte_id');

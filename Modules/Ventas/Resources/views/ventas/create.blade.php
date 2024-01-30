@@ -31,12 +31,11 @@
         class="w-full flex flex-wrap xl:flex-nowrap gap-8 xl:h-[calc(100vh_-_4rem)] animate__animated animate__fadeIn animate__faster">
         <div
             class="w-full xl:flex-shrink-0 xl:w-96 xl:overflow-y-auto soft-scrollbar h-full border rounded border-shadowform">
-            <livewire:modules.ventas.ventas.show-resumen-venta :empresa="$empresa" :sucursal="$sucursal" :typepayment="$typepayment"
-                :methodpayment="$methodpayment" :seriecomprobante="$seriecomprobante" :moneda="$moneda" :concept="$concept" :opencaja="$opencaja" />
+            <livewire:modules.ventas.ventas.show-resumen-venta :sucursal="$sucursal" :typepayment="$typepayment" :methodpayment="$methodpayment"
+                :seriecomprobante="$seriecomprobante" :moneda="$moneda" :concept="$concept" :opencaja="$opencaja" />
         </div>
         <div class="w-full xl:flex-shrink-1 xl:overflow-y-auto soft-scrollbar h-full border rounded border-shadowform">
-            <livewire:modules.ventas.ventas.create-venta :empresa="$empresa" :sucursal="$sucursal" :pricetype="$pricetype"
-                :moneda="$moneda" />
+            <livewire:modules.ventas.ventas.create-venta :sucursal="$sucursal" :pricetype="$pricetype" :moneda="$moneda" />
         </div>
     </div>
 </x-app-layout>

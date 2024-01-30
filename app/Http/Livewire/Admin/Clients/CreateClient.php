@@ -13,6 +13,7 @@ use App\Rules\ValidateDocument;
 use App\Rules\ValidateNacimiento;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateClient extends Component
@@ -21,7 +22,7 @@ class CreateClient extends Component
     public $open = false;
 
     public $document, $name, $ubigeo_id, $direccion, $email,
-    $sexo, $nacimiento, $pricetype_id, $telefono;
+        $sexo, $nacimiento, $pricetype_id, $telefono;
 
     public $documentContact, $nameContact, $telefonoContact;
 
@@ -36,9 +37,9 @@ class CreateClient extends Component
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'direccion' => ['required', 'string', 'min:3'],
             'email' => ['nullable', 'min:6', 'email'],
-            'sexo' => ['required'],
+            'sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])],
             'nacimiento' => ['nullable', 'date', new ValidateNacimiento(10)],
-            'pricetype_id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
+            'pricetype_id' => ['nullable', Rule::requiredIf(mi_empresa()->uselistprice == 1), 'integer', 'min:1', 'exists:pricetypes,id'],
             'telefono' => ['required', 'numeric', 'digits_between:7,9'],
             'documentContact' => [new ValidateContacto($this->document)],
             'nameContact' => [new ValidateContacto($this->document)],

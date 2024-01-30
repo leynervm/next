@@ -7,7 +7,7 @@
         @endif
 
         @if (isset($body))
-            <tbody class="bg-fondobodytable divide-y divide-dividetable text-textbodytable">
+            <tbody class="bg-fondobodytable divide-y divide-dividetable text-textbodytable text-xs">
                 {{ $body }}
             </tbody>
         @endif

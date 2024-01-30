@@ -19,8 +19,8 @@
             <form wire:submit.prevent="save">
                 <div class="w-full">
                     <x-label value="Seleccionar caja :" />
-                    <div x-data="{ caja_id: @entangle('caja_id') }" x-init="select2CajaAlpine" wire:ignore>
-                        <x-select class="block w-full" x-ref="select" id="aperturacaja_id" data-dropdown-parent="">
+                    <div x-data="{ caja_id: @entangle('caja_id') }" x-init="select2CajaAlpine" wire:ignore class="relative">
+                        <x-select class="block w-full" x-ref="select" id="aperturacaja_id" data-dropdown-parent="null">
                             <x-slot name="options">
                                 @if (count($cajas))
                                     @foreach ($cajas as $item)
@@ -29,8 +29,15 @@
                                 @endif
                             </x-slot>
                         </x-select>
+                        <x-icon-select />
                     </div>
                     <x-jet-input-error for="caja_id" />
+                </div>
+
+                <div class="w-full mt-2">
+                    <x-label value="Fecha cierre :" />
+                    <x-input class="block w-full" wire:model.defer="expiredate" type="datetime-local" />
+                    <x-jet-input-error for="expiredate" />
                 </div>
 
                 <div class="w-full mt-2">

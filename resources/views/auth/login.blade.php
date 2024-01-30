@@ -1,7 +1,8 @@
 <x-guest-layout>
     <x-jet-authentication-card>
         <x-slot name="logo">
-            <x-jet-authentication-card-logo />
+            {{-- <x-jet-authentication-card-logo /> --}}
+            <x-logo-next />
         </x-slot>
 
         <x-jet-validation-errors class="mb-4" />
@@ -36,7 +37,7 @@
             <div class="block mt-4">
                 <x-label-check for="remember_me">
                     <x-input name="remember" type="checkbox" id="remember_me" />
-                    {{ __('Remember me') }}</x-label-check>
+                    {{ __('REMEMBER ME') }}</x-label-check>
 
                 {{-- <label for="remember_me" class="flex items-center">
                     <x-jet-checkbox id="remember_me" name="remember" />
@@ -46,15 +47,15 @@
 
             <div class="flex items-center justify-end mt-4">
                 @if (Route::has('password.request'))
-                    <a class="underline text-sm text-primary hover:text-gray-900"
+                    <a class="underline text-sm text-linktable hover:text-hoverlinktable transition-all ease-in-out duration-150"
                         href="{{ route('password.request') }}">
                         {{ __('Forgot your password?') }}
                     </a>
                 @endif
 
-                <x-jet-button class="ml-4">
+                <x-button type="submit" class="ml-4 uppercase">
                     {{ __('Log in') }}
-                </x-jet-button>
+                </x-button>
             </div>
         </form>
     </x-jet-authentication-card>

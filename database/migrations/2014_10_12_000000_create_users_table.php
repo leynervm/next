@@ -22,10 +22,14 @@ return new class extends Migration
             $table->rememberToken();
             $table->integer('status')->default(0);
             $table->bigInteger('role_id')->nullable();
+            $table->tinyInteger('sucursal_id')->nullable();
+            $table->tinyInteger('almacen_id')->nullable();
             $table->tinyInteger('theme_id')->nullable();
             $table->foreignId('current_team_id')->nullable();
             $table->string('profile_photo_path', 2048)->nullable();
             $table->foreign('theme_id')->on('themes')->references('id');
+            $table->foreign('sucursal_id')->on('sucursals')->references('id');
+            $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->timestamps();
             $table->softDeletes();
         });

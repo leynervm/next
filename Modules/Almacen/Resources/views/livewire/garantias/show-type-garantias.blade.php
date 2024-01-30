@@ -10,9 +10,13 @@
         @if (count($typegarantias))
             @foreach ($typegarantias as $item)
                 @php
-                    $timemes = $item->time > 11 ? ' (' . $item->time . ' Meses)' : '';
+                    if ($item->datecode == 'MM') {
+                        $timestring = $item->time > 1 ? ' MESES' : ' MES';
+                    } else {
+                        $timestring = $item->time > 1 ? ' AÑOS' : ' AÑO';
+                    }
                 @endphp
-                <x-minicard :title="$item->name" :content="$item->timestring . $timemes" size="lg">
+                <x-minicard :title="$item->name" :content="$item->time . $timestring" size="lg">
                     <x-slot name="buttons">
                         <div class="ml-auto">
                             <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
@@ -36,22 +40,37 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update">
+            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
+                <div>
+                    <x-label value="Descripción :" />
+                    <x-input class="block w-full" wire:model.defer="typegarantia.name"
+                        placeholder="Ingrese descripción garantía..." />
+                    <x-jet-input-error for="typegarantia.name" />
+                </div>
 
-                <x-label value="Descripción :" />
-                <x-input class="block w-full" wire:model.defer="typegarantia.name"
-                    placeholder="Ingrese descripción garantía..." />
-                <x-jet-input-error for="typegarantia.name" />
+                <div>
+                    <x-label value="Medida garantía :" />
+                    <div class="w-full flex flex-wrap gap-2">
+                        <x-input-radio class="py-2" for="edit_month" text="MESES">
+                            <input wire:model.defer="typegarantia.datecode"
+                                class="sr-only peer peer-disabled:opacity-25" type="radio" id="edit_month"
+                                name="datecode" value="MM" />
+                        </x-input-radio>
+                        <x-input-radio class="py-2" for="edit_year" text="AÑOS">
+                            <input wire:model.defer="typegarantia.datecode"
+                                class="sr-only peer peer-disabled:opacity-25" type="radio" id="edit_year"
+                                name="datecode" value="YYYY" />
+                        </x-input-radio>
+                    </div>
+                    <x-jet-input-error for="typegarantia.datecode" />
+                </div>
 
-                <x-label class="mt-2" value="Tiempo predeterminado (Letras):" />
-                <x-input class="block w-full" wire:model.defer="typegarantia.timestring"
-                    placeholder="Ingrese tiempo garantía en letras..." />
-                <x-jet-input-error for="typegarantia.timestring" />
-
-                <x-label class="mt-2" value="Tiempo predeterminado (Meses):" />
-                <x-input type="number" class="block w-full" wire:model.defer="typegarantia.time" step="1"
-                    min="1" />
-                <x-jet-input-error for="typegarantia.time" />
+                <div>
+                    <x-label value="Tiempo predeterminado (Meses):" />
+                    <x-input type="number" class="block w-full" wire:model.defer="typegarantia.time" step="1"
+                        min="1" />
+                    <x-jet-input-error for="typegarantia.time" />
+                </div>
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
@@ -65,8 +84,8 @@
         document.addEventListener('livewire:load', function() {
             Livewire.on('typegarantias.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
+                    title: 'Eliminar tipo de garantía, ' + data.name,
+                    text: "Se eliminará el tipo de garantía de la base de datos, incluyendo todas las garantías vinculadas a los productos.",
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#0FB9B9',
@@ -76,8 +95,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         // console.log(data.detail.id);
-                        Livewire.emitTo('almacen::garantias.show-type-garantias', 'delete', data
-                            .id);
+                        @this.delete(data.id);
                     }
                 })
             })

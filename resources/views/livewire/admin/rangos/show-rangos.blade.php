@@ -1,6 +1,6 @@
 <div class="">
 
-    @if (count($rangos))
+    @if ($rangos->hasPages())
         <div class="pb-2">
             {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
@@ -44,17 +44,29 @@
                                 </svg>
                             </button>
                         </th>
-                        <th scope="col" class="p-2 font-medium text-left">
-                            INCREMENTO
+                        <th scope="col" class="p-2 font-medium text-center">
+                            INCREMENTO P.C
                         </th>
 
-                        @foreach ($rangos as $item)
-                            <th></th>
-                        @endforeach
+                        @if (count($pricetypes) > 0)
+                            @foreach ($pricetypes as $item)
+                                <th scope="col" class="p-2 font-medium text-center">
+                                    <div class="flex justify-center items-center gap-1">
+                                        <span>{{ $item->name }}</span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                            class="w-4 h-4 block" stroke-width="0.5" stroke="currentColor"
+                                            fill-rule="evenodd" clip-rule="evenodd">
+                                            <path
+                                                d="M19 11.1554L17.5858 12.5L12 7.1892L6.4142 12.5L5 11.1554L12.0001 4.5L19 11.1554Z" />
+                                            <path
+                                                d="M19 18.1554L17.5858 19.5L12 14.1892L6.4142 19.5L5 18.1554L12.0001 11.5L19 18.1554Z" />
+                                        </svg>
+                                    </div>
+                                </th>
+                            @endforeach
+                        @endif
 
-                        <th scope="col" class="p-2 relative">
-                            <span class="sr-only">OPCIONES</span>
-                        </th>
+                        <th scope="col" class="p-2 text-end">OPCIONES</th>
                     </tr>
                 </x-slot>
                 <x-slot name="body">
@@ -67,25 +79,34 @@
                                 {{ $item->hasta }}
                             </td>
                             <td class="p-2 text-xs">
-                                {{ $item->incremento }}
+                                <div class="flex gap-1 text-green-500 items-center justify-center">
+                                    <span>{{ formatDecimalOrInteger($item->incremento) }}%</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                        class="w-4 h-4 block" stroke-width="0.5" stroke="currentColor"
+                                        fill-rule="evenodd" clip-rule="evenodd">
+                                        <path
+                                            d="M19 11.1554L17.5858 12.5L12 7.1892L6.4142 12.5L5 11.1554L12.0001 4.5L19 11.1554Z" />
+                                        <path
+                                            d="M19 18.1554L17.5858 19.5L12 14.1892L6.4142 19.5L5 18.1554L12.0001 11.5L19 18.1554Z" />
+                                    </svg>
+                                </div>
                             </td>
 
                             @foreach ($item->pricetypes as $lista)
-                                <td class="p-2 text-xs">
+                                <td class="p-2 text-center">
                                     <p class="font-semibold text-[10px]">{{ $lista->name }}</p>
-                                    <x-input class="block w-20" :value="$lista->pivot->ganancia" type="number" step="0.1"
+                                    <x-input class="inline-block" :value="$lista->pivot->ganancia" type="number" step="0.1"
                                         min="0"
                                         wire:keydown.enter="updatepricerango({{ $item->id }},{{ $lista->id }}, $event.target.value)" />
-                                    {{-- <p>{{ $lista->pivot->id }}</p> --}}
                                 </td>
                             @endforeach
 
-                            <td class="p-2 whitespace-nowrap">
-                                <div class="flex gap-1 items-center">
+                            <td class="p-2">
+                                <div class="flex gap-2 items-center justify-end">
                                     <x-button-edit wire:click="edit({{ $item->id }})"
-                                        wire:loading.attr="disabled"></x-button-edit>
-                                    <x-button-delete wire:loading.attr="disabled" wire:target="confirmDelete"
-                                        wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
+                                        wire:loading.attr="disabled" />
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        wire:click="$emit('rangos.confirmDelete',{{ $item }})" />
                                 </div>
                             </td>
                         </tr>
@@ -98,13 +119,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar rango precio') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -112,13 +127,13 @@
                 <div class="w-full flex flex-wrap sm:flex-nowrap gap-2">
                     <div class="w-full sm:w-1/2">
                         <x-label value="Precio desde :" />
-                        <x-input class="block w-full" wire:model.defer="rango.desde" type="number" step="0.1"
+                        <x-input class="block w-full" wire:model.defer="rango.desde" type="number" step="0.01"
                             min="0" />
                         <x-jet-input-error for="rango.desde" />
                     </div>
                     <div class="w-full sm:w-1/2">
                         <x-label value="Precio hasta :" />
-                        <x-input class="block w-full" wire:model.defer="rango.hasta" type="number" step="0.1"
+                        <x-input class="block w-full" wire:model.defer="rango.hasta" type="number" step="0.01"
                             min="0" />
                         <x-jet-input-error for="rango.hasta" />
                     </div>
@@ -126,15 +141,14 @@
 
                 <div class="md:w-1/2 mt-2">
                     <x-label value="Incremento precio :" />
-                    <x-input class="block w-full" wire:model.defer="rango.incremento" type="number" step="0.1"
+                    <x-input class="block w-full" wire:model.defer="rango.incremento" type="number" step="0.01"
                         min="0" />
                     <x-jet-input-error for="rango.incremento" />
                 </div>
 
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
@@ -143,9 +157,9 @@
     </x-jet-dialog-modal>
     <script>
         document.addEventListener('livewire:load', function() {
-            window.addEventListener('rangos.confirmDelete', data => {
+            Livewire.on('rangos.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
+                    title: 'Eliminar rango de precio, ' + data.desde + ' - ' + data.hasta,
                     text: "Se eliminará un registro de la base de datos",
                     icon: 'question',
                     showCancelButton: true,
@@ -155,8 +169,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('admin.rangos.show-rangos', 'delete', data.detail
-                            .id);
+                        @this.delete(data.id);
                     }
                 })
             })

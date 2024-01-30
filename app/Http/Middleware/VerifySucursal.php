@@ -2,8 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Empresa;
 use Closure;
 use Illuminate\Http\Request;
+use Nwidart\Modules\Facades\Module;
 
 class VerifySucursal
 {
@@ -16,46 +18,29 @@ class VerifySucursal
      */
     public function handle(Request $request, Closure $next)
     {
+        $empresa = Empresa::exists();
+        // session(['redirect_url' => url()->previous()]);
 
-        $user = auth()->user();
-        // if (session('redirect_url')) {
-        //     $url = session('redirect_url');
-        //     session()->forget('intended_url');
-        //     return redirect()->to($url);
-        // } else {
-        //     return redirect()->route('admin.administracion.empresa');
-        // }
-
-        if ($user->sucursals()->exists()) {
-            if (!$user->sucursalDefault()->exists()) {
-                $mensaje = response()->json([
-                    'title' => 'SELECCIONAR SUCURSAL PREDETERMINADO',
-                    'text' => 'Seleccione una sucursal predeterminada a usar !',
-                    'type' => 'warning'
-                ]);
-
-                return redirect()->back()->with('message', $mensaje);
-                // return redirect()->route('admin.ventas')->with('message', $mensaje);
-            }
-
-            if (!$user->sucursalDefault()->first()->seriecomprobantes()->exists()) {
-                $mensaje = response()->json([
-                    'title' => 'ASIGNAR SERIES SUCURSAL',
-                    'text' => 'Seleccionar series para generar comprobantes de venta !',
-                    'type' => 'warning'
-                ]);
-                return redirect()->back()->with('message', $mensaje);
-                // return redirect()->route('admin.ventas')->with('message', $mensaje);
-            }
-            return $next($request);
-        } else {
+        if (!$empresa) {
             $mensaje = response()->json([
-                'title' => 'ASIGNAR SUCURSAL',
-                'text' => 'Sucursal no asignado, contáctese con el administrador del sistema !',
+                'title' => 'CONFIGURAR PERFIL DE LA EMPRESA',
+                'text' => 'Configurar los datos de la empresa, requeridos por el sistema, contáctese con su administrador.',
+                'type' => 'warning'
+            ]);
+            return redirect()->back()->with('message', $mensaje);
+            // return redirect()->route('admin.administracion.empresa.create')->with('message', 'Configurar datos de la empresa !');
+        }
+
+        if (auth()->user()->sucursal == null) {
+            $mensaje = response()->json([
+                'title' => 'ASIGNAR SUCURSAL PARA EL USUARIO LOGUEADO',
+                'text' => 'Usuario logueado no cuenta con sucursal asignada, contáctese con su administrador.',
                 'type' => 'warning'
             ]);
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.ventas')->with('message', $mensaje);
         }
+
+        return $next($request);
     }
 }

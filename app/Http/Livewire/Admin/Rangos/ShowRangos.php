@@ -19,7 +19,7 @@ class ShowRangos extends Component
     public $rango;
     public $minHasta;
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
@@ -35,7 +35,6 @@ class ShowRangos extends Component
             'rango.incremento' => [
                 'required', 'numeric', 'min:0', 'decimal:0,2',
             ]
-
         ];
     }
 
@@ -46,8 +45,11 @@ class ShowRangos extends Component
 
     public function render()
     {
-        $rangos = Rango::orderBy('desde', 'asc')->paginate();
-        return view('livewire.admin.rangos.show-rangos', compact('rangos'));
+        $rangos = Rango::with(['pricetypes' => function ($query) {
+            $query->orderBy('id', 'asc');
+        }])->orderBy('desde', 'asc')->paginate();
+        $pricetypes = Pricetype::orderBy('id', 'asc')->paginate();
+        return view('livewire.admin.rangos.show-rangos', compact('rangos', 'pricetypes'));
     }
 
     public function edit(Rango $rango)
@@ -62,23 +64,23 @@ class ShowRangos extends Component
     {
 
         $this->validate();
-
         DB::beginTransaction();
         try {
 
             $this->rango->save();
-            $pricetypes = Pricetype::pluck('id')->toArray();
-            $this->rango->pricetypes()->syncWithPivotValues(
-                $pricetypes,
-                [
-                    // 'ganancia' => $this->rango->incremento,
-                    'user_id' => Auth::user()->id,
-                    'created_at' => now('America/Lima'),
-                    'updated_at' => now('America/Lima')
-                ]
-            );
+            // $pricetypes = Pricetype::pluck('id')->toArray();
+            // $this->rango->pricetypes()->syncWithPivotValues(
+            //     $pricetypes,
+            //     [
+            //         // 'ganancia' => $this->rango->incremento,
+            //         'user_id' => Auth::user()->id,
+            //         'created_at' => now('America/Lima'),
+            //         'updated_at' => now('America/Lima')
+            //     ]
+            // );
             DB::commit();
-            $this->reset();
+            $this->resetExcept(['rango']);
+            $this->dispatchBrowserEvent('updated');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -95,12 +97,7 @@ class ShowRangos extends Component
         try {
             $rango->pricetypes()->updateExistingPivot(
                 $pricetype,
-                [
-                    'ganancia' => $cantidad,
-                    'user_id' => Auth::user()->id,
-                    'created_at' => now('America/Lima'),
-                    'updated_at' => now('America/Lima')
-                ]
+                ['ganancia' => $cantidad]
             );
 
             $this->dispatchBrowserEvent('updated');
@@ -114,17 +111,12 @@ class ShowRangos extends Component
         }
     }
 
-    public function confirmDelete(Rango $rango)
-    {
-        $this->dispatchBrowserEvent('rangos.confirmDelete', $rango);
-    }
-
     public function delete(Rango $rango)
     {
         DB::beginTransaction();
         try {
             $rango->pricetypes()->detach();
-            $rango->deleteOrFail();
+            $rango->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {

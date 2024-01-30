@@ -48,33 +48,47 @@ Route::get('/users/historial', [UserController::class, 'history'])->name('admin.
 Route::get('/users/historial-reset-password', [UserController::class, 'historypassword'])->name('admin.users.historypassword');
 
 
-Route::get('/administracion/empresa/create', [EmpresaController::class, 'create'])->name('admin.administracion.empresa.create')->middleware(['verifycompany']);
-Route::get('/administracion/empresa/edit/', [EmpresaController::class, 'show'])->name('admin.administracion.empresa')->middleware(['registercompany']);
 
-Route::get('/administracion/sucursales', [SucursalController::class, 'index'])->name('admin.administracion.sucursales')->middleware(['registercompany']);
-Route::get('/administracion/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('admin.administracion.sucursales.edit')->middleware(['registercompany']);
+Route::get('/administracion/empresa/edit/', [EmpresaController::class, 'show'])->name('admin.administracion.empresa')->middleware(['verifycompany']);
+Route::get('/administracion/empresa/create', [EmpresaController::class, 'create'])->name('admin.administracion.empresa.create')->middleware(['registercompany']);
+
+
+
+Route::get('/administracion/employers', [HomeController::class, 'employers'])->name('admin.administracion.employers')->middleware(['verifycompany']);
+
+
+
+
+
+Route::get('/administracion/sucursales', [SucursalController::class, 'index'])->name('admin.administracion.sucursales')->middleware(['verifycompany']);
+Route::get('/administracion/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('admin.administracion.sucursales.edit')->middleware(['verifycompany']);
 // Route::get('/administracion/sucursales', ShowSucursales::class)->name('admin.administracion.sucursales')->middleware(['registercompany']);
 
 Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('admin.units');
 
 
-
-Route::get('/clientes', [ClientController::class, 'index'])->name('admin.clientes');
-Route::get('/clientes/{client:document}', [ClientController::class, 'show'])->name('admin.clientes.show');
+Route::get('/clientes', [ClientController::class, 'index'])->name('admin.clientes')->middleware(['verifycompany']);
+Route::get('/clientes/{client:document}/edit', [ClientController::class, 'show'])->name('admin.clientes.show')->middleware(['verifycompany']);
+Route::get('/clientes/{client:document}/historial-ventas', [ClientController::class, 'show'])->name('admin.clientes.historial')->middleware(['verifycompany']);
 
 Route::get('/proveedores', [ProveedorController::class, 'index'])->name('admin.proveedores');
 Route::get('/proveedores/create', [ProveedorController::class, 'create'])->name('admin.proveedores.create');
-Route::get('/proveedores/edit/{proveedor:document}', [ProveedorController::class, 'show'])->name('admin.proveedores.show');
+Route::get('/proveedores/{proveedor:document}/edit', [ProveedorController::class, 'show'])->name('admin.proveedores.show');
 Route::get('/proveedores/tipos', [ProveedorController::class, 'proveedortypes'])->name('admin.proveedores.tipos');
+Route::get('/proveedores/{proveedor:document}/historial-compras', [ProveedorController::class, 'history'])->name('admin.proveedores.historial');
+Route::get('/proveedores/{proveedor:document}/historial-pedidos', [ProveedorController::class, 'pedidos'])->name('admin.proveedores.pedidos');
 
 
 Route::get('/lista-precios', [HomeController::class, 'pricetypes'])->name('admin.pricetypes');
 Route::get('/canales-venta', [HomeController::class, 'channelsales'])->name('admin.channelsales');
 
+Route::get('/administracion/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('admin.administracion.typecomprobantes')->middleware(['verifycompany']);
+
+
 
 
 Route::get('/cajas', [CajaController::class, 'index'])->name('admin.cajas');
-Route::get('/cajas/aperturas', [CajaController::class, 'aperturas'])->name('admin.cajas.aperturas')->middleware(['registercompany', 'verifysucursal']);
+Route::get('/cajas/aperturas', [CajaController::class, 'aperturas'])->name('admin.cajas.aperturas')->middleware(['verifysucursal']);
 Route::get('/cajas/administrar', [CajaController::class, 'administrar'])->name('admin.cajas.administrar');
 Route::get('/cajas/conceptos', [CajaController::class, 'conceptos'])->name('admin.cajas.conceptos');
 Route::get('/cajas/movimientos', [CajaController::class, 'movimientos'])->name('admin.cajas.movimientos');
@@ -83,16 +97,15 @@ Route::get('/cajas/cuentas', [CajaController::class, 'cuentas'])->name('admin.ca
 Route::get('/cajas/forma-pago', [CajaController::class, 'methodpayments'])->name('admin.cajas.methodpayments');
 
 
-Route::get('/facturacion/typecomprobantes', [HomeController::class, 'typecomprobantes'])->name('admin.facturacion.typecomprobantes');
-
-
 if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
-    Route::get('/almacen/productos', [ProductoController::class, 'index'])->name('admin.almacen.productos');
-    Route::get('/almacen/productos/create', [ProductoController::class, 'create'])->name('admin.almacen.productos.create');
-    Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.show');
+    Route::get('/almacen/productos', [ProductoController::class, 'index'])->name('admin.almacen.productos')->middleware(['verifysucursal']);
+    Route::get('/almacen/productos/create', [ProductoController::class, 'create'])->name('admin.almacen.productos.create')->middleware(['verifysucursal', 'verifyalmacen']);
+    Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.show')->middleware(['verifysucursal']);
+
+    Route::get('/almacen/productos/promociones', [HomeController::class, 'promociones'])->name('admin.almacen.promociones')->middleware(['verifysucursal']);
 }
 
-
+Route::get('/marcas', [HomeController::class, 'marcas'])->name('admin.almacen.marcas');
 Route::get('/categorias', [AlmacenController::class, 'categorias'])->name('admin.almacen.categorias');
 Route::get('/subcategorias', [AlmacenController::class, 'subcategorias'])->name('admin.almacen.subcategorias');
 Route::get('/almacen/productos/ofertas', [AlmacenController::class, 'ofertas'])->name('admin.almacen.ofertas');

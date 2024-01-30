@@ -15,7 +15,7 @@ class ShowUsers extends Component
 
     public function render()
     {
-        $users = User::with('sucursals')->orderBy('name', 'asc')->paginate();
+        $users = User::with(['sucursal', 'almacen'])->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.users.show-users', compact('users'));
     }
 }

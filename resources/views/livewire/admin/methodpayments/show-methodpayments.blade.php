@@ -10,20 +10,33 @@
         <div class="flex gap-3 flex-wrap justify-start mt-3">
             @foreach ($methodpayments as $item)
                 <div
-                    class="w-60 flex flex-col items-center justify-center bg-fondominicard p-2 rounded-md shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard">
-                    <h1 class="text-xs text-colorlinknav">{{ $item->name }}</h1>
-                    @if (count($item->cuentas))
-                        <div class="space-y-1 mt-3">
-                            <h1
-                                class="text-[10px] text-colorsubtitleform font-semibold tracking-widest relative before:absolute before:bottom-0 before:w-12 before:h-0.5 before:bg-colorsubtitleform">
-                                CUENTAS</h1>
-                            @foreach ($item->cuentas as $account)
-                                <p class="text-[10px] text-colorminicard leading-3">
-                                    [ {{ $account->account }}] - {{ $account->descripcion }}
-                                </p>
-                            @endforeach
+                    class="w-full xs:w-60 flex flex-col items-center justify-between bg-fondominicard p-2 rounded-md shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard">
+                    <div>
+                        <h1 class="text-xs text-colorlinknav">{{ $item->name }}</h1>
+                        @if (count($item->cuentas))
+                            <div class="space-y-1 mt-3">
+                                <h1
+                                    class="text-[10px] text-colorsubtitleform font-semibold tracking-widest relative before:absolute before:bottom-0 before:w-12 before:h-0.5 before:bg-colorsubtitleform">
+                                    CUENTAS</h1>
+                                @foreach ($item->cuentas as $account)
+                                    <p class="text-[10px] text-colorminicard leading-3">
+                                        [ {{ $account->account }}] - {{ $account->descripcion }}
+                                    </p>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                    <div class="w-full flex items-center gap-2 {{ $item->default ? 'justify-between' : 'justify-end' }}">
+                        @if ($item->default)
+                            <x-icon-default class="inline-block" />
+                        @endif
+
+                        <div class="flex gap-2">
+                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                            <x-button-delete wire:loading.attr="disabled"
+                                wire:click="$emit('methodpayments.confirmDelete', {{ $item }})" />
                         </div>
-                    @endif
+                    </div>
                 </div>
             @endforeach
         </div>
@@ -33,13 +46,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar forma pago') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -49,14 +56,12 @@
                     placeholder="Ingrese descripción de forma pago..." />
                 <x-jet-input-error for="methodpayment.name" />
 
-                <x-label textSize="[10px]"
-                    class="mt-1 inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                    for="default_edit">
-                    <x-input wire:model.defer="methodpayment.default" name="default" value="1" type="checkbox"
-                        id="default_edit" />
-                    SELECCIONAR COMO PREDETERMINADO
-                </x-label>
-                <x-jet-input-error for="methodpayment.default" />
+                <div class="block mt-1">
+                    <x-label-check for="default_edit">
+                        <x-input wire:model.defer="methodpayment.default" name="default" value="1" type="checkbox"
+                            id="default_edit" />SELECCIONAR COMO PREDETERMINADO </x-label-check>
+                    <x-jet-input-error for="methodpayment.default" />
+                </div>
 
                 <x-label value="Asignar cuentas pago :" class="mt-2 underline" />
 
@@ -72,9 +77,8 @@
                     </div>
                 @endif
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
@@ -83,9 +87,9 @@
     </x-jet-dialog-modal>
     <script>
         document.addEventListener('livewire:load', function() {
-            window.addEventListener('methodpayments.confirmDelete', data => {
+            Livewire.on('methodpayments.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
+                    title: 'Eliminar forma de pago, ' + data.name,
                     text: "Se eliminará un registro de la base de datos",
                     icon: 'question',
                     showCancelButton: true,
@@ -95,9 +99,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('methodpayments.show-methodpayments', 'delete', data
-                            .detail.id);
-
+                        @this.delete(data.id);
                     }
                 })
             })

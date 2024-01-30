@@ -29,4 +29,9 @@ class Moneda extends Model
     {
         return $query->where('default', 1);
     }
+
+    public function scopeDefault($query)
+    {
+        return $query->where('default', 1);
+    }
 }

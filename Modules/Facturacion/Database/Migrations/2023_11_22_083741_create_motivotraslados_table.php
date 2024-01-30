@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -14,8 +15,11 @@ return new class extends Migration {
     {
         Schema::create('motivotraslados', function (Blueprint $table) {
             $table->tinyIncrements('id')->unsigned();
-            $table->string('code', 2);
+            $table->string('code', 2)->nullable();
             $table->string('name', 255);
+            $table->unsignedTinyInteger('typecomprobante_id')->nullable();
+            $table->foreign('typecomprobante_id')->references('id')->on('typecomprobantes');
+            $table->softDeletes();
         });
     }
 

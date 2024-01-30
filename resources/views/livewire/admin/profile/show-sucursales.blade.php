@@ -9,26 +9,14 @@
 
     <x-slot name="form">
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="sucursal_id" value="{{ __('Default Sucursal') }} :" />
-            <div id="parentsucursal_id" class="relative">
-                <x-select class="block w-full" id="sucursal_id" wire:model.defer="sucursal_id">
-                    <x-slot name="options">
-                        @if (count($sucursals))
-                            @foreach ($sucursals as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        @endif
-                    </x-slot>
-                </x-select>
-                <x-icon-select />
-                <x-jet-input-error for="sucursal_id" />
-            </div>
+            <x-label for="sucursal_id" value="{{ __('Sucursal asignado') }} :" />
+            <x-disabled-text :text="auth()->user()->sucursal->name" />
         </div>
 
         <div class="col-span-6 sm:col-span-4">
-            <x-label for="almacen_id" value="{{ __('Default Almacen') }} :" />
-            <div id="parentalmacen_id" class="relative">
-                <x-select class="block w-full" id="almacen_id" wire:model.defer="almacen_id">
+            <x-label for="almacen_id" value="{{ __('Almacen predeterminado') }} :" />
+            <div id="parentalmacen_id" class="relative" x-data="{ almacen_id: @entangle('almacen_id').defer }" x-init="select2Almacen" wire:ignore>
+                <x-select class="block w-full" id="almacen_id" x-ref="select" data-placeholder="null">
                     <x-slot name="options">
                         @if (count($almacens))
                             @foreach ($almacens as $item)
@@ -41,6 +29,20 @@
                 <x-jet-input-error for="almacen_id" />
             </div>
         </div>
+
+        <script>
+            function select2Almacen() {
+                this.select = $(this.$refs.select).select2();
+                this.select.val(this.almacen_id).trigger("change");
+                this.select.on("select2:select", (event) => {
+                    this.almacen_id = event.target.value;
+                }).on('select2:open', function(e) {
+                    const evt = "scroll.select2";
+                    $(e.target).parents().off(evt);
+                    $(window).off(evt);
+                });
+            }
+        </script>
     </x-slot>
 
     <x-slot name="actions">
@@ -52,42 +54,4 @@
             {{ __('Save') }}
         </x-jet-button>
     </x-slot>
-
-    @section('scripts')
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-
-                renderselect2();
-
-                $('#almacen_id').on("change", function(e) {
-                    disableselect2()
-                    @this.set('almacen_id', e.target.value);
-                });
-
-                $('#sucursal_id').on("change", function(e) {
-                    disableselect2()
-                    @this.set('sucursal_id', e.target.value);
-                });
-
-
-                document.addEventListener('render-show-sucursals', () => {
-                    renderselect2();
-                });
-
-                function disableselect2() {
-                    $('#sucursal_id, #almacen_id').attr('disabled', true);
-                }
-
-                function renderselect2() {
-                    $('#sucursal_id, #almacen_id').select2()
-                        .on('select2:open', function(e) {
-                            const evt = "scroll.select2";
-                            $(e.target).parents().off(evt);
-                            $(window).off(evt);
-                        });
-                }
-            })
-        </script>
-    @endsection
-
 </x-jet-form-section>

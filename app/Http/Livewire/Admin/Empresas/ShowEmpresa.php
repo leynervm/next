@@ -32,30 +32,30 @@ class ShowEmpresa extends Component
     public $idlogo, $idicono, $idpublickey, $publickey, $idprivatekey, $privatekey;
     public $validatemail;
 
-    protected $listeners = ['erroricono', 'iconloaded'];
+    protected $listeners = ['erroricono'];
 
     protected function rules()
     {
         return [
-            'empresa.document' => ['required', 'numeric', 'digits:11'],
-            'empresa.name' => ['required'],
-            'empresa.direccion' => ['required'],
+            'empresa.document' => ['required', 'numeric', 'digits:11', 'regex:/^\d{11}$/'],
+            'empresa.name' => ['required', 'string', 'min:3'],
+            'empresa.direccion' => ['required', 'string', 'min:3'],
             'empresa.ubigeo_id' => ['required', 'integer', 'min:0', 'exists:ubigeos,id'],
             'empresa.estado' => ['required', 'string'],
             'empresa.condicion' => ['required', 'string'],
-            'empresa.email' => ['nullable'],
-            'empresa.web' => ['nullable'],
-            'empresa.montoadelanto' => ['nullable', 'decimal:0,2'],
-            'empresa.usuariosol' => ['nullable'],
-            'empresa.clavesol' => ['nullable'],
+            'empresa.email' => ['nullable', 'email'],
+            'empresa.web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'empresa.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+            'empresa.usuariosol' => ['nullable', 'string'],
+            'empresa.clavesol' => ['nullable', 'string'],
             'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
             'publickey' => ['nullable', 'file', new ValidateFileKey("pem")],
             'privatekey' => ['nullable', 'file',  new ValidateFileKey("pem")],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
-            'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1'],
-            'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1'],
+            'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+            'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1', 'numeric', 'decimal:0,4', 'min:0'],
             'empresa.tipocambioauto' => ['integer', 'min:0', 'max:1']
         ];
     }
@@ -78,15 +78,26 @@ class ShowEmpresa extends Component
 
     public function update()
     {
+        // dd($this->empresa->usepricedolar);
+        $this->empresa->uselistprice = $this->empresa->uselistprice == 1 ? 1 : 0;
+        $this->empresa->usepricedolar = $this->empresa->usepricedolar == true ?  1 : 0;
+        $this->empresa->viewpricedolar = $this->empresa->viewpricedolar == true ?  1 : 0;
+        $this->empresa->tipocambioauto = $this->empresa->tipocambioauto == true ?  1 : 0;
 
-        $this->empresa->uselistprice = $this->empresa->uselistprice == 1 ?  1 : 0;
-        $this->empresa->usepricedolar = $this->empresa->usepricedolar == 1 ?  1 : 0;
-        $this->empresa->viewpricedolar = $this->empresa->viewpricedolar == 1 ?  1 : 0;
-        $this->empresa->tipocambioauto = $this->empresa->tipocambioauto == 1 ?  1 : 0;
+        if ($this->empresa->usepricedolar == 0) {
+            $this->empresa->usepricedolar = 0;
+            $this->empresa->viewpricedolar = 0;
+            $this->empresa->tipocambioauto = 0;
+            $this->empresa->tipocambio = null;
+        }
+
+        // dd($this->empresa->usepricedolar, $this->empresa->viewpricedolar, $this->empresa->tipocambioauto);
+
         $this->empresa->document = trim($this->empresa->document);
         $this->empresa->name = trim($this->empresa->name);
         $this->empresa->direccion = trim($this->empresa->direccion);
         $this->empresa->estado = trim($this->empresa->estado);
+        $this->empresa->condicion = trim($this->empresa->condicion);
         $this->validate();
 
         try {
@@ -130,11 +141,7 @@ class ShowEmpresa extends Component
                 $this->privatekey->storeAs('company/pem/', $urlprivatekey, 'local');
             }
 
-            $this->empresa->document = $this->empresa->document;
-            $this->empresa->name = $this->empresa->name;
-            $this->empresa->estado = $this->empresa->estado;
-            $this->empresa->condicion = $this->empresa->condicion;
-            $this->empresa->direccion = $this->empresa->direccion;
+
             $this->empresa->email = $this->empresa->email;
             $this->empresa->web = $this->empresa->web;
             $this->empresa->icono = $urlicono;
@@ -143,11 +150,6 @@ class ShowEmpresa extends Component
             $this->empresa->usuariosol = $this->empresa->usuariosol;
             $this->empresa->clavesol = $this->empresa->clavesol;
             $this->empresa->montoadelanto = $this->empresa->montoadelanto;
-            $this->empresa->uselistprice = $this->empresa->uselistprice;
-            $this->empresa->usepricedolar = $this->empresa->usepricedolar;
-            $this->empresa->viewpricedolar = $this->empresa->viewpricedolar;
-            $this->empresa->tipocambio = $this->empresa->tipocambio;
-            $this->empresa->tipocambioauto = $this->empresa->tipocambioauto;
             $this->empresa->default = 1;
             $this->empresa->ubigeo_id = $this->empresa->ubigeo_id;
             $this->empresa->save();
@@ -182,16 +184,18 @@ class ShowEmpresa extends Component
                 ]);
             }
 
-
             DB::commit();
             $this->resetValidation();
             $this->reset([
                 'icono', 'logo', 'idlogo', 'idicono',
                 'publickey', 'privatekey', 'idpublickey', 'idprivatekey'
             ]);
-
             $this->dispatchBrowserEvent('updated');
             $this->empresa->refresh();
+            $this->idlogo = rand();
+            $this->idicono = rand();
+            $this->idpublickey = rand();
+            $this->idprivatekey = rand();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -200,13 +204,6 @@ class ShowEmpresa extends Component
             throw $e;
         }
     }
-
-    // public function updatedEmpresaUsepricedolar($value)
-    // {
-    //     if ($value) {
-    //         $this->searchpricedolar();
-    //     }
-    // }
 
     public function openmodalphone()
     {
@@ -229,7 +226,7 @@ class ShowEmpresa extends Component
 
         $this->phone = trim($this->phone);
         $this->validate([
-            'phone' => ['required', 'numeric', 'digits_between:7,9']
+            'phone' => ['required', 'numeric', 'digits_between:6,9', 'regex:/^\d{6,9}$/']
         ]);
 
         if ($this->empresa) {
@@ -262,6 +259,7 @@ class ShowEmpresa extends Component
 
             $empresa->publickey = null;
             $empresa->save();
+            $this->idpublickey = rand();
             $this->empresa->refresh();
         }
     }
@@ -276,6 +274,7 @@ class ShowEmpresa extends Component
             $empresa->privatekey = null;
             $empresa->save();
             $this->empresa->refresh();
+            $this->idprivatekey = rand();
         }
     }
 
@@ -289,6 +288,7 @@ class ShowEmpresa extends Component
             $empresa->icono = null;
             $empresa->save();
             $this->empresa->refresh();
+            $this->idicono = rand();
         }
     }
 
@@ -301,6 +301,7 @@ class ShowEmpresa extends Component
 
             $logo->deleteOrFail();
             $this->empresa->refresh();
+            $this->idlogo = rand();
         }
     }
 
@@ -309,7 +310,7 @@ class ShowEmpresa extends Component
 
         $this->empresa->document = trim($this->empresa->document);
         $validate = $this->validate([
-            'empresa.document' => 'required|numeric|digits:11'
+            'empresa.document' => 'required|numeric|digits:11|regex:/^\d{11}$/'
         ]);
 
         $this->empresa->name = null;
@@ -341,18 +342,18 @@ class ShowEmpresa extends Component
         }
     }
 
-    public function searchpricedolar()
-    {
+    // public function searchpricedolar()
+    // {
 
-        $this->resetValidation(['empresa.tipocambio']);
+    //     $this->resetValidation(['empresa.tipocambio']);
 
-        $http = new GetClient();
-        $response = $http->getTipoCambio();
+    //     $http = new GetClient();
+    //     $response = $http->getTipoCambio();
 
-        if ($response->precioVenta) {
-            $this->empresa->tipocambio = $response->precioVenta;
-        }
-    }
+    //     if ($response->precioVenta) {
+    //         $this->empresa->tipocambio = $response->precioVenta;
+    //     }
+    // }
 
     public function clearLogo()
     {
@@ -396,9 +397,4 @@ class ShowEmpresa extends Component
     // {
     //     $this->isUploadingIcono = false;
     // }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-select-empresa');
-    }
 }

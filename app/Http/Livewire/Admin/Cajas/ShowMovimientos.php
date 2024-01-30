@@ -64,12 +64,19 @@ class ShowMovimientos extends Component
         $methodpayments = Methodpayment::whereHas('cajamovimientos')->get();
         $concepts = Concept::whereHas('cajamovimientos')->get();
         $users = User::whereHas('cajamovimientos')->get();
-        $sucursals = Sucursal::whereHas('cajamovimientos')->get();
+        $sucursals = Sucursal::withTrashed()->whereHas('cajamovimientos')->get();
         $cajas = Caja::whereHas('opencajas', function ($query) {
             $query->whereHas('cajamovimientos');
         })->withTrashed()->get();
 
-        $movimientos = Cajamovimiento::orderBy('date', 'desc');
+        $movimientos = Cajamovimiento::withWhereHas('sucursal', function ($query) {
+            $query->withTrashed();
+            if ($this->searchsucursal !== '') {
+                $query->where('id', $this->searchsucursal);
+            } else {
+                $query->where('id', auth()->user()->sucursal_id);
+            }
+        });
 
         if ($this->date) {
             if ($this->dateto) {
@@ -90,9 +97,7 @@ class ShowMovimientos extends Component
         if ($this->searchuser !== '') {
             $movimientos->where('user_id', $this->searchuser);
         }
-        if ($this->searchsucursal !== '') {
-            $movimientos->where('sucursal_id', $this->searchsucursal);
-        }
+
         if ($this->searchcaja !== '') {
             $movimientos->whereHas('opencaja', function ($query) {
                 $query->where('caja_id', $this->searchcaja);

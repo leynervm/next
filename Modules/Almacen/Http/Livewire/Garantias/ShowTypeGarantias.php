@@ -18,28 +18,19 @@ class ShowTypeGarantias extends Component
     public $open = false;
     public $typegarantia;
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
         return [
             'typegarantia.name' => [
-                'required',
-                'min:3',
-                'max:100',
-                new Letter,
-                new CampoUnique('typegarantias', 'name', $this->typegarantia->id, true),
+                'required', 'min:3', 'max:100', new CampoUnique('typegarantias', 'name', $this->typegarantia->id, true),
             ],
-            'typegarantia.timestring' => [
-                'required',
-                'min:3',
-                'max:100',
-                'string'
+            'typegarantia.datecode' => [
+                'required', 'string', 'min:2', 'max:4',
             ],
             'typegarantia.time' => [
-                'required',
-                'integer',
-                'min:1'
+                'required', 'integer', 'min:1', 'max:100'
             ]
         ];
     }
@@ -64,7 +55,7 @@ class ShowTypeGarantias extends Component
     public function update()
     {
         $this->typegarantia->name = trim($this->typegarantia->name);
-        $this->typegarantia->timestring = trim($this->typegarantia->timestring);
+        $this->typegarantia->datecode = trim($this->typegarantia->datecode);
         $this->typegarantia->time = $this->typegarantia->time;
         $this->validate();
         $this->typegarantia->save();

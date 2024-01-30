@@ -2,11 +2,11 @@
 
 namespace Modules\Almacen\Http\Livewire\Almacenareas;
 
+use App\Models\Almacenarea;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Almacen\Entities\Almacenarea;
 
 class ShowAlmacenareas extends Component
 {

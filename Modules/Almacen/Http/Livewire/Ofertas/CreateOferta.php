@@ -23,42 +23,20 @@ class CreateOferta extends Component
     protected function rules()
     {
         return [
-            'almacen_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:almacens,id',
-            ],
+            'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
             'producto_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:productos,id',
+                'required', 'integer', 'min:1', 'exists:productos,id',
                 Rule::unique('ofertas', 'producto_id')->where('status', 0)->whereNull('deleted_at')
             ],
-            'descuento' => [
-                'required',
-                'decimal:0,2',
-                'min:1',
-            ],
+            'descuento' => ['required', 'decimal:0,2', 'min:1'],
             'datestart' => [
-                'required',
-                'date',
-                'date_format:Y-m-d',
-                'after_or_equal:today',
+                'required', 'date', 'date_format:Y-m-d', 'after_or_equal:today'
             ],
             'dateexpire' => [
-                'required',
-                'date',
-                'date_format:Y-m-d',
-                'after_or_equal:today',
-                'after_or_equal:datestart',
+                'required', 'date', 'date_format:Y-m-d', 'after_or_equal:today', 'after_or_equal:datestart',
             ],
             'limit' => [
-                'required',
-                'integer',
-                'min:1',
-                'max:' . $this->limit
+                'required', 'integer', 'min:1', 'max:' . $this->limit
             ]
         ];
     }

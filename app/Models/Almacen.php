@@ -64,14 +64,29 @@ class Almacen extends Model
         return $this->belongsTo(Sucursal::class);
     }
 
+    public function users(): hasMany
+    {
+        return $this->hasMany(User::class);
+    }
+
     public function isDefault()
     {
-        return $this->where('default', $this::DEFAULT );
+        return $this->where('default', $this::DEFAULT);
     }
 
     public function carshoops(): HasMany
     {
         return $this->hasMany(Carshoop::class);
+    }
+
+    public function kardexes()
+    {
+        return $this->hasMany(Kardex::class);
+    }
+
+    public function scoopeDefault($query)
+    {
+        return $query->where('default', $this::DEFAULT);
     }
 
     // public function disponibles()

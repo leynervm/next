@@ -14,7 +14,6 @@ use Nwidart\Modules\Facades\Module;
 class ShowTypecomprobantes extends Component
 {
 
-
     use WithPagination;
 
     public $open = false;
@@ -32,11 +31,11 @@ class ShowTypecomprobantes extends Component
     public function render()
     {
 
-        if (Module::isEnabled('Facturacion')) {
-            $typecomprobantes = Typecomprobante::orderBy('code', 'asc')->paginate();
-        } else {
-            $typecomprobantes = Typecomprobante::DefaultSucursalTypecomprobantes()->paginate();
+        $typecomprobantes = Typecomprobante::orderBy('code', 'asc');
+        if (!Module::isEnabled('Facturacion')) {
+            $typecomprobantes->Default();
         }
+        $typecomprobantes =  $typecomprobantes->paginate();
 
         return view('livewire.admin.typecomprobantes.show-typecomprobantes', compact('typecomprobantes'));
     }
@@ -109,13 +108,17 @@ class ShowTypecomprobantes extends Component
     public function delete(Seriecomprobante $seriecomprobante)
     {
 
+        $ventas = $seriecomprobante->ventas()->count();
         $comprobantes = $seriecomprobante->comprobantes()->count();
+        $guias = $seriecomprobante->guias()->count();
 
         $cadena = FormatoPersonalizado::extraerMensaje([
+            'Ventas' => $ventas,
             'Comprobantes' => $comprobantes,
+            'Guias_Remision' => $guias,
         ]);
 
-        if ($comprobantes > 0) {
+        if ($ventas > 0 || $comprobantes > 0 || $guias > 0) {
             $mensaje = response()->json([
                 'title' => 'No se puede eliminar serie ' . $seriecomprobante->serie,
                 'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."

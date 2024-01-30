@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
+    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8 relative" x-data="createempresa">
         <x-form-card titulo="DATOS EMPRESA">
             <div class="bg-body p-3 w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                 <div class="w-full">
@@ -22,21 +22,21 @@
 
                 <div class="w-full sm:col-span-2">
                     <x-label value="Razón Social :" />
-                    <x-input class="block w-full" wire:model.defer="name" />
+                    <x-input class="block w-full" wire:model.defer="name" placeholder="Razón social..." />
                     <x-jet-input-error for="name" />
                 </div>
 
                 <div class="w-full sm:col-span-2 xl:col-span-1">
                     <x-label value="Dirección :" />
-                    <x-input class="block w-full" wire:model.defer="direccion" />
+                    <x-input class="block w-full" wire:model.defer="direccion" placeholder="Dirección..."/>
                     <x-jet-input-error for="direccion" />
                 </div>
 
                 <div class="w-full sm:col-span-2">
                     <x-label value="Ubigeo :" />
                     {{-- 20201987297 --}}
-                    <div id="parentubigeoempresa_id">
-                        <x-select class="block w-full" wire:model.defer="ubigeo_id" id="ubigeoempresa_id"
+                    <div id="parentubigeoempresa_id" class="relative" wire:ignore>
+                        <x-select class="block w-full" x-ref="selectubigeo" id="ubigeoempresa_id"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)
@@ -45,13 +45,14 @@
                                 @endforeach
                             </x-slot>
                         </x-select>
+                        <x-icon-select />
                     </div>
                     <x-jet-input-error for="ubigeo_id" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Teléfono /Celular :" />
-                    <x-input class="block w-full" wire:model.defer="telefono" />
+                    <x-input class="block w-full" wire:model.defer="telefono" placeholder="Teléfono / Celaular..." />
                     <x-jet-input-error for="telefono" />
                 </div>
 
@@ -69,8 +70,8 @@
 
                 <div class="w-full">
                     <x-label value="Correo :" />
-                    <x-input class="block w-full" wire:model.defer="email" />
-                    <x-jet-input-error for="correo" />
+                    <x-input class="block w-full" wire:model.defer="email" placeholder="@" />
+                    <x-jet-input-error for="email" />
                 </div>
 
                 <div class="w-full">
@@ -80,9 +81,9 @@
                 </div>
 
                 <div class="w-full">
-                    <x-label value="Monto adelanto máximo :" />
-                    <x-input class="block w-full" wire:model.defer="montoadelanto" type="number" placeholder="0.00" />
-                    <x-jet-input-error for="montoadelanto" />
+                    <x-label value="Porcentaje IGV :" />
+                    <x-input class="block w-full" wire:model.defer="igv" type="number" placeholder="0.00" />
+                    <x-jet-input-error for="igv" />
                 </div>
             </div>
         </x-form-card>
@@ -183,46 +184,48 @@
                             <x-jet-input-error for="uselistprice" />
                         </div>
 
-                        <div class="block" x-data="{ openpricedolar: false }">
+                        <div class="block">
                             <x-label-check for="usepricedolar">
-                                <x-input wire:model.defer="usepricedolar" name="usepricedolar" value="1"
-                                    type="checkbox" id="usepricedolar" x-on:change="openpricedolar = !openpricedolar"
-                                    wire:change="$emit('searchpricedolar', $event.target)" />
-                                USAR PRECIO EN DÓLARES
-                            </x-label-check>
+                                <x-input x-model="usepricedolar" id="usepricedolar" type="checkbox"
+                                    @change="changePricedolar" />USAR PRECIO EN DÓLARES</x-label-check>
                             <x-jet-input-error for="usepricedolar" />
 
-                            <div x-show="openpricedolar" wire:loading.remove wire:target="searchpricedolar">
-                                <x-input class="block w-full" type="number" wire:model.defer="tipocambio"
-                                    placeholder="0.00" min="0" step="0.0001" />
+                            <div x-show="!cambioauto">
+                                <div x-show="openpricedolar" style="display: none;">
+                                    <x-input class="w-full" type="number" x-model="tipocambio" placeholder="0.00"
+                                        min="0" step="0.0001" />
+                                </div>
                             </div>
+
+                            <div x-show="cambioauto">
+                                <x-disabled-text text="" x-text="tipocambio" />
+                            </div>
+
                             <x-jet-input-error for="tipocambio" />
 
-                            <div wire:loading.block wire:target="searchpricedolar">
+                            <div x-show="loadingdolar" style="display: none;">
                                 <x-loading-next />
                             </div>
                         </div>
 
-                        <div class="block">
+                        <div class="w-full animate__animated animate__fadeInDown" x-show="openpricedolar">
                             <x-label-check for="viewpricedolar">
-                                <x-input wire:model.defer="viewpricedolar" name="viewpricedolar" value="1"
-                                    type="checkbox" id="viewpricedolar" />
-                                VER PRECIO EN DÓLARES
-                            </x-label-check>
+                                <x-input x-model="viewpricedolar" name="viewpricedolar" type="checkbox"
+                                    id="viewpricedolar" />VER PRECIO EN DÓLARES</x-label-check>
                             <x-jet-input-error for="viewpricedolar" />
                         </div>
 
-                        <div class="block">
+                        <div class="w-full animate__animated animate__fadeInDown" x-show="openpricedolar">
                             <x-label-check for="tipocambioauto">
-                                <x-input wire:model.defer="tipocambioauto" name="tipocambioauto" value="1"
-                                    type="checkbox" id="tipocambioauto" />
+                                <x-input name="tipocambioauto" x-model="cambioauto" type="checkbox"
+                                    id="tipocambioauto" @change="changeAutomatico" />
                                 ACTUALIZAR TIPO CAMBIO AUTOMÁTICO
                             </x-label-check>
                             <x-jet-input-error for="tipocambioauto" />
                         </div>
                     @endif
 
-                    <div class="block" x-data="{ openvalidatemail: false }">
+                    <div class="w-full">
                         <x-label-check for="validatemail">
                             <x-input wire:model.defer="validatemail" value="1" type="checkbox"
                                 x-on:change="openvalidatemail = !openvalidatemail" id="validatemail" />
@@ -247,13 +250,13 @@
                         <div class="w-full">
                             <x-label value="Usuario SOL :" />
                             <x-input class="block w-full" wire:model.defer="usuariosol"
-                                placeholder="Ingrese usuario SOL Sunat..." />
+                                placeholder="Usuario SOL Sunat..." />
                             <x-jet-input-error for="usuariosol" />
                         </div>
                         <div class="w-full">
                             <x-label value="Clave SOL :" />
                             <x-input class="block w-full" wire:model.defer="clavesol"
-                                placeholder="Ingrese clave SOL Sunat..." />
+                                placeholder="Clave SOL Sunat..." />
                             <x-jet-input-error for="clavesol" />
                         </div>
                     </div>
@@ -357,75 +360,116 @@
             <x-button type="submit">REGISTRAR</x-button>
         </div>
 
-        <div wire:loading wire:target="save" class="relative">
+        <div wire:loading.flex wire:target="save" class="loading-overlay rounded hidden">
             <x-loading-next />
         </div>
     </form>
 
-    @section('scripts')
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('createempresa', () => ({
+                ubigeo_id: @entangle('ubigeo_id').defer,
+                usepricedolar: @entangle('usepricedolar').defer,
+                viewpricedolar: @entangle('viewpricedolar').defer,
+                tipocambio: @entangle('tipocambio').defer,
+                cambioauto: @entangle('tipocambioauto').defer,
+                loadingdolar: false,
+                openpricedolar: false,
+                openvalidatemail: false,
 
-                $("#ubigeoempresa_id").select2().on("change", function(e) {
-                    e.target.setAttribute("disabled", true);
-                    @this.ubigeo_id = e.target.value;
-                }).on('select2:open', function(e) {
-                    const evt = "scroll.select2";
-                    $(e.target).parents().off(evt);
-                    $(window).off(evt);
-                });
-
-
-                window.addEventListener('render-select-empresa', () => {
-                    $("#ubigeoempresa_id").select2()
-                });
-
-
-                Livewire.on('searchpricedolar', event => {
-                    let checked = $(event).is(':checked');
-                    if (checked) {
-                        @this.searchpricedolar();
+                init() {
+                    this.usepricedolar = false;
+                    this.viewpricedolar = false;
+                    this.cambioauto = false;
+                    this.selectUbigeo();
+                },
+                changePricedolar() {
+                    if (this.usepricedolar) {
+                        this.getTipocambio();
+                    } else {
+                        this.viewpricedolar = false;
+                        this.cambioauto = false;
+                        this.openpricedolar = false;
                     }
-                });
-
-                Livewire.on('iconload', (inputId) => {
-
-                    var input = $('#' + inputId);
-                    var file = input[0].files[0];
-
-                    if (file) {
-                        var reader = new FileReader();
-                        reader.onload = function(e) {
-                            $('#uploadForm + img').remove();
-                            $('#uploadForm').html('<img src="' + e.target.result +
-                                '" class="w-full h-full object-scale-down"/>');
-                            // document.getElementById('iconopreview').src = e.target.result;
-                        };
-                        // @this.isUploadingIcono = false;
-                        reader.readAsDataURL(file);
+                },
+                changeAutomatico() {
+                    if (this.cambioauto) {
+                        this.getTipocambio();
                     }
+                },
+                selectUbigeo() {
+                    this.selectU = $(this.$refs.selectubigeo).select2();
+                    this.selectU.val(this.ubigeo_id).trigger("change");
+                    this.selectU.on("select2:select", (event) => {
+                        this.ubigeo_id = event.target.value;
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                },
+                async getTipocambio() {
+                    try {
+                        this.loadingdolar = true;
+                        const response = await fetch('/admin/tipocambio');
+                        const data = await response.json();
+                        this.tipocambio = data.precioVenta;
+                        this.loadingdolar = false;
+                        this.openpricedolar = true;
 
-                    // document.getElementById(fileicono).addEventListener('change', function() {
+                    } catch (error) {
+                        console.error('Error al obtener el tipo de cambio', error);
+                        this.tipocambio = null;
+                        this.loadingdolar = false;
+                        this.openpricedolar = true;
+                    }
+                },
+            }))
+        });
 
-                    //     var file = this.files[0];
-                    //     if (file) {
+        window.addEventListener('selectubigeo', data => {
+            let selectubigeo = document.querySelector('[x-ref="selectubigeo"]');
+            $(selectubigeo).val(data.detail).trigger('change');
+            // $(selectubigeo).select2().trigger('change');
+        })
 
-                    //         var reader = new FileReader();
-                    //         reader.onload = function(e) {
-                    //             console.log(e.target);
-                    //             @this.iconobase64 = e.target.result;
-                    //             $('#uploadForm + img').remove();
-                    //             $('#uploadForm').html('<img src="' + e.target.result +
-                    //                 '" class="w-full h-full object-scale-down"/>');
-                    //             // document.getElementById('iconopreview').src = e.target.result;
-                    //         };
-                    //         // Livewire.emitTo('admin.empresas.show-empresa', 'iconloaded');
-                    //         reader.readAsDataURL(file);
-                    //     }
-                    // });
-                });
+        document.addEventListener('livewire:load', function() {
+            Livewire.on('iconload', (inputId) => {
+                var input = $('#' + inputId);
+                var file = input[0].files[0];
 
-            })
-        </script>
-    @endsection
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#uploadForm + img').remove();
+                        $('#uploadForm').html('<img src="' + e.target.result +
+                            '" class="w-full h-full object-scale-down"/>');
+                        // document.getElementById('iconopreview').src = e.target.result;
+                    };
+                    // @this.isUploadingIcono = false;
+                    reader.readAsDataURL(file);
+                }
+
+                // document.getElementById(fileicono).addEventListener('change', function() {
+
+                //     var file = this.files[0];
+                //     if (file) {
+
+                //         var reader = new FileReader();
+                //         reader.onload = function(e) {
+                //             console.log(e.target);
+                //             @this.iconobase64 = e.target.result;
+                //             $('#uploadForm + img').remove();
+                //             $('#uploadForm').html('<img src="' + e.target.result +
+                //                 '" class="w-full h-full object-scale-down"/>');
+                //             // document.getElementById('iconopreview').src = e.target.result;
+                //         };
+                //         // Livewire.emitTo('admin.empresas.show-empresa', 'iconloaded');
+                //         reader.readAsDataURL(file);
+                //     }
+                // });
+            });
+
+        })
+    </script>
 </div>

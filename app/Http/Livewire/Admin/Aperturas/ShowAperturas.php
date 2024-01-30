@@ -13,6 +13,8 @@ class ShowAperturas extends Component
 
     public $open = false;
     public $opencaja;
+    public $searchcaja = '';
+    public $searchsucursal = '';
 
     protected $listeners = ['render', 'close'];
 
@@ -22,8 +24,11 @@ class ShowAperturas extends Component
             'opencaja.caja_id' => [
                 'required', 'integer', 'min:1', 'exists:cajas,id',
             ],
+            'opencaja.expiredate' => [
+                'required', 'date', 'after:startdate', 'after_or_equal:' . now('America/Lima')->format('Y-m-d H:i')
+            ],
             'opencaja.startmount' => [
-                'required', 'numeric', 'min:0', 'decimal:0,2'
+                'required', 'numeric', 'min:0', 'decimal:0,4'
             ],
         ];
     }
@@ -35,9 +40,19 @@ class ShowAperturas extends Component
 
     public function render()
     {
-        $sucursals = auth()->user()->sucursals()->select('sucursals.id')->pluck('sucursals.id');
-        $aperturas = Opencaja::withWhereHas('caja', function ($query) use ($sucursals) {
-            $query->whereIn('sucursal_id', $sucursals)->withTrashed();
+        $aperturas = Opencaja::withWhereHas('caja', function ($query) {
+            $query->withTrashed()->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed();
+                if (trim($this->searchsucursal !== '')) {
+                    $query->where('id', $this->searchsucursal);
+                } else {
+                    $query->where('id', auth()->user()->sucursal_id);
+                }
+            });
+
+            if (trim($this->searchcaja !== '')) {
+                $query->where('id', $this->searchcaja);
+            }
         })->orderBy('startdate', 'desc')->paginate();
         return view('livewire.admin.aperturas.show-aperturas', compact('aperturas'));
     }
@@ -61,9 +76,9 @@ class ShowAperturas extends Component
     public function close(Opencaja $opencaja)
     {
         $this->opencaja = $opencaja;
-        $this->opencaja->expiredate = now("America/Lima");
+        $this->opencaja->closedate = now("America/Lima");
+        $this->opencaja->status = 1;
         $this->opencaja->save();
         $this->dispatchBrowserEvent('updated');
-
     }
 }

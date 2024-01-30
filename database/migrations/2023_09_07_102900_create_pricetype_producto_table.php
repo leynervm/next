@@ -16,8 +16,8 @@ class CreatePricetypeProductoTable extends Migration
         Schema::create('pricetype_producto', function (Blueprint $table) {
             $table->id();
             $table->decimal('price', 10, 4);
-            $table->unsignedSmallInteger('pricetype_id')->nullable();
-            $table->bigInteger('producto_id')->nullable();
+            $table->unsignedSmallInteger('pricetype_id');
+            $table->bigInteger('producto_id');
             $table->foreign('pricetype_id')->on('pricetypes')->references('id');
             $table->foreign('producto_id')->on('productos')->references('id');
         });

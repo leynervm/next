@@ -2,7 +2,7 @@
     <div class="w-full h-full flex flex-col gap-1 justify-center">
 
         @if (isset($imagen))
-            <div class="w-full h-8 rounded">
+            <div class="w-full h-12 rounded">
                 {{ $imagen }}
             </div>
         @endif

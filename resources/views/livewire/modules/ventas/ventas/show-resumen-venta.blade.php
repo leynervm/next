@@ -1,14 +1,15 @@
 <div>
+    {{ $typecomprobante }}
     <div class="w-full flex flex-col gap-8" x-data="{ loading: false }">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full flex flex-col gap-1" x-data="payment">
+                <div class="w-full flex flex-col gap-1" x-data="loader">
 
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
                         <div class="w-full">
                             <x-label value="Vincular cotización :" />
-                            <div id="parentventacotizacion_id">
-                                <x-select class="block w-full" id="ventacotizacion_id" wire:model.defer="cotizacion_id"
+                            <div id="parentctzc" class="relative" x-init="selectCotizacion" wire:ignore>
+                                <x-select class="block w-full" id="ctzc" x-ref="selectcot"
                                     data-minimum-results-for-search="3">
                                     <x-slot name="options">
                                         {{-- @if (count($categories))
@@ -18,24 +19,28 @@
                                 @endif --}}
                                     </x-slot>
                                 </x-select>
+                                <x-icon-select />
                             </div>
                             <x-jet-input-error for="cotizacion_id" />
                         </div>
-                        <div class="w-full">
-                            <x-label value="Moneda :" />
-                            <div id="parentventamoneda_id">
-                                <x-select class="block w-full" id="ventamoneda_id" wire:model.lazy="moneda_id">
-                                    <x-slot name="options">
-                                        @if (count($monedas))
-                                            @foreach ($monedas as $item)
-                                                <option value="{{ $item->id }}">{{ $item->currency }}</option>
-                                            @endforeach
-                                        @endif
-                                    </x-slot>
-                                </x-select>
+                        @if (count($monedas) > 1)
+                            <div class="w-full">
+                                <x-label value="Moneda :" />
+                                <div id="parentmnd" class="relative" x-init="selectMoneda" wire:ignore>
+                                    <x-select class="block w-full" x-ref="selectmoneda" id="mnd">
+                                        <x-slot name="options">
+                                            @if (count($monedas))
+                                                @foreach ($monedas as $item)
+                                                    <option value="{{ $item->id }}">{{ $item->currency }}</option>
+                                                @endforeach
+                                            @endif
+                                        </x-slot>
+                                    </x-select>
+                                    <x-icon-select />
+                                </div>
+                                <x-jet-input-error for="moneda_id" />
                             </div>
-                            <x-jet-input-error for="moneda_id" />
-                        </div>
+                        @endif
                     </div>
 
                     <div class="w-full flex flex-wrap lg:flex-nowrap xl:flex-wrap gap-1">
@@ -72,7 +77,7 @@
                             <x-jet-input-error for="direccion" />
                         </div>
 
-                        @if ($empresa->uselistprice)
+                        @if (mi_empresa()->uselistprice)
                             @if ($pricetypeasigned)
                                 <div class="w-full lg:w-1/3 xl:w-full">
                                     <x-label value="Lista precio asignado :" />
@@ -93,18 +98,21 @@
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
                         <div class="w-full">
                             <x-label value="Tipo comprobante :" />
-                            <div id="parentventatypecomprobante_id">
-                                <x-select class="block w-full" id="ventatypecomprobante_id"
-                                    wire:model.defer="typecomprobante_id">
+                            <div id="parenttpcmpbt" class="relative" x-init="selectComprobante" wire:ignore>
+                                <x-select class="block w-full" x-ref="selectcomprobante" id="tpcmpbt"
+                                    @change="getCodeSend($event.target)" data-placeholder="null">
                                     <x-slot name="options">
                                         @if (count($typecomprobantes))
                                             @foreach ($typecomprobantes as $item)
-                                                <option value="{{ $item->id }}">{{ $item->descripcion }}
+                                                <option value="{{ $item->id }}" data-code="{{ $item->code }}"
+                                                    data-sunat="{{ $item->sendsunat }}">
+                                                    {{ $item->descripcion }}
                                                 </option>
                                             @endforeach
                                         @endif
                                     </x-slot>
                                 </x-select>
+                                <x-icon-select />
                             </div>
                             <x-jet-input-error for="typecomprobante_id" />
                         </div>
@@ -112,10 +120,9 @@
                         @if (Module::isEnabled('Facturacion'))
                             <div class="w-full">
                                 <x-label value="Tipo pago :" />
-                                <div id="parentventatypepayment_id">
-                                    <x-select class="block w-full" id="ventatypepayment_id"
-                                        wire:model.lazy="typepayment_id" x-ref="selectpayment"
-                                        @change="getTipopago($event.target)">
+                                <div id="parenttpymt" class="relative" x-init="selectPayment" wire:ignore>
+                                    <x-select class="block w-full" id="tpymt" x-ref="selectpayment"
+                                        @change="getTipopago($event.target)" data-placeholder="null">
                                         <x-slot name="options">
                                             @if (count($typepayments))
                                                 @foreach ($typepayments as $item)
@@ -126,8 +133,8 @@
                                             @endif
                                         </x-slot>
                                     </x-select>
+                                    <x-icon-select />
                                 </div>
-                                <span x-text="formapago"></span>
                                 <x-jet-input-error for="typepayment_id" />
                             </div>
                         @endif
@@ -153,16 +160,16 @@
                             <x-label value="Cuotas :" />
                             <div class="w-full inline-flex">
                                 <x-input class="block w-full" type="number" min="1" step="1"
-                                    max="12" wire:model.defer="countcuotas" wire:key="countcuotas" />
+                                    max="100" wire:model.defer="countcuotas" wire:key="countcuotas" />
                             </div>
                             <x-jet-input-error for="countcuotas" />
                         </div>
 
-                        <div class="w-full animate__animated animate__fadeInDown" x-show="!paymentcuotas">
+                        <div class="w-full" x-show="!paymentcuotas">
                             <x-label value="Método pago :" />
-                            <div id="parentventamethodpayment_id">
-                                <x-select class="block w-full" id="ventamethodpayment_id"
-                                    wire:model.lazy="methodpayment_id">
+                            <div id="parenttmpym" class="relative" x-init="selectMethodpayment" wire:ignore>
+                                <x-select class="block w-full" id="tmpym" x-ref="selectmethodpayment"
+                                    data-placeholder="null">
                                     <x-slot name="options">
                                         @if (count($methodpayments))
                                             @foreach ($methodpayments as $item)
@@ -173,15 +180,16 @@
                                         @endif
                                     </x-slot>
                                 </x-select>
+                                <x-icon-select />
                             </div>
                             <x-jet-input-error for="methodpayment_id" />
                         </div>
 
-                        @if (count($accounts))
-                            <div class="w-full animate__animated animate__fadeInDown" x-show="!paymentcuotas">
+                        {{-- @if (count($accounts))
+                            <div class="w-full" x-show="!paymentcuotas">
                                 <x-label value="Cuenta pago :" />
-                                <div id="parentventacuenta_id">
-                                    <x-select class="block w-full" id="ventacuenta_id" wire:model.lazy="cuenta_id">
+                                <div id="parentcta" class="relative" x-init="selectCuenta" wire:ignore>
+                                    <x-select class="block w-full" id="cta" x-ref="selectcuenta">
                                         <x-slot name="options">
                                             @if (count($accounts))
                                                 @foreach ($accounts as $item)
@@ -193,10 +201,11 @@
                                             @endif
                                         </x-slot>
                                     </x-select>
+                                    <x-icon-select />
                                 </div>
                                 <x-jet-input-error for="cuenta_id" />
                             </div>
-                        @endif
+                        @endif --}}
 
                         <div class="w-full animate__animated animate__fadeInDown" x-show="!paymentcuotas">
                             <x-label value="Detalle pago :" />
@@ -205,7 +214,7 @@
                         </div>
                     </div>
 
-                    <div class="block relative" x-data="loader">
+                    <div class="block relative">
                         <x-label-check for="incluyeigv">
                             <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1" type="checkbox"
                                 id="incluyeigv" />
@@ -214,10 +223,13 @@
                         <x-jet-input-error for="incluyeigv" />
 
                         @if (Module::isEnabled('Facturacion'))
-                            <x-label-check for="incluyeguia">
-                                <x-input @change="toggleguia" name="incluyeguia" type="checkbox" id="incluyeguia" />
-                                GENERAR GUÍA REMISIÓN
-                            </x-label-check>
+                            @if (count($comprobantesguia) > 0)
+                                <x-label-check for="incluyeguia" x-show="openguia">
+                                    <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
+                                        id="incluyeguia" />
+                                    GENERAR GUÍA REMISIÓN
+                                </x-label-check>
+                            @endif
 
                             <div x-show="incluyeguia" class="block w-full animate__animated animate__fadeInDown">
 
@@ -225,39 +237,65 @@
 
                                 <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-1 gap-1">
                                     <div class="w-full xs:col-span-2 lg:col-span-1">
+                                        <x-label value="Guía remisión :" />
+                                        <div class="relative" id="parentsrgr" x-init="selectSerieguia" wire:ignore>
+                                            <x-select class="block w-full uppercase" x-ref="selectguia"
+                                                id="srgr" data-placeholder="null">
+                                                <x-slot name="options">
+                                                    @if (count($comprobantesguia))
+                                                        @foreach ($comprobantesguia as $item)
+                                                            <option value="{{ $item->id }}"
+                                                                data-code="{{ $item->code }}">
+                                                                {{ $item->name }} </option>
+                                                        @endforeach
+                                                    @endif
+                                                </x-slot>
+                                            </x-select>
+                                            <x-icon-select />
+                                        </div>
+                                        <x-jet-input-error for="typecomprobanteguia_id" />
+                                    </div>
+
+                                    <div class="w-full xs:col-span-2 lg:col-span-1">
                                         <x-label value="Motivo traslado :" />
-                                        <x-select class="block w-full uppercase" id="motivotraslado_id"
-                                            wire:model.defer="motivotraslado_id"
-                                            @change="getCodeMotivo($event.target)">
-                                            <x-slot name="options">
-                                                @if (count($motivotraslados))
-                                                    @foreach ($motivotraslados as $item)
-                                                        <option value="{{ $item->id }}"
-                                                            data-code="{{ $item->code }}">
-                                                            {{ $item->name }} </option>
-                                                    @endforeach
-                                                @endif
-                                            </x-slot>
-                                        </x-select>
+                                        <div class="relative" id="parentmtvtr" x-init="selectMotivo" wire:ignore>
+                                            <x-select class="block w-full uppercase" x-ref="selectmotivo"
+                                                id="mtvtr" data-placeholder="null"
+                                                @change="getCodeMotivo($event.target)">
+                                                <x-slot name="options">
+                                                    @if (count($motivotraslados))
+                                                        @foreach ($motivotraslados as $item)
+                                                            <option value="{{ $item->id }}"
+                                                                data-code="{{ $item->code }}">
+                                                                {{ $item->name }} </option>
+                                                        @endforeach
+                                                    @endif
+                                                </x-slot>
+                                            </x-select>
+                                            <x-icon-select />
+                                        </div>
                                         <span x-text="codemotivotraslado"></span>
                                         <x-jet-input-error for="motivotraslado_id" />
                                     </div>
 
                                     <div class="w-full">
                                         <x-label value="Modalidad transporte :" />
-                                        <x-select class="block w-full uppercase" id="modalidadtransporte_id"
-                                            wire:model.defer="modalidadtransporte_id"
-                                            @change="getCodeModalidad($event.target)">
-                                            <x-slot name="options">
-                                                @if (count($modalidadtransportes))
-                                                    @foreach ($modalidadtransportes as $item)
-                                                        <option value="{{ $item->id }}"
-                                                            data-code="{{ $item->code }}">{{ $item->name }}
-                                                        </option>
-                                                    @endforeach
-                                                @endif
-                                            </x-slot>
-                                        </x-select>
+                                        <div class="relative" id="parentmdtr" x-init="selectModalidad" wire:ignore>
+                                            <x-select class="block w-full uppercase" x-ref="selectmodalidad"
+                                                id="mdtr" data-placeholder="null"
+                                                @change="getCodeModalidad($event.target)">
+                                                <x-slot name="options">
+                                                    @if (count($modalidadtransportes))
+                                                        @foreach ($modalidadtransportes as $item)
+                                                            <option value="{{ $item->id }}"
+                                                                data-code="{{ $item->code }}">{{ $item->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    @endif
+                                                </x-slot>
+                                            </x-select>
+                                            <x-icon-select />
+                                        </div>
                                         <span x-text="codemodalidad"></span>
                                         <x-jet-input-error for="modalidadtransporte_id" />
                                     </div>
@@ -554,7 +592,7 @@
                                 </div>
 
                                 <div class="w-full flex flex-col gap-1 mt-1">
-                                    <x-jet-input-error for="serieguiaremision_id" />
+                                    <x-jet-input-error for="typecomprobanteguia_id" />
                                 </div>
                             </div>
                         @endif
@@ -581,7 +619,7 @@
                 </div>
             </form>
             <div x-show="loading" wire:loading.flex
-                wire:target="save, typepayment_id, getClient, getTransport, getDestinatario, getDriver"
+                wire:target="save, typepayment_id, setTypepayment, methodpayment_id, getClient, getTransport, getDestinatario, getDriver"
                 class="loading-overlay rounded z-50">
                 <x-loading-next />
             </div>
@@ -589,8 +627,8 @@
 
         <x-form-card titulo="RESUMEN DE VENTA">
 
-            <div x-show="loading" wire:loading wire:loading.flex
-                wire:target="save, setTotal, increment, paymentactual, incluyeigv, updategratis, deleteitem, deleteserie"
+            <div x-show="loading" wire:loading.flex
+                wire:target="save, setMoneda, setTotal, increment, paymentactual, incluyeigv, updategratis, deleteitem, deleteserie"
                 class="loading-overlay rounded">
                 <x-loading-next />
             </div>
@@ -619,20 +657,16 @@
                 </p>
 
                 <p class="text-[10px]">
-                    @if ($increment)
-                        IMPORTE TOTAL + INCREMENTO({{ $moneda->simbolo }}
-                        {{ number_format($amountincrement, 2, '.', ', ') }}) :
-                    @else
-                        IMPORTE TOTAL :
-                    @endif
+                    TOTAL VENTA :
                     {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($total, 3, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">SALDO PENDIENTE
                     @if ($increment)
-                        ({{ number_format($total - $amountincrement, 3, '.', ', ') }}
-                        + {{ formatDecimalOrInteger($increment) }}%)
+                        {{ number_format($total - $paymentactual - $amountincrement, 3, '.', ', ') }}
+                        + {{ formatDecimalOrInteger($increment) }}%
+                        ({{ number_format($amountincrement, 2, '.', ', ') }})
                     @endif
                     : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($total - $paymentactual, 3, '.', ', ') }}</span>
@@ -733,7 +767,6 @@
             </x-form-card>
         @endif --}}
 
-
         @if (count(getCarrito()) > 0)
             <x-form-card titulo="CARRITO">
 
@@ -759,14 +792,14 @@
                                 <div class="w-full flex flex-wrap gap-1 mt-2">
                                     <x-span-text :text="'P. UNIT : ' .
                                         $item->simbolo .
-                                        number_format($item->price, 2, '.', ', ')" class="leading-3" />
+                                        number_format($item->price, 2, '.', ', ')" class="leading-3 !tracking-normal" />
 
-                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) . ' ' . $item->unit" class="leading-3" />
+                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) . ' ' . $item->unit" class="leading-3 !tracking-normal" />
 
-                                    <x-span-text :text="$item->almacen" class="leading-3" />
+                                    <x-span-text :text="$item->almacen" class="leading-3 !tracking-normal" />
 
                                     @if (count($item->series) == 1)
-                                        <x-span-text :text="'SERIE : ' . $item->series[0]->serie" class="leading-3" />
+                                        <x-span-text :text="'SERIE : ' . $item->series[0]->serie" class="leading-3 !tracking-normal" />
                                     @endif
                                 </div>
 
@@ -799,7 +832,7 @@
                                             type="checkbox" id="gratuito_{{ $item->id }}" :checked="$item->gratuito == 1" />
                                         GRATUITO
                                     </x-label-check>
-                                    <x-span-text :text="$item->sucursal ?? 'NOMBRE DE SUCURSAL DEL CARRITO ASIGNADO'" class="leading-3 truncate w-28" />
+                                    <x-span-text :text="$item->sucursal ?? 'NOMBRE DE SUCURSAL DEL CARRITO ASIGNADO'" class="leading-3 !tracking-normal truncate w-32" />
                                 </div>
                                 <x-button-delete wire:click="delete('{{ $item->id }}')"
                                     wire:loading.attr="disabled" />
@@ -829,9 +862,31 @@
                 loadingdestinatario: false,
                 codemotivotraslado: '',
                 codemodalidad: '',
+                paymentcuotas: false,
+                formapago: '',
+                code: '',
+                sendsunat: '',
+                openguia: true,
+
+                cotizacion_id: @entangle('cotizacion_id').defer,
+                moneda_id: @entangle('moneda_id').defer,
+                typecomprobante_id: @entangle('typecomprobante_id').defer,
+                typepayment_id: @entangle('typepayment_id').defer,
+                methodpayment_id: @entangle('methodpayment_id').defer,
+                cuenta_id: @entangle('cuenta_id').defer,
+                typecomprobanteguia_id: @entangle('typecomprobanteguia_id').defer,
+                motivotraslado_id: @entangle('motivotraslado_id').defer,
+                modalidadtransporte_id: @entangle('modalidadtransporte_id').defer,
 
                 init() {
-                    console.log("Show resumen venta");
+                    // const selectpayment = this.$refs.selectpayment;
+                    // const selectcomprobante = this.$refs.selectcomprobante;
+                    // if (selectpayment) {
+                    //     this.getTipopago(selectpayment);
+                    // }
+                    // if (selectcomprobante) {
+                    //     this.getCodeSend(selectcomprobante);
+                    // }
                 },
                 toggle() {
                     this.vehiculosml = !this.vehiculosml;
@@ -858,6 +913,7 @@
                     }
                 },
                 selectedModalidadtransporte(value) {
+                    console.log(value);
                     switch (value) {
                         case '01':
                             this.loadingpublic = true;
@@ -885,21 +941,9 @@
                             this.loadingprivate = false;
                             this.loadingpublic = false;
                     }
-                }
-            }));
-
-            Alpine.data('payment', () => ({
-                paymentcuotas: false,
-                formapago: '',
-
-                init() {
-                    const selectpayment = this.$refs.selectpayment;
-                    if (selectpayment) {
-                        this.getTipopago(selectpayment);
-                        console.log('Encontrado');
-                    }
-
                 },
+
+
                 getTipopago(target) {
                     let datapayment = target.options[target.selectedIndex].getAttribute(
                         'data-payment');
@@ -919,59 +963,212 @@
                             this.formapago = '';
                     }
                 },
-            }))
+                getCodeSend(target) {
+                    this.sendsunat = target.options[target.selectedIndex].getAttribute(
+                        'data-sunat');
+
+                    switch (this.sendsunat) {
+                        case '0':
+                            this.incluyeguia = false;
+                            this.openguia = false;
+                            break;
+                        case '1':
+                            this.openguia = true;
+                            break;
+                        default:
+                            this.openguia = false;
+                            this.incluyeguia = false;
+                            this.sendsunat = '';
+                    }
+
+                    // console.log('sendsunat ' + this.sendsunat);
+                    // console.log('incluyeguia ' + this.incluyeguia);
+                    // console.log('openguia ' + this.openguia);
+                },
+            }));
         })
 
-        // renderselect2();
-
-        // $("#ventamoneda_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.moneda_id = e.target.value;
-        // });
-        // $("#ventatypepayment_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.typepayment_id = e.target.value;
-        // });
-
-        // $("#ventamethodpayment_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.methodpayment_id = e.target.value;
-        // });
-
-        // $("#ventacuenta_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.cuenta_id = e.target.value;
-        // });
-
-        // $("#ventatypecomprobante_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.typecomprobante_id = e.target.value;
-        // });
-
-        // $("#ventacotizacion_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.cotizacion_id = e.target.value;
-        // });
-
-        // $("#ventamoneda_id").on("change", (e) => {
-        //     deshabilitarSelects();
-        //     @this.setMoneda(e.target.value);
-        //     @this.moneda_id = e.target.value;
-        // });
-
-
-        // document.addEventListener('render-show-resumen-venta', () => {
-        //     renderselect2();
-        //     $('#ventamethodpayment_id').on("change", (e) => {
-        //         deshabilitarSelects();
-        //         @this.methodpayment_id = e.target.value;
-        //     });
-        // });
+        window.addEventListener('birthday', data => {
+            console.log(data);
+            swal.fire({
+                title: 'FELÍZ CUMPLEAÑOS, ' + data.detail,
+                // text: data.detail.text,
+                // html: data.detail.text,
+                icon: 'success',
+                confirmButtonColor: '#0FB9B9',
+                confirmButtonText: 'Gracias',
+            })
+        });
 
         window.addEventListener('show-resumen-venta', () => {
             @this.render();
             @this.setTotal();
         });
+
+        function selectCotizacion() {
+            this.selectCO = $(this.$refs.selectcot).select2();
+            this.selectCO.val(this.cotizacion_id).trigger("change");
+            this.selectCO.on("select2:select", (event) => {
+                this.cotizacion_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("cotizacion_id", (value) => {
+                this.selectCO.val(value).trigger("change");
+            });
+        }
+
+        function selectMoneda() {
+            this.selectMD = $(this.$refs.selectmoneda).select2();
+            this.selectMD.val(this.moneda_id).trigger("change");
+            this.selectMD.on("select2:select", (event) => {
+                // this.moneda_id = event.target.value;
+                @this.setMoneda(event.target.value);
+                window.dispatchEvent(new CustomEvent('setMoneda', {
+                    detail: {
+                        message: event.target.value
+                    }
+                }));
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("moneda_id", (value) => {
+                this.selectMD.val(value).trigger("change");
+            });
+        }
+
+        function selectComprobante() {
+            this.selectTC = $(this.$refs.selectcomprobante).select2();
+            this.selectTC.val(this.typecomprobante_id).trigger("change");
+            this.selectTC.on("select2:select", (event) => {
+                this.typecomprobante_id = event.target.value;
+                this.getCodeSend(event.target);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("typecomprobante_id", (value) => {
+                this.selectTC.val(value).trigger("change");
+            });
+        }
+
+        function selectPayment() {
+            this.selectTP = $(this.$refs.selectpayment).select2();
+            this.selectTP.val(this.typepayment_id).trigger("change");
+            this.selectTP.on("select2:select", (event) => {
+                // this.typepayment_id = event.target.value;
+                this.getTipopago(event.target);
+                @this.setTypepayment(event.target.value);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("typepayment_id", (value) => {
+                this.selectTP.val(value).trigger("change");
+            });
+        }
+
+        function selectSerieguia() {
+            this.selectGR = $(this.$refs.selectguia).select2();
+            this.selectGR.val(this.typecomprobanteguia_id).trigger("change");
+            this.selectGR.on("select2:select", (event) => {
+                this.typecomprobanteguia_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("typecomprobanteguia_id", (value) => {
+                this.selectGR.val(value).trigger("change");
+            });
+        }
+
+        function selectMotivo() {
+            this.selectM = $(this.$refs.selectmotivo).select2();
+            this.selectM.val(this.motivotraslado_id).trigger("change");
+            this.selectM.on("select2:select", (event) => {
+                this.motivotraslado_id = event.target.value;
+                const selectedOption = event.target.selectedOptions[0];
+                this.codemotivotraslado = selectedOption.getAttribute('data-code');
+                this.selectedMotivotraslado(this.codemotivotraslado);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("motivotraslado_id", (value) => {
+                this.selectM.val(value).trigger("change");
+            });
+        }
+
+        function selectModalidad() {
+            this.selectMT = $(this.$refs.selectmodalidad).select2();
+            this.selectMT.val(this.modalidadtransporte_id).trigger("change");
+            this.selectMT.on("select2:select", (event) => {
+                this.modalidadtransporte_id = event.target.value;
+                const selectedOption = event.target.selectedOptions[0];
+                this.codemodalidad = selectedOption.getAttribute('data-code');
+                this.selectedModalidadtransporte(this.codemodalidad)
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("modalidadtransporte_id", (value) => {
+                this.selectMT.val(value).trigger("change");
+            });
+        }
+
+        function selectCuenta() {
+            this.selectC = $(this.$refs.selectcuenta).select2();
+            this.selectC.val(this.cuenta_id).trigger("change");
+            this.selectC.on("select2:select", (event) => {
+                this.cuenta_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("cuenta_id", (value) => {
+                this.selectC.val(value).trigger("change");
+            });
+        }
+
+        function selectMethodpayment() {
+            this.selectMP = $(this.$refs.selectmethodpayment).select2();
+            this.selectMP.val(this.methodpayment_id).trigger("change");
+            this.selectMP.on("select2:select", (event) => {
+                this.methodpayment_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("methodpayment_id", (value) => {
+                this.selectMP.val(value).trigger("change");
+            });
+        }
+
+        // function selectCuenta() {
+        //     this.selectC = $(this.$refs.selectcuenta.select2();
+        //     this.selectC.val(this.cuenta_id).trigger("change");
+        //     this.selectC.on("select2:select", (event) => {
+        //         this.cuenta_id = event.target.value;
+        //     }).on('select2:open', function(e) {
+        //         const evt = "scroll.select2";
+        //         $(e.target).parents().off(evt);
+        //         $(window).off(evt);
+        //     });
+        //     this.$watch("cuenta_id", (value) => {
+        //         this.selectMT.val(value).trigger("change");
+        //     });
+        // }
 
         document.addEventListener("livewire:load", () => {
             // Livewire.hook('message.processed', (message, component) => {
@@ -983,7 +1180,6 @@
             //         }
             //     })
             // });
-
 
             Livewire.on('ventas.confirmDeleteItemCart', data => {
                 swal.fire({
@@ -1022,24 +1218,7 @@
                 })
             });
 
-            // function renderselect2() {
-            //     $('#ventamoneda_id, #ventatypepayment_id, #ventacotizacion_id, #ventamethodpayment_id, #ventacuenta_id, #ventatypecomprobante_id')
-            //         .select2().on('select2:open', function(e) {
-            //             const evt = "scroll.select2";
-            //             $(e.target).parents().off(evt);
-            //             $(window).off(evt);
-            //         });
 
-            //     $("#ventacuenta_id").on("change", (e) => {
-            //         deshabilitarSelects();
-            //         @this.cuenta_id = e.target.value;
-            //     });
-            // }
-
-            // function deshabilitarSelects() {
-            //     $('#ventamoneda_id, #ventatypepayment_id, #ventacotizacion_id, #ventamethodpayment_id, #ventacuenta_id, #ventatypecomprobante_id')
-            //         .attr('disabled', true);
-            // }
         })
     </script>
 </div>

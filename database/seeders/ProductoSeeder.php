@@ -9,6 +9,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 use Faker\Factory as Faker;
+use Nwidart\Modules\Facades\Module;
 
 class ProductoSeeder extends Seeder
 {
@@ -19,10 +20,10 @@ class ProductoSeeder extends Seeder
      */
     public function run()
     {
+
         $faker = Faker::create();
 
-        // $this->call("OthersTableSeeder");
-        $productos = Producto::all();
+        $productos = Producto::factory(10)->create();
         $almacens = Almacen::all();
 
         foreach ($productos as $producto) {
@@ -35,24 +36,17 @@ class ProductoSeeder extends Seeder
                 ]);
 
                 if ($cantidad < 10) {
-                    $createserie = $faker->boolean;
-                    if ($createserie) {
-                        for ($i = 0; $i < $cantidad; $i++) {
-                            Serie::create([
-                                'serie' => $faker->bothify('?##??###?#?#'),
-                                'almacen_id' => $almacenRandom,
-                                'producto_id' => $producto->id,
-                                'user_id' => 1
-                            ]);
-
-                            // for ($j = 1; $j <= count($almacens); $j++) {
-                            //     Serie::create([
-                            //         'serie' => $faker->bothify('?##??###?#?#'),
-                            //         'almacen_id' => $j,
-                            //         'producto_id' => $producto->id,
-                            //         'user_id' => 1
-                            //     ]);
-                            // }
+                    if (Module::isEnabled('Almacen')) {
+                        $createserie = $faker->boolean;
+                        if ($createserie) {
+                            for ($i = 0; $i < $cantidad; $i++) {
+                                Serie::create([
+                                    'serie' => $faker->bothify('?##??###?#?#'),
+                                    'almacen_id' => $almacenRandom,
+                                    'producto_id' => $producto->id,
+                                    'user_id' => 1
+                                ]);
+                            }
                         }
                     }
                 }

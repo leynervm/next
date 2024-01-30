@@ -20,10 +20,10 @@
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
             </span>
-            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model="search">
+            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model.lazy="search">
             </x-input>
         </div>
-        @if (count($marcaGroup))
+        @if (count($marcaGroup) > 0)
             <x-dropdown titulo="Marca">
                 <x-slot name="items">
                     @foreach ($marcaGroup as $item)
@@ -135,15 +135,11 @@
                 </th>
 
                 <th scope="col" class="p-2 font-medium">
-                    MINICÓDIGO
+                    COD. PRODUCTO
                 </th>
 
                 <th scope="col" class="p-2 font-medium">
-                    COD. FABRIC
-                </th>
-
-                <th scope="col" class="p-2 font-medium">
-                    SKU
+                    COD. FABRICANTE
                 </th>
 
                 <th scope="col" class="p-2 font-medium">
@@ -162,9 +158,11 @@
                     PRECIO COMPRA
                 </th>
 
-                <th scope="col" class="p-2 font-medium">
-                    PRECIO VENTA
-                </th>
+                @if (mi_empresa()->uselistprice)
+                    <th scope="col" class="p-2 font-medium">
+                        PRECIO VENTA
+                    </th>
+                @endif
 
                 @if (Module::isEnabled('Almacen'))
                     <th scope="col" class="p-2 font-medium">
@@ -194,10 +192,10 @@
 
                                         @if (count($item->defaultImage))
                                             <img src="{{ asset('storage/productos/' . $item->defaultImage->first()->url) }}"
-                                                alt="" class="w-full h-full object-scale-down">
+                                                alt="" class="w-full h-full object-cover">
                                         @else
                                             <img src="{{ asset('storage/productos/' . $item->images->first()->url) }}"
-                                                alt="" class="w-full h-full object-scale-down">
+                                                alt="" class="w-full h-full object-cover">
                                         @endif
 
                                         @if (count($item->images) > 1)
@@ -209,7 +207,7 @@
                                 @endif
                                 <div class="flex-shrink-1">
                                     <a href="{{ route('admin.almacen.productos.show', $item) }}"
-                                        class="font-medium break-words underline text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                        class="inline-block font-medium break-words underline text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
                                         {{ $item->name }}</a>
 
                                     {{-- <a href="{{ route('admin.almacen.productos.show', $item) }}"
@@ -221,13 +219,10 @@
                             </div>
                         </td>
                         <td class="p-2 text-xs text-center">
-                            {{ $item->id }}
+                            {{ $item->code }}
                         </td>
                         <td class="p-2 text-xs text-center">
                             {{ $item->codefabricante }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->sku }}
                         </td>
                         <td class="p-2 text-xs">
                             <div>
@@ -241,7 +236,8 @@
                             @if (count($item->almacens))
                                 <div class="flex flex-wrap items-center justify-center gap-1">
                                     @foreach ($item->almacens as $almacen)
-                                        <x-span-text :text="$almacen->name" class="whitespace-nowrap" />
+                                        <x-span-text :text="$almacen->name"
+                                            class="whitespace-nowrap leading-3 !tracking-normal" />
                                     @endforeach
                                 </div>
                             @endif
@@ -250,10 +246,8 @@
                         @if (Module::isEnabled('Almacen'))
                             <td class="p-2">
                                 @if ($item->publicado)
-                                    <small
-                                        class="inline-block leading-3 whitespace-nowrap p-1 text-[10px] font-medium text-white bg-green-500 rounded">
-                                        DISPONIBLE WEB
-                                    </small>
+                                    <x-span-text text="DISPONIBLE WEB"
+                                        class="whitespace-nowrap leading-3 !tracking-normal" type="green" />
                                 @endif
                             </td>
                         @endif
@@ -261,9 +255,12 @@
                         <td class="p-2 text-xs text-center">
                             {{ $item->pricebuy }}
                         </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->pricesale }}
-                        </td>
+
+                        @if (mi_empresa()->uselistprice)
+                            <td class="p-2 text-xs text-center">
+                                {{ $item->pricesale }}
+                            </td>
+                        @endif
 
                         @if (Module::isEnabled('Almacen'))
                             <td class="p-2 text-xs">
@@ -279,10 +276,14 @@
                             </td>
 
                             <td class="p-2 text-xs">
-                                {{ $item->almacenarea->name }}
+                                @if ($item->almacenarea)
+                                    {{ $item->almacenarea->name }}
+                                @endif
                             </td>
                             <td class="p-2 text-xs">
-                                {{ $item->estante->name }}
+                                @if ($item->estante)
+                                    {{ $item->estante->name }}
+                                @endif
                             </td>
                         @endif
                     </tr>

@@ -17,7 +17,8 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Almacen;
 use App\Models\Producto;
-use Nwidart\Modules\Facades\Module;
+use App\Models\Subcategory;
+use App\Rules\ValidateSerie;
 
 class CreateVenta extends Component
 {
@@ -35,14 +36,18 @@ class CreateVenta extends Component
     public $searchserie = '';
     public $searchalmacen = '';
     public $searchcategory = '';
+    public $searchsubcategory = '';
     public $cart = [];
     public $seriescarrito = [];
+    public $subcategories = [];
+
 
     protected $listeners = ['render'];
 
     protected $queryString = [
         'search' => ['except' => '', 'as' => 'producto'],
         'searchcategory' => ['except' => '', 'as' => 'categoria'],
+        'searchsubcategory' => ['except' => '', 'as' => 'subcategoria'],
     ];
 
     protected $messages = [
@@ -54,10 +59,10 @@ class CreateVenta extends Component
         'cart.*.serie.required' => 'Serie del producto requerido',
     ];
 
-    public function mount(Empresa $empresa, Sucursal $sucursal, Pricetype $pricetype, Moneda $moneda)
+    public function mount(Sucursal $sucursal, $pricetype, Moneda $moneda)
     {
-        $this->empresa = $empresa;
         $this->sucursal = $sucursal;
+        $this->empresa = $sucursal->empresa;
         $this->pricetype = $pricetype;
         $this->moneda = $moneda;
         $this->pricetype_id = $pricetype->id ?? null;
@@ -67,26 +72,27 @@ class CreateVenta extends Component
             $carritoSesion = json_decode($carritoSesion, true);
         }
         $this->seriescarrito = $this->getseriecarrito($carritoSesion);
+        if (trim($this->searchcategory) !== '') {
+            $this->subcategories = Category::find($this->searchcategory)->subcategories()
+                ->whereHas('productos')->get();
+        }
 
-        // if (Module::isEnabled('Almacen')) {
-        if ($sucursal->almacens()->exists()) {
-            if ($sucursal->almacens()->count() == 1) {
+
+        if (count($sucursal->almacens) > 0) {
+            if (!is_null(auth()->user()->almacen_id)) {
+                $this->almacen_id = auth()->user()->almacen_id;
+                $this->almacendefault = auth()->user()->almacen;
+            } else {
                 $this->almacendefault = $sucursal->almacens()->first();
                 $this->almacen_id = $this->almacendefault->id;
-            } else {
-                $this->almacen_id = auth()->user()->sucursalDefault()->first()->pivot->almacen_id ?? null;
-                if ($this->almacen_id) {
-                    $this->almacendefault = Almacen::find($this->almacen_id);
-                }
             }
         }
-        // }
     }
 
-    public function loadProductos()
-    {
-        $this->readyToLoad = true;
-    }
+    // public function loadProductos()
+    // {
+    //     $this->readyToLoad = true;
+    // }
 
     public function render()
     {
@@ -96,46 +102,36 @@ class CreateVenta extends Component
             $almacens[] = $this->almacen_id;
         }
 
-        if ($this->readyToLoad) {
-            // $miproducto = Producto::with(['almacens' => function ($query) use ($almacens) {
-            //     $query->whereIn('almacens.id', $almacens)
-            //         ->where('cantidad', '>', 0);
-            // }])->find(39);
+        // $miproducto = Producto::with(['almacens' => function ($query) use ($almacens) {
+        //     $query->whereIn('almacens.id', $almacens)
+        //         ->where('cantidad', '>', 0);
+        // }])->find(39);
 
-            $productos = Producto::withWhereHas('almacens', function ($query) use ($almacens) {
-                $query->whereIn('almacens.id', $almacens);
-                if ($this->disponibles) {
-                    $query->where('cantidad', '>', 0);
-                }
-            })->with('seriesdisponibles', function ($query) use ($almacens) {
-                $query->whereIn('almacen_id', $almacens);
-            });
-
-            if (trim($this->search) !== "") {
-                $productos->where('name', 'ilike', $this->search . '%');
+        $productos = Producto::withWhereHas('almacens', function ($query) use ($almacens) {
+            $query->whereIn('almacens.id', $almacens);
+            if ($this->disponibles) {
+                $query->where('cantidad', '>', 0);
             }
+        })->with('seriesdisponibles', function ($query) use ($almacens) {
+            $query->whereIn('almacen_id', $almacens);
+        });
 
-            if (trim($this->searchcategory) !== "") {
-                $productos->where('category_id', $this->searchcategory);
-            }
-
-            $productos = $productos->orderBy('name', 'asc')->paginate();
-
-            // dd($productos);
-
-        } else {
-            $productos = [];
-            // $miproducto = Producto::find(39);
+        if (trim($this->search) !== "") {
+            $productos->where('name', 'ilike', $this->search . '%');
         }
 
-        $categories = Category::orderBy('name', 'asc')->get();
-        $pricetypes = Pricetype::orderBy('name', 'asc')->get();
+        if (trim($this->searchcategory) !== "") {
+            $productos->where('category_id', $this->searchcategory);
+        }
 
-        // if (Module::isEnabled('Almacen')) {
-        $almacens = Almacen::orderBy('name', 'asc')->get();
-        // } else {
-        //     $almacens = [];
-        // }
+        if (trim($this->searchsubcategory) !== "") {
+            $productos->where('subcategory_id', $this->searchsubcategory);
+        }
+
+        $productos = $productos->orderBy('name', 'asc')->paginate();
+        $categories = Category::whereHas('productos')->orderBy('name', 'asc')->get();
+        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
+        $almacens = Almacen::whereHas('productos')->orderBy('name', 'asc')->get();
 
         return view('livewire.modules.ventas.ventas.create-venta', compact('productos', 'pricetypes', 'categories', 'almacens'));
     }
@@ -145,10 +141,18 @@ class CreateVenta extends Component
         $this->resetPage();
     }
 
-    public function updatedSearchcategory()
+    public function updatedSearchcategory($value)
     {
         $this->resetPage();
+        $this->reset(['searchsubcategory', 'subcategories']);
         $this->resetValidation();
+        if (trim($value) !== '') {
+            $this->subcategories = Category::find($value)->subcategories()
+                ->whereHas('productos')->get();
+            $this->dispatchBrowserEvent('loadsubcategories', $this->subcategories->toArray());
+        } else {
+            $this->dispatchBrowserEvent('loadsubcategories', []);
+        }
     }
 
     public function updatedAlmacenId($value)
@@ -178,13 +182,11 @@ class CreateVenta extends Component
         $this->searchserie = trim($this->searchserie);
         $this->validate([
             'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
-            'searchserie' => ['required', 'string', 'min:4',
-                Rule::exists('series', 'serie')->where('almacen_id', $this->almacen_id)->where('status', 0)
-            ],
+            'searchserie' => ['required', 'string', 'min:4', new ValidateSerie($this->almacen_id)],
             'moneda.id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
         ]);
 
-        $serie = Serie::where('serie', trim(mb_strtoupper($this->searchserie, "UTF-8")))
+        $serie = Serie::whereRaw('UPPER(serie) = ?', mb_strtoupper($this->searchserie, "UTF-8"))
             ->where('almacen_id', $this->almacen_id)
             ->where('status', 0)->first();
 
@@ -227,7 +229,7 @@ class CreateVenta extends Component
                 $this->addError('searchserie', $precios->error);
             }
         } else {
-            $this->addError('searchserie', 'No encontrararon registros de series.');
+            $this->addError('searchserie', 'Serie del producto no disponible.');
         }
     }
 
@@ -245,21 +247,18 @@ class CreateVenta extends Component
 
         $validateDate = $this->validate([
             "cart.$producto->id.price" => [
-                'required', 'numeric', 'decimal:0,4', 'min:0.0001'
+                'required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0',
             ],
             "cart.$producto->id.almacen_id" => [
-                'required', 'integer', 'exists:almacens,id',
-                new ValidateStock($producto->id, $this->almacen_id)
+                'required', 'integer', 'exists:almacens,id', new ValidateStock($producto->id, $this->almacen_id)
             ],
             "cart.$producto->id.cantidad" => [
                 'required', 'numeric', 'min:1', 'integer',
                 new ValidateStock($producto->id, $this->almacen_id, $cantidad)
             ],
             "cart.$producto->id.serie" => [
-                'nullable',
-                Rule::requiredIf($producto->seriesdisponibles()->where('almacen_id', $this->almacen_id)->exists()),
-                'string', 'min:4',
-                new ValidateSerieRequerida($producto->id, $this->almacen_id, $serie),
+                'nullable', Rule::requiredIf($producto->seriesdisponibles()->where('almacen_id', $this->almacen_id)->exists()),
+                'string', 'min:4', new ValidateSerieRequerida($producto->id, $this->almacen_id, $serie),
             ],
             "moneda.id" => [
                 'required', 'integer', 'min:1', 'exists:monedas,id'

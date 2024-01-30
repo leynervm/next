@@ -40,17 +40,17 @@ class Concept extends Model
         return $query->where('default', $this::INTERNET);
     }
 
-    public function scopeDefaultConceptPaycuota($query)
+    public function scopeDefaultPaycuota($query)
     {
         return $query->where('default', $this::PAYCUOTA);
     }
 
-    public function scopeDefaultConceptCompra($query)
+    public function scopeCompra($query)
     {
         return $query->where('default', $this::COMPRA);
     }
 
-    public function scopeDefaultConceptPaycuotaCompra($query)
+    public function scopePaycuotaCompra($query)
     {
         return $query->where('default', $this::PAYCUOTACOMPRA);
     }

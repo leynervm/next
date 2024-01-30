@@ -9,13 +9,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Ofertar producto') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -116,8 +110,7 @@
 
                 <div class="xs:col-span-2">
                     <x-label-check for="max">
-                        <x-input wire:model.lazy="max" name="max" value="1" type="checkbox"
-                            id="max" />
+                        <x-input wire:model.lazy="max" name="max" value="1" type="checkbox" id="max" />
                         SELECCIONAR STOCK MÁXIMO DISPONIBLE
                     </x-label-check>
                     <x-jet-input-error for="max" />

@@ -4,20 +4,17 @@
 <head>
     <meta charset="utf-8">
 
-    @php
-        $empresa = \App\Models\Empresa::first();
-    @endphp
 
-    @if ($empresa)
-        @if ($empresa->icono)
-            <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
+    @if (mi_empresa())
+        @if (mi_empresa()->icono)
+            <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . mi_empresa()->icono) }}">
         @endif
     @endif
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', '@NEXT TECHNOLOGIES') }}</title>
 
 
     <!-- Fonts -->
@@ -62,10 +59,10 @@
                         {{-- <img class="w-full h-full object-scale-down object-center"
                             src="{{ asset('assets/settings/login.png') }}" alt=""> --}}
 
-                        @if ($empresa)
-                            @if ($empresa->image)
+                        @if (mi_empresa())
+                            @if (mi_empresa()->image)
                                 <img class="w-full h-full object-scale-down object-center"
-                                    src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+                                    src="{{ Storage::url('images/company/' . mi_empresa()->image->url) }}" alt="">
                             @endif
                         @endif
 
@@ -88,6 +85,22 @@
             </div>
             <div class="flex-1 p-1 lg:px-3 overflow-y-auto bg-body h-screen">
                 <main class="shadow relative">
+                    @if (session('message'))
+                        <x-alert :titulo="session('message')->getData()->title" :mensaje="session('message')->getData()->text" :type="session('message')->getData()->type">
+                            <x-slot name="icono">
+                                <svg class="w-6 h-6 p-0.5 animate-bounce" viewBox="0 0 24 24" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M5.32171 9.68293C7.73539 5.41199 8.94222 3.27651 10.5983 2.72681C11.5093 2.4244 12.4907 2.4244 13.4017 2.72681C15.0578 3.27651 16.2646 5.41199 18.6783 9.68293C21.092 13.9539 22.2988 16.0893 21.9368 17.8293C21.7376 18.7866 21.2469 19.6549 20.535 20.3097C19.241 21.5 16.8274 21.5 12 21.5C7.17265 21.5 4.75897 21.5 3.46496 20.3097C2.75308 19.6549 2.26239 18.7866 2.06322 17.8293C1.70119 16.0893 2.90803 13.9539 5.32171 9.68293Z" />
+                                    <path
+                                        d="M12.2422 17V13C12.2422 12.5286 12.2422 12.2929 12.0957 12.1464C11.9493 12 11.7136 12 11.2422 12" />
+                                    <path d="M11.992 9H12.001" />
+                                </svg>
+                            </x-slot>
+                        </x-alert>
+                    @endif
+
                     <div class="relative flex flex-col-reverse gap-2 md:flex-row items-end md:justify-between pb-2">
 
                         <div class="w-full md:w-auto">
@@ -105,24 +118,20 @@
                                     <div class="text-xs px-3">
                                         <p class="text-right">{{ Auth::user()->name }}</p>
 
-                                        @if (count(Auth::user()->sucursals))
-                                            @if (Auth::user()->SucursalDefault()->first())
-                                                <small
-                                                    class="font-medium text-[10px]">[{{ Auth::user()->SucursalDefault()->first()->name }}]</small>
-                                            @else
-                                                <small class="font-medium text-[10px] text-next-500">[SELECCIONAR
-                                                    SUCURSAL PREDETERMINADA]</small>
-                                            @endif
+                                        @if (Auth::user()->sucursal)
+                                            <small
+                                                class="font-medium text-[10px]">[{{ Auth::user()->sucursal->name }}]</small>
                                         @else
-                                            <small class="font-medium text-[10px] text-next-500">[NO EXISTEN
-                                                SUCURSALES]</small>
+                                            <small class="font-medium text-[10px] text-next-500">[SUCURSAL NO
+                                                ASIGNADA]</small>
                                         @endif
 
                                     </div>
 
                                     @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
                                         <img class="h-8 w-8 rounded-full object-cover"
-                                            src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
+                                            src="{{ Auth::user()->profile_photo_url }}"
+                                            alt="{{ Auth::user()->name }}" />
                                     @else
                                         <svg class="h-8 w-8 p-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                             fill="currentColor">

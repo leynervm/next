@@ -20,42 +20,25 @@ class CreateSucursal extends Component
     {
         return [
             'name' => [
-                'required',
-                'min:3',
-                'max:255',
+                'required', 'min:3', 'max:255',
                 new CampoUnique('sucursals', 'name', null, true),
             ],
             'direccion' => [
-                'required',
-                'string',
-                'min:3',
-                'max:255'
+                'required', 'string', 'min:3', 'max:255'
             ],
             'ubigeo_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:ubigeos,id',
+                'required', 'integer', 'min:1', 'exists:ubigeos,id',
             ],
             'codeanexo' => [
-                'required',
-                'string',
-                'min:4',
-                'max:4',
+                'required', 'string', 'min:4', 'max:4',
                 new CampoUnique('sucursals', 'codeanexo', null, true),
             ],
             'default' => [
-                'required',
-                'integer',
-                'min:0',
-                'max:1',
+                'required', 'integer', 'min:0', 'max:1',
                 new DefaultValue('sucursals', 'default', null, true)
             ],
             'empresa.id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:empresas,id'
+                'required', 'integer', 'min:1', 'exists:empresas,id'
             ]
         ];
     }
@@ -76,7 +59,7 @@ class CreateSucursal extends Component
     {
         if ($this->open == false) {
             $this->resetValidation();
-            $this->reset(['name', 'direccion', 'ubigeo_id', 'default']);
+            $this->reset(['name', 'direccion', 'ubigeo_id', 'default', 'codeanexo']);
         }
     }
 
@@ -92,7 +75,7 @@ class CreateSucursal extends Component
         try {
             DB::beginTransaction();
             $sucursal = Sucursal::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
+                ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])->first();
 
             if ($sucursal) {
                 $sucursal->direccion = $this->direccion;
@@ -100,15 +83,18 @@ class CreateSucursal extends Component
                 $sucursal->codeanexo = $this->codeanexo;
                 $sucursal->default = $this->default;
                 $sucursal->empresa_id = $this->empresa->id;
-                $sucursal->restore();
+                if ($sucursal->trashed()) {
+                    $sucursal->restore();
+                }
             } else {
                 $this->empresa->sucursals()->create($validateData);
             }
 
             DB::commit();
             $this->resetValidation();
-            $this->reset();
+            $this->reset(['open', 'name', 'direccion', 'ubigeo_id', 'default', 'codeanexo']);
             $this->emitTo('admin.sucursales.show-sucursales', 'render');
+            $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

@@ -37,199 +37,187 @@ class ShowGuia extends Component
 
     protected function rules()
     {
-        return [
-            'guia.ructransport' => [
-                'nullable',
-                Rule::requiredIf($this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'numeric', 'digits:11', 'regex:/^\d{11}$/',
-                $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
-            ],
-            'guia.nametransport' => [
-                'nullable',
-                Rule::requiredIf($this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'string', 'min:6',
-                $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.name' : '',
-            ],
-            'guia.documentdestinatario' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '01' && $this->guia->comprobante ? 'same:guia.comprobante.client.document' : '',
-                $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
-            ],
-            'guia.namedestinatario' => [
-                'required', 'string', 'min:6',
-                $this->motivotraslado->code == '03' ? 'different:namecomprador' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : ''),
-            ],
-            'documentcomprador' => [
-                'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '03'),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' && $this->guia->comprobante ? 'same:client.document' : '',
-                $this->motivotraslado->code == '03' ? 'different:documentdestinatario' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
-            ],
-            'namecomprador' => [
-                'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '03'),
-                'string', 'min:6',
-                $this->motivotraslado->code == '03' ? 'different:namedestinatario' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : '')
-            ],
-            'guia.rucproveedor' => [
-                'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '02'),
-                'numeric', 'digits:11', 'regex:/^\d{11}$/',
-                $this->motivotraslado->code == '02' ? 'different:guia.documentdestinatario' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
-            ],
-            'guia.nameproveedor' => [
-                'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '02'),
-                'string', 'min:6',
-                $this->motivotraslado->code == '02' ? 'different:namedestinatario' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : ''
-            ],
-            'guia.anexoorigen' => [
-                'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '04'),
-                'numeric', 'min:0', 'max:4',
-                $this->motivotraslado->code == '04' ? 'different:anexodestino' : '',
-            ],
-            'guia.anexodestino' => [
-                'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '04'),
-                'numeric', 'min:0', 'max:4',
-                $this->motivotraslado->code == '04' ? 'different:anexoorigen' : '',
-            ],
+        // return [
+        //     'guia.ructransport' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+        //         'numeric', 'digits:11', 'regex:/^\d{11}$/',
+        //         $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
+        //     ],
+        //     'guia.nametransport' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+        //         'string', 'min:6',
+        //         $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.name' : '',
+        //     ],
+        //     'guia.documentdestinatario' => [
+        //         'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+        //         $this->motivotraslado->code == '01' && $this->guia->comprobante ? 'same:guia.comprobante.client.document' : '',
+        //         $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
+        //         in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
+        //     ],
+        //     'guia.namedestinatario' => [
+        //         'required', 'string', 'min:6',
+        //         $this->motivotraslado->code == '03' ? 'different:namecomprador' : '',
+        //         in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : ''),
+        //     ],
+        //     'documentcomprador' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->motivotraslado->code == '03'),
+        //         'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+        //         $this->motivotraslado->code == '03' && $this->guia->comprobante ? 'same:client.document' : '',
+        //         $this->motivotraslado->code == '03' ? 'different:documentdestinatario' : '',
+        //         in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
+        //     ],
+        //     'namecomprador' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->motivotraslado->code == '03'),
+        //         'string', 'min:6',
+        //         $this->motivotraslado->code == '03' ? 'different:namedestinatario' : '',
+        //         in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : '')
+        //     ],
+        //     'guia.rucproveedor' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->motivotraslado->code == '02'),
+        //         'numeric', 'digits:11', 'regex:/^\d{11}$/',
+        //         $this->motivotraslado->code == '02' ? 'different:guia.documentdestinatario' : '',
+        //         in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
+        //     ],
+        //     'guia.nameproveedor' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->motivotraslado->code == '02'),
+        //         'string', 'min:6',
+        //         $this->motivotraslado->code == '02' ? 'different:namedestinatario' : '',
+        //         in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : ''
+        //     ],
+        //     'guia.anexoorigen' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->motivotraslado->code == '04'),
+        //         'numeric', 'min:0', 'max:4',
+        //         $this->motivotraslado->code == '04' ? 'different:anexodestino' : '',
+        //     ],
+        //     'guia.anexodestino' => [
+        //         'nullable',
+        //         Rule::requiredIf($this->motivotraslado->code == '04'),
+        //         'numeric', 'min:0', 'max:4',
+        //         $this->motivotraslado->code == '04' ? 'different:anexoorigen' : '',
+        //     ],
 
-            'guia.peso' => ['required', 'numeric', 'gt:0', 'decimal:0,4',],
-            'guia.packages' => ['required', 'integer', 'min:1',],
-            'guia.datetraslado' => ['required', 'date'],
-            'guia.note' => ['nullable', 'string', 'min:10'],
-            'guia.placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
-            'regionorigen_id' => ['required', 'string', 'exists:ubigeos,departamento_inei'],
-            'provinciaorigen_id' => ['required', 'string', 'exists:ubigeos,provincia_inei'],
-            'distritoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'guia.ubigeoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'guia.direccionorigen' => ['required', 'string', 'min:12'],
-            'regiondestino_id' => ['required', 'string', 'exists:ubigeos,departamento_inei'],
-            'provinciadestino_id' => ['required', 'string', 'exists:ubigeos,provincia_inei'],
-            'distritodestino_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'guia.ubigeodestino_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'guia.direcciondestino' => ['required', 'string', 'min:12',],
-            'guia.indicadorvehiculosml' => ['required', 'integer', 'min:0', 'max:1'],
-            'guia.indicadorvehretorvacio' => ['required', 'integer', 'min:0', 'max:1'],
-            'guia.motivotraslado_id' => ['required', 'integer', 'min:1', 'exists:motivotraslados,id'],
-            'guia.modalidadtransporte_id' => ['required', 'integer', 'min:1', 'exists:modalidadtransportes,id'],
-            'guia.seriecomprobante_id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
-            'guia.sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id']
-        ];
+        //     'guia.peso' => ['required', 'numeric', 'gt:0', 'decimal:0,4',],
+        //     'guia.packages' => ['required', 'integer', 'min:1',],
+        //     'guia.datetraslado' => ['required', 'date'],
+        //     'guia.note' => ['nullable', 'string', 'min:10'],
+        //     'guia.placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
+        //     'regionorigen_id' => ['required', 'string', 'exists:ubigeos,departamento_inei'],
+        //     'provinciaorigen_id' => ['required', 'string', 'exists:ubigeos,provincia_inei'],
+        //     'distritoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
+        //     'guia.ubigeoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
+        //     'guia.direccionorigen' => ['required', 'string', 'min:12'],
+        //     'regiondestino_id' => ['required', 'string', 'exists:ubigeos,departamento_inei'],
+        //     'provinciadestino_id' => ['required', 'string', 'exists:ubigeos,provincia_inei'],
+        //     'distritodestino_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
+        //     'guia.ubigeodestino_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
+        //     'guia.direcciondestino' => ['required', 'string', 'min:12',],
+        //     'guia.indicadorvehiculosml' => ['required', 'integer', 'min:0', 'max:1'],
+        //     'guia.indicadorvehretorvacio' => ['required', 'integer', 'min:0', 'max:1'],
+        //     'guia.motivotraslado_id' => ['required', 'integer', 'min:1', 'exists:motivotraslados,id'],
+        //     'guia.modalidadtransporte_id' => ['required', 'integer', 'min:1', 'exists:modalidadtransportes,id'],
+        //     'guia.seriecomprobante_id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
+        //     'guia.sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id']
+        // ];
     }
 
     public function mount(Guia $guia)
     {
         $this->guia = $guia;
-        $this->sucursal = $guia->sucursal;
-        $this->empresa = $guia->sucursal->empresa;
-        $this->motivotraslado = $guia->motivotraslado;
-        $this->modalidadtransporte = $guia->modalidadtransporte;
+        // $this->sucursal = $guia->sucursal;
+        // $this->empresa = $guia->sucursal->empresa;
+        // $this->motivotraslado = $guia->motivotraslado;
+        // $this->modalidadtransporte = $guia->modalidadtransporte;
 
-        if ($guia->comprobante) {
-            $this->client = $guia->comprobante->client;
-        }
+        // if ($guia->comprobante) {
+        //     $this->client = $guia->comprobante->client;
+        // }
 
-        $this->vehiculosml = $guia->indicadorvehiculosml == 1 ? true : false;
-        $this->vehiculovacio = $guia->indicadorvehretorvacio == 1 ? true : false;
+        // $this->vehiculosml = $guia->indicadorvehiculosml == 1 ? true : false;
+        // $this->vehiculovacio = $guia->indicadorvehretorvacio == 1 ? true : false;
 
-        if ($guia->motivotraslado->code == '03') {
-            $this->documentcomprador = $guia->client->document;
-            $this->namecomprador = $guia->client->name;
-        }
+        // if ($guia->motivotraslado->code == '03') {
+        //     $this->documentcomprador = $guia->client->document;
+        //     $this->namecomprador = $guia->client->name;
+        // }
 
 
-        $this->regionorigen_id = $guia->ubigeoorigen->departamento_inei;
-        $this->regiondestino_id = $guia->ubigeodestino->departamento_inei;
+        // $this->regionorigen_id = $guia->ubigeoorigen->departamento_inei;
+        // $this->regiondestino_id = $guia->ubigeodestino->departamento_inei;
 
-        $this->provinciaorigen_id = $guia->ubigeoorigen->provincia_inei;
-        $this->provinciadestino_id = $guia->ubigeodestino->provincia_inei;
+        // $this->provinciaorigen_id = $guia->ubigeoorigen->provincia_inei;
+        // $this->provinciadestino_id = $guia->ubigeodestino->provincia_inei;
 
-        $this->distritoorigen_id = $guia->ubigeoorigen->id;
-        $this->distritodestino_id = $guia->ubigeodestino->id;
+        // $this->distritoorigen_id = $guia->ubigeoorigen->id;
+        // $this->distritodestino_id = $guia->ubigeodestino->id;
 
-        $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $guia->ubigeoorigen->provincia_inei)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        $this->distritosdestino = Ubigeo::select('id', 'distrito')->where('provincia_inei', $guia->ubigeodestino->provincia_inei)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
+        // $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $guia->ubigeoorigen->provincia_inei)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
+        // $this->distritosdestino = Ubigeo::select('id', 'distrito')->where('provincia_inei', $guia->ubigeodestino->provincia_inei)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
 
-        $this->loadprovinciasorigen($guia->ubigeoorigen->departamento_inei);
-        $this->loadprovinciasdestino($guia->ubigeodestino->departamento_inei);
+        // $this->loadprovinciasorigen($guia->ubigeoorigen->departamento_inei);
+        // $this->loadprovinciasdestino($guia->ubigeodestino->departamento_inei);
     }
 
     public function render()
     {
-        $regiones = Ubigeo::select('departamento_inei', 'region')->groupBy('departamento_inei', 'region')->orderBy('region', 'asc')->get();
-        $modalidadtransportes = Modalidadtransporte::orderBy('id', 'asc')->get();
-        $motivotraslados = Motivotraslado::orderBy('code', 'asc')->get();
+        // $regiones = Ubigeo::select('departamento_inei', 'region')->groupBy('departamento_inei', 'region')->orderBy('region', 'asc')->get();
+        // $modalidadtransportes = Modalidadtransporte::orderBy('id', 'asc')->get();
+        // $motivotraslados = Motivotraslado::orderBy('code', 'asc')->get();
 
-        return view('livewire.modules.facturacion.guias.show-guia', compact('regiones', 'modalidadtransportes', 'motivotraslados'));
+        return view('livewire.modules.facturacion.guias.show-guia');
     }
 
-    public function update()
-    {
+    // public function update()
+    // {
 
-        $this->guia->indicadorvehiculosml = $this->vehiculosml ? 1 : 0;
-        $this->guia->indicadorvehretorvacio = $this->vehiculovacio ? 1 : 0;
+    //     $this->guia->indicadorvehiculosml = $this->vehiculosml ? 1 : 0;
+    //     $this->guia->indicadorvehretorvacio = $this->vehiculovacio ? 1 : 0;
 
-        $this->guia->rucproveedor = trim($this->guia->rucproveedor);
-        $this->guia->nameproveedor = trim($this->guia->nameproveedor);
+    //     $this->guia->rucproveedor = trim($this->guia->rucproveedor);
+    //     $this->guia->nameproveedor = trim($this->guia->nameproveedor);
 
-        $this->guia->direccionorigen = trim($this->guia->direccionorigen);
-        $this->guia->ubigeoorigen_id = $this->distritoorigen_id;
-        $this->guia->direcciondestino = trim($this->guia->direcciondestino);
-        $this->guia->ubigeodestino_id = $this->distritodestino_id;
-        $this->guia->documentdestinatario = trim($this->guia->documentdestinatario);
-        $this->guia->namedestinatario = trim($this->guia->namedestinatario);
-        $this->guia->placavehiculo = !$this->vehiculosml ? null : trim($this->guia->placavehiculo) ?? null;
-        $this->guia->placavehiculo = empty(trim($this->guia->placavehiculo)) ? null : $this->guia->placavehiculo;
+    //     $this->guia->direccionorigen = trim($this->guia->direccionorigen);
+    //     $this->guia->ubigeoorigen_id = $this->distritoorigen_id;
+    //     $this->guia->direcciondestino = trim($this->guia->direcciondestino);
+    //     $this->guia->ubigeodestino_id = $this->distritodestino_id;
+    //     $this->guia->documentdestinatario = trim($this->guia->documentdestinatario);
+    //     $this->guia->namedestinatario = trim($this->guia->namedestinatario);
+    //     $this->guia->placavehiculo = !$this->vehiculosml ? null : trim($this->guia->placavehiculo) ?? null;
+    //     $this->guia->placavehiculo = empty(trim($this->guia->placavehiculo)) ? null : $this->guia->placavehiculo;
 
-        if ($this->guia->modalidadtransporte_id) {
-            $this->modalidadtransporte = Modalidadtransporte::find($this->guia->modalidadtransporte_id);
-        }
+    //     if ($this->guia->modalidadtransporte_id) {
+    //         $this->modalidadtransporte = Modalidadtransporte::find($this->guia->modalidadtransporte_id);
+    //     }
 
-        if ($this->guia->motivotraslado_id) {
-            $this->motivotraslado = Motivotraslado::find($this->guia->motivotraslado_id);
-            if (in_array($this->motivotraslado->code, $this->arrayequalremite)) {
-                $this->guia->documentdestinatario = $this->sucursal->empresa->document;
-                $this->guia->namedestinatario = $this->sucursal->empresa->name;
-            }
-            $this->guia->anexoorigen = $this->motivotraslado->code == '04' ? $this->sucursal->codeanexo : null;
-            $this->guia->anexodestino = $this->motivotraslado->code == '04' ? $this->guia->anexodestino : null;
-        }
+    //     if ($this->guia->motivotraslado_id) {
+    //         $this->motivotraslado = Motivotraslado::find($this->guia->motivotraslado_id);
+    //         if (in_array($this->motivotraslado->code, $this->arrayequalremite)) {
+    //             $this->guia->documentdestinatario = $this->sucursal->empresa->document;
+    //             $this->guia->namedestinatario = $this->sucursal->empresa->name;
+    //         }
+    //         $this->guia->anexoorigen = $this->motivotraslado->code == '04' ? $this->sucursal->codeanexo : null;
+    //         $this->guia->anexodestino = $this->motivotraslado->code == '04' ? $this->guia->anexodestino : null;
+    //     }
 
-        // if ($this->guia->motivotraslado->code != '03') {
-        //     $this->guia->documentdestinatario = trim($this->guia->client->document);
-        //     $this->guia->namedestinatario = trim($this->guia->client->name);
-        // }
+    //     if ($this->vehiculosml) {
+    //         $this->reset(['documentdriver', 'namedriver', 'lastname', 'licencia']);
+    //     }
 
-        // if ($this->modalidadtransporte->code == '01' && $this->vehiculosml == false) {
-        //     $this->guia->ructransport = trim($this->guia->ructransport);
-        //     $this->guia->nametransport = trim($this->guia->nametransport);
-        // }
-
-        if ($this->vehiculosml) {
-            $this->reset(['documentdriver', 'namedriver', 'lastname', 'licencia']);
-        }
-
-        $this->validate();
-        if ($this->vehiculosml) {
-            // $this->guia->ructransport = null;
-            // $this->guia->nametransport = null;
-            $this->guia->transportvehiculos()->delete();
-            $this->guia->transportdrivers()->delete();
-        }
-        $this->guia->save();
-        $this->resetValidation();
-        $this->dispatchBrowserEvent('updated');
-    }
+    //     $this->validate();
+    //     if ($this->vehiculosml) {
+    //         $this->guia->transportvehiculos()->delete();
+    //         $this->guia->transportdrivers()->delete();
+    //     }
+    //     $this->guia->save();
+    //     $this->resetValidation();
+    //     $this->dispatchBrowserEvent('updated');
+    // }
 
     public function savevehiculo()
     {
@@ -378,190 +366,188 @@ class ShowGuia extends Component
         }
     }
 
-    public function getProveedor()
-    {
-        $this->guia->rucproveedor = trim($this->guia->rucproveedor);
-        $this->validate([
-            'guia.rucproveedor' => [
-                'required', 'numeric', 'digits:11', 'regex:/^\d{11}$/',
-                $this->motivotraslado->code == '02' ? 'different:guia.documentdestinatario' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
-            ],
-        ]);
+    // public function getProveedor()
+    // {
+    //     $this->guia->rucproveedor = trim($this->guia->rucproveedor);
+    //     $this->validate([
+    //         'guia.rucproveedor' => [
+    //             'required', 'numeric', 'digits:11', 'regex:/^\d{11}$/',
+    //             $this->motivotraslado->code == '02' ? 'different:guia.documentdestinatario' : '',
+    //             in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
+    //         ],
+    //     ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->guia->rucproveedor);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['guia.rucproveedor', 'guia.nameproveedor']);
-                $this->guia->nameproveedor = $response->getData()->name;
-            } else {
-                $this->resetValidation(['guia.rucproveedor']);
-                $this->addError('guia.rucproveedor', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->guia->rucproveedor);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['guia.rucproveedor', 'guia.nameproveedor']);
+    //             $this->guia->nameproveedor = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['guia.rucproveedor']);
+    //             $this->addError('guia.rucproveedor', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
 
-    public function getTransport()
-    {
+    // public function getTransport()
+    // {
 
-        $this->guia->ructransport = trim($this->guia->ructransport);
-        $this->validate([
-            'guia.ructransport' => [
-                'required', 'numeric', 'digits:11', 'regex:/^\d{11}$/'
-            ],
-        ]);
+    //     $this->guia->ructransport = trim($this->guia->ructransport);
+    //     $this->validate([
+    //         'guia.ructransport' => [
+    //             'required', 'numeric', 'digits:11', 'regex:/^\d{11}$/'
+    //         ],
+    //     ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->guia->ructransport);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['ructransport', 'nametransport']);
-                $this->guia->nametransport = $response->getData()->name;
-            } else {
-                $this->resetValidation(['ructransport']);
-                $this->addError('ructransport', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->guia->ructransport);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['ructransport', 'nametransport']);
+    //             $this->guia->nametransport = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['ructransport']);
+    //             $this->addError('ructransport', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
 
-    public function getDestinatario()
-    {
+    // public function getDestinatario()
+    // {
 
-        if ($this->guia->motivotraslado_id) {
-            $this->motivotraslado = Motivotraslado::find($this->guia->motivotraslado_id);
-        }
-        $this->guia->documentdestinatario = trim($this->guia->documentdestinatario);
-        $this->validate([
-            'guia.documentdestinatario' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '01' && $this->guia->comprobante ? 'same:client.document' : '',
-                $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
-            ],
-        ]);
+    //     if ($this->guia->motivotraslado_id) {
+    //         $this->motivotraslado = Motivotraslado::find($this->guia->motivotraslado_id);
+    //     }
+    //     $this->guia->documentdestinatario = trim($this->guia->documentdestinatario);
+    //     $this->validate([
+    //         'guia.documentdestinatario' => [
+    //             'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+    //             $this->motivotraslado->code == '01' && $this->guia->comprobante ? 'same:client.document' : '',
+    //             $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
+    //         ],
+    //     ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->guia->documentdestinatario);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['guia.documentdestinatario', 'guia.namedestinatario']);
-                $this->guia->namedestinatario = $response->getData()->name;
-            } else {
-                $this->resetValidation(['guia.documentdestinatario']);
-                $this->addError('guia.documentdestinatario', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->guia->documentdestinatario);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['guia.documentdestinatario', 'guia.namedestinatario']);
+    //             $this->guia->namedestinatario = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['guia.documentdestinatario']);
+    //             $this->addError('guia.documentdestinatario', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
 
-    public function getComprador()
-    {
+    // public function getComprador()
+    // {
 
-        $this->documentcomprador = trim($this->documentcomprador);
-        $this->validate([
-            'documentcomprador' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' && $this->guia->comprobante ? 'same:client.document' : '',
-                $this->motivotraslado->code == '03' ? 'different:guia.documentdestinatario' : '',
-            ],
-        ]);
+    //     $this->documentcomprador = trim($this->documentcomprador);
+    //     $this->validate([
+    //         'documentcomprador' => [
+    //             'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+    //             $this->motivotraslado->code == '03' && $this->guia->comprobante ? 'same:client.document' : '',
+    //             $this->motivotraslado->code == '03' ? 'different:guia.documentdestinatario' : '',
+    //         ],
+    //     ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->documentcomprador);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentcomprador', 'namecomprador']);
-                $this->namecomprador = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentcomprador']);
-                $this->addError('documentcomprador', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->documentcomprador);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['documentcomprador', 'namecomprador']);
+    //             $this->namecomprador = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['documentcomprador']);
+    //             $this->addError('documentcomprador', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
 
-    public function getDriver()
-    {
+    // public function getDriver()
+    // {
 
-        $this->documentdriver = trim($this->documentdriver);
-        $this->validate([
-            'documentdriver' => [
-                'nullable',
-                Rule::requiredIf($this->modalidadtransporte->code == '02'),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/'
-            ],
-        ]);
+    //     $this->documentdriver = trim($this->documentdriver);
+    //     $this->validate([
+    //         'documentdriver' => [
+    //             'nullable',
+    //             Rule::requiredIf($this->modalidadtransporte->code == '02'),
+    //             'numeric', 'regex:/^\d{8}(?:\d{3})?$/'
+    //         ],
+    //     ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->documentdriver);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentdriver', 'namedriver']);
-                $this->namedriver = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentdriver']);
-                $this->addError('documentdriver', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->documentdriver);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['documentdriver', 'namedriver']);
+    //             $this->namedriver = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['documentdriver']);
+    //             $this->addError('documentdriver', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
 
-    public function loadprovinciasorigen($value)
-    {
-        if ($value) {
-            $this->provinciasorigen = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
-        }
-    }
+    // public function loadprovinciasorigen($value)
+    // {
+    //     if ($value) {
+    //         $this->provinciasorigen = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
+    //     }
+    // }
 
-    public function updatedRegionorigenId($value)
-    {
-        $this->reset(['provinciasorigen', 'distritosorigen', 'provinciaorigen_id', 'distritoorigen_id']);
-        $this->loadprovinciasorigen($this->regionorigen_id);
-    }
+    // public function updatedRegionorigenId($value)
+    // {
+    //     $this->reset(['provinciasorigen', 'distritosorigen', 'provinciaorigen_id', 'distritoorigen_id']);
+    //     $this->loadprovinciasorigen($this->regionorigen_id);
+    // }
 
-    public function updatedProvinciaorigenId($value)
-    {
-        $this->reset(['distritosorigen', 'distritoorigen_id']);
-        if ($value) {
-            $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciaorigen_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        }
-        $this->loadprovinciasorigen($this->regionorigen_id);
-    }
+    // public function updatedProvinciaorigenId($value)
+    // {
+    //     $this->reset(['distritosorigen', 'distritoorigen_id']);
+    //     if ($value) {
+    //         $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciaorigen_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
+    //     }
+    //     $this->loadprovinciasorigen($this->regionorigen_id);
+    // }
 
-    public function loadprovinciasdestino($value)
-    {
-        if ($value) {
-            $this->provinciasdestino = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
-        }
-    }
+    // public function loadprovinciasdestino($value)
+    // {
+    //     if ($value) {
+    //         $this->provinciasdestino = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
+    //     }
+    // }
 
-    public function updatedRegiondestinoId($value)
-    {
-        $this->reset(['provinciasdestino', 'distritosdestino', 'provinciadestino_id', 'distritodestino_id']);
-        $this->loadprovinciasdestino($this->regiondestino_id);
-    }
+    // public function updatedRegiondestinoId($value)
+    // {
+    //     $this->reset(['provinciasdestino', 'distritosdestino', 'provinciadestino_id', 'distritodestino_id']);
+    //     $this->loadprovinciasdestino($this->regiondestino_id);
+    // }
 
-    public function updatedProvinciadestinoId($value)
-    {
-        $this->reset(['distritosdestino', 'distritodestino_id']);
-        if ($value) {
-            $this->distritosdestino = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciadestino_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        }
-        $this->loadprovinciasdestino($this->regiondestino_id);
-    }
+    // public function updatedProvinciadestinoId($value)
+    // {
+    //     $this->reset(['distritosdestino', 'distritodestino_id']);
+    //     if ($value) {
+    //         $this->distritosdestino = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciadestino_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
+    //     }
+    //     $this->loadprovinciasdestino($this->regiondestino_id);
+    // }
 
-
-    public function hydrate()
-    {
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        $this->loadprovinciasdestino($this->regiondestino_id);
-    }
-
+    // public function hydrate()
+    // {
+    //     $this->loadprovinciasorigen($this->regionorigen_id);
+    //     $this->loadprovinciasdestino($this->regiondestino_id);
+    // }
 }

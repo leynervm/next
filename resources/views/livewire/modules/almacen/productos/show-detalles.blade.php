@@ -160,12 +160,9 @@
                         @if (isset($imagen))
                             <x-slot name="clear">
                                 <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
-                                    REGISTRAR
-                                </x-button>
+                                    REGISTRAR</x-button>
                                 <x-button class="inline-flex" wire:loading.attr="disabled" wire:target="clearImage"
-                                    wire:click="clearImage">
-                                    LIMPIAR
-                                </x-button>
+                                    wire:click="clearImage">LIMPIAR</x-button>
                             </x-slot>
                         @endif
                     </x-input-file>

@@ -1,5 +1,5 @@
-<div>
-    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8" x-data="loader">
+<div x-data="loader">
+    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="RESUMEN GUÍA REMISIÓN"
             subtitulo="Complete todos los campos para registrar una nueva guía de remisión.">
             <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
@@ -7,11 +7,11 @@
                     <div class="w-full xs:col-span-2 md:col-span-1">
                         <x-label value="Tipo guía :" />
                         <x-select class="block w-full uppercase" id="motivotraslado_id"
-                            wire:model.defer="typecomprobante_id">
+                            wire:model.lazy="typecomprobante_id" @change="resetMotivotraslado($event.target)">
                             <x-slot name="options">
                                 @if (count($typecomprobantes))
                                     @foreach ($typecomprobantes as $item)
-                                        <option value="{{ $item->id }}">
+                                        <option value="{{ $item->id }}" data-sendsunat="{{ $item->sendsunat }}">
                                             {{ $item->name }}
                                         </option>
                                     @endforeach
@@ -71,7 +71,7 @@
                         <x-jet-input-error for="peso" />
                     </div>
 
-                    <div class="w-full">
+                    <div class="w-full animate__animated animate__fadeInDown" x-show="loadingpackages">
                         <x-label value="Bultos / Paquetes :" />
                         <x-input class="block w-full" wire:model.defer="packages" min="0" step="1"
                             type="number" />
@@ -128,7 +128,8 @@
                     </div>
                 </div>
 
-                <div wire:loading.flex wire:target="save" class="loading-overlay rounded hidden">
+                <div wire:loading.flex wire:target="save, searchreferencia, typecomprobante_id"
+                    class="loading-overlay rounded hidden">
                     <x-loading-next />
                 </div>
             </div>
@@ -140,8 +141,9 @@
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
                     <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" wire:model.defer="documentdestinatario"
-                            wire:keydown.enter="getDestinatario" minlength="0" maxlength="11" />
+                        <x-input class="block w-full prevent numeric" x-model="documentdestinatario"
+                            wire:model.defer="documentdestinatario" wire:keydown.enter="getDestinatario"
+                            minlength="0" maxlength="11" />
                         <x-button-add class="px-2" wire:click="getDestinatario" wire:target="getDestinatario"
                             wire:loading.attr="disable">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -157,7 +159,7 @@
 
                 <div class="w-full lg:col-span-2">
                     <x-label value="Nombres / Razón social :" />
-                    <x-input class="block w-full" wire:model.defer="namedestinatario"
+                    <x-input class="block w-full" x-model="namedestinatario" wire:model.defer="namedestinatario"
                         placeholder="Nombres / razón social del destinatario" />
                     <x-jet-input-error for="namedestinatario" />
                 </div>
@@ -172,8 +174,9 @@
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
                     <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" wire:model.defer="documentcomprador"
-                            wire:keydown.enter="getComprador" minlength="0" maxlength="11" />
+                        <x-input class="block w-full prevent numeric" x-model="documentcomprador"
+                            wire:model.defer="documentcomprador" wire:keydown.enter="getComprador" minlength="0"
+                            maxlength="11" />
                         <x-button-add class="px-2" wire:click="getComprador" wire:loading.attr="disable">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -188,12 +191,45 @@
 
                 <div class="w-full lg:col-span-2">
                     <x-label value="Nombres / Razón social :" />
-                    <x-input class="block w-full" wire:model.defer="namecomprador"
+                    <x-input class="block w-full" x-model="namecomprador" wire:model.defer="namecomprador"
                         placeholder="Nombres / razón social del comprador" />
                     <x-jet-input-error for="namecomprador" />
                 </div>
             </div>
             <div wire:loading.flex wire:target="getComprador,save" class="loading-overlay rounded hidden">
+                <x-loading-next />
+            </div>
+        </x-form-card>
+
+        <x-form-card titulo="PROVEEDOR" x-show="loadingproveedor" class="animate__animated animate__fadeInDown">
+            <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div class="w-full">
+                    <x-label value="RUC :" />
+                    <div class="w-full inline-flex">
+                        <x-input class="block w-full prevent numeric" x-model="rucproveedor"
+                            wire:model.defer="rucproveedor" wire:keydown.enter="getProveedor" minlength="0"
+                            maxlength="11" />
+                        <x-button-add class="px-2" wire:click="getProveedor" wire:target="getDestinatario"
+                            wire:loading.attr="disable">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8" />
+                                <path d="m21 21-4.3-4.3" />
+                            </svg>
+                        </x-button-add>
+                    </div>
+                    <x-jet-input-error for="rucproveedor" />
+                </div>
+
+                <div class="w-full lg:col-span-2">
+                    <x-label value="Razón social :" />
+                    <x-input class="block w-full" x-model="nameproveedor" wire:model.defer="nameproveedor"
+                        placeholder="Razón social del proveedor" />
+                    <x-jet-input-error for="nameproveedor" />
+                </div>
+            </div>
+            <div wire:loading.flex wire:target="getProveedor, save" class="loading-overlay rounded hidden">
                 <x-loading-next />
             </div>
         </x-form-card>
@@ -223,38 +259,6 @@
                         placeholder="Razón social del transportista" />
                     <x-jet-input-error for="nametransport" />
                 </div>
-            </div>
-        </x-form-card>
-
-        <x-form-card titulo="PROVEEDOR" x-show="loadingproveedor" class="animate__animated animate__fadeInDown">
-            <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                <div class="w-full">
-                    <x-label value="RUC :" />
-                    <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" wire:model.defer="rucproveedor"
-                            wire:keydown.enter="getProveedor" minlength="0" maxlength="11" />
-                        <x-button-add class="px-2" wire:click="getProveedor" wire:target="getDestinatario"
-                            wire:loading.attr="disable">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <circle cx="11" cy="11" r="8" />
-                                <path d="m21 21-4.3-4.3" />
-                            </svg>
-                        </x-button-add>
-                    </div>
-                    <x-jet-input-error for="rucproveedor" />
-                </div>
-
-                <div class="w-full lg:col-span-2">
-                    <x-label value="Razón social :" />
-                    <x-input class="block w-full" wire:model.defer="nameproveedor"
-                        placeholder="Razón social del proveedor" />
-                    <x-jet-input-error for="nameproveedor" />
-                </div>
-            </div>
-            <div wire:loading.flex wire:target="getProveedor, save" class="loading-overlay rounded hidden">
-                <x-loading-next />
             </div>
         </x-form-card>
 
@@ -544,25 +548,28 @@
                 <div class="w-full grid grid-cols-1 sm:grid-cols-4 gap-1">
                     <div class="w-full">
                         <x-label value="Almacén :" />
-                        <x-select class="block w-full uppercase" id="almacenguia_id" wire:model.lazy="almacen_id">
-                            <x-slot name="options">
-                                @if (count($almacens))
-                                    @foreach ($almacens as $item)
-                                        <option value="{{ $item->id }}">
-                                            {{ $item->name }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
+                        <div class="relative" x-init="select2Almacen" id="parentalmacenguia_id" wire:ignore>
+                            <x-select class="block w-full uppercase" id="almacenguia_id" x-ref="selectalmacen"
+                                data-placeholder="null">
+                                <x-slot name="options">
+                                    @if (count($almacens))
+                                        @foreach ($almacens as $item)
+                                            <option value="{{ $item->id }}">
+                                                {{ $item->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                         <x-jet-input-error for="almacen_id" />
                     </div>
 
                     <div class="w-full sm:col-span-2">
                         <x-label value="Descripción del producto :" />
-                        <div class="w-full relative" x-data="{ producto_id: @entangle('producto_id') }" x-init="select2ProductoAlpine"
-                            id="parentguiaproducto_id" wire:ignore>
-                            <x-select class="block w-full uppercase" x-ref="select"
+                        <div class="w-full relative" x-init="select2Producto" id="parentguiaproducto_id" wire:ignore>
+                            <x-select class="block w-full uppercase" x-ref="selectprod"
                                 data-minimum-results-for-search="3" id="guiaproducto_id">
                                 <x-slot name="options">
                                     @if (count($productos))
@@ -582,9 +589,8 @@
                     @if (count($series))
                         <div class="w-full">
                             <x-label value="Seleccionar serie :" />
-                            <div class="w-full relative" id="parentguiaserie_id" x-data="{ serie_id: @entangle('serie_id').defer }"
-                                x-init="select2SerieAlpine">
-                                <x-select class="block w-full uppercase" x-ref="select"
+                            <div class="w-full relative" id="parentguiaserie_id" x-init="select2Serie" wire:ignore>
+                                <x-select class="block w-full" x-ref="selectserie"
                                     data-minimum-results-for-search="3" id="guiaserie_id">
                                     <x-slot name="options">
                                         @foreach ($series as $item)
@@ -607,20 +613,23 @@
                         <x-jet-input-error for="cantidad" />
                     </div>
                 </div>
-                {{ count($series) }}
-
 
                 <div class="w-full flex justify-between items-start">
                     <div class="w-full">
+                        <x-label-check for="disponibles">
+                            <x-input wire:model.defer="disponibles" @change="toggledisponibles" name="disponibles"
+                                type="checkbox" id="disponibles" />
+                            MOSTRAR SOLAMENTE PRODUCTOS DISPONIBLES
+                        </x-label-check>
                         <x-label-check for="alterstock">
                             <x-input wire:model.defer="alterstock" name="alterstock" value="true" type="checkbox"
                                 id="alterstock" />
-                            Alterar stock
+                            ALTERAR STOCK
                         </x-label-check>
                         <x-label-check for="clearaftersave">
                             <x-input wire:model.defer="clearaftersave" name="clearaftersave" value="true"
                                 type="checkbox" id="clearaftersave" />
-                            Limpiar formulario despues de agregar
+                            LIMPIAR FORMULARIO DESPUES AGREGAR
                         </x-label-check>
                     </div>
                     <x-button type="submit" wire:loading.attr="disabled">{{ __('AGREGAR') }}</x-button>
@@ -629,19 +638,17 @@
 
             <div class="w-full flex flex-wrap gap-2 relative rounded">
                 @foreach ($carrito as $item)
-                    <x-card-producto :name="$item->producto" :almacen="$item->almacen">
+                    <x-card-producto :name="$item->producto" :almacen="$item->almacen" :category="$item->referencia">
                         <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
-                            <x-span-text :text="$item->cantidad . ' ' . $item->unit" class="leading-3" />
-
-                            <x-span-text :text="'ALTER ' . $item->alterstock" class="leading-3" />
-                            <x-span-text :text="'SUCURSAL ' . $item->sucursal_id" class="leading-3" />
-                            <x-span-text :text="'USER ' . $item->user_id" class="leading-3" />
+                            <x-span-text :text="$item->cantidad . ' ' . $item->unit" class="leading-3 !tracking-normal" />
+                            {{-- <x-span-text :text="'SUCURSAL ' . $item->sucursal_id" class="leading-3 !tracking-normal" /> --}}
+                            {{-- <x-span-text :text="$item->almacen" class="leading-3 !tracking-normal" /> --}}
+                            <x-span-text :text="$item->alterstock == '0' ? 'NO ALTERÓ STOCK' : 'STOCK ALTERADO'" class="leading-3 !tracking-normal" />
 
                             {{-- {{ print_r($item->series) }} --}}
-                            {{-- @if (count($item->series) == 1)
-                                <x-span-text :text="'SERIE : ' . $item->series[0]->serie" class="leading-3" />
-                            @endif --}}
-
+                            @if (count($item->series) == 1)
+                                <x-span-text :text="'SERIE : ' . $item->series[0]->serie" class="leading-3 !tracking-normal" />
+                            @endif
                         </div>
                         @if (count($item->series) > 1)
                             <div x-data="{ showForm: false }" class="mt-1">
@@ -677,7 +684,7 @@
                     </x-card-producto>
                 @endforeach
 
-                {{ print_r($seriescarrito) }}
+                {{-- {{ print_r($seriescarrito) }} --}}
                 {{-- @if (count($series))
                     @foreach ($series as $item)
                         {{ $item }}
@@ -691,26 +698,47 @@
     </x-form-card>
 
     <script>
-        function select2ProductoAlpine() {
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.producto_id).trigger("change");
-            this.select2.on("select2:select", (event) => {
-                    this.producto_id = event.target.value;
-                })
-                .on('select2:open', function(e) {
-                    const evt = "scroll.select2";
-                    $(e.target).parents().off(evt);
-                    $(window).off(evt);
-                });
-            this.$watch("producto_id", (value) => {
-                this.select2.val(value).trigger("change");
+        function select2Almacen() {
+            this.selectA = $(this.$refs.selectalmacen).select2();
+            this.selectA.val(this.almacen_id).trigger("change");
+            this.selectA.on("select2:select", (event) => {
+                this.producto_id = null;
+                this.almacen_id = event.target.value == "" ? null : event.target.value;
+                @this.loadproductos();
+                @this.loadseries();
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("almacen_id", (value) => {
+                this.selectA.val(value).trigger("change");
             });
         }
 
-        function select2SerieAlpine() {
+        function select2Producto() {
+            this.selectP = $(this.$refs.selectprod).select2();
+            this.selectP.val(this.producto_id).trigger("change");
+            this.selectP.on("select2:select", (event) => {
+                this.producto_id = event.target.value;
+                @this.loadseries();
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("producto_id", (value) => {
+                this.selectP.val(value).trigger("change");
+                if (value == null) {
+                    this.selectP.empty();
+                }
+            });
+        }
 
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.on("select2:select", (event) => {
+        function select2Serie() {
+            this.selectS = $(this.$refs.selectserie).select2();
+            this.selectS.val(this.serie_id).trigger("change");
+            this.selectS.on("select2:select", (event) => {
                 this.serie_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -718,21 +746,46 @@
                 $(window).off(evt);
             });
             this.$watch("serie_id", (value) => {
-                this.select2.val(value).trigger("change");
+                this.selectS.val(value).trigger("change");
             });
         }
 
-        window.addEventListener('renderselect2', () => {
-            $("#guiaserie_id").select2();
+        window.addEventListener('loadproductos', productos => {
+            let selectprod = document.querySelector('[x-ref="selectprod"]');
+            $(selectprod).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
+            productos.detail.forEach(product => {
+                let option = new Option(product.name, product.id, false, false);
+                $(selectprod).append(option);
+            });
+            $(selectprod).select2().trigger('change');
+        })
 
-            // $("#guiaserie_id").select2()
-            //     .on("change", (e) => {
-            //         @this.serie_id = e.target.value;
-            //     }).on('select2:open', function(e) {
-            //         const evt = "scroll.select2";
-            //         $(e.target).parents().off(evt);
-            //         $(window).off(evt);
-            //     });
+        window.addEventListener('loadseries', series => {
+            let selectserie = document.querySelector('[x-ref="selectserie"]');
+            $(selectserie).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
+            series.detail.forEach(serie => {
+                let option = new Option(serie.serie, serie.id, false, false);
+                $(selectserie).append(option);
+            });
+            $(selectserie).select2().trigger('change');
+        })
+
+        window.addEventListener('confirmaritemsguia', () => {
+            swal.fire({
+                title: 'Agregar items del comprobante a la Guía ?',
+                text: "Se agregarán todos los items encontrados en el comprobante de referencia.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.confirmaradditemsguia();
+                }
+            })
+
         })
 
         document.addEventListener('alpine:init', () => {
@@ -743,11 +796,24 @@
                 loadingdestinatario: false,
                 loadingcomprador: false,
                 loadingproveedor: false,
+                loadingpackages: false,
+                local: false,
                 codemotivotraslado: '',
                 codemodalidad: '',
+                documentdestinatario: @entangle('documentdestinatario').defer,
+                namedestinatario: @entangle('namedestinatario').defer,
+                documentcomprador: @entangle('documentcomprador').defer,
+                namecomprador: @entangle('namecomprador').defer,
+                rucproveedor: @entangle('rucproveedor').defer,
+                nameproveedor: @entangle('nameproveedor').defer,
+
+                // disponibles: @entangle('disponibles'),
+                serie_id: @entangle('serie_id').defer,
+                almacen_id: @entangle('almacen_id').defer,
+                producto_id: @entangle('producto_id').defer,
 
                 init() {
-                    console.log("loaded Edit");
+                    console.log("loaded Alpine on create-guia");
                 },
                 toggle() {
                     this.vehiculosml = !this.vehiculosml;
@@ -765,6 +831,12 @@
                     this.codemotivotraslado = target.options[target.selectedIndex].getAttribute(
                         'data-code');
                     this.selectedMotivotraslado(this.codemotivotraslado);
+                    this.documentdestinatario = '';
+                    this.namedestinatario = '';
+                    this.documentcomprador = '';
+                    this.namecomprador = '';
+                    this.rucproveedor = '';
+                    this.nameproveedor = '';
                 },
                 getCodeModalidad(target) {
                     this.codemodalidad = target.options[target.selectedIndex].getAttribute(
@@ -789,62 +861,100 @@
                     }
                 },
                 selectedMotivotraslado(value) {
+
                     switch (value) {
-                        case '01':
+                        case '01': //VENTA
                             this.loadingdestinatario = true;
                             this.loadingcomprador = false;
                             this.loadingproveedor = false;
+                            this.loadingpackages = false;
                             break;
-                        case '02':
+                        case '02': //COMPRA
                             this.loadingdestinatario = false;
                             this.loadingcomprador = false;
                             this.loadingproveedor = true;
+                            this.loadingpackages = false;
                             break;
-                        case '03':
+                        case '03': //VENTA TERCEROS
                             this.loadingdestinatario = true;
                             this.loadingcomprador = true;
                             this.loadingproveedor = false;
+                            this.loadingpackages = false;
                             break;
-                        case '04':
-                            this.loadingpublic = true;
+                        case '04': //TRASLADO ESTABLECIMIENTOS
                             this.loadingdestinatario = false;
                             this.loadingcomprador = false;
                             this.loadingproveedor = false;
+                            this.loadingpackages = false;
                             break;
-                        case '13':
-
+                        case '05': //CONSIGNACION
+                            this.loadingdestinatario = true;
+                            this.loadingproveedor = false;
+                            this.loadingcomprador = false;
+                            this.loadingpackages = false;
+                            break;
+                        case '06': //DEVOLUCION
+                            this.loadingdestinatario = true;
+                            this.loadingproveedor = false;
+                            this.loadingcomprador = false;
+                            this.loadingpackages = false;
+                            break;
+                        case '13': //OTROS
+                            this.loadingdestinatario = true;
+                            this.loadingproveedor = true;
+                            this.loadingcomprador = true;
+                            this.loadingpackages = false;
+                            break;
+                        case '14': //VENTA SUJETA CONFIRMACION
+                            this.loadingdestinatario = true;
+                            this.loadingproveedor = false;
+                            this.loadingcomprador = false;
+                            this.loadingpackages = false;
                             break;
                         default:
                             this.loadingdestinatario = false;
-                            this.loadingprivate = false;
-                            this.loadingpublic = false;
+                            // this.loadingprivate = false;
+                            // this.loadingpublic = false;
                             this.loadingdestinatario = false;
                             this.loadingcomprador = false;
                             this.loadingproveedor = false;
+                            this.loadingpackages = false;
+                    }
+
+                    if (this.codemodalidad == '' || this.vehiculosml) {
+                        this.loadingprivate = false;
+                        this.loadingpublic = false;
+                    }
+
+                    if (this.local == '0') {
+                        this.loadingdestinatario = true;
+                    }
+                },
+                toggledisponibles() {
+                    this.producto_id = null;
+                    @this.loadproductos();
+                    @this.loadseries();
+                },
+                resetMotivotraslado(target) {
+                    this.local = target.options[target.selectedIndex].getAttribute(
+                        'data-sendsunat');
+                    this.codemotivotraslado = '';
+                    this.loadingdestinatario = false;
+                    this.loadingcomprador = false;
+                    this.loadingproveedor = false;
+                    // this.loadingprivate = false;
+                    // this.loadingpublic = false;
+
+                    if (this.codemodalidad == '' || this.vehiculosml) {
+                        this.loadingprivate = false;
+                        this.loadingpublic = false;
+                    }
+                    
+                    if (this.local == '0') {
+                        this.loadingdestinatario = true;
                     }
                 }
             }))
-        })
-
-        document.addEventListener('livewire:load', () => {
-            Livewire.on('confirmaritemsguia', data => {
-                swal.fire({
-                    title: 'Desea agregar items encontrados a la guia"',
-                    text: "Se encontraron items del comprobante de referencia, desea añadirlos a la guía ?",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.confirmaradditemsguia(data);
-                        // Livewire.emitTo('ventas::ventas.show-venta', 'deletecuota', data.id);
-                    }
-                })
-
-            })
         })
     </script>
 </div>

@@ -20,10 +20,5 @@ class AlmacenDatabaseSeeder extends Seeder
 
         // $this->call("OthersTableSeeder");
         // $this->call(SeedEstantesTableSeeder::class);
-
-        // Storage::deleteDirectory('productos');
-        // Storage::makeDirectory('productos');
-        // Producto::factory(5)->create();
-        // $this->call(SeedProductoTableSeeder::class);
     }
 }

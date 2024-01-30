@@ -66,4 +66,9 @@ class Serie extends Model
     {
         return $this->hasOne(Itemserie::class);
     }
+
+    public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
+    {
+        return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
+    }
 }

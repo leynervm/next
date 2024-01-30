@@ -19,6 +19,7 @@ class CreateRango extends Component
     public $hasta;
     public $minHasta;
     public $incremento = 0;
+   
 
     protected function rules()
     {
@@ -58,26 +59,20 @@ class CreateRango extends Component
 
         try {
             DB::beginTransaction();
-
             $rango = Rango::create([
                 'desde' => $this->desde,
                 'hasta' => $this->hasta,
                 'incremento' => $this->incremento,
-                'user_id' => Auth::user()->id
             ]);
 
             $pricetypes = Pricetype::pluck('id')->toArray();
             $rango->pricetypes()->syncWithPivotValues(
                 $pricetypes,
-                [
-                    'ganancia' => $rango->incremento,
-                    'user_id' => Auth::user()->id,
-                    'created_at' => now('America/Lima'),
-                    'updated_at' => now('America/Lima')
-                ]
+                ['ganancia' => 0]
             );
             DB::commit();
             $this->emitTo('admin.rangos.show-rangos', 'render');
+            $this->dispatchBrowserEvent('created');
             $this->reset();
         } catch (\Exception $e) {
             DB::rollBack();

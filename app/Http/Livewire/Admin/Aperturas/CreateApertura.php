@@ -14,7 +14,7 @@ class CreateApertura extends Component
 {
 
     public $open = false;
-    public $caja_id;
+    public $caja_id, $expiredate;
     public $startmount = 0;
 
     protected $listeners = ['render'];
@@ -26,6 +26,9 @@ class CreateApertura extends Component
                 'required', 'integer', 'min:1', 'exists:cajas,id',
                 new ValidateCaja()
             ],
+            'expiredate' => [
+                'required', 'date', 'after:' . now('America/Lima')->format('Y-m-d H:i')
+            ],
             'startmount' => [
                 'required', 'numeric', 'min:0', 'decimal:0,2'
             ],
@@ -35,11 +38,12 @@ class CreateApertura extends Component
     public function render()
     {
 
-        $sucursals = auth()->user()->sucursalDefault()->select('sucursals.id')->pluck('sucursals.id');
-        $cajas = Caja::whereDoesntHave('opencajas')->whereIn('sucursal_id', $sucursals)
+        $cajas = Caja::where('sucursal_id', auth()->user()->sucursal_id)
+            ->whereDoesntHave('opencajas')
             ->orWhereHas('opencajas', function ($query) {
                 $query->whereNotNull('expiredate');
-            })->whereIn('sucursal_id', $sucursals)->orderBy('name', 'asc')->get();
+            })->where('sucursal_id', auth()->user()->sucursal_id)
+            ->orderBy('name', 'asc')->get();
 
         return view('livewire.admin.aperturas.create-apertura', compact('cajas'));
     }
@@ -55,16 +59,15 @@ class CreateApertura extends Component
     public function save()
     {
         $this->startmount = trim($this->startmount);
-        $startdate = Carbon::now()->format('Y-m-d H:i:s');
         $this->validate();
 
         DB::beginTransaction();
         try {
-
             Opencaja::create([
-                'startdate' => $startdate,
+                'startdate' => now('America/Lima'),
+                'expiredate' => $this->expiredate,
                 'startmount' => $this->startmount,
-                'user_id' =>  Auth::user()->id,
+                'user_id' => Auth::user()->id,
                 'caja_id' => $this->caja_id,
                 'status' => 0
             ]);

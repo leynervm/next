@@ -25,7 +25,7 @@ class ShowSubcategories extends Component
     {
         return [
             'subcategory.name' => [
-                'required', 'string', 'min:2', 'max:100',
+                'required', 'string', 'min:3', 'max:100',
                 new CampoUnique('subcategories', 'name', $this->subcategory->id, true),
             ],
             'selectedCategories' => ['required', 'array', 'min:1']

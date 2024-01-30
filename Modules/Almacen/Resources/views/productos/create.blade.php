@@ -44,7 +44,7 @@
     </x-slot>
 
     <div class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
-        @livewire('almacen::productos.create-producto')
+        <livewire:modules.almacen.productos.create-producto />
     </div>
 
 </x-app-layout>

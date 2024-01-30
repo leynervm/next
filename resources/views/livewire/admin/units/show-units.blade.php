@@ -9,7 +9,7 @@
     <div class="flex gap-2 flex-wrap justify-start">
         @if (count($units))
             @foreach ($units as $item)
-                <x-minicard :title="$item->name" :content="$item->code">
+                <x-minicard :title="$item->name" :content="$item->code" size="md">
                     <x-slot name="buttons">
                         <div class="ml-auto">
                             <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />

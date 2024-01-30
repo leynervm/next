@@ -19,7 +19,7 @@ class ShowMethodpayments extends Component
     public $open = false;
     public $selectedCuentas = [];
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {

@@ -16,7 +16,7 @@ class CreateVentasTable extends Migration
         Schema::create('ventas', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->string('code', 12);
+            $table->string('code', 13);
             $table->string('direccion', 255);
             $table->decimal('exonerado', 12, 4);
             $table->decimal('gravado', 12, 4);

@@ -12,19 +12,21 @@
 
         <div class="w-full xs:w-40">
             <x-label value="Movimiento :" />
-            <div x-data="{ searchtype: @entangle('searchtype') }" x-init="select2TypeAlpine" id="parentsearchtype" wire:ignore>
+            <div x-data="{ searchtype: @entangle('searchtype') }" x-init="select2TypeAlpine" class="relative" id="parentsearchtype" wire:ignore>
                 <x-select id="searchtype" x-ref="select" data-placeholder="null">
                     <x-slot name="options">
                         <option value="INGRESO">INGRESO</option>
                         <option value="EGRESO">EGRESO</option>
                     </x-slot>
                 </x-select>
+                <x-icon-select />
             </div>
         </div>
 
         <div class="w-full xs:w-52">
             <x-label value="Método pago :" />
-            <div x-data="{ searchmethodpayment: @entangle('searchmethodpayment') }" x-init="select2MethodpayAlpine" id="parentsearchmethodpayment" wire:ignore>
+            <div class="relative" x-data="{ searchmethodpayment: @entangle('searchmethodpayment') }" x-init="select2MethodpayAlpine" id="parentsearchmethodpayment"
+                wire:ignore>
                 <x-select id="searchmethodpayment" x-ref="select" data-placeholder="null">
                     <x-slot name="options">
                         @if (count($methodpayments))
@@ -34,12 +36,13 @@
                         @endif
                     </x-slot>
                 </x-select>
+                <x-icon-select />
             </div>
         </div>
 
         <div class="w-full xs:w-52">
             <x-label value="Concepto :" />
-            <div x-data="{ searchconcept: @entangle('searchconcept') }" x-init="select2ConceptAlpine" id="parentsearchconcept" wire:ignore>
+            <div class="relative" x-data="{ searchconcept: @entangle('searchconcept') }" x-init="select2ConceptAlpine" id="parentsearchconcept" wire:ignore>
                 <x-select id="searchconcept" x-ref="select" data-placeholder="null">
                     <x-slot name="options">
                         @if (count($concepts))
@@ -49,12 +52,13 @@
                         @endif
                     </x-slot>
                 </x-select>
+                <x-icon-select />
             </div>
         </div>
 
         <div class="w-full xs:w-60">
             <x-label value="Usuario :" />
-            <div x-data="{ searchuser: @entangle('searchuser') }" x-init="select2UserAlpine" id="parentsearchuser" wire:ignore>
+            <div class="relative" x-data="{ searchuser: @entangle('searchuser') }" x-init="select2UserAlpine" id="parentsearchuser" wire:ignore>
                 <x-select id="searchuser" x-ref="select" data-placeholder="null">
                     <x-slot name="options">
                         @foreach ($users as $item)
@@ -62,13 +66,14 @@
                         @endforeach
                     </x-slot>
                 </x-select>
+                <x-icon-select />
             </div>
         </div>
 
         <div class="w-full xs:w-full xs:max-w-xs">
             <x-label value="Sucursal :" />
-            <div x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal" wire:ignore>
-                <x-select id="searchsucursal" x-ref="select" data-placeholder="null">
+            <div class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal" wire:ignore>
+                <x-select id="searchsucursal" x-ref="selectsucursal" data-placeholder="null">
                     <x-slot name="options">
                         @if (count($sucursals))
                             @foreach ($sucursals as $item)
@@ -77,13 +82,14 @@
                         @endif
                     </x-slot>
                 </x-select>
+                <x-icon-select />
             </div>
         </div>
 
         <div class="w-full xs:w-40">
             <x-label value="Caja :" />
-            <div x-data="{ searchcaja: @entangle('searchcaja') }" x-init="select2CajaAlpine" id="parentsearchcaja" wire:ignore>
-                <x-select id="searchcaja" x-ref="select" data-placeholder="null">
+            <div class="relative" x-data="{ searchcaja: @entangle('searchcaja') }" x-init="select2CajaAlpine" id="parentsearchcaja" wire:ignore>
+                <x-select id="searchcaja" x-ref="selectcaja" data-placeholder="null">
                     <x-slot name="options">
                         @if (count($cajas))
                             @foreach ($cajas as $item)
@@ -92,6 +98,7 @@
                         @endif
                     </x-slot>
                 </x-select>
+                <x-icon-select />
             </div>
         </div>
     </div>
@@ -157,43 +164,44 @@
             <x-slot name="body">
                 @foreach ($movimientos as $item)
                     <tr>
-                        <td class="p-2 text-xs uppercase">
+                        <td class="p-2 uppercase">
                             {{ \Carbon\Carbon::parse($item->date)->locale('es')->isoformat('DD MMMM YYYY h:m A') }}
                         </td>
-                        <td class="p-2 text-[10px]">
-                            {{ $item->amount }}
+                        <td class="p-2">
+                            {{ $item->moneda->simbolo }}
+                            {{ number_format($item->amount, 3, '.', ', ') }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->moneda->currency }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->referencia }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             <p>{{ $item->detalle }}</p>
                             @if ($item->cuenta)
                                 <p class="text-[10px]">{{ $item->cuenta->account }}</p>
                                 <p class="text-[10px]">{{ $item->cuenta->descripcion }}</p>
                             @endif
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             <small
-                                class="p-1 text-xs leading-3 rounded text-white inline-block @if ($item->typemovement == 'INGRESO') bg-green-500 @else bg-red-500 @endif">
+                                class="p-1 leading-3 rounded text-white inline-block @if ($item->typemovement == 'INGRESO') bg-green-500 @else bg-red-500 @endif">
                                 {{ $item->typemovement }}</small>
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->methodpayment->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->concept->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->opencaja->caja->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->user->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->sucursal->name }}
                         </td>
                     </tr>
@@ -218,14 +226,11 @@
 
         function select2TypeAlpine() {
 
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.searchtype).trigger("change");
-            this.select2.on("select2:select", (event) => {
+            this.selectT = $(this.$refs.select).select2();
+            this.selectT.val(this.searchtype).trigger("change");
+            this.selectT.on("select2:select", (event) => {
                     this.searchtype = event.target.value;
                     // @this.set('searchtype', event.target.value);
-                })
-                .on('change', function(event) {
-
                 })
                 .on('select2:open', function(e) {
                     const evt = "scroll.select2";
@@ -233,14 +238,14 @@
                     $(window).off(evt);
                 });
             this.$watch('searchtype', (value) => {
-                this.select2.val(value).trigger("change");
+                this.selectT.val(value).trigger("change");
             });
         }
 
         function select2MethodpayAlpine() {
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.searchmethodpayment).trigger("change");
-            this.select2.on("select2:select", (event) => {
+            this.selectM = $(this.$refs.select).select2();
+            this.selectM.val(this.searchmethodpayment).trigger("change");
+            this.selectM.on("select2:select", (event) => {
                     this.searchmethodpayment = event.target.value;
                 })
                 .on('select2:open', function(e) {
@@ -249,15 +254,15 @@
                     $(window).off(evt);
                 });
             this.$watch('searchmethodpayment', (value) => {
-                this.select2.val(value).trigger("change");
+                this.selectM.val(value).trigger("change");
             });
         }
 
 
         function select2ConceptAlpine() {
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.searchconcept).trigger("change");
-            this.select2.on("select2:select", (event) => {
+            this.selectCo = $(this.$refs.select).select2();
+            this.selectCo.val(this.searchconcept).trigger("change");
+            this.selectCo.on("select2:select", (event) => {
                     this.searchconcept = event.target.value;
                 })
                 .on('select2:open', function(e) {
@@ -266,14 +271,14 @@
                     $(window).off(evt);
                 });
             this.$watch("searchconcept", (value) => {
-                this.select2.val(value).trigger("change");
+                this.selectCo.val(value).trigger("change");
             });
         }
 
         function select2SucursalAlpine() {
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.searchsucursal).trigger("change");
-            this.select2.on("select2:select", (event) => {
+            this.selectS = $(this.$refs.selectsucursal).select2();
+            this.selectS.val(this.searchsucursal).trigger("change");
+            this.selectS.on("select2:select", (event) => {
                     this.searchsucursal = event.target.value;
                 })
                 .on('select2:open', function(e) {
@@ -282,7 +287,7 @@
                     $(window).off(evt);
                 });
             this.$watch("searchsucursal", (value) => {
-                this.select2.val(value).trigger("change");
+                this.selectS.val(value).trigger("change");
             });
         }
 
@@ -303,9 +308,9 @@
         }
 
         function select2CajaAlpine() {
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.searchcaja).trigger("change");
-            this.select2.on("select2:select", (event) => {
+            this.selectC = $(this.$refs.selectcaja).select2();
+            this.selectC.val(this.searchcaja).trigger("change");
+            this.selectC.on("select2:select", (event) => {
                     this.searchcaja = event.target.value;
                 })
                 .on('select2:open', function(e) {
@@ -314,7 +319,7 @@
                     $(window).off(evt);
                 });
             this.$watch("searchcaja", (value) => {
-                this.select2.val(value).trigger("change");
+                this.selectC.val(value).trigger("change");
             });
         }
 

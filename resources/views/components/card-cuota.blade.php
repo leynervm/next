@@ -14,17 +14,13 @@
                 DETALLES DEL PAGO</h1>
 
             <div class="w-full flex flex-wrap gap-1 text-[10px]">
-                <p class="inline-block uppercase bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
-                    {{ \Carbon\Carbon::parse($detallepago->date)->locale('es')->isoformat('DD MMMM Y') }}
-                </p>
-                <p class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
-                    {{ $detallepago->methodpayment->name }} </p>
-                <p class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
-                    USUARIO : {{ $detallepago->user->name }} </p>
+                <x-span-text :text="formatDate($detallepago->date, 'DD MMMM Y')" class="leading-3 inline-block !text-[9px]" />
+                <x-span-text :text="$detallepago->methodpayment->name" class="leading-3 inline-block !text-[9px]" />
+                    <x-span-text :text="$detallepago->opencaja->caja->name" class="leading-3 inline-block !text-[9px]" />
+                <x-span-text :text="'USUARIO :' . $detallepago->user->name" class="leading-3 inline-block !text-[9px]" />
 
                 @if ($detallepago->detalle)
-                    <p class="inline-block bg-fondospancardproduct text-textspancardproduct rounded-lg p-0.5 px-1">
-                        {{ $detallepago->detalle }} </p>
+                    <x-span-text :text="$detallepago->detalle" class="leading-3 inline-block !text-[9px]" />
                 @endif
             </div>
         @endif

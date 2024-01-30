@@ -1,131 +1,167 @@
 <div>
     <div class="flex flex-col xl:flex-row gap-8 animate__animated animate__fadeIn animate__faster">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del producto registrado.">
-            <form wire:submit.prevent="update"
-                class="w-full bg-body p-3 rounded relative grid grid-cols-1 xs:grid-cols-2 2xl:grid-cols-3 gap-2">
+            <form class="w-full bg-body p-3 rounded relative flex flex-col gap-2" wire:submit.prevent="update"
+                x-data="showproducto">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 4xl:grid-cols-3 gap-2">
+                    <div class="w-full sm:col-span-2">
+                        <x-label value="Descripcion producto :" />
+                        <x-input class="block w-full" wire:model.defer="producto.name" />
+                        <x-jet-input-error for="producto.name" />
+                    </div>
 
-                <div class="w-full xs:col-span-2 2xl:col-span-3">
-                    <x-label value="NOMBRE:" textSize="[10px]" class="font-semibold" />
-                    <x-input class="block w-full" wire:model.defer="producto.name" />
-                    <x-jet-input-error for="producto.name" />
-                </div>
+                    <div class="w-full">
+                        <x-label value="Marca :" />
+                        <div class="relative" id="parentmrcpdto" x-init="selectMarca" wire:ignore>
+                            <x-select class="block w-full" id="mrcpdto" x-ref="selectmarca" data-placeholder="null">
+                                <x-slot name="options">
+                                    @if (count($marcas))
+                                        @foreach ($marcas as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="producto.marca_id" />
+                    </div>
 
-                <div class="w-full">
-                    <x-label value="PRECIO COMPRA:" textSize="[10px]" class="font-semibold" />
-                    <x-input class="block w-full" wire:model.defer="producto.pricebuy" type="number" min="0"
-                        step="0.0001" />
-                    <x-jet-input-error for="producto.pricebuy" />
-                </div>
+                    <div class="w-full">
+                        <x-label value="Modelo:" />
+                        <x-input class="block w-full" wire:model.defer="producto.modelo" />
+                        <x-jet-input-error for="producto.modelo" />
+                    </div>
 
-                <div class="w-full">
-                    <x-label value="PRECIO VENTA:" textSize="[10px]" class="font-semibold" />
-                    <x-input class="block w-full" wire:model.defer="producto.pricesale" type="number" min="0"
-                        step="0.0001" />
-                    <x-jet-input-error for="producto.pricesale" />
-                </div>
+                    <div class="w-full">
+                        <x-label value="Codigo fabricante :" />
+                        <x-input class="block w-full" wire:model.defer="producto.codefabricante" placeholder="Cádigo del fabricante..." />
+                        <x-jet-input-error for="producto.codefabricante" />
+                    </div>
 
-                <div class="w-full">
-                    <x-label value="IGV:" textSize="[10px]" class="font-semibold" />
-                    <x-input class="block w-full" wire:model.defer="producto.igv" type="number" min="0"
-                        step="0.0001" />
-                    <x-jet-input-error for="producto.igv" />
-                </div>
+                    <div class="w-full">
+                        <x-label value="Unidad medida :" />
+                        <div class="relative" id="parentundpdto" x-init="selectUnit" wire:ignore>
+                            <x-select class="block w-full" id="undpdto" x-ref="selectunit" data-placeholder="null">
+                                <x-slot name="options">
+                                    @if (count($units))
+                                        @foreach ($units as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="producto.unit_id" />
+                    </div>
 
-                <div class="w-full">
-                    <x-label value="MARCA:" textSize="[10px]" class="font-semibold" />
-                    <x-select class="block w-full" id="parentmarcaproducto_id" wire:model.defer="producto.marca_id"
-                        id="marcaproducto_id">
-                        <x-slot name="options">
-                            @if (count($marcas))
-                                @foreach ($marcas as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-jet-input-error for="producto.marca_id" />
-                </div>
+                    <div class="w-full">
+                        <x-label value="Categoría :" />
+                        <div class="relative" id="parentctgpdto" x-data="selectCategory" wire:ignore>
+                            <x-select class="block w-full" id="ctgpdto" x-ref="selectcat" data-placeholder="null"
+                                data-minimum-results-for-search="3">
+                                <x-slot name="options">
+                                    @if (count($categories))
+                                        @foreach ($categories as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="producto.category_id" />
+                    </div>
 
-                <div class="w-full">
-                    <x-label value="UNIDAD MEDIDA:" textSize="[10px]" class="font-semibold" />
-                    <x-select class="block w-full" id="editunitproducto" wire:model.defer="producto.unit_id"
-                        id="unitproducto_id">
-                        <x-slot name="options">
-                            @if (count($units))
-                                @foreach ($units as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-jet-input-error for="producto.unit_id" />
+                    <div class="w-full">
+                        <x-label value="Subcategoría :" />
+                        <div class="relative" id="parentsubcpdto" x-init="selectSubcategory" wire:ignore>
+                            <x-select class="block w-full" id="subcpdto" x-ref="selectsub" data-placeholder="null">
+                                <x-slot name="options">
+                                    @if (count($subcategories))
+                                        @foreach ($subcategories as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="producto.subcategory_id" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label value="Precio compra :" />
+                        <x-input class="block w-full" wire:model.defer="producto.pricebuy" type="number" min="0"
+                            step="0.0001" />
+                        <x-jet-input-error for="producto.pricebuy" />
+                    </div>
+
+                    @if (mi_empresa()->uselistprice == 0 ?? 0)
+                        <div class="w-full">
+                            <x-label value="Precio venta :" />
+                            <x-input class="block w-full" wire:model.defer="producto.pricesale" type="number"
+                                min="0" step="0.0001" />
+                            <x-jet-input-error for="producto.pricesale" />
+                        </div>
+                    @endif
+
+                    {{-- <div class="w-full">
+                        <x-label value="IGV :" />
+                        <x-input class="block w-full" wire:model.defer="producto.igv" type="number" min="0"
+                            step="0.0001" />
+                        <x-jet-input-error for="producto.igv" />
+                    </div> --}}
+
+                    <div class="w-full">
+                        <x-label value="Stock Mínimo :" />
+                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number" step="1"
+                            min="0" />
+                        <x-jet-input-error for="producto.minstock" />
+                    </div>
+
+                    @if (Module::isEnabled('Almacen'))
+                        <div class="w-full">
+                            <x-label value="Area :" />
+                            <div class="relative" id="parentarea" x-init="selectArea" wire:ignore>
+                                <x-select class="block w-full" id="area" x-ref="selectarea"
+                                    data-placeholder="null">
+                                    <x-slot name="options">
+                                        @if (count($almacenareas))
+                                            @foreach ($almacenareas as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="producto.almacenarea_id" />
+                        </div>
+
+                        <div class="w-full">
+                            <x-label value="Estante :" />
+                            <div class="relative" id="parentestnt" x-init="selectEstante" wire:ignore>
+                                <x-select class="block w-full" id="estnt" x-ref="selectestante"
+                                    data-placeholder="null">
+                                    <x-slot name="options">
+                                        @if (count($estantes))
+                                            @foreach ($estantes as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="producto.estante_id" />
+                        </div>
+                    @endif
                 </div>
 
                 @if (Module::isEnabled('Almacen'))
                     <div class="w-full">
-                        <x-label value="AREA:" textSize="[10px]" class="font-semibold" id="almacenareaproducto_id" />
-                        <x-select class="block w-full" id="editalmacenareaproducto"
-                            wire:model.defer="producto.almacenarea_id">
-                            <x-slot name="options">
-                                @if (count($almacenareas))
-                                    @foreach ($almacenareas as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="producto.almacenarea_id" />
-                    </div>
-
-                    <div class="w-full">
-                        <x-label value="ESTANTE:" textSize="[10px]" class="font-semibold" />
-                        <x-select class="block w-full" id="editestanteproducto" wire:model.defer="producto.estante_id"
-                            id="estanteproducto_id">
-                            <x-slot name="options">
-                                @if (count($estantes))
-                                    @foreach ($estantes as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="producto.estante_id" />
-                    </div>
-                @endif
-
-                <div class="w-full">
-                    <x-label value="CATEGORÍA:" textSize="[10px]" class="font-semibold" />
-                    {{-- <div x-data="{ category_id: @entangle('producto.category_id') }" x-init="select2CategoryAlpine" id="parentcategoryproducto_id"> --}}
-                    <x-select class="block w-full" wire:model.lazy="producto.category_id" id="categoryproducto_id">
-                        <x-slot name="options">
-                            @if (count($categories))
-                                @foreach ($categories as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    {{-- </div> --}}
-                    <x-jet-input-error for="producto.category_id" />
-                </div>
-
-                <div class="w-full">
-                    <x-label value="SUBCATEGORÍA:" textSize="[10px]" class="font-semibold" />
-                    <x-select class="block w-full" wire:model.defer="producto.subcategory_id"
-                        id="editsubcategoryproducto">
-                        <x-slot name="options">
-                            @if (count($subcategories))
-                                @foreach ($subcategories as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-jet-input-error for="producto.subcategory_id" />
-                </div>
-
-                @if (Module::isEnabled('Almacen'))
-                    <div class="w-full xs:col-span-2 2xl:col-span-3">
                         <x-label-check for="publicado_dit">
                             <x-input wire:model="producto.publicado" name="publicado" value="1" type="checkbox"
                                 id="publicado_dit" />
@@ -134,7 +170,7 @@
                     </div>
                 @endif
 
-                <div class="w-full xs:col-span-2 2xl:col-span-3 flex pt-4 gap-1 justify-end">
+                <div class="w-full flex pt-4 gap-2 justify-end">
                     <x-button-secondary wire:click="$emit('producto.confirmDelete', {{ $producto }})"
                         wire:loading.attr="disabled">
                         ELIMINAR
@@ -264,60 +300,99 @@
     </x-jet-dialog-modal>
 
     <script>
-        // function select2CategoryAlpine() {
-        //     this.select2 = $(this.$refs.select).select2();
-        //     this.select2.val(this.category_id).trigger("change");
-        //     this.select2.on("change", (event) => {
-        //         event.target.setAttribute("disabled", true);
-        //         // this.select2.attr('disabled', true);
-        //         @this.set('producto.category_id', event.target.value)
-        //         this.category_id = event.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-        //     this.$watch('category_id', (value) => {
-        //         this.select2.val(value).trigger("change");
-        //         this.select2 = $(this.$refs.select).select2();
-        //     });
-        // }
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('showproducto', () => ({
+                marca_id: @entangle('producto.marca_id').defer,
+                unit_id: @entangle('producto.unit_id').defer,
+                category_id: @entangle('producto.category_id').defer,
+                subcategory_id: @entangle('producto.subcategory_id').defer,
+                almacenarea_id: @entangle('producto.almacenarea_id').defer,
+                estante_id: @entangle('producto.estante_id').defer,
+            }));
+        })
 
-        // function select2SubcategoryAlpine() {
-        //     this.select2 = $(this.$refs.select).select2();
-        //     this.select2.val(this.subcategory_id).trigger("change");
-        //     this.select2.on("select2:select", (event) => {
-        //         this.select2.attr('disabled', true);
-        //         // @this.set('producto.subcategory_id', event.target.value)
-        //         this.subcategory_id = event.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-        //     this.$watch('subcategory_id', (value) => {
-        //         this.select2.val(value).trigger("change");
-        //     });
-        // }
+        function selectUnit() {
+            this.selectM = $(this.$refs.selectunit).select2();
+            this.selectM.val(this.unit_id).trigger("change");
+            this.selectM.on("select2:select", (event) => {
+                this.unit_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+        }
 
+        function selectMarca() {
+            this.selectU = $(this.$refs.selectmarca).select2();
+            this.selectU.val(this.marca_id).trigger("change");
+            this.selectU.on("select2:select", (event) => {
+                this.marca_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+        }
 
-        // $("#newalmacen_id").select2({}).on("change", function(e) {
-        //     e.target.setAttribute("disabled", true);
-        //     @this.newalmacen_id = e.target.value;
-        // }).on('select2:open', function(e) {
-        //     const evt = "scroll.select2";
-        //     $(e.target).parents().off(evt);
-        //     $(window).off(evt);
-        // });
+        function selectCategory() {
+            this.selectC = $(this.$refs.selectcat).select2();
+            this.selectC.val(this.category_id).trigger("change");
+            this.selectC.on("select2:select", (event) => {
+                this.category_id = event.target.value;
+                @this.setCategory(event.target.value);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+        }
 
-        // $("#almacenproducto_id").select2({}).on("change", function(e) {
-        //     e.target.setAttribute("disabled", true);
-        //     @this.almacen_id = e.target.value;
-        // }).on('select2:open', function(e) {
-        //     const evt = "scroll.select2";
-        //     $(e.target).parents().off(evt);
-        //     $(window).off(evt);
-        // });
+        function selectSubcategory() {
+            this.selectS = $(this.$refs.selectsub).select2();
+            this.selectS.val(this.subcategory_id).trigger("change");
+            this.selectS.on("select2:select", (event) => {
+                this.subcategory_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+        }
+
+        function selectArea() {
+            this.selectAA = $(this.$refs.selectarea).select2();
+            this.selectAA.val(this.almacenarea_id).trigger("change");
+            this.selectAA.on("select2:select", (event) => {
+                this.almacenarea_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+        }
+
+        function selectEstante() {
+            this.selectE = $(this.$refs.selectestante).select2();
+            this.selectE.val(this.estante_id).trigger("change");
+            this.selectE.on("select2:select", (event) => {
+                this.estante_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+        }
+
+        window.addEventListener('loadsubcategories', subcategories => {
+            let subcat = document.querySelector('[x-ref="selectsub"]');
+            $(subcat).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
+            subcategories.detail.forEach(subcateg => {
+                let option = new Option(subcateg.name, subcateg.id, false, false);
+                $(subcat).append(option);
+            });
+            $(subcat).select2().trigger('change');
+        })
 
         document.addEventListener("livewire:load", () => {
             Livewire.on("producto.confirmDeleteAlmacen", data => {

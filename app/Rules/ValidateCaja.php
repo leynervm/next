@@ -27,10 +27,8 @@ class ValidateCaja implements Rule
      */
     public function passes($attribute, $value)
     {
-        $sucursals = auth()->user()->sucursalDefault()->select('sucursals.id')->pluck('sucursals.id');
-        // return Opencaja::cajasAbiertas()->CajasUser()->count() === 0;
-        return Opencaja::whereHas('caja', function ($query) use ($sucursals) {
-            $query->whereIn('sucursal_id', $sucursals);
+        return Opencaja::whereHas('caja', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
         })->cajasAbiertas()->CajasUser()->count() === 0;
     }
 

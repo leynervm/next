@@ -13,6 +13,27 @@ class Rango extends Model
 
     protected $fillable = ['desde', 'hasta', 'incremento'];
 
+    public function getDesdeAttribute($value)
+    {
+        return number_format($value, 2, '.', '');
+    }
+
+    public function getHastaAttribute($value)
+    {
+        return number_format($value, 2, '.', '');
+    }
+
+    public function getIncrementoAttribute($value)
+    {
+        return number_format($value, 2, '.', '');
+    }
+
+
+    // public function getIncremento($value)
+    // {
+    //     return formatDecimalOrInteger($value);
+    // }
+
     public function pricetypes(): BelongsToMany
     {
         return $this->belongsToMany(Pricetype::class)

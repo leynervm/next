@@ -14,25 +14,32 @@ class ShowCuentasCobrar extends Component
     use WithPagination;
 
     public $search = '';
+    public $comprobante = '';
     public $datepay = '';
     public $amountdeuda = 0;
     public $page = 1;
 
     protected $queryString = [
-        'search' => ['except' => ''],
+        'search' => ['except' => '', 'as' => 'cliente'],
+        'comprobante' => ['except' => ''],
         'datepay' => ['except' => ''],
         'page' => ['except' => 1]
     ];
 
     public function mount()
     {
-        $this->amountdeuda = Cuota::doesntHave('cajamovimiento')->sum('amount');
+        $this->amountdeuda = Cuota::whereHasMorph('cuotable', Venta::class)->doesntHave('cajamovimiento')->sum('amount');
     }
 
     public function render()
     {
 
-        $cuotas = Venta::withWhereHas('cuotas', function ($query) {
+        $cuotas = Venta::with(['client' => function ($query) {
+            if (trim($this->search) !== '') {
+                $query->where('document', 'ILIKE', '%' . $this->search . '%')
+                    ->orWhere('name', 'ILIKE', '%' . $this->search . '%');
+            }
+        }])->withWhereHas('cuotas', function ($query) {
             $query->whereDoesntHave('cajamovimiento')
                 ->orderBy('expiredate', 'asc');
             if (trim($this->datepay) !== '') {
@@ -40,17 +47,9 @@ class ShowCuentasCobrar extends Component
             }
         });
 
-        if (trim($this->search) !== '') {
-            if (Module::isEnabled('Facturacion')) {
-                $cuotas->withWhereHas('comprobante', function ($query) {
-                    if (trim($this->search) !== '') {
-                        $query->where('seriecompleta', 'ilike', '%' . $this->search . '%');
-                    }
-                });
-            } else {
-                $cuotas->whereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
-                // ->orWhereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
-            }
+        if (trim($this->comprobante) !== '') {
+            $cuotas->where('code', 'ILIKE', '%' . $this->comprobante . '%');
+            // $cuotas->whereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
         }
 
         $cuotas = $cuotas->orderBy('date', 'desc')->paginate();

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Cajas;
 
 use App\Models\Caja;
+use App\Models\Sucursal;
 use App\Rules\CampoUnique;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -46,13 +47,15 @@ class ShowCajas extends Component
     public function render()
     {
 
-        $cajas = Caja::with('sucursal');
-        if (trim($this->searchsucursal) !== '') {
-            $cajas->where('sucursal_id', $this->searchsucursal);
-        }
+        $cajas = Caja::withWhereHas('sucursal', function ($query) {
+            $query->withTrashed();
+            if (trim($this->searchsucursal) !== '') {
+                $query->where('id', $this->searchsucursal);
+            }
+        });
 
         $cajas = $cajas->orderBy('name', 'asc')->paginate();
-        $sucursals = auth()->user()->sucursals;
+        $sucursals = Sucursal::withTrashed()->whereHas('cajas')->get();
         return view('livewire.admin.cajas.show-cajas', compact('cajas', 'sucursals'));
     }
 

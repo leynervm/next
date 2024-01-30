@@ -58,13 +58,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar caja') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -86,7 +80,26 @@
 
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('livewire:load', function() {
+
+            Livewire.on('confirmRestorecaja', data => {
+                console.log(data);
+                swal.fire({
+                    title: 'Habilitar registro de caja, ' + data.name,
+                    text: "Actualizar registro de la base de datos",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0FB9B9',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.restorecaja(data.id);
+                    }
+                })
+            })
+
 
             Livewire.on('sucursales.confirmDeleteCaja', data => {
                 swal.fire({

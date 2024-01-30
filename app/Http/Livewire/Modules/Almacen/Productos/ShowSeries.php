@@ -30,7 +30,6 @@ class ShowSeries extends Component
     ];
 
     // Escucha render method desde show-productos
-    protected $listeners = ['resetfilter', 'delete'];
 
     public function rules()
     {
@@ -71,10 +70,9 @@ class ShowSeries extends Component
 
     public function resetfilter()
     {
-
         $this->reset(['searchseriealmacen', 'disponibles', 'almacen_id']);
         $this->resetPage();
-        $this->render();
+        // $this->render();
     }
 
     public function save()

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
+use App\Models\Sucursal;
 use App\Models\User;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -29,28 +30,27 @@ class ShowVentas extends Component
         'deletes' => ['except' => false, 'as' => 'eliminados'],
     ];
 
+
     public function render()
     {
-        $sucursals = auth()->user()->sucursals;
+        $sucursals = Sucursal::withTrashed()->whereHas('ventas')->get();
         $users = User::whereHas('ventas')->orderBy('name', 'asc')->get();
-
-        if (Module::isEnabled('Facturacion')) {
-            $ventas = Venta::with('comprobante', 'sucursal', 'user', 'client', 'typepayment');
-        } else {
-            $ventas = Venta::with('sucursal', 'user', 'client', 'typepayment');
-        }
+        $ventas = Venta::with(['sucursal', 'user', 'client', 'typepayment', 'cajamovimiento', 'cuotas'])
+            ->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed();
+                if ($this->searchsucursal !== '') {
+                    $query->where('id', $this->searchsucursal);
+                } else {
+                    $query->where('id', auth()->user()->sucursal_id);
+                }
+            });
 
         if (trim($this->search) !== '') {
             $ventas->whereHas('client', function ($query) {
                 $query->where('document', 'ilike', '%' . $this->search . '%')
                     ->orWhere('name', 'ilike', '%' . $this->search . '%');
-            })->orWhereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
-
-            if (Module::isEnabled('Facturacion')) {
-                $ventas->orWhereHas('comprobante', function ($query) {
-                    $query->where('seriecompleta', 'ilike', '%' . $this->search . '%');
-                });
-            }
+            })->orWhere('code', 'ilike', ['%' . $this->search . '%']);
+            // ->orWhereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
         }
 
         if ($this->date) {
@@ -64,9 +64,6 @@ class ShowVentas extends Component
         if ($this->searchuser !== '') {
             $ventas->where('user_id', $this->searchuser);
         }
-        if ($this->searchsucursal !== '') {
-            $ventas->where('sucursal_id', $this->searchsucursal);
-        }
 
         if ($this->deletes) {
             $ventas->onlyTrashed();
@@ -77,10 +74,33 @@ class ShowVentas extends Component
         return view('livewire.modules.ventas.ventas.show-ventas', compact('ventas', 'sucursals', 'users'));
     }
 
-    public function hydrate()
+    public function updatedSearch()
     {
-        // $this->emit('render-show-ventas');
+        $this->resetPage();
     }
 
+    public function updatedDate()
+    {
+        $this->resetPage();
+    }
 
+    public function updatedDateto()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchuser()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDeletes()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchsucursal()
+    {
+        $this->resetPage();
+    }
 }

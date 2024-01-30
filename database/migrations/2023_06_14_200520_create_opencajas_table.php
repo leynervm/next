@@ -18,6 +18,7 @@ return new class extends Migration
             $table->id();
             $table->dateTime('startdate');
             $table->dateTime('expiredate')->nullable();
+            $table->dateTime('closedate')->nullable();
             $table->decimal('startmount', 10, 2)->default(0);
             $table->decimal('totalcash', 10, 2)->default(0);
             $table->decimal('totaltransfer', 10, 2)->default(0);

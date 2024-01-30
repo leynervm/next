@@ -17,9 +17,14 @@ class VerifyCompany
      */
     public function handle(Request $request, Closure $next)
     {
-        $empresa = Empresa::all()->count();
-        if ($empresa) {
-            return redirect()->route('admin.administracion.empresa');
+        $empresa = Empresa::exists();
+        if (!$empresa) {
+            $mensaje = response()->json([
+                'title' => 'CONFIGURAR PERFIL DE LA EMPRESA',
+                'text' => 'Configurar los datos de la empresa, requeridos por el sistema, contáctese con su administrador.',
+                'type' => 'warning'
+            ]);
+            return redirect()->back()->with('message', $mensaje);
         }
 
         return $next($request);

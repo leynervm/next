@@ -3,7 +3,7 @@
 namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
-use Modules\Almacen\Entities\Producto;
+use App\Models\Producto;
 
 class ValidateSerieRequerida implements Rule
 {
@@ -41,7 +41,7 @@ class ValidateSerieRequerida implements Rule
             $query->where('almacen_id', $this->almacen_id);
         }
         if (trim($value) !== "") {
-            $query->where('serie', trim(mb_strtoupper($value, "UTF-8")));
+            $query->whereRaw('UPPER(serie) = ?', trim(mb_strtoupper($value, "UTF-8")));
         }
 
         return $query->exists();
@@ -54,6 +54,6 @@ class ValidateSerieRequerida implements Rule
      */
     public function message()
     {
-        return 'Serie del producto no se encuentra disponible.';
+        return 'Serie del producto no disponible.';
     }
 }

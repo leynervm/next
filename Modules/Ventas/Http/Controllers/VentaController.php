@@ -36,31 +36,46 @@ class VentaController extends Controller
     public function create()
     {
 
-        $sucursal = auth()->user()->sucursalDefault()->with('almacens')->first();
-
-        if ($sucursal->seriecomprobantes()->exists()) {
-            if ($sucursal->defaultSeriecomprobantes()->exists()) {
-                $seriecomprobante = $sucursal->defaultSeriecomprobantes()->first();
-            } else {
-                $seriecomprobante = $sucursal->seriecomprobantes()->first();
+        $sucursal = auth()->user()->sucursal;
+        $seriecomprobante = auth()->user()->sucursal->seriecomprobantes()->withWhereHas('typecomprobante', function ($query) {
+            if (!Module::isEnabled('Facturacion')) {
+                $query->default();
             }
+            $query->whereNotIn('code', ['07', '09', '13'])->orderBy('code', 'asc');
+        })->orderByPivot('default', 'desc')->first();
+
+        // if ($seriecomprobante->wherePivot('default', 1)->exists()) {
+        //     $first = $seriecomprobante->first();
+        // }
+        // else {
+        //     $first = $seriecomprobante->first();
+        // }
+
+        $methodpayments = Methodpayment::default();
+        if (count($methodpayments->get()) > 0) {
+            $methodpayment = $methodpayments->first();
+        } else {
+            $methodpayment = Methodpayment::first();
         }
 
-        $empresa = Empresa::DefaultEmpresa()->first();
-        $methodpayment = Methodpayment::defaultMethodPayment()->first();
         $typepayment = Typepayment::defaultTypepayment()->first();
-        $moneda = Moneda::defaultMoneda()->first();
+        $moneda = Moneda::default()->first();
         $concept = Concept::defaultConceptVentas()->first();
         // $opencaja =  Opencaja::CajasAbiertas()->CajasUser()->cajasSucursal()->first();
-        $pricetype = Pricetype::defaultPricetype()->first();
+
+        $pricetypes = Pricetype::default();
+        if (count($pricetypes->get()) > 0) {
+            $pricetype = $pricetypes->first();
+        } else {
+            $pricetype = Pricetype::orderBy('id', 'asc')->first();
+        }
 
         $opencaja = Opencaja::CajasAbiertas()->CajasUser()
             ->WhereHas('caja', function ($query) {
-                $query->whereIn('sucursal_id', auth()->user()->sucursalDefault()
-                    ->select('sucursals.id')->pluck('sucursals.id'));
+                $query->where('sucursal_id', auth()->user()->sucursal_id);
             })->first();
 
-        return view('ventas::ventas.create', compact('empresa', 'sucursal', 'methodpayment', 'seriecomprobante', 'typepayment', 'moneda', 'concept', 'opencaja', 'pricetype'));
+        return view('ventas::ventas.create', compact('sucursal', 'methodpayment', 'seriecomprobante', 'typepayment', 'moneda', 'concept', 'opencaja', 'pricetype'));
     }
 
     /**
@@ -80,14 +95,18 @@ class VentaController extends Controller
      */
     public function show(Venta $venta)
     {
-        $concept = Concept::DefaultConceptPaycuota()->first();
-        $methodpayment = Methodpayment::defaultMethodpayment()->first();
+        $concept = Concept::DefaultPaycuota()->first();
+        $methodpayments = Methodpayment::default();
+        if (count($methodpayments->get()) > 0) {
+            $methodpayment = $methodpayments->first();
+        } else {
+            $methodpayment = Methodpayment::first();
+        }
         $opencaja = Opencaja::CajasAbiertas()->CajasUser()
             ->WhereHas('caja', function ($query) {
-                $query->whereIn('sucursal_id', auth()->user()->sucursalDefault()
-                    ->select('sucursals.id')->pluck('sucursals.id'));
+                $query->where('sucursal_id', auth()->user()->sucursal_id);
             })->first();
-        $sucursal = auth()->user()->sucursalDefault()->first();
+        $sucursal = auth()->user()->sucursal;
 
         // $venta = Venta::with([
         //     'comprobante' => function ($query) {

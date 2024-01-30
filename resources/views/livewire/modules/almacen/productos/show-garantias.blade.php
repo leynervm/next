@@ -1,20 +1,27 @@
 <div class="w-full flex flex-col gap-8">
-    <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto.">
-        <div class="w-full flex flex-wrap lg:flex-nowrap gap-3 relative" x-data="{ loading: false }">
+    <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto." class="relative">
+        <div class="w-full flex flex-wrap lg:flex-nowrap gap-3" x-data="{ loading: false }">
             <div x-show="loading" wire:loading.flex wire:target="save, delete, render, " class="loading-overlay rounded">
                 <x-loading-next />
             </div>
             <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
-                <form wire:submit.prevent="save" class="w-full">
+                <form wire:submit.prevent="save" class="w-full" x-data="datagarantia">
                     <div class="w-full">
                         <x-label value="Garantías disponibles :" />
-                        <div class="relative" x-data="{ typegarantia_id: @entangle('typegarantia_id') }" x-init="select2GarantiaAlpine" id="parenttypegarantia_id"
-                            wire:ignore>
-                            <x-select class="block w-full select2" x-ref="select" id="typegarantia_id">
+                        <div class="relative" id="parenttypegarantia_id" wire:ignore>
+                            <x-select class="block w-full select2" x-ref="select" id="typegarantia_id"
+                                data-placeholder="null">
                                 <x-slot name="options">
                                     @if (count($typegarantias))
                                         @foreach ($typegarantias as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            <option value="{{ $item->id }}" data-time="{{ $item->time }}">
+                                                {{ $item->name }} -
+                                                @if ($item->datecode == 'MM')
+                                                    MESES
+                                                @else
+                                                    AÑOS
+                                                @endif
+                                            </option>
                                         @endforeach
                                     @endif
                                 </x-slot>
@@ -25,10 +32,9 @@
                     </div>
 
                     <div class="w-full mt-2">
-                        <x-label value="Tiempo garantía (Meses) :" />
-                        <x-input class="block w-full" wire:model.defer="time" type="number" />
+                        <x-label value="Tiempo garantía :" />
+                        <x-input class="block w-full" x-model="time" type="number" placeholder="Meses garantía..." />
                         <x-jet-input-error for="time" />
-                        <x-jet-input-error for="producto.id" />
                     </div>
 
                     <div class="w-full pt-4 flex justify-end">
@@ -39,10 +45,18 @@
                 </form>
             </div>
             @if (count($producto->garantiaproductos))
-                <div class="w-full flex flex-wrap gap-3 bg-body p-3 rounded">
+                <div class="w-full flex flex-wrap gap-2">
                     @foreach ($producto->garantiaproductos as $item)
-                        <x-minicard size="lg" :title="$item->typegarantia->name">
-                            <span class="absolute right-2 -top-3 w-4 h-4 block text-red-500 ml-2">
+                        @php
+                            if ($item->typegarantia->datecode == 'MM') {
+                                $timestring = $item->time > 1 ? ' MESES' : ' MES';
+                            } else {
+                                $timestring = $item->time > 1 ? ' AÑOS' : ' AÑO';
+                            }
+                        @endphp
+
+                        <x-minicard size="lg" :title="$item->typegarantia->name" :content="$item->time . $timestring" class="!bg-body">
+                            {{-- <span class="absolute right-2 -top-3 w-4 h-4 block text-next-500 ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 320 512"
                                     fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -50,9 +64,24 @@
                                         d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
                                 </svg>
                             </span>
+
                             <span
-                                class="absolute right-0 -top-8 bg-red-500 text-white text-[10px] font-semibold tracking-widest p-1.5 px-2 rounded-sm">
-                                {{ $item->time }}{{ $item->time > 1 ? 'MESES' : 'MES' }}</span>
+                                class="absolute right-0 -top-8 bg-next-500 text-white text-[10px] font-semibold tracking-widest p-1.5 px-2 rounded-sm">
+                                {{ $item->time . $timestring }}</span> --}}
+
+                            <span class="block mx-auto">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-colorlinknav"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M10.014 2C6.23617 2 4.34725 2 3.17362 3.17157C2 4.34315 2 6.22876 2 10C2 13.7712 2 15.6569 3.17362 16.8284C4.34725 18 6.23617 18 10.014 18H14.021C17.7989 18 19.6878 18 20.8614 16.8284C21.671 16.0203 21.9221 14.8723 22 13" />
+                                    <path d="M12 18V22" />
+                                    <path d="M8 22H16" />
+                                    <path d="M11 15H13" />
+                                    <path
+                                        d="M17.4991 2C16.0744 2 15.1506 2.90855 14.0581 3.23971C13.6138 3.37436 13.3917 3.44168 13.3018 3.53659C13.2119 3.6315 13.1856 3.77019 13.133 4.04756C12.5696 7.0157 13.801 9.75979 16.7375 10.8279C17.053 10.9426 17.2108 11 17.5007 11C17.7906 11 17.9484 10.9426 18.2639 10.8279C21.2002 9.75978 22.4304 7.01569 21.8669 4.04756C21.8142 3.77014 21.7879 3.63143 21.698 3.53652C21.6081 3.44161 21.386 3.37432 20.9418 3.23974C19.8488 2.90862 18.9239 2 17.4991 2Z" />
+                                </svg>
+                            </span>
 
                             <x-slot name="buttons">
                                 <x-button-delete
@@ -66,55 +95,86 @@
         </div>
     </x-form-card>
 
-    <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
-        <div class="w-full flex flex-wrap gap-2">
-            @if (count($pricetypes))
-                @foreach ($pricetypes as $lista)
-                    @php
-                        $precios = \App\Helpers\GetPrice::getPriceProducto($producto, $lista->id)->getData();
-                    @endphp
+    @if (mi_empresa()->uselistprice)
+        <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
+            <div class="w-full flex flex-wrap gap-2">
+                @if (count($pricetypes))
+                    @foreach ($pricetypes as $lista)
+                        @php
+                            $precios = \App\Helpers\GetPrice::getPriceProducto($producto, $lista->id, mi_empresa()->tipocambio)->getData();
+                            // var_dump($precios);
+                        @endphp
 
-                    <div
-                        class="w-full xs:w-48 flex flex-col items-center justify-between bg-body rounded-lg shadow p-1">
-                        <div class="text-center">
-                            <x-span-text :text="$lista->name" />
+                        <div
+                            class="w-full xs:w-48 flex flex-col items-center justify-between bg-body rounded-lg shadow p-1">
+                            <div class="text-center">
+                                <x-span-text :text="$lista->name" class="leading-3 !tracking-normal" />
 
-                            <div class="text-center relative pt-1">
-                                @if ($precios->pricemanual)
-                                    <x-span-text :text="'SUGERIDO : S/.' . number_format($precios->oldPrice, 2, '.', ', ')"
-                                        class="bg-red-100 !text-red-500 font-semibold leading-3" />
+                                <div class="text-center relative pt-1">
+                                    @if ($precios->pricemanual)
+                                        <x-span-text :text="'SUGERIDO : S/.' .
+                                            number_format($precios->oldPrice, $lista->decimals, '.', ', ')"
+                                            class="bg-red-100 !text-red-500 font-semibold leading-3" />
+                                    @endif
+
+                                    @if ($precios->pricemanual)
+                                        <p class="text-green-500 text-sm">
+                                            S/. {{ number_format($precios->pricemanual, 2, '.', ', ') }}</p>
+                                    @else
+                                        @if ($precios->existsrango)
+                                            <p class="text-green-500 text-sm">
+                                                S/. {{ number_format($precios->pricesale, 2, '.', ', ') }}</p>
+                                        @else
+                                            <p class="mx-auto">
+                                                <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
+                                                    class="!tracking-normal leading-3" type="red" />
+                                            </p>
+                                        @endif
+                                    @endif
+                                </div>
+
+                                @if ($precios->existsrango)
+                                    @if (mi_empresa()->viewpricedolar)
+                                        @if (mi_empresa()->tipocambio > 0)
+                                            <div class="text-center">
+                                                <x-span-text :text="'$. ' .
+                                                    number_format(
+                                                        $precios->pricewithdescountDolar ?? $precios->priceDolar,
+                                                        $lista->decimals,
+                                                        '.',
+                                                        ', ',
+                                                    )"
+                                                    class="font-semibold leading-3 !tracking-normal" type="blue" />
+                                            </div>
+                                        @else
+                                            <div class="text-center">
+                                                <x-span-text text="TIPO CAMBIO NO CONFIGURADO"
+                                                    class="leading-3 !tracking-normal" type="red" />
+                                            </div>
+                                        @endif
+                                    @endif
                                 @endif
-                                <p class="text-green-500 text-sm">
-                                    S/. {{ number_format($precios->pricesale, 2, '.', ', ') }}</p>
+                            </div>
+
+                            <div class="w-full flex justify-end">
+                                <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
+                                    wire:loading.attr="disabled" />
                             </div>
                         </div>
+                    @endforeach
+                @else
+                    <x-span-text text="NO EXISTEN LISTAS DE PRECIOS REGISTRADOS..." />
+                @endif
+            </div>
+        </x-form-card>
+    @endif
 
-                        <div class="w-full flex justify-end">
-                            <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
-                                wire:loading.attr="disabled" />
-                        </div>
-                    </div>
-                @endforeach
-            @else
-                <small class="text-red-500 bg-red-50 text-xs p-0.5 rounded font-semibold inline-block mt-1">
-                    Configurar lista de precios
-                    <a class="underline px-1" href="#">REGISTRAR</a>
-                </small>
-            @endif
-        </div>
-    </x-form-card>
+    {{-- {{ $producto->detalleproducto->descripcion }} --}}
 
-    <x-form-card titulo="DESCRIPCIÓN PRODUCTO">
+    <x-form-card titulo="DETALLE PRODUCTO">
         <div class="w-full">
             <form wire:submit.prevent="savedetalle" class="w-full">
-                <div>
-                    <x-label value="Título :" />
-                    <x-input class="block w-full" wire:model.defer="titulo" />
-                    <x-jet-input-error for="titulo" />
-                </div>
-
                 <div wire:ignore>
-                    <x-label value="Descripción :" class="mt-2" />
                     <x-textarea class="w-full" id="descripcionproducto" wire:model.defer="descripcion" rows="6">
                     </x-textarea>
                 </div>
@@ -124,30 +184,14 @@
 
                 <div class="mt-3 flex justify-end">
                     <x-button type="submit" wire:loading.atrr="disabled">
-                        REGISTRAR
+                        @if ($producto->detalleproducto)
+                            ACTUALIZAR
+                        @else
+                            REGISTRAR
+                        @endif
                     </x-button>
                 </div>
             </form>
-
-            @if (count($producto->detalleproductos))
-                <div class="w-full lg:grid lg:grid-cols-2 gap-3 mt-3">
-                    @foreach ($producto->detalleproductos as $item)
-                        <div class="w-full rounded shadow border border-borderminicard hover:shadow-lg">
-                            <p
-                                class="font-semibold p-1 text-xs text-center bg-fondospancardproduct text-textspancardproduct">
-                                {{ $item->title }}</p>
-                            <div class="">
-                                {!! $item->descripcion !!}
-                            </div>
-
-                            <div class="flex gap-1 justify-end mt-1">
-                                <x-button-edit></x-button-edit>
-                                <x-button-delete></x-button-delete>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
         </div>
     </x-form-card>
 
@@ -167,7 +211,7 @@
 
                 <div>
                     <x-label value="Precio venta sugerido :" />
-                    <x-disabled-text :text="$priceold" />
+                    <x-disabled-text :text="$priceold ?? '0.00'" />
                 </div>
 
                 <div>
@@ -194,24 +238,38 @@
 
     <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
     <script>
-        function select2GarantiaAlpine() {
-
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.typegarantia_id).trigger("change");
-            this.select2.on("select2:select", (event) => {
-                this.select2.attr('disabled', true);
-                this.typegarantia_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch('typegarantia_id', (value) => {
-                this.select2.val(value).trigger("change");
-            });
-        }
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('datagarantia', () => ({
+                typegarantia_id: @entangle('typegarantia_id').defer,
+                time: @entangle('time').defer,
+                
+                init() {
+                    this.select2GarantiaAlpine();
+                    window.addEventListener('created', () => {
+                        this.select2.val(this.typegarantia_id).trigger("change");
+                    })
+                },
+                select2GarantiaAlpine() {
+                    this.select2 = $(this.$refs.select).select2();
+                    this.select2.val(this.typegarantia_id).trigger("change");
+                    this.select2.on("select2:select", (event) => {
+                        this.typegarantia_id = event.target.value;
+                        this.getTimegarantia(event.target);
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                },
+                getTimegarantia(target) {
+                    let time = target.options[target.selectedIndex].getAttribute('data-time');
+                    this.time = time;
+                },
+            }));
+        })
 
         document.addEventListener("livewire:load", () => {
+
             Livewire.on("producto.confirmDeleteGarantia", data => {
                 swal.fire({
                     title: 'Eliminar garantía del producto !',
@@ -229,7 +287,7 @@
                     }
                 })
             });
-
+           
             CKEDITOR.ClassicEditor.create(document.getElementById("descripcionproducto"), {
                 toolbar: {
                     items: [
@@ -407,7 +465,7 @@
                 table: {
                     // Agregar el filtro
                     addClassToAllCells: true, // Para agregar la clase a todas las celdas de la tabla
-                    class: 'w-full' // Nombre de la clase que se agregará a las tablas
+                    class: 'w-full bg-next-500' // Nombre de la clase que se agregará a las tablas
                 }
 
                 // height: '500px',
@@ -419,20 +477,18 @@
                     @this.set('descripcion', editor.getData());
                 });
 
+                editor.setData(@this.get('descripcion'));
                 //PARA ESCUCHAR EVENTOS CON EMIT
-                Livewire.on("resetCKEditor", () => {
-                    console.log("Reset CKEditor");
-                    editor.setData('');
-                });
-
-                //PARA ESCUCHAR EVENTOS CON DISPATCHBROWSEREVENT
-                // window.addEventListener("resetCKEditor", () => {
+                // Livewire.on("resetCKEditor", () => {
                 //     console.log("Reset CKEditor");
-                //     editor.setData('');
                 // });
+
+
             }).catch(error => {
                 console.log(error);
             });
+
+            
         })
     </script>
 </div>

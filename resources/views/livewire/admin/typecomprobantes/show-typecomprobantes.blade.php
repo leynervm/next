@@ -21,9 +21,11 @@
                 <th scope="col" class="p-2 font-medium">
                     EMITIBLE SUNAT</th>
 
-                <th scope="col" class="p-2 font-medium text-center">
-                    OPCIONES
-                </th>
+                @if (Module::isEnabled('Facturacion') || Module::isEnabled('Ventas'))
+                    <th scope="col" class="p-2 font-medium text-center">
+                        OPCIONES
+                    </th>
+                @endif
             </tr>
         </x-slot>
         @if (count($typecomprobantes))
@@ -58,19 +60,18 @@
 
                         <td class="p-2 text-xs text-center">
                             @if ($item->sendsunat)
-                                <small
-                                    class="p-1 text-xs inline-block leading-3 rounded bg-blue-100 text-blue-600">Emitible
-                                    sunat</small>
+                                <x-span-text text="EMITIBLE SUNAT" class="leading-3" type="green" />
                             @else
-                                <small
-                                    class="p-1 text-xs inline-block leading-3 rounded bg-red-100 text-red-600">Local</small>
+                                <x-span-text text="LOCAL" class="leading-3" />
                             @endif
                         </td>
-                        <td class="p-2 text-xs align-middle text-center">
-                            <x-button class="inline-block" wire:click="openmodal({{ $item->id }})"
-                                wire:loading.attr="disabled">AGREGAR
-                                SERIE</x-button>
-                        </td>
+                        @if (Module::isEnabled('Facturacion') || Module::isEnabled('Ventas'))
+                            <td class="p-2 text-xs align-middle text-center">
+                                <x-button class="inline-block" wire:click="openmodal({{ $item->id }})"
+                                    wire:loading.attr="disabled">AGREGAR
+                                    SERIE</x-button>
+                            </td>
+                        @endif
                     </tr>
                 @endforeach
             </x-slot>
@@ -81,13 +82,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Agregar nueva serie') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">

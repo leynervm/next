@@ -1,7 +1,13 @@
 <?php
 
+use App\Models\Concept;
+use App\Models\Empresa;
 use App\Models\Guia;
+use App\Models\Opencaja;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 function verificarCarpeta($path, $disk = 'public')
 {
@@ -24,6 +30,17 @@ function formatDecimalOrInteger($numero, $decimals = 2)
 {
     return intval($numero) == floatval($numero) ? intval($numero) : number_format($numero, $decimals, '.', '');
 }
+
+function formatDate($date, $format = "DD MMMM YYYY hh:m A")
+{
+    return !is_null($date) ? Str::upper(Carbon::parse($date)->locale('es')->isoformat($format)) : null;
+}
+
+function formatTelefono($numero, $group = 3, $prefijo = '')
+{
+    return $prefijo . chunk_split($numero, $group);
+}
+
 
 function extraerMensaje($data)
 {
@@ -78,6 +95,52 @@ function toastJSON($title, $icon = 'success')
     ])->getData();
 }
 
+
+function verifyOpencaja($opencajaId)
+{
+    $opencaja = Opencaja::find($opencajaId);
+    return $opencaja->isActivo();
+}
+
+function mi_empresa()
+{
+    return Empresa::first();
+}
+
+
+function getTextConcept($value)
+{
+    switch ($value) {
+        case '1': //Concept::VENTAS;
+            $text = 'VENTA FÍSICA';
+            break;
+        case '2': //Concept::INTERNET;
+            $text = 'PAGO INTERNET';
+            break;
+        case '3': //Concept::PAYCUOTA;
+            $text = 'PAGO CUOTA';
+            break;
+        case '4': //Concept::COMPRA;
+            $text = 'COMPRA';
+            break;
+        case '5': //Concept::PAYCUOTACOMPRA;
+            $text = 'PAGO CUOTA COMPRA';
+            break;
+        default:
+            $text = null;
+            break;
+    }
+
+    return $text;
+}
+
+function getMessageOpencaja()
+{
+    return response()->json([
+        'title' => 'APERTURAR NUEVA CAJA !',
+        'text' => "La apertura de caja no se encuentra disponible en este momento, o ha sido cerrada."
+    ])->getData();
+}
 
 function getIndicadorTransbProg()
 {
@@ -138,12 +201,20 @@ function getCarrito()
     return $carrito;
 }
 
+function getCombo()
+{
+    $combo = Session::get('combo', []);
+    return collect($combo);
+}
+
 
 function getTotalCarrito($sesionName)
 {
 
     $total = 0;
     $gratuito = 0;
+    $countgratuitos = 0;
+    $countnogratuitos = 0;
 
     $carrito = Session::get($sesionName, []);
     if (!is_array($carrito)) {
@@ -155,8 +226,10 @@ function getTotalCarrito($sesionName)
         foreach ($carritoJSON as $item) {
             if ($item->gratuito) {
                 $gratuito += $item->importe;
+                $countgratuitos++;
             } else {
                 $total += $item->importe;
+                $countnogratuitos++;
             }
         }
     }
@@ -165,6 +238,9 @@ function getTotalCarrito($sesionName)
         'total' => formatDecimalOrInteger($total, 3),
         'gratuito' => formatDecimalOrInteger($gratuito, 3),
         'sumatoria' => formatDecimalOrInteger($total + $gratuito, 3),
+        'countgratuitos' => $countgratuitos,
+        'countnogratuitos' => $countnogratuitos,
+        'count' => $countgratuitos + $countnogratuitos,
     ]);
 
     // $total = Carshoop::Micarrito()
@@ -175,4 +251,3 @@ function getTotalCarrito($sesionName)
     //     ->where('gratuito', 1)->sum('total') ?? 0;
 
 }
-

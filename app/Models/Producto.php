@@ -6,6 +6,7 @@ use App\Models\Carshoop;
 use App\Models\Guiaitem;
 use App\Models\Tvitem;
 use App\Models\Almacen;
+use App\Traits\KardexTrait;
 use Cviebrock\EloquentSluggable\Sluggable;
 
 use App\Models\Caracteristica;
@@ -23,25 +24,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\Almacen\Entities\Almacenarea;
 use Modules\Almacen\Entities\Compraitem;
 use App\Models\Detalleproducto;
-use Modules\Almacen\Entities\Estante;
 use App\Models\Garantiaproducto;
 use App\Models\Oferta;
 use App\Models\Category;
 use App\Models\Subcategory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Producto extends Model
 {
     use HasFactory;
     use SoftDeletes;
     use Sluggable;
+    use KardexTrait;
 
-    protected static function newFactory()
-    {
-        return \Modules\Almacen\Database\factories\ProductoFactory::new();
-    }
+    // protected static function newFactory()
+    // {
+    //     return \Database\Factories\ProductoFactory::new();
+    // }
 
     protected $guarded = ['created_at', 'updated_at'];
 
@@ -59,9 +60,9 @@ class Producto extends Model
         ];
     }
 
-    public function setSkuAttribute($value)
+    public function setCodeAttribute($value)
     {
-        $this->attributes['sku'] = trim(mb_strtoupper($value, "UTF-8"));
+        $this->attributes['code'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function setCodefabricanteAttribute($value)
@@ -81,7 +82,7 @@ class Producto extends Model
 
     public function almacens(): BelongsToMany
     {
-        return $this->belongsToMany(Almacen::class)->withPivot('cantidad')->orderByPivot('cantidad', 'desc', );
+        return $this->belongsToMany(Almacen::class)->withPivot('cantidad')->orderByPivot('cantidad', 'desc',);
     }
 
     public function disponibles()
@@ -170,9 +171,9 @@ class Producto extends Model
         return $this->belongsTo(Caracteristica::class)->withTrashed();
     }
 
-    public function detalleproductos(): HasMany
+    public function detalleproducto(): HasOne
     {
-        return $this->hasMany(Detalleproducto::class);
+        return $this->hasOne(Detalleproducto::class);
     }
 
     public function carshoops(): HasMany
@@ -185,12 +186,22 @@ class Producto extends Model
         return $this->hasMany(Oferta::class);
     }
 
+    // public function ofertasdisponibles(): HasMany
+    // {
+    //     return $this->hasMany(Oferta::class)
+    //         ->whereDate('datestart', '<=', Carbon::now('America/Lima')->format('Y-m-d'))
+    //         ->whereDate('dateexpire', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
+    //         ->where('status', 0);
+    // }
+
+    public function promocions(): HasMany
+    {
+        return $this->hasMany(Promocion::class);
+    }
+
     public function ofertasdisponibles(): HasMany
     {
-        return $this->hasMany(Oferta::class)
-            ->whereDate('datestart', '<=', Carbon::now('America/Lima')->format('Y-m-d'))
-            ->whereDate('dateexpire', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
-            ->where('status', 0);
+        return $this->hasMany(Promocion::class)->disponibles();
     }
 
     public function existStock(): BelongsToMany

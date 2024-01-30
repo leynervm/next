@@ -45,7 +45,7 @@ class Caja extends Model
 
     public function scopeOpencajasdisponibles()
     {
-        return $this->opencajas()->whereNull('expiredate');
+        return $this->opencajas()->where('status', self::ACTIVO);
     }
 
     public function scopeOpencajasdisponiblesuser()
@@ -54,9 +54,8 @@ class Caja extends Model
             ->where('user_id', auth()->user()->id);
     }
 
-
-    public function isUsing()
+    public function isUsingCaja()
     {
-        return $this->sucursal_id ==  auth()->user()->sucursalDefault()->first()->id;
+        return $this->sucursal_id == auth()->user()->sucursal_id;
     }
 }

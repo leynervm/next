@@ -1,5 +1,5 @@
 <div>
-    <x-button-next titulo="Registrar sucursal" wire:click="$set('open', true)">
+    <x-button-next titulo="Registrar" wire:click="$set('open', true)">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" x2="12" y1="5" y2="19" />
@@ -9,13 +9,7 @@
     <x-jet-dialog-modal wire:model="open" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva sucursal') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -50,7 +44,7 @@
 
                 <div class="w-full">
                     <x-label value="Código anexo :" />
-                    <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..." />
+                    <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..." maxlength="4" />
                     <x-jet-input-error for="codeanexo" />
                 </div>
 

@@ -46,10 +46,9 @@
                         <x-jet-input-error for="direccion" />
                     </div>
 
-                    <div class="w-full sm:col-span-2 mt-2 sm:mt-0 relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }"
-                        x-init="select2UbigeoAlpine" wire:ignore>
+                    <div class="w-full sm:col-span-2 mt-2 sm:mt-0 relative">
                         <x-label value="Ubigeo :" />
-                        <div class="relative">
+                        <div class="relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }" x-init="select2UbigeoAlpine" wire:ignore>
                             <x-select class="block w-full" x-ref="select" wire:model.defer="ubigeo_id"
                                 id="ubigeoclient_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
                                 <x-slot name="options">
@@ -92,20 +91,23 @@
                         <x-jet-input-error for="nacimiento" />
                     </div>
 
-                    <div class="w-full mt-2 sm:mt-0">
-                        <x-label value="Lista precio :" />
-                        <x-select class="block w-full" wire:model.defer="pricetype_id" id="pricetype_id"
-                            data-dropdown-parent="null">
-                            <x-slot name="options">
-                                @if (count($pricetypes))
-                                    @foreach ($pricetypes as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="pricetype_id" />
-                    </div>
+                    @if (mi_empresa()->uselistprice == 1)
+                        <div class="w-full mt-2 sm:mt-0">
+                            <x-label value="Lista precio :" />
+                            <x-select class="block w-full iconselect" wire:model.defer="pricetype_id"
+                                id="pricetype_id" data-dropdown-parent="null">
+                                <x-slot name="options">
+                                    @if (count($pricetypes))
+                                        @foreach ($pricetypes as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-jet-input-error for="pricetype_id" />
+                        </div>
+                    @endif
+
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Teléfono :" />
                         <x-input class="block w-full" wire:model.defer="telefono" placeholder="+51 999 999 999"

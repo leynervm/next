@@ -22,8 +22,8 @@
 
             @if (isset($image))
                 <div
-                    class="w-full h-36 xs:h-32 rounded shadow shadow-shadowminicard border border-borderminicard">
-                    <img src="{{ $image }}" alt="" class="w-full h-full object-scale-down">
+                    class="w-full h-36 xs:h-32 rounded shadow shadow-shadowminicard border border-borderminicard overflow-hidden">
+                    <img src="{{ $image }}" alt="" class="w-full h-full object-cover">
                 </div>
             @else
                 <div class="w-full h-24 xs:h-32 rounded shadow shadow-shadowminicard border border-borderminicard">

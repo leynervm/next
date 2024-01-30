@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use App\Models\Almacen;
+use App\Models\User;
 
 class ShowAlmacens extends Component
 {
@@ -159,9 +160,25 @@ class ShowAlmacens extends Component
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
         } else {
-            $almacen->forceDelete();
-            $this->sucursal->refresh();
-            $this->dispatchBrowserEvent('deleted');
+
+            DB::beginTransaction();
+            try {
+
+                if ($almacen->users()->count() > 0) {
+                    User::query()->where('almacen_id', $almacen->id)->update(['almacen_id' => null]);
+                }
+
+                $almacen->forceDelete();
+                DB::commit();
+                $this->sucursal->refresh();
+                $this->dispatchBrowserEvent('deleted');
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Modules\Facturacion\Comprobantes;
 
 use App\Helpers\Facturacion\createXML;
 use App\Helpers\Facturacion\SendXML;
+use App\Models\Sucursal;
 use App\Models\Typecomprobante;
 use App\Models\Typepayment;
 use App\Models\User;
@@ -64,17 +65,30 @@ class ShowComprobantes extends Component
     public function render()
     {
 
-        $sucursals =auth()->user()->sucursals()->orderBy('name', 'asc')->get();
-        $typepayments = Typepayment::whereHas('comprobantes', function ($query) use ($sucursals) {
-            $query->whereIn('sucursal_id', $sucursals->pluck('id')->toArray());
-        })->orderBy('name', 'asc')->get();
-        $users = User::whereHas('comprobantes')->orderBy('name', 'asc')->get();
-        $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes.sucursals', function ($query) use ($sucursals) {
-            $query->whereIn('sucursal_id', $sucursals->pluck('id')->toArray());
-        })->orderBy('code', 'asc')->get();
-        $comprobantes = Comprobante::with('facturableitems')->withTrashed()
-            ->whereIn('sucursal_id', $sucursals->pluck('id')->toArray());
+        $comprobantes = Comprobante::withTrashed()->with(['facturableitems', 'sucursal'])
+            ->withWherehas('sucursal', function ($query) {
+                $query->withTrashed();
+                if ($this->searchsucursal !== '') {
+                    $query->where('id', $this->searchsucursal);
+                } else {
+                    $query->where('id', auth()->user()->sucursal_id);
+                }
+            });
 
+        $sucursals = Sucursal::withTrashed()->whereHas('comprobantes')->get();
+
+        $typepayments = Typepayment::whereHas('comprobantes', function ($query) {
+            $query->withTrashed()
+                ->where('sucursal_id', auth()->user()->sucursal_id);
+        })->orderBy('name', 'asc')->get();
+
+        $users = User::whereHas('comprobantes')->orderBy('name', 'asc')->get();
+
+        $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
+            $query->whereHas('comprobantes')->withWhereHas('sucursals', function ($query) {
+                $query->withTrashed()->where('sucursals.id', auth()->user()->sucursal_id);
+            });
+        })->orderBy('code', 'asc')->get();
 
         if ($this->search !== '') {
             $comprobantes->whereHas('client', function ($query) {
@@ -107,10 +121,6 @@ class ShowComprobantes extends Component
             $comprobantes->where('user_id', $this->searchuser);
         }
 
-        if ($this->searchsucursal !== '') {
-            $comprobantes->where('sucursal_id', $this->searchsucursal);
-        }
-
         if ($this->serie !== '') {
             $comprobantes->where('seriecompleta', 'ilike', trim($this->serie) . '%');
         }
@@ -120,8 +130,12 @@ class ShowComprobantes extends Component
         return view('livewire.modules.facturacion.comprobantes.show-comprobantes', compact('comprobantes', 'typepayments', 'typecomprobantes', 'sucursals', 'users'));
     }
 
-    public function enviarsunat(Comprobante $comprobante)
+    public function enviarsunat($id)
     {
+
+        $comprobante =  Comprobante::find($id)->with(['sucursal' => function ($query) {
+            $query->withTrashed();
+        }])->find($id);
 
         $codetypecomprobante = $comprobante->seriecomprobante->typecomprobante->code;
         $nombreXML = $comprobante->sucursal->empresa->document . '-' . $codetypecomprobante . '-' . $comprobante->seriecompleta;
@@ -140,6 +154,7 @@ class ShowComprobantes extends Component
         $response = $objApi->enviarComprobante($comprobante->sucursal->empresa, $nombreXML, storage_path('app/cert/'), storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
         if ($response->code == '0') {
+            $comprobante->codesunat = $response->code;
             if ($response->notes !== '') {
                 $mensaje = response()->json([
                     'title' => $response->descripcion,
@@ -162,7 +177,7 @@ class ShowComprobantes extends Component
             $this->dispatchBrowserEvent('validation', $mensaje->getData());
         }
 
-        $comprobante->codesunat = $response->code;
+        // dd($mensaje->getData());
         $comprobante->descripcion = $response->descripcion;
         $comprobante->save();
     }

@@ -32,9 +32,6 @@
                     CÓDIGO ANEXO</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    DETALLE</th>
-
-                <th scope="col" class="p-2 font-medium">
                     ESTADO</th>
 
                 <th scope="col" class="p-2 font-medium text-center">
@@ -46,9 +43,20 @@
             <x-slot name="body">
                 @foreach ($sucursales as $item)
                     <tr>
-                        <td class="p-2 text-xs">
-                            <a href="{{ route('admin.administracion.sucursales.edit', $item) }}"
-                                class="text-linktable hover:text-hoverlinktable hover:underline transition-all ease-in-out duration-150">{{ $item->name }}</a>
+                        <td class="p-2 align-middle ">
+                            <div class="flex items-center justify-start gap-1">
+                                @if ($item->default)
+                                    <x-icon-default />
+                                @endif
+
+                                @if ($item->trashed())
+                                    <p class="inline-block text-linktable">
+                                        {{ $item->name }}</p>
+                                @else
+                                    <a href="{{ route('admin.administracion.sucursales.edit', $item) }}"
+                                        class="inline-block text-linktable hover:text-hoverlinktable transition-all ease-in-out duration-150">{{ $item->name }}</a>
+                                @endif
+                            </div>
                         </td>
                         <td class="p-2 text-[10px]">
                             <p>{{ $item->direccion }}</p>
@@ -66,50 +74,28 @@
                             {{ $item->codeanexo }}
                         </td>
 
-                        <td class="p-2 text-xs align-middle text-center">
-                            @if ($item->default)
-                                <small class="p-1 text-xs leading-3 rounded bg-green-500 text-white inline-block">
-                                    Sucursal principal</small>
+                        <td class="p-2 text-center align-middle">
+                            @if ($item->trashed())
+                                <x-span-text text="INACTIVO" class="leading-3 !tracking-normal" type="red" />
                             @else
-                                {{-- @if ($item->status == 0)
-                                    <x-button wire:click="$emit('sucursales.confirmSetDefault', {{ $item }})"
-                                        class="inline-block" wire:loading.attr="disabled">
-                                        {{ __('DEFINIR PRINCIPAL') }}
-                                    </x-button>
-                                @endif --}}
+                                <x-span-text text="ACTIVO" class="leading-3 !tracking-normal" type="green" />
                             @endif
                         </td>
 
-                        <td class="p-2 text-xs text-center align-middle">
-                            @if ($item->status == 0)
-                                <span class="inline-block text-center text-green-500">
-                                    <svg class="w-4 h-4 scale-125" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path fill="currentColor"
-                                            d="M19 12C19 13.6569 17.6569 15 16 15C14.3431 15 13 13.6569 13 12C13 10.3431 14.3431 9 16 9C17.6569 9 19 10.3431 19 12Z" />
-                                        <path
-                                            d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                    </svg>
+                        <td class="p-2 align-middle text-center space-x-3">
+                            @if ($item->default == 0 && $item->deleted_at == null)
+                                <x-icon-default wire:click="$emit('sucursales.confirmSetDefault', {{ $item }})"
+                                    wire:loading.attr="disabled"
+                                    class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
+                            @endif
 
-                                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path
-                                            d="M3 13.3333C3 13.3333 4.5 14 6.5 17C6.5 17 6.78485 16.5192 7.32133 15.7526M17 6C14.7085 7.14577 12.3119 9.55181 10.3879 11.8223" />
-                                        <path d="M8 13.3333C8 13.3333 9.5 14 11.5 17C11.5 17 17 8.5 22 6" />
-                                    </svg> --}}
-                                </span>
+                            @if ($item->deleted_at == null)
+                                <x-button-delete wire:click="$emit('sucursales.confirmDelete', {{ $item }})"
+                                    wire:loading.attr="disabled" />
                             @else
-                                <span class="inline-block text-center text-neutral-200">
-                                    {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="M5 5L19 19" />
-                                        <path
-                                            d="M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z" />
-                                    </svg> --}}
-                                    <svg class="w-4 h-4 scale-125" viewBox="0 0 24 24" fill="none"
+                                <button wire:click="$emit('sucursales.restoreSucursal', {{ $item }})"
+                                    wire:loading.attr="disabled">
+                                    <svg class="w-4 h-4 scale-125 inline-block" viewBox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
                                         <path fill="currentColor"
@@ -117,40 +103,8 @@
                                         <path
                                             d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
                                     </svg>
-                                </span>
+                                </button>
                             @endif
-                        </td>
-
-                        <td class="p-2 align-middle text-center">
-                            <x-button-delete wire:click="$emit('sucursales.confirmDelete', {{ $item }})"
-                                wire:loading.attr="disabled" wire:target="delete" />
-                            {{-- @if ($item->status == 0)
-                                    <x-mini-button wire:click="$emit('sucursales.confirmDown', {{ $item }})"
-                                        wire:loading.attr="disabled" wire:target="delete">
-                                        <svg class="w-4 h-4 scale-125" viewBox="0 0 24 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path fill="currentColor"
-                                                d="M19 12C19 13.6569 17.6569 15 16 15C14.3431 15 13 13.6569 13 12C13 10.3431 14.3431 9 16 9C17.6569 9 19 10.3431 19 12Z" />
-                                            <path
-                                                d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                        </svg>
-                                    </x-mini-button>
-                                @else
-                                    <x-mini-button
-                                        class="hover:bg-neutral-500 hover:ring-neutral-300 focus:bg-neutral-500 focus:ring-neutral-300"
-                                        wire:click="$emit('sucursales.confirmActive', {{ $item }})"
-                                        wire:loading.attr="disabled">
-                                        <svg class="w-4 h-4 scale-125 text-neutral-200" viewBox="0 0 24 24"
-                                            fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path fill="currentColor"
-                                                d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                            <path
-                                                d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                        </svg>
-                                    </x-mini-button>
-                                @endif --}}
                         </td>
                     </tr>
                 @endforeach
@@ -163,7 +117,7 @@
 
             Livewire.on('sucursales.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar sucursal con nombre : ' + data.name,
+                    title: 'Deshabilitar sucursal, ' + data.name,
                     text: "Se eliminará un registro en la base de datos,",
                     icon: 'question',
                     showCancelButton: true,
@@ -173,16 +127,14 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('admin.sucursales.show-sucursales', 'delete', data
-                            .id);
+                        @this.delete(data.id);
                     }
                 })
             })
 
             Livewire.on('sucursales.confirmSetDefault', data => {
                 swal.fire({
-                    title: 'Definir ' + data.name +
-                        ' como sucursal principal ?',
+                    title: 'Seleccionar ' + data.name + ' como sucursal principal ?',
                     text: "Se actualizarán los registro de la base de datos.",
                     icon: 'question',
                     showCancelButton: true,
@@ -192,8 +144,41 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('admin.sucursales.show-sucursales', 'setsucursaldefault',
-                            data.id);
+                        @this.setsucursaldefault(data.id);
+                    }
+                })
+            })
+
+            Livewire.on('sucursales.restoreSucursal', data => {
+                swal.fire({
+                    title: 'Habilitar sucursal, ' + data.name + ' ?',
+                    text: "Se actualizará un registro en la base de datos.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0FB9B9',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.restoreSucursal(data.id);
+                    }
+                })
+            })
+
+            Livewire.on('sucursales.existUserSucursals', data => {
+                swal.fire({
+                    title: 'Sucursal, ' + data.name + ' se encuentra vinculado a usuarios  ?',
+                    text: "Se deshabilitará la sucursal seleccionada de todos los usuarios vinculados.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0FB9B9',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Confirmar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.delete(data.id, true);
                     }
                 })
             })

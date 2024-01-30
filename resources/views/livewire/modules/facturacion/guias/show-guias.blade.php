@@ -3,12 +3,12 @@
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
         <div class="w-full sm:max-w-md">
             <x-label value="Destinatario :" />
-            <x-input wire:model.lazy="search" class="w-full" />
+            <x-input wire:model.lazy="search" class="w-full" placeholder="Buscar destinatario..." />
         </div>
 
         <div class="w-full xs:w-40">
             <x-label value="Serie :" />
-            <x-input wire:model.lazy="serie" class="w-full block" />
+            <x-input wire:model.lazy="serie" class="w-full block" placeholder="Buscar serie..." />
         </div>
         <div class="w-full xs:w-auto">
             <x-label value="Fecha :" />
@@ -135,9 +135,6 @@
                     PESO</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    BULTOS</th>
-
-                <th scope="col" class="p-2 font-medium">
                     FECHA TRASLADO</th>
 
                 {{-- <th scope="col" class="p-2 font-medium">
@@ -153,10 +150,10 @@
                     REFERENCIA</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    USUARIO</th>
+                    SUCURSAL</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    SUCURSAL</th>
+                    USUARIO</th>
 
                 <th scope="col" class="p-2 font-medium">
                     SUNAT</th>
@@ -180,31 +177,34 @@
                                 {{ $item->seriecomprobante->typecomprobante->descripcion }}
                             </a>
                         </td>
-                        <td class="p-2 text-xs uppercase">
-                            {{ \Carbon\Carbon::parse($item->date)->locale('es')->format('d/m/Y h:i A') }}
+                        <td class="p-2 uppercase">
+                            {{ formatdate($item->date) }}
                         </td>
                         <td class="p-2 text-[10px] text-left">
-                            <p>{{ $item->client->document }}</p>
-                            <p>{{ $item->client->name }}</p>
+                            <p>{{ $item->documentdestinatario }}</p>
+                            <p>{{ $item->namedestinatario }}</p>
+                            {{-- <p>{{ $item->client->document }}</p>
+                            <p>{{ $item->client->name }}</p> --}}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-[10px] text-center">
                             {{ $item->motivotraslado->name }}
                         </td>
-                        <td class="p-2 text-xs text-center uppercase">
+                        <td class="p-2 text-[10px] text-center uppercase">
                             {{ $item->modalidadtransporte->name }}
                         </td>
                         <td class="p-2 text-[10px]">
                             <p>{{ $item->ructransport }}</p>
                             <p>{{ $item->nametransport }}</p>
                         </td>
-                        <td class="p-2 text-xs text-center whitespace-nowrap">
-                            {{ formatDecimalOrInteger($item->peso) }} {{ $item->unit }}
+                        <td class="p-2 text-center whitespace-nowrap">
+                            <p>{{ formatDecimalOrInteger($item->peso) }} {{ $item->unit }}</p>
+
+                            @if ($item->packages)
+                                <p>{{ $item->packages }} {{ $item->packages > 1 ? 'BULTOS' : 'BULTO' }}</p>
+                            @endif
                         </td>
-                        <td class="p-2 text-xs text-center whitespace-nowrap">
-                            {{ $item->packages }} {{ $item->packages > 1 ? 'BULTOS' : 'BULTO' }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ \Carbon\Carbon::parse($item->datetraslado)->locale('es')->format('d/m/Y') }}
+                        <td class="p-2 text-center">
+                            {{ formatdate($item->datetraslado, 'DD MMMM Y') }}
                         </td>
                         {{-- <td class="p-2 text-[10px]">
                             <p>{{ $item->direccionorigen }}</p>
@@ -218,7 +218,7 @@
                                 {{ $item->ubigeodestino->provincia }},
                                 {{ $item->ubigeodestino->distrito }}</p>
                         </td>
-                        <td class="p-2 text-xs">
+                        <td class="p-2">
                             @if ($item->indicadortransbordo == '1')
                                 <p>{{ getIndicadorTransbProg()->name }}</p>
                             @endif
@@ -239,23 +239,27 @@
                             @endif
                         </td>
 
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             @if ($item->comprobante)
                                 {{ $item->comprobante->seriecompleta }}
                             @endif
                         </td>
-                        <td class="p-2 text-xs text-center">
+
+                        <td class="p-2 text-center">
+                            {{ $item->sucursal->name }}
+                            @if ($item->sucursal->trashed())
+                                <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
+                            @endif
+                        </td>
+
+                        <td class="p-2 text-center">
                             {{ $item->user->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->sucursal->name }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
+
+                        <td class="p-2 text-center">
                             @if ($item->seriecomprobante->typecomprobante->sendsunat)
                                 @if ($item->codesunat == '0')
-                                    <small
-                                        class="p-1 text-[10px] leading-3 rounded text-white inline-block bg-green-500">
-                                        ENVIADO</small>
+                                    <x-span-text text="ENVIADO" class="leading-3 !tracking-normal" type="green" />
                                 @else
                                     <x-button wire:click="enviarsunat({{ $item->id }})"
                                         wire:loading.attr="disabled" class="inline-block">
@@ -263,10 +267,10 @@
                                     </x-button>
                                 @endif
                             @else
-                                <x-span-text text="LOCAL" class="leading-3" />
+                                <x-span-text text="LOCAL" class="leading-3 !tracking-normal" />
                             @endif
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             @if ($item->codesunat != '0')
                                 <p>{{ $item->codesunat }}</p>
                             @endif

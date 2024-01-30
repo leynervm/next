@@ -1,28 +1,28 @@
 <div>
-    <x-form-card titulo="SERIES" subtitulo="Administrar todas las series del producto.">
-        <div class="w-full h-full relative rounded flex flex-wrap lg:flex-nowrap gap-3">
+    <x-form-card titulo="SERIES" subtitulo="Administrar series del producto." class="relative">
+        <div class="w-full h-full rounded flex flex-wrap lg:flex-nowrap gap-3">
             <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
-                <form wire:submit.prevent="save" class="flex flex-col gap-2">
+                <form wire:submit.prevent="save" class="flex flex-col gap-2" x-data="almacendata">
                     <div class="w-full">
                         <x-label value="Almacén :" />
-                        {{-- <div x-data="{ almacen_id: @entangle('almacen_id') }" x-init="select2AlmacenAlpine" id="parentalmacen_id" wire:ignore> --}}
-                        <x-select class="block w-full" id="almacen_id" wire:model.defer="almacen_id">
-                            <x-slot name="options">
-                                @if (count($producto->almacens))
-                                    @foreach ($producto->almacens as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        {{-- </div> --}}
+                        <div id="parentalmacen_id" class="relative" wire:ignore>
+                            <x-select class="block w-full" id="almacen_id" x-ref="select" data-placeholder="null">
+                                <x-slot name="options">
+                                    @if (count($producto->almacens))
+                                        @foreach ($producto->almacens as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                         <x-jet-input-error for="almacen_id" />
                     </div>
                     <div class="w-full">
                         <x-label value="Serie :" />
-                        <x-input class="block w-full" wire:model.defer="serie" />
+                        <x-input class="block w-full" placeholder="Ingresar serie..." wire:model.defer="serie" />
                         <x-jet-input-error for="serie" />
-                        <x-jet-input-error for="producto.id" />
                     </div>
                     <div class="w-full mt-3 flex justify-end">
                         <x-button type="submit" wire:loading.atrr="disabled">
@@ -32,13 +32,7 @@
                 </form>
             </div>
             @if (count($producto->series))
-                <div class="w-full relative bg-body p-3 rounded" x-data="{ loading: false }">
-                    <div wire:loading wire:loading.flex
-                        wire:target="save, disponibles, searchseriealmacen, gotoPage, nextPage, previousPage, delete"
-                        class="loading-overlay rounded hidden">
-                        <x-loading-next />
-                    </div>
-
+                <div class="w-full relative bg-body p-3 rounded">
                     <div class="w-full flex items-end gap-1 mb-2">
                         @if (count($producto->almacens) > 1)
                             <div class="relative" x-data="{ open: false }">
@@ -119,24 +113,49 @@
                 </div>
             @endif
         </div>
+
+        <div wire:loading.flex
+            wire:target="save, disponibles, searchseriealmacen, gotoPage, nextPage, previousPage, delete"
+            class="loading-overlay rounded hidden">
+            <x-loading-next />
+        </div>
     </x-form-card>
 
     <script>
-        // function select2AlmacenAlpine() {
-        //     this.select2 = $(this.$refs.select).select2();
-        //     this.select2.val(this.almacen_id).trigger("change");
-        //     this.select2.on("select2:select", (event) => {
-        //         this.select2.attr('disabled', true);
-        //         this.almacen_id = event.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-        //     this.$watch('almacen_id', (value) => {
-        //         this.select2.val(value).trigger("change");
-        //     });
-        // }
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('almacendata', () => ({
+                almacen_id: @entangle('almacen_id').defer,
+
+                init() {
+                    this.select2AlmacenAlpine();
+                    window.addEventListener('created', () => {
+                        this.select2.val(this.almacen_id).trigger("change");
+                    });
+                },
+                select2AlmacenAlpine() {
+                    this.select2 = $(this.$refs.select).select2();
+                    this.select2.val(this.almacen_id).trigger("change");
+                    this.select2.on("select2:select", (event) => {
+                        this.almacen_id = event.target.value;
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                }
+            }));
+        })
+
+        window.addEventListener('resetfilter', almacens => {
+            @this.resetfilter();
+            let selectalmacen = document.querySelector('[x-ref="select"]');
+            $(selectalmacen).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
+            almacens.detail.forEach(almacen => {
+                let option = new Option(almacen.name, almacen.id, false, false);
+                $(selectalmacen).append(option);
+            });
+            $(selectalmacen).select2().trigger('change');
+        })
 
         document.addEventListener("livewire:load", () => {
             Livewire.on("producto.confirmDeleteSerie", data => {

@@ -64,11 +64,21 @@ class ShowProveedor extends Component
 
     public function delete(Proveedor $proveedor)
     {
+
+        if ($proveedor->compras()->exists()) {
+            $mensaje = response()->json([
+                'title' => 'No se puede eliminar proveedor ' . $proveedor->name,
+                'text' => "El proveedor contiene compras vinculadas, eliminar causará conflictos en la base de datos."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
         DB::beginTransaction();
         try {
             $proveedor->contacts()->delete();
             $proveedor->telephones()->delete();
-            $proveedor->deleteOrFail();
+            $proveedor->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');
             return redirect()->route('admin.proveedores');
@@ -153,7 +163,7 @@ class ShowProveedor extends Component
 
     public function openmodalphone()
     {
-        $this->reset(['newtelefono', 'telephone']);
+        $this->reset(['newtelefono']);
         $this->resetValidation(['telephone', 'newtelefono']);
         $this->openphone = true;
     }
@@ -192,7 +202,7 @@ class ShowProveedor extends Component
 
     public function deletephone(Telephone $telephone)
     {
-        $telephone->deleteOrFail();
+        $telephone->delete();
         $this->proveedor->refresh();
         $this->dispatchBrowserEvent('deleted');
     }
@@ -200,7 +210,7 @@ class ShowProveedor extends Component
     public function deleterepresentante(Contact $contact)
     {
         $contact->telephone->delete();
-        $contact->deleteOrFail();
+        $contact->delete();
         $this->proveedor->refresh();
         $this->dispatchBrowserEvent('deleted');
     }
@@ -266,5 +276,4 @@ class ShowProveedor extends Component
             $this->addError('document2', 'Error al buscar datos del representante.');
         }
     }
-
 }

@@ -20,16 +20,23 @@ class RegisterCompany
      */
     public function handle(Request $request, Closure $next)
     {
-        $empresa = Empresa::all()->count();
-
+        $empresa = Empresa::exists();
         // dd($request->session()->previousUrl());
         // dd(url()->previous());
         // dd(URL::previous());
-        session(['redirect_url' => url()->previous()]);
-        if (!$empresa) {
+
+
+        if ($empresa) {
+            // session(['redirect_url' => url()->previous()]);
             // Session::put('redirect_url', $request->fullUrl());
             // session(['redirect_url' => $request->url()]);
-            return redirect()->route('admin.administracion.empresa.create')->with('message', 'Configurar datos de la empresa por favor !');
+            // $mensaje = response()->json([
+            //     'title' => 'CONFIGURAR PERFIL DE LA EMPRESA',
+            //     'text' => 'Configurar los datos de la empresa, requeridos por el sistema, contáctese con su administrador.',
+            //     'type' => 'warning'
+            // ]);
+            // return redirect()->back()->with('message', $mensaje);
+            return redirect()->route('admin.administracion.empresa');
         }
 
         return $next($request);

@@ -23,11 +23,7 @@ class ShowCategories extends Component
     {
         return [
             'category.name' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
-                new CampoUnique('categories', 'name', $this->category->id, true),
+                'required', 'string', 'min:3', 'max:100', new CampoUnique('categories', 'name', $this->category->id, true),
             ],
         ];
     }

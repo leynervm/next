@@ -6,6 +6,8 @@ use App\Models\Cajamovimiento;
 use App\Models\Cuota;
 use App\Models\Moneda;
 use App\Models\Proveedor;
+use App\Models\Serie;
+use App\Models\Sucursal;
 use App\Models\Typepayment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -15,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Auth;
 
 class Compra extends Model
 {
@@ -34,7 +35,7 @@ class Compra extends Model
         parent::boot();
 
         static::creating(function ($model) {
-            $model->user_id = Auth::user()->id;
+            $model->user_id = auth()->user()->id;
         });
     }
 
@@ -53,6 +54,11 @@ class Compra extends Model
         $this->attributes['descripcion'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function sucursal(): BelongsTo
+    {
+        return $this->belongsTo(Sucursal::class);
+    }
+
     public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Proveedor::class);
@@ -68,9 +74,9 @@ class Compra extends Model
         return $this->belongsTo(Typepayment::class);
     }
 
-    public function cajamovimiento(): MorphOne
+    public function cajamovimientos(): MorphMany
     {
-        return $this->morphOne(Cajamovimiento::class, 'cajamovimientable');
+        return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
     }
 
     public function compraitems(): HasMany

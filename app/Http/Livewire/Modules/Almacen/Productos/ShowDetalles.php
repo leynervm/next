@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Models\Caracteristica;
+use App\Models\Detalleproducto;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Producto;
@@ -41,7 +42,7 @@ class ShowDetalles extends Component
     public function openmodal()
     {
         $this->selectedEspecificacion = $this->producto->especificaciones()
-            ->pluck('especificacion_id', 'caracteristica_id', )->toArray();
+            ->pluck('especificacion_id', 'caracteristica_id',)->toArray();
         $this->open = true;
     }
 
@@ -153,4 +154,5 @@ class ShowDetalles extends Component
         $this->resetValidation();
         $this->identificador = rand();
     }
+    
 }

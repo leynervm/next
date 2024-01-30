@@ -12,6 +12,8 @@ class Methodpayment extends Model
     use HasFactory;
     use SoftDeletes;
 
+    const DEFAULT = '1';
+
     protected $guarded = ['created_at', 'updated_at'];
 
     public function setNameAttribute($value)
@@ -21,7 +23,12 @@ class Methodpayment extends Model
 
     public function scopeDefaultMethodpayment($query)
     {
-        return $query->where('default', 1);
+        return $query->where('default', self::DEFAULT);
+    }
+
+    public function scopeDefault($query)
+    {
+        return $query->where('default', self::DEFAULT);
     }
 
     public function cuentas(): BelongsToMany

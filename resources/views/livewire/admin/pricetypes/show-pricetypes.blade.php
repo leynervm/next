@@ -1,34 +1,34 @@
 <div class="">
 
-    @if (count($pricetypes))
-        <div class="pb-2">
-            {{ $pricetypes->links() }}
+    @if ($pricetypes->hasPages())
+        <div class="w-full py-2">
+            {{ $pricetypes->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
         @if (count($pricetypes))
             @foreach ($pricetypes as $item)
-                <x-minicard :title="$item->name" :content="'Formato: ' . number_format(0, $item->decimalrounded)" :alignFooter="$item->default == 1 || $item->web == 1 ? 'justify-between' : 'justify-end'" size="md">
-                    {{-- :content="number_format($item->ganancia, $item->decimalrounded) . ' %'" --}}
-                    <x-slot name="buttons">
+                <x-minicard :title="$item->name" :content="$item->decimals . ' decimales'" :alignFooter="$item->default == 1 || $item->web == 1 ? 'justify-between' : 'justify-end'" size="lg">
+                    @if ($item->rounded > 0)
+                        @php
+                            $stringrounded = $item->rounded == 1 ? '(+0.5)' : '(+1)';
+                        @endphp
+                        <p class="text-center">
+                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green" class="leading-3 inline-block" />
+                        </p>
+                    @endif
 
+                    <x-slot name="buttons">
                         <div class="inline-flex">
                             @if ($item->default)
-                                <span class="bg-green-100 text-green-500 p-1 rounded-full">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </span>
+                                <x-icon-default />
                             @endif
                             @if ($item->web)
-                                <span
-                                    class="bg-green-100 text-green-500 p-1 rounded-full @if ($item->default) absolute left-6 ring-2 ring-white @endif">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
+                                <span class="text-next-500 @if ($item->default) absolute left-6 @endif">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 scale-110"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
                                         <circle cx="12" cy="12" r="10" />
                                         <line x1="2" x2="22" y1="12" y2="12" />
                                         <path
@@ -39,10 +39,9 @@
                         </div>
 
                         <div class="">
-                            <x-button-edit wire:loading.attr="disabled" wire:target="edit"
-                                wire:click="edit({{ $item->id }})"></x-button-edit>
-                            <x-button-delete wire:loading.attr="disabled" wire:target="confirmDelete"
-                                wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
+                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                            <x-button-delete wire:loading.attr="disabled"
+                                wire:click="$emit('pricetypes.confirmDelete',{{ $item }})" />
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -50,75 +49,144 @@
         @endif
     </div>
 
-    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="2xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar lista precio') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update">
-                <x-label value="Lista precio :" />
-                <x-input class="block w-full" wire:model.defer="pricetype.name"
-                    placeholder="Nombre de lista precio..." />
-                <x-jet-input-error for="pricetype.name" />
+            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2" x-data="loaderpricetypes">
+                <div>
+                    <x-label value="Lista precio :" />
+                    <x-input class="block w-full" wire:model.defer="pricetype.name"
+                        placeholder="Nombre de lista precio..." />
+                    <x-jet-input-error for="pricetype.name" />
+                </div>
 
-                <div class="w-full flex flex-wrap sm:flex-nowrap gap-2 mt-2">
-                    <div class="w-full sm:w-1/2">
+                {{-- <div class="w-full sm:w-1/2">
                         <x-label value="Porcentaje ganancia (%) :" />
                         <x-input class="block w-full" wire:model.defer="pricetype.ganancia" type="number"
                             step="0.1" min="0" />
                         <x-jet-input-error for="pricetype.ganancia" />
-                    </div>
-                    <div class="w-full sm:w-1/2">
-                        <x-label value="Redondear decimales :" />
-                        <x-input class="block w-full" wire:model.defer="pricetype.decimalrounded" type="number"
-                            step="1" min="0" max="4" />
-                        <x-jet-input-error for="pricetype.decimalrounded" />
-                    </div>
+                    </div> --}}
+                <div class="w-full">
+                    <x-label value="Cantidad decimales :" />
+                    <x-input class="block w-full" wire:model.defer="pricetype.decimals" type="number" step="1"
+                        min="0" max="4" />
+                    <x-jet-input-error for="pricetype.decimals" />
                 </div>
 
-                <div class="mt-3 mb-1">
-                    <x-label textSize="[10px]"
-                        class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                        for="default_edit">
-                        <x-input wire:model.defer="pricetype.default" name="default" type="checkbox" id="default_edit" />
+                <div class="w-full">
+                    <x-label value="Redondeo decimales :" />
+                    <div id="parentroundededit" class="relative" wire:ignore>
+                        <x-select class="block w-full" id="roundededit" x-ref="select">
+                            <x-slot name="options">
+                                <option value="0">NO USAR REDONDEO</option>
+                                <option value="1">REDONDEAR DECIMAL (+0.5)</option>
+                                <option value="2">REDONDEAR DECIMAL A ENTERO (+1)</option>
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="pricetype.rounded" />
+                </div>
+
+                <div class="">
+                    <x-label-check for="default_edit">
+                        <x-input wire:model.defer="pricetype.default" name="default" value="1" type="checkbox"
+                            id="default_edit" />
                         SELECCIONAR COMO PREDETERMINADO
-                    </x-label>
+                    </x-label-check>
+                    <x-jet-input-error for="pricetype.default" />
                 </div>
-                <x-jet-input-error for="pricetype.default" />
 
-                <div class="mt-1 mb-1">
-                    <x-label textSize="[10px]"
-                        class="inline-flex items-center tracking-widest font-semibold gap-2 cursor-pointer bg-next-100 rounded-lg p-1"
-                        for="web_edit">
-                        <x-input wire:model.defer="pricetype.web" name="web" type="checkbox" id="web_edit" />
-                        PREDETERMINADO PARA VENTAS POR INTERNET
-                    </x-label>
+                <div class="">
+                    <x-label-check for="web_edit">
+                        <x-input wire:model.defer="pricetype.web" name="web" value="1" type="checkbox"
+                            id="web_edit" />
+                        PREDETERMINADO PARA VENTAS WEB
+                    </x-label-check>
+                    <x-jet-input-error for="pricetype.web" />
                 </div>
-                <x-jet-input-error for="pricetype.web" />
 
+                <div class="">
+                    <x-label-check for="edit_defaultlogin">
+                        <x-input wire:model.defer="pricetype.defaultlogin" name="defaultlogin" value="1"
+                            type="checkbox" id="edit_defaultlogin" />
+                        PREDETERMINADO PARA VENTAS WEB DESPUES LOGIN
+                    </x-label-check>
+                    <x-jet-input-error for="pricetype.defaultlogin" />
+                </div>
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="block">
+                    <x-label-check for="edit_temporal">
+                        <x-input wire:model.defer="pricetype.temporal" @change="changeTemporal($event.target)"
+                            name="temporal" type="checkbox" id="edit_temporal" />
+                        USAR DE MANERA TEMPORAL PARA VENTAS POR INTERNET
+                    </x-label-check>
+                    <x-jet-input-error for="pricetype.temporal" />
+
+                    <div x-show="show" class="relative mt-2">
+                        <div class="w-full flex gap-2 animate__animated animate__fadeInDown">
+                            <div class="w-full">
+                                <x-label value="Fecha inicio :" />
+                                <x-input class="w-full" type="date" wire:model.defer="pricetype.startdate" />
+                                <x-jet-input-error for="pricetype.startdate" />
+                            </div>
+                            <div class="w-full">
+                                <x-label value="Fecha fin :" />
+                                <x-input class="w-full" type="date" wire:model.defer="pricetype.expiredate" />
+                                <x-jet-input-error for="pricetype.expiredate" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
             </form>
         </x-slot>
     </x-jet-dialog-modal>
+
+
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('loaderpricetypes', () => ({
+                rounded: @entangle('pricetype.rounded').defer,
+                show: @entangle('pricetype.temporal').defer,
+
+                changeTemporal(target) {
+                    this.show = !this.show;
+                },
+                init() {
+                    this.select2Rounded();
+                    // this.show = @this.get('pricetype.temporal');
+                },
+                select2Rounded() {
+                    this.selectR = $(this.$refs.select).select2();
+                    this.selectR.val(this.rounded).trigger("change");
+                    this.selectR.on("select2:select", (event) => {
+                        this.rounded = event.target.value;
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                    this.$watch("rounded", (value) => {
+                        this.selectR.val(value).trigger("change");
+                    });
+                },
+            }));
+        })
+
         document.addEventListener('livewire:load', function() {
-            window.addEventListener('pricetypes.confirmDelete', data => {
+            Livewire.on('pricetypes.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
+                    title: 'Eliminar lista de precio, ' + data.name,
                     text: "Se eliminará un registro de la base de datos",
                     icon: 'question',
                     showCancelButton: true,
@@ -128,8 +196,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('admin.pricetypes.show-pricetypes', 'delete', data.detail
-                            .id);
+                        @this.delete(data.id);
                     }
                 })
             })

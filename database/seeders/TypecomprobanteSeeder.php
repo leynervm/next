@@ -15,28 +15,18 @@ class TypecomprobanteSeeder extends Seeder
      */
     public function run()
     {
-        $ticket = Typecomprobante::create([
+        Typecomprobante::create([
             'code' => 'VT',
             'name' => 'TICKET VENTA',
             'descripcion' => 'TICKET VENTA',
             'sendsunat' => 0,
         ]);
 
-        $guiaremisioninterna = Typecomprobante::create([
+        Typecomprobante::create([
             'code' => '09',
-            'name' => 'GUIA DE REMISIÓN REMITENTE INTERNA',
-            'descripcion' => 'GUIA DE REMISIÓN REMITENTE INTERNA',
+            'name' => 'GUIA INTERNA',
+            'descripcion' => 'GUIA INTERNA',
             'sendsunat' => 0,
-        ]);
-
-        $ticket->seriecomprobantes()->create([
-            'serie' => 'VT01',
-            'contador' => 0
-        ]);
-
-        $guiaremisioninterna->seriecomprobantes()->create([
-            'serie' => 'EG07',
-            'contador' => 0
         ]);
 
     }

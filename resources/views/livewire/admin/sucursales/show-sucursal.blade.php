@@ -37,7 +37,7 @@
                 <div class="w-full">
                     <x-label value="Código anexo :" />
                     <x-input class="block w-full" wire:model.defer="sucursal.codeanexo"
-                        placeholder="Anexo de sucursal..." />
+                        placeholder="Anexo de sucursal..." maxlength="4" />
                     <x-jet-input-error for="sucursal.codeanexo" />
                 </div>
 

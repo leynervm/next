@@ -1,14 +1,14 @@
 <div class="relative" x-data="{ loading: false }">
 
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
-        <div class="w-full sm:max-w-md">
+        <div class="w-full sm:max-w-sm">
             <x-label value="Cliente :" />
-            <x-input wire:model.lazy="search" class="w-full" />
+            <x-input wire:model.lazy="search" class="w-full" placeholder="Buscar nombres cliente..." />
         </div>
 
         <div class="w-full xs:w-40">
             <x-label value="Serie :" />
-            <x-input wire:model.lazy="serie" class="w-full block" />
+            <x-input wire:model.lazy="serie" class="w-full block" placeholder="Serie comprobante..." />
         </div>
         <div class="w-full xs:w-auto">
             <x-label value="Fecha :" />
@@ -23,9 +23,9 @@
         @if (count($typepayments) > 1)
             <div class="w-full xs:w-52">
                 <x-label value="Tipo pago :" />
-                <div id="parentsearchtypepayment">
-                    <x-select id="searchtypepayment" wire:model.lazy="searchtypepayment" class="w-full"
-                        data-placeholder="null">
+                <div id="parentsearchtypepayment" class="relative" x-data="{ searchtypepayment: @entangle('searchtypepayment') }" x-init="select2Type"
+                    wire:ignore>
+                    <x-select id="searchtypepayment" x-ref="selecttype" class="w-full" data-placeholder="null">
                         <x-slot name="options">
                             @if (count($typepayments))
                                 @foreach ($typepayments as $item)
@@ -34,45 +34,53 @@
                             @endif
                         </x-slot>
                     </x-select>
+                    <x-icon-select />
                 </div>
             </div>
         @endif
 
-        <div class="w-full xs:w-52">
-            <x-label value="Tipo comprobante :" />
-            <div id="parentsearchtypecomprobante">
-                <x-select class="w-full" wire:model.lazy="searchtypecomprobante" id="searchtypecomprobante"
-                    data-placeholder="null">
-                    <x-slot name="options">
-                        @if (count($typecomprobantes))
-                            @foreach ($typecomprobantes as $item)
-                                <option value="{{ $item->code }}">{{ $item->descripcion }}</option>
-                            @endforeach
-                        @endif
-                    </x-slot>
-                </x-select>
+        @if (count($typecomprobantes) > 1)
+            <div class="w-full xs:w-52">
+                <x-label value="Tipo comprobante :" />
+                <div id="parentsearchtypecomprobante" class="relative" x-data="{ searchtypecomprobante: @entangle('searchtypecomprobante') }" x-init="select2Comprobante"
+                    wire:ignore>
+                    <x-select class="w-full" x-ref="selectcomprobante" id="searchtypecomprobante"
+                        data-placeholder="null">
+                        <x-slot name="options">
+                            @if (count($typecomprobantes))
+                                @foreach ($typecomprobantes as $item)
+                                    <option value="{{ $item->code }}">{{ $item->descripcion }}</option>
+                                @endforeach
+                            @endif
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
             </div>
-        </div>
+        @endif
 
-        <div class="w-full xs:w-60">
-            <x-label value="Usuario :" />
-            <div id="parentsearchuser">
-                <x-select id="searchuser" class="w-full" wire:model.lazy="searchuser" data-placeholder="null">
-                    <x-slot name="options">
-                        @foreach ($users as $item)
-                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                        @endforeach
-                    </x-slot>
-                </x-select>
+        @if (count($users) > 1)
+            <div class="w-full xs:w-60">
+                <x-label value="Usuario :" />
+                <div id="parentsearchuser" class="relative" x-data="{ searchuser: @entangle('searchuser') }" x-init="select2User" wire:ignore>
+                    <x-select id="searchuser" class="w-full" x-ref="selectuser" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($users as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
             </div>
-        </div>
+        @endif
 
         @if (count($sucursals) > 1)
             <div class="w-full xs:w-full xs:max-w-xs">
                 <x-label value="Sucursal :" />
-                <div id="parentsearchsucursal">
-                    <x-select id="searchsucursal" wire:model.lazy="searchsucursal" class="w-full"
-                        data-placeholder="null">
+                <div id="parentsearchsucursal" class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2Sucursal"
+                    wire:ignore>
+                    <x-select id="searchsucursal" x-ref="selectsucursal" class="w-full" data-placeholder="null">
                         <x-slot name="options">
                             @if (count($sucursals))
                                 @foreach ($sucursals as $item)
@@ -81,6 +89,7 @@
                             @endif
                         </x-slot>
                     </x-select>
+                    <x-icon-select />
                 </div>
             </div>
         @endif
@@ -122,8 +131,6 @@
                 <th scope="col" class="p-2 font-medium text-left">
                     CLIENTE</th>
 
-                <th scope="col" class="p-2 font-medium">
-                    TIPO PAGO</th>
 
                 <th scope="col" class="p-2 font-medium">
                     GRAVADO</th>
@@ -134,26 +141,29 @@
                 <th scope="col" class="p-2 font-medium">
                     IGV</th>
 
-                {{-- <th scope="col" class="p-2 font-medium">
-                    DESCUENTOS</th>
-
                 <th scope="col" class="p-2 font-medium">
+                    GRATUITO</th>
+
+                {{-- <th scope="col" class="p-2 font-medium">
                     OTROS</th> --}}
 
                 <th scope="col" class="p-2 font-medium">
                     TOTAL</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    MONEDA</th>
+                    TIPO PAGO</th>
+
+                {{-- <th scope="col" class="p-2 font-medium">
+                    MONEDA</th> --}}
 
                 <th scope="col" class="p-2 font-medium text-center">
                     REFERENCIA</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    USUARIO</th>
+                    SUCURSAL</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    SUCURSAL</th>
+                    USUARIO</th>
 
                 <th scope="col" class="p-2 font-medium">
                     SUNAT</th>
@@ -172,57 +182,57 @@
                         <td class="p-2 text-[10px]">
                             {{ $item->seriecompleta }}
                             <p class="leading-3">{{ $item->seriecomprobante->typecomprobante->descripcion }}</p>
-                            {{-- <a href="#"
-                                class="text-linktable hover:text-hoverlinktable inline-block leading-3 transition-colors ease-out duration-150">
-                                {{ $item->seriecompleta }}
-                                <br>
-                                {{ $item->seriecomprobante->typecomprobante->descripcion }}
-                            </a> --}}
                         </td>
-                        <td class="p-2 text-xs uppercase">
-                            {{-- <p>
-                                {{ \Carbon\Carbon::parse($item->date)->locale('es')->isoformat('DD MMMM YYYY') }}
-                            </p> --}}
-                            {{ \Carbon\Carbon::parse($item->date)->locale('es')->format('d/m/Y h:i A') }}
+                        <td class="p-2 uppercase">
+                            {{ formatDate($item->date, 'DD MMMM YYYY hh:ss A') }}
                         </td>
-                        <td class="p-2 text-xs text-left">
-                            <p class="text-[10px]">{{ $item->client->document }}</p>
-                            <p class="text-[10px]">{{ $item->client->name }}</p>
+                        <td class="p-2 text-left">
+                            <p class="">{{ $item->client->document }}</p>
+                            <p class="text-[10px] leading-3">{{ $item->client->name }}</p>
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center whitespace-nowrap">
+                            {{ $item->moneda->simbolo }}
+                            {{ number_format($item->gravado, 3, '.', ', ') }}
+                        </td>
+                        <td class="p-2 text-center whitespace-nowrap">
+                            {{ $item->moneda->simbolo }}
+                            {{ number_format($item->exonerado, 3, '.', ', ') }}
+                        </td>
+                        <td class="p-2 text-center whitespace-nowrap">
+                            {{ $item->moneda->simbolo }}
+                            {{ number_format($item->igv, 3, '.', ', ') }}
+                        </td>
+                        <td class="p-2 text-center whitespace-nowrap">
+                            {{ $item->moneda->simbolo }}
+                            {{ number_format($item->gratuito, 3, '.', ', ') }}
+                        </td>
+                        {{-- <td class="p-2 text-center">
+                            {{ $item->moneda->simbolo }}
+                            {{ $item->otros }}
+                        </td> --}}
+                        <td class="p-2 text-center whitespace-nowrap">
+                            {{ $item->moneda->simbolo }}
+                            {{ number_format($item->total, 3, '.', ', ') }}
+                        </td>
+                        <td class="p-2 text-center">
                             {{ $item->typepayment->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->gravado }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->exonerado }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->igv }}
-                        </td>
-                        {{-- <td class="p-2 text-xs text-center">
-                            {{ $item->descuento }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->otros }} --}}
-                        </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->total }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
+                        {{-- <td class="p-2 text-center">
                             {{ $item->moneda->currency }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
+                        </td> --}}
+                        <td class="p-2 text-center">
                             {{ $item->referencia }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
+                            {{ $item->sucursal->name }}
+                            @if ($item->sucursal->trashed())
+                                <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
+                            @endif
+                        </td>
+                        <td class="p-2 text-center">
                             {{ $item->user->name }}
                         </td>
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->sucursal->name }}
-                        </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{-- {{ $item->deleted_at }} --}}
                             @if ($item->deleted_at)
                                 <small class="p-1 text-[10px] leading-3 rounded text-white inline-block bg-red-500">
@@ -246,7 +256,7 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             @if ($item->codesunat != '0')
                                 <p>{{ $item->codesunat }}</p>
                             @endif
@@ -353,4 +363,68 @@
         @endif
     </x-table>
 
+    <script>
+        function select2Type() {
+            this.selectT = $(this.$refs.selecttype).select2();
+            this.selectT.val(this.searchtypepayment).trigger("change");
+            this.selectT.on("select2:select", (event) => {
+                    this.searchtypepayment = event.target.value;
+                })
+                .on('select2:open', function(e) {
+                    const evt = "scroll.select2";
+                    $(e.target).parents().off(evt);
+                    $(window).off(evt);
+                });
+            this.$watch("searchtypepayment", (value) => {
+                this.selectT.val(value).trigger("change");
+            });
+        }
+
+        function select2Comprobante() {
+            this.selectC = $(this.$refs.selectcomprobante).select2();
+            this.selectC.val(this.searchtypecomprobante).trigger("change");
+            this.selectC.on("select2:select", (event) => {
+                    this.searchtypecomprobante = event.target.value;
+                })
+                .on('select2:open', function(e) {
+                    const evt = "scroll.select2";
+                    $(e.target).parents().off(evt);
+                    $(window).off(evt);
+                });
+            this.$watch("searchtypecomprobante", (value) => {
+                this.selectC.val(value).trigger("change");
+            });
+        }
+
+        function select2User() {
+            this.selectU = $(this.$refs.selectuser).select2();
+            this.selectU.val(this.searchuser).trigger("change");
+            this.selectU.on("select2:select", (event) => {
+                    this.searchuser = event.target.value;
+                })
+                .on('select2:open', function(e) {
+                    const evt = "scroll.select2";
+                    $(e.target).parents().off(evt);
+                    $(window).off(evt);
+                });
+            this.$watch("searchuser", (value) => {
+                this.selectU.val(value).trigger("change");
+            });
+        }
+
+        function select2Sucursal() {
+            this.selectS = $(this.$refs.selectsucursal).select2();
+            this.selectS.val(this.searchsucursal).trigger("change");
+            this.selectS.on("select2:select", (event) => {
+                this.searchsucursal = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchsucursal", (value) => {
+                this.selectS.val(value).trigger("change");
+            });
+        }
+    </script>
 </div>

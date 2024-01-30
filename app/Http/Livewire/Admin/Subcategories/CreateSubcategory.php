@@ -20,7 +20,7 @@ class CreateSubcategory extends Component
     {
         return [
             'name' => [
-                'required', 'string', 'min:2', 'max:100',
+                'required', 'string', 'min:3', 'max:100',
                 new CampoUnique('subcategories', 'name', null, true),
             ],
             'selectedCategories' => ['required', 'array', 'min:1']

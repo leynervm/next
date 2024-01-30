@@ -45,13 +45,13 @@
                 <th scope="col" class="p-2 font-medium">
                     CORREO</th>
 
-                <th scope="col" class="p-2 font-medium text-left">
+                <th scope="col" class="p-2 font-medium text-center">
                     TELEFONOS</th>
 
-                <th scope="col" class="p-2 font-medium text-left">
+                <th scope="col" class="p-2 font-medium text-center">
                     HISTORIAL COMPRAS</th>
 
-                <th scope="col" class="p-2 font-medium text-left">
+                <th scope="col" class="p-2 font-medium text-center">
                     HISTORIAL PEDIDOS</th>
 
                 {{-- <th scope="col" class="p-2 relative">
@@ -105,11 +105,12 @@
                             @endif
                         </td>
                         <td class="p-2 text-xs text-center align-middle">
-                            <x-button>VER</x-button>
+                            <x-link-button class="inline-block"
+                                href="{{ route('admin.proveedores.historial', $item) }}">VER COMPRAS</x-link-button>
                         </td>
 
                         <td class="p-2 text-xs text-center align-middle">
-                            <x-button>VER</x-button>
+                            <x-link-button class="inline-block">VER PEDIDOS</x-link-button>
                         </td>
 
                         {{-- <td class="p-2 whitespace-nowrap">

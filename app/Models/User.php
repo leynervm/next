@@ -38,7 +38,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'role_id',
-        'theme_id'
+        'theme_id',
+        'sucursal_id',
+        'almacen_id',
     ];
 
     /**
@@ -97,23 +99,23 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Cajamovimiento::class);
     }
 
-    public function sucursals(): BelongsToMany
+    public function sucursal(): BelongsTo
     {
-        return $this->belongsToMany(Sucursal::class)->withPivot('default', 'almacen_id');
+        return $this->belongsTo(Sucursal::class);
     }
 
-    public function sucursalDefault()
+    public function almacen(): BelongsTo
     {
-        return $this->sucursals()->wherePivot('default', Sucursal::DEFAULT );
-    }
-
-    public function almacenDefault()
-    {
-        return $this->sucursalDefault()->wherePivotNotNull('almacen_id');
+        return $this->belongsTo(Almacen::class);
     }
 
     public function comprobantes(): HasMany
     {
         return $this->hasMany(Comprobante::class);
+    }
+
+    public function kardexes()
+    {
+        return $this->hasMany(Kardex::class);
     }
 }

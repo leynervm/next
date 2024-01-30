@@ -3,7 +3,9 @@
 namespace App\Helpers;
 
 use App\Models\Client;
+use App\Models\Empresa;
 use App\Models\Pricetype;
+use Carbon\Carbon;
 // use GuzzleHttp\Client as Http;
 use Illuminate\Support\Facades\Http;
 
@@ -20,26 +22,53 @@ class GetClient
     public function getClient($document)
     {
 
+        $uselistprice = mi_empresa()->uselistprice ?? 0;
+        $bithday = false;
         $cliente = Client::withTrashed()->where('document', $document)->first();
         $response = array();
 
+        if ($uselistprice == 1) {
+            $pricetypes = Pricetype::default();
+            if (count($pricetypes->get()) > 0) {
+                $pricetypeDefault = $pricetypes->first();
+            } else {
+                $pricetypeDefault = Pricetype::first();
+            }
+
+            $pricetypeclient_id = $pricetypeDefault->id ?? null;
+            $pricetypename = $pricetypeDefault->name ?? '';
+        }
+
         if ($cliente) {
             if ($cliente->trashed()) {
-                $cliente->pricetype_id = Pricetype::DefaultPricetype()->first()->id ?? null;
                 $cliente->restore();
+                $cliente->pricetype_id = $uselistprice == 1 ?  $pricetypeDefault->id ?? null : null;
                 $cliente->direccions()->restore();
                 $cliente->telephones()->restore();
             }
 
             $direccion = $cliente->direccions()->first()->name ?? '';
+
+            if ($uselistprice == 1) {
+                if ($cliente->pricetype_id) {
+                    $pricetypeclient_id = $cliente->pricetype_id;
+                    $pricetypename = $cliente->pricetype->name;
+                }
+            }
+
+            if ($cliente->nacimiento) {
+                $bithday = Carbon::parse($cliente->nacimiento)->format('m-d') == Carbon::now()->format('m-d') ? true : false;
+            }
+
             $response = [
                 'success' => true,
                 'name' => $cliente->name,
-                'pricetype_id' => $cliente->pricetype_id,
-                'pricetypeasigned' => $cliente->pricetype->name ?? '',
+                'pricetype_id' => $pricetypeclient_id ?? null,
+                'pricetypeasigned' => $pricetypename ?? '',
                 'direccion' => strlen(trim($direccion)) < 3 ? '' : $direccion,
                 'ubigeo' => $cliente->direccions()->first()->ubigeo->ubigeo_reniec ?? null,
-                'telefono' => $cliente->telephones()->first()->phone ?? null
+                'telefono' => $cliente->telephones()->first()->phone ?? null,
+                'birthday' => $bithday
             ];
         } else {
 
@@ -55,7 +84,6 @@ class GetClient
             ]);
 
             if ($http->getBody()) {
-
                 $result = json_decode($http->getBody());
 
                 if (isset($result->message)) {
@@ -64,8 +92,6 @@ class GetClient
                         'message' => $result->message,
                     ];
                 } else {
-
-                    $pricetypeDefault = Pricetype::DefaultPricetype()->first();
 
                     if (strlen(trim($document)) == 8) {
                         $name = $result->nombres . ' ' . $result->apellidoPaterno . ' ' . $result->apellidoMaterno;
@@ -78,13 +104,14 @@ class GetClient
                     $response = [
                         'success' => true,
                         'name' => $name,
-                        'pricetype_id' => $pricetypeDefault->id ?? null,
-                        'pricetypeasigned' => $pricetypeDefault->name ?? '',
+                        'pricetype_id' => $pricetypeclient_id ?? null,
+                        'pricetypeasigned' => $pricetypename ?? null,
                         'direccion' => strlen(trim($direccion)) < 3 ? null : $direccion,
                         'ubigeo' => isset($result->ubigeo) ? $result->ubigeo : null,
                         'telefono' => null,
                         'estado' => isset($result->estado) ? $result->estado : null,
                         'condicion' => isset($result->condicion) ? $result->condicion : null,
+                        'birthday' => $bithday
                     ];
                     // $response = $result;
                 }

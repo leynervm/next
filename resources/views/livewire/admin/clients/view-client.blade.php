@@ -6,7 +6,7 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-disabled-text :text="$client->document" class="w-full block"/>
+                        <x-disabled-text :text="$client->document" class="w-full block" />
                         <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
                             wire:target="searchclient">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -56,19 +56,22 @@
                     <x-jet-input-error for="ubigeo_id" />
                 </div>
 
-                <div class="w-full">
-                    <x-label value="Lista precio :" />
-                    <x-select class="block w-full" wire:model.defer="client.pricetype_id" id="editpricetypeclient_id">
-                        <x-slot name="options">
-                            @if (count($pricetypes))
-                                @foreach ($pricetypes as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-jet-input-error for="client.pricetype_id" />
-                </div>
+                @if (mi_empresa()->uselistprice == 1)
+                    <div class="w-full">
+                        <x-label value="Lista precio :" />
+                        <x-select class="block w-full" wire:model.defer="client.pricetype_id"
+                            id="editpricetypeclient_id">
+                            <x-slot name="options">
+                                @if (count($pricetypes))
+                                    @foreach ($pricetypes as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-jet-input-error for="client.pricetype_id" />
+                    </div>
+                @endif
 
                 <div class="w-full">
                     <x-label value="F. Nacimiento :" />

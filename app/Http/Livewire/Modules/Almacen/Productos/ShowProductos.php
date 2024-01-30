@@ -3,14 +3,14 @@
 namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Models\Almacen;
+use App\Models\Almacenarea;
 use App\Models\Category;
+use App\Models\Estante;
 use App\Models\Marca;
 use App\Models\Producto;
 use App\Models\Unit;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Almacen\Entities\Almacenarea;
-use Modules\Almacen\Entities\Estante;
 
 class ShowProductos extends Component
 {
@@ -43,19 +43,31 @@ class ShowProductos extends Component
             if (count($this->searchalmacen) > 0) {
                 $query->whereIn('almacens.name', $this->searchalmacen);
             }
-        })->whereHas('marca', function ($query) {
-            if (count($this->searchmarca) > 0) {
-                $query->whereIn('marcas.name', $this->searchmarca);
-            }
-        })->whereHas('category', function ($query) {
-            if (count($this->searchcategory) > 0) {
-                $query->whereIn('categories.name', $this->searchcategory);
-            }
-        })->whereHas('subcategory', function ($query) {
-            if (count($this->searchsubcategory) > 0) {
-                $query->whereIn('subcategories.name', $this->searchsubcategory);
-            }
         });
+
+        if (count($this->searchmarca) > 0) {
+            $productos->whereHas('marca', function ($query) {
+                // if (count($this->searchmarca) > 0) {
+                $query->whereIn('marcas.name', $this->searchmarca);
+                // }
+            });
+        }
+
+        if (count($this->searchcategory) > 0) {
+            $productos->whereHas('category', function ($query) {
+                // if (count($this->searchcategory) > 0) {
+                $query->whereIn('categories.name', $this->searchcategory);
+                // }
+            });
+        }
+
+        if (count($this->searchsubcategory) > 0) {
+            $productos->whereHas('subcategory', function ($query) {
+                // if (count($this->searchsubcategory) > 0) {
+                $query->whereIn('subcategories.name', $this->searchsubcategory);
+                // }
+            });
+        }
 
         if ($this->search !== '') {
             $productos->where('name', 'ilike', '%' . $this->search . '%');
@@ -66,17 +78,12 @@ class ShowProductos extends Component
         }
 
         $productos = $productos->orderBy('name', 'asc')->paginate();
-        $units = Unit::orderBy('name', 'asc')->get();
-        $categories = Category::orderBy('name', 'asc')->get();
-        $marcas = Marca::orderBy('name', 'asc')->get();
-        $almacenareas = Almacenarea::orderBy('name', 'asc')->get();
-        $estantes = Estante::orderBy('name', 'asc')->get();
-        $marcaGroup = Producto::select('marca_id')->groupBy('marca_id')->get();
-        $categoriaGroup = Producto::select('category_id')->groupBy('category_id')->get();
+        $marcaGroup = Producto::select('marca_id')->whereNotNull('marca_id')->groupBy('marca_id')->get();
+        $categoriaGroup = Producto::select('category_id')->whereNotNull('category_id')->groupBy('category_id')->get();
         $subcategoriaGroup = Producto::select('subcategory_id')->whereNotNull('subcategory_id')->groupBy('subcategory_id')->paginate(10, ['*'], 'page-subcategory');
-        $almacenGroup = Almacen::whereHas('productos')->get();
+        $almacenGroup = Almacen::whereHas('productos')->where('sucursal_id', auth()->user()->sucursal_id)->get();
 
-        return view('livewire.modules.almacen.productos.show-productos', compact('productos', 'units', 'marcas', 'almacenareas', 'estantes', 'categories', 'marcaGroup', 'categoriaGroup', 'subcategoriaGroup', 'almacenGroup'));
+        return view('livewire.modules.almacen.productos.show-productos', compact('productos', 'marcaGroup', 'categoriaGroup', 'subcategoriaGroup', 'almacenGroup'));
     }
 
     public function updatedSearch($value)

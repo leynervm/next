@@ -3,9 +3,7 @@
     @if (isset($name) || isset($buttonpricemanual))
         <div class="w-full flex flex-wrap gap-1 items-start justify-between">
             @if (isset($name))
-                <span
-                    class="text-[9px] font-semibold leading-3 p-1 bg-fondospancardproduct text-textspancardproduct rounded uppercase">
-                    {{ $name }}</span>
+                <x-span-text :text="$name" class="leading-3" />
             @endif
             @if (isset($buttonpricemanual))
                 {{ $buttonpricemanual }}

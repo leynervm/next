@@ -49,8 +49,6 @@ class CampoUnique implements Rule
 
         if ($this->softDeleted) {
             $query->whereNull('deleted_at');
-        } else {
-            $query->where('delete', 0);
         }
 
         if (!is_null($this->ignoreId)) {

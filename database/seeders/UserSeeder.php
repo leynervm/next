@@ -32,15 +32,17 @@ class UserSeeder extends Seeder
             'password' => bcrypt('12345678'),
         ]);
 
-        // $almacen_id = null;
-        $sucursal_id = Sucursal::first()->id;
-        // if (Module::isEnabled('Almacen')) {
-        $almacen_id = Almacen::first()->id ?? null;
-        // }
-        $admin->sucursals()->sync([$sucursal_id => [
-            'default' => 1,
-            'almacen_id' => $almacen_id,
-        ]]);
+
+        $sucursal = Sucursal::first();
+        $almacen = Almacen::first();
+
+        if ($sucursal && $almacen) {
+            $admin->sucursals()->sync([$sucursal->id => [
+                'default' => 1,
+                'almacen_id' => $almacen->id,
+            ]]);
+        }
+
         // User::factory(30)->create();
     }
 }

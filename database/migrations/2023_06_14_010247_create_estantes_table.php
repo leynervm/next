@@ -14,10 +14,8 @@ class CreateEstantesTable extends Migration
     public function up()
     {
         Schema::create('estantes', function (Blueprint $table) {
-            $table->id();
+            $table->smallIncrements('id')->unsigned();
             $table->string('name', 100);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
             $table->softDeletes();
         });
     }

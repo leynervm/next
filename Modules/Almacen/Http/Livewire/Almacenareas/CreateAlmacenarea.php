@@ -2,10 +2,10 @@
 
 namespace Modules\Almacen\Http\Livewire\Almacenareas;
 
+use App\Models\Almacenarea;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Livewire\Component;
-use Modules\Almacen\Entities\Almacenarea;
 
 class CreateAlmacenarea extends Component
 {

@@ -45,16 +45,16 @@
 
     <div class="flex flex-col gap-8">
         <div  style="z-index: 1">
-            <livewire:almacen.productos.show-producto :producto="$producto" />
+            <livewire:modules.almacen.productos.show-producto :producto="$producto" />
         </div>
         <div>
-            <livewire:almacen.productos.show-detalles :producto="$producto" />
+            <livewire:modules.almacen.productos.show-detalles :producto="$producto" />
         </div>
         <div>
-            <livewire:almacen.productos.show-series :producto="$producto" />
+            <livewire:modules.almacen.productos.show-series :producto="$producto" />
         </div>
         <div>
-            <livewire:almacen.productos.show-garantias :producto="$producto" />
+            <livewire:modules.almacen.productos.show-garantias :producto="$producto" />
         </div>
     </div>
 </x-app-layout>

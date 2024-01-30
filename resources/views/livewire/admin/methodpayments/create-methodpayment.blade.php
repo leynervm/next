@@ -9,13 +9,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva forma pago') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -25,11 +19,13 @@
                     placeholder="Ingrese descripción de forma pago..." />
                 <x-jet-input-error for="name" />
 
-                <x-label-check for="default" class="mt-1">
-                    <x-input wire:model.defer="default" name="default" value="1" type="checkbox" id="default" />
-                    SELECCIONAR COMO PREDETERMINADO
-                </x-label-check>
-                <x-jet-input-error for="default" />
+
+                <div class="block mt-1">
+                    <x-label-check for="default">
+                        <x-input wire:model.defer="default" name="default" value="1" type="checkbox"
+                            id="default" />SELECCIONAR COMO PREDETERMINADO </x-label-check>
+                    <x-jet-input-error for="default" />
+                </div>
 
                 <x-label value="Asignar cuentas pago :" class="mt-2 underline" />
 
@@ -45,9 +41,8 @@
                     </div>
                 @endif
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="save">
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>

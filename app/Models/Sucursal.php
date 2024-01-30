@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Almacen;
+use Modules\Almacen\Entities\Compra;
+use Modules\Facturacion\Entities\Comprobante;
 use Modules\Ventas\Entities\Venta;
 
 class Sucursal extends Model
@@ -47,9 +49,9 @@ class Sucursal extends Model
         return $this->status == $this::ACTIVO;
     }
 
-    public function users(): BelongsToMany
+    public function users(): HasMany
     {
-        return $this->belongsToMany(User::class)->withPivot('default', 'almacen_id');
+        return $this->hasMany(User::class);
     }
 
     public function ubigeo(): BelongsTo
@@ -69,17 +71,32 @@ class Sucursal extends Model
 
     public function almacenDefault()
     {
-        return $this->almacens()->where('default', $this::DEFAULT );
+        return $this->almacens()->where('default', $this::DEFAULT);
     }
 
     public function cajas(): HasMany
     {
-        return $this->hasMany(Caja::class)->withTrashed();
+        return $this->hasMany(Caja::class)->withTrashed()->orderBy('name', 'asc');
     }
 
     public function ventas(): HasMany
     {
         return $this->hasMany(Venta::class);
+    }
+
+    public function comprobantes(): HasMany
+    {
+        return $this->hasMany(Comprobante::class);
+    }
+
+    public function guias(): HasMany
+    {
+        return $this->hasMany(Guia::class);
+    }
+
+    public function compras(): HasMany
+    {
+        return $this->hasMany(Compra::class);
     }
 
     public function cajamovimientos()
@@ -92,18 +109,9 @@ class Sucursal extends Model
         return $this->belongsToMany(Seriecomprobante::class)->withPivot('default');
     }
 
-    public function scopeDefaultSeriecomprobantes()
+    public function kardexes()
     {
-        return $this->seriecomprobantes()->wherePivot('default', 1);
+        return $this->hasMany(Kardex::class);
     }
-
-    // public function scopeSucursalCajas($query)
-    // {
-    //     return $query->withWhereHas('seriecomprobantes', function ($query) {
-    //         $query->whereHas('sucursals', function ($query) {
-    //             $query->whereIn('sucursal_id', auth()->user()->sucursalDefault()
-    //                 ->select('sucursals.id')->pluck('sucursals.id'));
-    //         });
-    //     });
-    // }
+    
 }

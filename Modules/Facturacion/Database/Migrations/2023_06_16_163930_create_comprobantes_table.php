@@ -33,8 +33,8 @@ class CreateComprobantesTable extends Migration
             $table->decimal('percent', 5, 2);
             $table->string('hash', 32)->nullable();
             $table->string('referencia', 50);
-            $table->tinyInteger('codesunat')->nullable();
-            $table->string('descripcion', 255)->nullable();
+            $table->string('codesunat', 4)->nullable();
+            $table->text('descripcion')->nullable();
             $table->text('notasunat')->nullable();
             $table->string('leyenda', 255);
             $table->bigInteger('client_id')->nullable();

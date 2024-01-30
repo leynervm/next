@@ -1,6 +1,6 @@
 <div>
     <div class="w-full relative flex flex-col gap-8">
-        <x-form-card titulo="DATOS PROVEEDOR" subtitulo="Complete todos los campos para registrar un nuevo proveedor.">
+        <x-form-card titulo="DATOS PROVEEDOR">
             <form wire:submit.prevent="update" class="w-full flex flex-col gap-2 bg-body p-3 rounded">
                 <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
                     <div class="w-full">
@@ -95,11 +95,11 @@
             </form>
         </x-form-card>
 
-        <x-form-card titulo="TELÉFONOS CLIENTE">
+        <x-form-card titulo="TELÉFONOS PROVEEDOR">
             @if (count($proveedor->telephones))
                 <div class="w-full flex flex-wrap gap-1">
                     @foreach ($proveedor->telephones as $item)
-                        <x-minicard-phone phone="{{ $item->phone }}">
+                        <x-minicard-phone :phone="formatTelefono($item->phone)">
                             <x-slot name="footer">
                                 <x-button-edit wire:click="editphone({{ $item->id }})"
                                     wire:loading.attr="disabled" />
@@ -118,8 +118,8 @@
             </div>
         </x-form-card>
 
-        <x-form-card titulo="REPRESENTANTES"
-            subtitulo="Complete todos los campos, nos permitirá contactarse con la empresa.">
+        <x-form-card titulo="CONTACTOS"
+            subtitulo="Nos permitirá contactarse con el proveedor.">
             <div class="w-full h-full flex flex-col">
                 @if (count($proveedor->contacts))
                     <div class="w-full flex flex-col gap-2">

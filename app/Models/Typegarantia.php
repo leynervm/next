@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Typegarantia extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    public $timestamps = false;
+    protected $fillable = ['name', 'time', 'datecode'];
 
 
     public function setNameAttribute($value)
@@ -20,9 +20,9 @@ class Typegarantia extends Model
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    public function setTimestringAttribute($value)
+    public function settDatecodeAttribute($value)
     {
-        $this->attributes['timestring'] = trim(mb_strtoupper($value, "UTF-8"));
+        $this->attributes['datecode'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function garantiaproductos(): HasMany

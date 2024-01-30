@@ -18,6 +18,7 @@ class CreateEmpresa extends Component
 
     use WithFileUploads;
 
+
     public $isUploadingLogo = false;
     public $isUploadingIcono = false;
     public $isUploadingPublicKey = false;
@@ -38,23 +39,23 @@ class CreateEmpresa extends Component
     public $tipocambio;
     public $viewpricedolar = 0;
     public $tipocambioauto = 0;
+    public $igv = '18.00';
 
     protected function rules()
     {
-
         return [
-            'document' => ['required', 'numeric', 'digits:11'],
-            'name' => ['required'],
-            'direccion' => ['required'],
+            'document' => ['required', 'numeric', 'digits:11', 'regex:/^\d{11}$/'],
+            'name' => ['required', 'string', 'min:3'],
+            'direccion' => ['required', 'string', 'min:3'],
             'ubigeo_id' => ['required', 'integer', 'min:0', 'exists:ubigeos,id'],
             'estado' => ['required', 'string'],
             'condicion' => ['required', 'string'],
-            'email' => ['nullable'],
-            'web' => ['nullable'],
-            'telefono' => ['nullable', 'numeric', 'digits_between:9,12'],
-            'montoadelanto' => ['nullable', 'decimal:0,2'],
-            'usuariosol' => ['nullable'],
-            'clavesol' => ['nullable'],
+            'email' => ['nullable', 'email'],
+            'web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'telefono' => ['numeric', 'digits_between:6,9', 'regex:/^\d{6,9}$/'],
+            'igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+            'usuariosol' => ['nullable', 'string'],
+            'clavesol' => ['nullable', 'string'],
             'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
             'publickey' => ['nullable', 'file', new ValidateFileKey("pem")],
@@ -63,7 +64,7 @@ class CreateEmpresa extends Component
             // 'dominiocorreo' => ['nullable', 'required_if:validatemail,1'],
             'uselistprice' => ['integer', 'min:0', 'max:1'],
             'usepricedolar' => ['integer', 'min:0', 'max:1'],
-            'tipocambio' => ['nullable', 'required_if:usepricedolar,1'],
+            'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'viewpricedolar' => ['integer', 'min:0', 'max:1'],
             'tipocambioauto' => ['integer', 'min:0', 'max:1']
         ];
@@ -87,9 +88,17 @@ class CreateEmpresa extends Component
     {
 
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
-        $this->usepricedolar = $this->usepricedolar == 1 ?  1 : 0;
-        $this->viewpricedolar = $this->viewpricedolar == 1 ?  1 : 0;
-        $this->tipocambioauto = $this->tipocambioauto == 1 ?  1 : 0;
+        $this->usepricedolar = $this->usepricedolar == true ?  1 : 0;
+        $this->viewpricedolar = $this->viewpricedolar == true ?  1 : 0;
+        $this->tipocambioauto = $this->tipocambioauto == true ?  1 : 0;
+
+        if ($this->usepricedolar == 0) {
+            $this->usepricedolar = 0;
+            $this->viewpricedolar = 0;
+            $this->tipocambioauto = 0;
+            $this->tipocambio = null;
+        }
+
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
@@ -156,6 +165,7 @@ class CreateEmpresa extends Component
                 'tipocambio' => $this->tipocambio,
                 'tipocambioauto' => $this->tipocambioauto,
                 'default' => 1,
+                'igv' => $this->igv,
                 'ubigeo_id' => $this->ubigeo_id,
             ]);
 
@@ -163,6 +173,7 @@ class CreateEmpresa extends Component
                 'name' => $this->name,
                 'direccion' => $this->direccion,
                 'default' => 1,
+                'codeanexo' => '0000',
                 'ubigeo_id' => $this->ubigeo_id,
             ]);
 
@@ -202,7 +213,7 @@ class CreateEmpresa extends Component
             $this->dispatchBrowserEvent('created');
             if (session('redirect_url')) {
                 $url = session('redirect_url');
-                session()->forget('intended_url');
+                session()->forget('redirect_url');
                 return redirect()->to($url);
             } else {
                 return redirect()->route('admin.administracion.empresa');
@@ -216,7 +227,6 @@ class CreateEmpresa extends Component
         }
     }
 
-
     public function clearInput($input)
     {
         $this->reset([$input]);
@@ -226,7 +236,7 @@ class CreateEmpresa extends Component
     {
         $this->document = trim($this->document);
         $this->validate([
-            'document' => 'required|numeric|digits:11'
+            'document' => 'required|numeric|digits:11|regex:/^\d{11}$/'
         ]);
 
         $this->name = null;
@@ -249,6 +259,7 @@ class CreateEmpresa extends Component
 
                 if (isset($response->getData()->ubigeo)) {
                     $this->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
+                    $this->dispatchBrowserEvent('selectubigeo', $this->ubigeo_id);
                 }
             } else {
                 $this->addError('document', $response->getData()->message);

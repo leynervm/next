@@ -8,10 +8,11 @@
     @if (count($cajas))
         <div class="w-full relative mt-1" x-data="{ loading: false }" x-init="loadingData">
             @if (count($sucursals) > 1)
-                <div class="w-full max-w-xs mb-2">
-                    <x-label for="sucursal_id" value="{{ __('Filtrar Sucursal') }} :" />
-                    <div x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal" wire:ignore>
-                        <x-select id="searchsucursal" x-ref="select" data-placeholder="null">
+                <div class="w-full max-w-sm mb-2">
+                    <x-label value="Filtrar Sucursal :" />
+                    <div x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal" class="relative"
+                        wire:ignore>
+                        <x-select id="searchsucursal" class="block w-full" x-ref="select" data-placeholder="null">
                             <x-slot name="options">
                                 @if (count($sucursals))
                                     @foreach ($sucursals as $item)
@@ -20,6 +21,7 @@
                                 @endif
                             </x-slot>
                         </x-select>
+                        <x-icon-select />
                     </div>
                 </div>
             @endif
@@ -54,13 +56,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar caja') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">

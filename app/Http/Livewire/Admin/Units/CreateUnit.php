@@ -17,8 +17,7 @@ class CreateUnit extends Component
     {
         return [
             'name' => [
-                'required', 'min:2', 'max:100', new Letter,
-                new CampoUnique('units', 'name', null, true),
+                'required', 'min:2', 'max:100', new CampoUnique('units', 'name', null, true),
             ],
             // 'abreviatura' => [
             //     'required', 'min:2', 'max:4'

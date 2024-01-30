@@ -38,23 +38,26 @@ class Typecomprobante extends Model
         return $this->hasMany(Seriecomprobante::class);
     }
 
-    public function scopeSucursalTypecomprobantes($query)
+    public function motivotraslados(): HasMany
     {
-        return $query->withWhereHas('seriecomprobantes', function ($query) {
-            $query->whereHas('sucursals', function ($query) {
-                $query->whereIn('sucursal_id', auth()->user()->sucursalDefault()
-                    ->select('sucursals.id')->pluck('sucursals.id'));
-            });
-        });
+        return $this->hasMany(Motivotraslado::class);
     }
 
-    public function scopeDefaultSucursalTypecomprobantes()
-    {
-        return $this->default()->withWhereHas('seriecomprobantes', function ($query) {
-            $query->whereHas('sucursals', function ($query) {
-                $query->whereIn('sucursal_id', auth()->user()->sucursalDefault()
-                    ->select('sucursals.id')->pluck('sucursals.id'));
-            });
-        });
-    }
+    // public function scopeSucursalTypecomprobantes($query)
+    // {
+    //     return $query->withWhereHas('seriecomprobantes', function ($query) {
+    //         $query->whereHas('sucursals', function ($query) {
+    //             $query->where('sucursal_id', auth()->user()->sucursal_id);
+    //         });
+    //     });
+    // }
+
+    // public function scopeDefaultSucursalTypecomprobantes()
+    // {
+    //     return $this->default()->withWhereHas('seriecomprobantes', function ($query) {
+    //         $query->whereHas('sucursals', function ($query) {
+    //             $query->where('sucursal_id', auth()->user()->sucursal_id);
+    //         });
+    //     });
+    // }
 }

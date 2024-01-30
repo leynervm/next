@@ -46,7 +46,6 @@
     </x-slot>
 
     <div class="mx-auto xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
-        <livewire:almacen::compras.create-compra :sucursal="$sucursal" :typepayment="$typepayment" :methodpayment="$methodpayment" :moneda="$moneda" :concept="$concept"
-            :opencaja="$opencaja" />
+        <livewire:modules.almacen.compras.create-compra />
     </div>
 </x-app-layout>

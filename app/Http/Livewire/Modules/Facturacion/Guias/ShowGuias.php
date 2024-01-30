@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Modules\Facturacion\Guias;
 use App\Helpers\Facturacion\createXML;
 use App\Helpers\Facturacion\SendXML;
 use App\Models\Guia;
+use App\Models\Sucursal;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -32,10 +33,17 @@ class ShowGuias extends Component
     public function render()
     {
 
-        $sucursals = auth()->user()->sucursals()->orderBy('name', 'asc')->get();
+        $sucursals = Sucursal::withTrashed()->whereHas('guias')->orderBy('name', 'asc')->get();
         $guias = Guia::with(['comprobante' => function ($query) {
             $query->withTrashed();
-        }])->whereIn('sucursal_id', $sucursals->pluck('id')->toArray());
+        }])->withWhereHas('sucursal', function ($query) {
+            $query->withTrashed();
+            if ($this->searchsucursal !== '') {
+                $query->where('id', $this->searchsucursal);
+            } else {
+                $query->where('id', auth()->user()->sucursal_id);
+            }
+        });
 
         if ($this->serie !== '') {
             $guias->where('seriecompleta', 'ilike', '%' . $this->serie . '%');
@@ -54,17 +62,17 @@ class ShowGuias extends Component
                 ->orWhere('namedestinatario', 'ilike', '%' . $this->search . '%');
         }
 
-        if ($this->searchsucursal !== '') {
-            $guias->where('sucursal_id', $this->searchsucursal);
-        }
-
-        $guias = $guias->orderBy("id", "desc")->paginate();
+        $guias = $guias->orderBy('id', 'desc')->paginate();
 
         return view('livewire.modules.facturacion.guias.show-guias', compact('guias', 'sucursals'));
     }
 
-    public function enviarsunat(Guia $guia)
+    public function enviarsunat($id)
     {
+
+        $guia =  Guia::find($id)->with(['sucursal' => function ($query) {
+            $query->withTrashed();
+        }])->find($id);
 
         if ($guia->indicadorvehiculosml == '0') {
             if ($guia->modalidadtransporte->code == '02') {
@@ -88,7 +96,6 @@ class ShowGuias extends Component
             }
         }
 
-
         $nombreXML = $guia->sucursal->empresa->document . '-' . $guia->seriecomprobante->typecomprobante->code . '-' . $guia->seriecompleta;
         $ruta = 'xml/' . $guia->seriecomprobante->typecomprobante->code . '/';
 
@@ -100,6 +107,7 @@ class ShowGuias extends Component
         $response = $objApi->enviarGuia($guia->sucursal->empresa, $nombreXML, storage_path('app/cert/'), storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
         if ($response->codRespuesta == '0') {
+            $guia->codesunat = $response->code;
             if ($response->notes !== '') {
                 $mensaje = response()->json([
                     'title' => $response->descripcion,
@@ -122,9 +130,7 @@ class ShowGuias extends Component
             $this->dispatchBrowserEvent('validation', $mensaje->getData());
         }
 
-        // $guia->codesunat = $response->code;
         $guia->descripcion = $response->descripcion;
         $guia->save();
-
     }
 }

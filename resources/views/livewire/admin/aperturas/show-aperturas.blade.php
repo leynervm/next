@@ -18,6 +18,7 @@
                         <th scope="col" class="p-2 font-medium">MONTO INGRESOS</th>
                         <th scope="col" class="p-2 font-medium">MONTO EGRESOS</th>
                         <th scope="col" class="p-2 font-medium">USUARIO</th>
+                        <th scope="col" class="p-2 font-medium">CIERRE CAJA</th>
                         <th scope="col" class="p-2 font-medium">ESTADO</th>
                         <th scope="col" class="p-2 font-medium">SUCURSAL</th>
                         <th scope="col" class="p-2 font-medium">OPCIONES</th>
@@ -27,53 +28,64 @@
                     @if (count($aperturas))
                         @foreach ($aperturas as $item)
                             <tr>
-                                <td class="p-2 text-xs">
+                                <td class="p-2">
                                     {{ $item->caja->name }}
                                 </td>
-                                <td class="p-2 text-center text-xs uppercase">
-                                    {{ \Carbon\Carbon::parse($item->startdate)->locale('es')->isoformat('DD MMMM YYYY hh:mm:ss A') }}
+                                <td class="p-2 text-center uppercase">
+                                    {{ \Carbon\Carbon::parse($item->startdate)->locale('es')->isoformat('DD MMMM YYYY hh:mm A') }}
                                 </td>
-                                <td class="p-2 text-center text-xs uppercase">
-                                    @if ($item->expiredate)
-                                        {{ \Carbon\Carbon::parse($item->expiredate)->locale('es')->isoformat('DD MMMM YYYY hh:mm:ss A') }}
+                                <td class="p-2 text-center uppercase">
+                                    {{ \Carbon\Carbon::parse($item->expiredate)->locale('es')->isoformat('DD MMMM YYYY hh:mm A') }}
+                                </td>
+                                <td class="p-2 text-center">
+                                    {{ $item->startmount }}
+                                </td>
+                                <td class="p-2 text-center">
+                                    {{ $item->totalcash }}
+                                </td>
+                                <td class="p-2 text-center">
+                                    {{ $item->totalcash }}
+                                </td>
+                                <td class="p-2 text-center">
+                                    {{ $item->user->name }}
+                                </td>
+                                <td class="p-2 text-center uppercase">
+                                    @if ($item->status)
+                                        {{ formatDate($item->closedate) }}
                                     @else
-                                        @if ($item->caja->isUsing())
-                                            @if ($item->isUsing())
+                                        @if ($item->caja->isUsingCaja() && $item->isUsingUser())
+                                            @if ($item->isExpired())
                                                 <x-button class="inline-block"
                                                     wire:click="$emit('aperturas.confirmClose',{{ $item }})"
                                                     wire:loading.attr="disabled">CERRAR CAJA</x-button>
+                                            @else
+                                                <x-span-text text="EN USO" class="leading-3 !tracking-normal"
+                                                    type="green" />
                                             @endif
                                         @endif
                                     @endif
                                 </td>
-                                <td class="p-2 text-center text-xs">
-                                    {{ $item->startmount }}
-                                </td>
-                                <td class="p-2 text-center text-xs">
-                                    {{ $item->totalcash }}
-                                </td>
-                                <td class="p-2 text-center text-xs">
-                                    {{ $item->totalcash }}
-                                </td>
-                                <td class="p-2 text-center text-xs">
-                                    {{ $item->user->name }}
-                                </td>
-                                <td class="p-2 text-xs text-center">
-                                    @if ($item->expiredate)
-                                        <small class="p-1 text-xs leading-3 rounded bg-red-500 text-white inline-block">
-                                            Cerrado</small>
+                                <td class="p-2 text-center">
+                                    @if ($item->status)
+                                        <x-span-text text="CERRADO" class="leading-3 !tracking-normal" type="red" />
                                     @else
-                                        <small
-                                            class="p-1 text-xs leading-3 rounded bg-green-500 text-white inline-block">
-                                            Activo</small>
+                                        @if ($item->isExpired())
+                                            <x-span-text text="EXPIRADO" class="leading-3 !tracking-normal"
+                                                type="orange" />
+                                        @else
+                                            <x-span-text text="ACTIVO" class="leading-3 !tracking-normal"
+                                                type="green" />
+                                        @endif
                                     @endif
                                 </td>
-                                <td class="p-2 text-xs text-center">
+                                <td class="p-2 text-center">
                                     {{ $item->caja->sucursal->name }}
                                 </td>
-                                <td class="p-2 text-center text-xs">
-                                    <x-button-edit wire:click="edit({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
+                                <td class="p-2 text-center">
+                                    @if ($item->closedate == null)
+                                        <x-button-edit wire:click="edit({{ $item->id }})"
+                                            wire:loading.attr="disabled" />
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -99,9 +111,23 @@
                 </div>
 
                 <div class="w-full mt-2">
+                    <x-label value="Fecha cierre :" />
+                    @if ($opencaja->closedate)
+                        <x-disabled-text :text="formatDate($opencaja->expiredate)" />
+                    @else
+                        <x-input class="block w-full" wire:model.defer="opencaja.expiredate" type="datetime-local" />
+                    @endif
+                    <x-jet-input-error for="opencaja.expiredate" />
+                </div>
+
+                <div class="w-full mt-2">
                     <x-label value="Saldo inicial :" />
-                    <x-input class="block w-full" wire:model.defer="opencaja.startmount" type="number" step="0.01"
-                        min="0" />
+                    @if ($opencaja->closedate)
+                        <x-disabled-text :text="$opencaja->startmount" />
+                    @else
+                        <x-input class="block w-full" wire:model.defer="opencaja.startmount" type="number"
+                            step="0.01" min="0" />
+                    @endif
                     <x-jet-input-error for="opencaja.startmount" />
                 </div>
 

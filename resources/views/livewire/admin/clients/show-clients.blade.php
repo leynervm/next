@@ -57,6 +57,11 @@
                 <th scope="col" class="p-2 font-medium text-center">
                     TELEFONOS</th>
 
+                @if (Module::isEnabled('Ventas'))
+                    <th scope="col" class="p-2 font-medium text-center">
+                        HISTORIAL VENTAS</th>
+                @endif
+
                 {{-- <th scope="col" class="p-2 relative">
                     <span class="sr-only">OPCIONES</span>
                 </th> --}}
@@ -105,7 +110,9 @@
                             {{ $item->channelsale->name }}
                         </td> --}}
                         <td class="p-2 text-xs text-center">
-                            {{ $item->pricetype->name }}
+                            @if ($item->pricetype)
+                                {{ $item->pricetype->name }}
+                            @endif
                         </td>
 
                         <td class="p-2 text-xs text-center">
@@ -130,13 +137,19 @@
                                                         d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                                                 </svg>
                                             </span>
-                                            <span class="text-[10px]">{{ $telef->phone }}</span>
+                                            <span class="text-[10px]">{{ formatTelefono($telef->phone) }}</span>
                                         </div>
                                     @endforeach
                                 </div>
                             @endif
                         </td>
 
+                        @if (Module::isEnabled('Ventas'))
+                            <td class="p-2 text-xs text-center align-middle">
+                                {{-- <x-link-button class="inline-block"
+                                    href="{{ route('admin.clientes.historial', $item) }}">VER VENTAS</x-link-button> --}}
+                            </td>
+                        @endif
                         {{-- <td class="p-2 whitespace-nowrap">
                             <div class="flex gap-1 items-center">
                                 <x-button-delete></x-button-delete>

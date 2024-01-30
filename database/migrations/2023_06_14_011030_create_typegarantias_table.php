@@ -14,14 +14,10 @@ class CreateTypegarantiasTable extends Migration
     public function up()
     {
         Schema::create('typegarantias', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('name', 255);
-            $table->string('timestring', 20);
             $table->integer('time');
-            $table->string('datecode', 2);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->string('datecode', 4);
         });
     }
 

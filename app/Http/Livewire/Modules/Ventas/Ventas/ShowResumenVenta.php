@@ -7,6 +7,7 @@ use App\Models\Cajamovimiento;
 use App\Models\Client;
 use App\Models\Concept;
 use App\Models\Empresa;
+use App\Models\Kardex;
 use App\Models\Methodpayment;
 use App\Models\Modalidadtransporte;
 use App\Models\Moneda;
@@ -39,11 +40,11 @@ class ShowResumenVenta extends Component
     public $typecomprobante, $typecomprobante_id, $seriecomprobante_id, $tribute_id;
     public $document, $name, $direccion, $pricetypeasigned;
 
-    public $serieguiaremision_id, $ructransport, $nametransport,
-    $documentdriver, $namedriver, $lastname, $licencia, $placa, $placavehiculo,
-    $documentdestinatario, $namedestinatario, $peso, $packages, $datetraslado,
-    $note, $ubigeoorigen_id, $direccionorigen, $anexoorigen, $ubigeodestino_id,
-    $direcciondestino, $anexodestino, $motivotraslado_id, $modalidadtransporte_id;
+    public $typecomprobanteguia_id, $ructransport, $nametransport,
+        $documentdriver, $namedriver, $lastname, $licencia, $placa, $placavehiculo,
+        $documentdestinatario, $namedestinatario, $peso, $packages, $datetraslado,
+        $note, $ubigeoorigen_id, $direccionorigen, $anexoorigen, $ubigeodestino_id,
+        $direcciondestino, $anexodestino, $motivotraslado_id, $modalidadtransporte_id;
 
     public $vehiculosml = false;
     public $incluyeguia = false;
@@ -96,8 +97,7 @@ class ShowResumenVenta extends Component
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             'paymentactual' => [
                 'nullable', Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'numeric', 'min:0',
-                $this->typepayment->paycuotas ? 'lt:' . $this->total : '',
+                'numeric', 'min:0', $this->typepayment->paycuotas ? 'lt:' . $this->total : '',
                 'decimal:0,2'
             ],
             'increment' => [
@@ -130,14 +130,12 @@ class ShowResumenVenta extends Component
             'seriecomprobante_id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
             'items' => ['required', 'array', 'min:1', new ValidateCarrito($this->moneda->id, $this->sucursal->id)],
             'ructransport' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
                 'numeric', 'digits:11', 'regex:/^\d{11}$/',
                 $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
             ],
             'nametransport' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
                 'string', 'min:6',
                 $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.name' : '',
             ],
@@ -159,23 +157,19 @@ class ShowResumenVenta extends Component
                 // 'different:document'
             ],
             'namedriver' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
                 'string', 'min:6'
             ],
             'lastname' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
                 'string', 'min:6'
             ],
             'licencia' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
                 'string', 'min:9', 'max:10'
             ],
             'placa' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
                 'string', 'min:6', 'max:8'
             ],
             'peso' => [
@@ -183,12 +177,10 @@ class ShowResumenVenta extends Component
                 'numeric', 'gt:0', 'decimal:0,4',
             ],
             'packages' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1',
+                'nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1',
             ],
             'datetraslado' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'date', 'after_or_equal:today',
+                'nullable', Rule::requiredIf($this->incluyeguia), 'date', 'after_or_equal:today',
             ],
             'placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
             'note' => ['nullable', 'string', 'min:10'],
@@ -240,18 +232,18 @@ class ShowResumenVenta extends Component
                 'nullable', Rule::requiredIf($this->incluyeguia),
                 'integer', 'min:1', 'exists:modalidadtransportes,id'
             ],
-            'serieguiaremision_id' => [
+            'typecomprobanteguia_id' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:seriecomprobantes,id'
+                'integer', 'min:1', 'exists:seriecomprobantes,typecomprobante_id'
             ],
         ];
     }
 
-    public function mount(Empresa $empresa, Sucursal $sucursal, Typepayment $typepayment, Methodpayment $methodpayment, Seriecomprobante $seriecomprobante, Moneda $moneda, Concept $concept, Opencaja $opencaja)
+    public function mount(Sucursal $sucursal, Typepayment $typepayment, Methodpayment $methodpayment, Seriecomprobante $seriecomprobante, Moneda $moneda, Concept $concept, Opencaja $opencaja)
     {
         $this->motivotraslado = new Motivotraslado();
         $this->modalidadtransporte = new Modalidadtransporte();
-        $this->empresa = $empresa;
+        $this->empresa = $sucursal->empresa;
         $this->sucursal = $sucursal;
         $this->methodpayment = $methodpayment;
         $this->typepayment = $typepayment;
@@ -282,23 +274,41 @@ class ShowResumenVenta extends Component
     public function render()
     {
 
-        if (Module::isEnabled('Facturacion')) {
-            $typecomprobantes = Typecomprobante::SucursalTypecomprobantes()
-                ->orderBy('code', 'asc')->get();
-            $modalidadtransportes = Modalidadtransporte::orderBy('code', 'asc')->get();
-            $motivotraslados = Motivotraslado::whereIn('code', ['01', '03'])->orderBy('code', 'asc')->get();
-        } else {
-            $typecomprobantes = Typecomprobante::DefaultSucursalTypecomprobantes()
-                ->orderBy('code', 'asc')->get();
+        $typepayments = Typepayment::orderBy('name', 'asc')->get();
+        $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
+        $modalidadtransportes = Modalidadtransporte::orderBy('code', 'asc')->get();
+        $motivotraslados = Motivotraslado::whereIn('code', ['01', '03'])->orderBy('code', 'asc')->get();
+
+        $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
+            $query->withWhereHas('sucursals', function ($query) {
+                $query->where('sucursal_id', $this->sucursal->id);
+            });
+        })->whereNotIn('code', ['07', '09']);
+
+        $comprobantesguia = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
+            $query->withWhereHas('sucursals', function ($query) {
+                $query->where('sucursal_id', $this->sucursal->id);
+            });
+        })->whereIn('code', ['09', '13']);
+
+        if (!Module::isEnabled('Facturacion')) {
+            $typecomprobantes = $typecomprobantes->default();
+            $comprobantesguia = $comprobantesguia->default();
             $modalidadtransportes = [];
             $motivotraslados = [];
         }
 
+        $typecomprobantes = $typecomprobantes->orderBy('code', 'asc')->get();
+        $comprobantesguia = $comprobantesguia->orderBy('code', 'asc')->get();
         // $carrito = Carshoop::Micarrito()->with(['carshoopseries', 'producto', 'almacen'])
         //     ->where('sucursal_id', $this->sucursal->id)->orderBy('id', 'asc')->get();
-        $typepayments = Typepayment::orderBy('name', 'asc')->get();
-        $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        $monedas = Moneda::orderBy('currency', 'asc')->get();
+
+        if ($this->empresa->usepricedolar) {
+            $monedas = Moneda::orderBy('currency', 'asc')->get();
+        } else {
+            $monedas = Moneda::where('code', 'PEN')->orderBy('currency', 'asc')->get();
+        }
+
         $regiones = Ubigeo::select('departamento_inei', 'region')->groupBy('departamento_inei', 'region')->orderBy('region', 'asc')->get();
 
         $carrito = Session::get('carrito', []);
@@ -306,9 +316,13 @@ class ShowResumenVenta extends Component
             $carrito = json_decode($carrito);
         }
 
-        return view('livewire.modules.ventas.ventas.show-resumen-venta', compact('carrito', 'typecomprobantes', 'typepayments', 'methodpayments', 'monedas', 'regiones', 'modalidadtransportes', 'motivotraslados'));
+        return view('livewire.modules.ventas.ventas.show-resumen-venta', compact('carrito', 'typecomprobantes', 'comprobantesguia', 'typepayments', 'methodpayments', 'monedas', 'regiones', 'modalidadtransportes', 'motivotraslados'));
     }
 
+    public function setTypepayment($value)
+    {
+        $this->typepayment_id = $value;
+    }
 
     public function updatedIncluyeigv($value)
     {
@@ -338,11 +352,11 @@ class ShowResumenVenta extends Component
         }
     }
 
-    public function updatedMonedaId($value)
+    public function setMoneda($value)
     {
         if ($value) {
             $this->moneda = Moneda::findOrFail($value);
-            $this->dispatchBrowserEvent('setMoneda', $value);
+            // $this->dispatchBrowserEvent('setMoneda', $value);
         }
     }
 
@@ -383,6 +397,11 @@ class ShowResumenVenta extends Component
     public function save()
     {
 
+        if (!verifyOpencaja($this->opencaja->id)) {
+            $this->dispatchBrowserEvent('validation', getMessageOpencaja());
+            return false;
+        }
+
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
@@ -396,6 +415,10 @@ class ShowResumenVenta extends Component
         $this->lastname = trim($this->lastname);
         $this->licencia = trim($this->licencia);
         $this->placa = trim($this->placa);
+        // if ($this->incluyeguia) {
+        $this->ubigeoorigen_id = $this->incluyeguia ? $this->distritoorigen_id : null;
+        $this->ubigeodestino_id = $this->incluyeguia ? $this->distritodestino_id : null;
+        // }
 
         if ($this->typepayment_id) {
             $this->typepayment = Typepayment::find($this->typepayment_id);
@@ -424,25 +447,18 @@ class ShowResumenVenta extends Component
         $carrito = Session::get('carrito', []);
         $this->items = (!is_array($carrito)) ? (json_decode($carrito, true)) : $carrito;
 
-        if ($this->incluyeguia) {
-            $guiaremision = Typecomprobante::facturables()->where('code', '09')->first();
-            $series = $this->sucursal->seriecomprobantes()->where('typecomprobante_id', $guiaremision->id);
+        if ($this->typecomprobante_id) {
+            $this->typecomprobante = Typecomprobante::find($this->typecomprobante_id);
 
-            if ($series->exists()) {
-                $serieguiaremision = $series->first();
-                $this->serieguiaremision_id = $serieguiaremision->id ?? null;
-                $numeracionguia = $serieguiaremision->contador + 1;
+            if ($this->typepayment->paycuotas && $this->typecomprobante->code <> '01') {
+                $this->addError('typepayment_id', 'Tipo de pago no permitido para el comprobante seleccionado.');
+                DB::rollBack();
+                return false;
             }
 
-            $this->ubigeoorigen_id = $this->distritoorigen_id;
-            $this->ubigeodestino_id = $this->distritodestino_id;
-        }
-
-        if ($this->typecomprobante_id) {
-
-            $this->typecomprobante = Typecomprobante::find($this->typecomprobante_id);
             $this->setTotal();
-            $series = $this->sucursal->seriecomprobantes()->where('typecomprobante_id', $this->typecomprobante_id);
+            $series = $this->sucursal->seriecomprobantes()
+                ->where('typecomprobante_id', $this->typecomprobante_id);
 
             if ($series->exists()) {
                 $seriecomprobante = $series->first();
@@ -473,23 +489,30 @@ class ShowResumenVenta extends Component
             ]);
 
             $carritoSum = json_decode(getTotalCarrito('carrito'));
-            $totalSinIncrement = number_format($carritoSum->sumatoria - $this->paymentactual ?? 0, 4, '.', '');
-            // $totalSinIncrement = number_format($carrito->sum('total') - $this->paymentactual ?? 0, 4, '.', '');
-            $totalAmountCuotas = number_format($totalSinIncrement + (($totalSinIncrement * $this->increment ?? 0) / 100), 2, '.', '');
-            $amountCuota = number_format($totalAmountCuotas / $this->countcuotas, 4, '.', '');
-            $priceIncrItem = number_format(($totalAmountCuotas - $totalSinIncrement) / count(getCarrito()), 4, '.', '');
-            // $priceIncrItem = number_format(($totalAmountCuotas - $totalSinIncrement) / count($carrito), 4, '.', '');
-            $gratuito = number_format($this->incluyeigv ? ($this->gratuito * 100) / (100 + $this->empresa->igv) : $this->gratuito, 4, '.', '');
-            $igvgratuito = number_format($this->incluyeigv ? $this->gratuito - $gratuito : 0, 4, '.', '');
-            //ESTABA ANTES DE CAMBIAR CARRITO COMENTADO YA $totalAmount = number_format($this->total + (($totalSinIncrement * $this->increment ?? 0) / 100), 4, '.', '');
+
+            //SOLO DEBE INCREMENTAR PORCENTAJE EN LOS ITEMS DEL CARRITO QUE NO SEAN GRATUITOS
+            // CONTAMOS LOS ITEMS DEL CARITO QUE NO SEAN GRATUITOS
+
+            if ($carritoSum->countnogratuitos > 0) {
+                $totalSinIncrement = number_format($carritoSum->total - $this->paymentactual ?? 0, 3, '.', '');
+            } else {
+                $totalSinIncrement = number_format($carritoSum->sumatoria - $this->paymentactual ?? 0, 3, '.', '');
+            }
+
+            $totalAmountCuotas = number_format($totalSinIncrement + (($totalSinIncrement * $this->increment ?? 0) / 100), 3, '.', '');
+            $amountCuota = number_format($totalAmountCuotas / $this->countcuotas, 3, '.', '');
+            $gratuito = number_format($this->incluyeigv ? ($this->gratuito * 100) / (100 + $this->empresa->igv) : $this->gratuito, 3, '.', '');
+            $igvgratuito = number_format($this->incluyeigv ? $this->gratuito - $gratuito : 0, 3, '.', '');
+
             $venta = Venta::create([
                 'date' => now('America/Lima'),
-                'code' => 'VT',
+                // 'code' => 'VT',
+                'code' => $seriecomprobante->serie . '-' . $numeracion,
                 'direccion' => $this->direccion,
                 'exonerado' => number_format($this->exonerado, 4, '.', ''),
                 'gravado' => number_format($this->gravado, 4, '.', ''),
                 'gratuito' => number_format($gratuito, 4, '.', ''),
-                'inafecto' => number_format($this->inafecto, 4, '.', ''),
+                'inafecto' => number_format($this->inafecto, 3, '.', ''),
                 'descuento' => number_format($this->descuentos, 4, '.', ''),
                 'otros' => number_format($this->otros, 4, '.', ''),
                 'igv' => number_format($this->igv, 4, '.', ''),
@@ -511,7 +534,7 @@ class ShowResumenVenta extends Component
                 $venta->cajamovimiento()->create([
                     'date' => now('America/Lima'),
                     'amount' => number_format($this->paymentactual > 0 ? $this->paymentactual : $this->total, 4, '.', ''),
-                    'referencia' => 'VT-' . $venta->id,
+                    'referencia' => $seriecomprobante->serie . '-' . $numeracion,
                     'detalle' => trim($this->detallepago),
                     'moneda_id' => $this->moneda_id,
                     'methodpayment_id' => $this->methodpayment_id,
@@ -543,7 +566,7 @@ class ShowResumenVenta extends Component
                         'total' => number_format($this->total, 4, '.', ''),
                         'paymentactual' => number_format($this->typepayment->paycuotas ? $this->paymentactual : $this->total, 4, '.', ''),
                         'percent' => $this->empresa->igv,
-                        'referencia' => 'VT-' . $venta->id,
+                        'referencia' => $venta->code,
                         'leyenda' => 'SON SOLES/100',
                         'client_id' => $client->id,
                         'typepayment_id' => $this->typepayment_id,
@@ -552,65 +575,76 @@ class ShowResumenVenta extends Component
                         'sucursal_id' => $this->sucursal->id,
                         'user_id' => auth()->user()->id,
                     ]);
-                }
-            }
 
-            if ($this->incluyeguia) {
-                $guia = $comprobante->guias()->create([
-                    'seriecompleta' => $serieguiaremision->serie . '-' . $numeracionguia,
-                    'date' => Carbon::now('America/Lima'),
-                    'expire' => Carbon::now('America/Lima')->format('Y-m-d'),
-                    'code' => $serieguiaremision->typecomprobante->code,
-                    'datetraslado' => $this->datetraslado,
-                    'ructransport' => $this->ructransport,
-                    'nametransport' => $this->nametransport,
-                    'rucproveedor' => null,
-                    'nameproveedor' => null,
-                    'placavehiculo' => $this->placavehiculo,
-                    'documentdestinatario' => $this->documentdestinatario,
-                    'namedestinatario' => $this->namedestinatario,
-                    'documentcomprador' => $this->motivotraslado->code == '03' ? $this->document : null,
-                    'namecomprador' => $this->motivotraslado->code == '03' ? $this->name : null,
-                    'peso' => $this->peso,
-                    'unit' => 'KGM',
-                    'packages' => $this->packages,
-                    'direccionorigen' => $this->direccionorigen,
-                    'anexoorigen' => null,
-                    'direcciondestino' => $this->direcciondestino,
-                    'anexodestino' => null,
-                    'note' => $this->note,
-                    'indicadorvehiculosml' => $this->vehiculosml ? 1 : 0,
-                    'indicadorvehretorvacio' => 0,
-                    'indicadorvehretorenvacios' => 0,
-                    'motivotraslado_id' => $this->motivotraslado_id,
-                    'modalidadtransporte_id' => $this->modalidadtransporte_id,
-                    'ubigeoorigen_id' => $this->ubigeoorigen_id,
-                    'ubigeodestino_id' => $this->ubigeodestino_id,
-                    'client_id' => $client->id,
-                    'seriecomprobante_id' => $this->serieguiaremision_id,
-                    'sucursal_id' => $this->sucursal->id,
-                    'user_id' => auth()->user()->id,
-                ]);
+                    if ($this->incluyeguia) {
+                        $serieguia = $this->sucursal->seriecomprobantes()
+                            ->whereHas('typecomprobante', function ($query) {
+                                $query->where('typecomprobante_id', $this->typecomprobanteguia_id);
+                            });
 
-                if (!$this->vehiculosml) {
-                    if ($this->modalidadtransporte->code == '02') {
-                        $guia->transportdrivers()->create([
-                            'document' => $this->documentdriver,
-                            'name' => $this->name,
-                            'lastname' => $this->lastname,
-                            'licencia' => $this->licencia,
-                            'principal' => 1
+                        if ($serieguia->exists()) {
+                            $serieguiaremision = $serieguia->first();
+                            $numeracionguia = $serieguiaremision->contador + 1;
+                            // dd($serieguiaremision);
+                        }
+
+                        $guia = $comprobante->guias()->create([
+                            'seriecompleta' => $serieguiaremision->serie . '-' . $numeracionguia,
+                            'date' => Carbon::now('America/Lima'),
+                            'expire' => Carbon::now('America/Lima')->format('Y-m-d'),
+                            'code' => $serieguiaremision->typecomprobante->code,
+                            'datetraslado' => $this->datetraslado,
+                            'ructransport' => $this->ructransport,
+                            'nametransport' => $this->nametransport,
+                            'rucproveedor' => null,
+                            'nameproveedor' => null,
+                            'placavehiculo' => $this->placavehiculo,
+                            'documentdestinatario' => $this->documentdestinatario,
+                            'namedestinatario' => $this->namedestinatario,
+                            'documentcomprador' => $this->motivotraslado->code == '03' ? $this->document : null,
+                            'namecomprador' => $this->motivotraslado->code == '03' ? $this->name : null,
+                            'peso' => $this->peso,
+                            'unit' => 'KGM',
+                            'packages' => $this->packages,
+                            'direccionorigen' => $this->direccionorigen,
+                            'anexoorigen' => null,
+                            'direcciondestino' => $this->direcciondestino,
+                            'anexodestino' => null,
+                            'note' => $this->note,
+                            'indicadorvehiculosml' => $this->vehiculosml ? 1 : 0,
+                            'indicadorvehretorvacio' => 0,
+                            'indicadorvehretorenvacios' => 0,
+                            'motivotraslado_id' => $this->motivotraslado_id,
+                            'modalidadtransporte_id' => $this->modalidadtransporte_id,
+                            'ubigeoorigen_id' => $this->ubigeoorigen_id,
+                            'ubigeodestino_id' => $this->ubigeodestino_id,
+                            'client_id' => $client->id,
+                            'seriecomprobante_id' => $serieguiaremision->id,
+                            'sucursal_id' => $this->sucursal->id,
+                            'user_id' => auth()->user()->id,
                         ]);
 
-                        $guia->transportvehiculos()->create([
-                            'placa' => $this->placa,
-                            'principal' => 1
-                        ]);
+                        if (!$this->vehiculosml) {
+                            if ($this->modalidadtransporte->code == '02') {
+                                $guia->transportdrivers()->create([
+                                    'document' => $this->documentdriver,
+                                    'name' => $this->name,
+                                    'lastname' => $this->lastname,
+                                    'licencia' => $this->licencia,
+                                    'principal' => 1
+                                ]);
+
+                                $guia->transportvehiculos()->create([
+                                    'placa' => $this->placa,
+                                    'principal' => 1
+                                ]);
+                            }
+                        }
+
+                        $serieguiaremision->contador = $numeracionguia;
+                        $serieguiaremision->save();
                     }
                 }
-
-                $serieguiaremision->contador = $numeracionguia;
-                $serieguiaremision->save();
             }
 
             $counter = 1;
@@ -628,13 +662,29 @@ class ShowResumenVenta extends Component
                         return false;
                     } else {
 
-                        $porcentajeIncr = number_format(100 * ($priceIncrItem / $car->price), 2, '.', '');
-                        $price = number_format($car->price + $priceIncrItem, 4, '.', '');
+                        $porcentajeIncr = 0;
+                        if ($car->gratuito == 0) {
+                            $priceIncrItem = number_format(($totalAmountCuotas - $totalSinIncrement) / $carritoSum->countnogratuitos, 3, '.', '');
+                            $porcentajeIncr = number_format($this->increment ?? 0, 3, '.', '');
+                            $price = number_format($car->price + ($priceIncrItem / $car->cantidad), 3, '.', '');
+
+                            if ($this->paymentactual > 0) {
+                                $percentAmount = number_format((100 / $carritoSum->total) * $car->price, 3, '.', '');
+                                $amountItem =  number_format(($totalAmountCuotas - $totalSinIncrement) * $percentAmount / 100, 3, '.', '');
+                                $price = number_format($car->price + $amountItem, 3, '.', '');
+                                $porcentajeIncr = number_format($amountItem * 100 / $price, 3, '.', '');
+                            }
+                        } else {
+                            $price = number_format($car->price, 3, '.', '');
+                        }
+
+                        // dd($carritoSum->countnogratuitos, $carritoSum->total, $totalSinIncrement, $priceIncrItem, $porcentajeIncr);
+
                         $pricesale = $this->incluyeigv ? ($price * 100) / (100 + $this->empresa->igv) : $price;
                         $igv = $this->incluyeigv ? $price - $pricesale : 0;
                         $subtotalItemIGV = $this->incluyeigv ? $igv * $car->cantidad : 0;
-                        $subtotalItem = number_format($pricesale * $car->cantidad, 4, '.', '');
-                        $totalItem = number_format($pricesale * $car->cantidad, 4, '.', '');
+                        $subtotalItem = number_format($pricesale * $car->cantidad, 3, '.', '');
+                        $totalItem = number_format($pricesale * $car->cantidad, 3, '.', '');
 
                         $newTvitem = [
                             'date' => now('America/Lima'),
@@ -646,13 +696,17 @@ class ShowResumenVenta extends Component
                             'subtotal' => number_format($subtotalItem, 2, '.', ''),
                             'total' => number_format($totalItem, 2, '.', ''),
                             'status' => 0,
+                            'gratuito' => $car->gratuito,
                             'increment' => $porcentajeIncr,
                             'almacen_id' => $car->almacen_id,
                             'producto_id' => $car->producto_id,
                             'user_id' => auth()->user()->id
                         ];
 
+                        // dd($newTvitem);
+
                         $tvitem = $venta->tvitems()->create($newTvitem);
+                        $tvitem->saveKardex($this->sucursal->id, $car->producto_id, $car->almacen_id, $stock, $stock - $car->cantidad, $car->cantidad, '-', Kardex::SALIDA_VENTA, $seriecomprobante->serie . '-' . $numeracion);
 
                         if ($this->incluyeguia) {
                             $tvitemguia = $guia->tvitems()->create($newTvitem);
@@ -706,7 +760,7 @@ class ShowResumenVenta extends Component
                                 $comprobante->facturableitems()->create([
                                     'item' => $counter,
                                     'descripcion' => $producto->name,
-                                    'code' => $producto->sku,
+                                    'code' => $producto->code,
                                     'cantidad' => $car->cantidad,
                                     'price' => number_format($pricesale, 2, '.', ''),
                                     'igv' => number_format($igv, 2, '.', ''),
@@ -714,7 +768,7 @@ class ShowResumenVenta extends Component
                                     'subtotal' => number_format($subtotalItem, 2, '.', ''),
                                     'total' => number_format($totalItem, 2, '.', ''),
                                     'unit' => $producto->unit->code,
-                                    'codetypeprice' => $car->gratuito ? '02' : '01', //01: Precio unitario (incluye el IGV) 02: Valor referencial unitario en operaciones no onerosas 
+                                    'codetypeprice' => $car->gratuito ? '02' : '01', //01: Precio unitario (incluye el IGV) 02: Valor referencial unitario en operaciones no onerosas
                                     'afectacion' => $afectacion,
                                     'codeafectacion' => $car->gratuito ? '9996' : $codeafectacion,
                                     'nameafectacion' => $car->gratuito ? 'GRA' : $nameafectacion,
@@ -974,17 +1028,17 @@ class ShowResumenVenta extends Component
         $this->document = trim($this->document);
         $this->validate([
             'document' => [
-                'required', 'numeric',
-                $this->typecomprobante->code == "01" ? 'digits:11' : new ValidateDocument,
-                'regex:/^\d{8}(?:\d{3})?$/',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
+                'required', 'numeric', $this->typecomprobante->code == "01" ? 'digits:11' : new ValidateDocument,
+                'regex:/^\d{8}(?:\d{3})?$/', in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
             ],
         ]);
 
         $client = new GetClient();
         $response = $client->getClient($this->document);
+
         if ($response->getData()) {
             if ($response->getData()->success) {
+                // dd($response->getData());
                 $this->resetValidation(['document', 'name', 'direccion']);
                 $this->name = $response->getData()->name;
                 if (!empty($response->getData()->direccion)) {
@@ -993,17 +1047,17 @@ class ShowResumenVenta extends Component
 
                 // $this->pricetype_id = $response->getData()->pricetype_id;
                 if ($event) {
-                    $this->pricetypeasigned = $response->getData()->pricetypeasigned;
-                    $this->dispatchBrowserEvent('setPricetypeId', $response->getData()->pricetype_id);
-                } // if ($this->client->nacimiento) {
-                //     $nacimiento = Carbon::parse($this->client->nacimiento)->format("d-m");
-                //     $hoy = Carbon::now('America/Lima')->format("d-m");
+                    if ($this->empresa->uselistprice) {
+                        if ($response->getData()->pricetype_id) {
+                            $this->pricetypeasigned = $response->getData()->pricetypeasigned;
+                            $this->dispatchBrowserEvent('setPricetypeId', $response->getData()->pricetype_id);
+                        }
+                    }
 
-                //     if ($nacimiento ==  $hoy) {
-                //         $this->mensaje = "FELÍZ CUMPLEAÑOS";
-                //     }
-                // }
-
+                    if ($response->getData()->birthday) {
+                        $this->dispatchBrowserEvent('birthday', $response->getData()->name);
+                    }
+                }
             } else {
                 // dd($response);
                 $this->resetValidation(['document']);
@@ -1022,7 +1076,9 @@ class ShowResumenVenta extends Component
             'ructransport' => [
                 'nullable',
                 Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'numeric', 'digits:11', 'regex:/^\d{11}$/',
+                'numeric',
+                'digits:11',
+                'regex:/^\d{11}$/',
                 $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
             ],
         ]);
@@ -1048,9 +1104,11 @@ class ShowResumenVenta extends Component
         $this->documentdestinatario = trim($this->documentdestinatario);
         $this->validate([
             'documentdestinatario' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' ? 'different:document' : '',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
+                $this->incluyeguia && $this->motivotraslado->code == '03' ? 'different:document' : '',
                 // 'different:document',
             ],
         ]);
@@ -1076,8 +1134,10 @@ class ShowResumenVenta extends Component
         $this->documentdriver = trim($this->documentdriver);
         $this->validate([
             'documentdriver' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02'),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02'),
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/'
             ],
         ]);
 

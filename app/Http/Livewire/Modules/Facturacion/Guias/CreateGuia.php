@@ -6,6 +6,7 @@ use App\Helpers\GetClient;
 use App\Models\Almacen;
 use App\Models\Client;
 use App\Models\Guia;
+use App\Models\Kardex;
 use App\Models\Modalidadtransporte;
 use App\Models\Motivotraslado;
 use App\Models\Pricetype;
@@ -16,18 +17,24 @@ use App\Models\Sucursal;
 use App\Models\Typecomprobante;
 use App\Models\Ubigeo;
 use App\Rules\ValidateStock;
+use App\Traits\KardexTrait;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Facturacion\Entities\Comprobante;
-use Session;
+use Modules\Ventas\Entities\Venta;
+use Nwidart\Modules\Facades\Module;
 
 class CreateGuia extends Component
 {
 
     use WithPagination;
+    use KardexTrait;
+
+    public $local = false;
 
     public $motivotraslado, $modalidadtransporte, $sucursal, $empresa, $seriecomprobante;
     public $alterstock = false;
@@ -41,6 +48,7 @@ class CreateGuia extends Component
     public $items = [];
     public $series = [];
     public $placavehiculos = [];
+    public $productos = [];
     public $seriescarrito = [];
 
     public $arrayrequireruc = ['06', '17'];
@@ -48,7 +56,7 @@ class CreateGuia extends Component
     public $arraydistintremite = ['01', '03', '05', '06', '09', '14', '17'];
 
     public $comprobante_id, $typecomprobante_id, $placavehiculo, $peso, $packages,
-    $datetraslado, $note, $motivotraslado_id, $modalidadtransporte_id, $referencia;
+        $datetraslado, $note, $motivotraslado_id, $modalidadtransporte_id, $referencia;
 
     public $documentdestinatario, $namedestinatario;
     public $documentcomprador, $namecomprador;
@@ -84,7 +92,7 @@ class CreateGuia extends Component
             'placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
 
             'documentdestinatario' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required', 'numeric', $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
                 $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
             ],
@@ -96,29 +104,29 @@ class CreateGuia extends Component
 
             'documentcomprador' => [
                 'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '03'),
+                Rule::requiredIf($this->motivotraslado->code == '03' || $this->motivotraslado->code == '13'),
                 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' ? 'different:documentdestinatario' : '',
+                $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:documentdestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
             ],
             'namecomprador' => [
                 'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '03'),
+                Rule::requiredIf($this->motivotraslado->code == '03' || $this->motivotraslado->code == '13'),
                 'string', 'min:6',
-                $this->motivotraslado->code == '03' ? 'different:namedestinatario' : '',
+                $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:namedestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : '')
             ],
 
             'rucproveedor' => [
                 'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '02'),
+                Rule::requiredIf($this->motivotraslado->code == '02' || $this->motivotraslado->code == '13'),
                 'numeric', 'digits:11', 'regex:/^\d{11}$/',
                 $this->motivotraslado->code == '02' ? 'different:documentdestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
             ],
             'nameproveedor' => [
                 'nullable',
-                Rule::requiredIf($this->motivotraslado->code == '02'),
+                Rule::requiredIf($this->motivotraslado->code == '02' || $this->motivotraslado->code == '13'),
                 'string', 'min:6',
                 $this->motivotraslado->code == '02' ? 'different:namedestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : ''
@@ -175,12 +183,14 @@ class CreateGuia extends Component
             'direcciondestino' => ['required', 'string', 'min:12'],
 
             'peso' => ['required', 'numeric', 'gt:0', 'decimal:0,4'],
-            'packages' => ['required', 'integer', 'min:1'],
+            'packages' => ['nullable', Rule::requiredIf($this->motivotraslado->code == '08' || $this->motivotraslado->code == '09'), 'integer', 'min:1'],
             'datetraslado' => ['required', 'date', 'after_or_equal:today'],
-            'note' => ['nullable', 'string', 'min:10'],
-            'referencia' => ['nullable',
+            'note' => ['nullable', Rule::requiredIf($this->motivotraslado->code == '13'), 'string', 'min:3', 'max:100'],
+            'referencia' => [
+                'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '01' || $this->motivotraslado->code == '03'),
-                'string', 'min:6', 'max:13'],
+                'string', 'min:6', 'max:13'
+            ],
             'vehiculosml' => ['required', 'boolean'],
             'motivotraslado_id' => ['required', 'integer', 'min:1', 'exists:motivotraslados,id'],
             'modalidadtransporte_id' => ['required', 'integer', 'min:1', 'exists:modalidadtransportes,id'],
@@ -211,53 +221,34 @@ class CreateGuia extends Component
         if (!is_array($carritoSesion)) {
             $carritoSesion = json_decode($carritoSesion, true);
         }
-
         $this->seriescarrito = $this->getseriecarrito($carritoSesion);
-
-        if ($sucursal->almacens()->exists()) {
-            if ($sucursal->almacens()->count() == 1) {
-                $this->almacen_id = $sucursal->almacens()->first()->pivot->almacen_id ?? null;
-            } else {
-                $this->almacen_id = auth()->user()->sucursalDefault()->first()->pivot->almacen_id ?? null;
-            }
-        }
     }
 
     public function render()
     {
 
         $regiones = Ubigeo::select('departamento_inei', 'region')
-            ->groupBy('departamento_inei', 'region')
-            ->orderBy('region', 'asc')
-            ->get();
+            ->groupBy('departamento_inei', 'region')->orderBy('region', 'asc')->get();
         $modalidadtransportes = Modalidadtransporte::orderBy('id', 'asc')->get();
-        $motivotraslados = Motivotraslado::orderBy('code', 'asc')->get();
-        $typecomprobantes = Typecomprobante::whereIn('code', ['09', '13', 'GR'])
-            ->orderBy('code', 'asc')
-            ->get();
-
-        $almacen = [];
-
-        if ($this->almacen_id) {
-            $almacen[] = $this->almacen_id;
+        $motivotraslados = Motivotraslado::orderBy('code', 'asc');
+        if ($this->typecomprobante_id) {
+            $motivotraslados->where('typecomprobante_id', $this->typecomprobante_id);
         }
+        $motivotraslados = $motivotraslados->get();
+        $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
+            $query->withWhereHas('sucursals', function ($query) {
+                $query->where('sucursals.id', $this->sucursal->id);
+            });
+        })->whereIn('code', ['09'])->orderBy('code', 'asc')->get();
 
-        $productos = Producto::withWhereHas('almacens', function ($query) use ($almacen) {
-            $query->whereIn('almacens.id', $almacen);
-            if ($this->disponibles) {
-                $query->where('cantidad', '>', 0);
-            }
-        });
-
-        $productos = $productos->orderBy('name', 'asc')->paginate();
-        $almacens = Almacen::orderBy('name', 'asc')->get();
+        $almacens = $this->sucursal->almacens()->orderBy('name', 'asc')->get();
         $carrito = Session::get('carguias', []);
 
         if (!is_array($carrito)) {
             $carrito = json_decode($carrito);
         }
 
-        return view('livewire.modules.facturacion.guias.create-guia', compact('regiones', 'modalidadtransportes', 'motivotraslados', 'typecomprobantes', 'productos', 'almacens', 'carrito'));
+        return view('livewire.modules.facturacion.guias.create-guia', compact('regiones', 'modalidadtransportes', 'motivotraslados', 'typecomprobantes', 'almacens', 'carrito'));
     }
 
     public function save()
@@ -297,22 +288,23 @@ class CreateGuia extends Component
             $this->reset(['placavehiculos', 'documentdriver', 'namedriver', 'lastname', 'licencia']);
         }
 
-
         $this->seriecomprobante = $this->sucursal->seriecomprobantes()
-            ->where('typecomprobante_id', $this->typecomprobante_id)->first() ?? null;
+            ->whereHas('typecomprobante', function ($query) {
+                $query->where('typecomprobante_id', $this->typecomprobante_id);
+            })->first();
+
         $validatedData = $this->validate();
         // dd($validatedData);
-
         DB::beginTransaction();
         try {
 
-            $documentclient = $this->motivotraslado->code == '03' ? $this->documentcomprador : $this->documentdestinatario;
+            $documentclient = $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? $this->documentcomprador : $this->documentdestinatario;
             $client = Client::where('document', $documentclient)->first();
 
             if (!$client) {
                 $client = Client::create([
                     'document' => $documentclient,
-                    'name' => $this->motivotraslado->code == '03' ? $this->namecomprador : $this->namedestinatario,
+                    'name' => $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? $this->namecomprador : $this->namedestinatario,
                     'sexo' => strlen(trim($documentclient)) == 11 ? 'E' : null,
                     'pricetype_id' => Pricetype::DefaultPricetype()->first()->id ?? null,
                 ]);
@@ -339,8 +331,8 @@ class CreateGuia extends Component
                 'packages' => $this->packages,
                 'documentcomprador' => $this->documentcomprador,
                 'namecomprador' => $this->namecomprador,
-                'rucproveedor' => $this->motivotraslado->code == '02' ? $this->rucproveedor : null,
-                'nameproveedor' => $this->motivotraslado->code == '02' ? $this->nameproveedor : null,
+                'rucproveedor' => $this->motivotraslado->code == '02' || $this->motivotraslado->code == '13' ? $this->rucproveedor : null,
+                'nameproveedor' => $this->motivotraslado->code == '02' || $this->motivotraslado->code == '13' ? $this->nameproveedor : null,
                 'direccionorigen' => $this->direccionorigen,
                 'anexoorigen' => $this->anexoorigen ?? '0',
                 'direcciondestino' => $this->direcciondestino,
@@ -410,7 +402,9 @@ class CreateGuia extends Component
                         ]);
 
                         if ($item->alterstock) {
-                            $ser->serie()->update([
+                            // dd($ser->id);
+                            $miserie = Serie::find($ser->id);
+                            $miserie->update([
                                 'status' => 2,
                                 'dateout' => now('America/Lima')
                             ]);
@@ -427,6 +421,18 @@ class CreateGuia extends Component
                             $this->addError('items', 'Cantidad del producto ' . $producto->name . ' supera el stock.');
                             return false;
                         } else {
+                            $tvitem->saveKardex(
+                                $this->sucursal->id,
+                                $item->producto_id,
+                                $item->almacen_id,
+                                $stock,
+                                ($stock - $item->cantidad),
+                                $item->cantidad,
+                                '-',
+                                Kardex::SALIDA_GUIA,
+                                $this->seriecomprobante->serie . '-' . $contador
+                            );
+
                             $producto->almacens()->updateExistingPivot($item->almacen_id, [
                                 'cantidad' => formatDecimalOrInteger($stock) - $item->cantidad,
                             ]);
@@ -456,13 +462,18 @@ class CreateGuia extends Component
     }
 
 
+    public function updatedTypecomprobanteId($value)
+    {
+        $this->reset(['motivotraslado_id']);
+        // if (trim($value) !== '') {
+        // }
+    }
+
     public function searchreferencia()
     {
-        $this->referencia = trim($this->referencia);
+        $this->referencia = mb_strtoupper(trim($this->referencia), "UTF-8");
         $this->reset(['itemsconfirm']);
-        $this->validate([
-            'referencia' => ['required', 'string', 'min:6', 'max:13']
-        ]);
+        $this->validate(['referencia' => ['required', 'string', 'min:6', 'max:13']]);
 
         if ($this->motivotraslado_id) {
             $this->motivotraslado = Motivotraslado::find($this->motivotraslado_id);
@@ -484,15 +495,15 @@ class CreateGuia extends Component
                             $this->namedestinatario = $comprobante->client->name;
                         }
 
-                        $this->emit('confirmaritemsguia');
+                        $this->dispatchBrowserEvent('confirmaritemsguia');
                     } else {
                         $this->addError('referencia', 'No se encontraron items del comprobante.');
                     }
                 } else {
-                    $this->addError('referencia', 'No es instancia de una venta.');
+                    $this->addError('referencia', 'Comprobante referenciado no es una venta.');
                 }
             } else {
-                $this->addError('referencia', 'El comprobante se encuentra anulado.');
+                $this->addError('referencia', 'Comprobante se encuentra anulado.');
             }
         } else {
             $this->addError('referencia', 'No se encontraron resultados.');
@@ -533,6 +544,7 @@ class CreateGuia extends Component
                 'almacen' => $item->almacen->name,
                 'unit' => $item->producto->unit->name,
                 'alterstock' => 0,
+                'referencia' => $item->tvitemable->code ?? null,
                 // 'series' => [],
             ];
 
@@ -554,22 +566,17 @@ class CreateGuia extends Component
             'producto_id' => ['required', 'integer', 'min:1'],
             'almacen_id' => ['required', 'integer', 'min:1'],
             'cantidad' => [
-                'nullable',
-                Rule::requiredIf(count($this->series) == 0),
-                'integer', 'min:1',
-                $this->alterstock ? new ValidateStock($this->producto_id, $this->almacen_id) : ''
+                'nullable', Rule::requiredIf(count($this->series) == 0),
+                'integer', 'min:1', $this->alterstock ? new ValidateStock($this->producto_id, $this->almacen_id) : ''
             ],
             'serie_id' => [
-                'nullable',
-                Rule::requiredIf(count($this->series) > 0),
-                'integer', 'min:1'
+                'nullable', Rule::requiredIf(count($this->series) > 0), 'integer', 'min:1'
             ],
             'alterstock' => ['required', 'integer', 'min:0', 'max:1'],
         ]);
 
         $producto = Producto::find($this->producto_id);
         $almacen = Almacen::find($this->almacen_id);
-
 
         if ($this->alterstock) {
             $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
@@ -611,6 +618,7 @@ class CreateGuia extends Component
             'almacen' => $almacen->name,
             'unit' => $producto->unit->name,
             'alterstock' => $this->alterstock,
+            'referencia' => null,
             // 'series' => $nuevaSerie,
         ];
 
@@ -652,14 +660,14 @@ class CreateGuia extends Component
 
         $carritoJSON = response()->json($carritoSesion)->getContent();
         Session::put('carguias', $carritoJSON);
+        $seriescarrito = $this->getseriecarrito($carritoSesion);
 
         if ($this->clearaftersave) {
             $this->reset(['series', 'serie_id', 'producto_id', 'almacen_id', 'alterstock', 'cantidad']);
         } else {
             $this->reset(['series', 'serie_id', 'cantidad']);
         }
-
-        $seriescarrito = $this->getseriecarrito($carritoSesion);
+        // $this->loadproductos();
         $this->loadseries();
     }
 
@@ -766,14 +774,16 @@ class CreateGuia extends Component
         $this->loadseries();
     }
 
-    public function updatedProductoId()
+    public function loadproductos()
     {
-        $this->loadseries();
-    }
 
-    public function updatedAlmacenId()
-    {
-        $this->loadseries();
+        $productos = Producto::withWhereHas('almacens', function ($query) {
+            $query->where('almacens.id', $this->almacen_id);
+            if ($this->disponibles) {
+                $query->where('cantidad', '>', 0);
+            }
+        })->orderBy('name', 'asc')->get();
+        $this->dispatchBrowserEvent('loadproductos', $productos);
     }
 
     public function loadseries()
@@ -786,11 +796,12 @@ class CreateGuia extends Component
         $seriescarrito = $this->getseriecarrito($carritoSesion);
         $this->seriescarrito = $seriescarrito;
 
-        if ($this->producto_id && $this->almacen_id) {
-            $this->series = Serie::disponibles()->where('almacen_id', $this->almacen_id)
-                ->where('producto_id', $this->producto_id)
-                ->whereNotIn('id', $seriescarrito)->get();
-        }
+        // if ($this->producto_id && $this->almacen_id) {
+        $this->series = Serie::disponibles()->where('almacen_id', $this->almacen_id)
+            ->where('producto_id', $this->producto_id)
+            ->whereNotIn('id', $seriescarrito)->get();
+        $this->dispatchBrowserEvent('loadseries', $this->series);
+        // }
     }
 
     public function getProveedor()
@@ -854,9 +865,7 @@ class CreateGuia extends Component
         $this->documentdestinatario = trim($this->documentdestinatario);
         $this->validate([
             'documentdestinatario' => [
-                'required',
-                'numeric',
-                'regex:/^\d{8}(?:\d{3})?$/',
+                'required', 'numeric', $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
                 $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
             ],
@@ -885,7 +894,7 @@ class CreateGuia extends Component
         $this->validate([
             'documentcomprador' => [
                 'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' ? 'different:documentdestinatario' : '',
+                $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:documentdestinatario' : '',
             ],
         ]);
 

@@ -9,12 +9,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Marca extends Model
 {
     use HasFactory;
-    USE SoftDeletes;
+    use SoftDeletes;
 
-    protected $guarded = ['created_at', 'updated_at'];
+
+    protected $fillable = ['name'];
+    public $timestamps = false;
 
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function image()
+    {
+        return $this->morphOne(Image::class, "imageable");
     }
 }

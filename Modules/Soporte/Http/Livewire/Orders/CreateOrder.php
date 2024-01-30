@@ -61,63 +61,31 @@ class CreateOrder extends Component
     protected function rules()
     {
         return [
-            'estate.id' => [
-                'required', 'exists:estates,id'
-            ],
-            'moneda.id' => [
-                'required', 'exists:monedas,id'
-            ],
-            'priority_id' => [
-                'required', 'exists:priorities,id'
-            ],
-            'entorno_id' => [
-                'required', 'exists:entornos,id'
-            ],
-            'atencion_id' => [
-                'required', 'exists:atencions,id'
-            ],
-            'condition_id' => [
-                'required', 'exists:conditions,id'
-            ],
-            'client_id' => [
-                'required', 'exists:clients,id'
-            ],
-            'contact_id' => [
-                new ValidateContacto($this->client->document)
-            ],
-            'direccion' => [
-                'required'
-            ],
+            'estate.id' => ['required', 'exists:estates,id'],
+            'moneda.id' => ['required', 'exists:monedas,id'],
+            'priority_id' => ['required', 'exists:priorities,id'],
+            'entorno_id' => ['required', 'exists:entornos,id'],
+            'atencion_id' => ['required', 'exists:atencions,id'],
+            'condition_id' => ['required', 'exists:conditions,id'],
+            'client_id' => ['required', 'exists:clients,id'],
+            'contact_id' => [new ValidateContacto($this->client->document)],
+            'direccion' => ['required'],
             'equipo_id' => [
                 'nullable', 'required_if:atencion.equipamentrequire,1', 'exists:equipos,id'
             ],
             'marca_id' => [
                 'nullable', 'required_if:atencion.equipamentrequire,1', 'exists:marcas,id'
             ],
-            'modelo' => [
-                'nullable', 'required_if:atencion.equipamentrequire,1'
-            ],
-            'serie' => [
-                'nullable'
-            ],
-            'stateinicial' => [
-                'nullable', 'required_if:atencion.equipamentrequire,1'
-            ],
-            'descripcion' => [
-                'nullable', 'required_if:atencion.equipamentrequire,1'
-            ],
-            'detalle' => [
-                'required', 'string'
-            ],
+            'modelo' => ['nullable', 'required_if:atencion.equipamentrequire,1'],
+            'serie' => ['nullable'],
+            'stateinicial' => ['nullable', 'required_if:atencion.equipamentrequire,1'],
+            'descripcion' => ['nullable', 'required_if:atencion.equipamentrequire,1'],
+            'detalle' => ['required', 'string'],
             'ubigeolugar_id' => [
                 'nullable', 'required_if:entorno.requiredirection,1', 'exists:ubigeos,id'
             ],
-            'direccionlugar' => [
-                'nullable', 'required_if:entorno.requiredirection,1'
-            ],
-            'referencia' => [
-                'nullable', 'required_if:entorno.requiredirection,1'
-            ],
+            'direccionlugar' => ['nullable', 'required_if:entorno.requiredirection,1'],
+            'referencia' => ['nullable', 'required_if:entorno.requiredirection,1'],
             'datevisita' => [
                 'nullable', 'required_if:entorno.requiredirection,1', 'date', 'after:' . now("America/Lima")
             ]
@@ -131,7 +99,7 @@ class CreateOrder extends Component
         $this->condition = new Condition();
         $this->client = new Client();
         $this->estate = new Estate();
-        $this->clients = Client::where('delete', 0)->orderBy('name', 'asc')->get();
+        $this->clients = Client::orderBy('name', 'asc')->get();
     }
 
     public function render()

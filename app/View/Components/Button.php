@@ -12,13 +12,9 @@ class Button extends Component
      * @return void
      */
 
-    public $fontSize, $disabled;
-
-    public function __construct($size = '[10px]', $disabled = false)
+    public function __construct()
     {
 
-        $this->fontSize = 'text-' . $size;
-        // $this->classes = $fontSize . ' bg-fondobutton text-colorbutton block group relative font-semibold tracking-widest p-2.5 rounded-sm disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton transition ease-in duration-150';
     }
 
     /**

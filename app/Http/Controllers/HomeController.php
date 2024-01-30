@@ -47,6 +47,21 @@ class HomeController extends Controller
         return view('admin.typecomprobantes.index');
     }
 
+    public function marcas()
+    {
+        return view('admin.marcas.index');
+    }
+
+    public function employers()
+    {
+        return view('admin.employers.index');
+    }
+
+    public function promociones()
+    {
+        return view('admin.promociones.index');
+    }
+
 
 
 

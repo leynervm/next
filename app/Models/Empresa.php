@@ -21,8 +21,23 @@ class Empresa extends Model
         'urbanizacion', 'email', 'web', 'icono', 'publickey', 'privatekey',
         'usuariosol', 'clavesol', 'montoadelanto', 'uselistprice',
         'usepricedolar', 'viewpricedolar', 'tipocambio', 'tipocambioauto',
-        'status', 'default', 'ubigeo_id'
+        'status', 'igv', 'default', 'ubigeo_id'
     ];
+
+    // public function getUsepricedolarAttribute($value)
+    // {
+    //     return (bool) $value; 
+    // }
+
+    // public function getViewpricedolarAttribute($value)
+    // {
+    //     return (bool) $value; 
+    // }
+
+    // public function getTipocambioautoAttribute($value)
+    // {
+    //     return (bool) $value; 
+    // }
 
     public function scopeDefaultEmpresa($query)
     {

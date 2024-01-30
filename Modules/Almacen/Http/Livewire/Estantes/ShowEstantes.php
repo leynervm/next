@@ -2,11 +2,11 @@
 
 namespace Modules\Almacen\Http\Livewire\Estantes;
 
+use App\Models\Estante;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Modules\Almacen\Entities\Estante;
 
 class ShowEstantes extends Component
 {

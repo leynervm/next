@@ -16,11 +16,14 @@ class CreatePricetypesTable extends Migration
         Schema::create('pricetypes', function (Blueprint $table) {
             $table->smallIncrements('id')->unsigned();
             $table->string('name', 255);
-            $table->decimal('ganancia', 8, 2);
-            $table->char('decimalrounded', 1)->default(0);
+            $table->char('rounded', 1)->default(0);
             $table->char('decimals', 1)->default(2);
-            $table->integer('default')->default(0);
-            $table->integer('web')->default(0);
+            $table->char('default', 1)->default(0);
+            $table->char('web', 1)->default(0);
+            $table->char('defaultlogin', 1)->default(0);
+            $table->char('temporal', 1)->default(0);
+            $table->dateTime('startdate')->nullable();
+            $table->dateTime('expiredate')->nullable();
             $table->softDeletes();
         });
     }

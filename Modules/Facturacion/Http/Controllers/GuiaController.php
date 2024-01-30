@@ -24,7 +24,7 @@ class GuiaController extends Controller
      */
     public function create()
     {
-        $sucursal = auth()->user()->sucursalDefault()->first();
+        $sucursal = auth()->user()->sucursal;
         return view('facturacion::guias.create', compact('sucursal'));
     }
 
@@ -77,5 +77,10 @@ class GuiaController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function motivos()
+    {
+        return view('facturacion::guias.motivos');
     }
 }

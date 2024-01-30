@@ -17,6 +17,11 @@ class Typepayment extends Model
 
     protected $fillable = ['name', 'paycuotas', 'default'];
 
+    public function getNameAttribute($value)
+    {
+        return trim(mb_strtoupper($value, "UTF-8"));
+    }
+
     public function comprobantes(): HasMany
     {
         return $this->hasMany(Comprobante::class);

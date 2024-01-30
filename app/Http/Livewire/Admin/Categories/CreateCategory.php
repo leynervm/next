@@ -18,10 +18,7 @@ class CreateCategory extends Component
     {
         return [
             'name' => [
-                'required',
-                'string',
-                'min:3',
-                'max:100',
+                'required', 'string', 'min:3', 'max:100',
                 new CampoUnique('categories', 'name', null, true),
             ]
         ];

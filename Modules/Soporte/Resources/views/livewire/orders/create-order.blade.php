@@ -338,13 +338,7 @@
     <x-jet-dialog-modal wire:model="openModalClient" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo cliente') }}
-            <x-button-add wire:click="$toggle('openModalClient')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('openModalClient')" wire:loading.attr="disabled"/>
         </x-slot>
 
         <x-slot name="content">
@@ -375,7 +369,7 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Ubigeo :" />
-                        <x-select class="block w-full" wire:model.defer="ubigeo_id">
+                        <x-select class="block w-full" wire:model.defer="ubigeo_id" id="ubigeo_id">
                             <x-slot name="options">
 
                             </x-slot>
@@ -396,7 +390,7 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Sexo :" />
-                        <x-select class="block w-full" wire:model.defer="sexoClient">
+                        <x-select class="block w-full" wire:model.defer="sexoClient" id="sexoClient">
                             <x-slot name="options">
                                 <option value="M">MASCULINO</option>
                                 <option value="F">FEMENINO</option>
@@ -412,7 +406,7 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Lista precio :" />
-                        <x-select class="block w-full" wire:model.defer="pricetype_id">
+                        <x-select class="block w-full" wire:model.defer="pricetype_id" id="pricetype_id">
                             <x-slot name="options">
                                 {{-- @if (count($atenciones))
                                         @foreach ($atenciones as $item)
@@ -425,7 +419,7 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Canal registro :" />
-                        <x-select class="block w-full" wire:model.defer="channelsale_id">
+                        <x-select class="block w-full" wire:model.defer="channelsale_id" id="channelsale_id">
                             <x-slot name="options">
                                 {{-- @if (count($atenciones))
                                         @foreach ($atenciones as $item)

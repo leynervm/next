@@ -14,12 +14,12 @@ class CreateGarantiaproductosTable extends Migration
     public function up()
     {
         Schema::create('garantiaproductos', function (Blueprint $table) {
-            $table->id();
+            $table->integerIncrements('id')->unsigned();
             $table->integer('time');
-            $table->bigInteger('producto_id')->nullable();
-            $table->bigInteger('typegarantia_id')->nullable();
+            $table->unsignedBigInteger('producto_id');
+            $table->unsignedTinyInteger('typegarantia_id');
             $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('typegarantia_id')->on('typegarantias')->references('id');
+            $table->foreign('typegarantia_id')->on('typegarantias')->references('id')->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
         });

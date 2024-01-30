@@ -43,17 +43,20 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div
-        class="mx-auto xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
+    <div class="w-full flex flex-col gap-8 mx-auto xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
 
         <div>
-            <livewire:modules.almacen.compras.show-compra :compra="$compra" :empresa="$empresa" :opencaja="$opencaja"
-                :concept="$concept" wire:key="show-compra{{ $compra->id }}"/>
+            <livewire:modules.almacen.compras.show-compra :compra="$compra" :opencaja="$opencaja" />
         </div>
 
+        @if ($compra->typepayment->paycuotas == 1)
+            <div>
+                <livewire:modules.almacen.compras.show-cuotas-compra :compra="$compra" :opencaja="$opencaja" />
+            </div>
+        @endif
+
         <div>
-            <livewire:almacen::compras.show-resumen-compra :compra="$compra" :empresa="$empresa"
-                wire:key="show-resumen-compra{{ $compra->id }}" />
+            <livewire:modules.almacen.compras.show-resumen-compra :compra="$compra" />
         </div>
     </div>
 </x-app-layout>

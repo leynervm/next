@@ -93,8 +93,8 @@
             </div>
         </x-form-card>
 
-        <x-form-card titulo="REPRESENTANTE"
-            subtitulo="Complete todos los campos, nos permitirá contactarse con la empresa.">
+        <x-form-card titulo="CONTACTO"
+            subtitulo="Nos permitirá contactarse con el proveedor.">
 
             <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
                 <div class="w-full">

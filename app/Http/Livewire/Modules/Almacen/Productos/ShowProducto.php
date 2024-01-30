@@ -3,7 +3,10 @@
 namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Models\Almacen;
+use App\Models\Almacenarea;
 use App\Models\Category;
+use App\Models\Estante;
+use App\Models\Kardex;
 use App\Models\Marca;
 use App\Models\Producto;
 use App\Models\Unit;
@@ -13,8 +16,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Modules\Almacen\Entities\Almacenarea;
-use Modules\Almacen\Entities\Estante;
 use Nwidart\Modules\Facades\Module;
 use Illuminate\Database\Query\Builder;
 
@@ -40,15 +41,17 @@ class ShowProducto extends Component
                 'required', 'min:3', new CampoUnique('productos', 'name', $this->producto->id, true)
             ],
             'producto.marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
-            'producto.modelo' => ['required'],
+            'producto.modelo' => ['required', 'string'],
+            'producto.codefabricante' => ['nullable', 'string', 'min:4'],
             'producto.unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'producto.pricebuy' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'producto.pricesale' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'producto.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+            'producto.minstock' => ['required', 'integer', 'min:0'],
             'producto.category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
             'producto.subcategory_id' => ['nullable', 'integer', 'min:1', 'exists:subcategories,id'],
-            'producto.almacenarea_id' => ['required', 'integer', 'min:1', 'exists:almacenareas,id'],
-            'producto.estante_id' => ['required', 'integer', 'min:1', 'exists:estantes,id'],
+            'producto.almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
+            'producto.estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
         ];
     }
@@ -57,10 +60,9 @@ class ShowProducto extends Component
     {
         $this->producto = $producto;
         $this->almacen = new Almacen();
-        $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
-            ->orderBy('name', 'asc')->get();
-        $this->subcategories = Category::find($this->producto->category_id)->subcategories;
-
+        // $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
+        //     ->orderBy('name', 'asc')->get();
+        $this->subcategories = $this->producto->category->subcategories;
     }
 
     public function render()
@@ -87,16 +89,32 @@ class ShowProducto extends Component
         $this->dispatchBrowserEvent('updated');
     }
 
-    public function updatedProductoCategoryId($value)
+    // public function updatedProductoCategoryId($value)
+    // {
+    //     $this->reset(['subcategories']);
+    //     if (trim($value) !== "") {
+    //         $this->subcategories = Category::find($value)->subcategories;
+    //     }
+    // }
+
+    public function setCategory($value)
     {
         $this->reset(['subcategories']);
-        if (trim($value) !== "") {
-            $this->subcategories = Category::find($value)->subcategories;
+        $this->producto->subcategory_id = null;
+
+        if ($value) {
+            $category = Category::find($value);
+            $this->subcategories = $category->subcategories;
+            $this->dispatchBrowserEvent('loadsubcategories', $category->subcategories->toArray());
         }
     }
 
     public function update()
     {
+
+        $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;
+        $this->producto->almacenarea_id = !empty(trim($this->producto->almacenarea_id)) ? trim($this->producto->almacenarea_id) : null;
+        $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
         $this->validate();
         $this->producto->save();
         $this->dispatchBrowserEvent('updated');
@@ -105,7 +123,9 @@ class ShowProducto extends Component
     public function openmodal()
     {
         $this->almacen = new Almacen();
-        $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
+        $this->almacens = Almacen::WhereHas('sucursal', function ($query) {
+            $query->whereNull('deleted_at');
+        })->whereNotIn('id', $this->producto->almacens->pluck('id'))
             ->orderBy('name', 'asc')->get();
         $this->resetValidation();
         $this->reset(['newcantidad', 'almacen_id']);
@@ -115,21 +135,22 @@ class ShowProducto extends Component
     public function savealmacen()
     {
         $this->validate([
-            'producto.id' => ['required', 'exists:productos,id'],
+            'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'almacen_id' => [
                 'required', 'integer', 'min:1', 'exists:almacens,id',
                 Rule::unique('almacen_producto', 'almacen_id')
-                    ->where(fn(Builder $query) => $query
+                    ->where(fn (Builder $query) => $query
                         ->where('producto_id', $this->producto->id))
                     ->ignore($this->almacen_id, 'almacen_id')
             ],
-            'newcantidad' => ['required', 'decimal:0,2', 'min:0']
+            'newcantidad' => ['required', 'numeric', 'min:0', 'decimal:0,2']
         ]);
 
         $event = 'created';
 
         DB::beginTransaction();
         try {
+
             if ($this->almacen->id ?? null) {
                 $event = 'updated';
                 $countSeries = $this->producto->seriesdisponibles
@@ -139,21 +160,34 @@ class ShowProducto extends Component
                     $this->producto->almacens()->updateExistingPivot($this->almacen_id, [
                         'cantidad' => $this->newcantidad,
                     ]);
+
+                    $stock = $this->producto->almacens->find($this->almacen->id)->pivot->cantidad;
+                    if ($this->newcantidad <> $stock) {
+                        // dd($stock, $this->newcantidad);
+                        if ($this->newcantidad > $stock) {
+                            $this->producto->saveKardex($this->almacen->sucursal_id, $this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $this->newcantidad - $stock, '+', Kardex::ACTUALIZACION_MANUAL, null);
+                        } else {
+                            $this->producto->saveKardex($this->almacen->sucursal_id, $this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $stock - $this->newcantidad, '-', Kardex::ACTUALIZACION_MANUAL, null);
+                        }
+                    }
                 } else {
                     $this->addError('newcantidad', "Cantidad es menor a las series disonibles ($countSeries).");
                     return false;
                 }
             } else {
+
+                $almacen = Almacen::find($this->almacen_id);
                 $this->producto->almacens()->attach($this->almacen_id, [
                     'cantidad' => $this->newcantidad,
                 ]);
+                $this->producto->saveKardex($almacen->sucursal_id, $this->producto->id, $this->almacen_id, 0, $this->newcantidad, $this->newcantidad, '+', Kardex::ENTRADA_PRODUCTO, null);
             }
 
             DB::commit();
             $this->reset(['newcantidad', 'almacen_id', 'open']);
             $this->resetValidation();
             $this->producto->refresh();
-            $this->emitTo('modules.almacen.productos.show-series', 'resetfilter');
+            $this->dispatchBrowserEvent('resetfilter',  $this->producto->almacens->toArray());
             $this->dispatchBrowserEvent($event);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -209,7 +243,7 @@ class ShowProducto extends Component
                 $this->producto->almacens()->detach($almacen);
                 DB::commit();
                 $this->producto->refresh();
-                $this->emitTo('modules.almacen.productos.show-series', 'resetfilter');
+                $this->dispatchBrowserEvent('resetfilter', $this->producto->almacens->toArray());
                 $this->dispatchBrowserEvent('deleted');
             } catch (\Exception $e) {
                 DB::rollBack();
@@ -275,7 +309,6 @@ class ShowProducto extends Component
                 DB::commit();
                 $this->dispatchBrowserEvent('deleted');
                 return redirect()->route('admin.almacen');
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 throw $e;

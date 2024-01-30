@@ -15,11 +15,9 @@ class CreateDetalleproductosTable extends Migration
     {
         Schema::create('detalleproductos', function (Blueprint $table) {
             $table->id();
-            $table->string('title', 255);
             $table->text('descripcion');
             $table->bigInteger('producto_id')->nullable();
             $table->foreign('producto_id')->on('productos')->references('id');
-            $table->timestamps();
         });
     }
 

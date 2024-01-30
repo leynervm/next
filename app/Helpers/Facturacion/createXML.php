@@ -86,7 +86,7 @@ class createXML
                     <cbc:RegistrationName><![CDATA[' . $emisor->name . ']]></cbc:RegistrationName>
                     <cac:RegistrationAddress>
                        <cbc:ID schemeName="Ubigeos" schemeAgencyName="PE:INEI">' . $emisor->ubigeo->ubigeo_reniec . '</cbc:ID>
-                       <cbc:AddressTypeCode listAgencyName="PE:SUNAT" listName="Establecimientos anexos">0000</cbc:AddressTypeCode>
+                       <cbc:AddressTypeCode listAgencyName="PE:SUNAT" listName="Establecimientos anexos">' . trim($comprobante->sucursal->codeanexo) . '</cbc:AddressTypeCode>
                        <cbc:CityName>
                            <![CDATA[' . trim($comprobante->sucursal->ubigeo->region) . ']]>
                        </cbc:CityName>
@@ -129,7 +129,7 @@ class createXML
            </cac:AccountingCustomerParty>
            <cac:PaymentTerms>
                <cbc:ID>FormaPago</cbc:ID>
-               <cbc:PaymentMeansID>' . $comprobante->typepayment->name . '</cbc:PaymentMeansID>';
+               <cbc:PaymentMeansID>' . ucfirst(strtolower($comprobante->typepayment->name)) . '</cbc:PaymentMeansID>';
 
       if ($comprobante->seriecomprobante->typecomprobante->code == '01' && $comprobante->typepayment->paycuotas) {
          $xml .= '<cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . FormatoPersonalizado::getValueDecimal($comprobante->total - $comprobante->paymentactual) . '</cbc:Amount>';
@@ -268,7 +268,6 @@ class createXML
       $doc->loadXML($xml);
       $xmlString = $doc->saveXML();
       Storage::disk('local')->put($nombreXML . '.xml', $xmlString);
-
    }
 
    function notaCreditoXML($nombreXML, $emisor, $cliente, $comprobante, $motivo = null)
@@ -282,7 +281,7 @@ class createXML
       }
 
       //   dd($nombreXML, $emisor, $emisor->ubigeo, $cliente->name, $comprobante);
-      $comprobanteReferencia = Comprobante::where('seriecompleta', $comprobante->referencia)->first();
+      $comprobanteReferencia = Comprobante::withTrashed()->where('seriecompleta', $comprobante->referencia)->first();
       $codeReferencia = $comprobanteReferencia->seriecomprobante->typecomprobante->code;
 
       $doc = new DOMDocument(); //clase que permite crear archivos, XML
@@ -358,7 +357,7 @@ class createXML
                     <cbc:RegistrationName><![CDATA[' . $emisor->name . ']]></cbc:RegistrationName>
                     <cac:RegistrationAddress>
                        <cbc:ID schemeName="Ubigeos" schemeAgencyName="PE:INEI">' . $emisor->ubigeo->ubigeo_reniec . '</cbc:ID>
-                       <cbc:AddressTypeCode listAgencyName="PE:SUNAT" listName="Establecimientos anexos">0000</cbc:AddressTypeCode>
+                       <cbc:AddressTypeCode listAgencyName="PE:SUNAT" listName="Establecimientos anexos">' . trim($comprobante->sucursal->codeanexo) . '</cbc:AddressTypeCode>
                        <cbc:CityName>
                            <![CDATA[' . trim($comprobante->sucursal->ubigeo->region) . ']]>
                        </cbc:CityName>
@@ -403,7 +402,7 @@ class createXML
       if ($comprobante->typepayment->paycuotas) {
          $xml .= '<cac:PaymentTerms>
                <cbc:ID>FormaPago</cbc:ID>
-               <cbc:PaymentMeansID>' . $comprobante->typepayment->name . '</cbc:PaymentMeansID>
+               <cbc:PaymentMeansID>' . ucfirst(strtolower($comprobante->typepayment->name)) . '</cbc:PaymentMeansID>
                <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . FormatoPersonalizado::getValueDecimal($comprobante->total - $comprobante->paymentactual) . '</cbc:Amount>
             </cac:PaymentTerms>';
       }
@@ -538,7 +537,6 @@ class createXML
       $doc->loadXML($xml);
       $xmlString = $doc->saveXML();
       Storage::disk('local')->put($nombreXML . '.xml', $xmlString);
-
    }
 
 
@@ -640,13 +638,14 @@ class createXML
       }
 
       if ($guia->motivotraslado->code == '02' || $guia->motivotraslado->code == '07' || $guia->motivotraslado->code == '13') {
-         $xml .= 'cac:SellerSupplierParty>
+         $codeDocumentProveedor = strlen(trim($guia->rucproveedor)) == 11 ? '6' : '1';
+         $xml .= '<cac:SellerSupplierParty>
                <cac:Party>
                   <cac:PartyIdentification>
-                     <cbc:ID schemeID="6" schemeName="Documento de Identidad" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">0000000000</cbc:ID>
+                     <cbc:ID schemeID="' . $codeDocumentProveedor . '" schemeName="Documento de Identidad" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">' . $guia->rucproveedor . '</cbc:ID>
                   </cac:PartyIdentification>
                   <cac:PartyLegalEntity>
-                     <cbc:RegistrationName><![CDATA[NOMBRE RAZON SOCIAL DE PROVEEDOR DE COMPRA]]></cbc:RegistrationName>
+                     <cbc:RegistrationName><![CDATA[' . $guia->nameproveedor . ']]></cbc:RegistrationName>
                   </cac:PartyLegalEntity>
                </cac:Party>
             </cac:SellerSupplierParty>';
@@ -656,9 +655,12 @@ class createXML
                   <cbc:ID>SUNAT_Envio</cbc:ID>
                   <cbc:HandlingCode listAgencyName="PE:SUNAT" listName="Motivo de traslado" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo20">' . $guia->motivotraslado->code . '</cbc:HandlingCode>
                   <cbc:HandlingInstructions><![CDATA[' . $guia->motivotraslado->name . ']]></cbc:HandlingInstructions>
-                  <cbc:GrossWeightMeasure unitCode="' . $guia->unit . '">' . formatDecimalOrInteger($guia->peso, 3) . '</cbc:GrossWeightMeasure>
-                  <cbc:TotalTransportHandlingUnitQuantity>' . $guia->packages . '</cbc:TotalTransportHandlingUnitQuantity>';
+                  <cbc:GrossWeightMeasure unitCode="' . $guia->unit . '">' . formatDecimalOrInteger($guia->peso, 3) . '</cbc:GrossWeightMeasure>';
 
+
+      if (!empty($guia->packages)) {
+         $xml .= '<cbc:TotalTransportHandlingUnitQuantity>' . $guia->packages . '</cbc:TotalTransportHandlingUnitQuantity>';
+      }
       if ($guia->indicadortransbordo == '1') {
          $xml .= '<cbc:SpecialInstructions>' . getIndicadorTransbProg()->code . '</cbc:SpecialInstructions>';
       }
@@ -819,6 +821,5 @@ class createXML
       $doc->loadXML($xml);
       $xmlString = $doc->saveXML();
       Storage::disk('local')->put($nombreXML . '.xml', $xmlString);
-
    }
 }

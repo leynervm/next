@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Facturacion\Entities\Comprobante;
+use Modules\Ventas\Entities\Venta;
 
 class Seriecomprobante extends Model
 {
@@ -17,6 +18,7 @@ class Seriecomprobante extends Model
 
     public $timestamps = false;
     protected $fillable = ['serie', 'code', 'contador', 'typecomprobante_id'];
+    const DEFAULT = '1';
 
     public function setSerieAttribute($value)
     {
@@ -33,14 +35,24 @@ class Seriecomprobante extends Model
         return $this->hasMany(Comprobante::class);
     }
 
+    public function guias(): HasMany
+    {
+        return $this->hasMany(Guia::class);
+    }
+
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class);
+    }
+
     public function sucursals(): BelongsToMany
     {
         return $this->belongsToMany(Sucursal::class)->withPivot('default');
     }
 
-    // public function scopeDefaultseriecomprobantes()
-    // {
-    //     return $this->belongsToMany(Seriecomprobante::class)
-    //         ->withPivot('default');
-    // }
+    public function scopeDefault($query)
+    {
+        return $query->withPivot('default', self::DEFAULT);
+    }
+
 }

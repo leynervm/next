@@ -17,8 +17,13 @@ class FacturacionDatabaseSeeder extends Seeder
         Model::unguard();
 
         // $this->call("OthersTableSeeder");
-        $this->call(SeedTypecomprobantesTableSeeder::class);
-        $this->call(SeedMotivotrasladosTableSeeder::class);
+        //Para tipocomprobantes sin series
+        $this->call(TypecomprobanteTableSeeder::class);
+        
+        //Para tipocomprobantes con series
+        // $this->call(SeriecomprobanteTableSeeder::class);
 
+        $this->call(SeedMotivotrasladosTableSeeder::class); //Requerido
+        $this->call(SeedModalidadtransporteTableSeeder::class); //Requerido
     }
 }

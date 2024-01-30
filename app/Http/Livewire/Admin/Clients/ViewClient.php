@@ -18,6 +18,7 @@ use App\Rules\ValidateNacimiento;
 use App\Rules\ValidatePhoneClient;
 use App\Rules\ValidatePhoneContact;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class ViewClient extends Component
@@ -44,7 +45,7 @@ class ViewClient extends Component
             'client.email' => ['nullable', 'min:6', 'email'],
             'client.sexo' => ['nullable', 'string', 'min:1'],
             'client.nacimiento' => ['nullable', new ValidateNacimiento()],
-            'client.pricetype_id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
+            'client.pricetype_id' => ['nullable', Rule::requiredIf(mi_empresa()->uselistprice == 1), 'integer', 'min:1', 'exists:pricetypes,id'],
             'direccion.name' => ['required', 'string', 'min:3'],
             'ubigeo_id' => ['nullable', 'integer', 'min:1', 'exists:ubigeos,id'],
         ];
