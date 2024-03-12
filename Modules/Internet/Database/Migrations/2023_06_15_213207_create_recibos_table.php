@@ -24,14 +24,11 @@ class CreateRecibosTable extends Migration
             $table->decimal('reconeccion', 10, 2);
             $table->decimal('total', 10, 2);
             $table->string('leyenda', 255);
-            $table->integer('delete')->default(0);
             $table->bigInteger('moneda_id')->nullable();
-            $table->bigInteger('tribute_id')->nullable();
             $table->bigInteger('network_id')->nullable();
             $table->bigInteger('cajamovimiento_id')->nullable();
             $table->bigInteger('user_id')->nullable();
             $table->foreign('moneda_id')->on('monedas')->references('id');
-            $table->foreign('tribute_id')->on('tributes')->references('id');
             $table->foreign('network_id')->on('networks')->references('id');
             $table->foreign('cajamovimiento_id')->on('cajamovimientos')->references('id');
             $table->foreign('user_id')->on('users')->references('id');

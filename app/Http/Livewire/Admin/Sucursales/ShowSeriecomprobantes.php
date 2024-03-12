@@ -5,8 +5,8 @@ namespace App\Http\Livewire\Admin\Sucursales;
 use App\Models\Seriecomprobante;
 use App\Models\Sucursal;
 use App\Models\Typecomprobante;
-use App\Rules\ValidateSeriecomprobante;
-use App\Rules\ValidateTypecomprobante;
+use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Nwidart\Modules\Facades\Module;
@@ -14,30 +14,16 @@ use Nwidart\Modules\Facades\Module;
 class ShowSeriecomprobantes extends Component
 {
 
-    public $sucursal;
-    public $typecomprobante_id, $seriecomprobante_id, $default;
-    public $seriecomprobantes = [];
+    use AuthorizesRequests;
 
-    protected function rules()
-    {
-        return [
-            'typecomprobante_id' => [
-                'required', 'integer', 'min:1', 'exists:typecomprobantes,id',
-                new ValidateTypecomprobante($this->sucursal->id)
-            ],
-            'seriecomprobante_id' => [
-                'required', 'integer', 'min:1', 'exists:seriecomprobantes,id',
-                new ValidateSeriecomprobante, new ValidateSeriecomprobante($this->sucursal->id)
-            ],
-            'default' => [
-                'nullable', 'integer', 'min:0', 'max:1',
-            ],
-        ];
-    }
+    public $sucursal, $seriecomprobante;
+    public $typecomprobante_id, $serie;
+    public $contador = 0;
 
     public function mount(Sucursal $sucursal)
     {
         $this->sucursal = $sucursal;
+        $this->seriecomprobante = new Seriecomprobante();
     }
 
     public function render()
@@ -48,50 +34,94 @@ class ShowSeriecomprobantes extends Component
             $typecomprobantes = Typecomprobante::Default()->orderBy('code', 'asc')->get();
         }
 
-        $sucursalcomprobantes = $this->sucursal->seriecomprobantes()
-            ->withWherehas('typecomprobante', function ($query) {
+        $seriecomprobantes = $this->sucursal->seriecomprobantes()
+            ->withTrashed()->withWherehas('typecomprobante', function ($query) {
                 if (Module::isDisabled('Facturacion')) {
                     $query->default();
                 }
-            })->orderBy('code', 'desc')->orderByPivot('default', 'desc')->get();
+            })->orderBy('default', 'desc')->get();
 
-        return view('livewire.admin.sucursales.show-seriecomprobantes', compact('typecomprobantes', 'sucursalcomprobantes'));
+        return view('livewire.admin.sucursales.show-seriecomprobantes', compact('typecomprobantes', 'seriecomprobantes'));
     }
 
-    public function updatedTypecomprobanteId($value)
+    public function updatecontador(Seriecomprobante $seriecomprobante, $cantidad)
     {
-        $this->reset(['seriecomprobantes', 'seriecomprobante_id']);
-        $this->resetValidation();
-        if ($value) {
-            $typecomprobante = Typecomprobante::with('seriecomprobantes')->find($value);
-            $this->seriecomprobantes = $typecomprobante->seriecomprobantes;
-            if (count($this->seriecomprobantes) == 1) {
-                $this->seriecomprobante_id = $typecomprobante->seriecomprobantes->first()->id;
-            }
+        if ($cantidad >= 0) {
+            $seriecomprobante->contador = $cantidad;
+            $seriecomprobante->save();
+            $this->dispatchBrowserEvent('updated');
         }
     }
 
     public function saveserie()
     {
-        $this->default = $this->default == 1 ? 1 : 0;
-        $this->validate();
+        $this->authorize('admin.administracion.sucursales.seriecomprobantes.edit');
+        $this->serie = trim($this->serie);
+        $regex = '';
+        $code = null;
+
+        if ($this->typecomprobante_id) {
+            $typecomprobante = Typecomprobante::find($this->typecomprobante_id);
+
+            switch ($typecomprobante->code) {
+                case '01':
+                    $regex = 'regex:/^F[A-Z0-9][0-9]{2}$/';
+                    $code = null;
+                    break;
+                case '03':
+                    $regex = 'regex:/^B[A-Z0-9][0-9]{2}$/';
+                    $code = null;
+                    break;
+                case '07':
+                    $regex = $typecomprobante->referencia == '01' ? 'regex:/^[F][A-Z0-9][0-9]{2}$/' : 'regex:/^[B][A-Z0-9][0-9]{2}$/';
+                    $code = $typecomprobante->referencia;
+                    break;
+                case '09':
+                    $regex = 'regex:/^[TE][A-Z0-9][0-9]{2}$/';
+                    $code = null;
+                    break;
+                case 'VT':
+                    $regex = 'regex:/^V[A-Z0-9][0-9]{2}$/';
+                    $code = null;
+                    break;
+                default:
+                    $regex = '';
+                    $code = null;
+                    break;
+            }
+        }
+
+        $this->validate([
+            'typecomprobante_id' => [
+                'required', 'integer', 'min:1', 'exists:typecomprobantes,id',
+                new CampoUnique('seriecomprobantes', 'typecomprobante_id', $this->seriecomprobante->id ?? null, true, 'sucursal_id', $this->sucursal->id)
+            ],
+            'serie' => [
+                'required', 'string', 'size:4', $regex,
+                new CampoUnique('seriecomprobantes', 'serie', $this->seriecomprobante->id ?? null, true)
+            ],
+            'contador' => ['required', 'integer', 'min:0']
+        ]);
+
         try {
             DB::beginTransaction();
-            if ($this->default) {
-                $this->sucursal->seriecomprobantes()->each(function ($seriesucursal) {
-                    $this->sucursal->seriecomprobantes()->updateExistingPivot($seriesucursal->id, [
-                        'default' => 0
-                    ]);
-                });
+            $exists = Seriecomprobante::onlyTrashed()->where('serie', $this->serie)->exists();
+            if ($exists) {
+                $mensaje = response()->json([
+                    'title' => 'Serie ' . $this->serie . ' se encuentra deshabilitada.',
+                    'text' => "Existen registros de comprobante con la misma serie en la base de datos.",
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
             }
-
-            $this->sucursal->seriecomprobantes()->attach(
-                $this->seriecomprobante_id,
-                ['default' => $this->default]
-            );
-
+            $this->sucursal->seriecomprobantes()->create([
+                'serie' => $this->serie,
+                'contador' => $this->contador,
+                'code' => $code,
+                'typecomprobante_id' => $this->typecomprobante_id,
+            ]);
             DB::commit();
-            $this->reset(['typecomprobante_id', 'seriecomprobante_id', 'default', 'seriecomprobantes']);
+            $this->reset(['typecomprobante_id', 'contador', 'serie']);
             $this->resetValidation();
             $this->sucursal->refresh();
             $this->dispatchBrowserEvent('created');
@@ -104,23 +134,24 @@ class ShowSeriecomprobantes extends Component
         }
     }
 
-    public function delete(Sucursal $sucursal, Seriecomprobante $seriecomprobante)
+    public function delete(Seriecomprobante $seriecomprobante)
     {
-        $sucursal->seriecomprobantes()->detach($seriecomprobante);
+        $this->authorize('admin.administracion.sucursales.seriecomprobantes.edit');
+        $seriecomprobante->delete();
         $this->sucursal->refresh();
         $this->dispatchBrowserEvent('deleted');
     }
 
     public function setcomprobantedefault(Seriecomprobante $seriecomprobante)
     {
+        $this->authorize('admin.administracion.sucursales.seriecomprobantes.edit');
         try {
             DB::beginTransaction();
-
-            $this->sucursal->seriecomprobantes()->each(function ($seriecomprobante) {
-                $seriecomprobante->pivot->update(['default' => 0]);
-            });
-            $this->sucursal->seriecomprobantes()->updateExistingPivot($seriecomprobante->id, ['default' => 1]);
+            $this->sucursal->seriecomprobantes()->update(['default' => 0]);
+            $seriecomprobante->default = 1;
+            $seriecomprobante->save();
             DB::commit();
+            $this->sucursal->refresh();
             $this->dispatchBrowserEvent('updated');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -131,8 +162,25 @@ class ShowSeriecomprobantes extends Component
         }
     }
 
-    public function hydrate()
+    public function restoreserie($seriecomprobante_id)
     {
-        $this->dispatchBrowserEvent('render-show-seriecomprobante');
+
+        $this->authorize('admin.administracion.sucursales.seriecomprobantes.edit');
+        $seriecomprobante = Seriecomprobante::onlyTrashed()->find($seriecomprobante_id);
+        if ($seriecomprobante) {
+            if (Seriecomprobante::where('serie', $seriecomprobante->serie)->exists()) {
+                $mensaje = response()->json([
+                    'title' => 'Ya existe comprobante con serie ' . $seriecomprobante->serie . '.',
+                    'text' => "Existen registros de comprobante con la misma serie en la base de datos.",
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
+            $seriecomprobante->default = 0;
+            $seriecomprobante->restore();
+            $this->resetValidation();
+            $this->dispatchBrowserEvent('toast', toastJSON('Serie comprobante habilitado correctamente'));
+        }
     }
 }

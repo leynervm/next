@@ -10,9 +10,12 @@
             @foreach ($motivos as $item)
                 <x-minicard :title="$item->name" size="xl">
                     <x-slot name="buttons">
-                        <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
-                        <x-button-delete wire:click="$emit('motivotraslado.confirmDelete', {{ $item }})"
-                            wire:loading.attr="disabled" />
+                        @can('admin.facturacion.guias.motivos.edit')
+                            <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
+                        @endcan
+                        @can('admin.facturacion.guias.motivos.delete')
+                            <x-button-delete onclick="confirmDelete({{ $item }})" wire:loading.attr="disabled" />
+                        @endcan
                     </x-slot>
                 </x-minicard>
             @endforeach
@@ -50,23 +53,21 @@
     </x-jet-dialog-modal>
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('motivotraslado.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar motivo de traslado, ' + data.name,
-                    text: "Se eliminará un registro de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
+        function confirmDelete(motivotraslado) {
+            swal.fire({
+                title: 'Eliminar motivo de traslado, ' + motivotraslado.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(motivotraslado.id);
+                }
             })
-        })
+        }
     </script>
 </div>

@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\CajamovimientoTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -27,20 +29,26 @@ class User extends Authenticatable implements MustVerifyEmail
     use HasRoles;
     use SoftDeletes;
 
+    use CajamovimientoTrait;
+
+
     const DEFAULT = "1";
+    const SUPER_ADMIN = '1';
+    const ACTIVO = '0';
+    const BAJA = '1';
     /**
      * The attributes that are mass assignable.
      *
      * @var string[]
      */
     protected $fillable = [
+        'document',
         'name',
         'email',
         'password',
-        'role_id',
+        'admin',
         'theme_id',
         'sucursal_id',
-        'almacen_id',
     ];
 
     /**
@@ -79,9 +87,9 @@ class User extends Authenticatable implements MustVerifyEmail
     //     return $this->belongsToMany(Sucursal::class)->withPivot('default');
     // }
 
-    public function opencajas(): HasMany
+    public function openboxes(): HasMany
     {
-        return $this->hasMany(Opencaja::class);
+        return $this->hasMany(Openbox::class);
     }
 
     public function carshoop()
@@ -104,9 +112,9 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Sucursal::class);
     }
 
-    public function almacen(): BelongsTo
+    public function employer(): HasOne
     {
-        return $this->belongsTo(Almacen::class);
+        return $this->hasOne(Employer::class);
     }
 
     public function comprobantes(): HasMany
@@ -117,5 +125,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function kardexes()
     {
         return $this->hasMany(Kardex::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->admin == self::SUPER_ADMIN;
     }
 }

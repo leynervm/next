@@ -1,5 +1,4 @@
 <x-app-layout>
-
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="FACTURACIÓN" route="admin.facturacion">
             <x-slot name="icon">

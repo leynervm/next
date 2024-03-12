@@ -1,8 +1,7 @@
 <div class="">
-
     @if (count($units))
         <div class="pb-2">
-            {{ $units->links() }}
+            {{ $units->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
@@ -10,13 +9,18 @@
         @if (count($units))
             @foreach ($units as $item)
                 <x-minicard :title="$item->name" :content="$item->code" size="md">
-                    <x-slot name="buttons">
-                        <div class="ml-auto">
-                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            <x-button-delete wire:loading.attr="disabled"
-                                wire:click="$emit('units.confirmDelete', {{ $item }})" />
-                        </div>
-                    </x-slot>
+                    @canany(['admin.administracion.units.edit', 'admin.administracion.units.delete'])
+                        <x-slot name="buttons">
+                            <div class="ml-auto">
+                                @can('admin.administracion.units.edit')
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                @endcan
+                                @can('admin.administracion.units.delete')
+                                    <x-button-delete wire:loading.attr="disabled" onclick="confirmDelete( {{ $item }})" />
+                                @endcan
+                            </div>
+                        </x-slot>
+                    @endcanany
                 </x-minicard>
             @endforeach
         @endif
@@ -63,24 +67,21 @@
     </x-jet-dialog-modal>
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('units.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // console.log(data.detail.id);
-                        @this.delete(data.id)
-                    }
-                })
+        function confirmDelete(unit) {
+            swal.fire({
+                title: 'Eliminar unidad de medida ' + unit.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(unit.id)
+                }
             })
-        })
+        }
     </script>
 </div>

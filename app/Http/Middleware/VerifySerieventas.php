@@ -17,7 +17,7 @@ class VerifySerieventas
      */
     public function handle(Request $request, Closure $next)
     {
-
+        
         $serieventas = auth()->user()->sucursal->seriecomprobantes()->whereHas('typecomprobante', function ($query) {
             if (Module::isDisabled('Facturacion')) {
                 $query->default();
@@ -33,6 +33,7 @@ class VerifySerieventas
             ]);
             return redirect()->back()->with('message', $mensaje);
         }
+
         return $next($request);
     }
 }

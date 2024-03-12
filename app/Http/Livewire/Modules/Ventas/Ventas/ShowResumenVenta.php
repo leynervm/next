@@ -2,30 +2,30 @@
 
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
+use App\Enums\MovimientosEnum;
 use App\Helpers\GetClient;
-use App\Models\Cajamovimiento;
+use App\Helpers\GetPrice;
+use App\Models\Almacen;
+use App\Models\Carshoop;
+use App\Models\Carshoopserie;
 use App\Models\Client;
 use App\Models\Concept;
-use App\Models\Empresa;
+use App\Models\Guia;
 use App\Models\Kardex;
 use App\Models\Methodpayment;
 use App\Models\Modalidadtransporte;
 use App\Models\Moneda;
+use App\Models\Monthbox;
 use App\Models\Motivotraslado;
-use App\Models\Opencaja;
-use App\Models\Pricetype;
-use App\Models\Producto;
-use App\Models\Serie;
+use App\Models\Openbox;
 use App\Models\Seriecomprobante;
-use App\Models\Sucursal;
-use App\Models\Typecomprobante;
+use App\Models\Tvitem;
 use App\Models\Typepayment;
 use App\Models\Ubigeo;
 use App\Rules\ValidateCarrito;
 use App\Rules\ValidateDocument;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Ventas\Entities\Venta;
@@ -34,13 +34,14 @@ use Nwidart\Modules\Facades\Module;
 class ShowResumenVenta extends Component
 {
 
-    public $empresa, $sucursal, $typepayment, $methodpayment, $moneda, $modalidadtransporte, $motivotraslado;
+
+    public $empresa, $sucursal, $typepayment, $moneda, $modalidadtransporte, $motivotraslado;
     public $cotizacion_id, $client_id, $direccion_id, $pricetype_id, $mensaje;
-    public $moneda_id, $opencaja, $methodpayment_id, $typepayment_id, $detallepago, $concept, $cuenta_id;
+    public $moneda_id, $monthbox, $openbox, $methodpayment_id, $typepayment_id, $detallepago, $concept;
     public $typecomprobante, $typecomprobante_id, $seriecomprobante_id, $tribute_id;
     public $document, $name, $direccion, $pricetypeasigned;
 
-    public $typecomprobanteguia_id, $ructransport, $nametransport,
+    public $serieguia_id, $ructransport, $nametransport,
         $documentdriver, $namedriver, $lastname, $licencia, $placa, $placavehiculo,
         $documentdestinatario, $namedestinatario, $peso, $packages, $datetraslado,
         $note, $ubigeoorigen_id, $direccionorigen, $anexoorigen, $ubigeodestino_id,
@@ -63,20 +64,15 @@ class ShowResumenVenta extends Component
     public $amountincrement = 0;
     public $paymentactual = 0;
 
-    public $accounts = [];
     public $cuotas = [];
     public $items = [];
 
-    public $regionorigen_id, $provinciaorigen_id, $distritoorigen_id;
-    public $regiondestino_id, $provinciadestino_id, $distritodestino_id;
-
-    public $provinciasorigen = [];
-    public $distritosorigen = [];
-    public $provinciasdestino = [];
-    public $distritosdestino = [];
     public $arrayequalremite = ['02', '04', '07'];
     public $arraydistintremite = ['01', '03', '05', '06', '09', '14', '17'];
-    // protected $listeners = ['render' => 'refresh', 'deleteitem', 'deleteserie'];
+
+    public $searchgre, $guiaremision;
+    public $sincronizegre = false;
+
 
     protected function rules()
     {
@@ -90,8 +86,8 @@ class ShowResumenVenta extends Component
             ],
             'name' => ['required', 'string', 'min:6'],
             'direccion' => ['required', 'string', 'min:3'],
-            // 'client_id' => ['nullable', 'integer', 'min:1', 'exists:clients,id'],
-            'typecomprobante_id' => ['required', 'integer', 'min:1', 'exists:typecomprobantes,id'],
+            'client_id' => ['required', 'integer', 'min:1', 'exists:clients,id'],
+            'typecomprobante.id' => ['required', 'integer', 'min:1', 'exists:typecomprobantes,id'],
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'typepayment.id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
@@ -112,17 +108,17 @@ class ShowResumenVenta extends Component
                 'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
                 'integer', 'min:1', 'exists:concepts,id',
             ],
-            'opencaja.id' => [
+            'openbox.id' => [
                 'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'min:1', 'exists:opencajas,id',
+                'integer', 'min:1', 'exists:openboxes,id',
+            ],
+            'monthbox.id' => [
+                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'integer', 'min:1', 'exists:monthboxes,id',
             ],
             'methodpayment_id' => [
                 'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
                 'integer', 'min:1', 'exists:methodpayments,id',
-            ],
-            'cuenta_id' => [
-                'nullable', Rule::requiredIf($this->methodpayment->cuentas->count() > 1),
-                'integer', 'min:1', 'exists:cuentas,id',
             ],
             'detallepago' => ['nullable'],
             'cotizacion_id' => ['nullable', 'integer', 'min:1', 'exists:cotizacions,id'],
@@ -184,18 +180,6 @@ class ShowResumenVenta extends Component
             ],
             'placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
             'note' => ['nullable', 'string', 'min:10'],
-            'regionorigen_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'exists:ubigeos,departamento_inei'
-            ],
-            'provinciaorigen_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'exists:ubigeos,provincia_inei'
-            ],
-            'distritoorigen_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:ubigeos,id'
-            ],
             'ubigeoorigen_id' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
                 'integer', 'min:1', 'exists:ubigeos,id'
@@ -203,18 +187,6 @@ class ShowResumenVenta extends Component
             'direccionorigen' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
                 'string', 'min:12',
-            ],
-            'regiondestino_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'exists:ubigeos,departamento_inei'
-            ],
-            'provinciadestino_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'exists:ubigeos,provincia_inei'
-            ],
-            'distritodestino_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:ubigeos,id'
             ],
             'ubigeodestino_id' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
@@ -232,64 +204,52 @@ class ShowResumenVenta extends Component
                 'nullable', Rule::requiredIf($this->incluyeguia),
                 'integer', 'min:1', 'exists:modalidadtransportes,id'
             ],
-            'typecomprobanteguia_id' => [
+            'serieguia_id' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:seriecomprobantes,typecomprobante_id'
+                'integer', 'min:1', 'exists:seriecomprobantes,id'
             ],
         ];
     }
 
-    public function mount(Sucursal $sucursal, Typepayment $typepayment, Methodpayment $methodpayment, Seriecomprobante $seriecomprobante, Moneda $moneda, Concept $concept, Opencaja $opencaja)
+    public function mount(Seriecomprobante $seriecomprobante, Moneda $moneda, Concept $concept)
     {
         $this->motivotraslado = new Motivotraslado();
         $this->modalidadtransporte = new Modalidadtransporte();
-        $this->empresa = $sucursal->empresa;
-        $this->sucursal = $sucursal;
-        $this->methodpayment = $methodpayment;
-        $this->typepayment = $typepayment;
+        $this->typepayment = new Typepayment();
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->sucursal = auth()->user()->employer->sucursal;
+        $this->empresa = auth()->user()->employer->sucursal->empresa;
+        $this->monthbox = Monthbox::usando($this->sucursal->id)->first();
+        $this->openbox = Openbox::mybox($this->sucursal->id)->first();
+        $this->typepayment_id = Typepayment::default()->first()->id ?? null;
         $this->seriecomprobante_id = $seriecomprobante->id ?? null;
         $this->typecomprobante = $seriecomprobante->typecomprobante;
-        $this->concept = $concept;
-        $this->opencaja = $opencaja;
-
-        $this->methodpayment_id = $methodpayment->id ?? null;
-        $this->typepayment_id = $typepayment->id ?? null;
-        $this->typecomprobante_id = $seriecomprobante->typecomprobante_id ?? null;
         $this->moneda_id = $moneda->id ?? null;
         $this->moneda = $moneda;
+        $this->concept = $concept;
         $this->setTotal();
-        // $this->total = Carshoop::Micarrito()->where('sucursal_id', $this->sucursal->id)->where('gratuito', 0)->sum('total') ?? 0;
-        // $this->exonerado = $this->total;
-        // $this->gratuito = Carshoop::Micarrito()->where('sucursal_id', $this->sucursal->id)->where('gratuito', 1)->sum('total') ?? 0;
-
-        $ubigeosucursal = Ubigeo::find($this->sucursal->ubigeo_id);
-        $this->regionorigen_id = $ubigeosucursal->departamento_inei;
-        $this->provinciaorigen_id = $ubigeosucursal->provincia_inei;
-        $this->distritoorigen_id = $ubigeosucursal->id;
+        $this->ubigeoorigen_id = $this->sucursal->ubigeo_id;
         $this->direccionorigen = $this->sucursal->direccion;
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciaorigen_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
     }
 
     public function render()
     {
 
+        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')
+            ->orderBy('distrito', 'asc')->get();
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
         $modalidadtransportes = Modalidadtransporte::orderBy('code', 'asc')->get();
         $motivotraslados = Motivotraslado::whereIn('code', ['01', '03'])->orderBy('code', 'asc')->get();
 
-        $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
-            $query->withWhereHas('sucursals', function ($query) {
-                $query->where('sucursal_id', $this->sucursal->id);
+        $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()
+            ->withWhereHas('typecomprobante', function ($query) {
+                $query->whereNotIn('code', ['07', '09']);
             });
-        })->whereNotIn('code', ['07', '09']);
-
-        $comprobantesguia = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
-            $query->withWhereHas('sucursals', function ($query) {
-                $query->where('sucursal_id', $this->sucursal->id);
+        $comprobantesguia = auth()->user()->sucursal->seriecomprobantes()
+            ->withWhereHas('typecomprobante', function ($query) {
+                $query->whereIn('code', ['09', '13']);
             });
-        })->whereIn('code', ['09', '13']);
 
         if (!Module::isEnabled('Facturacion')) {
             $typecomprobantes = $typecomprobantes->default();
@@ -300,8 +260,9 @@ class ShowResumenVenta extends Component
 
         $typecomprobantes = $typecomprobantes->orderBy('code', 'asc')->get();
         $comprobantesguia = $comprobantesguia->orderBy('code', 'asc')->get();
-        // $carrito = Carshoop::Micarrito()->with(['carshoopseries', 'producto', 'almacen'])
-        //     ->where('sucursal_id', $this->sucursal->id)->orderBy('id', 'asc')->get();
+        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen', 'promocion'])
+            ->ventas()->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('id', 'asc')->paginate();
 
         if ($this->empresa->usepricedolar) {
             $monedas = Moneda::orderBy('currency', 'asc')->get();
@@ -309,14 +270,12 @@ class ShowResumenVenta extends Component
             $monedas = Moneda::where('code', 'PEN')->orderBy('currency', 'asc')->get();
         }
 
-        $regiones = Ubigeo::select('departamento_inei', 'region')->groupBy('departamento_inei', 'region')->orderBy('region', 'asc')->get();
+        return view('livewire.modules.ventas.ventas.show-resumen-venta', compact('carshoops', 'typecomprobantes', 'comprobantesguia', 'typepayments', 'methodpayments', 'monedas', 'modalidadtransportes', 'motivotraslados', 'ubigeos'));
+    }
 
-        $carrito = Session::get('carrito', []);
-        if (!is_array($carrito)) {
-            $carrito = json_decode($carrito);
-        }
-
-        return view('livewire.modules.ventas.ventas.show-resumen-venta', compact('carrito', 'typecomprobantes', 'comprobantesguia', 'typepayments', 'methodpayments', 'monedas', 'regiones', 'modalidadtransportes', 'motivotraslados'));
+    public function limpiarcliente()
+    {
+        $this->reset(['client_id', 'document', 'name', 'direccion']);
     }
 
     public function setTypepayment($value)
@@ -334,21 +293,38 @@ class ShowResumenVenta extends Component
     public function setTotal()
     {
 
-        $resumen = json_decode(getTotalCarrito('carrito'));
-        $total = $resumen->total;
-        $this->gratuito = $resumen->gratuito;
-        // $total = Carshoop::Micarrito()->where('sucursal_id', $this->sucursal->id)->where('gratuito', 0)->sum('total') ?? 0;
-        // $this->gratuito = Carshoop::Micarrito()->where('sucursal_id', $this->sucursal->id)->where('gratuito', 1)->sum('total') ?? 0;
+        // $resumen = json_decode(getTotalCarrito('carrito'));
+        // $total = $resumen->total;
+        // $this->gratuito = $resumen->gratuito;
 
-        $totalSinIncrement = number_format($total - $this->paymentactual ?? 0, 4, '.', '');
+        $sumatorias = Carshoop::ventas()->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->selectRaw('gratuito, COALESCE(SUM(total), 0) as total')->groupBy('gratuito')
+            ->orderBy('total', 'desc')->get();
+
+        $gratuito = 0;
+        $total = 0;
+
+        if (count($sumatorias) > 0) {
+            foreach ($sumatorias as $item) {
+                if ($item->gratuito == '0') {
+                    $total = $item->total;
+                }
+                if ($item->gratuito == '1') {
+                    $gratuito = $item->total;
+                }
+            }
+        }
+        $this->gratuito = $gratuito;
+        $totalSinIncrement = number_format($total - $this->paymentactual ?? 0, 3, '.', '');
         $this->amountincrement = (($totalSinIncrement ?? 0) * $this->increment) / 100;
-        $this->total = number_format($total + (($totalSinIncrement * $this->increment ?? 0) / 100), 4, '.', '');
+        $this->total = number_format($total + (($totalSinIncrement * $this->increment ?? 0) / 100), 3, '.', '');
 
         if ($this->incluyeigv) {
-            $this->igv = number_format(($this->total * $this->empresa->igv) / (100 + $this->empresa->igv), 4, '.', '');
-            $this->gravado = number_format($this->total - $this->igv, 4, '.', '');
+            $this->igv = number_format(($this->total * $this->empresa->igv) / (100 + $this->empresa->igv), 3, '.', '');
+            $this->gravado = number_format($this->total - $this->igv, 3, '.', '');
         } else {
-            $this->exonerado = number_format($this->total, 4, '.', '');
+            $this->exonerado = number_format($this->total, 3, '.', '');
         }
     }
 
@@ -356,13 +332,15 @@ class ShowResumenVenta extends Component
     {
         if ($value) {
             $this->moneda = Moneda::findOrFail($value);
-            // $this->dispatchBrowserEvent('setMoneda', $value);
         }
     }
 
     public function updatedTypepaymentId($value)
     {
-        $this->reset(['increment', 'paymentactual', 'amountincrement', 'gravado', 'exonerado', 'igv', 'countcuotas', 'cuotas', 'accounts', 'cuenta_id']);
+        $this->reset([
+            'increment', 'paymentactual', 'amountincrement',
+            'gravado', 'exonerado', 'igv', 'countcuotas', 'cuotas'
+        ]);
         if ($value) {
             $this->setTotal();
         }
@@ -370,34 +348,40 @@ class ShowResumenVenta extends Component
 
     public function updatedIncrement($value)
     {
-        $this->increment = !empty($value) ? $value : 0;
-        $this->setTotal();
+        $this->setincrement($value);
     }
 
     public function updatedPaymentactual($value)
+    {
+        $this->setpaymentactual($value);
+    }
+
+    public function setpaymentactual($value)
     {
         $this->paymentactual = !empty($value) ? $value : 0;
         $this->setTotal();
         $this->resetValidation(['paymentactual']);
     }
 
-    public function updatedMethodpaymentId($value)
+    public function setincrement($value)
     {
-        $this->reset(['accounts', 'cuenta_id']);
-        $this->methodpayment_id = !empty(trim($value)) ? trim($value) : null;
-        if ($this->methodpayment_id) {
-            $this->methodpayment = Methodpayment::findOrFail($value);
-            $this->accounts = $this->methodpayment->cuentas;
-            if ($this->methodpayment->cuentas->count() == 1) {
-                $this->cuenta_id = $this->methodpayment->cuentas->first()->id;
-            }
-        }
+        $this->increment = !empty($value) ? $value : 0;
+        $this->setTotal();
     }
 
     public function save()
     {
 
-        if (!verifyOpencaja($this->opencaja->id)) {
+        if (!$this->monthbox->isUsing()) {
+            $mensaje =  response()->json([
+                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
+                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
@@ -415,10 +399,6 @@ class ShowResumenVenta extends Component
         $this->lastname = trim($this->lastname);
         $this->licencia = trim($this->licencia);
         $this->placa = trim($this->placa);
-        // if ($this->incluyeguia) {
-        $this->ubigeoorigen_id = $this->incluyeguia ? $this->distritoorigen_id : null;
-        $this->ubigeodestino_id = $this->incluyeguia ? $this->distritodestino_id : null;
-        // }
 
         if ($this->typepayment_id) {
             $this->typepayment = Typepayment::find($this->typepayment_id);
@@ -441,62 +421,80 @@ class ShowResumenVenta extends Component
             $this->reset(['documentdriver', 'namedriver', 'lastname', 'licencia', 'placa', 'ructransport', 'nametransport']);
         }
 
-        // $carrito = Carshoop::Micarrito()->where('sucursal_id', $this->sucursal->id)->get();
-        // $this->items = $carrito;
+        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen'])
+            ->ventas()->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->orderBy('id', 'asc')->get();
+        $this->items = $carshoops;
 
-        $carrito = Session::get('carrito', []);
-        $this->items = (!is_array($carrito)) ? (json_decode($carrito, true)) : $carrito;
-
-        if ($this->typecomprobante_id) {
-            $this->typecomprobante = Typecomprobante::find($this->typecomprobante_id);
+        if ($this->seriecomprobante_id) {
+            $seriecomprobante = Seriecomprobante::with('typecomprobante')->find($this->seriecomprobante_id);
+            $this->typecomprobante = $seriecomprobante->typecomprobante;
 
             if ($this->typepayment->paycuotas && $this->typecomprobante->code <> '01') {
                 $this->addError('typepayment_id', 'Tipo de pago no permitido para el comprobante seleccionado.');
-                DB::rollBack();
+                $mensaje =  response()->json([
+                    'title' => 'TIPO DE PAGO NO PERMITIDO PARA EL COMPROBANTE SELECCIONADO !',
+                    'text' => "Comprobante seleccionado no permite generar ventas con tipo de pago a CREDITO."
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
 
-            $this->setTotal();
-            $series = $this->sucursal->seriecomprobantes()
-                ->where('typecomprobante_id', $this->typecomprobante_id);
-
-            if ($series->exists()) {
-                $seriecomprobante = $series->first();
-                $this->seriecomprobante_id = $seriecomprobante->id ?? null;
-                $numeracion = $seriecomprobante->contador + 1;
+            if ($this->guiaremision && $seriecomprobante->typecomprobante->isSunat()) {
+                if (!$this->guiaremision->seriecomprobante->typecomprobante->isSunat()) {
+                    $mensaje =  response()->json([
+                        'title' => 'GRE LOCAL NO SE PUEDE VINCULAR A COMPROBANTE VENTA EMITIBLE A SUNAT !',
+                        'text' => "No se puede vincular una Guía de remisión local a un comprobante de pago emitible a SUNAT."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
             }
+
+            $this->setTotal();
+            $numeracion = $seriecomprobante->contador + 1;
         }
 
         $validatedData = $this->validate();
-        $this->getClient(false);
-        $this->getTransport();
         DB::beginTransaction();
 
         try {
 
-            $client = Client::where('document', $this->document)->first();
-            if (!$client) {
-                $client = Client::create([
-                    'document' => $this->document,
-                    'name' => $this->name,
-                    'sexo' => strlen(trim($this->document)) == 11 ? 'E' : null,
-                    'pricetype_id' => Pricetype::DefaultPricetype()->first()->id ?? null,
-                ]);
-            }
-
+            $client = Client::find($this->client_id);
             $client->direccions()->updateOrCreate([
                 'name' => $this->direccion,
             ]);
 
-            $carritoSum = json_decode(getTotalCarrito('carrito'));
+            $sumatorias = Carshoop::ventas()->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)
+                ->selectRaw('gratuito, COALESCE(SUM(total), 0) as total')->groupBy('gratuito')
+                ->orderBy('total', 'desc')->get();
+            $itemsnogratuitos = Carshoop::ventas()->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)
+                ->count() ?? 0;
+
+            $gratuito = 0;
+            $total = 0;
+
+            if (count($sumatorias) > 0) {
+                foreach ($sumatorias as $item) {
+                    if ($item->gratuito == '0') {
+                        $total = $item->total;
+                    }
+                    if ($item->gratuito == '1') {
+                        $gratuito = $item->total;
+                    }
+                }
+            }
 
             //SOLO DEBE INCREMENTAR PORCENTAJE EN LOS ITEMS DEL CARRITO QUE NO SEAN GRATUITOS
             // CONTAMOS LOS ITEMS DEL CARITO QUE NO SEAN GRATUITOS
 
-            if ($carritoSum->countnogratuitos > 0) {
-                $totalSinIncrement = number_format($carritoSum->total - $this->paymentactual ?? 0, 3, '.', '');
+            if ($itemsnogratuitos > 0) {
+                $totalSinIncrement = number_format($total - $this->paymentactual ?? 0, 3, '.', '');
             } else {
-                $totalSinIncrement = number_format($carritoSum->sumatoria - $this->paymentactual ?? 0, 3, '.', '');
+                $totalSinIncrement = number_format($total + $gratuito - $this->paymentactual ?? 0, 3, '.', '');
             }
 
             $totalAmountCuotas = number_format($totalSinIncrement + (($totalSinIncrement * $this->increment ?? 0) / 100), 3, '.', '');
@@ -506,8 +504,7 @@ class ShowResumenVenta extends Component
 
             $venta = Venta::create([
                 'date' => now('America/Lima'),
-                // 'code' => 'VT',
-                'code' => $seriecomprobante->serie . '-' . $numeracion,
+                'seriecompleta' => $seriecomprobante->serie . '-' . $numeracion,
                 'direccion' => $this->direccion,
                 'exonerado' => number_format($this->exonerado, 4, '.', ''),
                 'gravado' => number_format($this->gravado, 4, '.', ''),
@@ -530,25 +527,25 @@ class ShowResumenVenta extends Component
                 'user_id' => auth()->user()->id,
             ]);
 
+            // REVISAR CODIGO PARA VINCULAR UNA GRE CON VENTA U CPE
+
             if (!$this->typepayment->paycuotas || $this->paymentactual > 0) {
-                $venta->cajamovimiento()->create([
-                    'date' => now('America/Lima'),
-                    'amount' => number_format($this->paymentactual > 0 ? $this->paymentactual : $this->total, 4, '.', ''),
-                    'referencia' => $seriecomprobante->serie . '-' . $numeracion,
-                    'detalle' => trim($this->detallepago),
-                    'moneda_id' => $this->moneda_id,
-                    'methodpayment_id' => $this->methodpayment_id,
-                    'typemovement' => Cajamovimiento::INGRESO,
-                    'cuenta_id' => $this->cuenta_id,
-                    'concept_id' => $this->concept->id,
-                    'opencaja_id' => $this->opencaja->id,
-                    'sucursal_id' => $this->sucursal->id,
-                    'user_id' => auth()->user()->id,
-                ]);
+                $venta->savePayment(
+                    $this->sucursal->id,
+                    $this->paymentactual > 0 ? $this->paymentactual : $this->total,
+                    $this->moneda_id,
+                    $this->methodpayment_id,
+                    MovimientosEnum::INGRESO->value,
+                    $this->concept->id,
+                    $this->openbox->id,
+                    $this->monthbox->id,
+                    $seriecomprobante->serie . '-' . $numeracion,
+                    trim($this->detallepago),
+                );
             }
 
             if (Module::isEnabled('Facturacion')) {
-                if ($seriecomprobante->typecomprobante->sendsunat) {
+                if ($seriecomprobante->typecomprobante->isSunat()) {
                     $comprobante = $venta->comprobante()->create([
                         'seriecompleta' => $seriecomprobante->serie . '-' . $numeracion,
                         'date' => Carbon::now('America/Lima'),
@@ -566,7 +563,7 @@ class ShowResumenVenta extends Component
                         'total' => number_format($this->total, 4, '.', ''),
                         'paymentactual' => number_format($this->typepayment->paycuotas ? $this->paymentactual : $this->total, 4, '.', ''),
                         'percent' => $this->empresa->igv,
-                        'referencia' => $venta->code,
+                        'referencia' => $venta->seriecompleta,
                         'leyenda' => 'SON SOLES/100',
                         'client_id' => $client->id,
                         'typepayment_id' => $this->typepayment_id,
@@ -577,22 +574,13 @@ class ShowResumenVenta extends Component
                     ]);
 
                     if ($this->incluyeguia) {
-                        $serieguia = $this->sucursal->seriecomprobantes()
-                            ->whereHas('typecomprobante', function ($query) {
-                                $query->where('typecomprobante_id', $this->typecomprobanteguia_id);
-                            });
+                        $serieguiaremision = Seriecomprobante::find($this->serieguia_id);
+                        $numeracionguia = $serieguiaremision->contador + 1;
 
-                        if ($serieguia->exists()) {
-                            $serieguiaremision = $serieguia->first();
-                            $numeracionguia = $serieguiaremision->contador + 1;
-                            // dd($serieguiaremision);
-                        }
-
-                        $guia = $comprobante->guias()->create([
+                        $guia = $comprobante->guia()->create([
                             'seriecompleta' => $serieguiaremision->serie . '-' . $numeracionguia,
                             'date' => Carbon::now('America/Lima'),
                             'expire' => Carbon::now('America/Lima')->format('Y-m-d'),
-                            'code' => $serieguiaremision->typecomprobante->code,
                             'datetraslado' => $this->datetraslado,
                             'ructransport' => $this->ructransport,
                             'nametransport' => $this->nametransport,
@@ -647,148 +635,126 @@ class ShowResumenVenta extends Component
                 }
             }
 
+            if ($this->guiaremision) {
+                if (isset($comprobante)) {
+                    // dd($comprobante);
+                    $this->guiaremision->guiable()->associate($comprobante);
+                    $this->guiaremision->save();
+                } else {
+                    // dd($venta);
+                    $this->guiaremision->guiable()->associate($venta);
+                    $this->guiaremision->save();
+                }
+            }
+
             $counter = 1;
-            $carritoJSON = json_decode(Session::get('carrito'));
+            foreach ($carshoops as $item) {
 
-            foreach ($carritoJSON as $car) {
+                $porcentajeIncr = 0;
+                if ($item->gratuito == 0) {
+                    $priceIncrItem = number_format(($totalAmountCuotas - $totalSinIncrement) / $itemsnogratuitos, 3, '.', '');
+                    $porcentajeIncr = number_format($this->increment ?? 0, 3, '.', '');
+                    $price = number_format($item->price + ($priceIncrItem / $item->cantidad), 3, '.', '');
 
-                $producto = Producto::with('almacens')->find($car->producto_id);
-                $stock = $producto->almacens->find($car->almacen_id)->pivot->cantidad;
+                    if ($this->paymentactual > 0) {
+                        $percentAmount = number_format((100 / $total) * $item->price, 3, '.', '');
+                        $amountItem =  number_format(($totalAmountCuotas - $totalSinIncrement) * $percentAmount / 100, 3, '.', '');
+                        $price = number_format($item->price + $amountItem, 3, '.', '');
+                        $porcentajeIncr = number_format($amountItem * 100 / $price, 3, '.', '');
+                    }
+                } else {
+                    $price = number_format($item->price, 3, '.', '');
+                }
 
-                if ($stock && $stock > 0) {
-                    if ($stock - $car->cantidad < 0) {
-                        $this->addError('items', 'Cantidad del producto ' . $producto->name . ' supera el stock disponible [' . formatDecimalOrInteger($stock) . '].');
-                        DB::rollBack();
-                        return false;
-                    } else {
+                // dd($carritoSum->countnogratuitos, $carritoSum->total, $totalSinIncrement, $priceIncrItem, $porcentajeIncr);
+                $pricesale = $this->incluyeigv ? ($price * 100) / (100 + $this->empresa->igv) : $price;
+                $igv = $this->incluyeigv ? $price - $pricesale : 0;
+                $subtotalItemIGV = $this->incluyeigv ? $igv * $item->cantidad : 0;
+                $subtotalItem = number_format($pricesale * $item->cantidad, 3, '.', '');
+                $totalItem = number_format($pricesale * $item->cantidad + $subtotalItemIGV, 3, '.', '');
 
-                        $porcentajeIncr = 0;
-                        if ($car->gratuito == 0) {
-                            $priceIncrItem = number_format(($totalAmountCuotas - $totalSinIncrement) / $carritoSum->countnogratuitos, 3, '.', '');
-                            $porcentajeIncr = number_format($this->increment ?? 0, 3, '.', '');
-                            $price = number_format($car->price + ($priceIncrItem / $car->cantidad), 3, '.', '');
+                $newTvitem = [
+                    'date' => now('America/Lima'),
+                    'cantidad' => $item->cantidad,
+                    'pricebuy' => $item->pricebuy,
+                    'price' => number_format($pricesale, 2, '.', ''),
+                    'igv' => number_format($igv, 2, '.', ''),
+                    'subtotaligv' => number_format($subtotalItemIGV, 2, '.', ''),
+                    'subtotal' => number_format($subtotalItem, 2, '.', ''),
+                    'total' => number_format($totalItem, 2, '.', ''),
+                    'status' => 0,
+                    'alterstock' => $item->mode,
+                    'gratuito' => $item->gratuito,
+                    'increment' => $porcentajeIncr,
+                    'almacen_id' => $item->almacen_id,
+                    'producto_id' => $item->producto_id,
+                    'user_id' => auth()->user()->id
+                ];
 
-                            if ($this->paymentactual > 0) {
-                                $percentAmount = number_format((100 / $carritoSum->total) * $car->price, 3, '.', '');
-                                $amountItem =  number_format(($totalAmountCuotas - $totalSinIncrement) * $percentAmount / 100, 3, '.', '');
-                                $price = number_format($car->price + $amountItem, 3, '.', '');
-                                $porcentajeIncr = number_format($amountItem * 100 / $price, 3, '.', '');
-                            }
-                        } else {
-                            $price = number_format($car->price, 3, '.', '');
-                        }
+                // dd($newTvitem);
 
-                        // dd($carritoSum->countnogratuitos, $carritoSum->total, $totalSinIncrement, $priceIncrItem, $porcentajeIncr);
+                $tvitem = $venta->tvitems()->create($newTvitem);
+                if ($item->kardex) {
+                    $item->kardex->detalle = Kardex::SALIDA_VENTA;
+                    $item->kardex->reference = $seriecomprobante->serie . '-' . $numeracion;
+                    $item->kardex->kardeable_id = $tvitem->id;
+                    $item->kardex->kardeable_type = Tvitem::class;
+                    $item->kardex->save();
+                }
 
-                        $pricesale = $this->incluyeigv ? ($price * 100) / (100 + $this->empresa->igv) : $price;
-                        $igv = $this->incluyeigv ? $price - $pricesale : 0;
-                        $subtotalItemIGV = $this->incluyeigv ? $igv * $car->cantidad : 0;
-                        $subtotalItem = number_format($pricesale * $car->cantidad, 3, '.', '');
-                        $totalItem = number_format($pricesale * $car->cantidad, 3, '.', '');
+                if ($this->incluyeguia) {
+                    $tvitemguia = $guia->tvitems()->create($newTvitem);
+                }
 
-                        $newTvitem = [
+                if (count($item->carshoopseries) > 0) {
+                    foreach ($item->carshoopseries as $carshoopserie) {
+                        $newTvserieitem = [
                             'date' => now('America/Lima'),
-                            'cantidad' => $car->cantidad,
-                            'pricebuy' => $car->pricebuy,
+                            'serie_id' => $carshoopserie->serie_id,
+                            'user_id' => auth()->user()->id,
+                        ];
+
+                        $tvitem->itemseries()->create($newTvserieitem);
+                        if ($this->incluyeguia) {
+                            $tvitemguia->itemseries()->create($newTvserieitem);
+                        }
+                    }
+                }
+
+                if ($item->gratuito) {
+                    $afectacion = $this->incluyeigv ? '15' : '21';
+                } else {
+                    $afectacion = $this->incluyeigv ? '10' : '20';
+                }
+
+                $codeafectacion = $this->incluyeigv ? '1000' : '9997';
+                $nameafectacion = $this->incluyeigv ? 'IGV' : 'EXO';
+                $typeafectacion = $this->incluyeigv ? 'VAT' : 'VAT';
+                $abreviatureafectacion = $this->incluyeigv ? 'S' : 'E';
+
+                if (Module::isEnabled('Facturacion')) {
+                    if ($seriecomprobante->typecomprobante->sendsunat) {
+                        $comprobante->facturableitems()->create([
+                            'item' => $counter,
+                            'descripcion' => $item->producto->name,
+                            'code' => $item->producto->code,
+                            'cantidad' => $item->cantidad,
                             'price' => number_format($pricesale, 2, '.', ''),
                             'igv' => number_format($igv, 2, '.', ''),
                             'subtotaligv' => number_format($subtotalItemIGV, 2, '.', ''),
                             'subtotal' => number_format($subtotalItem, 2, '.', ''),
                             'total' => number_format($totalItem, 2, '.', ''),
-                            'status' => 0,
-                            'gratuito' => $car->gratuito,
-                            'increment' => $porcentajeIncr,
-                            'almacen_id' => $car->almacen_id,
-                            'producto_id' => $car->producto_id,
-                            'user_id' => auth()->user()->id
-                        ];
-
-                        // dd($newTvitem);
-
-                        $tvitem = $venta->tvitems()->create($newTvitem);
-                        $tvitem->saveKardex($this->sucursal->id, $car->producto_id, $car->almacen_id, $stock, $stock - $car->cantidad, $car->cantidad, '-', Kardex::SALIDA_VENTA, $seriecomprobante->serie . '-' . $numeracion);
-
-                        if ($this->incluyeguia) {
-                            $tvitemguia = $guia->tvitems()->create($newTvitem);
-                        }
-
-                        if (count($car->series)) {
-                            foreach ($car->series as $ser) {
-                                $serieItem = Serie::find($ser->id);
-                                if ($serieItem) {
-                                    if ($serieItem->status == 2) {
-                                        $this->addError('items', 'Serie: ' . $serieItem->serie . ', ya no se encuentra disponible.');
-                                        DB::rollBack();
-                                        return false;
-                                    } else {
-                                        $newTvserieitem = [
-                                            'date' => now('America/Lima'),
-                                            'status' => 0,
-                                            'serie_id' => $ser->id,
-                                            'user_id' => auth()->user()->id,
-                                        ];
-
-                                        $tvitem->itemseries()->create($newTvserieitem);
-                                        if ($this->incluyeguia) {
-                                            $tvitemguia->itemseries()->create($newTvserieitem);
-                                        }
-                                        $serieItem->status = 2;
-                                        $serieItem->dateout = now('America/Lima');
-                                        $serieItem->save();
-                                    }
-                                } else {
-                                    $this->addError('items', 'No se pudo encontrar la serie: ' . $ser->serie . '.');
-                                    DB::rollBack();
-                                    return false;
-                                }
-                            }
-                        }
-
-                        if ($car->gratuito) {
-                            $afectacion = $this->incluyeigv ? '13' : '21';
-                        } else {
-                            $afectacion = $this->incluyeigv ? '10' : '20';
-                        }
-
-                        $codeafectacion = $this->incluyeigv ? '1000' : '9997';
-                        $nameafectacion = $this->incluyeigv ? 'IGV' : 'EXO';
-                        $typeafectacion = $this->incluyeigv ? 'VAT' : 'VAT';
-                        $abreviatureafectacion = $this->incluyeigv ? 'S' : 'E';
-
-                        if (Module::isEnabled('Facturacion')) {
-                            if ($seriecomprobante->typecomprobante->sendsunat) {
-                                $comprobante->facturableitems()->create([
-                                    'item' => $counter,
-                                    'descripcion' => $producto->name,
-                                    'code' => $producto->code,
-                                    'cantidad' => $car->cantidad,
-                                    'price' => number_format($pricesale, 2, '.', ''),
-                                    'igv' => number_format($igv, 2, '.', ''),
-                                    'subtotaligv' => number_format($subtotalItemIGV, 2, '.', ''),
-                                    'subtotal' => number_format($subtotalItem, 2, '.', ''),
-                                    'total' => number_format($totalItem, 2, '.', ''),
-                                    'unit' => $producto->unit->code,
-                                    'codetypeprice' => $car->gratuito ? '02' : '01', //01: Precio unitario (incluye el IGV) 02: Valor referencial unitario en operaciones no onerosas
-                                    'afectacion' => $afectacion,
-                                    'codeafectacion' => $car->gratuito ? '9996' : $codeafectacion,
-                                    'nameafectacion' => $car->gratuito ? 'GRA' : $nameafectacion,
-                                    'typeafectacion' => $car->gratuito ? 'FRE' : $typeafectacion,
-                                    'abreviatureafectacion' => $car->gratuito ? 'Z' : $abreviatureafectacion,
-                                    'percent' => $this->incluyeigv ? $this->empresa->igv : 0,
-                                ]);
-                            }
-                        }
-
-                        $producto->almacens()->updateExistingPivot($car->almacen_id, [
-                            'cantidad' => formatDecimalOrInteger($stock) - $car->cantidad,
+                            'unit' => $item->producto->unit->code,
+                            'codetypeprice' => $item->gratuito ? '02' : '01', //01: Precio unitario (incluye el IGV) 02: Valor referencial unitario en operaciones no onerosas
+                            'afectacion' => $afectacion,
+                            'codeafectacion' => $item->gratuito ? '9996' : $codeafectacion,
+                            'nameafectacion' => $item->gratuito ? 'GRA' : $nameafectacion,
+                            'typeafectacion' => $item->gratuito ? 'FRE' : $typeafectacion,
+                            'abreviatureafectacion' => $item->gratuito ? 'Z' : $abreviatureafectacion,
+                            'percent' => $this->incluyeigv ? $this->empresa->igv : 0,
                         ]);
                     }
-                } else {
-                    $this->addError('items', 'Stock del producto ' . $producto->name . ' no disponible [' . formatDecimalOrInteger($stock) . '].');
-                    DB::rollBack();
-                    return false;
                 }
-
                 $counter++;
             }
 
@@ -820,13 +786,22 @@ class ShowResumenVenta extends Component
 
             $seriecomprobante->contador = $numeracion;
             $seriecomprobante->save();
+
+            Carshoop::with(['carshoopseries'])->ventas()->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
+                    $carshoop->carshoopseries()->delete();
+                    $carshoop->delete();
+                });
             DB::commit();
-            Session::forget('carrito');
             $this->resetValidation();
-            // $this->resetErrorBag();
             $this->reset();
             $this->dispatchBrowserEvent('created');
-            return redirect()->route('admin.ventas.show', $venta);
+
+            if (auth()->user()->hasPermissionTo('admin.ventas.edit')) {
+                return redirect()->route('admin.ventas.edit', $venta);
+            } else {
+                return redirect()->route('admin.ventas');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -836,199 +811,276 @@ class ShowResumenVenta extends Component
         }
     }
 
-    public function delete($id)
+    public function delete(Carshoop $carshoop)
     {
-        $carrito = Session::pull('carrito');
-        if (!is_array($carrito)) {
-            $carrito = json_decode($carrito, true);
-            unset($carrito[$id]);
-        }
-
-        $carritoJSON = response()->json($carrito)->getContent();
-        Session::put('carrito', $carritoJSON);
-        $this->setTotal();
-    }
-
-    public function deleteserie($idItem, $idSerie)
-    {
-        $carritoSesion = Session::pull('carrito');
-        if (!is_array($carritoSesion)) {
-            $carritoSesion = json_decode($carritoSesion, true);
-        }
-
-        $existSerie = false;
-        $arrayseries = $carritoSesion[$idItem]['series'] ?? [];
-
-        if (count($arrayseries) > 0) {
-            foreach ($arrayseries as $key => $serie) {
-                if ($serie['id'] == $idSerie) {
-                    $existSerie = true;
-                    unset($arrayseries[$key]);
-                }
+        DB::beginTransaction();
+        try {
+            if (count($carshoop->carshoopseries) > 0) {
+                $carshoop->carshoopseries()->each(function ($carshoopserie) use ($carshoop) {
+                    if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+                        $carshoopserie->serie->dateout = null;
+                        $carshoopserie->serie->status = 0;
+                        $carshoopserie->serie->save();
+                    }
+                    $carshoopserie->delete();
+                });
             }
 
-            if ($existSerie) {
-                $carritoSesion[$idItem]['series'] = [];
-                foreach ($arrayseries as $serie) {
-                    $carritoSesion[$idItem]['series'][] = $serie;
+            if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+                $stock = $carshoop->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
+                $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+                    'cantidad' => $stock + $carshoop->cantidad,
+                ]);
+            }
+
+            if ($carshoop->kardex) {
+                $carshoop->kardex->delete();
+            }
+
+            $carshoop->delete();
+            DB::commit();
+            $this->setTotal();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function updategratis(Carshoop $carshoop)
+    {
+        $carshoop->gratuito = $carshoop->gratuito == 1 ? 0 : 1;
+        $carshoop->save();
+        $this->setTotal();
+        $this->dispatchBrowserEvent('updated');
+    }
+
+    public function deleteserie(Carshoopserie $carshoopserie)
+    {
+        DB::beginTransaction();
+        try {
+            if ($carshoopserie->carshoop->isDiscountStock() || $carshoopserie->carshoop->isReservedStock()) {
+                $carshoopserie->serie->dateout = null;
+                $carshoopserie->serie->status = 0;
+                $carshoopserie->serie->save();
+                $carshoopserie->carshoop->cantidad = $carshoopserie->carshoop->cantidad - 1;
+                $carshoopserie->carshoop->subtotal = $carshoopserie->carshoop->price * $carshoopserie->carshoop->cantidad;
+                $carshoopserie->carshoop->total = $carshoopserie->carshoop->price * $carshoopserie->carshoop->cantidad;
+                $carshoopserie->carshoop->save();
+
+                $stock = $carshoopserie->carshoop->producto->almacens->find($carshoopserie->carshoop->almacen_id)->pivot->cantidad;
+                $carshoopserie->carshoop->producto->almacens()->updateExistingPivot($carshoopserie->carshoop->almacen_id, [
+                    'cantidad' => $stock + 1,
+                ]);
+            }
+
+            if ($carshoopserie->carshoop->kardex) {
+                $carshoopserie->carshoop->kardex->cantidad = $carshoopserie->carshoop->kardex->cantidad - 1;
+                $carshoopserie->carshoop->kardex->newstock = $carshoopserie->carshoop->kardex->newstock + 1;
+                $carshoopserie->carshoop->kardex->save();
+            }
+
+            $carshoopserie->delete();
+            DB::commit();
+            $this->setTotal();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function getGRE()
+    {
+
+        $this->searchgre = mb_strtoupper(trim($this->searchgre), "UTF-8");
+        $this->validate([
+            'searchgre' => ['required', 'string', 'min:6', 'max:13']
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $guia = Guia::with(['tvitems', 'client', 'guiable'])->where('seriecompleta', $this->searchgre)
+                ->where('sucursal_id', $this->sucursal->id)->withTrashed()->first();
+            if ($guia) {
+                // dd($guia);
+                if ($guia->trashed()) {
+                    $mensaje =  response()->json([
+                        'title' => 'GUÍA DE REMISIÓN SE ENCUENTRA ANULADO !',
+                        'text' => "Guía de remisión se encuentra anulado, ingrese una nueva guia de remisión."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
                 }
-                $carritoSesion[$idItem]['cantidad'] -= 1;
+
+                if ($guia->guiable) {
+                    $mensaje =  response()->json([
+                        'title' => 'GRE YA SE ENCUENTRA RELACIONADO A UN COMPROBANTE !',
+                        'text' => "Guía de remisión se encuentra vinculado al comprobante " . $guia->guiable->seriecompleta . "."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+
+                $existsreservados = $guia->tvitems()->where('alterstock', Almacen::RESERVAR_STOCK)->exists();
+                if ($existsreservados) {
+                    $mensaje =  response()->json([
+                        'title' => 'GRE CONTIENE ITEMS PENDIENTES POR CONFIRMAR !',
+                        'text' => "Guía de remisión contiene items reservados, pendientes por confirmar, verifique el estado de los items y vuelva a intentarlo."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                } else {
+
+                    $tvitems = $guia->tvitems()->where('alterstock', Almacen::DISMINUIR_STOCK)->get();
+                    if (count($tvitems) > 0) {
+                        $this->sincronizegre = true;
+                        $this->guiaremision = $guia;
+                        $this->document = $guia->client->document;
+                        $this->name = $guia->client->name;
+                        if (count($guia->client->direccions) > 0) {
+                            $this->direccion = $guia->client->direccions()->first()->name;
+                        }
+
+                        $this->confirmaradditemsventa($tvitems);
+                        $this->dispatchBrowserEvent('toast', toastJSON('Items de GRE agregados correctamente'));
+                        $this->setTotal();
+                    } else {
+                        $this->addError('searchgre', 'No se encontraron items del comprobante.');
+                    }
+                }
+            } else {
+                $this->addError('searchgre', 'No se encontraron resultados.');
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function confirmaradditemsventa($tvitems)
+    {
+        foreach ($tvitems as $item) {
+            $date = now('America/Lima');
+            $precios = GetPrice::getPriceProducto($item->producto, mi_empresa()->usarlista() ? $this->pricetype_id : null)->getData();
+
+            if ($precios->success) {
+                if (mi_empresa()->uselistprice) {
+                    if (!$precios->existsrango) {
+                        $mensaje =  response()->json([
+                            'title' => 'RANGO DE PRECIO DEL PRODUCTO NO DISPONIBLE !',
+                            'text' => "No se encontraron rangos de precio de compra del producto."
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+                    if ($this->moneda->code == 'USD') {
+                        $price =  $precios->pricewithdescountDolar ??  $precios->priceDolar;
+                    } else {
+                        $price = !is_null($precios->pricemanual) ? $precios->pricemanual : $precios->pricewithdescount ?? $precios->pricesale;
+                    }
+                } else {
+                    if ($this->moneda->code  == 'USD') {
+                        $price = $precios->pricewithdescountDolar ?? $precios->priceDolar;
+                    } else {
+                        $price = $precios->pricewithdescount ?? $precios->pricesale;
+                    }
+                }
+            } else {
+                $mensaje =  response()->json([
+                    'title' => 'NO SE PUDO OBTENER PRECIO DEL PRODUCTO !',
+                    'text' => "No se encontraron registros de precios del producto seleccionado $precios->error"
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
+            $carshoop = Carshoop::create([
+                'date' => $date,
+                'cantidad' =>  $item->cantidad,
+                'pricebuy' => $item->producto->pricebuy,
+                'price' => $price,
+                'igv' => 0,
+                'subtotal' => $price * $item->cantidad,
+                'total' => $price * $item->cantidad,
+                'gratuito' => 0,
+                'status' => 0,
+                'producto_id' => $item->producto_id,
+                'almacen_id' => $item->almacen_id,
+                'moneda_id' => $this->moneda_id,
+                'user_id' => auth()->user()->id,
+                'sucursal_id' => $this->sucursal->id,
+                'mode' => Almacen::NO_ALTERAR_STOCK,
+                'cartable_type' => Venta::class,
+            ]);
+
+            if (count($item->itemseries) > 0) {
+                foreach ($item->itemseries as $itemserie) {
+                    if (Carshoopserie::where('serie_id', $itemserie->serie_id)->exists()) {
+                        $mensaje =  response()->json([
+                            'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN LOS ITEMS !',
+                            'text' => "La serie " . $itemserie->serie->serie . " ya se encuentra registrado en los items de la Guía."
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+
+                    $carshoop->carshoopseries()->create([
+                        'date' =>  $date,
+                        'serie_id' => $itemserie->serie_id,
+                        'user_id' => auth()->user()->id
+                    ]);
+                }
             }
         }
-
-        $carritoJSON = response()->json($carritoSesion)->getContent();
-        Session::put('carrito', $carritoJSON);
-        $this->setTotal();
     }
 
-    public function deletecarrito()
+    public function deleteallcarshoop()
     {
-        Session::forget('carrito');
-        $this->setTotal();
-    }
-
-    public function updategratis($id)
-    {
-        $carrito = Session::pull('carrito');
-        if (!is_array($carrito)) {
-            $carrito = json_decode($carrito, true);
-            $carrito[$id]['gratuito'] = $carrito[$id]['gratuito'] == 0 ? 1 : 0;
-        }
-
-        $carritoJSON = response()->json($carrito)->getContent();
-        Session::put('carrito', $carritoJSON);
-        $this->setTotal();
-    }
-
-    // public function updategratis(Carshoop $carshoop)
-    // {
-    //     $carshoop->gratuito = $carshoop->gratuito == 1 ? 0 : 1;
-    //     $carshoop->save();
-    //     $this->setTotal();
-    //     $this->dispatchBrowserEvent('updated');
-    // }
-
-    // public function deleteitem(Carshoop $carshoop)
-    // {
-
-    //     DB::beginTransaction();
-
-    //     try {
-
-    //         $stock = $carshoop->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
-
-    //         if ($carshoop->carshoopseries()->exists()) {
-    //             foreach ($carshoop->carshoopseries as $itemserie) {
-    //                 $itemserie->serie()->update([
-    //                     'status' => 0,
-    //                     'dateout' => null
-    //                 ]);
-    //             }
-    //             $carshoop->carshoopseries()->delete();
-    //         }
-
-    //         $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
-    //             'cantidad' => $stock + $carshoop->cantidad,
-    //         ]);
-
-    //         $carshoop->delete();
-    //         DB::commit();
-    //         $this->setTotal();
-    //         $this->emitTo('ventas.ventas.create-venta', 'render');
-    //         $this->dispatchBrowserEvent('deleted');
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         throw $e;
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-    //         throw $e;
-    //     }
-    // }
-
-    // public function deleteserie(Carshoopserie $carshoopserie)
-    // {
-
-    //     DB::beginTransaction();
-    //     try {
-    //         $cantidad = $carshoopserie->carshoop->cantidad - 1;
-    //         $carshoopserie->serie->dateout = null;
-    //         $carshoopserie->serie->status = 0;
-    //         $carshoopserie->serie->save();
-    //         $carshoopserie->carshoop->cantidad = $cantidad;
-    //         $carshoopserie->carshoop->subtotal = $carshoopserie->carshoop->price * $cantidad;
-    //         $carshoopserie->carshoop->save();
-    //         $carshoopserie->forceDelete();
-
-
-    //         // FALTA CODIGO DEVOLVER STOCK ALMACEN CUANDO ELIMINO UNA SERIE
-
-
-
-
-
-    //         DB::commit();
-    //         $this->setTotal();
-    //         $this->dispatchBrowserEvent('deleted');
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         throw $e;
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-    //         throw $e;
-    //     }
-    // }
-
-    public function loadprovinciasorigen($value)
-    {
-        if ($value) {
-            $this->provinciasorigen = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
+        try {
+            DB::beginTransaction();
+            Carshoop::with(['carshoopseries'])->ventas()->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
+                    $this->delete($carshoop);
+                    // $carshoop->carshoopseries()->delete();
+                    // $carshoop->delete();
+                });
+            DB::commit();
+            $this->setTotal();
+            $this->resetValidation();
+            $this->dispatchBrowserEvent('toast', toastJSON('Carrito de ventas eliminado correctamente'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 
-    public function updatedRegionorigenId($value)
+    public function desvinculargre()
     {
-        $this->reset(['provinciasorigen', 'distritosorigen', 'provinciaorigen_id', 'distritoorigen_id']);
-        $this->loadprovinciasorigen($this->regionorigen_id);
+        $this->reset(['searchgre', 'sincronizegre', 'guiaremision']);
     }
 
-    public function updatedProvinciaorigenId($value)
-    {
-        $this->reset(['distritosorigen', 'distritoorigen_id']);
-        if ($value) {
-            $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciaorigen_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        }
-        $this->loadprovinciasorigen($this->regionorigen_id);
-    }
-
-    public function loadprovinciasdestino($value)
-    {
-        if ($value) {
-            $this->provinciasdestino = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
-        }
-    }
-
-    public function updatedRegiondestinoId($value)
-    {
-        $this->reset(['provinciasdestino', 'distritosdestino', 'provinciadestino_id', 'distritodestino_id']);
-        $this->loadprovinciasdestino($this->regiondestino_id);
-    }
-
-    public function updatedProvinciadestinoId($value)
-    {
-        $this->reset(['distritosdestino', 'distritodestino_id']);
-        if ($value) {
-            $this->distritosdestino = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciadestino_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        }
-        $this->loadprovinciasdestino($this->regiondestino_id);
-    }
-
-    public function getClient($event = true)
+    public function getClient()
     {
 
         $this->document = trim($this->document);
         $this->validate([
             'document' => [
-                'required', 'numeric', $this->typecomprobante->code == "01" ? 'digits:11' : new ValidateDocument,
+                'required', 'numeric', new ValidateDocument,
                 'regex:/^\d{8}(?:\d{3})?$/', in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
             ],
         ]);
@@ -1039,32 +1091,27 @@ class ShowResumenVenta extends Component
         if ($response->getData()) {
             if ($response->getData()->success) {
                 // dd($response->getData());
-                $this->resetValidation(['document', 'name', 'direccion']);
+                $this->resetValidation(['client_id', 'document', 'name', 'direccion']);
                 $this->name = $response->getData()->name;
+                $this->client_id = $response->getData()->client_id;
                 if (!empty($response->getData()->direccion)) {
                     $this->direccion = $response->getData()->direccion;
                 }
 
-                // $this->pricetype_id = $response->getData()->pricetype_id;
-                if ($event) {
-                    if ($this->empresa->uselistprice) {
-                        if ($response->getData()->pricetype_id) {
-                            $this->pricetypeasigned = $response->getData()->pricetypeasigned;
-                            $this->dispatchBrowserEvent('setPricetypeId', $response->getData()->pricetype_id);
-                        }
-                    }
-
-                    if ($response->getData()->birthday) {
-                        $this->dispatchBrowserEvent('birthday', $response->getData()->name);
+                if ($this->empresa->usarlista()) {
+                    if ($response->getData()->pricetype_id) {
+                        $this->pricetypeasigned = $response->getData()->pricetypeasigned;
+                        $this->dispatchBrowserEvent('setPricetypeId', $response->getData()->pricetype_id);
                     }
                 }
+
+                if ($response->getData()->birthday) {
+                    $this->dispatchBrowserEvent('birthday', $response->getData()->name);
+                }
             } else {
-                // dd($response);
                 $this->resetValidation(['document']);
                 $this->addError('document', $response->getData()->message);
             }
-        } else {
-            dd($response);
         }
     }
 
@@ -1142,7 +1189,7 @@ class ShowResumenVenta extends Component
         ]);
 
         $client = new GetClient();
-        $response = $client->getClient($this->documentdriver);
+        $response = $client->getClient($this->documentdriver, false);
         if ($response->getData()) {
             if ($response->getData()->success) {
                 $this->resetValidation(['documentdriver', 'namedriver']);
@@ -1154,11 +1201,5 @@ class ShowResumenVenta extends Component
         } else {
             dd($response);
         }
-    }
-
-    public function hydrate()
-    {
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        $this->loadprovinciasdestino($this->regiondestino_id);
     }
 }

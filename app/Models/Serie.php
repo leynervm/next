@@ -49,7 +49,7 @@ class Serie extends Model
 
     public function scopeSalidas($query)
     {
-        return $query->where('status', $this::SALIDA);
+        return $query->where('status', self::SALIDA);
     }
 
     public function scopeReservadas($query)
@@ -59,12 +59,27 @@ class Serie extends Model
 
     public function scopeDisponibles($query)
     {
-        return $query->where('status', $this::DISPONIBLE);
+        return $query->where('status', self::DISPONIBLE);
     }
 
     public function itemserie(): HasOne
     {
         return $this->hasOne(Itemserie::class);
+    }
+
+    public function isDisponible()
+    {
+        return $this->status == self::DISPONIBLE;
+    }
+
+    public function isSalida()
+    {
+        return $this->status == self::SALIDA;
+    }
+
+    public function isReservada()
+    {
+        return $this->status == self::RESERVADA;
     }
 
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)

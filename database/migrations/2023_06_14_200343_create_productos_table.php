@@ -38,7 +38,7 @@ class CreateProductosTable extends Migration
             $table->foreign('estante_id')->on('estantes')->references('id');
             $table->foreign('marca_id')->on('marcas')->references('id');
             $table->foreign('category_id')->on('categories')->references('id');
-            $table->foreign('subcategory_id')->on('subcategories')->references('id');
+            $table->foreign('subcategory_id')->on('subcategories')->references('id')->nullOnDelete();
             $table->foreign('unit_id')->on('units')->references('id');
             $table->timestamps();
             $table->softDeletes();

@@ -17,8 +17,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Ventas\Entities\Venta;
 
 class Comprobante extends Model
 {
@@ -42,6 +44,11 @@ class Comprobante extends Model
         return $this->morphTo()->withTrashed();
     }
 
+    public function scopeVentas($query)
+    {
+        return $query->where('facturable_type', Venta::class);
+    }
+
     public function seriecomprobante(): BelongsTo
     {
         return $this->belongsTo(Seriecomprobante::class);
@@ -59,7 +66,7 @@ class Comprobante extends Model
 
     public function sucursal()
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function facturableitems(): HasMany
@@ -82,10 +89,16 @@ class Comprobante extends Model
         return $this->belongsTo(Moneda::class);
     }
 
-    public function guias(): HasMany
+    // public function guias(): HasMany
+    // {
+    //     return $this->hasMany(Guia::class);
+    // }
+
+    public function guia(): MorphOne
     {
-        return $this->hasMany(Guia::class);
+        return $this->morphOne(Guia::class, 'guiable');
     }
+
 
     public function cuotas(): MorphMany
     {

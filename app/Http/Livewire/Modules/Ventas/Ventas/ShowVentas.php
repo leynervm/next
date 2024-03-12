@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
 use App\Models\Sucursal;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Ventas\Entities\Venta;
@@ -12,7 +13,7 @@ use Nwidart\Modules\Facades\Module;
 class ShowVentas extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $search = '';
     public $date = '';
@@ -66,6 +67,7 @@ class ShowVentas extends Component
         }
 
         if ($this->deletes) {
+            $this->authorize('admin.ventas.deletes');
             $ventas->onlyTrashed();
         }
 
@@ -96,6 +98,7 @@ class ShowVentas extends Component
 
     public function updatedDeletes()
     {
+        $this->authorize('admin.ventas.deletes');
         $this->resetPage();
     }
 

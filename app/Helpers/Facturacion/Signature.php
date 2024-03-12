@@ -1,17 +1,21 @@
 <?php
+
 namespace App\Helpers\Facturacion;
+
 use App\Helpers\Facturacion\ApiSignature\XMLSecurityDSig;
 use App\Helpers\Facturacion\ApiSignature\XMLSecurityKey;
 
 use DOMDocument;
+use Exception;
 
 // require_once('api_signature/XMLSecurityKey.php');
 // require_once('api_signature/XMLSecurityDSig.php');
 // require_once('api_signature/XMLSecEnc.php');
 
-class Signature 
+class Signature
 {
-    public function signatureXML($flg_firma, $ruta, $ruta_firma, $pass_firma) {        
+    public function signatureXML($flg_firma, $ruta, $ruta_firma, $pass_firma)
+    {
         $doc = new DOMDocument();
 
         $doc->formatOutput = FALSE;
@@ -24,7 +28,7 @@ class Signature
         $options['id_name'] = 'ID';
         $options['overwrite'] = FALSE;
 
-        
+
 
         $objDSig->addReference($doc, XMLSecurityDSig::SHA1, array('http://www.w3.org/2000/09/xmldsig#enveloped-signature'), $options);
         $objKey = new XMLSecurityKey(XMLSecurityKey::RSA_SHA1, array('type' => 'private'));
@@ -32,23 +36,29 @@ class Signature
         $pfx = file_get_contents($ruta_firma);
         $key = array();
 
-        openssl_pkcs12_read($pfx, $key, $pass_firma);
-        $objKey->loadKey($key["pkey"]);
-        $objDSig->add509Cert($key["cert"], TRUE, FALSE);
-        $objDSig->sign($objKey, $doc->documentElement->getElementsByTagName("ExtensionContent")->item($flg_firma));
+        try {
+            openssl_pkcs12_read($pfx, $key, $pass_firma);
+            $objKey->loadKey($key["pkey"]);
+            $objDSig->add509Cert($key["cert"], TRUE, FALSE);
+            $objDSig->sign($objKey, $doc->documentElement->getElementsByTagName("ExtensionContent")->item($flg_firma));
 
-        $atributo = $doc->getElementsByTagName('Signature')->item(0);
-        $atributo->setAttribute('Id', 'SignatureSP');
-        
-        //===================rescatamos Codigo(HASH_CPE)==================
-        $hash_cpe = $doc->getElementsByTagName('DigestValue')->item(0)->nodeValue;
-        $firma_cpe = $doc->getElementsByTagName('SignatureValue')->item(0)->nodeValue;
+            $atributo = $doc->getElementsByTagName('Signature')->item(0);
+            $atributo->setAttribute('Id', 'SignatureSP');
 
-        $doc->save($ruta);
-        $resp['respuesta'] = 'ok';
-        $resp['hash_cpe'] = $hash_cpe;
-        $resp['firma_cpe'] = $firma_cpe;
-        return $resp;
+            //===================rescatamos Codigo(HASH_CPE)==================
+            $hash_cpe = $doc->getElementsByTagName('DigestValue')->item(0)->nodeValue;
+            $firma_cpe = $doc->getElementsByTagName('SignatureValue')->item(0)->nodeValue;
+
+            $doc->save($ruta);
+            $resp['respuesta'] = true;
+            $resp['hash_cpe'] = $hash_cpe;
+            $resp['firma_cpe'] = $firma_cpe;
+            return response()->json($resp)->getData();
+        } catch (Exception $e) {
+            $resp['respuesta'] = false;
+            $resp['code'] = '';
+            $resp['mensaje'] = "Se produjo un error: " . $e->getMessage();
+            return response()->json($resp)->getData();
+        }
     }
 }
-?>

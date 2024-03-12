@@ -26,13 +26,12 @@ class CreateComprasTable extends Migration
             $table->decimal('descuento', 10, 4)->default(0);
             $table->decimal('otros', 12, 4)->default(0);
             $table->decimal('total', 12, 4)->default(0);
-            $table->decimal('counter', 12, 2)->default(0);
+            $table->char('status', 1)->default(0);
             $table->tinyInteger('moneda_id')->nullable();
             $table->tinyInteger('typepayment_id')->nullable();
             $table->bigInteger('proveedor_id')->nullable();
             $table->tinyInteger('sucursal_id')->nullable();
             $table->bigInteger('user_id')->nullable();
-
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('typepayment_id')->on('typepayments')->references('id');
             $table->foreign('proveedor_id')->on('proveedors')->references('id');

@@ -2,17 +2,20 @@
 
 namespace App\Http\Livewire\Admin\Sucursales;
 
-use App\Models\Caja;
+use App\Models\Box;
 use App\Models\Sucursal;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class ShowCajas extends Component
 {
 
+    use AuthorizesRequests;
+    
     public $open = false;
-    public $sucursal, $caja;
-    public $name;
+    public $sucursal, $box;
+    public $name, $apertura;
 
     protected $listeners = ['delete'];
 
@@ -22,9 +25,12 @@ class ShowCajas extends Component
             'sucursal.id' => [
                 'required', 'integer', 'min:1', 'exists:sucursals,id'
             ],
-            'caja.name' => [
+            'box.name' => [
                 'required', 'min:3', 'max:100',
-                new CampoUnique('cajas', 'name', $this->caja->id, true, 'sucursal_id', $this->sucursal->id),
+                new CampoUnique('boxes', 'name', $this->box->id, true, 'sucursal_id', $this->sucursal->id),
+            ],
+            'box.apertura' => [
+                'required', 'numeric', 'min:0', 'decimal:0,2'
             ],
         ];
     }
@@ -32,7 +38,7 @@ class ShowCajas extends Component
     public function mount(Sucursal $sucursal)
     {
         $this->sucursal = $sucursal;
-        $this->caja = new Caja();
+        $this->box = new Box();
     }
 
     public function render()
@@ -40,50 +46,49 @@ class ShowCajas extends Component
         return view('livewire.admin.sucursales.show-cajas');
     }
 
-    public function edit(Caja $caja)
+    public function edit(Box $box)
     {
-        $this->caja = $caja;
+        $this->box = $box;
         $this->resetValidation();
         $this->open = true;
     }
 
     public function save()
     {
+        $this->authorize('admin.administracion.sucursales.boxes.edit');
         $this->name = trim($this->name);
         $validateData = $this->validate([
             'sucursal.id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'name' => [
-                'required', 'min:3', 'max:100',
-                new CampoUnique('cajas', 'name', null, true, 'sucursal_id', $this->sucursal->id),
+                'required', 'min:3', 'max:100', new CampoUnique('boxes', 'name', null, true, 'sucursal_id', $this->sucursal->id),
+            ],
+            'apertura' => [
+                'required', 'numeric', 'min:0', 'decimal:0,2'
             ],
         ]);
 
-        $caja = $this->sucursal->cajas()->withTrashed()
+        $box = $this->sucursal->boxes()->withTrashed()
             ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])->first();
 
-        if ($caja) {
-            if ($caja->trashed()) {
-                $this->emit('confirmRestorecaja', $caja);
+        if ($box) {
+            if ($box->trashed()) {
+                $this->emit('sucursales.confirmRestorecaja', $box);
             }
         } else {
-            $this->sucursal->cajas()->create($validateData);
+            $this->sucursal->boxes()->create($validateData);
             $this->sucursal->refresh();
             $this->resetValidation();
-            $this->reset(['name']);
+            $this->reset(['name', 'apertura']);
             $this->dispatchBrowserEvent('created');
         }
     }
 
     public function update()
     {
-        $this->caja->name = trim($this->caja->name);
-        $this->validate([
-            'caja.name' => [
-                'required', 'min:3', 'max:100',
-                new CampoUnique('cajas', 'name', $this->caja->id, true, 'sucursal_id', $this->sucursal->id),
-            ]
-        ]);
-        $this->caja->save();
+        $this->authorize('admin.administracion.sucursales.boxes.edit');
+        $this->box->name = trim($this->box->name);
+        $this->validate();
+        $this->box->save();
         $this->sucursal->refresh();
         $this->resetValidation();
         $this->reset(['open']);
@@ -91,22 +96,23 @@ class ShowCajas extends Component
     }
 
 
-    public function delete(Caja $caja)
+    public function delete(Box $box)
     {
 
-        $opencajas = $this->sucursal->cajas()
-            ->withWhereHas('opencajas', function ($query) use ($caja) {
-                $query->whereNull('closedate')->where('caja_id', $caja->id);
+        $this->authorize('admin.administracion.sucursales.boxes.edit');
+        $opencajas = $this->sucursal->boxes()
+            ->withWhereHas('openboxes', function ($query) use ($box) {
+                $query->whereNull('closedate')->where('box_id', $box->id);
             })->exists();
 
         if ($opencajas) {
             $mensaje = response()->json([
-                'title' => 'Existen cajas aperturadas con la registro a eliminar, ' . $caja->name,
-                'text' => "La caja seleccionada se encuentra en uso, cierre la apertura de caja e inténtelo nuevamente."
+                'title' => 'Actualmente La caja se encuentra aperturada, ' . $box->name,
+                'text' => "La caja seleccionada se encuentra en uso, cerrar caja e inténtelo nuevamente."
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
         } else {
-            $caja->delete();
+            $box->delete();
             $this->sucursal->refresh();
             $this->dispatchBrowserEvent('deleted');
         }
@@ -114,12 +120,12 @@ class ShowCajas extends Component
 
     public function restorecaja($id)
     {
-        $caja = Caja::onlyTrashed()->find($id);
-        if ($caja) {
-            $caja->restore();
+        $box = Box::onlyTrashed()->find($id);
+        if ($box) {
+            $box->restore();
             $this->sucursal->refresh();
             $this->resetValidation();
-            $this->reset(['name']);
+            $this->reset(['name', 'apertura']);
             $this->dispatchBrowserEvent('toast', toastJSON('Caja habilitada correctamente'));
         }
     }

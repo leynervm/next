@@ -2,19 +2,22 @@
 
 namespace App\Http\Livewire\Admin\Concepts;
 
+use App\Enums\MovimientosEnum;
 use App\Models\Concept;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 use Livewire\Component;
 
 class CreateConcept extends Component
 {
 
+    use AuthorizesRequests;
+
     public $open = false;
 
-    public $name;
-    public $default = 0;
+    public $name, $typemovement;
 
     protected function rules()
     {
@@ -23,10 +26,9 @@ class CreateConcept extends Component
                 'required', 'min:3', 'max:100',
                 new CampoUnique('concepts', 'name', null, true)
             ],
-            'default' => [
-                'required', 'integer', 'min:0', 'max:6',
-                $this->default != 0 ? Rule::unique('concepts', 'default') : '',
-            ]
+            'typemovement' => [
+                'required', 'string', new Enum(MovimientosEnum::class),
+            ],
         ];
     }
 
@@ -38,6 +40,7 @@ class CreateConcept extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.cajas.conceptos.create');
             $this->resetValidation();
             $this->reset();
         }
@@ -45,24 +48,24 @@ class CreateConcept extends Component
 
     public function save()
     {
+        $this->authorize('admin.cajas.conceptos.create');
         $this->name = trim($this->name);
         $this->validate();
 
         try {
             DB::beginTransaction();
             $concept = Concept::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
+                ->whereRaw('UPPER(name) = ?', [mb_strtoupper(trim($this->name), "UTF-8")])->first();
 
             if ($concept) {
-                $concept->default = $this->default;
+                $concept->typemovement = $this->typemovement;
                 $concept->restore();
             } else {
                 $concept = Concept::create([
                     'name' => $this->name,
-                    'default' => $this->default,
+                    'typemovement' => $this->typemovement,
                 ]);
             }
-
             DB::commit();
             $this->emitTo('admin.concepts.show-concepts', 'render');
             $this->reset();

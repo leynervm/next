@@ -9,6 +9,13 @@ use Nwidart\Modules\Facades\Module;
 
 class SucursalController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.administracion.sucursales')->only('index');
+        // $this->middleware('can:admin.administracion.sucursales.edit')->only('edit');
+    }
+
     public function index()
     {
         $empresa = Empresa::DefaultEmpresa()->first();

@@ -3,6 +3,10 @@
 @php
 
     switch ($type) {
+        case 'next':
+            $fondo = 'bg-next-500';
+            break;
+
         case 'red':
             $fondo = 'bg-red-500';
             break;

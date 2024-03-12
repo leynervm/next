@@ -14,7 +14,7 @@ class ValidatePrincipalCombo implements Rule
      * @return void
      */
 
-    protected $producto_id, $type;
+    protected $producto_id, $type, $mensaje;
 
     public function __construct($producto_id, $type)
     {
@@ -31,15 +31,31 @@ class ValidatePrincipalCombo implements Rule
      */
     public function passes($attribute, $value)
     {
-        if ($this->type == Promocion::DESCUENTO) {
-            $disponibles = Promocion::where('type', Promocion::DESCUENTO)->activos()
-                ->where('producto_id', $this->producto_id);
-        } else {
-            $disponibles = Promocion::whereIn('type', [Promocion::COMBO, Promocion::REMATE])->activos()
-                ->where('producto_id', $this->producto_id);
+        // if ($this->type == Promocion::DESCUENTO) {
+        //     $promocions = Promocion::where('type', Promocion::DESCUENTO)->activos()
+        //         ->where('producto_id', $this->producto_id);
+        // } else {
+        //     $promocions = Promocion::whereIn('type', [Promocion::COMBO, Promocion::REMATE])->activos()
+        //         ->where('producto_id', $this->producto_id);
+        // }
+
+        $promocions = Promocion::activos()->where('producto_id', $this->producto_id)->exists();
+        if ($promocions) {
+            $this->mensaje = 'Producto ya tiene promociones activas.';
+            return false;
         }
 
-        return $disponibles->exists() === false;
+        $itemcombos = Promocion::activos()->withWhereHas('itempromos', function ($query) {
+            $query->where('producto_id', $this->producto_id);
+        })->exists();
+
+        if ($itemcombos) {
+            $this->mensaje = 'Producto ya se encuentra dentro de una promoción activa.';
+            return false;
+        }
+        return true;
+
+        // return $promocions || $itemcombos === false;
     }
 
     /**
@@ -49,6 +65,6 @@ class ValidatePrincipalCombo implements Rule
      */
     public function message()
     {
-        return 'Producto principal contiene promociones activas.';
+        return $this->mensaje;
     }
 }

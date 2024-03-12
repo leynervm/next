@@ -9,25 +9,7 @@
     <div class="flex gap-2 flex-wrap justify-start">
         @if (count($proveedortypes))
             @foreach ($proveedortypes as $item)
-                @php
-                    $default = '';
-                    switch ($item->default) {
-                        case 1:
-                            $default = 'Pago ventas';
-                            break;
-                        case 2:
-                            $default = 'Pago internet';
-                            break;
-                        case 3:
-                            $default = 'Pago cuotas';
-                            break;
-                        default:
-                            $default = null;
-                            break;
-                    }
-                @endphp
-
-                <x-minicard :title="$item->name" :content="$default" :alignFooter="$item->default ? 'justify-between' : 'justify-end'" size="md">
+                <x-minicard :title="$item->name" :alignFooter="$item->default ? 'justify-between' : 'justify-end'" size="md">
                     <x-slot name="buttons">
                         <div class="inline-flex">
                             @if ($item->default)
@@ -55,9 +37,14 @@
                         </div>
 
                         <div class="">
-                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            <x-button-delete wire:click="$emit('proveedortypes.confirmDelete', {{ $item }})"
-                                wire:loading.attr="disabled" />
+                            @can('admin.proveedores.tipos.edit')
+                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                            @endcan
+
+                            @can('admin.proveedores.tipos.delete')
+                                <x-button-delete onclick="confirmDelete({{ $item }})"
+                                    wire:loading.attr="disabled" />
+                            @endcan
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -87,24 +74,21 @@
         </x-slot>
     </x-jet-dialog-modal>
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('proveedortypes.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.emitTo('admin.proveedortypes.show-proveedortypes', 'delete', data
-                            .id);
-                    }
-                })
+        function confirmDelete(proveedor) {
+            swal.fire({
+                title: 'Eliminar tipo de proveedor ' + proveedor.name,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(proveedor.id);
+                }
             })
-        })
+        }
     </script>
 </div>

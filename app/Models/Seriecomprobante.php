@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Facturacion\Entities\Comprobante;
@@ -17,7 +16,7 @@ class Seriecomprobante extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['serie', 'code', 'contador', 'typecomprobante_id'];
+    protected $fillable = ['serie', 'code', 'contador', 'default', 'typecomprobante_id', 'sucursal_id'];
     const DEFAULT = '1';
 
     public function setSerieAttribute($value)
@@ -45,14 +44,13 @@ class Seriecomprobante extends Model
         return $this->hasMany(Venta::class);
     }
 
-    public function sucursals(): BelongsToMany
+    public function sucursals(): BelongsTo
     {
-        return $this->belongsToMany(Sucursal::class)->withPivot('default');
+        return $this->belongsTo(Sucursal::class);
     }
 
     public function scopeDefault($query)
     {
         return $query->withPivot('default', self::DEFAULT);
     }
-
 }

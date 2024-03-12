@@ -16,13 +16,38 @@
                 @auth
                     <x-link-button class="inline-block uppercase" href="{{ url('/admin') }}">Dashboard</x-link-button>
                     {{-- <a href="{{ url('/admin') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Dashboard</a> --}}
+
+
+                    <!-- Authentication -->
+                    <form method="POST" class="inline-block" action="{{ route('logout') }}" x-data>
+                        @csrf
+                        <x-button class="inline-block uppercase" type="submit" @click.prevent="$root.submit();">
+                            {{ __('Log Out') }}
+                        </x-button>
+
+                        {{-- <x-nav-link class="" href="{{ route('logout') }}" @click.prevent="$root.submit();">
+                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                stroke="currentColor" stroke-width=".5" fill-rule="evenodd" clip-rule="evenodd">
+                                <path
+                                    d="M7.95964 5.18436C8.25778 5.63184 8.13597 6.23577 7.68756 6.53329C5.58339 7.92941 4.2 10.3139 4.2 13.0203C4.2 17.3192 7.69218 20.8041 12 20.8041C16.3078 20.8041 19.8 17.3192 19.8 13.0203C19.8 10.3139 18.4166 7.92941 16.3124 6.53329C15.864 6.23577 15.7422 5.63184 16.0404 5.18436C16.3385 4.73689 16.9437 4.61533 17.3921 4.91285C20.0168 6.65432 21.75 9.63513 21.75 13.0203C21.75 18.3939 17.3848 22.75 12 22.75C6.61522 22.75 2.25 18.3939 2.25 13.0203C2.25 9.63513 3.98323 6.65432 6.60789 4.91285C7.0563 4.61533 7.6615 4.73689 7.95964 5.18436Z" />
+                                <path
+                                    d="M12 1.25C12.5523 1.25 13 1.69772 13 2.25V10.25C13 10.8023 12.5523 11.25 12 11.25C11.4477 11.25 11 10.8023 11 10.25V2.25C11 1.69772 11.4477 1.25 12 1.25Z" />
+                            </svg>
+                            <span class="font-medium">{{ __('Log Out') }}</span>
+                        </x-nav-link> --}}
+                        {{-- <x-jet-dropdown-link href="{{ route('logout') }}"
+                            @click.prevent="$root.submit();">
+                            {{ __('Log Out') }}
+                        </x-jet-dropdown-link> --}}
+                    </form>
                 @else
                     <x-link-button class="inline-block uppercase" href="{{ route('login') }}">Log in</x-link-button>
 
                     {{-- <a href="{{ route('login') }}" class="text-sm text-gray-700 dark:text-gray-500 underline">Log in</a> --}}
 
                     @if (Route::has('register'))
-                        <x-link-button class="inline-block uppercase" href="{{ route('register') }}">Register</x-link-button>
+                        <x-link-button class="inline-block uppercase"
+                            href="{{ route('register') }}">Register</x-link-button>
                         {{-- <a href="{{ route('register') }}"
                             class="ml-4 text-sm text-gray-700 dark:text-gray-500 underline">Register</a> --}}
                     @endif

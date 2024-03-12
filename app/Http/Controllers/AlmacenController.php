@@ -2,12 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Empresa;
-use App\Models\Moneda;
 use Illuminate\Http\Request;
 
 class AlmacenController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.administracion.units')->only('units');
+        $this->middleware('can:admin.almacen.categorias')->only('categorias');
+        $this->middleware('can:admin.almacen.subcategorias')->only('subcategorias');
+        $this->middleware('can:admin.almacen.caracteristicas')->only('caracteristicas');
+    }
+
+
     public function categorias()
     {
         return view('admin.categories.index');
@@ -23,16 +31,8 @@ class AlmacenController extends Controller
         return view('admin.units.index');
     }
 
-    public function especificaciones()
+    public function caracteristicas()
     {
         return view('admin.especificaciones.index');
     }
-
-    public function ofertas()
-    {
-        $empresa = Empresa::DefaultEmpresa()->first();
-        $moneda = Moneda::DefaultMoneda()->first();
-        return view('almacen::ofertas', compact('empresa', 'moneda'));
-    }
-
 }

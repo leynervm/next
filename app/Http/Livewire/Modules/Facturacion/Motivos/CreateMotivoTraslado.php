@@ -5,11 +5,14 @@ namespace App\Http\Livewire\Modules\Facturacion\Motivos;
 use App\Models\Motivotraslado;
 use App\Models\Typecomprobante;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rules\Unique;
 use Livewire\Component;
 
 class CreateMotivoTraslado extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name, $typecomprobante_id;
@@ -43,6 +46,7 @@ class CreateMotivoTraslado extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.facturacion.guias.motivos.create');
             $this->resetValidation();
             $this->reset(['name']);
         }
@@ -50,6 +54,12 @@ class CreateMotivoTraslado extends Component
 
     public function save()
     {
+
+        $this->authorize('admin.facturacion.guias.motivos.create');
+        $typecomprobantes = Typecomprobante::default()->where('code', '09')->orderBy('name', 'asc')->get();
+        if (count($typecomprobantes) > 0) {
+            $this->typecomprobante_id = $typecomprobantes->first()->id ?? null;
+        }
         $this->name = mb_strtoupper(trim($this->name), "UTF-8");
         $validateData = $this->validate();
 

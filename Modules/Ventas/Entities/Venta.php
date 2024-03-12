@@ -5,13 +5,14 @@ namespace Modules\Ventas\Entities;
 use App\Models\Cajamovimiento;
 use App\Models\Client;
 use App\Models\Cuota;
+use App\Models\Guia;
 use App\Models\Moneda;
 use App\Models\Seriecomprobante;
 use App\Models\Sucursal;
 use App\Models\Tvitem;
-use App\Models\Typecomprobante;
 use App\Models\User;
 use App\Models\Typepayment;
+use App\Traits\CajamovimientoTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,8 +27,10 @@ class Venta extends Model
     use HasFactory;
     use SoftDeletes;
 
+    use CajamovimientoTrait;
+
     protected $fillable = [
-        'date', 'code', 'direccion', 'exonerado', 'gravado', 'gratuito',
+        'date', 'seriecompleta', 'direccion', 'exonerado', 'gravado', 'gratuito',
         'descuento', 'otros', 'inafecto', 'igv', 'igvgratuito',
         'subtotal', 'total', 'tipocambio', 'increment', 'paymentactual',
         'moneda_id', 'typepayment_id', 'client_id', 'seriecomprobante_id', 'user_id', 'sucursal_id'
@@ -93,6 +96,11 @@ class Venta extends Model
     public function comprobante(): MorphOne
     {
         return $this->morphOne(Comprobante::class, 'facturable')->withTrashed();
+    }
+
+    public function guia(): MorphOne
+    {
+        return $this->morphOne(Guia::class, 'guiable')->withTrashed();
     }
 
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)

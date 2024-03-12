@@ -5,21 +5,20 @@ namespace App\Http\Livewire\Admin\Rangos;
 use App\Models\Pricetype;
 use App\Models\Rango;
 use App\Rules\ValidateRango;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateRango extends Component
 {
 
-    public $open = false;
+    use AuthorizesRequests;
 
+    public $open = false;
     public $desde;
     public $hasta;
     public $minHasta;
     public $incremento = 0;
-   
 
     protected function rules()
     {
@@ -32,9 +31,7 @@ class CreateRango extends Component
                 'required', 'numeric', 'min:' . $this->minHasta, 'decimal:0,2',
                 new ValidateRango($this->desde, $this->hasta),
             ],
-            'incremento' => [
-                'required', 'numeric', 'min:0', 'decimal:0,2',
-            ]
+            'incremento' => ['required', 'numeric', 'min:0', 'decimal:0,2',]
 
         ];
     }
@@ -47,6 +44,7 @@ class CreateRango extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.administracion.rangos.create');
             $this->resetValidation();
             $this->reset();
         }
@@ -54,6 +52,8 @@ class CreateRango extends Component
 
     public function save()
     {
+
+        $this->authorize('admin.administracion.rangos.create');
         $this->minHasta = $this->desde == 0 ? 1 : $this->desde + 0.1;
         $this->validate();
 

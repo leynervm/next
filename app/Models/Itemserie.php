@@ -10,7 +10,11 @@ class Itemserie extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = [
+        'date', 'status', 'serie_id', 'tvitem_id', 'user_id'
+    ];
+
+    public $timestamps = false;
 
     public function serie(): BelongsTo
     {

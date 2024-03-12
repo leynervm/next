@@ -17,9 +17,6 @@ class CreateCaracteristicasTable extends Migration
             $table->id();
             $table->string('name', 255);
             $table->integer('view')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

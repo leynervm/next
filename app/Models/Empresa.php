@@ -18,11 +18,15 @@ class Empresa extends Model
 
     protected $fillable = [
         'document', 'name', 'estado', 'condicion', 'direccion',
-        'urbanizacion', 'email', 'web', 'icono', 'publickey', 'privatekey',
+        'urbanizacion', 'email', 'web', 'icono',
         'usuariosol', 'clavesol', 'montoadelanto', 'uselistprice',
         'usepricedolar', 'viewpricedolar', 'tipocambio', 'tipocambioauto',
-        'status', 'igv', 'default', 'ubigeo_id'
+        'status', 'igv', 'default', 'ubigeo_id', 'cert', 'sendmode', 'passwordcert',
+        'clientid', 'clientsecret'
     ];
+
+    const PRODUCCION = '1';
+    const OPTION_ACTIVE = '1';
 
     // public function getUsepricedolarAttribute($value)
     // {
@@ -62,5 +66,25 @@ class Empresa extends Model
     public function sucursals(): HasMany
     {
         return $this->hasMany(Sucursal::class);
+    }
+
+    public function isProduccion()
+    {
+        return $this->sendmode == self::OPTION_ACTIVE;
+    }
+
+    public function usarlista()
+    {
+        return $this->uselistprice == self::OPTION_ACTIVE;
+    }
+
+    public function usarDolar()
+    {
+        return $this->usepricedolar == self::OPTION_ACTIVE;
+    }
+
+    public function verDolar()
+    {
+        return $this->viewpricedolar == self::OPTION_ACTIVE;
     }
 }

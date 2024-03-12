@@ -1,10 +1,11 @@
 <div x-data="data">
     <x-form-card titulo="REGISTRAR COMPRA" subtitulo="Complete todos los campos para registrar una nueva compra.">
         <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded">
+
             <div class="w-full flex flex-col xs:grid xs:grid-cols-2 xl:grid-cols-3 gap-2">
                 <div class="w-full xs:col-span-2">
                     <x-label value="Proveedor :" />
-                    <div id="parentproveedorcompra_id" class="relative" x-init="selec2Proveedor" wire:ignore>
+                    <div id="parentproveedorcompra_id" class="relative" x-init="selec2Proveedor">
                         <x-select class="block w-full" x-ref="selectproveedor" id="proveedorcompra_id"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
@@ -29,7 +30,8 @@
                             <x-slot name="options">
                                 @if (count($monedas))
                                     @foreach ($monedas as $item)
-                                        <option value="{{ $item->id }}" data-code="{{ $item->code }}">
+                                        <option value="{{ $item->id }}" data-code="{{ $item->code }}"
+                                            data-simbolo="{{ $item->simbolo }}">
                                             {{ $item->currency }}</option>
                                     @endforeach
                                 @endif
@@ -88,9 +90,8 @@
 
                 <div class="w-full">
                     <x-label value="Total exonerado :" />
-                    <x-input class="block w-full numeric" wire:model.defer="exonerado" x-model="exonerado"
-                        @change="sumar" placeholder="0.00" type="number" min="0" step="0.0001"
-                        oninput="numeric(event)" />
+                    <x-input class="block w-full" wire:model.defer="exonerado" x-model="exonerado" @change="sumar"
+                        placeholder="0.00" type="number" min="0" step="0.0001" />
                     <x-jet-input-error for="exonerado" />
                 </div>
 
@@ -123,19 +124,13 @@
                 </div>
 
                 <div class="w-full">
-                    <x-label value="Total compra :" />
-                    <x-disabled-text :text="$total" x-text="total" />
-                    <x-jet-input-error for="total" />
-                </div>
-
-                <div class="w-full">
                     <x-label value="Tipo pago :" />
                     <div id="parenttypepaymentcompra_id" class="relative" x-init="select2Typepayment" wire:ignore>
                         <x-select class="block w-full" x-ref="select" id="typepaymentcompra_id">
                             <x-slot name="options">
                                 @if (count($typepayments))
                                     @foreach ($typepayments as $item)
-                                        <option value="{{ $item->id }}" data-paycuotas="{{ $item->paycuotas }}">
+                                        <option value="{{ $item->id }}">
                                             {{ $item->name }}</option>
                                     @endforeach
                                 @endif
@@ -153,7 +148,25 @@
                     <x-jet-input-error for="detalle" />
                 </div>
             </div>
-            <x-jet-input-error for="opencaja" />
+
+            <x-jet-input-error for="total" />
+
+            <div class="w-full">
+                <p class="text-colorminicard text-sm font-semibold text-end !leading-4">
+                    <small class="text-[10px] font-medium">SUBTOTAL : </small>
+                    <span x-text="subtotal"></span>
+                </p>
+
+                <p class="text-colorminicard text-sm font-semibold text-end !leading-4">
+                    <small class="text-[10px] font-medium">DSCT. : </small>
+                    <span x-text="descuento"></span>
+                </p>
+
+                <p class="text-colorminicard lg:text-3xl font-semibold text-end">
+                    <small class="text-[10px] font-medium" x-text="simbolo"></small>
+                    <span x-text="total"></span>
+                </p>
+            </div>
 
             <div class="w-full flex pt-4 justify-end">
                 <x-button type="submit" wire:loading.attr="disabled">
@@ -161,15 +174,13 @@
                 </x-button>
             </div>
         </form>
-
         <div wire:loading.flex class="loading-overlay rounded hidden">
             <x-loading-next />
         </div>
     </x-form-card>
-    <x-jet-input-error for="cuenta_id" />
 
     <script>
-        function toDecimal(valor, decimals = 4) {
+        function toDecimal(valor, decimals = 3) {
             let numero = parseFloat(valor);
 
             if (isNaN(numero)) {
@@ -182,7 +193,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 open: false,
-                paycuotas: false,
+                simbolo: '',
                 proveedor_id: @entangle('proveedor_id').defer,
                 sucursal_id: @entangle('sucursal_id').defer,
                 typepayment_id: @entangle('typepayment_id').defer,
@@ -191,9 +202,19 @@
                 igv: @entangle('igv').defer,
                 descuento: @entangle('descuento').defer,
                 otros: @entangle('otros').defer,
+                subtotal: @entangle('subtotal').defer,
                 total: @entangle('total').defer,
                 moneda_id: @entangle('moneda_id').defer,
 
+                init() {
+                    this.exonerado = toDecimal(this.exonerado);
+                    this.gravado = toDecimal(this.gravado);
+                    this.igv = toDecimal(this.igv);
+                    this.otros = toDecimal(this.otros);
+                    this.descuento = toDecimal(this.descuento);
+                    this.subtotal = toDecimal(this.subtotal);
+                    this.total = toDecimal(this.total);
+                },
                 sumar() {
                     let total = 0;
                     this.exonerado = toDecimal(this.exonerado);
@@ -204,7 +225,8 @@
 
                     total = parseFloat(this.exonerado) + parseFloat(this.gravado) + parseFloat(this
                         .igv) + parseFloat(this.otros);
-                    this.total = toDecimal(total - parseFloat(this.descuento));
+                    this.subtotal = toDecimal(parseFloat(total) + parseFloat(this.descuento));
+                    this.total = toDecimal(total);
                 },
             }))
         })
@@ -221,6 +243,10 @@
             });
             this.$watch("proveedor_id", (value) => {
                 this.selectP.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectP.select2().val(this.proveedor_id).trigger('change');
             });
         }
 
@@ -245,8 +271,9 @@
             this.selectM.on("select2:select", (event) => {
                 this.moneda_id = event.target.value;
                 let datacode = event.target.options[event.target.selectedIndex].getAttribute('data-code');
+                let datasimbolo = event.target.options[event.target.selectedIndex].getAttribute('data-simbolo');
                 this.open = datacode == 'USD' ? true : false;
-
+                this.simbolo = datasimbolo;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -262,74 +289,11 @@
             this.selectT.val(this.typepayment_id).trigger("change");
             this.selectT.on("select2:select", (event) => {
                 this.typepayment_id = event.target.value;
-                let datapaycuotas = event.target.options[event.target.selectedIndex].getAttribute(
-                    'data-paycuotas');
-                this.paycuotas = datapaycuotas == '1' ? false : true;
-
-                // @this.set('typepayment_id', this.typepayment_id);
-                // @this.set('methodpayment_id', this.methodpayment_id);
-                // @this.set('cuenta_id', this.cuenta_id);
-                // console.log(this.typepayment_id);
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
         }
-
-
-        // renderselect2();
-
-        // $('#proveedorcompra_id').on("change", function(e) {
-        //     $('.select2').attr("disabled", true);
-        //     @this.proveedor_id = e.target.value;
-        // });
-
-        // $('#monedacompra_id').on("change", function(e) {
-        //     $('.select2').attr("disabled", true);
-        //     @this.moneda_id = e.target.value;
-        // });
-
-        // $('#typepaymentcompra_id').on("change", function(e) {
-        //     $('.select2').attr("disabled", true);
-        //     @this.typepayment_id = e.target.value;
-        // });
-
-        // $('#methodpaymentcompra_id').on("change", function(e) {
-        //     $('.select2').attr("disabled", true);
-        //     @this.methodpayment_id = e.target.value;
-        // });
-
-        // $('#cuentacompra_id').on("change", function(e) {
-        //     $('.select2').attr("disabled", true);
-        //     @this.cuenta_id = e.target.value;
-        // });
-
-
-
-        // document.addEventListener('render-select2-compra', () => {
-        //     renderselect2();
-        // });
-
-        // function renderselect2() {
-        //     $('#proveedorcompra_id, #monedacompra_id, #typepaymentcompra_id, #methodpaymentcompra_id, #cuentacompra_id')
-        //         .select2()
-        //         .on('select2:open', function(e) {
-        //             const evt = "scroll.select2";
-        //             $(e.target).parents().off(evt);
-        //             $(window).off(evt);
-        //         });
-
-        //     $('#cuentacompra_id').on("change", function(e) {
-        //         $('.select2').attr("disabled", true);
-        //         @this.cuenta_id = e.target.value;
-        //     });
-
-        //     $('#methodpaymentcompra_id').on("change", function(e) {
-        //         $('.select2').attr("disabled", true);
-        //         @this.methodpayment_id = e.target.value;
-        //     });
-
-        // }
     </script>
 </div>

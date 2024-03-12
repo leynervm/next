@@ -2,10 +2,10 @@
 
 namespace App\Http\Livewire\Admin\Subcategories;
 
-use App\Helpers\FormatoPersonalizado;
 use App\Models\Category;
 use App\Models\Subcategory;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,20 +13,21 @@ use Livewire\WithPagination;
 class ShowSubcategories extends Component
 {
 
+    use AuthorizesRequests;
     use WithPagination;
 
     public $open = false;
     public $subcategory;
     public $selectedCategories = [];
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
         return [
             'subcategory.name' => [
-                'required', 'string', 'min:3', 'max:100',
-                new CampoUnique('subcategories', 'name', $this->subcategory->id, true),
+                'required', 'string', 'min:2', 'max:100',
+                new CampoUnique('subcategories', 'name', $this->subcategory->id, false),
             ],
             'selectedCategories' => ['required', 'array', 'min:1']
         ];
@@ -40,14 +41,15 @@ class ShowSubcategories extends Component
     public function render()
     {
 
-        $subcategories = Subcategory::orderBy('name', 'asc')->paginate(50);
-        $categories = Category::orderBy('name', 'asc')->get();
+        $subcategories = Subcategory::orderBy('order', 'asc')->orderBy('name', 'asc')->paginate(50);
+        $categories = Category::orderBy('order', 'asc')->orderBy('name', 'asc')->get();
 
         return view('livewire.admin.subcategories.show-subcategories', compact('subcategories', 'categories'));
     }
 
     public function edit(Subcategory $subcategory)
     {
+        $this->authorize('admin.almacen.subcategorias.edit');
         $this->subcategory = $subcategory;
         $this->selectedCategories = $subcategory->categories()->pluck('category_id')->toArray();
         $this->open = true;
@@ -55,6 +57,7 @@ class ShowSubcategories extends Component
 
     public function update()
     {
+        $this->authorize('admin.almacen.subcategorias.edit');
         $this->subcategory->name = trim($this->subcategory->name);
         $this->validate();
         $this->subcategory->save();
@@ -64,31 +67,19 @@ class ShowSubcategories extends Component
 
     public function delete(Subcategory $subcategory)
     {
-        $productos = $subcategory->productos()->count();
-        $cadena = FormatoPersonalizado::extraerMensaje([
-            'Productos' => $productos
-        ]);
-
-        if ($productos > 0) {
-            $mensaje = response()->json([
-                'title' => 'No se puede eliminar subcategoría, ' . $subcategory->name,
-                'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-        } else {
-            DB::beginTransaction();
-            try {
-                $subcategory->categories()->detach();
-                $subcategory->deleteOrFail();
-                DB::commit();
-                $this->dispatchBrowserEvent('deleted');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
+        $this->authorize('admin.almacen.subcategorias.delete');
+        DB::beginTransaction();
+        try {
+            $subcategory->categories()->detach();
+            $subcategory->delete();
+            DB::commit();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }

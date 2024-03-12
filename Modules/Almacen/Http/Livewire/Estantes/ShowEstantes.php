@@ -5,24 +5,25 @@ namespace Modules\Almacen\Http\Livewire\Estantes;
 use App\Models\Estante;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowEstantes extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $open = false;
     public $estante;
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
         return [
             'estante.name' => [
-                'required', 'min:1', 'max:100', new Letter,
+                'required', 'min:1', 'max:100',
                 new CampoUnique('estantes', 'name', $this->estante->id, true),
             ]
         ];
@@ -41,26 +42,25 @@ class ShowEstantes extends Component
 
     public function edit(Estante $estante)
     {
+        $this->authorize('admin.almacen.estantes.edit');
         $this->estante = $estante;
         $this->open = true;
     }
 
     public function update()
     {
+        $this->authorize('admin.almacen.estantes.edit');
         $this->estante->name = trim($this->estante->name);
         $this->validate();
         $this->estante->save();
         $this->reset(['open']);
-    }
-
-    public function confirmDelete(Estante $estante)
-    {
-        $this->dispatchBrowserEvent('estantes.confirmDelete', $estante);
+        $this->dispatchBrowserEvent('updated');
     }
 
     public function delete(Estante $estante)
     {
-        $estante->deleteOrFail();
+        $this->authorize('admin.almacen.estantes.delete');
+        $estante->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 }

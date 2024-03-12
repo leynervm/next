@@ -31,15 +31,16 @@
         </x-link-breadcrumb>
     </x-slot>
 
-
-    <div class="flex flex-wrap gap-2 mt-3">
-        <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
-    </div>
+    @can('admin.administracion.sucursales.create')
+        <div class="flex flex-wrap gap-2 mt-3">
+            <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
+        </div>
+    @endcan
 
     {{-- <x-title-next titulo="Sucursales" class="mt-5" /> --}}
-
-    <div class="mt-3">
-        <livewire:admin.sucursales.show-sucursales>
-    </div>
-
+    @can('admin.administracion.sucursales')
+        <div class="mt-3">
+            <livewire:admin.sucursales.show-sucursales>
+        </div>
+    @endcan
 </x-app-layout>

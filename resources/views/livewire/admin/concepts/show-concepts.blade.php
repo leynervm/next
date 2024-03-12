@@ -1,5 +1,4 @@
-<div class="">
-
+<div>
     @if ($concepts->hasPages())
         <div class="pb-2">
             {{ $concepts->onEachSide(0)->links('livewire::pagination-default') }}
@@ -9,13 +8,18 @@
     <div class="flex gap-2 flex-wrap justify-start">
         @if (count($concepts))
             @foreach ($concepts as $item)
-                <x-minicard :title="$item->name" :alignFooter="$item->default == 1 ? 'justify-between' : 'justify-end'" size="md">
-                    <p class="text-center">
-                        <x-span-text :text="getTextConcept($item->default)" class="inline-block leading-3" />
-                    </p>
+                <x-minicard :title="$item->name" alignFooter="justify-between" size="lg">
+                    @if ($item->default->value > 0)
+                        <p class="text-center">
+                            <x-span-text :text="getTextConcept($item->default->value)" class="inline-block text-[9px] leading-3 !tracking-normal" />
+                        </p>
+                    @endif
 
                     <x-slot name="buttons">
                         <div class="inline-flex">
+                            <x-span-text :text="$item->typemovement->value" class="inline-block leading-3 !tracking-normal"
+                                type="{{ $item->isIngreso() ? 'green' : 'red' }}" />
+
                             @if ($item->default == 1)
                                 <x-icon-default />
                             @endif
@@ -35,10 +39,16 @@
                         </div>
 
                         <div class="">
-                            <x-button-edit wire:loading.attr="disabled" wire:target="edit"
-                                wire:click="edit({{ $item->id }})"></x-button-edit>
-                            <x-button-delete wire:loading.attr="disabled" wire:target="confirmDelete"
-                                wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
+                            @can('admin.cajas.conceptos.edit')
+                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                            @endcan
+
+                            @can('admin.cajas.conceptos.delete')
+                                @if ($item->isDefault())
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        wire:click="$emit('concept.confirmDelete',{{ $item }})" />
+                                @endif
+                            @endcan
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -53,48 +63,32 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update">
-                <x-label value="Descripción concepto :" />
-                <x-input class="block w-full" wire:model.defer="concept.name"
-                    placeholder="Descripción del concepto pago..." />
-                <x-jet-input-error for="concept.name" />
-
-                <x-title-next titulo="VALOR PREDETERMINADO" class="mt-3" />
-                <div class="w-full flex gap-1 items-start p-1">
-
-                    <div class="block">
-                        <x-label-check for="edit_ninguno">
-                            <x-input wire:model.defer="concept.default" name="default" type="radio" value="0"
-                                id="edit_ninguno" class="checked:rounded-full" />
-                            NINGUNO
-                        </x-label-check>
+            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
+                @if ($concept->isDefault())
+                    <div class="w-full">
+                        <x-label value="Tipo movimiento :" />
+                        @if (count(getTiypemovimientos()))
+                            <div class="w-full flex flex-wrap gap-2 items-start">
+                                @foreach (getTiypemovimientos() as $movimiento)
+                                    <x-input-radio class="py-2" for="edit_{{ $movimiento->value }}" :text="$movimiento->value">
+                                        <input wire:model.defer="concept.typemovement"
+                                            class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                            id="edit_{{ $movimiento->value }}" name="edittypemovement"
+                                            value="{{ $movimiento->value }}" />
+                                    </x-input-radio>
+                                @endforeach
+                            </div>
+                        @endif
+                        <x-jet-input-error for="concept.typemovement" />
                     </div>
+                @endif
 
-                    <div class="block">
-                        <x-label-check for="edit_ventas">
-                            <x-input wire:model.defer="concept.default" name="default" type="radio" value="1"
-                                id="edit_ventas" class="checked:rounded-full" />
-                            PAGO VENTAS
-                        </x-label-check>
-                    </div>
-
-                    <div class="block">
-                        <x-label-check for="edit_internet">
-                            <x-input wire:model.defer="concept.default" name="default" type="radio" value="2"
-                                id="edit_internet" class="checked:rounded-full" />
-                            PAGO INTERNET
-                        </x-label-check>
-                    </div>
-
-                    <div class="block">
-                        <x-label-check for="edit_cuota">
-                            <x-input wire:model.defer="concept.default" name="default" type="radio" value="3"
-                                id="edit_cuota" class="checked:rounded-full" />
-                            PAGO CUOTA
-                        </x-label-check>
-                    </div>
+                <div class="w-full">
+                    <x-label value="Descripción concepto :" />
+                    <x-input class="block w-full" wire:model.defer="concept.name"
+                        placeholder="Descripción del concepto pago..." />
+                    <x-jet-input-error for="concept.name" />
                 </div>
-                <x-jet-input-error for="concept.default" />
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
@@ -106,9 +100,9 @@
     </x-jet-dialog-modal>
     <script>
         document.addEventListener('livewire:load', function() {
-            window.addEventListener('concepts.confirmDelete', data => {
+            Livewire.on('concept.confirmDelete', data => {
                 swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
+                    title: 'Eliminar concepto ' + data.name,
                     text: "Se eliminará un registro de la base de datos",
                     icon: 'question',
                     showCancelButton: true,
@@ -118,8 +112,7 @@
                     cancelButtonText: 'Cancelar'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        Livewire.emitTo('admin.concepts.show-concepts', 'delete', data.detail
-                            .id);
+                        @this.delete(data.id);
                     }
                 })
             })

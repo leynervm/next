@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Admin\Cajas;
 
+use App\Models\Box;
 use App\Models\Caja;
 use App\Rules\CampoUnique;
 use Illuminate\Validation\Rule;
@@ -45,7 +46,7 @@ class CreateCaja extends Component
         $this->name = trim($this->name);
         $this->validate();
 
-        $caja = Caja::withTrashed()
+        $caja = Box::withTrashed()
             ->where('name', mb_strtoupper($this->name, "UTF-8"))
             ->where('sucursal_id', $this->sucursal_id)->first();
 
@@ -53,7 +54,7 @@ class CreateCaja extends Component
             $caja->status =  0;
             $caja->save();
         } else {
-            Caja::create([
+            Box::create([
                 'name' => $this->name,
                 'sucursal_id' => $this->sucursal_id,
                 'status' => 0

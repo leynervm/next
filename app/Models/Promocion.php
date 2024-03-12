@@ -46,7 +46,8 @@ class Promocion extends Model
 
     public function scopeActivos($query)
     {
-        return $query->where('status', '0');
+        return $query->where('status', '0')
+            ->orWhere('expiredate', '>=', Carbon::now('America/Lima')->format('Y-m-d'));
     }
 
     public function isActivo()
@@ -59,6 +60,21 @@ class Promocion extends Model
         return $this->expiredate >= Carbon::now('America/Lima')->format('Y-m-d');
     }
 
+    public function isDescuento()
+    {
+        return $this->type == self::DESCUENTO;
+    }
+
+    public function isCombo()
+    {
+        return $this->type == self::COMBO;
+    }
+
+    public function isRemate()
+    {
+        return $this->type == self::REMATE;
+    }
+
     public function scopeDisponibles($query)
     {
         return $query->activos()->whereDate('startdate', '<=', Carbon::now('America/Lima')->format('Y-m-d'))
@@ -66,5 +82,10 @@ class Promocion extends Model
             ->orWhereNull('startdate')->whereNull('expiredate')
             ->orderBy('startdate', 'asc')->orderBy('status', 'asc')
             ->orderBy('id', 'asc');
+    }
+
+    public function scopeDescuentosDisponibles($query)
+    {
+        return $query->descuentos()->disponibles()->orderBy('id', 'asc');
     }
 }

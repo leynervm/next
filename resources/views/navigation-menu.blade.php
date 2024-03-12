@@ -53,93 +53,151 @@
                 </x-nav-link>
             </li>
             @if (Module::isEnabled('Ventas'))
-                <li>
-                    <x-nav-link href="{{ route('admin.ventas') }}" :active="request()->routeIs('admin.ventas*')">
-                        <x-slot name="titulo">Ventas</x-slot>
-                        {{-- <span class="hidden md:block">Ventas</span> --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" width="24" height="24"
-                            viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path
-                                d="M11.5 21h-2.926a3 3 0 0 1 -2.965 -2.544l-1.255 -8.152a2 2 0 0 1 1.977 -2.304h11.339a2 2 0 0 1 1.977 2.304l-.117 .761">
-                            </path>
-                            <path d="M9 11v-5a3 3 0 0 1 6 0v5" />
-                            <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
-                            <path d="M20.2 20.2l1.8 1.8" />
-                        </svg>
-                        {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
+                @can('admin.ventas')
+                    <li>
+                        <x-nav-link href="{{ route('admin.ventas') }}" :active="request()->routeIs('admin.ventas*')">
+                            <x-slot name="titulo">Ventas</x-slot>
+                            {{-- <span class="hidden md:block">Ventas</span> --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path
+                                    d="M11.5 21h-2.926a3 3 0 0 1 -2.965 -2.544l-1.255 -8.152a2 2 0 0 1 1.977 -2.304h11.339a2 2 0 0 1 1.977 2.304l-.117 .761">
+                                </path>
+                                <path d="M9 11v-5a3 3 0 0 1 6 0v5" />
+                                <path d="M18 18m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+                                <path d="M20.2 20.2l1.8 1.8" />
+                            </svg>
+                            {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
                         <line x1="3" x2="21" y1="6" y2="6" />
                         <path d="M16 10a4 4 0 0 1-8 0" />
                     </svg> --}}
-                    </x-nav-link>
-                </li>
+                        </x-nav-link>
+                    </li>
+                @endcan
             @endif
             @if (Module::isEnabled('Facturacion'))
+                @can('admin.facturacion')
+                    <li>
+                        <x-nav-link href="{{ route('admin.facturacion') }}" class="" :active="request()->routeIs('admin.facturacion*')">
+                            <x-slot name="titulo">Facturación</x-slot>
+                            {{-- <span class="hidden md:block">Facturación</span> --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M9.72727 2C6.46607 2 4.83546 2 3.70307 2.79784C3.37862 3.02643 3.09058 3.29752 2.8477 3.60289C2 4.66867 2 6.20336 2 9.27273V11.8182C2 14.7814 2 16.2629 2.46894 17.4462C3.22281 19.3486 4.81714 20.8491 6.83836 21.5586C8.09563 22 9.66981 22 12.8182 22C14.6173 22 15.5168 22 16.2352 21.7478C17.3902 21.3424 18.3012 20.4849 18.732 19.3979C19 18.7217 19 17.8751 19 16.1818V15.5" />
+                                <path d="M15 7.5C15 7.5 15.5 7.5 16 8.5C16 8.5 17.5882 6 19 5.5" />
+                                <path
+                                    d="M22 7C22 9.76142 19.7614 12 17 12C14.2386 12 12 9.76142 12 7C12 4.23858 14.2386 2 17 2C19.7614 2 22 4.23858 22 7Z" />
+                                <path
+                                    d="M2 12C2 13.8409 3.49238 15.3333 5.33333 15.3333C5.99912 15.3333 6.78404 15.2167 7.43137 15.3901C8.00652 15.5442 8.45576 15.9935 8.60988 16.5686C8.78333 17.216 8.66667 18.0009 8.66667 18.6667C8.66667 20.5076 10.1591 22 12 22" />
+                            </svg>
+                        </x-nav-link>
+                    </li>
+                @endcan
+            @endif
+
+            @can('admin.cajas')
                 <li>
-                    <x-nav-link href="{{ route('admin.facturacion') }}" class="" :active="request()->routeIs('admin.facturacion*')">
-                        <x-slot name="titulo">Facturación</x-slot>
-                        {{-- <span class="hidden md:block">Facturación</span> --}}
+                    <x-nav-link href="{{ route('admin.cajas') }}" class="" :active="request()->routeIs('admin.cajas*')">
+                        <x-slot name="titulo">Caja Chica</x-slot>
+                        {{-- <span class="hidden md:block">Caja Chica</span> --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path
-                                d="M9.72727 2C6.46607 2 4.83546 2 3.70307 2.79784C3.37862 3.02643 3.09058 3.29752 2.8477 3.60289C2 4.66867 2 6.20336 2 9.27273V11.8182C2 14.7814 2 16.2629 2.46894 17.4462C3.22281 19.3486 4.81714 20.8491 6.83836 21.5586C8.09563 22 9.66981 22 12.8182 22C14.6173 22 15.5168 22 16.2352 21.7478C17.3902 21.3424 18.3012 20.4849 18.732 19.3979C19 18.7217 19 17.8751 19 16.1818V15.5" />
-                            <path d="M15 7.5C15 7.5 15.5 7.5 16 8.5C16 8.5 17.5882 6 19 5.5" />
+                                d="m14,18c4.4183,0 8,-3.5817 8,-8c0,-4.41828 -3.5817,-8 -8,-8c-4.41828,0 -8,3.58172 -8,8c0,4.4183 3.58172,8 8,8z" />
                             <path
-                                d="M22 7C22 9.76142 19.7614 12 17 12C14.2386 12 12 9.76142 12 7C12 4.23858 14.2386 2 17 2C19.7614 2 22 4.23858 22 7Z" />
+                                d="m3.15657,11c-0.73134,1.1176 -1.15657,2.4535 -1.15657,3.8888c0,3.9274 3.18378,7.1112 7.11116,7.1112c1.43534,0 2.77124,-0.4252 3.88884,-1.1566" />
                             <path
-                                d="M2 12C2 13.8409 3.49238 15.3333 5.33333 15.3333C5.99912 15.3333 6.78404 15.2167 7.43137 15.3901C8.00652 15.5442 8.45576 15.9935 8.60988 16.5686C8.78333 17.216 8.66667 18.0009 8.66667 18.6667C8.66667 20.5076 10.1591 22 12 22" />
+                                d="m14,7c-1.1046,0 -2,0.67157 -2,1.5c0,0.82843 0.8954,1.5 2,1.5c1.1046,0 2,0.6716 2,1.5c0,0.8284 -0.8954,1.5 -2,1.5m0,-6c0.8708,0 1.6116,0.4174 1.8862,1m-1.8862,5c-0.8708,0 -1.6116,-0.4174 -1.8862,-1m1.8862,1" />
                         </svg>
                     </x-nav-link>
                 </li>
-            @endif
-            <li>
-                <x-nav-link href="{{ route('admin.cajas') }}" class="" :active="request()->routeIs('admin.cajas*')">
-                    <x-slot name="titulo">Caja Chica</x-slot>
-                    {{-- <span class="hidden md:block">Caja Chica</span> --}}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="m14,18c4.4183,0 8,-3.5817 8,-8c0,-4.41828 -3.5817,-8 -8,-8c-4.41828,0 -8,3.58172 -8,8c0,4.4183 3.58172,8 8,8z" />
-                        <path
-                            d="m3.15657,11c-0.73134,1.1176 -1.15657,2.4535 -1.15657,3.8888c0,3.9274 3.18378,7.1112 7.11116,7.1112c1.43534,0 2.77124,-0.4252 3.88884,-1.1566" />
-                        <path
-                            d="m14,7c-1.1046,0 -2,0.67157 -2,1.5c0,0.82843 0.8954,1.5 2,1.5c1.1046,0 2,0.6716 2,1.5c0,0.8284 -0.8954,1.5 -2,1.5m0,-6c0.8708,0 1.6116,0.4174 1.8862,1m-1.8862,5c-0.8708,0 -1.6116,-0.4174 -1.8862,-1m1.8862,1" />
-                    </svg>
-                </x-nav-link>
-            </li>
+            @endcan
+
             @if (Module::isEnabled('Almacen'))
+                @can('admin.almacen')
+                    <li>
+                        <x-nav-link href="{{ route('admin.almacen') }}" class="" :active="request()->routeIs('admin.almacen*')">
+                            <x-slot name="titulo">Almacén</x-slot>
+                            {{-- <span class="hidden md:block">Almacén</span> --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                                <polyline points="2 17 12 22 22 17" />
+                                <polyline points="2 12 12 17 22 12" />
+                            </svg>
+                        </x-nav-link>
+                    </li>
+                @endcan
+            @elseif (Module::isEnabled('Ventas'))
+                @can('admin.almacen.productos')
+                    <li>
+                        <x-nav-link href="{{ route('admin.almacen.productos') }}" class="" :active="request()->routeIs('admin.almacen*')">
+                            <x-slot name="titulo">Productos</x-slot>
+                            {{-- <span class="hidden md:block">Almacén</span> --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
+                                stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M4.5 17V6H19.5V17H4.5Z" />
+                                <path d="M4.5 6L6.5 2.00001L17.5 2L19.5 6" />
+                                <path d="M10 9H14" />
+                                <path
+                                    d="M11.9994 19.5V22M11.9994 19.5L6.99939 19.5M11.9994 19.5H16.9994M6.99939 19.5H1.99939V22M6.99939 19.5V22M16.9994 19.5H22L21.9994 22M16.9994 19.5V22" />
+                            </svg>
+                        </x-nav-link>
+                    </li>
+                @endcan
+            @endif
+
+            @if (Module::isEnabled('Ventas'))
                 <li>
-                    <x-nav-link href="{{ route('admin.almacen') }}" class="" :active="request()->routeIs('admin.almacen*')">
-                        <x-slot name="titulo">Almacén</x-slot>
+                    <x-nav-link href="{{ route('admin.promociones') }}" class="" :active="request()->routeIs('admin.promociones*')">
+                        <x-slot name="titulo">Promociones</x-slot>
                         {{-- <span class="hidden md:block">Almacén</span> --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
                             <polygon points="12 2 2 7 12 12 22 7 12 2" />
                             <polyline points="2 17 12 22 22 17" />
                             <polyline points="2 12 12 17 22 12" />
-                        </svg>
-                    </x-nav-link>
-                </li>
-            @elseif (Module::isEnabled('Ventas'))
-                <li>
-                    <x-nav-link href="{{ route('admin.almacen.productos') }}" class="" :active="request()->routeIs('admin.almacen*')">
-                        <x-slot name="titulo">Productos</x-slot>
-                        {{-- <span class="hidden md:block">Almacén</span> --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
-                            stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                        </svg> --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 p-1.5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round">
-                            <path d="M4.5 17V6H19.5V17H4.5Z" />
-                            <path d="M4.5 6L6.5 2.00001L17.5 2L19.5 6" />
-                            <path d="M10 9H14" />
                             <path
-                                d="M11.9994 19.5V22M11.9994 19.5L6.99939 19.5M11.9994 19.5H16.9994M6.99939 19.5H1.99939V22M6.99939 19.5V22M16.9994 19.5H22L21.9994 22M16.9994 19.5V22" />
+                                d="M4 11V15C4 18.2998 4 19.9497 5.02513 20.9749C6.05025 22 7.70017 22 11 22H13C16.2998 22 17.9497 22 18.9749 20.9749C20 19.9497 20 18.2998 20 15V11" />
+                            <path
+                                d="M3 9C3 8.25231 3 7.87846 3.20096 7.6C3.33261 7.41758 3.52197 7.26609 3.75 7.16077C4.09808 7 4.56538 7 5.5 7H18.5C19.4346 7 19.9019 7 20.25 7.16077C20.478 7.26609 20.6674 7.41758 20.799 7.6C21 7.87846 21 8.25231 21 9C21 9.74769 21 10.1215 20.799 10.4C20.6674 10.5824 20.478 10.7339 20.25 10.8392C19.9019 11 19.4346 11 18.5 11H5.5C4.56538 11 4.09808 11 3.75 10.8392C3.52197 10.7339 3.33261 10.5824 3.20096 10.4C3 10.1215 3 9.74769 3 9Z" />
+                            <path
+                                d="M6 3.78571C6 2.79949 6.79949 2 7.78571 2H8.14286C10.2731 2 12 3.7269 12 5.85714V7H9.21429C7.43908 7 6 5.56091 6 3.78571Z" />
+                            <path
+                                d="M18 3.78571C18 2.79949 17.2005 2 16.2143 2H15.8571C13.7269 2 12 3.7269 12 5.85714V7H14.7857C16.5609 7 18 5.56091 18 3.78571Z" />
+                            <path d="M12 11L12 22" />
                         </svg>
+
+                        {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 p-1.5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path d="M5.8 11.3 2 22l10.7-3.79" />
+                            <path d="M4 3h.01" />
+                            <path d="M22 8h.01" />
+                            <path d="M15 2h.01" />
+                            <path d="M22 20h.01" />
+                            <path
+                                d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10" />
+                            <path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17" />
+                            <path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7" />
+                            <path
+                                d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z" />
+                        </svg> --}}
                     </x-nav-link>
                 </li>
             @endif
+
             <li>
                 <x-nav-link href="#" class="">
                     <x-slot name="titulo">Reportes</x-slot>
@@ -163,38 +221,42 @@
                     </svg>
                 </x-nav-link>
             </li>
-            <li>
-                <x-nav-link href="{{ route('admin.clientes') }}" :active="request()->routeIs('admin.clientes*') ||
-                    request()->routeIs('admin.pricetypes*') ||
-                    request()->routeIs('admin.channelsales*')">
-                    <x-slot name="titulo">Clientes</x-slot>
-                    {{-- <span class="hidden md:block">Clientes</span> --}}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14 19a6 6 0 0 0-12 0" />
-                        <circle cx="8" cy="9" r="4" />
-                        <path d="M22 19a6 6 0 0 0-6-6 4 4 0 1 0 0-8" />
-                    </svg>
-                </x-nav-link>
-            </li>
 
-            @if (Module::isEnabled('Almacen') || Module::isEnabled('Soporte'))
+            @can('admin.clientes')
                 <li>
-                    <x-nav-link href="{{ route('admin.proveedores') }}" :active="request()->routeIs('admin.proveedores*') || request()->routeIs('admin.proveedores*')">
-                        <x-slot name="titulo">Proveedores</x-slot>
-                        {{-- <span class="hidden md:block">Proveedores</span> --}}
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M10 17h4V5H2v12h3" />
-                            <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5" />
-                            <path d="M14 17h1" />
-                            <circle cx="7.5" cy="17.5" r="2.5" />
-                            <circle cx="17.5" cy="17.5" r="2.5" />
+                    <x-nav-link href="{{ route('admin.clientes') }}" :active="request()->routeIs('admin.clientes*')">
+                        <x-slot name="titulo">Clientes</x-slot>
+                        {{-- <span class="hidden md:block">Clientes</span> --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 19a6 6 0 0 0-12 0" />
+                            <circle cx="8" cy="9" r="4" />
+                            <path d="M22 19a6 6 0 0 0-6-6 4 4 0 1 0 0-8" />
                         </svg>
                     </x-nav-link>
                 </li>
-            @endif
+            @endcan
+
+            @can('admin.proveedores')
+                @if (Module::isEnabled('Almacen') || Module::isEnabled('Soporte'))
+                    <li>
+                        <x-nav-link href="{{ route('admin.proveedores') }}" :active="request()->routeIs('admin.proveedores*') || request()->routeIs('admin.proveedores*')">
+                            <x-slot name="titulo">Proveedores</x-slot>
+                            {{-- <span class="hidden md:block">Proveedores</span> --}}
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M10 17h4V5H2v12h3" />
+                                <path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5" />
+                                <path d="M14 17h1" />
+                                <circle cx="7.5" cy="17.5" r="2.5" />
+                                <circle cx="17.5" cy="17.5" r="2.5" />
+                            </svg>
+                        </x-nav-link>
+                    </li>
+                @endif
+            @endcan
+
             <li>
                 <x-nav-link href="#" class="">
                     <x-slot name="titulo">Sitio Web</x-slot>

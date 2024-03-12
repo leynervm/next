@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Models\Caja;
+use App\Models\Openbox;
 use App\Models\Opencaja;
 use Illuminate\Contracts\Validation\Rule;
 
@@ -27,9 +28,8 @@ class ValidateCaja implements Rule
      */
     public function passes($attribute, $value)
     {
-        return Opencaja::whereHas('caja', function ($query) {
-            $query->where('sucursal_id', auth()->user()->sucursal_id);
-        })->cajasAbiertas()->CajasUser()->count() === 0;
+        $query = Openbox::mybox(auth()->user()->sucursal_id);
+        return !$query->exists() === true;
     }
 
     /**

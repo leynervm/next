@@ -14,13 +14,11 @@ class CreateMethodpaymentsTable extends Migration
     public function up()
     {
         Schema::create('methodpayments', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('name', 100);
-            $table->string('logo', 100)->nullable();
             $table->integer('type')->default(0);
             $table->integer('default')->default(0);
             $table->softDeletes();
-            $table->timestamps();
         });
     }
 

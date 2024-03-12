@@ -5,24 +5,25 @@ namespace Modules\Almacen\Http\Livewire\Almacenareas;
 use App\Models\Almacenarea;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowAlmacenareas extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $open = false;
     public $almacenarea;
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
         return [
             'almacenarea.name' => [
-                'required', 'min:1', 'max:100', new Letter,
+                'required', 'min:1', 'max:100',
                 new CampoUnique('almacenareas', 'name', $this->almacenarea->id, true),
             ]
         ];
@@ -41,26 +42,25 @@ class ShowAlmacenareas extends Component
 
     public function edit(Almacenarea $almacenarea)
     {
+        $this->authorize('admin.almacen.almacenareas.edit');
         $this->almacenarea = $almacenarea;
         $this->open = true;
     }
 
     public function update()
     {
+        $this->authorize('admin.almacen.almacenareas.edit');
         $this->almacenarea->name = trim($this->almacenarea->name);
         $this->validate();
         $this->almacenarea->save();
         $this->reset(['open']);
-    }
-
-    public function confirmDelete(Almacenarea $almacenarea)
-    {
-        $this->dispatchBrowserEvent('almacenareas.confirmDelete', $almacenarea);
+        $this->dispatchBrowserEvent('updated');
     }
 
     public function delete(Almacenarea $almacenarea)
     {
-        $almacenarea->deleteOrFail();
+        $this->authorize('admin.almacen.almacenareas.delete');
+        $almacenarea->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 }

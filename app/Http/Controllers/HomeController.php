@@ -3,13 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\GetClient;
+use App\Models\Employer;
 use App\Models\Empresa;
+use App\Models\Moneda;
 use Exception;
 use Illuminate\Http\Request;
-use Modules\Almacen\Entities\Producto;
 
 class HomeController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.administracion.employers')->only('employers');
+        $this->middleware('can:admin.administracion.employers.payments')->only('payments');
+        $this->middleware('can:admin.administracion.typecomprobantes')->only('typecomprobantes');
+        $this->middleware('can:admin.almacen.marcas')->only('marcas');
+    }
 
     public function index()
     {
@@ -37,11 +46,6 @@ class HomeController extends Controller
         return view('admin.pricetypes.index');
     }
 
-    public function channelsales()
-    {
-        return view('admin.channelsales.index');
-    }
-
     public function typecomprobantes()
     {
         return view('admin.typecomprobantes.index');
@@ -57,14 +61,23 @@ class HomeController extends Controller
         return view('admin.employers.index');
     }
 
+    public function payments(Employer $employer)
+    {
+        $this->authorize('sucursal', $employer);
+        return view('admin.employers.payments', compact('employer'));
+    }
+
     public function promociones()
     {
         return view('admin.promociones.index');
     }
 
-
-
-
+    public function ofertas()
+    {
+        $empresa = Empresa::DefaultEmpresa()->first();
+        $moneda = Moneda::DefaultMoneda()->first();
+        return view('admin.promociones.ofertas', compact('empresa', 'moneda'));
+    }
 
     public function tipocambio()
     {

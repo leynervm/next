@@ -8,12 +8,20 @@ use Illuminate\Http\Request;
 class ClientController extends Controller
 {
 
+    public function __construct()
+    {
+        $this->middleware('can:admin.clientes')->only('index');
+        $this->middleware('can:admin.clientes.edit')->only('edit');
+        $this->middleware('can:admin.clientes.historial')->only('history');
+    }
+
+
     public function index()
     {
         return view('admin.clients.index');
     }
 
-    public function show(Client $client)
+    public function edit(Client $client)
     {
         return view('admin.clients.show', compact('client'));
     }

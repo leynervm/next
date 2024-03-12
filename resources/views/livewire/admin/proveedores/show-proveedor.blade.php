@@ -46,7 +46,8 @@
                                     @if (count($ubigeos))
                                         @foreach ($ubigeos as $item)
                                             <option value="{{ $item->id }}">
-                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }} /
+                                                {{ $item->ubigeo_reniec }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -84,8 +85,10 @@
                 </div>
 
                 <div class="w-full flex gap-2 justify-end">
-                    <x-button-secondary wire:click="$emit('proveedor.confirmDelete', {{ $proveedor }})"
-                        wire:loading.attr="disabled">ELIMINAR PROVEEDOR</x-button-secondary>
+                    @can('admin.proveedores.delete')
+                        <x-button-secondary onclick="confirmDelete({{ $proveedor }})"
+                            wire:loading.attr="disabled">ELIMINAR PROVEEDOR</x-button-secondary>
+                    @endcan
 
                     <x-button type="submit" wire:loading.attr="disabled" wire:target="update">
                         {{ __('ACTUALIZAR') }}
@@ -95,65 +98,76 @@
             </form>
         </x-form-card>
 
-        <x-form-card titulo="TELÉFONOS PROVEEDOR">
-            @if (count($proveedor->telephones))
-                <div class="w-full flex flex-wrap gap-1">
-                    @foreach ($proveedor->telephones as $item)
-                        <x-minicard-phone :phone="formatTelefono($item->phone)">
-                            <x-slot name="footer">
-                                <x-button-edit wire:click="editphone({{ $item->id }})"
-                                    wire:loading.attr="disabled" />
-                                <x-button-delete wire:click="$emit('proveedor.confirmDeletephone',{{ $item }})"
-                                    wire:loading.attr="disabled" />
-                            </x-slot>
-                        </x-minicard-phone>
-                    @endforeach
-                </div>
-            @endif
-
-            <div class="w-full pt-4 flex justify-end">
-                <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
-                    AGREGAR TELEFONO
-                </x-button>
-            </div>
-        </x-form-card>
-
-        <x-form-card titulo="CONTACTOS"
-            subtitulo="Nos permitirá contactarse con el proveedor.">
-            <div class="w-full h-full flex flex-col">
-                @if (count($proveedor->contacts))
-                    <div class="w-full flex flex-col gap-2">
-                        @foreach ($proveedor->contacts as $item)
-                            <div class="w-full text-xs bg-body rounded p-2 shadow-md shadow-shadowform">
-
-                                <p class="text-colorsubtitleform text-[10px] font-semibold">
-                                    <span class="text-colortitleform">({{ $item->document }}) </span>
-                                    {{ $item->name }}
-                                </p>
-
-                                @if ($item->telephone)
-                                    <x-span-text :text="'TELÉFONO :' . $item->telephone->phone" class="leading-3" />
-                                @endif
-
-                                <div class="w-full flex flex-wrap gap-1 items-end justify-end mt-1">
-                                    <x-button-edit wire:click="editrepresentante({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
-                                    <x-button-delete
-                                        wire:click="$emit('proveedor.confirmDeleterepresentante',{{ $item }})"
-                                        wire:loading.attr="disabled" />
-                                </div>
-                            </div>
+        @can('admin.proveedores.phones')
+            <x-form-card titulo="TELÉFONOS PROVEEDOR">
+                @if (count($proveedor->telephones))
+                    <div class="w-full flex flex-wrap gap-1">
+                        @foreach ($proveedor->telephones as $item)
+                            <x-minicard-phone :phone="$item->phone">
+                                @can('admin.proveedores.phones.edit')
+                                    <x-slot name="footer">
+                                        <x-button-edit wire:click="editphone({{ $item->id }})" wire:loading.attr="disabled"
+                                            wire:key="edphonp_{{ $item->id }}" />
+                                        <x-button-delete onclick="confirmDeletephone({{ $item }})"
+                                            wire:loading.attr="disabled" wire:key="dephonp_{{ $item->id }}" />
+                                    </x-slot>
+                                @endcan
+                            </x-minicard-phone>
                         @endforeach
                     </div>
                 @endif
 
-                <div class="w-full flex pt-4 justify-end">
-                    <x-button wire:click="openmodalrepresentante" wire:loading.attr="disabled">
-                        AGREGAR REPRESENTANTE
-                    </x-button>
+                @can('admin.proveedores.phones.edit')
+                    <div class="w-full pt-4 flex justify-end">
+                        <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
+                            AGREGAR TELEFONO
+                        </x-button>
+                    </div>
+                @endcan
+            </x-form-card>
+        @endcan
+
+        @can('admin.proveedores.contacts')
+            <x-form-card titulo="CONTACTOS" subtitulo="Nos permitirá contactarse con el proveedor.">
+                <div class="w-full h-full flex flex-col">
+                    @if (count($proveedor->contacts))
+                        <div class="w-full flex flex-col gap-2">
+                            @foreach ($proveedor->contacts as $item)
+                                <div class="w-full text-xs bg-body rounded p-2 shadow-md shadow-shadowform">
+
+                                    <p class="text-colorsubtitleform text-[10px] font-medium">
+                                        <span class="text-colortitleform">({{ $item->document }}) </span>
+                                        {{ $item->name }}
+                                    </p>
+
+                                    @if ($item->telephone)
+                                        <x-span-text :text="'TELÉFONO :' . formatTelefono($item->telephone->phone)" class="leading-3 !tracking-normal" />
+                                    @endif
+
+
+                                    @can('admin.proveedores.contacts.edit')
+                                        <div class="w-full flex flex-wrap gap-1 items-end justify-end mt-1">
+                                            <x-button-edit wire:click="editrepresentante({{ $item->id }})"
+                                                wire:loading.attr="disabled" wire:key="eprovcont_{{ $item->id }}" />
+                                            <x-button-delete onclick="confirmDeleterepresentante({{ $item }})"
+                                                wire:loading.attr="disabled" wire:key="dprovcont_{{ $item->id }}" />
+                                        </div>
+                                    @endcan
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @can('admin.proveedores.contacts.edit')
+                        <div class="w-full flex pt-4 justify-end">
+                            <x-button wire:click="openmodalrepresentante" wire:loading.attr="disabled">
+                                AGREGAR REPRESENTANTE
+                            </x-button>
+                        </div>
+                    @endcan
                 </div>
-            </div>
-        </x-form-card>
+            </x-form-card>
+        @endcan
 
         <div wire:loading.flex class="loading-overlay rounded hidden">
             <x-loading-next />
@@ -301,61 +315,56 @@
         //         $(window).off(evt);
         //     });
 
-        document.addEventListener('livewire:load', () => {
-            Livewire.on('proveedor.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar proveedor con RUC : ' + data.document,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
-            });
 
-            Livewire.on('proveedor.confirmDeletephone', data => {
-                swal.fire({
-                    title: 'Eliminar número telefónico: ' + data.phone,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deletephone(data.id);
-                    }
-                })
-            });
+        function confirmDelete(proveedor) {
+            swal.fire({
+                title: 'Eliminar proveedor con RUC ' + proveedor.document,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(proveedor.id);
+                }
+            })
+        }
 
-            Livewire.on('proveedor.confirmDeleterepresentante', data => {
-                swal.fire({
-                    title: 'Eliminar representate con nombres: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deleterepresentante(data.id);
-                    }
-                })
-            });
+        function confirmDeletephone(phone) {
+            swal.fire({
+                title: 'Eliminar número telefónico ' + phone.phone,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletephone(phone.id);
+                }
+            })
+        }
 
-            // document.addEventListener('render-select2-editproveedores', () => {
-            //     $('.select2').select2();
-            // });
-        })
+        function confirmDeleterepresentante(contact) {
+            swal.fire({
+                title: 'Eliminar contacto ' + contact.name,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deleterepresentante(contact.id);
+                }
+            })
+        }
     </script>
 </div>

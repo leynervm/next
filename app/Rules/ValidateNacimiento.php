@@ -31,9 +31,12 @@ class ValidateNacimiento implements Rule
     public function passes($attribute, $value)
     {
         // Convierte el valor a una instancia de Carbon
-        $date = Carbon::createFromFormat('Y-m-d', $value);
+        // $date = Carbon::createFromFormat('Y-m-d', $value);
+        $date = Carbon::parse($value)->format('Y-m-d');
         $yearsAgo = now()->subYears($this->years);
-        return $date->lte($yearsAgo);
+        // dd(Carbon::createFromFormat('Y-m-d', $date)->lte($yearsAgo));
+
+        return Carbon::createFromFormat('Y-m-d', $date)->lte($yearsAgo);
     }
 
     /**

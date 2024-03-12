@@ -8,6 +8,7 @@ use App\Models\Sucursal;
 use App\Models\Typecomprobante;
 use App\Models\Typepayment;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Facturacion\Entities\Comprobante;
@@ -78,16 +79,14 @@ class ShowComprobantes extends Component
         $sucursals = Sucursal::withTrashed()->whereHas('comprobantes')->get();
 
         $typepayments = Typepayment::whereHas('comprobantes', function ($query) {
-            $query->withTrashed()
-                ->where('sucursal_id', auth()->user()->sucursal_id);
+            $query->withTrashed()->where('sucursal_id', auth()->user()->sucursal_id);
         })->orderBy('name', 'asc')->get();
 
         $users = User::whereHas('comprobantes')->orderBy('name', 'asc')->get();
 
         $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
-            $query->whereHas('comprobantes')->withWhereHas('sucursals', function ($query) {
-                $query->withTrashed()->where('sucursals.id', auth()->user()->sucursal_id);
-            });
+            $query->whereHas('comprobantes')
+                ->where('sucursal_id', auth()->user()->sucursal_id);
         })->orderBy('code', 'asc')->get();
 
         if ($this->search !== '') {
@@ -137,6 +136,34 @@ class ShowComprobantes extends Component
             $query->withTrashed();
         }])->find($id);
 
+        if ($comprobante->sucursal->empresa->cert) {
+            $filename = 'company/cert/' . $comprobante->sucursal->empresa->cert;
+            if (!Storage::disk('local')->exists($filename)) {
+                $mensaje = response()->json([
+                    'title' => 'Certificado digital SUNAT no encontrado !',
+                    'text' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+        } else {
+            $mensaje = response()->json([
+                'title' => 'No se ha configurado el certificado digital SUNAT !',
+                'text' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!$comprobante->sucursal->empresa->usuariosol || !$comprobante->sucursal->empresa->usuariosol) {
+            $mensaje = response()->json([
+                'title' => 'Configurar usuario y clave SOL para la emisión de comprobantes electrónicos !',
+                'text' => 'No se pudo encontrar los datos de usuario y clave SOL para emitir guías de remisión a SUNAT.',
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
         $codetypecomprobante = $comprobante->seriecomprobante->typecomprobante->code;
         $nombreXML = $comprobante->sucursal->empresa->document . '-' . $codetypecomprobante . '-' . $comprobante->seriecompleta;
         $ruta = 'xml/' . $codetypecomprobante . '/';
@@ -151,7 +178,8 @@ class ShowComprobantes extends Component
         }
 
         $objApi = new SendXML();
-        $response = $objApi->enviarComprobante($comprobante->sucursal->empresa, $nombreXML, storage_path('app/cert/'), storage_path('app/' . $ruta), storage_path('app/' . $ruta));
+        $pass_firma = $comprobante->sucursal->empresa->passwordcert;
+        $response = $objApi->enviarComprobante($comprobante->sucursal->empresa, $nombreXML, storage_path('app/company/cert/' . $comprobante->sucursal->empresa->cert), $pass_firma, storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
         if ($response->code == '0') {
             $comprobante->codesunat = $response->code;

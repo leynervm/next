@@ -7,6 +7,7 @@ use App\Models\Detalleproducto;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Producto;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManagerStatic as ImageIntervention;
 use Livewire\Component;
@@ -15,7 +16,7 @@ use Livewire\WithFileUploads;
 class ShowDetalles extends Component
 {
 
-    use WithFileUploads;
+    use WithFileUploads, AuthorizesRequests;
 
     public $open = false;
     public $openimage = false;
@@ -23,8 +24,6 @@ class ShowDetalles extends Component
     public $imagen, $identificador;
 
     public $selectedEspecificacion = [];
-
-    protected $listeners = ['delete', 'deleteimage'];
 
     public function mount(Producto $producto)
     {
@@ -41,6 +40,7 @@ class ShowDetalles extends Component
 
     public function openmodal()
     {
+        $this->authorize('admin.almacen.productos.especificaciones');
         $this->selectedEspecificacion = $this->producto->especificaciones()
             ->pluck('especificacion_id', 'caracteristica_id',)->toArray();
         $this->open = true;
@@ -48,6 +48,7 @@ class ShowDetalles extends Component
 
     public function saveespecificacion()
     {
+        $this->authorize('admin.almacen.productos.especificaciones');
         $this->producto->especificaciones()->syncWithPivotValues($this->selectedEspecificacion, [
             'user_id' => auth()->user()->id,
             'created_at' => now('America/Lima')
@@ -60,6 +61,7 @@ class ShowDetalles extends Component
 
     public function delete(Especificacion $especificacion)
     {
+        $this->authorize('admin.almacen.productos.especificaciones');
         $this->producto->especificaciones()->detach($especificacion);
         $this->producto->refresh();
         $this->dispatchBrowserEvent('deleted');
@@ -67,6 +69,7 @@ class ShowDetalles extends Component
 
     public function openmodalimage()
     {
+        $this->authorize('admin.almacen.productos.images');
         $this->identificador = rand();
         $this->reset(['imagen']);
         $this->openimage = true;
@@ -74,6 +77,7 @@ class ShowDetalles extends Component
 
     public function defaultimage(Image $image)
     {
+        $this->authorize('admin.almacen.productos.images');
         $this->producto->images()->update(['default' => 0]);
         $image->default = 1;
         $image->save();
@@ -83,6 +87,7 @@ class ShowDetalles extends Component
 
     public function saveimage()
     {
+        $this->authorize('admin.almacen.productos.images');
         $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120']
@@ -131,6 +136,7 @@ class ShowDetalles extends Component
 
     public function deleteimage(Image $image)
     {
+        $this->authorize('admin.almacen.productos.images');
         if ($image->default) {
             $imageDefault = $this->producto->images()
                 ->where('id', '<>', $image->id)->first();
@@ -154,5 +160,15 @@ class ShowDetalles extends Component
         $this->resetValidation();
         $this->identificador = rand();
     }
-    
+
+    public function updatedImagen($file)
+    {
+        try {
+            $url = $file->temporaryUrl();
+        } catch (\Exception $e) {
+            $this->reset(['imagen']);
+            $this->addError('imagen', $e->getMessage());
+            return;
+        }
+    }
 }

@@ -15,6 +15,7 @@ class Direccion extends Model
 
     public $timestamps = false;
     protected $fillable = ['name', 'ubigeo_id', 'direccionable_id', 'direccionable_type'];
+    const DEFAULT = '1';
 
     public function setNameAttribute($value)
     {
@@ -29,5 +30,10 @@ class Direccion extends Model
     public function ubigeo(): BelongsTo
     {
         return $this->belongsTo(Ubigeo::class);
+    }
+
+    public function isDefault()
+    {
+        return $this->default == self::DEFAULT;
     }
 }

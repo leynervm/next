@@ -164,10 +164,12 @@ class GetPrice
                     $amountDescuento = number_format(($producto->pricesale * $descuento) / 100, $decimal, '.', '');
                     $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
                     $precioDescuento = number_format($producto->pricesale - $amountDescuento, $decimal, '.', '');
-                    $amountDescuentoDolar = number_format((($producto->pricesale / $tipocambio) * $descuento) / 100, $decimal, '.', '');
-                    $precioVentaDolar = number_format($precioVenta / $tipocambio, $decimal, '.', '');
-                    $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $decimal, '.', '');
-                    $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
+                    
+                    if ($tipocambio > 0) {
+                        $amountDescuentoDolar = number_format((($producto->pricesale / $tipocambio) * $descuento) / 100, $decimal, '.', '');
+                        $precioVentaDolar = number_format($precioVenta / $tipocambio, $decimal, '.', '');
+                        $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $decimal, '.', '');
+                    }
                 }
             }
 

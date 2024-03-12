@@ -2,80 +2,105 @@
 
 namespace App\Http\Livewire\Admin\Aperturas;
 
-use App\Models\Caja;
-use App\Models\Opencaja;
+use App\Models\Box;
+use App\Models\Monthbox;
+use App\Models\Openbox;
 use App\Rules\ValidateCaja;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateApertura extends Component
 {
 
+    use AuthorizesRequests;
+
     public $open = false;
-    public $caja_id, $expiredate;
-    public $startmount = 0;
+    public $box_id, $apertura, $employer, $monthbox;
+    public $selected;
 
     protected $listeners = ['render'];
 
     protected function rules()
     {
         return [
-            'caja_id' => [
-                'required', 'integer', 'min:1', 'exists:cajas,id',
-                new ValidateCaja()
+            'box_id' => [
+                'required', 'integer', 'min:1', 'exists:boxes,id', new ValidateCaja()
             ],
-            'expiredate' => [
-                'required', 'date', 'after:' . now('America/Lima')->format('Y-m-d H:i')
-            ],
-            'startmount' => [
+            'apertura' => [
                 'required', 'numeric', 'min:0', 'decimal:0,2'
+            ],
+            'employer.id' => [
+                'required', 'integer', 'min:1', 'exists:employers,id'
             ],
         ];
     }
 
+    public function mount()
+    {
+        $this->monthbox = Monthbox::usando(auth()->user()->sucursal_id)->first();
+    }
+
     public function render()
     {
-
-        $cajas = Caja::where('sucursal_id', auth()->user()->sucursal_id)
-            ->whereDoesntHave('opencajas')
-            ->orWhereHas('opencajas', function ($query) {
-                $query->whereNotNull('expiredate');
-            })->where('sucursal_id', auth()->user()->sucursal_id)
-            ->orderBy('name', 'asc')->get();
-
-        return view('livewire.admin.aperturas.create-apertura', compact('cajas'));
+        $boxes = Box::with(['openboxes', 'user'])->sucursal()->orderBy('name', 'asc')->get();
+        return view('livewire.admin.aperturas.create-apertura', compact('boxes'));
     }
 
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.cajas.aperturas.create');
             $this->resetValidation();
-            $this->reset();
+            $this->resetExcept(['monthbox']);
         }
     }
 
     public function save()
     {
-        $this->startmount = trim($this->startmount);
+
+        $this->authorize('admin.cajas.aperturas.create');
+        if (auth()->user()->employer()->exists() == false) {
+            $mensaje = response()->json([
+                'title' => 'USUARIO NO ESTÁ VINCULADO A UN PERSONAL DE TRABAJO !',
+                'text' => 'Para aperturar nueva caja, el usuario debe estar vinculado a un personal de trabajo, contáctese con su administrador.',
+                'type' => 'warning'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!$this->monthbox->isUsing()) {
+            $mensaje =  response()->json([
+                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
+                'text' => "No se encontraron cajas mensuales activas para registrar movimiento."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        $this->employer = auth()->user()->employer;
         $this->validate();
-
         DB::beginTransaction();
-        try {
-            Opencaja::create([
-                'startdate' => now('America/Lima'),
-                'expiredate' => $this->expiredate,
-                'startmount' => $this->startmount,
-                'user_id' => Auth::user()->id,
-                'caja_id' => $this->caja_id,
-                'status' => 0
-            ]);
 
+        try {
+            $openbox = Openbox::create([
+                'startdate' => now('America/Lima')->format('Y-m-d ') . $this->employer->horaingreso,
+                'expiredate' => now('America/Lima')->format('Y-m-d ') . $this->employer->horasalida,
+                'apertura' => $this->apertura,
+                'aperturarestante' => $this->apertura,
+                'totalcash' => $this->apertura,
+                'status' => 0,
+                'box_id' => $this->box_id,
+                'sucursal_id' => $this->employer->sucursal_id,
+                'user_id' => auth()->user()->id,
+            ]);
+            $openbox->box->user_id = auth()->user()->id;
+            $openbox->box->save();
             DB::commit();
             $this->emitTo('admin.aperturas.show-aperturas', 'render');
             $this->dispatchBrowserEvent('created');
-            $this->reset();
+            $this->resetExcept(['monthbox']);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -83,10 +108,5 @@ class CreateApertura extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-apertura-select2');
     }
 }

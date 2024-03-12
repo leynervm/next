@@ -17,9 +17,7 @@ class CreateAlmacensTable extends Migration
         Schema::create('almacens', function (Blueprint $table) {
             $table->tinyIncrements('id')->unsigned();
             $table->string('name', 255);
-            $table->enum('default', [0, Almacen::DEFAULT])->default(0);
-            $table->unsignedTinyInteger('sucursal_id');
-            $table->foreign('sucursal_id')->on('sucursals')->references('id');
+            $table->char('default', 1)->default(0);
             $table->softDeletes();
         });
     }

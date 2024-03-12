@@ -6,12 +6,14 @@ use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class ShowSucursal extends Component
 {
 
+    use AuthorizesRequests;
 
     public $sucursal;
 
@@ -53,6 +55,7 @@ class ShowSucursal extends Component
     public function update()
     {
 
+        $this->authorize('admin.administracion.sucursales.edit');
         $this->sucursal->codeanexo = trim($this->sucursal->codeanexo);
         $this->sucursal->name = trim($this->sucursal->name);
         $this->sucursal->direccion = trim($this->sucursal->direccion);

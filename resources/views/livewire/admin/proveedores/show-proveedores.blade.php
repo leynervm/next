@@ -48,11 +48,15 @@
                 <th scope="col" class="p-2 font-medium text-center">
                     TELEFONOS</th>
 
-                <th scope="col" class="p-2 font-medium text-center">
-                    HISTORIAL COMPRAS</th>
+                @can('admin.proveedores.historial')
+                    <th scope="col" class="p-2 font-medium text-center">
+                        HISTORIAL COMPRAS</th>
+                @endcan
 
-                <th scope="col" class="p-2 font-medium text-center">
-                    HISTORIAL PEDIDOS</th>
+                @can('admin.proveedores.pedidos')
+                    <th scope="col" class="p-2 font-medium text-center">
+                        HISTORIAL PEDIDOS</th>
+                @endcan
 
                 {{-- <th scope="col" class="p-2 relative">
                     <span class="sr-only">OPCIONES</span>
@@ -64,10 +68,19 @@
                 @foreach ($proveedors as $item)
                     <tr>
                         <td class="p-2 text-xs">
-                            <a href="{{ route('admin.proveedores.show', $item) }}"
-                                class="font-medium break-words underline text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
-                                {{ $item->name }}</a>
-                            <p class="text-xs">{{ $item->document }}</p>
+                            @can('admin.proveedores.edit')
+                                <a href="{{ route('admin.proveedores.edit', $item) }}"
+                                    class="font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                    {{ $item->name }}</a>
+                                <p class="text-xs">{{ $item->document }}</p>
+                            @endcan
+
+                            @cannot('admin.proveedores.edit')
+                                <h1 class="font-medium break-words text-linktable cursor-pointer ">
+                                    {{ $item->name }}
+                                    <p class="text-xs">{{ $item->document }}</p>
+                                </h1>
+                            @endcannot
                         </td>
                         <td class="p-2 text-[10px]">
                             <p>{{ $item->direccion }}</p>
@@ -98,21 +111,25 @@
                                                         d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                                                 </svg>
                                             </span>
-                                            <span class="text-[10px]">{{ $telef->phone }}</span>
+                                            <span class="text-[10px]">{{ formatTelefono($telef->phone) }}</span>
                                         </div>
                                     @endforeach
                                 </div>
                             @endif
                         </td>
-                        <td class="p-2 text-xs text-center align-middle">
-                            <x-link-button class="inline-block"
-                                href="{{ route('admin.proveedores.historial', $item) }}">VER COMPRAS</x-link-button>
-                        </td>
 
-                        <td class="p-2 text-xs text-center align-middle">
-                            <x-link-button class="inline-block">VER PEDIDOS</x-link-button>
-                        </td>
+                        @can('admin.proveedores.historial')
+                            <td class="p-2 text-xs text-center align-middle">
+                                <x-link-button class="inline-block"
+                                    href="{{ route('admin.proveedores.historial', $item) }}">VER COMPRAS</x-link-button>
+                            </td>
+                        @endcan
 
+                        @can('admin.proveedores.pedidos')
+                            <td class="p-2 text-xs text-center align-middle">
+                                <x-link-button class="inline-block">VER PEDIDOS</x-link-button>
+                            </td>
+                        @endcan
                         {{-- <td class="p-2 whitespace-nowrap">
                             <div class="flex gap-1 items-center">
                                 <x-button-delete></x-button-delete>

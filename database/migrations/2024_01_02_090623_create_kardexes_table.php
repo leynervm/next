@@ -23,8 +23,8 @@ return new class extends Migration {
             $table->string('reference', 255)->nullable();
             $table->bigInteger('producto_id');
             $table->tinyInteger('almacen_id');
-            $table->tinyInteger('sucursal_id');
-            $table->bigInteger('user_id')->nullable();
+            $table->tinyInteger('sucursal_id')->nullable();
+            $table->bigInteger('user_id');
             $table->foreign('producto_id')->on('productos')->references('id');
             $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->foreign('sucursal_id')->on('sucursals')->references('id');

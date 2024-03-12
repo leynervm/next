@@ -13,23 +13,32 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" id="form_create_client" class="relative" x-data="data">
+            <form wire:submit.prevent="save" class="relative" x-data="data">
                 <div class="w-full sm:grid grid-cols-3 gap-2">
                     <div class="w-full">
                         <x-label value="DNI / RUC :" />
-                        <div class="w-full inline-flex gap-1">
-                            <x-input class="block w-full prevent" x-model="document" @keyup="toggle"
-                                wire:model.defer="document" wire:keydown.enter="searchclient" />
-                            <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
-                                wire:target="searchclient">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <path d="m21 21-4.3-4.3" />
-                                </svg>
-                            </x-button-add>
-                        </div>
+                        @if ($exists)
+                            <div class="w-full inline-flex relative">
+                                <x-disabled-text :text="$document" class="w-full block" />
+                                <x-button-close-modal
+                                    class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                    wire:click="limpiarcliente" wire:loading.attr="disabled" />
+                            </div>
+                        @else
+                            <div class="w-full inline-flex gap-1">
+                                <x-input class="block w-full prevent" x-model="document"
+                                    @keyup="togglecontact($event.target.value)" wire:model.defer="document"
+                                    wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)" />
+                                <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.3-4.3" />
+                                    </svg>
+                                </x-button-add>
+                            </div>
+                        @endif
                         <x-jet-input-error for="document" />
                     </div>
                     <div class="w-full sm:col-span-2 mt-2 sm:mt-0">
@@ -111,7 +120,7 @@
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Teléfono :" />
                         <x-input class="block w-full" wire:model.defer="telefono" placeholder="+51 999 999 999"
-                            maxlength="9" />
+                            maxlength="9" onkeypress="return validarNumero(event, 9)" />
                         <x-jet-input-error for="telefono" />
                     </div>
                 </div>
@@ -123,9 +132,10 @@
                         <div class="w-full">
                             <x-label value="DNI :" />
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full" wire:model.defer="documentContact" maxlength="8" />
-                                <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled"
-                                    wire:target="searchcontacto">
+                                <x-input class="block w-full" wire:model.defer="documentContact" maxlength="8"
+                                    onkeypress="return validarNumero(event, 8)" type="number" />
+                                <x-button-add class="px-2" wire:click="searchcontacto"
+                                    wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                         stroke-linejoin="round">
@@ -145,7 +155,8 @@
                         <div class="w-full mt-2 sm:mt-0">
                             <x-label value="Teléfono :" />
                             <x-input class="block w-full" wire:model.defer="telefonoContact"
-                                placeholder="+51 999 999 999" maxlength="9" />
+                                placeholder="+51 999 999 999" maxlength="9" type="number"
+                                onkeypress="return validarNumero(event, 9)" />
                             <x-jet-input-error for="telefonoContact" />
                         </div>
                     </div>
@@ -189,8 +200,10 @@
                 contact: false,
                 document: @entangle('document').defer,
 
-                toggle() {
-                    if (this.document.trim().length == 11) {
+                togglecontact(value) {
+                    // console.log(value);
+                    // console.log(this.document);
+                    if (value.trim().length == 11) {
                         this.contact = true;
                     } else {
                         this.contact = false;
@@ -198,55 +211,5 @@
                 }
             }))
         });
-
-
-        // window.addEventListener('render-client-select2', () => {
-        //     renderSelect2();
-        // });
-
-        document.addEventListener("livewire:load", () => {
-
-            // renderSelect2();
-
-            // $("#ubigeoclient_id").on("change", (e) => {
-            //     deshabilitarSelects();
-            //     @this.ubigeo_id = e.target.value;
-            // });
-
-            // $("#pricetype_id").on("change", (e) => {
-            //     deshabilitarSelects();
-            //     @this.pricetype_id = e.target.value;
-            // });
-
-            // $("#sexoclient_id").on("change", (e) => {
-            //     deshabilitarSelects();
-            //     @this.sexo = e.target.value;
-            // });
-
-
-
-            // function renderSelect2() {
-            //     var formulario = document.getElementById("form_create_client");
-            //     var selects = formulario.getElementsByTagName("select");
-
-            //     for (var i = 0; i < selects.length; i++) {
-            //         if (selects[i].id !== "") {
-            //             $("#" + selects[i].id).select2();
-            //         }
-            //     }
-            // }
-
-            // function deshabilitarSelects() {
-            //     var formulario = document.getElementById("form_create_client");
-            //     var selects = formulario.getElementsByTagName("select");
-
-            //     for (var i = 0; i < selects.length; i++) {
-            //         selects[i].disabled = true;
-            //     }
-            // }
-
-        })
     </script>
-
-
 </div>

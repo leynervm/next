@@ -29,12 +29,10 @@ class CreatePartesTable extends Migration
             $table->integer('delete')->default(0);
             $table->bigInteger('marca_id')->nullable();
             $table->bigInteger('unit_id')->nullable();
-            $table->bigInteger('tribute_id')->nullable();
             $table->bigInteger('user_id')->nullable();
 
             $table->foreign('marca_id')->on('marcas')->references('id');
             $table->foreign('unit_id')->on('units')->references('id');
-            $table->foreign('tribute_id')->on('tributes')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->timestamps();
             $table->softDeletes();

@@ -11,15 +11,9 @@ class ShowClients extends Component
 
     use WithPagination;
 
-    protected $queryString = [
-        'search' => ['except' => '']
-    ];
-
-    public $open = false;
-    public $client;
     public $search = '';
+    protected $queryString = ['search' => ['except' => '']];
 
-    protected $listeners = ['render', 'delete'];
 
     public function render()
     {
@@ -32,5 +26,10 @@ class ShowClients extends Component
         $clients = $clients->orderBy('document', 'asc')->paginate();
 
         return view('livewire.admin.clients.show-clients', compact('clients'));
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
     }
 }

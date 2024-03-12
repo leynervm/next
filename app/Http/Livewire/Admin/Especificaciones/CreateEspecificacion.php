@@ -4,11 +4,14 @@ namespace App\Http\Livewire\Admin\Especificaciones;
 
 use App\Models\Caracteristica;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateEspecificacion extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name;
@@ -19,11 +22,9 @@ class CreateEspecificacion extends Component
         return [
             'name' => [
                 'required', 'min:3', 'max:100',
-                new CampoUnique('caracteristicas', 'name', null, true),
+                new CampoUnique('caracteristicas', 'name', null),
             ],
-            'view' => [
-                'nullable', 'integer', 'min:0', 'max:1',
-            ]
+            'view' => ['nullable', 'integer', 'min:0', 'max:1',]
         ];
     }
 
@@ -35,34 +36,26 @@ class CreateEspecificacion extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.almacen.caracteristicas.create');
             $this->resetValidation();
-            $this->reset('name', 'view');
+            $this->reset();
         }
     }
 
     public function save()
     {
+        $this->authorize('admin.almacen.caracteristicas.create');
         $this->name = trim($this->name);
         $this->validate();
-
         DB::beginTransaction();
-
         try {
-            $caracteristica = Caracteristica::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
-
-            if ($caracteristica) {
-                $caracteristica->view = $this->view;
-                $caracteristica->restore();
-            } else {
-                Caracteristica::create([
-                    'name' => $this->name,
-                    'view' => $this->view,
-                ]);
-            }
-
+            Caracteristica::create([
+                'name' => $this->name,
+                'view' => $this->view,
+            ]);
             DB::commit();
             $this->emitTo('admin.especificaciones.show-especificaciones', 'render');
+            $this->dispatchBrowserEvent('created');
             $this->reset();
         } catch (\Exception $e) {
             DB::rollBack();

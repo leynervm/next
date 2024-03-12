@@ -36,15 +36,18 @@
                                             wire:loading.attr="disabled" />
                                     </div>
                                 @else
-                                    <div class="w-full flex gap-2 flex-wrap items-end justify-between">
-                                        <x-button wire:key="paycuota_{{ $item->id }}"
-                                            wire:click="paycuota({{ $item->id }})"
-                                            wire:loading.attr="disabled">PAGAR</x-button>
+                                    @can('admin.almacen.compras.pagos')
+                                        <div class="w-full flex gap-2 flex-wrap items-end justify-between">
+                                            <x-button wire:key="paycuota_{{ $item->id }}"
+                                                wire:click="paycuota({{ $item->id }})"
+                                                wire:loading.attr="disabled">PAGAR</x-button>
 
-                                        <x-button-delete
-                                            wire:click="$emit('compra.confirmDeleteCuota', {{ $item }})"
-                                            wire:loading.attr="disabled" />
-                                    </div>
+                                            <x-button-delete
+                                                wire:click="$emit('compra.confirmDeleteCuota', {{ $item }})"
+                                                wire:loading.attr="disabled" />
+
+                                        </div>
+                                    @endcan
                                 @endif
                             </x-slot>
 
@@ -52,12 +55,14 @@
                     @endforeach
                 </div>
 
-                @if ($compra->cuotas()->whereHas('cajamovimiento')->count() < $compra->cuotas->count())
-                    <div class="w-full flex justify-end">
-                        <x-button wire:click="editcuotas" wire:loading.attr="disabled" wire:key="editcuotas">
-                            EDITAR CUOTAS</x-button>
-                    </div>
-                @endif
+                @can('admin.almacen.compras.create')
+                    @if ($compra->cuotas()->whereHas('cajamovimiento')->count() < $compra->cuotas->count())
+                        <div class="w-full flex justify-end">
+                            <x-button wire:click="editcuotas" wire:loading.attr="disabled" wire:key="editcuotas">
+                                EDITAR CUOTAS</x-button>
+                        </div>
+                    @endif
+                @endcan
             </div>
         @else
             <div class="w-full flex flex-wrap xl:flex-nowrap gap-2">
@@ -70,11 +75,13 @@
                     </div>
                     <x-jet-input-error for="countcuotas" />
 
-                    <div class="w-full flex justify-end mt-3">
-                        <x-button type="submit" wire:loading.attr="disabled">
-                            CALCULAR
-                        </x-button>
-                    </div>
+                    @can('admin.almacen.compras.create')
+                        <div class="w-full flex justify-end mt-3">
+                            <x-button type="submit" wire:loading.attr="disabled">
+                                CALCULAR
+                            </x-button>
+                        </div>
+                    @endcan
                 </form>
 
                 <div class="w-full xl:w-2/3">
@@ -100,11 +107,13 @@
                         <x-jet-input-error for="cuotas" />
                         <x-jet-input-error for="amountcuotas" />
 
-                        <div class="w-full flex pt-4 justify-end">
-                            <x-button wire:click="savecuotas" wire:loading.attr="disabled">
-                                {{ __('REGISTRAR') }}
-                            </x-button>
-                        </div>
+                        @can('admin.almacen.compras.create')
+                            <div class="w-full flex pt-4 justify-end">
+                                <x-button wire:click="savecuotas" wire:loading.attr="disabled">
+                                    {{ __('REGISTRAR') }}
+                                </x-button>
+                            </div>
+                        @endcan
                     @endif
                 </div>
             </div>
@@ -163,11 +172,13 @@
                     </div>
                 @endif
 
-                <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled" wire:target="savepayment">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
-                </div>
+                @can('admin.almacen.compras.create')
+                    <div class="w-full flex pt-4 justify-end">
+                        <x-button type="submit" wire:loading.attr="disabled" wire:target="savepayment">
+                            {{ __('REGISTRAR') }}
+                        </x-button>
+                    </div>
+                @endcan
             </form>
         </x-slot>
     </x-jet-dialog-modal>

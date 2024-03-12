@@ -10,12 +10,15 @@ use App\Models\Telephone;
 use App\Models\Ubigeo;
 use App\Rules\ValidateDocument;
 use App\Rules\ValidatePhoneClient;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class ShowProveedor extends Component
 {
+
+    use AuthorizesRequests;
 
     public $proveedor, $contact, $telephone;
     public $document2, $name2, $telefono2, $newtelefono;
@@ -50,6 +53,7 @@ class ShowProveedor extends Component
 
     public function update()
     {
+        $this->authorize('admin.proveedores.edit');
         $this->proveedor->document = trim($this->proveedor->document);
         $this->proveedor->name = trim($this->proveedor->name);
         $this->proveedor->direccion = trim($this->proveedor->direccion);
@@ -65,6 +69,7 @@ class ShowProveedor extends Component
     public function delete(Proveedor $proveedor)
     {
 
+        $this->authorize('admin.proveedores.delete');
         if ($proveedor->compras()->exists()) {
             $mensaje = response()->json([
                 'title' => 'No se puede eliminar proveedor ' . $proveedor->name,
@@ -93,6 +98,7 @@ class ShowProveedor extends Component
 
     public function openmodalrepresentante()
     {
+        $this->authorize('admin.proveedores.contacts.edit');
         $this->reset(['contact', 'document2', 'name2', 'telefono2']);
         $this->resetValidation();
         $this->openrepresentante = true;
@@ -100,6 +106,7 @@ class ShowProveedor extends Component
 
     public function editrepresentante(Contact $contact)
     {
+        $this->authorize('admin.proveedores.contacts.edit');
         $this->contact = $contact;
         $this->reset(['document2', 'name2', 'telefono2']);
         $this->resetValidation();
@@ -114,6 +121,7 @@ class ShowProveedor extends Component
     public function saverepresentante()
     {
 
+        $this->authorize('admin.proveedores.contacts.edit');
         $this->document2 = trim($this->document2);
         $this->name2 = trim($this->name2);
         $this->validate([
@@ -154,6 +162,7 @@ class ShowProveedor extends Component
 
     public function editphone(Telephone $telephone)
     {
+        $this->authorize('admin.proveedores.phones.edit');
         $this->reset(['newtelefono']);
         $this->resetValidation(['telephone', 'newtelefono']);
         $this->telephone = $telephone;
@@ -163,6 +172,7 @@ class ShowProveedor extends Component
 
     public function openmodalphone()
     {
+        $this->authorize('admin.proveedores.phones.edit');
         $this->reset(['newtelefono']);
         $this->resetValidation(['telephone', 'newtelefono']);
         $this->openphone = true;
@@ -170,6 +180,8 @@ class ShowProveedor extends Component
 
     public function savephone()
     {
+
+        $this->authorize('admin.proveedores.phones.edit');
         $this->telefono2 = trim($this->telefono2);
         $this->validate([
             'newtelefono' => [
@@ -202,6 +214,7 @@ class ShowProveedor extends Component
 
     public function deletephone(Telephone $telephone)
     {
+        $this->authorize('admin.proveedores.phones.edit');
         $telephone->delete();
         $this->proveedor->refresh();
         $this->dispatchBrowserEvent('deleted');
@@ -209,6 +222,7 @@ class ShowProveedor extends Component
 
     public function deleterepresentante(Contact $contact)
     {
+        $this->authorize('admin.proveedores.contacts.edit');
         $contact->telephone->delete();
         $contact->delete();
         $this->proveedor->refresh();
@@ -218,6 +232,7 @@ class ShowProveedor extends Component
     public function searchclient()
     {
 
+        $this->authorize('admin.proveedores.edit');
         $this->proveedor->document = trim($this->proveedor->document);
         $this->validate([
             'proveedor.document' => ['required', 'numeric', new ValidateDocument]
@@ -253,6 +268,7 @@ class ShowProveedor extends Component
     public function searchcontacto()
     {
 
+        $this->authorize('admin.proveedores.contacts.edit');
         $this->document2 = trim($this->document2);
         $this->validate([
             'document2' => ['required', 'numeric', 'digits:8']

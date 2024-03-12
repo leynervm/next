@@ -36,7 +36,7 @@
     {{-- <x-title-next titulo="Cuentas por cobrar" /> --}}
 
     <div>
-        @livewire('ventas.ventas.show-cuentas-cobrar')
+        <livewire:modules.ventas.ventas.show-cuentas-cobrar />
     </div>
 
 </x-app-layout>

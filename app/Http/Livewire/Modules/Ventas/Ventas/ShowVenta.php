@@ -2,17 +2,18 @@
 
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
-use App\Models\Cajamovimiento;
+use App\Enums\MovimientosEnum;
 use App\Models\Concept;
 use App\Models\Cuota;
+use App\Models\Itemserie;
 use App\Models\Kardex;
 use App\Models\Methodpayment;
-use App\Models\Opencaja;
-use App\Models\Sucursal;
+use App\Models\Monthbox;
+use App\Models\Openbox;
 use App\Rules\ValidateNumericEquals;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Facturacion\Entities\Comprobante;
 use Modules\Ventas\Entities\Venta;
@@ -21,34 +22,24 @@ use Nwidart\Modules\Facades\Module;
 class ShowVenta extends Component
 {
 
+    use AuthorizesRequests;
+
     public $open = false;
     public $opencuotas = false;
-    public $venta, $sucursal, $cuota, $methodpayment, $typepayment;
-    public $opencaja, $concept;
-    public $methodpayment_id, $methodpaymentventa_id, $detalle, $cuentaventa_id, $cuenta_id;
-    public $cuentas = [];
+    public $venta, $cuota, $monthbox, $openbox, $concept, $methodpayment_id, $detalle;
     public $cuotas = [];
     public $amountcuotas = 0;
+    public $countcuotas = 0;
 
     protected function rules()
     {
         return [
-            'venta.id' => [
-                'required', 'integer', 'min:1', 'exists:ventas,id'
-            ],
-            'sucursal.id' => [
-                'required', 'integer', 'min:1', 'exists:sucursals,id'
-            ],
-            'methodpaymentventa_id' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'min:1', 'exists:methodpayments,id'
-            ],
-            'cuentaventa_id' => [
-                'nullable',
-                // Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'min:1', 'exists:cuentas,id'
-            ],
-            'detalle' => ['nullable'],
+            'cuota.id' => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
+            'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
+            'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
+            'concept.id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
+            'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
+            'detalle' => ['nullable', 'string'],
         ];
     }
 
@@ -59,22 +50,14 @@ class ShowVenta extends Component
         'cuotas.*.amount.required' => 'Monto de cuota requerido',
     ];
 
-    public function mount(Venta $venta, Concept $concept, Methodpayment $methodpayment, Opencaja $opencaja, Sucursal $sucursal)
+    public function mount(Venta $venta, Concept $concept)
     {
-        $this->venta = $venta;
-        $this->sucursal = $sucursal;
-        $this->concept = $concept;
-        $this->opencaja = $opencaja;
-        $this->methodpayment_id = $methodpayment->id ?? null;
-        $this->typepayment = $venta->typepayment;
         $this->cuota = new Cuota();
-        if ($this->venta->cajamovimiento) {
-            $this->methodpayment = $venta->cajamovimiento->methodpayment;
-            $this->methodpaymentventa_id = $venta->cajamovimiento->methodpayment_id ?? null;
-            $this->detalle = $venta->cajamovimiento->detalle;
-            $this->cuentaventa_id = $venta->cajamovimiento->cuenta_id;
-            $this->cuentas = $this->methodpayment->cuentas;
-        }
+        $this->openbox = Openbox::mybox($venta->sucursal_id)->first();
+        $this->monthbox = Monthbox::usando($venta->sucursal_id)->first();
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->venta = $venta;
+        $this->concept = $concept;
     }
 
     public function render()
@@ -83,65 +66,53 @@ class ShowVenta extends Component
         return view('livewire.modules.ventas.ventas.show-venta', compact('methodpayments'));
     }
 
-    public function update()
-    {
-        $this->validate();
-        $this->venta->cajamovimiento->methodpayment_id = $this->methodpaymentventa_id;
-        $this->venta->cajamovimiento->cuenta_id = $this->cuentaventa_id;
-        $this->venta->cajamovimiento->save();
-        $this->dispatchBrowserEvent('updated');
-    }
-
     public function pay(Cuota $cuota)
     {
-        $this->reset(['cuentas', 'cuenta_id']);
+        $this->authorize('admin.ventas.payments.edit');
         $this->resetValidation();
         $this->cuota = $cuota;
-
-        $this->methodpayment = Methodpayment::DefaultMethodpayment()->first() ?? new Methodpayment();
-        $this->cuentas = $this->methodpayment->cuentas ?? [];
-        if (count($this->cuentas) == 1) {
-            $this->cuenta_id = $this->methodpayment->cuentas->first()->id;
-        }
         $this->open = true;
     }
 
     public function savepayment()
     {
+        $this->authorize('admin.ventas.payments.edit');
+        if (!$this->monthbox->isUsing()) {
+            $mensaje =  response()->json([
+                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
+                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
 
-        $this->validate([
-            'cuota.id' => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
-            'opencaja.id' => ['required', 'integer', 'min:1', 'exists:opencajas,id'],
-            'concept.id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
-            'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
-            'cuenta_id' => [
-                'nullable', Rule::requiredIf(count($this->cuentas) > 1), 'integer', 'min:1', 'exists:cuentas,id'
-            ],
-            'detalle' => ['nullable'],
-        ]);
+        if (!$this->openbox->isActivo()) {
+            $this->dispatchBrowserEvent('validation', getMessageOpencaja());
+            return false;
+        }
 
+        $this->validate();
         DB::beginTransaction();
+
         try {
-            $this->cuota->cajamovimiento()->create([
-                'date' => now('America/Lima'),
-                'amount' => number_format($this->cuota->amount, 2, '.', ''),
-                'referencia' => $this->venta->code,
-                'detalle' => trim($this->detalle),
-                'moneda_id' => $this->venta->moneda_id,
-                'methodpayment_id' => $this->methodpayment_id,
-                'typemovement' => Cajamovimiento::INGRESO,
-                'cuenta_id' => $this->cuenta_id,
-                'concept_id' => $this->concept->id,
-                'opencaja_id' => $this->opencaja->id,
-                'sucursal_id' => $this->sucursal->id,
-                'user_id' => auth()->user()->id,
-            ]);
+            $this->cuota->savePayment(
+                $this->venta->sucursal_id,
+                $this->cuota->amount,
+                $this->venta->moneda_id,
+                $this->methodpayment_id,
+                MovimientosEnum::INGRESO->value,
+                $this->concept->id,
+                $this->openbox->id,
+                $this->monthbox->id,
+                $this->venta->code,
+                trim($this->detalle),
+            );
 
             $this->cuota->cuotable->paymentactual += $this->cuota->amount;
             $this->cuota->cuotable->save();
             DB::commit();
             $this->resetValidation();
-            $this->reset(['open', 'methodpayment_id', 'cuenta_id', 'cuentas']);
+            $this->reset(['open', 'methodpayment_id']);
             $this->venta->refresh();
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
@@ -153,38 +124,9 @@ class ShowVenta extends Component
         }
     }
 
-
-    public function updatedMethodpaymentventaId($value)
-    {
-
-        $this->reset(['cuentas', 'cuentaventa_id']);
-        $this->methodpaymentventa_id = !empty(trim($value)) ? trim($value) : null;
-        if ($this->methodpaymentventa_id) {
-            $this->methodpayment = Methodpayment::findOrFail($value);
-            $this->cuentas = $this->methodpayment->cuentas;
-            if ($this->methodpayment->cuentas->count() == 1) {
-                $this->cuentaventa_id = $this->methodpayment->cuentas->first()->id;
-            }
-        }
-    }
-
-    public function updatedMethodpaymentId($value)
-    {
-
-        $this->reset(['cuentas', 'cuenta_id']);
-        $this->methodpaymentventa_id = !empty(trim($value)) ? trim($value) : null;
-        if ($this->methodpaymentventa_id) {
-            $this->methodpayment = Methodpayment::findOrFail($value);
-            $this->cuentas = $this->methodpayment->cuentas;
-            if ($this->methodpayment->cuentas->count() == 1) {
-                $this->cuenta_id = $this->methodpayment->cuentas->first()->id;
-            }
-        }
-    }
-
     public function deletepaycuota(Cuota $cuota)
     {
-
+        $this->authorize('admin.ventas.payments.edit');
         DB::beginTransaction();
         try {
             $cuota->cuotable->paymentactual -= $cuota->amount;
@@ -204,7 +146,7 @@ class ShowVenta extends Component
 
     public function delete(Venta $venta)
     {
-
+        $this->authorize('admin.ventas.delete');
         $cuotas = $venta->cuotas()->withWhereHas('cajamovimiento')->count();
 
         if ($cuotas > 0) {
@@ -215,7 +157,6 @@ class ShowVenta extends Component
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
         }
-        // else {
 
         DB::beginTransaction();
 
@@ -268,7 +209,7 @@ class ShowVenta extends Component
                                 'typepayment_id' => $venta->comprobante->typepayment_id,
                                 'seriecomprobante_id' => $serienotacredito->id,
                                 'moneda_id' => $venta->comprobante->moneda_id,
-                                'sucursal_id' => $venta->comprobante->sucursal->id,
+                                'sucursal_id' => $venta->comprobante->sucursal_id,
                                 'user_id' => auth()->user()->id,
                                 'facturable_id' => $venta->id,
                                 'facturable_type' => Comprobante::class,
@@ -280,6 +221,8 @@ class ShowVenta extends Component
                                         'cuota' => $item->cuota,
                                         'amount' => $item->amount,
                                         'expiredate' => $item->expiredate,
+                                        'moneda_id' => $this->venta->moneda_id,
+                                        "sucursal_id" => $this->venta->sucursal_id,
                                         'user_id' => auth()->user()->id,
                                     ]);
                                 }
@@ -321,6 +264,8 @@ class ShowVenta extends Component
                             $this->dispatchBrowserEvent('validation', $mensaje);
                             return false;
                         }
+                    } else {
+                        $venta->comprobante->delete();
                     }
                 }
             }
@@ -338,7 +283,6 @@ class ShowVenta extends Component
                 // dd($tvitem, $tvitem->tvitemable);
                 //INSERTA UN REGISTRO EN KARDEX Y DEVUELVE LOS ITEM AL ALMACEN
                 $tvitem->saveKardex(
-                    $tvitem->tvitemable->sucursal_id,
                     $tvitem->producto_id,
                     $tvitem->almacen_id,
                     $stockPivot->pivot->cantidad,
@@ -379,10 +323,11 @@ class ShowVenta extends Component
 
     public function deletecuota(Cuota $cuota)
     {
-
+        $this->authorize('admin.ventas.create');
         DB::beginTransaction();
         try {
             $cuota->delete();
+            $this->reset(['cuotas']);
             DB::commit();
             $this->venta->refresh();
             $this->dispatchBrowserEvent('deleted');
@@ -397,7 +342,7 @@ class ShowVenta extends Component
 
     public function editcuotas()
     {
-
+        $this->authorize('admin.ventas.create');
         $this->resetValidation(['cuotas']);
         $this->reset(['cuotas']);
 
@@ -417,10 +362,20 @@ class ShowVenta extends Component
 
     public function addnewcuota()
     {
+        $this->authorize('admin.ventas.create');
+        if (count($this->cuotas) > 0) {
+            if (!empty(end($this->cuotas)['date'])) {
+                $date = Carbon::parse(end($this->cuotas)['date'])->addMonth()->format('Y-m-d');
+            } else {
+                $date = Carbon::now('America/Lima')->format('Y-m-d');
+            }
+        } else {
+            $date = Carbon::now('America/Lima')->format('Y-m-d');
+        }
         $this->cuotas[] = [
             'id' => null,
             'cuota' => count($this->cuotas) + 1,
-            'date' => Carbon::now('America/Lima')->format('Y-m-d'),
+            'date' => $date,
             'cajamovimiento_id' => null,
             'amount' => '0.00',
         ];
@@ -428,13 +383,14 @@ class ShowVenta extends Component
 
     public function updatecuotas()
     {
-
+        $this->authorize('admin.ventas.create');
         $arrayamountcuotas = array_column($this->cuotas, 'amount');
         $this->resetValidation(['cuotas']);
         $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 3, '.', '');
-        // $totalAmount = number_format($this->venta->total - $this->amountcuotas, 3, '.', '');
+        // $this->amountcuotas = number_format($this->venta->total - $this->venta->paymentactual, 3, '.', '');
+        $amountcuotas = number_format($this->venta->total - $this->venta->paymentactual, 3, '.', '');
 
-        $this->validate([
+        $data = $this->validate([
             'venta.id' => ['required', 'integer', 'min:1', 'exists:ventas,id'],
             'cuotas' => ['required', 'array', 'min:1'],
             'cuotas.*.id' => ['nullable', 'integer', 'min:1', 'exists:cuotas,id'],
@@ -442,7 +398,10 @@ class ShowVenta extends Component
             'cuotas.*.date' => ['required', 'date'],
             'cuotas.*.amount' => ['required', 'numeric', 'min:1', 'decimal:0,4'],
             'cuotas.*.cajamovimiento_id' => ['nullable', 'integer', 'min:1', 'exists:cajamovimientos,id'],
-            'amountcuotas' => ['required', 'numeric', 'min:1', 'decimal:0,4', new ValidateNumericEquals($this->amountcuotas)]
+            'amountcuotas' => [
+                'required', 'numeric', 'min:1', 'decimal:0,4',
+                new ValidateNumericEquals($amountcuotas)
+            ]
         ]);
 
         $responseCuotas = response()->json($this->cuotas)->getData();
@@ -469,6 +428,8 @@ class ShowVenta extends Component
                         "cuota" => $item->cuota,
                         "expiredate" => $item->date,
                         "amount" => $item->amount,
+                        "moneda_id" => $this->venta->moneda_id,
+                        "sucursal_id" => $this->venta->sucursal_id,
                         "user_id" => auth()->user()->id
                     ]);
                 }
@@ -476,7 +437,7 @@ class ShowVenta extends Component
 
             DB::commit();
             $this->resetValidation();
-            $this->reset(['opencuotas', 'cuotas']);
+            $this->reset(['opencuotas', 'cuotas', 'countcuotas']);
             $this->venta->refresh();
             $this->dispatchBrowserEvent('updated');
         } catch (\Exception $e) {
@@ -485,6 +446,60 @@ class ShowVenta extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+    }
+
+    public function deleteserie(Itemserie $itemserie)
+    {
+        $this->authorize('admin.ventas.create');
+        DB::beginTransaction();
+        try {
+            $itemserie->serie->status = 0;
+            $itemserie->serie->dateout = null;
+            $itemserie->serie->save();
+            $itemserie->delete();
+            DB::commit();
+            $this->venta->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function calcularcuotas()
+    {
+        $this->authorize('admin.ventas.create');
+        $this->resetValidation(['cuotas']);
+        $amountcuotas = number_format($this->venta->total - $this->venta->paymentactual, 3, '.', '');
+        $amountCuota = number_format($amountcuotas / $this->countcuotas, 3, '.', '');
+
+        if ((!empty(trim($this->countcuotas))) || $this->countcuotas > 0) {
+
+            $date = Carbon::now('America/Lima')->addMonth()->format('Y-m-d');
+            $sumaCuotas = 0.00;
+
+            for ($i = 1; $i <= $this->countcuotas; $i++) {
+                $sumaCuotas = number_format($sumaCuotas + $amountCuota, 2, '.', '');
+                if ($i == $this->countcuotas) {
+                    $result = number_format($amountcuotas - $sumaCuotas, 2, '.', '');
+                    $amountCuota = number_format($amountCuota + ($result), 2, '.', '');
+                }
+
+                $this->cuotas[] = [
+                    'id' => null,
+                    'cuota' => $i,
+                    'amount' => number_format($amountCuota, 2, '.', ''),
+                    'date' => $date,
+                    'cajamovimiento_id' => null,
+                ];
+                $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
+            }
+        } else {
+            $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
         }
     }
 

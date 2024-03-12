@@ -7,11 +7,14 @@ use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateSucursal extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name, $direccion, $codeanexo, $default, $ubigeo_id, $empresa;
@@ -58,6 +61,7 @@ class CreateSucursal extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.administracion.sucursales.create');
             $this->resetValidation();
             $this->reset(['name', 'direccion', 'ubigeo_id', 'default', 'codeanexo']);
         }
@@ -65,7 +69,7 @@ class CreateSucursal extends Component
 
     public function save()
     {
-
+        $this->authorize('admin.administracion.sucursales.create');
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
         $this->default = $this->default == 1 ? 1 : 0;

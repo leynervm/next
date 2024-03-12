@@ -8,6 +8,7 @@ use App\Models\Ubigeo;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,6 +17,7 @@ use Nwidart\Modules\Facades\Module;
 class ShowSucursales extends Component
 {
     use WithPagination;
+    use AuthorizesRequests;
 
     public $sucursal;
     protected $listeners = ['render'];
@@ -38,7 +40,7 @@ class ShowSucursales extends Component
 
     public function render()
     {
-        $sucursales = Sucursal::withTrashed()->with(['cajas' => function ($query) {
+        $sucursales = Sucursal::withTrashed()->with(['boxes' => function ($query) {
             $query->withTrashed();
         }])->with(['seriecomprobantes' => function ($query) {
             $query->whereHas('typecomprobante', function ($query) {
@@ -72,6 +74,8 @@ class ShowSucursales extends Component
         // ]);
 
         // dd($sucursal->getRelations());
+
+        $this->authorize('admin.administracion.sucursales.delete');
         if ($confirmation) {
             User::query()->where('sucursal_id', $sucursal->id)->update([
                 'sucursal_id' => null,
@@ -110,6 +114,7 @@ class ShowSucursales extends Component
 
     public function setsucursaldefault(Sucursal $sucursal)
     {
+        $this->authorize('admin.administracion.sucursales.edit');
         try {
             DB::beginTransaction();
             Sucursal::query()->update(['default' => 0]);
@@ -128,6 +133,7 @@ class ShowSucursales extends Component
 
     public function restoreSucursal($id)
     {
+        $this->authorize('admin.administracion.sucursales.restore');
         $sucursal = Sucursal::onlyTrashed()->find($id);
         if ($sucursal) {
             $anexos = Sucursal::withTrashed()->where('codeanexo', $sucursal->codeanexo)

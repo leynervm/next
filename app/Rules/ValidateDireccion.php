@@ -14,13 +14,11 @@ class ValidateDireccion implements Rule
      */
 
     protected $client_id;
-    protected $name;
     protected $ignoreId;
 
-    public function __construct($client_id, $name, $ignoreId = null)
+    public function __construct($client_id, $ignoreId = null)
     {
         $this->client_id = $client_id;
-        $this->name = $name;
         $this->ignoreId = $ignoreId;
     }
 
@@ -34,7 +32,9 @@ class ValidateDireccion implements Rule
     public function passes($attribute, $value)
     {
 
-        $query = Client::find($this->client_id)->direccions()->where('name', $this->name);
+        $query = Client::find($this->client_id)->direccions()
+            ->whereRaw('UPPER(name) = ?', trim(mb_strtoupper($value, "UTF-8")));
+
         if (!is_null($this->ignoreId)) {
             $query->where('id', '<>', $this->ignoreId);
         }
@@ -48,6 +48,6 @@ class ValidateDireccion implements Rule
      */
     public function message()
     {
-        return 'La dirección ya está registrado para este cliente.';
+        return 'Dirección del cliente ya está registrado.';
     }
 }

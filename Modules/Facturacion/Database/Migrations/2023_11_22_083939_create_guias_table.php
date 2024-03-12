@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -43,6 +44,7 @@ return new class extends Migration {
             $table->string('codesunat', 4)->nullable();
             $table->text('descripcion')->nullable();
             $table->text('notasunat')->nullable();
+            $table->char('referencia', 13)->nullable();
             $table->tinyInteger('motivotraslado_id');
             $table->tinyInteger('modalidadtransporte_id');
             $table->bigInteger('ubigeoorigen_id');
@@ -51,7 +53,8 @@ return new class extends Migration {
             $table->tinyInteger('seriecomprobante_id');
             $table->tinyInteger('sucursal_id');
             $table->bigInteger('user_id');
-            $table->bigInteger('comprobante_id')->nullable();
+            $table->bigInteger('guiable_id')->nullable();
+            $table->string('guiable_type')->nullable();
             $table->foreign('motivotraslado_id')->on('motivotraslados')->references('id');
             $table->foreign('modalidadtransporte_id')->on('modalidadtransportes')->references('id');
             $table->foreign('ubigeoorigen_id')->on('ubigeos')->references('id');
@@ -60,7 +63,6 @@ return new class extends Migration {
             $table->foreign('seriecomprobante_id')->on('seriecomprobantes')->references('id');
             $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->foreign('comprobante_id')->on('comprobantes')->references('id');
             $table->timestamps();
             $table->softDeletes();
         });

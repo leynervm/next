@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Rangos;
 use App\Models\Pricetype;
 use App\Models\Rango;
 use App\Rules\ValidateRango;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -14,6 +15,7 @@ class ShowRangos extends Component
 {
 
     use WithPagination;
+    use AuthorizesRequests;
 
     public $open = false;
     public $rango;
@@ -46,7 +48,7 @@ class ShowRangos extends Component
     public function render()
     {
         $rangos = Rango::with(['pricetypes' => function ($query) {
-            $query->orderBy('id', 'asc');
+            $query->orderBy('pricetypes.id', 'asc');
         }])->orderBy('desde', 'asc')->paginate();
         $pricetypes = Pricetype::orderBy('id', 'asc')->paginate();
         return view('livewire.admin.rangos.show-rangos', compact('rangos', 'pricetypes'));
@@ -63,6 +65,7 @@ class ShowRangos extends Component
     public function update()
     {
 
+        $this->authorize('admin.administracion.rangos.edit');
         $this->validate();
         DB::beginTransaction();
         try {
@@ -93,6 +96,7 @@ class ShowRangos extends Component
     public function updatepricerango(Rango $rango, Pricetype $pricetype, $cantidad)
     {
         // $listaRango = $rango->pricetypes()->where('pricetype_id', $pricetype->id)->firstOrFail();
+        $this->authorize('admin.administracion.rangos.edit');
         DB::beginTransaction();
         try {
             $rango->pricetypes()->updateExistingPivot(
@@ -113,6 +117,7 @@ class ShowRangos extends Component
 
     public function delete(Rango $rango)
     {
+        $this->authorize('admin.administracion.rangos.delete');
         DB::beginTransaction();
         try {
             $rango->pricetypes()->detach();

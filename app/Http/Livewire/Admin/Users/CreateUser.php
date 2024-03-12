@@ -2,9 +2,16 @@
 
 namespace App\Http\Livewire\Admin\Users;
 
+use App\Helpers\GetClient;
+use App\Models\Areawork;
+use App\Models\Employer;
 use App\Models\Sucursal;
 use App\Models\User;
+use App\Rules\CampoUnique;
+use App\Rules\ValidateDocument;
+use App\Rules\ValidateNacimiento;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -12,57 +19,137 @@ use Spatie\Permission\Models\Role;
 class CreateUser extends Component
 {
 
+    public $addemployer = false;
 
-    public $name, $email, $password, $password_confirmation,
-        $role_id, $sucursal_id, $almacen_id;
+    public $document, $name, $email, $password, $password_confirmation,
+        $sucursal_id, $almacen_id;
+    public $nacimiento, $sueldo, $horaingreso, $horasalida,
+        $sexo, $areawork_id,   $telefono, $employer;
+    public $selectedRoles = [];
 
 
     protected function rules()
     {
         return [
+            'document' => ['required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/', new CampoUnique('users', 'document', null, true)],
             'name' => ['required', 'string', 'min:3', 'string'],
-            'email' => ['required', 'email', 'unique:users,email'],
+            'email' => ['required', 'email', new CampoUnique('users', 'email', null, true)],
             'password' => ['required', 'min:8', 'confirmed'],
-            'role_id' => ['nullable', 'integer', 'min:1', 'exists:roles,id'],
-            'sucursal_id' => ['nullable', 'integer', 'min:1', 'exists:sucursals,id'],
-            'almacen_id' => ['nullable', 'integer', 'min:1', 'exists:almacens,id']
+            'selectedRoles' => ['nullable', 'array', 'min:0', 'exists:roles,id'],
+
+            'nacimiento' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'date', 'date_format:Y-m-d', 'before:today',
+                // new ValidateNacimiento(13)
+            ],
+            'telefono' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'
+            ],
+            'sexo' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])
+            ],
+            'sueldo' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'numeric', 'min:0', 'gt:0', 'decimal:0,2'
+            ],
+            'horaingreso' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'date_format:H:i'
+            ],
+            'horasalida' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'date_format:H:i'
+            ],
+            'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
+            'sucursal_id' => [
+                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
+                'integer', 'min:1', 'exists:sucursals,id'
+            ],
+            'almacen_id' => ['nullable', 'integer', 'min:1', 'exists:almacens,id'],
+
+            'employer.id' => ['nullable', 'integer', 'min:1', 'exists:employers,id']
         ];
     }
 
-
     public function render()
     {
-
         $roles = Role::all();
         $permisos = Permission::all();
         $sucursales = Sucursal::all();
-        return view('livewire.admin.users.create-user', compact('roles', 'sucursales'));
+        $areaworks = Areawork::orderBy('name', 'asc')->get();
+        return view('livewire.admin.users.create-user', compact('roles', 'sucursales', 'areaworks'));
     }
 
     public function save()
     {
-
+        $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->email = trim($this->email);
         $this->password = trim($this->password);
         $this->password_confirmation = trim($this->password_confirmation);
         $this->sucursal_id = empty($this->sucursal_id) ? null : $this->sucursal_id;
         $validatedData  = $this->validate();
+        DB::beginTransaction();
 
         try {
-            DB::beginTransaction();
+
             if ($this->sucursal_id) {
                 $this->almacen_id = Sucursal::find($this->sucursal_id)->almacenDefault()->first()->id ?? null;
             }
 
-            User::create([
+            $user = User::create([
+                'document' => $this->document,
                 'name' => $this->name,
                 'email' => $this->email,
                 'password' => bcrypt($this->password),
-                'role_id' => $this->role_id,
-                'almacen_id' => $this->almacen_id,
-                'sucursal_id' => $this->sucursal_id,
+                'almacen_id' => $this->addemployer ? $this->almacen_id : null,
+                'sucursal_id' => $this->addemployer ? $this->sucursal_id : null,
             ]);
+
+            if ($this->addemployer) {
+
+                $user->roles()->sync($this->selectedRoles);
+
+                if ($this->employer) {
+                    $this->employer->user_id = $user->id;
+                    $this->employer->save();
+                } else {
+                    $exists = Employer::with(['sucursal', 'areawork'])->whereDoesntHave('user', function ($query) {
+                        $query->where('document', $this->document);
+                    })->where('document', $this->document)->exists();
+
+                    if ($exists) {
+                        $mensaje = response()->json([
+                            'title' => 'YA EXISTE UN TRABAJADOR CON LOS MISMOS DATOS INGRESADOS !',
+                            'text' => 'Se encontraron registros de trabajadores con los mismos datos ingresados.',
+                            'type' => 'warning'
+                        ])->getData();
+                        $this->addError('document', 'Ya existe un trabajador con el mismo documento.');
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    } else {
+                        $employer = $user->employer()->create([
+                            'document' => $this->document,
+                            'name' => $this->name,
+                            'nacimiento' => $this->nacimiento,
+                            'sexo' => $this->sexo,
+                            'sueldo' => $this->sueldo,
+                            'horaingreso' => $this->horaingreso,
+                            'horasalida' => $this->horasalida,
+                            'areawork_id' => $this->areawork_id,
+                            'sucursal_id' => $this->sucursal_id,
+                        ]);
+
+                        if (!empty($this->telefono)) {
+                            $employer->telephone()->create([
+                                'phone' => $this->telefono,
+                            ]);
+                        }
+                    }
+                }
+            }
             DB::commit();
             $this->reset();
             $this->resetValidation();
@@ -75,5 +162,51 @@ class CreateUser extends Component
             DB::rollBack();
             throw $e;
         }
+    }
+
+    public function searchclient()
+    {
+        $this->resetValidation(['document', 'name']);
+        $this->reset(['name', 'employer']);
+        $this->document = trim($this->document);
+        $this->validate([
+            'document' => [
+                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                new ValidateDocument,
+                new CampoUnique('users', 'document', null, true)
+            ]
+        ]);
+
+        $http = new GetClient();
+        $response = $http->getClient($this->document);
+
+        if ($response->getData()) {
+            if ($response->getData()->success) {
+                $this->name = $response->getData()->name;
+            } else {
+                $this->addError('document', $response->getData()->message);
+            }
+        } else {
+            $this->addError('document', 'Error al buscar cliente.');
+        }
+
+        $this->employer = Employer::with(['sucursal', 'areawork'])->whereDoesntHave('user', function ($query) {
+            $query->where('document', $this->document);
+        })->where('document', $this->document)->first();
+        if ($this->employer) {
+            $this->addemployer = true;
+            $this->sucursal_id = $this->employer->sucursal_id;
+            $mensaje = response()->json([
+                'title' => 'SE ENCONTRARON DATOS DEL TRABAJADOR CON EL MISMO DOCUMENTO !',
+                'text' => 'vincular usuario de acceso con los datos del personal encontrado.',
+                'type' => 'warning'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+        }
+    }
+
+    public function deleteemployer()
+    {
+        $this->reset(['employer']);
     }
 }

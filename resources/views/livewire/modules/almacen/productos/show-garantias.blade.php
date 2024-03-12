@@ -1,62 +1,65 @@
 <div class="w-full flex flex-col gap-8">
-    <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto." class="relative">
-        <div class="w-full flex flex-wrap lg:flex-nowrap gap-3" x-data="{ loading: false }">
-            <div x-show="loading" wire:loading.flex wire:target="save, delete, render, " class="loading-overlay rounded">
-                <x-loading-next />
-            </div>
-            <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
-                <form wire:submit.prevent="save" class="w-full" x-data="datagarantia">
-                    <div class="w-full">
-                        <x-label value="Garantías disponibles :" />
-                        <div class="relative" id="parenttypegarantia_id" wire:ignore>
-                            <x-select class="block w-full select2" x-ref="select" id="typegarantia_id"
-                                data-placeholder="null">
-                                <x-slot name="options">
-                                    @if (count($typegarantias))
-                                        @foreach ($typegarantias as $item)
-                                            <option value="{{ $item->id }}" data-time="{{ $item->time }}">
-                                                {{ $item->name }} -
-                                                @if ($item->datecode == 'MM')
-                                                    MESES
-                                                @else
-                                                    AÑOS
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="typegarantia_id" />
-                    </div>
+    @can('admin.almacen.productos.garantias')
+        <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto." class="relative">
+            <div class="w-full flex flex-wrap lg:flex-nowrap gap-3" x-data="{ loading: false }">
+                <div x-show="loading" wire:loading.flex wire:target="save, delete, render, " class="loading-overlay rounded">
+                    <x-loading-next />
+                </div>
 
-                    <div class="w-full mt-2">
-                        <x-label value="Tiempo garantía :" />
-                        <x-input class="block w-full" x-model="time" type="number" placeholder="Meses garantía..." />
-                        <x-jet-input-error for="time" />
-                    </div>
+                @can('admin.almacen.productos.garantias.edit')
+                    <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
+                        <form wire:submit.prevent="save" class="w-full" x-data="datagarantia">
+                            <div class="w-full">
+                                <x-label value="Garantías disponibles :" />
+                                <div class="relative" id="parenttypegarantia_id" wire:ignore>
+                                    <x-select class="block w-full select2" x-ref="select" id="typegarantia_id"
+                                        data-placeholder="null">
+                                        <x-slot name="options">
+                                            @if (count($typegarantias))
+                                                @foreach ($typegarantias as $item)
+                                                    <option value="{{ $item->id }}" data-time="{{ $item->time }}">
+                                                        {{ $item->name }} -
+                                                        @if ($item->datecode == 'MM')
+                                                            MESES
+                                                        @else
+                                                            AÑOS
+                                                        @endif
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </x-slot>
+                                    </x-select>
+                                    <x-icon-select />
+                                </div>
+                                <x-jet-input-error for="typegarantia_id" />
+                            </div>
 
-                    <div class="w-full pt-4 flex justify-end">
-                        <x-button type="submit" wire:loading.atrr="disabled">
-                            REGISTRAR
-                        </x-button>
-                    </div>
-                </form>
-            </div>
-            @if (count($producto->garantiaproductos))
-                <div class="w-full flex flex-wrap gap-2">
-                    @foreach ($producto->garantiaproductos as $item)
-                        @php
-                            if ($item->typegarantia->datecode == 'MM') {
-                                $timestring = $item->time > 1 ? ' MESES' : ' MES';
-                            } else {
-                                $timestring = $item->time > 1 ? ' AÑOS' : ' AÑO';
-                            }
-                        @endphp
+                            <div class="w-full mt-2">
+                                <x-label value="Tiempo garantía :" />
+                                <x-input class="block w-full" x-model="time" type="number" placeholder="Meses garantía..." />
+                                <x-jet-input-error for="time" />
+                            </div>
 
-                        <x-minicard size="lg" :title="$item->typegarantia->name" :content="$item->time . $timestring" class="!bg-body">
-                            {{-- <span class="absolute right-2 -top-3 w-4 h-4 block text-next-500 ml-2">
+                            <div class="w-full pt-4 flex justify-end">
+                                <x-button type="submit" wire:loading.atrr="disabled">
+                                    REGISTRAR</x-button>
+                            </div>
+                        </form>
+                    </div>
+                @endcan
+                @if (count($producto->garantiaproductos))
+                    <div class="w-full flex flex-wrap gap-2">
+                        @foreach ($producto->garantiaproductos as $item)
+                            @php
+                                if ($item->typegarantia->datecode == 'MM') {
+                                    $timestring = $item->time > 1 ? ' MESES' : ' MES';
+                                } else {
+                                    $timestring = $item->time > 1 ? ' AÑOS' : ' AÑO';
+                                }
+                            @endphp
+
+                            <x-minicard size="lg" :title="$item->typegarantia->name" :content="$item->time . $timestring" class="!bg-body">
+                                {{-- <span class="absolute right-2 -top-3 w-4 h-4 block text-next-500 ml-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 320 512"
                                     fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -69,106 +72,110 @@
                                 class="absolute right-0 -top-8 bg-next-500 text-white text-[10px] font-semibold tracking-widest p-1.5 px-2 rounded-sm">
                                 {{ $item->time . $timestring }}</span> --}}
 
-                            <span class="block mx-auto">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-colorlinknav"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M10.014 2C6.23617 2 4.34725 2 3.17362 3.17157C2 4.34315 2 6.22876 2 10C2 13.7712 2 15.6569 3.17362 16.8284C4.34725 18 6.23617 18 10.014 18H14.021C17.7989 18 19.6878 18 20.8614 16.8284C21.671 16.0203 21.9221 14.8723 22 13" />
-                                    <path d="M12 18V22" />
-                                    <path d="M8 22H16" />
-                                    <path d="M11 15H13" />
-                                    <path
-                                        d="M17.4991 2C16.0744 2 15.1506 2.90855 14.0581 3.23971C13.6138 3.37436 13.3917 3.44168 13.3018 3.53659C13.2119 3.6315 13.1856 3.77019 13.133 4.04756C12.5696 7.0157 13.801 9.75979 16.7375 10.8279C17.053 10.9426 17.2108 11 17.5007 11C17.7906 11 17.9484 10.9426 18.2639 10.8279C21.2002 9.75978 22.4304 7.01569 21.8669 4.04756C21.8142 3.77014 21.7879 3.63143 21.698 3.53652C21.6081 3.44161 21.386 3.37432 20.9418 3.23974C19.8488 2.90862 18.9239 2 17.4991 2Z" />
-                                </svg>
-                            </span>
+                                <span class="block mx-auto">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-colorlinknav"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path
+                                            d="M10.014 2C6.23617 2 4.34725 2 3.17362 3.17157C2 4.34315 2 6.22876 2 10C2 13.7712 2 15.6569 3.17362 16.8284C4.34725 18 6.23617 18 10.014 18H14.021C17.7989 18 19.6878 18 20.8614 16.8284C21.671 16.0203 21.9221 14.8723 22 13" />
+                                        <path d="M12 18V22" />
+                                        <path d="M8 22H16" />
+                                        <path d="M11 15H13" />
+                                        <path
+                                            d="M17.4991 2C16.0744 2 15.1506 2.90855 14.0581 3.23971C13.6138 3.37436 13.3917 3.44168 13.3018 3.53659C13.2119 3.6315 13.1856 3.77019 13.133 4.04756C12.5696 7.0157 13.801 9.75979 16.7375 10.8279C17.053 10.9426 17.2108 11 17.5007 11C17.7906 11 17.9484 10.9426 18.2639 10.8279C21.2002 9.75978 22.4304 7.01569 21.8669 4.04756C21.8142 3.77014 21.7879 3.63143 21.698 3.53652C21.6081 3.44161 21.386 3.37432 20.9418 3.23974C19.8488 2.90862 18.9239 2 17.4991 2Z" />
+                                    </svg>
+                                </span>
 
-                            <x-slot name="buttons">
-                                <x-button-delete
-                                    wire:click="$emit('producto.confirmDeleteGarantia',{{ $item }})"
-                                    wire:loading.attr="disabled" />
-                            </x-slot>
-                        </x-minicard>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-    </x-form-card>
+                                @can('admin.almacen.productos.garantias.edit')
+                                    <x-slot name="buttons">
+                                        <x-button-delete onclick="confirmDeleteGarantia({{ $item }})"
+                                            wire:loading.attr="disabled" />
+                                    </x-slot>
+                                @endcan
+                            </x-minicard>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+        </x-form-card>
+    @endcan
 
-    @if (mi_empresa()->uselistprice)
-        <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
-            <div class="w-full flex flex-wrap gap-2">
-                @if (count($pricetypes))
-                    @foreach ($pricetypes as $lista)
-                        @php
-                            $precios = \App\Helpers\GetPrice::getPriceProducto($producto, $lista->id, mi_empresa()->tipocambio)->getData();
-                            // var_dump($precios);
-                        @endphp
+    @can('admin.administracion.pricetypes.productos')
+        @if (mi_empresa()->usarLista())
+            <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
+                <div class="w-full flex flex-wrap gap-2">
+                    @if (count($pricetypes))
+                        @foreach ($pricetypes as $lista)
+                            @php
+                                $precios = getPrecio($producto, $lista->id, mi_empresa()->tipocambio)->getData();
+                                // var_dump($precios);
+                            @endphp
 
-                        <div
-                            class="w-full xs:w-48 flex flex-col items-center justify-between bg-body rounded-lg shadow p-1">
-                            <div class="text-center">
-                                <x-span-text :text="$lista->name" class="leading-3 !tracking-normal" />
+                            <div
+                                class="w-full xs:w-48 flex flex-col items-center justify-between bg-body rounded-lg shadow p-1">
+                                <p class="text-[10px] leading-3 text-colorlabel">{{ var_dump($precios) }}</p>
+                                <div class="text-center">
+                                    <x-span-text :text="$lista->name" class="leading-3 !tracking-normal" />
 
-                                <div class="text-center relative pt-1">
-                                    @if ($precios->pricemanual)
-                                        <x-span-text :text="'SUGERIDO : S/.' .
-                                            number_format($precios->oldPrice, $lista->decimals, '.', ', ')"
-                                            class="bg-red-100 !text-red-500 font-semibold leading-3" />
-                                    @endif
+                                    <div class="text-center relative pt-1">
+                                        @if ($precios->pricemanual)
+                                            <x-span-text :text="'SUGERIDO : S/.' .
+                                                number_format($precios->oldPrice, $lista->decimals, '.', ', ')"
+                                                class="bg-red-100 !text-red-500 font-semibold leading-3" />
+                                        @endif
 
-                                    @if ($precios->pricemanual)
-                                        <p class="text-green-500 text-sm">
-                                            S/. {{ number_format($precios->pricemanual, 2, '.', ', ') }}</p>
-                                    @else
-                                        @if ($precios->existsrango)
+                                        @if ($precios->pricemanual)
                                             <p class="text-green-500 text-sm">
-                                                S/. {{ number_format($precios->pricesale, 2, '.', ', ') }}</p>
+                                                S/. {{ number_format($precios->pricemanual, 2, '.', ', ') }}</p>
                                         @else
-                                            <p class="mx-auto">
-                                                <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                    class="!tracking-normal leading-3" type="red" />
-                                            </p>
+                                            @if ($precios->existsrango)
+                                                <p class="text-green-500 text-sm">
+                                                    S/. {{ number_format($precios->pricesale, 2, '.', ', ') }}</p>
+                                            @else
+                                                <p class="mx-auto">
+                                                    <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
+                                                        class="!tracking-normal leading-3" type="red" />
+                                                </p>
+                                            @endif
+                                        @endif
+                                    </div>
+
+                                    @if ($precios->existsrango)
+                                        @if (mi_empresa()->verDolar())
+                                            @if (mi_empresa()->tipocambio > 0)
+                                                <div class="text-center">
+                                                    <x-span-text :text="'$. ' .
+                                                        number_format(
+                                                            $precios->pricewithdescountDolar ?? $precios->priceDolar,
+                                                            $lista->decimals,
+                                                            '.',
+                                                            ', ',
+                                                        )"
+                                                        class="font-semibold leading-3 !tracking-normal" type="blue" />
+                                                </div>
+                                            @else
+                                                <div class="text-center">
+                                                    <x-span-text text="TIPO CAMBIO NO CONFIGURADO"
+                                                        class="leading-3 !tracking-normal" type="red" />
+                                                </div>
+                                            @endif
                                         @endif
                                     @endif
                                 </div>
 
-                                @if ($precios->existsrango)
-                                    @if (mi_empresa()->viewpricedolar)
-                                        @if (mi_empresa()->tipocambio > 0)
-                                            <div class="text-center">
-                                                <x-span-text :text="'$. ' .
-                                                    number_format(
-                                                        $precios->pricewithdescountDolar ?? $precios->priceDolar,
-                                                        $lista->decimals,
-                                                        '.',
-                                                        ', ',
-                                                    )"
-                                                    class="font-semibold leading-3 !tracking-normal" type="blue" />
-                                            </div>
-                                        @else
-                                            <div class="text-center">
-                                                <x-span-text text="TIPO CAMBIO NO CONFIGURADO"
-                                                    class="leading-3 !tracking-normal" type="red" />
-                                            </div>
-                                        @endif
-                                    @endif
-                                @endif
+                                <div class="w-full flex justify-end">
+                                    <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
+                                        wire:loading.attr="disabled" />
+                                </div>
                             </div>
-
-                            <div class="w-full flex justify-end">
-                                <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
-                                    wire:loading.attr="disabled" />
-                            </div>
-                        </div>
-                    @endforeach
-                @else
-                    <x-span-text text="NO EXISTEN LISTAS DE PRECIOS REGISTRADOS..." />
-                @endif
-            </div>
-        </x-form-card>
-    @endif
-
+                        @endforeach
+                    @else
+                        <x-span-text text="NO EXISTEN LISTAS DE PRECIOS REGISTRADOS..." />
+                    @endif
+                </div>
+            </x-form-card>
+        @endif
+    @endcan
     {{-- {{ $producto->detalleproducto->descripcion }} --}}
 
     <x-form-card titulo="DETALLE PRODUCTO">
@@ -182,18 +189,22 @@
                 <x-jet-input-error for="descripcion" />
                 <x-jet-input-error for="producto.id" />
 
-                <div class="mt-3 flex justify-end">
-                    <x-button type="submit" wire:loading.atrr="disabled">
-                        @if ($producto->detalleproducto)
-                            ACTUALIZAR
-                        @else
-                            REGISTRAR
-                        @endif
-                    </x-button>
-                </div>
+                @can('admin.almacen.productos.especificaciones')
+                    <div class="mt-3 flex justify-end">
+                        <x-button type="submit" wire:loading.atrr="disabled">
+                            @if ($producto->detalleproducto)
+                                ACTUALIZAR
+                            @else
+                                REGISTRAR
+                            @endif
+                        </x-button>
+                    </div>
+                @endcan
             </form>
         </div>
     </x-form-card>
+
+
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -242,7 +253,7 @@
             Alpine.data('datagarantia', () => ({
                 typegarantia_id: @entangle('typegarantia_id').defer,
                 time: @entangle('time').defer,
-                
+
                 init() {
                     this.select2GarantiaAlpine();
                     window.addEventListener('created', () => {
@@ -268,26 +279,25 @@
             }));
         })
 
-        document.addEventListener("livewire:load", () => {
+        function confirmDeleteGarantia(garantia) {
+            swal.fire({
+                title: 'Eliminar garantía del producto !',
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(garantia);
+                    // Livewire.emitTo('almacen.productos.show-garantias', 'delete', data);
+                }
+            })
+        }
 
-            Livewire.on("producto.confirmDeleteGarantia", data => {
-                swal.fire({
-                    title: 'Eliminar garantía del producto !',
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data);
-                        // Livewire.emitTo('almacen.productos.show-garantias', 'delete', data);
-                    }
-                })
-            });
-           
+        document.addEventListener("livewire:load", () => {
             CKEDITOR.ClassicEditor.create(document.getElementById("descripcionproducto"), {
                 toolbar: {
                     items: [
@@ -488,7 +498,7 @@
                 console.log(error);
             });
 
-            
+
         })
     </script>
 </div>

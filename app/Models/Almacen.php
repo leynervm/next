@@ -21,8 +21,17 @@ class Almacen extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'default', 'sucursal_id'];
+    protected $fillable = ['name', 'default'];
+
+
     const DEFAULT = "1";
+    const SALIDA_ALMACEN = '-';
+    const INGRESO_ALMACEN = '+';
+
+    const NO_ALTERAR_STOCK = '0';
+    const RESERVAR_STOCK = '1';
+    const INCREMENTAR_STOCK = '2';
+    const DISMINUIR_STOCK = '3';
 
     protected $casts = [
         'default' => 'integer',
@@ -32,7 +41,6 @@ class Almacen extends Model
     {
         return \Modules\Almacen\Database\factories\AlmacenFactory::new();
     }
-
 
     public function setNameAttribute($value)
     {
@@ -59,15 +67,15 @@ class Almacen extends Model
         return $this->hasMany(Compraitem::class);
     }
 
-    public function sucursal(): BelongsTo
+    public function sucursals(): BelongsToMany
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsToMany(Sucursal::class);
     }
 
-    public function users(): hasMany
-    {
-        return $this->hasMany(User::class);
-    }
+    // public function users(): hasMany
+    // {
+    //     return $this->hasMany(User::class);
+    // }
 
     public function isDefault()
     {

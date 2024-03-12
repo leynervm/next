@@ -14,7 +14,7 @@
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
             </span>
-            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model="search">
+            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model.lazy="search">
             </x-input>
         </div>
     </div>
@@ -57,11 +57,12 @@
                 <th scope="col" class="p-2 font-medium text-center">
                     TELEFONOS</th>
 
-                @if (Module::isEnabled('Ventas'))
-                    <th scope="col" class="p-2 font-medium text-center">
-                        HISTORIAL VENTAS</th>
-                @endif
-
+                @can('admin.clientes.historial')
+                    @if (Module::isEnabled('Ventas'))
+                        <th scope="col" class="p-2 font-medium text-center">
+                            HISTORIAL VENTAS</th>
+                    @endif
+                @endcan
                 {{-- <th scope="col" class="p-2 relative">
                     <span class="sr-only">OPCIONES</span>
                 </th> --}}
@@ -72,15 +73,23 @@
                 @foreach ($clients as $item)
                     <tr>
                         <td class="p-2 text-xs">
-                            <a href="{{ route('admin.clientes.show', $item) }}"
-                                class="font-medium break-words underline text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
-                                {{ $item->name }}</a>
-                            <p class="text-xs">{{ $item->document }}</p>
+                            @can('admin.clientes.edit')
+                                <a href="{{ route('admin.clientes.edit', $item) }}"
+                                    class="font-medium inline-block break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                    {{ $item->name }}
+                                    <h1 class="text-xs">{{ $item->document }}</h1>
+                                </a>
+                            @endcan
+                            @cannot('admin.clientes.edit')
+                                <h1 class="font-medium break-words text-linktable cursor-pointer">
+                                    {{ $item->name }}
+                                    <p class="text-xs">{{ $item->document }}</p>
+                                </h1>
+                            @endcannot
                         </td>
                         <td class="p-2 text-[10px]">
                             @if ($item->direccion)
                                 <p>{{ $item->direccion->name }}</p>
-
                                 @if ($item->direccion->ubigeo)
                                     <p>
                                         {{ $item->direccion->ubigeo->distrito }},
@@ -144,12 +153,14 @@
                             @endif
                         </td>
 
-                        @if (Module::isEnabled('Ventas'))
-                            <td class="p-2 text-xs text-center align-middle">
-                                {{-- <x-link-button class="inline-block"
+                        @can('admin.clientes.historial')
+                            @if (Module::isEnabled('Ventas'))
+                                <td class="p-2 text-xs text-center align-middle">
+                                    {{-- <x-link-button class="inline-block"
                                     href="{{ route('admin.clientes.historial', $item) }}">VER VENTAS</x-link-button> --}}
-                            </td>
-                        @endif
+                                </td>
+                            @endif
+                        @endcan
                         {{-- <td class="p-2 whitespace-nowrap">
                             <div class="flex gap-1 items-center">
                                 <x-button-delete></x-button-delete>
@@ -160,22 +171,4 @@
             </x-slot>
         @endif
     </x-table>
-
-    <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
-        <x-slot name="title">
-            {{ __('Actualizar producto') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
-        </x-slot>
-
-        <x-slot name="content">
-
-        </x-slot>
-    </x-jet-dialog-modal>
-
 </div>

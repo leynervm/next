@@ -1,12 +1,11 @@
 <div class="relative">
-
     @if (count($typegarantias))
         <div class="pb-2">
-            {{ $typegarantias->links() }}
+            {{ $typegarantias->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
-    <div class="flex gap-2 flex-wrap justify-start">
+    <div class="w-full flex gap-2 flex-wrap justify-start">
         @if (count($typegarantias))
             @foreach ($typegarantias as $item)
                 @php
@@ -19,9 +18,13 @@
                 <x-minicard :title="$item->name" :content="$item->time . $timestring" size="lg">
                     <x-slot name="buttons">
                         <div class="ml-auto">
-                            <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
-                            <x-button-delete wire:click="$emit('typegarantias.confirmDelete',{{ $item }})"
-                                wire:loading.attr="disabled" />
+                            @can('admin.almacen.typegarantias.edit')
+                                <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled" />
+                            @endcan
+
+                            @can('admin.almacen.typegarantias.delete')
+                                <x-button-delete onclick="confirmDelete({{ $item }})" wire:loading.attr="disabled" />
+                            @endcan
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -29,9 +32,6 @@
         @endif
     </div>
 
-    <div wire:loading.flex class="loading-overlay rounded hidden">
-        <x-loading-next />
-    </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -81,24 +81,21 @@
         </x-slot>
     </x-jet-dialog-modal>
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('typegarantias.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar tipo de garantía, ' + data.name,
-                    text: "Se eliminará el tipo de garantía de la base de datos, incluyendo todas las garantías vinculadas a los productos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // console.log(data.detail.id);
-                        @this.delete(data.id);
-                    }
-                })
+        function confirmDelete(typegarantia) {
+            swal.fire({
+                title: 'Eliminar tipo de garantía, ' + typegarantia.name,
+                text: "Se eliminará el tipo de garantía de la base de datos, incluyendo todas las garantías vinculadas a los productos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(typegarantia.id);
+                }
             })
-        })
+        }
     </script>
 </div>

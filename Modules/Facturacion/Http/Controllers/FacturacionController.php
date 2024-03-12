@@ -9,34 +9,25 @@ use Modules\Facturacion\Entities\Comprobante;
 
 class FacturacionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.facturacion')->only('index');
+        $this->middleware('can:admin.facturacion.edit')->only('show');
+    }
+
     public function index()
     {
         return view('facturacion::index');
     }
 
-
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
     public function show(Comprobante $comprobante)
     {
         return view('facturacion::comprobantes.show', compact('comprobante'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
     public function edit($id)
     {
         return view('facturacion::edit');
     }
-
 }

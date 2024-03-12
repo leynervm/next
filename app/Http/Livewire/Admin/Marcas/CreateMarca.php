@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Marcas;
 
 use App\Models\Marca;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -12,10 +13,10 @@ use Intervention\Image\ImageManagerStatic as Image;
 class CreateMarca extends Component
 {
 
+    use AuthorizesRequests;
     use WithFileUploads;
 
     public $open = false;
-    public $isUploading = false;
     public $logo;
     public $identificador;
     public $name;
@@ -47,6 +48,7 @@ class CreateMarca extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.almacen.marcas.create');
             $this->resetValidation();
             $this->identificador = rand();
             $this->reset(['name', 'logo']);
@@ -55,6 +57,7 @@ class CreateMarca extends Component
 
     public function save()
     {
+        $this->authorize('admin.almacen.marcas.create');
         $this->name = mb_strtoupper(trim($this->name), "UTF-8");
         $this->validate();
         $logoURL = null;
@@ -98,7 +101,7 @@ class CreateMarca extends Component
                     ]);
                 }
             }
-            
+
             DB::commit();
             $this->resetValidation();
             $this->reset();
@@ -124,21 +127,18 @@ class CreateMarca extends Component
 
     public function errorImage()
     {
-        $this->isUploading = false;
         $this->reset(['logo']);
         $this->identificador = rand();
     }
 
-    public function updatedLogo()
+    public function updatedLogo($file)
     {
-
-        $this->resetValidation();
-
-        if ($this->logo && !in_array($this->logo->getClientOriginalExtension(), ['jpg', 'jpeg', 'png'])) {
-            $this->isUploading = false;
+        try {
+            $url = $file->temporaryUrl();
+        } catch (\Exception $e) {
             $this->reset(['logo']);
-            $this->identificador = rand();
-            $this->addError('logo', 'El tipo de archivo no es válido. Solo se permiten imágenes JPG, JPEG y PNG.');
+            $this->addError('logo', $e->getMessage());
+            return;
         }
     }
 }

@@ -21,19 +21,19 @@ class ShowSucursales extends Component
 
     public function mount()
     {
-        $this->sucursal_id = auth()->user()->sucursal_id;
-        $this->almacen_id = auth()->user()->almacen_id;
+        $this->sucursal_id = auth()->user()->employer->sucursal_id;
+        // $this->almacen_id = auth()->user()->almacen_id;
     }
 
 
     public function render()
     {
-        $almacens = auth()->user()->sucursal->almacens;
+        $almacens = auth()->user()->employer->sucursal->almacens;
         return view('livewire.admin.profile.show-sucursales', compact('almacens'));
     }
 
 
-    public function updateProfileSucursal()
+    public function update()
     {
         $this->almacen_id = empty($this->almacen_id) ? null : $this->almacen_id;
         $this->validate();
@@ -50,10 +50,5 @@ class ShowSucursales extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-show-sucursals');
     }
 }

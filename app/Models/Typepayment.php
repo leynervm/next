@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Almacen\Entities\Compra;
 use Modules\Facturacion\Entities\Comprobante;
+use Modules\Ventas\Entities\Venta;
 
 class Typepayment extends Model
 {
@@ -14,8 +16,11 @@ class Typepayment extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-
     protected $fillable = ['name', 'paycuotas', 'default'];
+
+    const DEFAULT = '1';
+    const CREDITO = '1';
+    const CONTADO = '0';
 
     public function getNameAttribute($value)
     {
@@ -29,26 +34,31 @@ class Typepayment extends Model
 
     public function ventas(): HasMany
     {
-        return $this->hasMany(Ventaonline::class);
+        return $this->hasMany(Venta::class);
+    }
+
+    public function compras(): HasMany
+    {
+        return $this->hasMany(Compra::class);
     }
 
     public function isDefault()
     {
-        return $this->default == 1;
+        return $this->default == self::DEFAULT;
     }
 
     public function isContado()
     {
-        return $this->paycuotas == 0;
+        return $this->paycuotas == self::CONTADO;
     }
 
     public function isCredito()
     {
-        return $this->paycuotas == 1;
+        return $this->paycuotas == self::CREDITO;
     }
 
-    public function scopeDefaultTypepayment($query)
+    public function scopeDefault($query)
     {
-        return $query->where('default', 1);
+        return $query->where('default', self::DEFAULT);
     }
 }

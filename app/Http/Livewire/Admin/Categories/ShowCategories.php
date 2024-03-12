@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Categories;
 use App\Helpers\FormatoPersonalizado;
 use App\Models\Category;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 class ShowCategories extends Component
 {
 
+    use AuthorizesRequests;
     use WithPagination;
 
     public $open = false;
@@ -36,24 +38,23 @@ class ShowCategories extends Component
     public function render()
     {
 
-        $categories = Category::orderBy('name', 'asc')->paginate();
+        $categories = Category::with('subcategories')->orderBy('order', 'asc')->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.categories.show-categories', compact('categories'));
     }
 
     public function edit(Category $category)
     {
+        $this->authorize('admin.almacen.categorias.edit');
         $this->category = $category;
         $this->open = true;
     }
 
     public function update()
     {
+        $this->authorize('admin.almacen.categorias.edit');
         $this->category->name = trim($this->category->name);
         $this->validate();
         $this->category->save();
-        // $this->category->subcategories()->syncWithPivotValues($this->selectedSubcategories, [
-        //     'updated_at' => now('America/Lima')
-        // ]);
         $this->reset(['open']);
     }
 
@@ -61,6 +62,7 @@ class ShowCategories extends Component
     public function delete(Category $category)
     {
 
+        $this->authorize('admin.almacen.categorias.delete');
         $productos = $category->productos()->count();
         $cadena = FormatoPersonalizado::extraerMensaje([
             'Productos' => $productos
@@ -76,7 +78,7 @@ class ShowCategories extends Component
             DB::beginTransaction();
             try {
                 $category->subcategories()->detach();
-                $category->deleteOrFail();
+                $category->delete();
                 DB::commit();
                 $this->dispatchBrowserEvent('deleted');
             } catch (\Exception $e) {

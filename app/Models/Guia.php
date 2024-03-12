@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Facturacion\Entities\Comprobante;
+use Modules\Ventas\Entities\Venta;
 
 class Guia extends Model
 {
@@ -52,7 +53,7 @@ class Guia extends Model
     {
         return formatDecimalOrInteger($value, 2);
     }
-    
+
     public function setNametransportAttribute($value)
     {
         $this->attributes['nametransport'] = trim(mb_strtoupper($value, "UTF-8"));
@@ -66,6 +67,11 @@ class Guia extends Model
     public function setNoteAttribute($value)
     {
         $this->attributes['note'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function setReferenciaAttribute($value)
+    {
+        $this->attributes['referencia'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function setPlacavehiculoAttribute($value)
@@ -83,9 +89,29 @@ class Guia extends Model
         $this->attributes['direcciondestino'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    public function guiaitems(): HasMany
+    // public function comprobante(): BelongsTo
+    // {
+    //     return $this->belongsTo(Comprobante::class);
+    // }
+
+    public function guiable(): MorphTo
     {
-        return $this->hasMany(Guiaitem::class)->orderBy('item', 'asc');
+        return $this->morphTo();
+    }
+
+    public function scopeGuias($query)
+    {
+        return $query->where('cartable_type', Guia::class);
+    }
+
+    public function scopeVentas($query)
+    {
+        return $query->where('cartable_type', Venta::class);
+    }
+
+    public function scopeComprobantes($query)
+    {
+        return $query->where('cartable_type', Comprobante::class);
     }
 
     public function tvitems(): MorphMany
@@ -107,7 +133,7 @@ class Guia extends Model
 
     public function motivotraslado(): BelongsTo
     {
-        return $this->belongsTo(Motivotraslado::class);
+        return $this->belongsTo(Motivotraslado::class)->withTrashed();
     }
 
     public function modalidadtransporte(): BelongsTo
@@ -115,19 +141,14 @@ class Guia extends Model
         return $this->belongsTo(Modalidadtransporte::class);
     }
 
-    public function comprobante(): BelongsTo
-    {
-        return $this->belongsTo(Comprobante::class);
-    }
-
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
     public function seriecomprobante(): BelongsTo

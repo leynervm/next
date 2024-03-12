@@ -20,12 +20,11 @@ class CreateCenterservicesTable extends Migration
             $table->string('name', 255);
             $table->string('direccion', 255);
             $table->string('email', 255)->nullable();
-            $table->integer('delete')->default(0);
-            $table->bigInteger('marca_id')->nullable();
-            $table->bigInteger('ubigeo_id')->nullable();
-            $table->bigInteger('moneda_id')->nullable();
-            $table->bigInteger('condition_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('marca_id')->nullable();
+            $table->unsignedBigInteger('ubigeo_id')->nullable();
+            $table->tinyInteger('moneda_id')->nullable();
+            $table->unsignedBigInteger('condition_id')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
 
             $table->foreign('marca_id')->on('marcas')->references('id');
             $table->foreign('ubigeo_id')->on('ubigeos')->references('id');

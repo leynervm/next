@@ -2,21 +2,35 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Monthbox;
+use App\Models\Openbox;
+
 class CajaController extends Controller
 {
-    public function index()
+
+    public function __construct()
     {
-        return view('admin.cajas');
+        $this->middleware('can:admin.cajas')->only('index');
+        $this->middleware('can:admin.cajas.methodpayments')->only('methodpayments');
+        $this->middleware('can:admin.cajas.conceptos')->only('conceptos');
+        $this->middleware('can:admin.cajas.aperturas')->only('aperturas');
+        $this->middleware('can:admin.cajas.mensuales')->only('mensuales');
     }
 
-    public function administrar()
+
+    public function index()
     {
-        return view('admin.cajas.index');
+        $openbox = Openbox::mybox(auth()->user()->sucursal_id)->first();
+        $monthbox = Monthbox::usando(auth()->user()->sucursal_id)->first();
+
+        return view('admin.cajas', compact('openbox', 'monthbox'));
     }
 
     public function aperturas()
     {
-        return view('admin.aperturas.index');
+        $openbox = Openbox::mybox(auth()->user()->sucursal_id)->first();
+        $monthbox = Monthbox::usando(auth()->user()->sucursal_id)->first();
+        return view('admin.aperturas.index', compact('openbox', 'monthbox'));
     }
 
     public function conceptos()
@@ -29,20 +43,13 @@ class CajaController extends Controller
         return view('admin.movimientos.index');
     }
 
-    public function resumen()
-    {
-        return view('admin.cajas.index');
-    }
-
-    public function cuentas()
-    {
-        return view('admin.cuentas.index');
-    }
-
     public function methodpayments()
     {
         return view('admin.methodpayments.index');
     }
-    
-    
+
+    public function mensuales()
+    {
+        return view('admin.cajas.mensuales');
+    }
 }

@@ -6,7 +6,7 @@
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
                         <x-input class="block w-full numeric prevent" wire:keydown.enter="searchclient" type="number"
-                            wire:model.defer="document" />
+                            wire:model.defer="document" onkeypress="return validarNumero(event, 11)" />
                         <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
                             wire:target="searchclient">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -28,20 +28,20 @@
 
                 <div class="w-full sm:col-span-2 xl:col-span-1">
                     <x-label value="Dirección :" />
-                    <x-input class="block w-full" wire:model.defer="direccion" placeholder="Dirección..."/>
+                    <x-input class="block w-full" wire:model.defer="direccion" placeholder="Dirección..." />
                     <x-jet-input-error for="direccion" />
                 </div>
 
                 <div class="w-full sm:col-span-2">
                     <x-label value="Ubigeo :" />
                     {{-- 20201987297 --}}
-                    <div id="parentubigeoempresa_id" class="relative" wire:ignore>
+                    <div id="parentubigeoempresa_id" class="relative" x-init="selectUbigeo">
                         <x-select class="block w-full" x-ref="selectubigeo" id="ubigeoempresa_id"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)
                                     <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }} /
-                                        {{ $item->distrito }}</option>
+                                        {{ $item->distrito }} /  {{ $item->ubigeo_reniec }}</option>
                                 @endforeach
                             </x-slot>
                         </x-select>
@@ -89,90 +89,8 @@
         </x-form-card>
 
         <div class="w-full flex flex-col xl:flex-row gap-8">
-            <x-form-card titulo="ICONO & LOGO">
-                <div class="w-full flex gap-3 flex-wrap">
-                    <div class="relative w-full xs:w-48 text-center bg-body shadow-md shadow-shadowminicard rounded p-1"
-                        x-data="{ isUploadingLogo: @entangle('isUploadingLogo'), progress: 0 }" x-on:livewire-upload-start="isUploadingLogo = true"
-                        x-on:livewire-upload-finish="isUploadingLogo = false"
-                        x-on:livewire-upload-error="$emit('errorImage'), isUploadingLogo = false"
-                        x-on:livewire-upload-progress="progress = $event.detail.progress">
-
-                        <div x-show="isUploadingLogo" wire:loading wire:target="isUploadingPublicKey,deletelogo"
-                            class="loading-overlay rounded">
-                            <x-loading-next />
-                        </div>
-
-                        @if (isset($logo))
-                            <div class="w-full h-32 md:max-w-md mx-auto mb-1 duration-300">
-                                <img class="w-full h-full object-scale-down" src="{{ $logo->temporaryUrl() }}" />
-                            </div>
-                        @else
-                            <x-icon-file-upload class="w-24 h-24 text-gray-300" />
-                        @endif
-
-                        <div class="w-full flex gap-1 flex-wrap justify-center">
-                            <x-input-file :for="$idlogo" titulo="SELECCIONAR LOGO" wire:loading.remove
-                                wire:target="logo">
-                                <input type="file" class="hidden" wire:model.defer="logo" id="{{ $idlogo }}"
-                                    accept="image/jpg, image/jpeg, image/png" />
-
-                                @if (isset($logo))
-                                    <x-slot name="clear">
-                                        <x-button class="inline-flex px-6" wire:loading.attr="disabled"
-                                            wire:target="clearLogo" wire:click="clearLogo">
-                                            LIMPIAR
-                                        </x-button>
-                                    </x-slot>
-                                @endif
-                            </x-input-file>
-                        </div>
-                        <x-jet-input-error wire:loading.remove wire:target="logo" for="logo"
-                            class="text-center" />
-                    </div>
-                    <div class="relative w-full xs:w-48 text-center bg-body shadow-md shadow-shadowminicard rounded p-1"
-                        x-data="{ isUploadingIcono: @entangle('isUploadingIcono'), progress: 0 }" x-on:livewire-upload-start="isUploadingIcono = true"
-                        x-on:livewire-upload-finish="$wire.emit('iconload', {{ $idicono }}),isUploadingIcono = false"
-                        x-on:livewire-upload-error="$wire.emit('erroricono'), isUploadingIcono = false"
-                        x-on:livewire-upload-progress="progress = $event.detail.progress">
-
-                        <div x-show="isUploadingIcono" wire:loading
-                            wire:target="isUploadingIcono,iconload, deleteicono" class="loading-overlay rounded">
-                            <x-loading-next />
-                        </div>
-
-                        @if (isset($icono))
-                            <div wire:ignore id="uploadForm"
-                                class="w-full h-32 md:max-w-md mx-auto mb-1 duration-300">
-                                <img class="w-full h-full object-scale-down" />
-                            </div>
-                        @else
-                            <x-icon-file-upload class="w-24 h-24 text-gray-300" />
-                        @endif
-
-                        <div class="w-full flex gap-1 flex-wrap justify-center">
-                            <x-input-file for="{{ $idicono }}" titulo="SELECCIONAR ÍCONO" wire:loading.remove
-                                wire:target="icono">
-                                <input type="file" class="hidden" wire:model.defer="icono"
-                                    id="{{ $idicono }}" accept=".ico" />
-
-                                @if (isset($icono))
-                                    <x-slot name="clear">
-                                        <x-button class="inline-flex px-6" wire:loading.attr="disabled"
-                                            wire:target="clearIcono" wire:click="clearIcono">
-                                            LIMPIAR
-                                        </x-button>
-                                    </x-slot>
-                                @endif
-                            </x-input-file>
-                        </div>
-                        <x-jet-input-error wire:loading.remove wire:target="icono" for="icono"
-                            class="text-center" />
-                    </div>
-                </div>
-            </x-form-card>
-
             <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
-                <div class="w-full items-start flex flex-col gap-1 flex-wrap bg-body p-3">
+                <div class="w-full items-start flex flex-col gap-1">
 
                     @if (Module::isEnabled('Ventas'))
                         <div class="block">
@@ -241,12 +159,124 @@
                     </div>
                 </div>
             </x-form-card>
+
+            <x-form-card titulo="LOGOTIPO & ICONO">
+                <div class="w-full grid gap-3 xs:grid-cols-2">
+                    <div class="relative w-full text-center " x-data="{ isUploadingLogo: false, progress: 0 }"
+                        x-on:livewire-upload-start="isUploadingLogo = true"
+                        x-on:livewire-upload-finish="isUploadingLogo = false"
+                        x-on:livewire-upload-error="$wire.emit('errorImage'), isUploadingLogo = false"
+                        x-on:livewire-upload-progress="progress = $event.detail.progress">
+
+                        <div wire:loading.flex wire:target="logo" class="loading-overlay rounded hidden">
+                            <x-loading-next />
+                        </div>
+
+                        @if (isset($logo))
+                            <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 border border-borderminicard">
+                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                    src="{{ $logo->temporaryUrl() }}" />
+                            </x-simple-card>
+                        @else
+                            <x-icon-file-upload class="w-36 h-36 text-gray-300" />
+                        @endif
+
+                        <div class="w-full flex gap-2 flex-wrap justify-center">
+                            @if (isset($logo))
+                                <x-button class="inline-flex" wire:loading.attr="disabled"
+                                    wire:click="clearLogo">LIMPIAR
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        <line x1="10" x2="10" y1="11" y2="17" />
+                                        <line x1="14" x2="14" y1="11" y2="17" />
+                                    </svg>
+                                </x-button>
+                            @else
+                                <x-input-file :for="$idlogo" titulo="SELECCIONAR LOGO" wire:loading.remove
+                                    wire:target="logo">
+                                    <input type="file" class="hidden" wire:model.defer="logo"
+                                        id="{{ $idlogo }}" accept="image/jpg, image/jpeg, image/png" />
+                                </x-input-file>
+                            @endif
+                        </div>
+                        <x-jet-input-error wire:loading.remove wire:target="logo" for="logo"
+                            class="text-center" />
+                    </div>
+
+                    <div class="relative w-full text-center">
+                        <div wire:loading.flex wire:target="icono, clearIcono" class="loading-overlay rounded hidden">
+                            <x-loading-next />
+                        </div>
+
+                        @if (isset($icono))
+                            <div>
+                                <x-simple-card
+                                    class="w-full h-40 md:max-w-md mx-auto mb-1 border border-borderminicard">
+                                    <img x-bind:src="URL.createObjectURL(icono)"
+                                        class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
+                                </x-simple-card>
+                            </div>
+                        @else
+                            <x-icon-file-upload class="w-36 h-36 text-gray-300" />
+                        @endif
+
+                        <div class="w-full flex gap-1 flex-wrap justify-center">
+                            @if (isset($icono))
+                                <x-button class="inline-flex px-6" wire:loading.attr="disabled"
+                                    wire:click="clearIcono">LIMPIAR
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        <line x1="10" x2="10" y1="11" y2="17" />
+                                        <line x1="14" x2="14" y1="11" y2="17" />
+                                    </svg>
+                                </x-button>
+                            @else
+                                <x-input-file for="{{ $idicono }}" titulo="SELECCIONAR ÍCONO" wire:loading.remove
+                                    wire:target="icono">
+                                    <input type="file" class="hidden" wire:model.defer="icono"
+                                        id="{{ $idicono }}" accept=".ico"
+                                        @change="icono = $event.target.files[0]" />
+                                </x-input-file>
+                            @endif
+                        </div>
+                        <x-jet-input-error for="icono" class="text-center" />
+                    </div>
+                </div>
+            </x-form-card>
         </div>
 
         @if (Module::isEnabled('Facturacion'))
-            <div class="w-full flex flex-col xl:flex-row gap-8">
-                <x-form-card titulo="DATOS FACTURACIÓN">
-                    <div class="w-full flex flex-col xs:flex-row gap-2 gap-x-3">
+            <x-form-card titulo="DATOS FACTURACIÓN">
+                <div class="w-full flex flex-col gap-2">
+                    <div class="w-full grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                        <div class="w-full">
+                            <x-label value="Modo envío SUNAT :" />
+                            <div class="w-full relative" x-init="SelectMode" wire:ignore>
+                                <x-select class="block w-full" x-ref="selectmode" id="sendmode"
+                                    data-dropdown-parent="null">
+                                    <x-slot name="options">
+                                        <option value="0">MODO PRUEBAS</option>
+                                        <option value="1">MODO PRODUCCIÓN</option>
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="sendmode" />
+                        </div>
+                        <div class="w-full">
+                            <x-label value="Clave certificado digital :" />
+                            <x-input class="block w-full" wire:model.defer="passwordcert"
+                                placeholder="Contraseña del certificado..." type="password" />
+                            <x-jet-input-error for="passwordcert" />
+                        </div>
                         <div class="w-full">
                             <x-label value="Usuario SOL :" />
                             <x-input class="block w-full" wire:model.defer="usuariosol"
@@ -256,105 +286,65 @@
                         <div class="w-full">
                             <x-label value="Clave SOL :" />
                             <x-input class="block w-full" wire:model.defer="clavesol"
-                                placeholder="Clave SOL Sunat..." />
+                                placeholder="Clave SOL Sunat..." type="password" />
                             <x-jet-input-error for="clavesol" />
                         </div>
+                        <div class="w-full">
+                            <x-label value="Client ID (Guías Remisión):" />
+                            <x-input class="block w-full" wire:model.defer="clientid"
+                                placeholder="Ingrese client id..." />
+                            <x-jet-input-error for="clientid" />
+                        </div>
+                        <div class="w-full">
+                            <x-label value="Client secret (Guías Remisión):" />
+                            <x-input class="block w-full" wire:model.defer="clientsecret"
+                                placeholder="Ingrese client secret..." />
+                            <x-jet-input-error for="clientsecret" />
+                        </div>
                     </div>
-                </x-form-card>
-
-                <x-form-card titulo="CERTIFICADOS FACTURACIÓN"
-                    subtitulo="Cargar los archivos para el envío de comprobantes electrónicos.">
-                    <div class="w-full flex gap-3 flex-wrap">
-                        <div class="relative w-full xs:w-48 text-center bg-body shadow-md shadow-shadowminicard rounded p-1"
-                            x-data="{ isUploadingPublicKey: @entangle('isUploadingPublicKey'), progress: 0 }" x-on:livewire-upload-start="isUploadingPublicKey = true"
-                            x-on:livewire-upload-finish="isUploadingPublicKey = false"
-                            x-on:livewire-upload-error="$wire.emit('publickey'), isUploadingPublicKey = false"
-                            x-on:livewire-upload-progress="progress = $event.detail.progress">
-
-                            <div x-show="isUploadingPublicKey" wire:loading
-                                wire:target="isUploadingPublicKey,deletepublickey" class="loading-overlay rounded">
+                    <div class="w-full">
+                        <div class="relative w-full xs:max-w-xs text-center">
+                            <div wire:loading.flex wire:target="cert"
+                                class="loading-overlay rounded shadow border border-borderminicard hidden">
                                 <x-loading-next />
                             </div>
 
-                            @if (isset($publickey))
-                                <x-icon-file-upload type="filesuccess" :uploadname="$publickey->getClientOriginalName()"
-                                    class="w-24 h-24 text-gray-300" />
+                            @if (isset($cert))
+                                <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()"
+                                    class="w-36 h-36 text-gray-300 animate__animated animate__fadeIn animate__faster" />
                             @else
-                                <x-icon-file-upload type="code" text="PEM" class="w-24 h-24 text-gray-300" />
+                                <x-icon-file-upload type="code" text="PFX" class="w-36 h-36 text-gray-300" />
                             @endif
 
                             <div class="w-full flex gap-1 flex-wrap justify-center">
-                                <x-input-file :for="$idpublickey" titulo="SUBIR CLAVE PÚBLICA" wire:loading.remove
-                                    wire:target="publickey">
-                                    <input type="file" class="hidden" wire:model="publickey"
-                                        id="{{ $idpublickey }}" accept=".pem" />
-
-                                    @if (isset($publickey))
-                                        <x-slot name="clear">
-                                            <x-button class="inline-flex px-6" wire:loading.attr="disabled"
-                                                wire:target="clearPublickey" wire:click="clearPublickey">
-                                                LIMPIAR
-                                            </x-button>
-                                        </x-slot>
-                                    @endif
-                                </x-input-file>
+                                @if (isset($cert))
+                                    <x-button class="inline-flex px-6" wire:loading.attr="disabled"
+                                        wire:click="clearCert">LIMPIAR
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 6h18" />
+                                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                            <line x1="10" x2="10" y1="11" y2="17" />
+                                            <line x1="14" x2="14" y1="11" y2="17" />
+                                        </svg>
+                                    </x-button>
+                                @else
+                                    <x-input-file :for="$idcert" titulo="CARGAR CERTIFICADO DIGITAL"
+                                        wire:loading.remove wire:target="cert">
+                                        <input type="file" class="hidden" wire:model="cert"
+                                            id="{{ $idcert }}" accept=".pfx" />
+                                    </x-input-file>
+                                @endif
                             </div>
-                            <x-jet-input-error wire:loading.remove wire:target="publickey" for="publickey"
-                                class="text-center" />
-                        </div>
-
-                        <div class="relative w-full xs:w-48 text-center bg-body shadow-md shadow-shadowminicard rounded p-1"
-                            x-data="{ isUploadingPrivateKey: @entangle('isUploadingPrivateKey'), progress: 0 }" x-on:livewire-upload-start="isUploadingPrivateKey = true"
-                            x-on:livewire-upload-finish="$wire.emit('privatekey', {{ $idicono }}),isUploadingPrivateKey = false"
-                            x-on:livewire-upload-error="$wire.emit('privatekey'), isUploadingPrivateKey = false"
-                            x-on:livewire-upload-progress="progress = $event.detail.progress">
-
-                            <div x-show="isUploadingPrivateKey" wire:loading
-                                wire:target="isUploadingPrivateKey,deleteprivatekey" class="loading-overlay rounded">
-                                <x-loading-next />
-                            </div>
-
-                            @if (isset($privatekey))
-                                <x-icon-file-upload type="filesuccess" :uploadname="$privatekey->getClientOriginalName()"
-                                    class="w-24 h-24 text-gray-300" />
-                            @else
-                                <x-icon-file-upload type="code" text="PEM" class="w-24 h-24 text-gray-300" />
-                            @endif
-
-                            <div class="w-full flex gap-1 flex-wrap justify-center">
-                                <x-input-file for="{{ $idprivatekey }}" titulo="SUBIR CLAVE PRIVADA"
-                                    wire:loading.remove wire:target="privatekey">
-                                    <input type="file" class="hidden" wire:model="privatekey"
-                                        id="{{ $idprivatekey }}" accept=".pem" />
-
-                                    @if (isset($privatekey))
-                                        <x-slot name="clear">
-                                            <x-button class="inline-flex px-6" wire:loading.attr="disabled"
-                                                wire:target="clearPrivatekey" wire:click="clearPrivatekey">
-                                                LIMPIAR
-                                            </x-button>
-                                        </x-slot>
-                                    @endif
-                                </x-input-file>
-                            </div>
-                            <x-jet-input-error wire:loading.remove wire:target="privatekey" for="privatekey"
+                            <x-jet-input-error wire:loading.remove wire:target="cert" for="cert"
                                 class="text-center" />
                         </div>
                     </div>
-                </x-form-card>
-            </div>
-        @endif
-
-        {{-- <div class="w-full">
-            @if ($errors->any())
-                <div class="flex flex-col gap-1 my-3">
-                    @foreach ($errors->all() as $error)
-                        <p class="text-red-500 text-xs inline-block font-semibold bg-red-100 p-0.5 rounded">
-                            {{ $error }}</p>
-                    @endforeach
                 </div>
-            @endif
-        </div> --}}
+            </x-form-card>
+        @endif
 
         <div class="w-full flex justify-end">
             <x-button type="submit">REGISTRAR</x-button>
@@ -372,6 +362,7 @@
                 usepricedolar: @entangle('usepricedolar').defer,
                 viewpricedolar: @entangle('viewpricedolar').defer,
                 tipocambio: @entangle('tipocambio').defer,
+                sendmode: @entangle('sendmode').defer,
                 cambioauto: @entangle('tipocambioauto').defer,
                 loadingdolar: false,
                 openpricedolar: false,
@@ -381,7 +372,6 @@
                     this.usepricedolar = false;
                     this.viewpricedolar = false;
                     this.cambioauto = false;
-                    this.selectUbigeo();
                 },
                 changePricedolar() {
                     if (this.usepricedolar) {
@@ -396,17 +386,6 @@
                     if (this.cambioauto) {
                         this.getTipocambio();
                     }
-                },
-                selectUbigeo() {
-                    this.selectU = $(this.$refs.selectubigeo).select2();
-                    this.selectU.val(this.ubigeo_id).trigger("change");
-                    this.selectU.on("select2:select", (event) => {
-                        this.ubigeo_id = event.target.value;
-                    }).on('select2:open', function(e) {
-                        const evt = "scroll.select2";
-                        $(e.target).parents().off(evt);
-                        $(window).off(evt);
-                    });
                 },
                 async getTipocambio() {
                     try {
@@ -427,48 +406,80 @@
             }))
         });
 
-        window.addEventListener('selectubigeo', data => {
-            let selectubigeo = document.querySelector('[x-ref="selectubigeo"]');
-            $(selectubigeo).val(data.detail).trigger('change');
-            // $(selectubigeo).select2().trigger('change');
-        })
+        function selectUbigeo() {
+            this.selectU = $(this.$refs.selectubigeo).select2();
+            this.selectU.val(this.ubigeo_id).trigger("change");
+            this.selectU.on("select2:select", (event) => {
+                this.ubigeo_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("ubigeo_id", (value) => {
+                this.selectU.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectU.select2().val(this.ubigeo_id).trigger('change');
+            });
+        }
+
+        function SelectMode() {
+            this.selectMode = $(this.$refs.selectmode).select2();
+            this.selectMode.val(this.sendmode).trigger("change");
+            this.selectMode.on("select2:select", (event) => {
+                this.sendmode = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("sendmode", (value) => {
+                this.selectMode.val(value).trigger("change");
+            });
+        }
+
 
         document.addEventListener('livewire:load', function() {
-            Livewire.on('iconload', (inputId) => {
-                var input = $('#' + inputId);
-                var file = input[0].files[0];
+            Livewire.on('errorImage', data => {
+                console.log('Error al cargar ', data);
+            })
 
-                if (file) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#uploadForm + img').remove();
-                        $('#uploadForm').html('<img src="' + e.target.result +
-                            '" class="w-full h-full object-scale-down"/>');
-                        // document.getElementById('iconopreview').src = e.target.result;
-                    };
-                    // @this.isUploadingIcono = false;
-                    reader.readAsDataURL(file);
-                }
+            // Livewire.on('iconload', (inputId) => {
+            //     var input = $('#' + inputId);
+            //     var file = input[0].files[0];
 
-                // document.getElementById(fileicono).addEventListener('change', function() {
+            //     if (file) {
+            //         var reader = new FileReader();
+            //         reader.onload = function(e) {
+            //             $('#uploadForm + img').remove();
+            //             $('#uploadForm').html('<img src="' + e.target.result +
+            //                 '" class="w-full h-full object-scale-down"/>');
+            //             // document.getElementById('iconopreview').src = e.target.result;
+            //         };
+            //         // @this.isUploadingIcono = false;
+            //         reader.readAsDataURL(file);
+            //     }
 
-                //     var file = this.files[0];
-                //     if (file) {
+            //     // document.getElementById(fileicono).addEventListener('change', function() {
 
-                //         var reader = new FileReader();
-                //         reader.onload = function(e) {
-                //             console.log(e.target);
-                //             @this.iconobase64 = e.target.result;
-                //             $('#uploadForm + img').remove();
-                //             $('#uploadForm').html('<img src="' + e.target.result +
-                //                 '" class="w-full h-full object-scale-down"/>');
-                //             // document.getElementById('iconopreview').src = e.target.result;
-                //         };
-                //         // Livewire.emitTo('admin.empresas.show-empresa', 'iconloaded');
-                //         reader.readAsDataURL(file);
-                //     }
-                // });
-            });
+            //     //     var file = this.files[0];
+            //     //     if (file) {
+
+            //     //         var reader = new FileReader();
+            //     //         reader.onload = function(e) {
+            //     //             console.log(e.target);
+            //     //             @this.iconobase64 = e.target.result;
+            //     //             $('#uploadForm + img').remove();
+            //     //             $('#uploadForm').html('<img src="' + e.target.result +
+            //     //                 '" class="w-full h-full object-scale-down"/>');
+            //     //             // document.getElementById('iconopreview').src = e.target.result;
+            //     //         };
+            //     //         // Livewire.emitTo('admin.empresas.show-empresa', 'iconloaded');
+            //     //         reader.readAsDataURL(file);
+            //     //     }
+            //     // });
+            // });
 
         })
     </script>

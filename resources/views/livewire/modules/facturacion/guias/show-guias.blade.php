@@ -101,11 +101,9 @@
             <tr>
                 <th scope="col" class="p-2 font-medium text-left">
                     SERIE</th>
-
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>FECHA</span>
-
                         <svg class="h-3 w-3" viewBox="0 0 10 11" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                             fill="currentColor" stroke="currentColor" stroke-width="0.1">
                             <path
@@ -118,49 +116,32 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     DESTINATARIO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     MOTIVO TRASLADO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     MODALIDAD TRANSPORTE</th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     DATOS TRANSPORTE</th>
-
                 <th scope="col" class="p-2 font-medium">
                     PESO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     FECHA TRASLADO</th>
-
                 {{-- <th scope="col" class="p-2 font-medium">
                     LUGAR EMISIÓN</th> --}}
-
                 <th scope="col" class="p-2 font-medium">
                     LUGAR DE ENVÍO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     INFORMACIÓN ADICIONAL</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     REFERENCIA</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SUCURSAL</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    USUARIO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SUNAT</th>
-
                 <th scope="col" class="p-2 font-medium">
                     DESCRIPCIÓN SUNAT</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     OPCIONES</th>
             </tr>
@@ -170,12 +151,22 @@
                 @foreach ($guias as $item)
                     <tr>
                         <td class="p-2 text-[10px]">
-                            <a href="{{ route('admin.facturacion.guias.show', $item) }}"
-                                class="text-linktable hover:text-hoverlinktable inline-block transition-colors ease-out duration-150">
-                                {{ $item->seriecompleta }}
-                                <br>
-                                {{ $item->seriecomprobante->typecomprobante->descripcion }}
-                            </a>
+                            @can('admin.facturacion.guias.edit')
+                                <a href="{{ route('admin.facturacion.guias.edit', $item) }}"
+                                    class="text-linktable hover:text-hoverlinktable inline-block transition-colors ease-out duration-150">
+                                    {{ $item->seriecompleta }}
+                                    <br>
+                                    {{ $item->seriecomprobante->typecomprobante->descripcion }}
+                                </a>
+                            @endcan
+
+                            @cannot('admin.facturacion.guias.edit')
+                                <p class="text-linktable inline-block ">
+                                    {{ $item->seriecompleta }}
+                                    <br>
+                                    {{ $item->seriecomprobante->typecomprobante->descripcion }}
+                                </p>
+                            @endcannot
                         </td>
                         <td class="p-2 uppercase">
                             {{ formatdate($item->date) }}
@@ -238,43 +229,44 @@
                                 <p>{{ getIndicadorRegistrarVehCondTransport()->name }}</p>
                             @endif
                         </td>
-
                         <td class="p-2 text-center">
-                            @if ($item->comprobante)
-                                {{ $item->comprobante->seriecompleta }}
+                            @if ($item->guiable)
+                                {{ $item->guiable->seriecompleta }}
                             @endif
                         </td>
-
                         <td class="p-2 text-center">
                             {{ $item->sucursal->name }}
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
+                            <p class="text-[10px] text-colorsubtitleform leading-3">USUARIO : {{ $item->user->name }}
+                            </p>
                         </td>
-
-                        <td class="p-2 text-center">
-                            {{ $item->user->name }}
-                        </td>
-
                         <td class="p-2 text-center">
                             @if ($item->seriecomprobante->typecomprobante->sendsunat)
                                 @if ($item->codesunat == '0')
                                     <x-span-text text="ENVIADO" class="leading-3 !tracking-normal" type="green" />
                                 @else
-                                    <x-button wire:click="enviarsunat({{ $item->id }})"
-                                        wire:loading.attr="disabled" class="inline-block">
-                                        ENVIAR
-                                    </x-button>
+                                    @can('admin.facturacion.guias.sunat')
+                                        <x-button wire:click="enviarsunat({{ $item->id }})"
+                                            wire:loading.attr="disabled" class="inline-block">
+                                            ENVIAR</x-button>
+                                    @endcan
                                 @endif
                             @else
                                 <x-span-text text="LOCAL" class="leading-3 !tracking-normal" />
                             @endif
                         </td>
                         <td class="p-2 text-center">
-                            @if ($item->codesunat != '0')
-                                <p>{{ $item->codesunat }}</p>
-                            @endif
-                            {{ $item->descripcion }}
+                            <div class="max-w-[120px] group relative">
+                                <p class="truncate"> {{ $item->descripcion }}</p>
+                                @if ($item->codesunat != '0')
+                                    <p>{{ $item->codesunat }}</p>
+                                    <small
+                                        class="opacity-0 cursor-pointer group-hover:opacity-100 absolute right-0 font-medium rounded-md p-0.5 bg-fondolinknav text-[9px] leading-3 whitespace-normal text-colorlinknav transition duration-150">
+                                        {{ $item->descripcion }}</small>
+                                @endif
+                            </div>
                         </td>
                         <td class="p-2 align-middle">
                             <div class="flex items-center justify-end gap-1">

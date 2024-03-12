@@ -7,7 +7,7 @@
     @endif
 
     <div class="block w-full">
-        @if (count($rangos))
+        @if (count($rangos) > 0)
             <x-table>
                 <x-slot name="header">
                     <tr>
@@ -66,7 +66,9 @@
                             @endforeach
                         @endif
 
-                        <th scope="col" class="p-2 text-end">OPCIONES</th>
+                        @canany(['admin.administracion.rangos.edit', 'admin.administracion.rangos.delete'])
+                            <th scope="col" class="p-2 text-end">OPCIONES</th>
+                        @endcanany
                     </tr>
                 </x-slot>
                 <x-slot name="body">
@@ -92,23 +94,37 @@
                                 </div>
                             </td>
 
+
                             @foreach ($item->pricetypes as $lista)
                                 <td class="p-2 text-center">
                                     <p class="font-semibold text-[10px]">{{ $lista->name }}</p>
-                                    <x-input class="inline-block" :value="$lista->pivot->ganancia" type="number" step="0.1"
-                                        min="0"
-                                        wire:keydown.enter="updatepricerango({{ $item->id }},{{ $lista->id }}, $event.target.value)" />
+                                    @can('admin.administracion.rangos.edit')
+                                        <x-input class="inline-block text-center" :value="$lista->pivot->ganancia" type="number"
+                                            step="0.1" min="0"
+                                            wire:keydown.enter="updatepricerango({{ $item->id }},{{ $lista->id }}, $event.target.value)" />
+                                    @endcan
+
+                                    @cannot('admin.administracion.rangos.edit')
+                                        <x-disabled-text :text="$lista->pivot->ganancia" class="inline-block md:px-5 border-0" />
+                                    @endcannot
                                 </td>
                             @endforeach
 
-                            <td class="p-2">
-                                <div class="flex gap-2 items-center justify-end">
-                                    <x-button-edit wire:click="edit({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
-                                    <x-button-delete wire:loading.attr="disabled"
-                                        wire:click="$emit('rangos.confirmDelete',{{ $item }})" />
-                                </div>
-                            </td>
+                            @canany(['admin.administracion.rangos.edit', 'admin.administracion.rangos.delete'])
+                                <td class="p-2">
+                                    <div class="flex gap-2 items-center justify-end">
+                                        @can('admin.administracion.rangos.edit')
+                                            <x-button-edit wire:click="edit({{ $item->id }})"
+                                                wire:loading.attr="disabled" />
+                                        @endcan
+
+                                        @can('admin.administracion.rangos.delete')
+                                            <x-button-delete wire:loading.attr="disabled"
+                                                wire:click="$emit('rangos.confirmDelete',{{ $item }})" />
+                                        @endcan
+                                    </div>
+                                </td>
+                            @endcanany
                         </tr>
                     @endforeach
                 </x-slot>

@@ -17,14 +17,14 @@
 
                 <div class="w-full">
                     <x-label value="Ubigeo :" />
-                    <div id="parentubigeosucursal_id" class="relative">
-                        <x-select class="block w-full" wire:model.defer="sucursal.ubigeo_id" id="ubigeosucursal_id"
-                            data-minimum-results-for-search="3">
+                    <div id="parentubs_id" class="relative" x-data="{ ubigeo_id: @entangle('sucursal.ubigeo_id').defer }" x-init="select2Ubigeo">
+                        <x-select class="block w-full" wire:model.defer="sucursal.ubigeo_id" x-ref="selectubigeosuc"
+                            id="ubs_id" data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @if (count($ubigeos))
                                     @foreach ($ubigeos as $item)
                                         <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }}
-                                            / {{ $item->distrito }}</option>
+                                            / {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                     @endforeach
                                 @endif
                             </x-slot>
@@ -60,31 +60,22 @@
     </x-form-card>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-
-            renderselect2();
-
-            $('#ubigeosucursal_id').on("change", function(e) {
-                disableselect2()
-                @this.set('sucursal.ubigeo_id', e.target.value);
+        function select2Ubigeo() {
+            this.selectUB = $(this.$refs.selectubigeosuc).select2();
+            this.selectUB.val(this.ubigeo_id).trigger("change");
+            this.selectUB.on("select2:select", (event) => {
+                this.ubigeo_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
             });
-
-            document.addEventListener('render-show-sucursal', () => {
-                renderselect2();
+            this.$watch("ubigeo_id", (value) => {
+                this.selectUB.val(value).trigger("change");
             });
-
-            function disableselect2() {
-                $('#ubigeosucursal_id').attr('disabled', true)
-            }
-
-            function renderselect2() {
-                $('#ubigeosucursal_id').select2().on('select2:open', function(e) {
-                    const evt = "scroll.select2";
-                    $(e.target).parents().off(evt);
-                    $(window).off(evt);
-                });
-            }
-
-        })
+            Livewire.hook('message.processed', () => {
+                this.selectUB.select2().val(this.ubigeo_id).trigger('change');
+            });
+        }
     </script>
 </div>

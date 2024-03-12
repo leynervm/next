@@ -1,25 +1,26 @@
 <div class="">
 
-    @if (count($estantes))
+    @if ($estantes->hasPages())
         <div class="pb-2">
-            {{ $estantes->links() }}
+            {{ $estantes->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
-
-        @livewire('almacen::estantes.create-estante')
-
         @if (count($estantes))
             @foreach ($estantes as $item)
-                <x-minicard :title="$item->name" size="">
+                <x-minicard :title="$item->name" size="md">
                     <x-slot name="buttons">
                         <div class="ml-auto">
-                            <x-button-edit wire:loading.attr="disabled" wire:target="edit({{ $item->id }})"
-                                wire:click="edit({{ $item->id }})"></x-button-edit>
-                            <x-button-delete wire:loading.attr="disabled"
-                                wire:target="confirmDelete({{ $item->id }})"
-                                wire:click="confirmDelete({{ $item->id }})"></x-button-delete>
+                            @can('admin.almacen.estantes.edit')
+                                <x-button-edit wire:loading.attr="disabled" wire:target="edit({{ $item->id }})"
+                                    wire:click="edit({{ $item->id }})"></x-button-edit>
+                            @endcan
+
+                            @can('admin.almacen.estantes.delete')
+                                <x-button-delete wire:loading.attr="disabled"
+                                    onclick="confirmDelete({{ $item }})"></x-button-delete>
+                            @endcan
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -30,13 +31,7 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar estante almacén') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -47,9 +42,8 @@
                     placeholder="Ingrese descripción estante almacén..." />
                 <x-jet-input-error for="estante.name" />
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
@@ -57,25 +51,21 @@
         </x-slot>
     </x-jet-dialog-modal>
     <script>
-        document.addEventListener('livewire:load', function() {
-            window.addEventListener('estantes.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.detail.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // console.log(data.detail.id);
-                        Livewire.emitTo('almacen::estantes.show-estantes', 'delete', data
-                            .detail.id);
-                    }
-                })
+        function confirmDelete(estante) {
+            swal.fire({
+                title: 'Eliminar estante de almacén ' + estante.name,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(estante.id);
+                }
             })
-        })
+        }
     </script>
 </div>

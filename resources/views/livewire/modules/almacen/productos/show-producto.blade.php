@@ -35,7 +35,8 @@
 
                     <div class="w-full">
                         <x-label value="Codigo fabricante :" />
-                        <x-input class="block w-full" wire:model.defer="producto.codefabricante" placeholder="Cádigo del fabricante..." />
+                        <x-input class="block w-full" wire:model.defer="producto.codefabricante"
+                            placeholder="Cádigo del fabricante..." />
                         <x-jet-input-error for="producto.codefabricante" />
                     </div>
 
@@ -76,7 +77,7 @@
 
                     <div class="w-full">
                         <x-label value="Subcategoría :" />
-                        <div class="relative" id="parentsubcpdto" x-init="selectSubcategory" wire:ignore>
+                        <div class="relative" id="parentsubcpdto" x-init="selectSubcategory">
                             <x-select class="block w-full" id="subcpdto" x-ref="selectsub" data-placeholder="null">
                                 <x-slot name="options">
                                     @if (count($subcategories))
@@ -171,13 +172,15 @@
                 @endif
 
                 <div class="w-full flex pt-4 gap-2 justify-end">
-                    <x-button-secondary wire:click="$emit('producto.confirmDelete', {{ $producto }})"
-                        wire:loading.attr="disabled">
-                        ELIMINAR
-                    </x-button-secondary>
-                    <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                    @can('admin.almacen.productos.delete')
+                        <x-button-secondary onclick="confirmDelete({{ $producto }})" wire:loading.attr="disabled">
+                            ELIMINAR</x-button-secondary>
+                    @endcan
+
+                    @can('admin.almacen.productos.edit')
+                        <x-button type="submit" wire:loading.attr="disabled">
+                            {{ __('ACTUALIZAR') }}</x-button>
+                    @endcan
                 </div>
 
                 <div wire:loading.flex wire:target="update, producto.publicado, producto.category_id, delete"
@@ -234,24 +237,26 @@
                                     </h1>
                                 </div>
 
-                                <div class="flex justify-end items-end gap-1">
-                                    <x-button-edit wire:click="editalmacen({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
-                                    <x-button-delete
-                                        wire:click="$emit('producto.confirmDeleteAlmacen',{{ $item }})"
-                                        wire:loading.attr="disabled" />
-                                </div>
+                                @can('admin.almacen.productos.almacen')
+                                    <div class="flex justify-end items-end gap-1">
+                                        <x-button-edit wire:click="editalmacen({{ $item->id }})"
+                                            wire:loading.attr="disabled" />
+                                        <x-button-delete onclick="confirmDeleteAlmacen({{ $item }})"
+                                            wire:loading.attr="disabled" />
+                                    </div>
+                                @endcan
                             </div>
                         @endforeach
                     </div>
                 @endif
 
                 {{-- @if (Module::isEnabled('Almacen')) --}}
-                <div class="flex justify-end mt-auto">
-                    <x-button wire:click="openmodal" wire:target="openmodal" wire:loading.attr="disabled">
-                        AÑADIR ALMACEN
-                    </x-button>
-                </div>
+                @can('admin.almacen.productos.almacen')
+                    <div class="flex justify-end mt-auto">
+                        <x-button wire:click="openmodal" wire:target="openmodal" wire:loading.attr="disabled">
+                            AÑADIR ALMACEN</x-button>
+                    </div>
+                @endcan
                 {{-- @endif --}}
             </div>
         </x-form-card>
@@ -270,16 +275,19 @@
                     @if ($almacen->id ?? null)
                         <x-disabled-text :text="$almacen->name" />
                     @else
-                        <x-select class="block w-full relative" id="almacen_id" wire:model.defer="almacen_id"
-                            data-dropdown-parent="null">
-                            <x-slot name="options">
-                                @if (count($almacens))
-                                    @foreach ($almacens as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
+                        <div class="relative" x-data="{ almacen_id: @entangle('almacen_id').defer }" x-init="selectAlmacenP">
+                            <x-select class="block w-full relative" x-ref="selectap" id="almacen_id"
+                                data-dropdown-parent="null" data-placeholder="null">
+                                <x-slot name="options">
+                                    @if (count($almacens) > 0)
+                                        @foreach ($almacens as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                     @endif
                     <x-jet-input-error for="almacen_id" />
                 </div>
@@ -308,6 +316,7 @@
                 subcategory_id: @entangle('producto.subcategory_id').defer,
                 almacenarea_id: @entangle('producto.almacenarea_id').defer,
                 estante_id: @entangle('producto.estante_id').defer,
+
             }));
         })
 
@@ -358,6 +367,13 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
+            this.$watch("subcategory_id", (value) => {
+                this.selectS.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectS.select2('destroy');
+                this.selectS.select2().val(this.subcategory_id).trigger('change');
+            });
         }
 
         function selectArea() {
@@ -384,54 +400,66 @@
             });
         }
 
-        window.addEventListener('loadsubcategories', subcategories => {
-            let subcat = document.querySelector('[x-ref="selectsub"]');
-            $(subcat).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
-            subcategories.detail.forEach(subcateg => {
-                let option = new Option(subcateg.name, subcateg.id, false, false);
-                $(subcat).append(option);
+        function selectAlmacenP() {
+            this.selectAP = $(this.$refs.selectap).select2();
+            this.selectAP.val(this.almacen_id).trigger("change");
+            this.selectAP.on("select2:select", (event) => {
+                this.almacen_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
             });
-            $(subcat).select2().trigger('change');
-        })
+            this.$watch("almacen_id", (value) => {
+                this.selectAP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectAP.select2().val(this.almacen_id).trigger('change');
+            });
+        }
 
-        document.addEventListener("livewire:load", () => {
-            Livewire.on("producto.confirmDeleteAlmacen", data => {
-                swal.fire({
-                    title: 'Eliminar almacen del producto con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos, incluyendo sus registros vinculadas.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // console.log(data.detail);
-                        @this.deletealmacen(data.id);
-                        // Livewire.emitTo('almacen.productos.show-producto', 'deletealmacen', data.id);
-                    }
-                })
-            });
+        // window.addEventListener('loadsubcategories', subcategories => {
+        //     let subcat = document.querySelector('[x-ref="selectsub"]');
+        //     $(subcat).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
+        //     subcategories.detail.forEach(subcateg => {
+        //         let option = new Option(subcateg.name, subcateg.id, false, false);
+        //         $(subcat).append(option);
+        //     });
+        //     $(subcat).select2().trigger('change');
+        // })
 
-            Livewire.on("producto.confirmDelete", data => {
-                swal.fire({
-                    title: 'Eliminar registro',
-                    text: "Se eliminará un registro de la base de datos con nombre: " + data.name +
-                        ", incluyendo todos los datos relacionados.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete();
-                        // Livewire.emitTo('almacen::productos.show-producto', 'delete', data.id);
-                    }
-                })
-            });
-        })
+        function confirmDeleteAlmacen(almacen) {
+            swal.fire({
+                title: 'Desvincular almacén, ' + almacen.name,
+                text: "Este producto dejará de estar disponible en el almacén seleccionado.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletealmacen(almacen.id);
+                }
+            })
+        }
+
+        function confirmDelete(producto) {
+            swal.fire({
+                title: 'Eliminar producto ' + producto.name + ' ?',
+                text: "Se eliminará un registro de la base de datos, incluyendo todos los datos relacionados.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(producto.id);
+                }
+            })
+        }
     </script>
 </div>

@@ -8,7 +8,7 @@ use Modules\Almacen\Entities\Compraitem;
 trait KardexTrait
 {
 
-    public function saveKardex($sucursal_id, $producto_id, $almacen_id, $oldstock, $newstock, $cantidad, $simbolo, $detalle, $reference)
+    public function saveKardex($producto_id, $almacen_id, $oldstock, $newstock, $cantidad, $simbolo, $detalle, $reference)
     {
         Kardex::create([
             'date' => now('America/Lima'),
@@ -20,7 +20,7 @@ trait KardexTrait
             'reference' => $reference,
             'producto_id' => $producto_id,
             'almacen_id' => $almacen_id,
-            'sucursal_id' => $sucursal_id,
+            'sucursal_id' => auth()->user()->employer->sucursal_id ?? null,
             'user_id' => auth()->user()->id,
             'kardeable_id' => $this->id,
             'kardeable_type' => get_class($this),

@@ -25,12 +25,12 @@ class Typecomprobante extends Model
 
     public function scopeDefault($query)
     {
-        return $query->where('sendsunat', Typecomprobante::DEFAULT);
+        return $query->where('sendsunat', self::DEFAULT);
     }
 
     public function scopeFacturables($query)
     {
-        return $query->where('sendsunat', Typecomprobante::SENDSUNAT);
+        return $query->where('sendsunat', self::SENDSUNAT);
     }
 
     public function seriecomprobantes(): HasMany
@@ -41,6 +41,11 @@ class Typecomprobante extends Model
     public function motivotraslados(): HasMany
     {
         return $this->hasMany(Motivotraslado::class);
+    }
+
+    public function isSunat()
+    {
+        return $this->sendsunat == self::SENDSUNAT;
     }
 
     // public function scopeSucursalTypecomprobantes($query)

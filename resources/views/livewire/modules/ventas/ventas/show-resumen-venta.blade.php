@@ -1,28 +1,23 @@
 <div>
-    {{ $typecomprobante }}
-    <div class="w-full flex flex-col gap-8" x-data="{ loading: false }">
+    {{-- {{ $typecomprobante }} --}}
+    <div class="w-full flex flex-col gap-8" x-data="loader">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full flex flex-col gap-1" x-data="loader">
+                <div class="w-full flex flex-col gap-1">
 
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-                        <div class="w-full">
+                        {{-- <div class="w-full">
                             <x-label value="Vincular cotización :" />
                             <div id="parentctzc" class="relative" x-init="selectCotizacion" wire:ignore>
                                 <x-select class="block w-full" id="ctzc" x-ref="selectcot"
                                     data-minimum-results-for-search="3">
                                     <x-slot name="options">
-                                        {{-- @if (count($categories))
-                                    @foreach ($categories as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif --}}
                                     </x-slot>
                                 </x-select>
                                 <x-icon-select />
                             </div>
                             <x-jet-input-error for="cotizacion_id" />
-                        </div>
+                        </div> --}}
                         @if (count($monedas) > 1)
                             <div class="w-full">
                                 <x-label value="Moneda :" />
@@ -43,22 +38,64 @@
                         @endif
                     </div>
 
+                    {{-- BUSCAR GRE Y OBTENER SUS ITEMS --}}
+                    @can('admin.ventas.create.guias')
+                        @if ($sincronizegre)
+                            <div class="w-full">
+                                <x-label value="Buscar GRE :" />
+                                <div class="w-full inline-flex relative">
+                                    <x-disabled-text :text="$searchgre" class="w-full block" />
+                                    <x-button-close-modal
+                                        class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                        wire:click="desvinculargre" wire:loading.attr="disabled" />
+                                </div>
+                                <x-jet-input-error for="searchgre" />
+                            </div>
+                        @else
+                            <div x-show="!incluyeguia" class="w-full">
+                                <x-label value="Buscar GRE :" />
+                                <div class="w-full inline-flex">
+                                    <x-input class="block w-full prevent" wire:model.defer="searchgre"
+                                        wire:keydown.enter="getGRE" minlength="0" maxlength="13" />
+                                    <x-button-add class="px-2" wire:click="getGRE" wire:loading.attr="disabled">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="m21 21-4.3-4.3" />
+                                        </svg>
+                                    </x-button-add>
+                                </div>
+                                <x-jet-input-error for="searchgre" />
+                            </div>
+                        @endif
+                    @endcan
+
                     <div class="w-full flex flex-wrap lg:flex-nowrap xl:flex-wrap gap-1">
                         <div class="w-full lg:w-1/3 xl:w-full">
                             <x-label value="DNI / RUC :" />
-                            <div class="w-full inline-flex">
-                                <x-input class="block w-full prevent numeric" wire:model.defer="document"
-                                    wire:keydown.enter="getClient" minlength="0" maxlength="11" />
-                                <x-button-add class="px-2" wire:click="getClient" wire:target="getClient"
-                                    wire:loading.attr="disable">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <circle cx="11" cy="11" r="8" />
-                                        <path d="m21 21-4.3-4.3" />
-                                    </svg>
-                                </x-button-add>
-                            </div>
+                            @if ($client_id)
+                                <div class="w-full inline-flex relative">
+                                    <x-disabled-text :text="$document" class="w-full block" />
+                                    <x-button-close-modal
+                                        class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                        wire:click="limpiarcliente" wire:loading.attr="disabled" />
+                                </div>
+                            @else
+                                <div class="w-full inline-flex">
+                                    <x-input class="block w-full prevent numeric" wire:model.defer="document"
+                                        wire:keydown.enter="getClient" minlength="8" maxlength="11"
+                                        onkeypress="return validarNumero(event, 11)" />
+                                    <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="m21 21-4.3-4.3" />
+                                        </svg>
+                                    </x-button-add>
+                                </div>
+                            @endif
                             <x-jet-input-error for="document" />
                         </div>
                         <div class="w-full lg:w-2/3 xl:w-full">
@@ -87,14 +124,6 @@
                         @endif
                     </div>
 
-                    @if ($mensaje)
-                        {{-- <div class="w-full mt-2">
-                            <x-label value="Mensaje :" />
-                            <x-input class="block w-full" wire:model.defer="mensaje" disabled readonly />
-                            <x-jet-input-error for="mensaje" />
-                        </div> --}}
-                    @endif
-
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
                         <div class="w-full">
                             <x-label value="Tipo comprobante :" />
@@ -104,9 +133,10 @@
                                     <x-slot name="options">
                                         @if (count($typecomprobantes))
                                             @foreach ($typecomprobantes as $item)
-                                                <option value="{{ $item->id }}" data-code="{{ $item->code }}"
-                                                    data-sunat="{{ $item->sendsunat }}">
-                                                    {{ $item->descripcion }}
+                                                <option value="{{ $item->id }}"
+                                                    data-code="{{ $item->typecomprobante->code }}"
+                                                    data-sunat="{{ $item->typecomprobante->sendsunat }}">
+                                                    [{{ $item->serie }}] - {{ $item->typecomprobante->descripcion }}
                                                 </option>
                                             @endforeach
                                         @endif
@@ -114,7 +144,7 @@
                                 </x-select>
                                 <x-icon-select />
                             </div>
-                            <x-jet-input-error for="typecomprobante_id" />
+                            <x-jet-input-error for="seriecomprobante_id" />
                         </div>
 
                         @if (Module::isEnabled('Facturacion'))
@@ -145,14 +175,18 @@
                         <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
                             <x-label value="Pago actual:" />
                             <x-input class="block w-full prevent" type="number" min="0" step="0.100"
-                                wire:model.lazy="paymentactual" wire:key="paymentactual" />
+                                wire:model.lazy="paymentactual" wire:key="paymentactual"
+                                wire:keydown.enter="setpaymentactual($event.target.value)"
+                                onkeypress="return validarDecimal(event, 12)" />
                             <x-jet-input-error for="paymentactual" />
                         </div>
 
                         <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
                             <x-label value="Incrementar venta (%):" />
                             <x-input class="block w-full prevent" type="number" min="0" step="0.10"
-                                wire:model.lazy="increment" wire:key="increment" />
+                                wire:model.lazy="increment" wire:key="increment"
+                                wire:keydown.enter="setincrement($event.target.value)"
+                                onkeypress="return validarDecimal(event, 5)" />
                             <x-jet-input-error for="increment" />
                         </div>
 
@@ -160,7 +194,8 @@
                             <x-label value="Cuotas :" />
                             <div class="w-full inline-flex">
                                 <x-input class="block w-full" type="number" min="1" step="1"
-                                    max="100" wire:model.defer="countcuotas" wire:key="countcuotas" />
+                                    max="100" wire:model.defer="countcuotas" wire:key="countcuotas"
+                                    onkeypress="return validarNumero(event, 3)" />
                             </div>
                             <x-jet-input-error for="countcuotas" />
                         </div>
@@ -185,29 +220,7 @@
                             <x-jet-input-error for="methodpayment_id" />
                         </div>
 
-                        {{-- @if (count($accounts))
-                            <div class="w-full" x-show="!paymentcuotas">
-                                <x-label value="Cuenta pago :" />
-                                <div id="parentcta" class="relative" x-init="selectCuenta" wire:ignore>
-                                    <x-select class="block w-full" id="cta" x-ref="selectcuenta">
-                                        <x-slot name="options">
-                                            @if (count($accounts))
-                                                @foreach ($accounts as $item)
-                                                    <option value="{{ $item->id }}">
-                                                        {{ $item->account }}
-                                                        ({{ $item->descripcion }})
-                                                    </option>
-                                                @endforeach
-                                            @endif
-                                        </x-slot>
-                                    </x-select>
-                                    <x-icon-select />
-                                </div>
-                                <x-jet-input-error for="cuenta_id" />
-                            </div>
-                        @endif --}}
-
-                        <div class="w-full animate__animated animate__fadeInDown" x-show="!paymentcuotas">
+                        <div class="w-full" x-show="!paymentcuotas">
                             <x-label value="Detalle pago :" />
                             <x-input class="block w-full" wire:model.defer="detallepago" />
                             <x-jet-input-error for="detallepago" />
@@ -215,392 +228,347 @@
                     </div>
 
                     <div class="block relative">
-                        <x-label-check for="incluyeigv">
-                            <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1" type="checkbox"
-                                id="incluyeigv" />
-                            INCLUIR IGV
-                        </x-label-check>
-                        <x-jet-input-error for="incluyeigv" />
+                        @can('admin.ventas.create.igv')
+                            <x-label-check for="incluyeigv">
+                                <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1" type="checkbox"
+                                    id="incluyeigv" />
+                                INCLUIR IGV</x-label-check>
+                            <x-jet-input-error for="incluyeigv" />
+                        @endcan
 
-                        @if (Module::isEnabled('Facturacion'))
-                            @if (count($comprobantesguia) > 0)
-                                <x-label-check for="incluyeguia" x-show="openguia">
-                                    <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
-                                        id="incluyeguia" />
-                                    GENERAR GUÍA REMISIÓN
-                                </x-label-check>
+                        @can('admin.ventas.create.guias')
+                            @if (Module::isEnabled('Facturacion'))
+                                @if (count($comprobantesguia) > 0)
+                                    <div class="inline-block" x-show="!sincronizegre">
+                                        <x-label-check for="incluyeguia" x-show="openguia">
+                                            <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
+                                                id="incluyeguia" />GENERAR GUÍA REMISIÓN
+                                        </x-label-check>
+                                    </div>
+                                @endif
+
+                                <div x-show="incluyeguia" x-transition>
+
+                                    <x-title-next titulo="MENÚ GUIA REMISION" class="my-3" />
+
+                                    <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-1 gap-1">
+                                        <div class="w-full xs:col-span-2 lg:col-span-1">
+                                            <x-label value="Guía remisión :" />
+                                            <div class="relative" id="parentsrgr" x-init="selectSerieguia" wire:ignore>
+                                                <x-select class="block w-full uppercase" x-ref="selectguia"
+                                                    id="srgr" data-placeholder="null">
+                                                    <x-slot name="options">
+                                                        @if (count($comprobantesguia))
+                                                            @foreach ($comprobantesguia as $item)
+                                                                <option value="{{ $item->id }}"
+                                                                    data-code="{{ $item->typecomprobante->code }}">
+                                                                    [{{ $item->serie }}] -
+                                                                    {{ $item->typecomprobante->descripcion }}
+                                                                </option>
+                                                            @endforeach
+                                                        @endif
+                                                    </x-slot>
+                                                </x-select>
+                                                <x-icon-select />
+                                            </div>
+                                            <x-jet-input-error for="serieguia_id" />
+                                        </div>
+
+                                        <div class="w-full xs:col-span-2 lg:col-span-1">
+                                            <x-label value="Motivo traslado :" />
+                                            <div class="relative" id="parentmtvtr" x-init="selectMotivo" wire:ignore>
+                                                <x-select class="block w-full uppercase" x-ref="selectmotivo"
+                                                    id="mtvtr" data-placeholder="null"
+                                                    @change="getCodeMotivo($event.target)">
+                                                    <x-slot name="options">
+                                                        @if (count($motivotraslados))
+                                                            @foreach ($motivotraslados as $item)
+                                                                <option value="{{ $item->id }}"
+                                                                    data-code="{{ $item->code }}">
+                                                                    {{ $item->name }} </option>
+                                                            @endforeach
+                                                        @endif
+                                                    </x-slot>
+                                                </x-select>
+                                                <x-icon-select />
+                                            </div>
+                                            <span x-text="codemotivotraslado"></span>
+                                            <x-jet-input-error for="motivotraslado_id" />
+                                        </div>
+
+                                        <div class="w-full">
+                                            <x-label value="Modalidad transporte :" />
+                                            <div class="relative" id="parentmdtr" x-init="selectModalidad" wire:ignore>
+                                                <x-select class="block w-full uppercase" x-ref="selectmodalidad"
+                                                    id="mdtr" data-placeholder="null"
+                                                    @change="getCodeModalidad($event.target)">
+                                                    <x-slot name="options">
+                                                        @if (count($modalidadtransportes))
+                                                            @foreach ($modalidadtransportes as $item)
+                                                                <option value="{{ $item->id }}"
+                                                                    data-code="{{ $item->code }}">{{ $item->name }}
+                                                                </option>
+                                                            @endforeach
+                                                        @endif
+                                                    </x-slot>
+                                                </x-select>
+                                                <x-icon-select />
+                                            </div>
+                                            <span x-text="codemodalidad"></span>
+                                            <x-jet-input-error for="modalidadtransporte_id" />
+                                        </div>
+
+                                        <div class="w-full">
+                                            <x-label value="Fecha traslado :" />
+                                            <x-input class="block w-full" wire:model.defer="datetraslado"
+                                                type="date" />
+                                            <x-jet-input-error for="datetraslado" />
+                                        </div>
+
+                                        <div class="w-full">
+                                            <x-label value="Bultos / Paquetes :" />
+                                            <x-input class="block w-full" wire:model.defer="packages" min="0"
+                                                step="1" type="number"
+                                                onkeypress="return validarDecimal(event, 12)" />
+                                            <x-jet-input-error for="packages" />
+                                        </div>
+
+                                        <div class="w-full">
+                                            <x-label value="Peso bruto total (KILOGRAMO) :" />
+                                            <x-input class="block w-full" wire:model.defer="peso" min="0"
+                                                step="0.01" type="number"
+                                                onkeypress="return validarDecimal(event, 12)" />
+                                            <x-jet-input-error for="peso" />
+                                        </div>
+
+                                        <div class="w-full xs:col-span-2 lg:col-span-1">
+                                            <x-label value="Descripción :" />
+                                            <x-input class="block w-full" wire:model.defer="note"
+                                                placeholder="Descripcion, detalle de la guía (Opcional)..." />
+                                            <x-jet-input-error for="note" />
+                                        </div>
+
+                                        <div class="w-full animate__animated animate__fadeInDown" x-show="vehiculosml">
+                                            <x-label value="Placa vehículo (Opcional) :" />
+                                            <x-input class="block w-full" wire:model.defer="placavehiculo"
+                                                placeholder="Placa del vehículo de transporte..." />
+                                            <x-jet-input-error for="placavehiculo" />
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-label-check for="vehiculosml" class="mt-2">
+                                            <x-input wire:model.defer="vehiculosml" name="vehiculosml" type="checkbox"
+                                                id="vehiculosml" @change="toggle" />
+                                            TRASLADO EN VEHÍCULOS DE CATEGORÍA M1 O L
+                                        </x-label-check>
+                                    </div>
+
+                                    <div class="w-full animate__animated animate__fadeInDown"
+                                        x-show="loadingdestinatario">
+                                        <x-title-next titulo="DATOS DEL DESTINATARIO" class="my-3" />
+
+                                        <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+                                            <div class="w-full">
+                                                <x-label value="DNI / RUC :" />
+                                                <div class="w-full inline-flex">
+                                                    <x-input class="block w-full prevent numeric"
+                                                        wire:model.defer="documentdestinatario"
+                                                        wire:keydown.enter="getDestinatario" minlength="0"
+                                                        maxlength="11" onkeypress="return validarNumero(event, 11)" />
+                                                    <x-button-add class="px-2" wire:click="getDestinatario"
+                                                        wire:target="getDestinatario" wire:loading.attr="disabled">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="3" stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <circle cx="11" cy="11" r="8" />
+                                                            <path d="m21 21-4.3-4.3" />
+                                                        </svg>
+                                                    </x-button-add>
+                                                </div>
+                                                <x-jet-input-error for="documentdestinatario" />
+                                            </div>
+
+                                            <div class="w-full lg:col-span-2 xl:col-span-1">
+                                                <x-label value="Nombres :" />
+                                                <x-input class="block w-full" wire:model.defer="namedestinatario"
+                                                    placeholder="Nombres / razón social del destinatario" />
+                                                <x-jet-input-error for="namedestinatario" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full animate__animated animate__slideInDown" x-show="loadingpublic">
+                                        <x-title-next titulo="DATOS DEL TRANSPORTISTA" class="my-3 " />
+
+                                        <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+                                            <div class="w-full">
+                                                <x-label value="RUC transportista :" />
+                                                <div class="w-full inline-flex">
+                                                    <x-input class="block w-full prevent numeric"
+                                                        wire:model.defer="ructransport" wire:keydown.enter="getTransport"
+                                                        minlength="0" maxlength="11"
+                                                        onkeypress="return validarNumero(event, 11)" />
+                                                    <x-button-add class="px-2" wire:click="getTransport"
+                                                        wire:loading.attr="disabled">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="3" stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <circle cx="11" cy="11" r="8" />
+                                                            <path d="m21 21-4.3-4.3" />
+                                                        </svg>
+                                                    </x-button-add>
+                                                </div>
+                                                <x-jet-input-error for="ructransport" />
+                                            </div>
+
+                                            <div class="w-full lg:col-span-2 xl:col-span-1">
+                                                <x-label value="Razón social transportista :" />
+                                                <x-input class="block w-full" wire:model.defer="nametransport"
+                                                    placeholder="Razón social del transportista" />
+                                                <x-jet-input-error for="nametransport" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full animate__animated animate__fadeInDown" x-show="loadingprivate">
+                                        <x-title-next titulo="DATOS DEL CONDUCTOR / VEHÍCULO" class="my-3" />
+
+                                        <div
+                                            class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+                                            <div class="w-full">
+                                                <x-label value="Documento conductor :" />
+                                                <div class="w-full inline-flex">
+                                                    <x-input class="block w-full prevent numeric"
+                                                        wire:model.defer="documentdriver" wire:keydown.enter="getDriver"
+                                                        minlength="0" maxlength="11"
+                                                        onkeypress="return validarNumero(event, 8)" />
+                                                    <x-button-add class="px-2" wire:click="getDriver"
+                                                        wire:loading.attr="disabled">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
+                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                            stroke-width="3" stroke-linecap="round"
+                                                            stroke-linejoin="round">
+                                                            <circle cx="11" cy="11" r="8" />
+                                                            <path d="m21 21-4.3-4.3" />
+                                                        </svg>
+                                                    </x-button-add>
+                                                </div>
+                                                <x-jet-input-error for="documentdriver" />
+                                            </div>
+
+                                            <div class="w-full">
+                                                <x-label value="Nombres conductor :" />
+                                                <x-input class="block w-full" wire:model.defer="namedriver"
+                                                    placeholder="Nombres del conductor" />
+                                                <x-jet-input-error for="namedriver" />
+                                            </div>
+
+                                            <div class="w-full">
+                                                <x-label value="Apellidos :" />
+                                                <x-input class="block w-full" wire:model.defer="lastname"
+                                                    placeholder="Apellidos del conductor..." />
+                                                <x-jet-input-error for="lastname" />
+                                            </div>
+
+                                            <div class="w-full">
+                                                <x-label value="Licencia conducir:" />
+                                                <x-input class="block w-full" wire:model.defer="licencia"
+                                                    placeholder="Licencia del conductor del vehículo..." />
+                                                <x-jet-input-error for="licencia" />
+                                            </div>
+
+                                            <div class="w-full">
+                                                <x-label value="Placa vehículo :" />
+                                                <x-input class="block w-full" wire:model.defer="placa"
+                                                    placeholder="placa del vehículo..." />
+                                                <x-jet-input-error for="placa" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-title-next titulo="LUGAR DE EMISIÓN" class="my-3" />
+
+                                        <div
+                                            class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+
+                                            <div class="w-full">
+                                                <x-label value="Lugar emisión :" />
+                                                <div class="relative" x-init="selectUbigeoEmision" id="parentemision_id">
+                                                    <x-select class="block w-full" id="emision_id" x-ref="ubigeoemision"
+                                                        data-minimum-results-for-search="3">
+                                                        <x-slot name="options">
+                                                            @if (count($ubigeos))
+                                                                @foreach ($ubigeos as $item)
+                                                                    <option value="{{ $item->id }}">
+                                                                        {{ $item->region }} / {{ $item->provincia }} /
+                                                                        {{ $item->distrito }} / {{ $item->ubigeo_reniec }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </x-slot>
+                                                    </x-select>
+                                                    <x-icon-select />
+                                                </div>
+                                                <x-jet-input-error for="ubigeoorigen_id" />
+                                            </div>
+
+                                            <div class="w-full lg:col-span-3 xl:col-span-1">
+                                                <x-label value="Direccion origen :" />
+                                                <x-input class="block w-full" wire:model.defer="direccionorigen"
+                                                    placeholder="Dirección del punto de partida..." />
+                                                <x-jet-input-error for="direccionorigen" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-title-next titulo="LUGAR DE DESTINO" class="my-3" />
+
+                                        <div
+                                            class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+                                            <div class="w-full">
+                                                <x-label value="Lugar destino :" />
+                                                <div class="relative" x-init="selectUbigeoDestino" id="parentdestino_id"
+                                                    wire:ignore>
+                                                    <x-select class="block w-full" id="destino_id" x-ref="ubigeodestino"
+                                                        data-minimum-results-for-search="3">
+                                                        <x-slot name="options">
+                                                            @if (count($ubigeos))
+                                                                @foreach ($ubigeos as $item)
+                                                                    <option value="{{ $item->id }}">
+                                                                        {{ $item->region }} / {{ $item->provincia }} /
+                                                                        {{ $item->distrito }} / {{ $item->ubigeo_reniec }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </x-slot>
+                                                    </x-select>
+                                                    <x-icon-select />
+                                                </div>
+                                                <x-jet-input-error for="ubigeodestino_id" />
+                                            </div>
+
+                                            <div class="w-full lg:col-span-3 xl:col-span-1">
+                                                <x-label value="Direccion destino :" />
+                                                <x-input class="block w-full" wire:model.defer="direcciondestino"
+                                                    placeholder="Direccion del punto de llegada.." />
+                                                <x-jet-input-error for="direcciondestino" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             @endif
-
-                            <div x-show="incluyeguia" class="block w-full animate__animated animate__fadeInDown">
-
-                                <x-title-next titulo="MENÚ GUIA REMISION" class="my-3" />
-
-                                <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-1 gap-1">
-                                    <div class="w-full xs:col-span-2 lg:col-span-1">
-                                        <x-label value="Guía remisión :" />
-                                        <div class="relative" id="parentsrgr" x-init="selectSerieguia" wire:ignore>
-                                            <x-select class="block w-full uppercase" x-ref="selectguia"
-                                                id="srgr" data-placeholder="null">
-                                                <x-slot name="options">
-                                                    @if (count($comprobantesguia))
-                                                        @foreach ($comprobantesguia as $item)
-                                                            <option value="{{ $item->id }}"
-                                                                data-code="{{ $item->code }}">
-                                                                {{ $item->name }} </option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-icon-select />
-                                        </div>
-                                        <x-jet-input-error for="typecomprobanteguia_id" />
-                                    </div>
-
-                                    <div class="w-full xs:col-span-2 lg:col-span-1">
-                                        <x-label value="Motivo traslado :" />
-                                        <div class="relative" id="parentmtvtr" x-init="selectMotivo" wire:ignore>
-                                            <x-select class="block w-full uppercase" x-ref="selectmotivo"
-                                                id="mtvtr" data-placeholder="null"
-                                                @change="getCodeMotivo($event.target)">
-                                                <x-slot name="options">
-                                                    @if (count($motivotraslados))
-                                                        @foreach ($motivotraslados as $item)
-                                                            <option value="{{ $item->id }}"
-                                                                data-code="{{ $item->code }}">
-                                                                {{ $item->name }} </option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-icon-select />
-                                        </div>
-                                        <span x-text="codemotivotraslado"></span>
-                                        <x-jet-input-error for="motivotraslado_id" />
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-label value="Modalidad transporte :" />
-                                        <div class="relative" id="parentmdtr" x-init="selectModalidad" wire:ignore>
-                                            <x-select class="block w-full uppercase" x-ref="selectmodalidad"
-                                                id="mdtr" data-placeholder="null"
-                                                @change="getCodeModalidad($event.target)">
-                                                <x-slot name="options">
-                                                    @if (count($modalidadtransportes))
-                                                        @foreach ($modalidadtransportes as $item)
-                                                            <option value="{{ $item->id }}"
-                                                                data-code="{{ $item->code }}">{{ $item->name }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-icon-select />
-                                        </div>
-                                        <span x-text="codemodalidad"></span>
-                                        <x-jet-input-error for="modalidadtransporte_id" />
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-label value="Fecha traslado :" />
-                                        <x-input class="block w-full" wire:model.defer="datetraslado"
-                                            type="date" />
-                                        <x-jet-input-error for="datetraslado" />
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-label value="Bultos / Paquetes :" />
-                                        <x-input class="block w-full" wire:model.defer="packages" min="0"
-                                            step="1" type="number" />
-                                        <x-jet-input-error for="packages" />
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-label value="Peso bruto total (KILOGRAMO) :" />
-                                        <x-input class="block w-full" wire:model.defer="peso" min="0"
-                                            step="0.01" type="number" />
-                                        <x-jet-input-error for="peso" />
-                                    </div>
-
-                                    <div class="w-full xs:col-span-2 lg:col-span-1">
-                                        <x-label value="Descripción :" />
-                                        <x-input class="block w-full" wire:model.defer="note"
-                                            placeholder="Descripcion, detalle de la guía (Opcional)..." />
-                                        <x-jet-input-error for="note" />
-                                    </div>
-
-                                    <div class="w-full animate__animated animate__fadeInDown" x-show="vehiculosml">
-                                        <x-label value="Placa vehículo (Opcional) :" />
-                                        <x-input class="block w-full" wire:model.defer="placavehiculo"
-                                            placeholder="Placa del vehículo de transporte..." />
-                                        <x-jet-input-error for="placavehiculo" />
-                                    </div>
-                                </div>
-
-                                <div class="w-full">
-                                    <x-label-check for="vehiculosml" class="mt-2">
-                                        <x-input wire:model.defer="vehiculosml" name="vehiculosml" type="checkbox"
-                                            id="vehiculosml" @change="toggle" />
-                                        TRASLADO EN VEHÍCULOS DE CATEGORÍA M1 O L
-                                    </x-label-check>
-                                </div>
-
-                                <div class="w-full animate__animated animate__fadeInDown"
-                                    x-show="loadingdestinatario">
-                                    <x-title-next titulo="DATOS DEL DESTINATARIO" class="my-3" />
-
-                                    <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                        <div class="w-full">
-                                            <x-label value="DNI / RUC :" />
-                                            <div class="w-full inline-flex">
-                                                <x-input class="block w-full prevent numeric"
-                                                    wire:model.defer="documentdestinatario"
-                                                    wire:keydown.enter="getDestinatario" minlength="0"
-                                                    maxlength="11" />
-                                                <x-button-add class="px-2" wire:click="getDestinatario"
-                                                    wire:target="getDestinatario" wire:loading.attr="disable">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="3" stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <circle cx="11" cy="11" r="8" />
-                                                        <path d="m21 21-4.3-4.3" />
-                                                    </svg>
-                                                </x-button-add>
-                                            </div>
-                                            <x-jet-input-error for="documentdestinatario" />
-                                        </div>
-
-                                        <div class="w-full lg:col-span-2 xl:col-span-1">
-                                            <x-label value="Nombres :" />
-                                            <x-input class="block w-full" wire:model.defer="namedestinatario"
-                                                placeholder="Nombres / razón social del destinatario" />
-                                            <x-jet-input-error for="namedestinatario" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="w-full animate__animated animate__slideInDown" x-show="loadingpublic">
-                                    <x-title-next titulo="DATOS DEL TRANSPORTISTA" class="my-3 " />
-
-                                    <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                        <div class="w-full">
-                                            <x-label value="RUC transportista :" />
-                                            <div class="w-full inline-flex">
-                                                <x-input class="block w-full prevent numeric"
-                                                    wire:model.defer="ructransport" wire:keydown.enter="getTransport"
-                                                    minlength="0" maxlength="11" />
-                                                <x-button-add class="px-2" wire:click="getTransport"
-                                                    wire:loading.attr="disable">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="3" stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <circle cx="11" cy="11" r="8" />
-                                                        <path d="m21 21-4.3-4.3" />
-                                                    </svg>
-                                                </x-button-add>
-                                            </div>
-                                            <x-jet-input-error for="ructransport" />
-                                        </div>
-
-                                        <div class="w-full lg:col-span-2 xl:col-span-1">
-                                            <x-label value="Razón social transportista :" />
-                                            <x-input class="block w-full" wire:model.defer="nametransport"
-                                                placeholder="Razón social del transportista" />
-                                            <x-jet-input-error for="nametransport" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="w-full animate__animated animate__fadeInDown" x-show="loadingprivate">
-                                    <x-title-next titulo="DATOS DEL CONDUCTOR / VEHÍCULO" class="my-3" />
-
-                                    <div
-                                        class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                        <div class="w-full">
-                                            <x-label value="Documento conductor :" />
-                                            <div class="w-full inline-flex">
-                                                <x-input class="block w-full prevent numeric"
-                                                    wire:model.defer="documentdriver" wire:keydown.enter="getDriver"
-                                                    minlength="0" maxlength="11" />
-                                                <x-button-add class="px-2" wire:click="getDriver"
-                                                    wire:loading.attr="disable">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="3" stroke-linecap="round"
-                                                        stroke-linejoin="round">
-                                                        <circle cx="11" cy="11" r="8" />
-                                                        <path d="m21 21-4.3-4.3" />
-                                                    </svg>
-                                                </x-button-add>
-                                            </div>
-                                            <x-jet-input-error for="documentdriver" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Nombres conductor :" />
-                                            <x-input class="block w-full" wire:model.defer="namedriver"
-                                                placeholder="Nombres del conductor" />
-                                            <x-jet-input-error for="namedriver" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Apellidos :" />
-                                            <x-input class="block w-full" wire:model.defer="lastname"
-                                                placeholder="Apellidos del conductor..." />
-                                            <x-jet-input-error for="lastname" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Licencia conducir:" />
-                                            <x-input class="block w-full" wire:model.defer="licencia"
-                                                placeholder="Licencia del conductor del vehículo..." />
-                                            <x-jet-input-error for="licencia" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Placa vehículo :" />
-                                            <x-input class="block w-full" wire:model.defer="placa"
-                                                placeholder="placa del vehículo..." />
-                                            <x-jet-input-error for="placa" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="w-full">
-                                    <x-title-next titulo="LUGAR DE EMISIÓN" class="my-3" />
-
-                                    <div
-                                        class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                        <div class="w-full">
-                                            <x-label value="Departamento :" />
-                                            <x-select class="block w-full" id="regionorigen_id"
-                                                wire:model.lazy="regionorigen_id">
-                                                <x-slot name="options">
-                                                    @if (count($regiones))
-                                                        @foreach ($regiones as $item)
-                                                            <option value="{{ $item->departamento_inei }}">
-                                                                {{ $item->region }}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-jet-input-error for="regionorigen_id" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Provincia :" />
-                                            <x-select class="block w-full" id="provinciaorigen_id"
-                                                wire:model.lazy="provinciaorigen_id">
-                                                <x-slot name="options">
-                                                    @if (count($provinciasorigen))
-                                                        @foreach ($provinciasorigen as $item)
-                                                            <option value="{{ $item->provincia_inei }}">
-                                                                {{ $item->provincia }}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-jet-input-error for="provinciaorigen_id" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Distrito :" />
-                                            <x-select class="block w-full" id="distritoorigen_id"
-                                                wire:model.defer="distritoorigen_id">
-                                                <x-slot name="options">
-                                                    @if (count($distritosorigen))
-                                                        @foreach ($distritosorigen as $item)
-                                                            <option value="{{ $item->id }}">{{ $item->distrito }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-jet-input-error for="distritoorigen_id" />
-                                        </div>
-
-                                        <div class="w-full lg:col-span-3 xl:col-span-1">
-                                            <x-label value="Direccion origen :" />
-                                            <x-input class="block w-full" wire:model.defer="direccionorigen"
-                                                placeholder="Dirección del punto de partida..." />
-                                            <x-jet-input-error for="direccionorigen" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="w-full">
-                                    <x-title-next titulo="LUGAR DE DESTINO" class="my-3" />
-
-                                    <div
-                                        class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                        <div class="w-full">
-                                            <x-label value="Departamento :" />
-                                            <x-select class="block w-full" id="regiondestino_id"
-                                                wire:model.lazy="regiondestino_id">
-                                                <x-slot name="options">
-                                                    @if (count($regiones))
-                                                        @foreach ($regiones as $item)
-                                                            <option value="{{ $item->departamento_inei }}">
-                                                                {{ $item->region }}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-jet-input-error for="regiondestino_id" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Provincia :" />
-                                            <x-select class="block w-full" id="provinciadestino_id"
-                                                wire:model.lazy="provinciadestino_id">
-                                                <x-slot name="options">
-                                                    @if (count($provinciasdestino))
-                                                        @foreach ($provinciasdestino as $item)
-                                                            <option value="{{ $item->provincia_inei }}">
-                                                                {{ $item->provincia }}</option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-jet-input-error for="provinciadestino_id" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Distrito :" />
-                                            <x-select class="block w-full" id="distritodestino_id"
-                                                wire:model.defer="distritodestino_id">
-                                                <x-slot name="options">
-                                                    @if (count($distritosdestino))
-                                                        @foreach ($distritosdestino as $item)
-                                                            <option value="{{ $item->id }}">{{ $item->distrito }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </x-slot>
-                                            </x-select>
-                                            <x-jet-input-error for="distritodestino_id" />
-                                        </div>
-
-                                        <div class="w-full lg:col-span-3 xl:col-span-1">
-                                            <x-label value="Direccion destino :" />
-                                            <x-input class="block w-full" wire:model.defer="direcciondestino"
-                                                placeholder="Direccion del punto de llegada.." />
-                                            <x-jet-input-error for="direcciondestino" />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="w-full flex flex-col gap-1 mt-1">
-                                    <x-jet-input-error for="typecomprobanteguia_id" />
-                                </div>
-                            </div>
-                        @endif
+                        @endcan
                     </div>
 
                     <div class="w-full flex flex-col gap-1">
                         <x-jet-input-error for="typepayment.id" />
                         <x-jet-input-error for="items" />
+                        <x-jet-input-error for="client_id" />
                     </div>
 
                     @if ($errors->any())
@@ -613,23 +581,18 @@
 
                     <div class="w-full flex mt-2 justify-end">
                         <x-button type="submit" wire:loading.attr="disabled">
-                            {{ __('REGISTRAR') }}
-                        </x-button>
+                            {{ __('REGISTRAR') }}</x-button>
                     </div>
                 </div>
             </form>
-            <div x-show="loading" wire:loading.flex
-                wire:target="save, typepayment_id, setTypepayment, methodpayment_id, getClient, getTransport, getDestinatario, getDriver"
-                class="loading-overlay rounded z-50">
+            <div wire:loading.flex class="loading-overlay rounded z-50 hidden"
+                wire:target="save, typepayment_id, setTypepayment, methodpayment_id, getClient, getTransport, getDestinatario, getDriver">
                 <x-loading-next />
             </div>
         </x-form-card>
 
         <x-form-card titulo="RESUMEN DE VENTA">
-
-            <div x-show="loading" wire:loading.flex
-                wire:target="save, setMoneda, setTotal, increment, paymentactual, incluyeigv, updategratis, deleteitem, deleteserie"
-                class="loading-overlay rounded">
+            <div wire:loading.flex class="loading-overlay rounded hidden" wire:target="save, setMoneda, setTotal">
                 <x-loading-next />
             </div>
 
@@ -676,15 +639,14 @@
             </div>
         </x-form-card>
 
-        {{-- @if (count($carrito))
+        @if (count($carshoops) > 0)
             <x-form-card titulo="CARRITO">
-
                 <small
                     class="text-white font-semibold absolute top-2 left-[70px] flex items-center justify-center w-5 h-5 p-0.5 leading-3 bg-orange-500 rounded-full text-[10px] animate-bounce">
-                    {{ count($carrito) }}</small>
+                    {{ count($carshoops) }}</small>
 
                 <div class="flex gap-2 flex-wrap justify-start">
-                    @foreach ($carrito as $item)
+                    @foreach ($carshoops as $item)
                         <div
                             class="w-full bg-body border border-borderminicard flex flex-col justify-between lg:w-60 xl:w-full group rounded shadow shadow-shadowminicard p-1 text-xs relative hover:shadow-md hover:shadow-shadowminicard cursor-pointer">
                             <div class="w-full">
@@ -698,20 +660,59 @@
                                     </h1>
                                 </div>
 
+                                @if ($item->promocion)
+                                    @if ($item->promocion->isCombo())
+                                        <x-span-text text="COMBO" type="red"
+                                            class="leading-3 !tracking-normal" />
+                                        @if (count($item->promocion->itempromos) > 0)
+                                            <div class="w-full mb-2 mt-1">
+                                                @foreach ($item->promocion->itempromos as $itempromo)
+                                                    <h1 class="text-colorsubtitleform text-[10px] leading-3 text-left">
+                                                        <span
+                                                            class="w-1.5 h-1.5 bg-next-500 inline-block rounded-full"></span>
+                                                        {{ $itempromo->producto->name }}
+                                                    </h1>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    @endif
+                                @endif
+
                                 <div class="w-full flex flex-wrap gap-1 mt-2">
-                                    <x-span-text :text="'P. UNIT : ' .
-                                        $item->moneda->simbolo .
-                                        number_format($item->price, 2, '.', ', ')" class="leading-3" />
 
-                                    <x-span-text :text="\App\Helpers\FormatoPersonalizado::getValue($item->cantidad) .
+                                    <x-span-text :text="'P.UNIT : ' . number_format($item->price, 2, '.', ', ')" class="leading-3 !tracking-normal" />
+                                    @if ($incluyeigv)
+                                        <x-span-text :text="'IGV UNIT : ' .
+                                            number_format(
+                                                $item->price - ($item->price * 100) / (100 + $empresa->igv),
+                                                2,
+                                                '.',
+                                                ', ',
+                                            )" class="leading-3 !tracking-normal" />
+                                    @endif
+
+                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) .
                                         ' ' .
-                                        $item->producto->unit->name" class="leading-3" />
-
-                                    <x-span-text :text="$item->almacen->name" class="leading-3" />
+                                        $item->producto->unit->name" class="leading-3 !tracking-normal" />
+                                    <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
 
                                     @if (count($item->carshoopseries) == 1)
-                                        <x-span-text :text="'SERIE : ' . $item->carshoopseries()->first()->serie->serie" class="leading-3" />
+                                        <x-span-text :text="'SERIE : ' . $item->carshoopseries()->first()->serie->serie" class="leading-3 !tracking-normal" />
                                     @endif
+
+                                    @if ($item->isNoAlterStock())
+                                        <x-span-text text="NO ALTERA STOCK" class="leading-3 !tracking-normal" />
+                                    @elseif ($item->isReservedStock())
+                                        <x-span-text text="STOCK RESERVADO" class="leading-3 !tracking-normal"
+                                            type="orange" />
+                                    @elseif ($item->isIncrementStock())
+                                        <x-span-text text="INCREMENTA STOCK" class="leading-3 !tracking-normal"
+                                            type="green" />
+                                    @elseif($item->isDiscountStock())
+                                        <x-span-text text="DISMINUYE STOCK" class="leading-3 !tracking-normal"
+                                            type="red" />
+                                    @endif
+
                                 </div>
 
                                 @if (count($item->carshoopseries) > 1)
@@ -719,21 +720,14 @@
                                         <x-button @click="showForm = !showForm" class="whitespace-nowrap">
                                             {{ __('VER SERIES') }}
                                         </x-button>
-                                        <div x-show="showForm"
-                                            x-transition:enter="transition ease-out duration-300 transform"
-                                            x-transition:enter-start="opacity-0 translate-y-[-10%]"
-                                            x-transition:enter-end="opacity-100 translate-y-0"
-                                            x-transition:leave="transition ease-in duration-300 transform"
-                                            x-transition:leave-start="opacity-100 translate-y-0"
-                                            x-transition:leave-end="opacity-0 translate-y-[-10%]"
-                                            class="block w-full rounded mt-1">
+                                        <div x-show="showForm" x-transition class="block w-full rounded mt-1">
                                             <div class="w-full flex flex-wrap gap-1">
                                                 @foreach ($item->carshoopseries as $itemserie)
                                                     <span
                                                         class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
                                                         {{ $itemserie->serie->serie }}
                                                         <x-button-delete
-                                                            wire:click="$emit('ventas.confirmDeleteSerie',{{ $itemserie }})"
+                                                            onclick="confirmDeleteSerie({{ $itemserie }})"
                                                             wire:loading.attr="disabled" />
                                                     </span>
                                                 @endforeach
@@ -744,115 +738,120 @@
                             </div>
 
                             <div class="w-full flex items-end gap-2 justify-between mt-2">
-                                <div>
-                                    <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
-                                        <x-input wire:change="updategratis({{ $item->id }})" value="1"
-                                            type="checkbox" id="gratuito_{{ $item->id }}" :checked="$item->gratuito == 1" />
-                                        GRATUITO
-                                    </x-label-check>
-                                </div>
-                                <x-button-delete
-                                    wire:click="$emit('ventas.confirmDeleteItemCart', {{ $item->id }})"
-                                    wire:loading.attr="disabled" />
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-                <div x-show="loading" wire:loading wire:loading.flex
-                    wire:target="save, setTotal, deleteitem, deleteserie, updategratis"
-                    class="loading-overlay rounded">
-                    <x-loading-next />
-                </div>
-            </x-form-card>
-        @endif --}}
-
-        @if (count(getCarrito()) > 0)
-            <x-form-card titulo="CARRITO">
-
-                <small
-                    class="text-white font-semibold absolute top-2 left-[70px] flex items-center justify-center w-5 h-5 p-0.5 leading-3 bg-orange-500 rounded-full text-[10px] animate-bounce">
-                    {{ count(getCarrito()) }}</small>
-
-                <div class="flex gap-2 flex-wrap justify-start">
-                    @foreach ($carrito as $item)
-                        {{-- {{ print_r($item) }} --}}
-                        <div
-                            class="w-full bg-body border border-borderminicard flex flex-col justify-between sm:w-64 xl:w-full group rounded shadow shadow-shadowminicard p-1 text-xs relative hover:shadow-md hover:shadow-shadowminicard cursor-pointer">
-                            <div class="w-full">
-                                <div class="w-full flex flex-col flex-wrap gap-2 text-colorminicard">
-                                    <h1 class="w-full text-[10px] leading-3 text-left mt-1">
-                                        {{ $item->producto }}</h1>
-                                    <h1 class="whitespace-nowrap text-right text-[10px] text-xs leading-3">
-                                        {{ $item->simbolo }}
-                                        {{ number_format($item->importe, 2, '.', ', ') }}
-                                        <small class="text-[7px]">{{ $item->moneda }}</small>
-                                    </h1>
-                                </div>
-                                <div class="w-full flex flex-wrap gap-1 mt-2">
-                                    <x-span-text :text="'P. UNIT : ' .
-                                        $item->simbolo .
-                                        number_format($item->price, 2, '.', ', ')" class="leading-3 !tracking-normal" />
-
-                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) . ' ' . $item->unit" class="leading-3 !tracking-normal" />
-
-                                    <x-span-text :text="$item->almacen" class="leading-3 !tracking-normal" />
-
-                                    @if (count($item->series) == 1)
-                                        <x-span-text :text="'SERIE : ' . $item->series[0]->serie" class="leading-3 !tracking-normal" />
-                                    @endif
-                                </div>
-
-                                @if (count($item->series) > 1)
-                                    <div x-data="{ showForm: false }" class="mt-1 relative">
-                                        <x-button @click="showForm = !showForm" class="whitespace-nowrap">
-                                            {{ __('VER SERIES') }}
-                                        </x-button>
-                                        <div x-show="showForm"
-                                            class="block w-full rounded mt-1 relative animate__animated animate__fadeInDown">
-                                            <div class="w-full flex flex-wrap gap-1">
-                                                @foreach ($item->series as $serie)
-                                                    <span
-                                                        class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-md">
-                                                        {{ $serie->serie }}
-                                                        <x-button-delete
-                                                            wire:click="deleteserie('{{ $item->id }}', {{ $serie->id }})"
-                                                            wire:loading.attr="disabled" />
-                                                    </span>
-                                                @endforeach
-                                            </div>
-                                        </div>
+                                @can('admin.ventas.create.gratuito')
+                                    <div>
+                                        <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
+                                            <x-input wire:change="updategratis({{ $item->id }})" value="1"
+                                                type="checkbox" id="gratuito_{{ $item->id }}" :checked="$item->gratuito == '1'" />
+                                            GRATUITO</x-label-check>
                                     </div>
-                                @endif
-                            </div>
-                            <div class="w-full flex items-end gap-2 justify-between mt-2">
-                                <div class="flex just items-end gap-1">
-                                    <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
-                                        <x-input wire:change="updategratis({{ $item->id }})" value="1"
-                                            type="checkbox" id="gratuito_{{ $item->id }}" :checked="$item->gratuito == 1" />
-                                        GRATUITO
-                                    </x-label-check>
-                                    <x-span-text :text="$item->sucursal ?? 'NOMBRE DE SUCURSAL DEL CARRITO ASIGNADO'" class="leading-3 !tracking-normal truncate w-32" />
-                                </div>
-                                <x-button-delete wire:click="delete('{{ $item->id }}')"
+                                @endcan
+                                <x-button-delete onclick="confirmDeleteCarshoop({{ $item }})"
                                     wire:loading.attr="disabled" />
                             </div>
                         </div>
                     @endforeach
                 </div>
-                <div class="w-full mt-2 flex justify-end">
-                    <x-button-secondary wire:loading.attr="disabled" wire:click="deletecarrito">ELIMINAR
-                        TODO</x-button-secondary>
+
+                <div class="w-full flex justify-end mt-2">
+                    <x-button-secondary onclick="confirmDeleteAllCarshoop()" wire:loading.attr="disabled"
+                        class="inline-block">ELIMINAR TODO</x-button-secondary>
                 </div>
 
-                <div x-show="loading" wire:loading wire:loading.flex wire:target="save, render"
-                    class="loading-overlay rounded">
+                <div wire:loading.flex class="loading-overlay rounded hidden"
+                    wire:target="save, setTotal, delete, deleteserie, updategratis">
                     <x-loading-next />
                 </div>
             </x-form-card>
         @endif
     </div>
+
     <script>
+        function confirmDeleteSerie(itemserie) {
+            swal.fire({
+                title: 'Eliminar serie ' + itemserie.serie.serie + ' del carrito de ventas ?',
+                text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deleteserie(itemserie.id);
+                }
+            })
+        }
+
+        function confirmDeleteCarshoop(Carshoop) {
+            swal.fire({
+                title: 'ANULAR ITEM DEL CARRITO DE VENTAS ?',
+                text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(Carshoop.id);
+                }
+            })
+        }
+
+        function confirmDeleteAllCarshoop() {
+            swal.fire({
+                title: 'Eliminar carrito de ventas ?',
+                text: "Se eliminarán todos los productos del carrito de ventas y se actualizará su stock correspondientes.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deleteallcarshoop();
+                }
+            })
+        }
+
+        function selectUbigeoEmision() {
+            this.selectUE = $(this.$refs.ubigeoemision).select2();
+            this.selectUE.val(this.ubigeoorigen_id).trigger("change");
+            this.selectUE.on("select2:select", (event) => {
+                this.ubigeoorigen_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("ubigeoorigen_id", (value) => {
+                this.selectUE.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectUE.select2('destroy');
+                this.selectUE.select2().val(this.ubigeoorigen_id).trigger('change');
+            });
+        }
+
+        function selectUbigeoDestino() {
+            this.selectUD = $(this.$refs.ubigeodestino).select2();
+            this.selectUD.val(this.ubigeodestino_id).trigger("change");
+            this.selectUD.on("select2:select", (event) => {
+                this.ubigeodestino_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("ubigeodestino_id", (value) => {
+                this.selectUD.val(value).trigger("change");
+            });
+        }
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('loader', () => ({
                 incluyeguia: @entangle('incluyeguia').defer,
@@ -867,16 +866,18 @@
                 code: '',
                 sendsunat: '',
                 openguia: true,
+                sincronizegre: @entangle('sincronizegre').defer,
 
                 cotizacion_id: @entangle('cotizacion_id').defer,
                 moneda_id: @entangle('moneda_id').defer,
-                typecomprobante_id: @entangle('typecomprobante_id').defer,
+                seriecomprobante_id: @entangle('seriecomprobante_id').defer,
                 typepayment_id: @entangle('typepayment_id').defer,
                 methodpayment_id: @entangle('methodpayment_id').defer,
-                cuenta_id: @entangle('cuenta_id').defer,
-                typecomprobanteguia_id: @entangle('typecomprobanteguia_id').defer,
+                serieguia_id: @entangle('serieguia_id').defer,
                 motivotraslado_id: @entangle('motivotraslado_id').defer,
                 modalidadtransporte_id: @entangle('modalidadtransporte_id').defer,
+                ubigeoorigen_id: @entangle('ubigeoorigen_id').defer,
+                ubigeodestino_id: @entangle('ubigeodestino_id').defer,
 
                 init() {
                     // const selectpayment = this.$refs.selectpayment;
@@ -942,8 +943,6 @@
                             this.loadingpublic = false;
                     }
                 },
-
-
                 getTipopago(target) {
                     let datapayment = target.options[target.selectedIndex].getAttribute(
                         'data-payment');
@@ -966,6 +965,7 @@
                 getCodeSend(target) {
                     this.sendsunat = target.options[target.selectedIndex].getAttribute(
                         'data-sunat');
+                    console.log(this.sendsunat);
 
                     switch (this.sendsunat) {
                         case '0':
@@ -987,18 +987,6 @@
                 },
             }));
         })
-
-        window.addEventListener('birthday', data => {
-            console.log(data);
-            swal.fire({
-                title: 'FELÍZ CUMPLEAÑOS, ' + data.detail,
-                // text: data.detail.text,
-                // html: data.detail.text,
-                icon: 'success',
-                confirmButtonColor: '#0FB9B9',
-                confirmButtonText: 'Gracias',
-            })
-        });
 
         window.addEventListener('show-resumen-venta', () => {
             @this.render();
@@ -1043,16 +1031,16 @@
 
         function selectComprobante() {
             this.selectTC = $(this.$refs.selectcomprobante).select2();
-            this.selectTC.val(this.typecomprobante_id).trigger("change");
+            this.selectTC.val(this.seriecomprobante_id).trigger("change");
             this.selectTC.on("select2:select", (event) => {
-                this.typecomprobante_id = event.target.value;
+                this.seriecomprobante_id = event.target.value;
                 this.getCodeSend(event.target);
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("typecomprobante_id", (value) => {
+            this.$watch("seriecomprobante_id", (value) => {
                 this.selectTC.val(value).trigger("change");
             });
         }
@@ -1076,15 +1064,15 @@
 
         function selectSerieguia() {
             this.selectGR = $(this.$refs.selectguia).select2();
-            this.selectGR.val(this.typecomprobanteguia_id).trigger("change");
+            this.selectGR.val(this.serieguia_id).trigger("change");
             this.selectGR.on("select2:select", (event) => {
-                this.typecomprobanteguia_id = event.target.value;
+                this.serieguia_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("typecomprobanteguia_id", (value) => {
+            this.$watch("serieguia_id", (value) => {
                 this.selectGR.val(value).trigger("change");
             });
         }
@@ -1125,21 +1113,6 @@
             });
         }
 
-        function selectCuenta() {
-            this.selectC = $(this.$refs.selectcuenta).select2();
-            this.selectC.val(this.cuenta_id).trigger("change");
-            this.selectC.on("select2:select", (event) => {
-                this.cuenta_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("cuenta_id", (value) => {
-                this.selectC.val(value).trigger("change");
-            });
-        }
-
         function selectMethodpayment() {
             this.selectMP = $(this.$refs.selectmethodpayment).select2();
             this.selectMP.val(this.methodpayment_id).trigger("change");
@@ -1154,71 +1127,5 @@
                 this.selectMP.val(value).trigger("change");
             });
         }
-
-        // function selectCuenta() {
-        //     this.selectC = $(this.$refs.selectcuenta.select2();
-        //     this.selectC.val(this.cuenta_id).trigger("change");
-        //     this.selectC.on("select2:select", (event) => {
-        //         this.cuenta_id = event.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-        //     this.$watch("cuenta_id", (value) => {
-        //         this.selectMT.val(value).trigger("change");
-        //     });
-        // }
-
-        document.addEventListener("livewire:load", () => {
-            // Livewire.hook('message.processed', (message, component) => {
-            //     message.updateQueue.some(update => {
-            //         console.log("Type : " + update.type, " Event : " + update.method);
-            //         if (update.method == "addtocar") {
-            //             // @this.setTotal();
-            //             // console.log(update.method);
-            //         }
-            //     })
-            // });
-
-            Livewire.on('ventas.confirmDeleteItemCart', data => {
-                swal.fire({
-                    title: 'Desea eliminar el producto del carrito de compras ?',
-                    text: "Se eliminará un registro de pago de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deleteitem(data);
-                        // Livewire.emitTo('ventas::ventas.show-resumen-venta', 'deleteitem', data);
-                    }
-                })
-            });
-
-            Livewire.on('ventas.confirmDeleteSerie', data => {
-                swal.fire({
-                    title: 'Desea quitar la serie ' + data.serie.serie +
-                        ' del carrito de compras ?',
-                    text: "Se eliminará un registro de pago de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deleteserie(data.id);
-                        // Livewire.emitTo('ventas::ventas.show-resumen-venta', 'deleteserie', data.id);
-                    }
-                })
-            });
-
-
-        })
     </script>
 </div>

@@ -18,9 +18,9 @@ class VerifySucursal
      */
     public function handle(Request $request, Closure $next)
     {
+
         $empresa = Empresa::exists();
         // session(['redirect_url' => url()->previous()]);
-
         if (!$empresa) {
             $mensaje = response()->json([
                 'title' => 'CONFIGURAR PERFIL DE LA EMPRESA',
@@ -31,10 +31,10 @@ class VerifySucursal
             // return redirect()->route('admin.administracion.empresa.create')->with('message', 'Configurar datos de la empresa !');
         }
 
-        if (auth()->user()->sucursal == null) {
+        if (auth()->user()->sucursal_id == null) {
             $mensaje = response()->json([
-                'title' => 'ASIGNAR SUCURSAL PARA EL USUARIO LOGUEADO',
-                'text' => 'Usuario logueado no cuenta con sucursal asignada, contáctese con su administrador.',
+                'title' => 'PERFIL DE USUARIO NO TIENE ACCESO',
+                'text' => 'Usuario de acceso debe estar vinculado al personal de empresa, contáctese con su administrador.',
                 'type' => 'warning'
             ]);
             return redirect()->back()->with('message', $mensaje);

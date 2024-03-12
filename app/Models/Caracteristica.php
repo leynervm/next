@@ -5,14 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Caracteristica extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['name', 'view'];
+    public $timestamps = false;
 
     public function setNameAttribute($value)
     {
@@ -23,5 +22,4 @@ class Caracteristica extends Model
     {
         return $this->hasMany(Especificacion::class);
     }
-
 }

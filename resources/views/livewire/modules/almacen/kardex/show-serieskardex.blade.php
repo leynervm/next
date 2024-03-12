@@ -77,49 +77,43 @@
 
                 <th scope="col" class="p-2 font-medium">
                     ESTADO</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    SUCURSAL</th>
             </tr>
         </x-slot>
 
-        @if (count($serieskardex))
+        @if (count($serieskardex) > 0)
             <x-slot name="body">
                 @foreach ($serieskardex as $item)
                     <tr>
                         <td class="p-2 text-center">
-                            <a class="text-linktable hover:text-hoverlinktable underline"
-                                href="{{ route('admin.almacen.kardex.series.show', $item->serie) }}">
-                                {{ $item->serie }} </a>
+                            @can('admin.almacen.kardex.series.show')
+                                <a class="text-linktable hover:text-hoverlinktable cursor-pointer transition-all ease-in-out duration-150"
+                                    href="{{ route('admin.almacen.kardex.series.show', $item->serie) }}">
+                                    {{ $item->serie }} </a>
+                            @endcan
+
+                            @cannot('admin.almacen.kardex.series.show')
+                                <h1 class="text-linktable">{{ $item->serie }} </h1>
+                            @endcannot
                         </td>
 
                         <td class="p-2 text-justify">
-                            <p>{{ $item->producto->name }}</p>
+                            <p class="w-full">{{ $item->producto->name }}</p>
                             <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
                         </td>
 
                         <td class="p-2 text-center">
                             @if ($item->compraitem)
                                 <x-span-text :text="formatDate($item->compraitem->created_at, 'DD MMMM YYYY')" class="leading-3 !tracking-normal" />
-                                <p>
-                                    <a class="text-linktable hover:text-hoverlinktable text-[10px] font-medium underline inline-block"
-                                        href="{{ route('admin.almacen.compras.show', $item->compraitem->compra->id) }}">
-                                        REF. COMPRA: {{ $item->compraitem->compra->referencia }}</a>
-                                </p>
+                                <p class="text-colorlabel leading-3 text-[10px]">
+                                    REF. COMPRA: {{ $item->compraitem->compra->referencia }}</p>
                             @endif
                         </td>
 
                         <td class="p-2 text-center">
                             @if ($item->itemserie)
                                 <x-span-text :text="formatDate($item->itemserie->date, 'DD MMMM YYYY')" class="leading-3 !tracking-normal" />
-
-                                @if (Module::isEnabled('Ventas') && $item->itemserie->tvitem->tvitemable instanceof \Modules\Ventas\Entities\Venta)
-                                    <p>
-                                        <a class="text-linktable hover:text-hoverlinktable text-[10px] font-medium underline block"
-                                            href="{{ route('admin.ventas.show', $item->itemserie->tvitem->tvitemable->id) }}">
-                                            REF. SALIDA: {{ $item->itemserie->tvitem->tvitemable->code }}</a>
-                                    </p>
-                                @endif
+                                <p class="text-colorlabel leading-3 text-[10px]">
+                                    {{ $item->itemserie->tvitem->tvitemable->seriecompleta }}</p>
                             @endif
                         </td>
 
@@ -131,10 +125,6 @@
                             @else
                                 <x-span-text text="SALIDA" class="leading-3 !tracking-normal" type="red" />
                             @endif
-                        </td>
-
-                        <td class="p-2 text-xs text-center">
-                            {{ $item->almacen->sucursal->name }}
                         </td>
                     </tr>
                 @endforeach

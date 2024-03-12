@@ -37,6 +37,6 @@ class Rango extends Model
     public function pricetypes(): BelongsToMany
     {
         return $this->belongsToMany(Pricetype::class)
-            ->withPivot('id', 'ganancia')->orderBy('ganancia', 'desc');
+            ->withPivot('id', 'ganancia');
     }
 }

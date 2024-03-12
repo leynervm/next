@@ -1,4 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Ubuntu&display=swap');
+@font-face {
+    font-family: "Ubuntu";
+    src: url("/assets/fonts/Ubuntu/Ubuntu.eot");
+    /* IE9 Compat Modes */
+    src: url("/assets/fonts/Ubuntu/Ubuntu.eot?#iefix") format("embedded-opentype"),
+        /* IE6-IE8 */
+        url("/assets/fonts/Ubuntu/Ubuntu.woff2") format("woff2"),
+        /* Super Modern Browsers */
+        url("/assets/fonts/Ubuntu/Ubuntu.woff") format("woff"),
+        /* Modern Browsers */
+        url("/assets/fonts/Ubuntu/Ubuntu.ttf") format("truetype"),
+        /* Safari, Android, iOS */
+        url("/assets/fonts/Ubuntu/Ubuntu.svg#Ubuntu") format("svg");
+    /* Legacy iOS */
+}
+
 
 * {
     font-family: 'Ubuntu';
@@ -158,9 +173,12 @@
     --fondo-select2: theme("colors.neutral.700");
     --color-select2: theme("colors.white");
     --fondo-hover-select2: theme("colors.neutral.600");
-    --color-hover-select2: theme("colors.next.500") --color-active-select2: theme("colors.white");
+    --color-hover-select2: theme("colors.next.500") 
+    --color-active-select2: theme("colors.white");
     --fondo-active-select2: theme("colors.next.500");
     --shadow-select2: theme("colors.neutral.950");
+    --color-subtitle-select2: theme("colors.neutral.400");
+    --color-active-subtitle-select2: theme("colors.neutral.100");
 
     --text-header-table: theme("colors.neutral.100");
     --fondo-header-table: theme("colors.neutral.500");

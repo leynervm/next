@@ -1,10 +1,9 @@
 <div>
     @if (count($caracteristicas))
         <div class="pb-2">
-            {{ $caracteristicas->links() }}
+            {{ $caracteristicas->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
-
 
     @if (count($caracteristicas))
         <div class="flex flex-wrap gap-5">
@@ -15,30 +14,42 @@
                             <div class="w-full flex gap-1 flex-wrap items-start">
                                 @foreach ($item->especificacions as $itemespecif)
                                     <div
-                                        class="inline-flex gap-1 items-center text-[10px] px-1 rounded-lg bg-fondospancardproduct text-textspancardproduct">
+                                        class="inline-flex gap-1 items-center text-[10px] p-1 rounded-md bg-fondospancardproduct text-textspancardproduct">
                                         <span class="mr-2">{{ $itemespecif->name }}</span>
-                                        <x-button-edit wire:loading.attr="disabled"
-                                            wire:click="editespecificacion({{ $itemespecif->id }})" />
-                                        <x-button-delete wire:loading.attr="disabled"
-                                            wire:click="$emit('especificaciones.confirmDelete',{{ $itemespecif }})" />
+                                        @can('admin.almacen.especificaciones.edit')
+                                            <x-button-edit wire:loading.attr="disabled"
+                                                wire:click="editespecificacion({{ $itemespecif->id }})" />
+                                        @endcan
+
+                                        @can('admin.almacen.especificaciones.delete')
+                                            <x-button-delete wire:loading.attr="disabled"
+                                                wire:key="delesp_{{ $itemespecif->id }}"
+                                                onclick="confirmDeleteEspec({{ $itemespecif }})" />
+                                        @endcan
                                     </div>
                                 @endforeach
                             </div>
                         @endif
 
-                        <div class="w-full flex justify-between gap-2">
-                            <x-button wire:loading.attr="disabled"
-                                wire:click="openmodalespecificacion({{ $item->id }})">
-                                AGREGAR
-                            </x-button>
+                        <div class="w-full flex justify-between gap-2 mt-auto">
+                            @can('admin.almacen.especificaciones.create')
+                                <x-button wire:loading.attr="disabled" wire:click="addespecificacion({{ $item->id }})">
+                                    AGREGAR</x-button>
+                            @endcan
 
                             <div class="flex flex-wrap gap-1 items-end">
                                 @if ($item->view == 1)
-                                    <x-span-text text="AUTOCOMPLETAR EQUIPO" class="leading-3" />
+                                    <x-span-text text="AUTOCOMPLETAR EQUIPO" class="leading-3 !tracking-normal" />
                                 @endif
-                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                                <x-button-delete wire:loading.attr="disabled"
-                                    wire:click="$emit('caracteristica.confirmDelete',{{ $item }})" />
+
+                                @can('admin.almacen.caracteristicas.edit')
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                @endcan
+
+                                @can('admin.almacen.caracteristicas.delete')
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        onclick="confirmDeleteCaract({{ $item }})" />
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -87,7 +98,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="add_especificacion" class="w-full flex flex-col gap-2">
+            <form wire:submit.prevent="saveespecificacion" class="w-full flex flex-col gap-2">
                 <div>
                     <x-label value="Nombre :" />
                     <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese especificación..." />
@@ -95,9 +106,8 @@
                 </div>
 
                 <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                    <x-button type="submit" wire:loading.attr="disabled" wire:loading.attr="disabled">
+                        {{ __('REGISTRAR') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -128,40 +138,38 @@
     </x-jet-dialog-modal>
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('caracteristica.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
+        function confirmDeleteEspec(especificacion) {
+            swal.fire({
+                title: 'Eliminar especificación ' + especificacion.name,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deleteEspecificacion(especificacion.id);
+                }
             })
+        }
 
-            Livewire.on('especificaciones.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deleteEspecificacion(data.id);
-                    }
-                })
+        function confirmDeleteCaract(caracteristica) {
+            swal.fire({
+                title: 'Eliminar característica ' + caracteristica.name,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(caracteristica.id);
+                }
             })
-        })
+        }
     </script>
 </div>

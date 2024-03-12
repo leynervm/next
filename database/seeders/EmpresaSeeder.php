@@ -36,6 +36,7 @@ class EmpresaSeeder extends Seeder
             'tipocambio' => null,
             'tipocambioauto' => 0,
             'igv' => 18,
+            'sendmode' => 0,
             'default' => 1,
             'ubigeo_id' => 636,
         ]);

@@ -4,6 +4,8 @@ namespace App\Http\Livewire\Modules\Facturacion\Guias;
 
 use App\Helpers\GetClient;
 use App\Models\Almacen;
+use App\Models\Carshoop;
+use App\Models\Carshoopserie;
 use App\Models\Client;
 use App\Models\Guia;
 use App\Models\Kardex;
@@ -14,18 +16,17 @@ use App\Models\Producto;
 use App\Models\Serie;
 use App\Models\Seriecomprobante;
 use App\Models\Sucursal;
-use App\Models\Typecomprobante;
+use App\Models\Tvitem;
 use App\Models\Ubigeo;
 use App\Rules\ValidateStock;
 use App\Traits\KardexTrait;
 use Carbon\Carbon;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Facturacion\Entities\Comprobante;
-use Modules\Ventas\Entities\Venta;
 use Nwidart\Modules\Facades\Module;
 
 class CreateGuia extends Component
@@ -33,29 +34,25 @@ class CreateGuia extends Component
 
     use WithPagination;
     use KardexTrait;
+    use AuthorizesRequests;
 
     public $local = false;
 
     public $motivotraslado, $modalidadtransporte, $sucursal, $empresa, $seriecomprobante;
-    public $alterstock = false;
     public $clearaftersave = true;
     public $vehiculosml = false;
-    public $provinciasorigen = [];
-    public $distritosorigen = [];
-    public $provinciasdestino = [];
-    public $distritosdestino = [];
+    public $vehiculovacio = false;
     public $itemsconfirm = [];
     public $items = [];
     public $series = [];
     public $placavehiculos = [];
     public $productos = [];
-    public $seriescarrito = [];
 
     public $arrayrequireruc = ['06', '17'];
     public $arrayequalremite = ['02', '04', '07'];
     public $arraydistintremite = ['01', '03', '05', '06', '09', '14', '17'];
 
-    public $comprobante_id, $typecomprobante_id, $placavehiculo, $peso, $packages,
+    public $comprobante_id, $seriecomprobante_id, $placavehiculo, $peso, $packages,
         $datetraslado, $note, $motivotraslado_id, $modalidadtransporte_id, $referencia;
 
     public $documentdestinatario, $namedestinatario;
@@ -63,16 +60,15 @@ class CreateGuia extends Component
     public $ructransport, $nametransport;
     public $rucproveedor, $nameproveedor;
 
-    public $regionorigen_id, $provinciaorigen_id, $distritoorigen_id, $direccionorigen, $ubigeoorigen_id, $anexoorigen;
-    public $regiondestino_id, $provinciadestino_id, $distritodestino_id, $direcciondestino, $ubigeodestino_id, $anexodestino;
+    public $direccionorigen, $ubigeoorigen_id, $anexoorigen;
+    public $direcciondestino, $ubigeodestino_id, $anexodestino;
 
     public $documentdriver, $namedriver, $lastname, $placa, $licencia;
 
     public $disponibles = true;
-    public $almacen_id;
-
-    public $producto_id, $cantidad, $serie_id, $searchserie;
-
+    public $alterstock, $almacen_id, $producto_id, $cantidad, $serie_id, $searchserie;
+    public $mode = '0';
+    public $sincronizecpe = false;
 
     protected function rules()
     {
@@ -132,7 +128,6 @@ class CreateGuia extends Component
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : ''
             ],
 
-
             'documentdriver' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
@@ -171,16 +166,10 @@ class CreateGuia extends Component
                 'numeric', 'min:0', 'max:4',
                 $this->motivotraslado->code == '04' ? 'different:anexoorigen' : '',
             ],
-            'regionorigen_id' => ['required', 'string', 'exists:ubigeos,departamento_inei'],
-            'provinciaorigen_id' => ['required', 'string', 'exists:ubigeos,provincia_inei'],
-            'distritoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'ubigeoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'direccionorigen' => ['required', 'string', 'min:12',],
-            'regiondestino_id' => ['required', 'string', 'exists:ubigeos,departamento_inei'],
-            'provinciadestino_id' => ['required', 'string', 'exists:ubigeos,provincia_inei'],
-            'distritodestino_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
+            'direccionorigen' => ['required', 'string', 'min:3',],
             'ubigeodestino_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'direcciondestino' => ['required', 'string', 'min:12'],
+            'direcciondestino' => ['required', 'string', 'min:3'],
 
             'peso' => ['required', 'numeric', 'gt:0', 'decimal:0,4'],
             'packages' => ['nullable', Rule::requiredIf($this->motivotraslado->code == '08' || $this->motivotraslado->code == '09'), 'integer', 'min:1'],
@@ -194,7 +183,7 @@ class CreateGuia extends Component
             'vehiculosml' => ['required', 'boolean'],
             'motivotraslado_id' => ['required', 'integer', 'min:1', 'exists:motivotraslados,id'],
             'modalidadtransporte_id' => ['required', 'integer', 'min:1', 'exists:modalidadtransportes,id'],
-            'typecomprobante_id' => ['required', 'integer', 'min:1', 'exists:typecomprobantes,id'],
+            'seriecomprobante_id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
             'comprobante_id' => ['nullable', 'integer', 'min:1', 'exists:comprobantes,id'],
             'seriecomprobante.id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
             'sucursal.id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
@@ -209,60 +198,50 @@ class CreateGuia extends Component
         $this->motivotraslado = new Motivotraslado();
         $this->modalidadtransporte = new Modalidadtransporte();
         $this->seriecomprobante = new Seriecomprobante();
-        $this->regionorigen_id = $sucursal->ubigeo->departamento_inei;
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        $this->provinciaorigen_id = $sucursal->ubigeo->provincia_inei;
-        $this->distritoorigen_id = $sucursal->ubigeo_id;
+        $this->ubigeoorigen_id = $sucursal->ubigeo_id;
         $this->direccionorigen = $sucursal->direccion;
         $this->anexoorigen = $sucursal->codeanexo;
-        $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciaorigen_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-
-        $carritoSesion = Session::get('carguias', []);
-        if (!is_array($carritoSesion)) {
-            $carritoSesion = json_decode($carritoSesion, true);
-        }
-        $this->seriescarrito = $this->getseriecarrito($carritoSesion);
     }
 
     public function render()
     {
 
-        $regiones = Ubigeo::select('departamento_inei', 'region')
-            ->groupBy('departamento_inei', 'region')->orderBy('region', 'asc')->get();
+        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $modalidadtransportes = Modalidadtransporte::orderBy('id', 'asc')->get();
         $motivotraslados = Motivotraslado::orderBy('code', 'asc');
-        if ($this->typecomprobante_id) {
-            $motivotraslados->where('typecomprobante_id', $this->typecomprobante_id);
+        if ($this->seriecomprobante_id) {
+            $this->seriecomprobante = Seriecomprobante::with('typecomprobante')->find($this->seriecomprobante_id);
+            $motivotraslados->where('typecomprobante_id', $this->seriecomprobante->typecomprobante_id);
         }
         $motivotraslados = $motivotraslados->get();
-        $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
-            $query->withWhereHas('sucursals', function ($query) {
-                $query->where('sucursals.id', $this->sucursal->id);
+        $seriecomprobantes = auth()->user()->sucursal->seriecomprobantes()
+            ->withWhereHas('typecomprobante', function ($query) {
+                $query->whereIn('code', ['09']);
             });
-        })->whereIn('code', ['09'])->orderBy('code', 'asc')->get();
 
-        $almacens = $this->sucursal->almacens()->orderBy('name', 'asc')->get();
-        $carrito = Session::get('carguias', []);
-
-        if (!is_array($carrito)) {
-            $carrito = json_decode($carrito);
+        if (!Module::isEnabled('Facturacion')) {
+            $seriecomprobantes = $seriecomprobantes->default();
         }
 
-        return view('livewire.modules.facturacion.guias.create-guia', compact('regiones', 'modalidadtransportes', 'motivotraslados', 'typecomprobantes', 'almacens', 'carrito'));
+        $seriecomprobantes = $seriecomprobantes->orderBy('code', 'asc')->get();
+        $almacens = $this->sucursal->almacens()->orderBy('name', 'asc')->get();
+
+        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen'])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('id', 'asc')->paginate();
+
+        return view('livewire.modules.facturacion.guias.create-guia', compact('modalidadtransportes', 'motivotraslados', 'seriecomprobantes', 'almacens', 'ubigeos', 'carshoops'));
     }
 
     public function save()
     {
 
-        $carrito = Session::get('carguias', []);
-        $this->comprobante_id = null;
+        $this->authorize('admin.facturacion.guias.create');
         $this->referencia = trim($this->referencia);
         $this->rucproveedor = trim($this->rucproveedor);
         $this->nameproveedor = trim($this->nameproveedor);
-        $this->ubigeoorigen_id = $this->distritoorigen_id;
-        $this->ubigeodestino_id = $this->distritodestino_id;
-        $this->typecomprobante_id = empty($this->typecomprobante_id) ? null : $this->typecomprobante_id;
-        $this->items = (!is_array($carrito)) ? (json_decode($carrito, true)) : $carrito;
+        $this->seriecomprobante_id = empty($this->seriecomprobante_id) ? null : $this->seriecomprobante_id;
+        $this->items = Carshoop::with(['carshoopseries', 'producto', 'almacen'])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('date', 'asc')->get();
 
         if ($this->modalidadtransporte_id) {
             $this->modalidadtransporte = Modalidadtransporte::find($this->modalidadtransporte_id);
@@ -278,23 +257,23 @@ class CreateGuia extends Component
             $this->anexodestino = $this->motivotraslado->code == '04' ? $this->anexodestino : null;
         }
 
-        if ($this->motivotraslado->code == '01' || $this->motivotraslado->code == '03') {
-            $comprobante = Comprobante::where('seriecompleta', $this->referencia)
-                ->where('sucursal_id', $this->sucursal->id)->first();
-            $this->comprobante_id = $comprobante->id ?? null;
-        }
+        // if ($this->motivotraslado->code == '01' || $this->motivotraslado->code == '03') {
+        //     if ($this->sincronizecpe) {
+        //         $comprobante = Comprobante::where('seriecompleta', $this->referencia)
+        //             ->where('sucursal_id', $this->sucursal->id)->first();
+        //         $this->comprobante_id = $comprobante->id ?? null;
+        //     }
+        // }
 
         if ($this->vehiculosml) {
             $this->reset(['placavehiculos', 'documentdriver', 'namedriver', 'lastname', 'licencia']);
         }
 
-        $this->seriecomprobante = $this->sucursal->seriecomprobantes()
-            ->whereHas('typecomprobante', function ($query) {
-                $query->where('typecomprobante_id', $this->typecomprobante_id);
-            })->first();
+        if ($this->seriecomprobante_id) {
+            $this->seriecomprobante = Seriecomprobante::find($this->seriecomprobante_id);
+        }
 
         $validatedData = $this->validate();
-        // dd($validatedData);
         DB::beginTransaction();
         try {
 
@@ -309,10 +288,6 @@ class CreateGuia extends Component
                     'pricetype_id' => Pricetype::DefaultPricetype()->first()->id ?? null,
                 ]);
             }
-
-            // $client->direccions()->updateOrCreate([
-            //     'name' => $this->direccion,
-            // ]);
 
             $contador = $this->seriecomprobante->contador + 1;
             $guia = Guia::create([
@@ -337,20 +312,21 @@ class CreateGuia extends Component
                 'anexoorigen' => $this->anexoorigen ?? '0',
                 'direcciondestino' => $this->direcciondestino,
                 'anexodestino' => $this->anexodestino ?? '0',
-                'regionorigen_id' => $this->regionorigen_id,
                 'note' => $this->note,
                 'indicadorvehiculosml' => $this->vehiculosml ? 1 : 0,
                 'indicadorvehretorvacio' => 0,
                 'indicadorvehretorenvacios' => 0,
+                'referencia' => empty($this->referencia) ? null : trim($this->referencia),
                 'motivotraslado_id' => $this->motivotraslado_id,
                 'modalidadtransporte_id' => $this->modalidadtransporte_id,
                 'ubigeoorigen_id' => $this->ubigeoorigen_id,
                 'ubigeodestino_id' => $this->ubigeodestino_id,
                 'client_id' => $client->id,
                 'seriecomprobante_id' => $this->seriecomprobante->id,
-                'comprobante_id' => $this->comprobante_id,
                 'sucursal_id' => $this->sucursal->id,
                 'user_id' => auth()->user()->id,
+                'guiable_id' => $this->comprobante_id,
+                'guiable_type' => $this->comprobante_id ? Comprobante::class : null,
             ]);
 
             if ($this->modalidadtransporte->code == '02' && $this->vehiculosml == false) {
@@ -373,8 +349,7 @@ class CreateGuia extends Component
                 }
             }
 
-            $carrito = (!is_array($carrito)) ? (json_decode($carrito)) : $carrito;
-            foreach ($carrito as $item) {
+            foreach ($this->items as $item) {
                 $tvitem = $guia->tvitems()->create([
                     'date' => now('America/Lima'),
                     'cantidad' => $item->cantidad,
@@ -386,72 +361,70 @@ class CreateGuia extends Component
                     'total' => 0,
                     'status' => 0,
                     'increment' => 0,
-                    'alterstock' => $item->alterstock,
+                    'alterstock' => $item->mode,
                     'almacen_id' => $item->almacen_id,
                     'producto_id' => $item->producto_id,
                     'user_id' => auth()->user()->id
                 ]);
 
-                if (count($item->series) > 0) {
-                    foreach ($item->series as $ser) {
+                if (count($item->carshoopseries) > 0) {
+                    foreach ($item->carshoopseries as $carshoopserie) {
                         $tvitem->itemseries()->create([
                             'date' => now('America/Lima'),
-                            'status' => 0,
-                            'serie_id' => $ser->id,
-                            'user_id' => auth()->user()->id,
+                            'serie_id' => $carshoopserie->serie_id,
+                            'user_id' => auth()->user()->id
                         ]);
-
-                        if ($item->alterstock) {
-                            // dd($ser->id);
-                            $miserie = Serie::find($ser->id);
-                            $miserie->update([
-                                'status' => 2,
-                                'dateout' => now('America/Lima')
-                            ]);
-                        }
                     }
                 }
 
-                if ($item->alterstock) {
-                    $producto = Producto::with('almacens')->find($item->producto_id);
-                    $stock = $producto->almacens->find($item->almacen_id)->pivot->cantidad;
+                if ($item->kardex) {
+                    $item->kardex->detalle = $item->isReservedStock() ? Kardex::RESERVADO_GUIA : Kardex::SALIDA_GUIA;
+                    $item->kardex->reference = $this->seriecomprobante->serie . '-' . $contador;
+                    $item->kardex->kardeable_id = $tvitem->id;
+                    $item->kardex->kardeable_type = Tvitem::class;
+                    $item->kardex->save();
+                } else {
+                    if ($item->isIncrementStock()) {
+                        $producto = Producto::with('almacens')->find($item->producto_id);
+                        $stock = $producto->almacens->find($item->almacen_id)->pivot->cantidad;
 
-                    if ($stock && $stock > 0) {
-                        if ($stock - $item->cantidad < 0) {
-                            $this->addError('items', 'Cantidad del producto ' . $producto->name . ' supera el stock.');
-                            return false;
-                        } else {
-                            $tvitem->saveKardex(
-                                $this->sucursal->id,
-                                $item->producto_id,
-                                $item->almacen_id,
-                                $stock,
-                                ($stock - $item->cantidad),
-                                $item->cantidad,
-                                '-',
-                                Kardex::SALIDA_GUIA,
-                                $this->seriecomprobante->serie . '-' . $contador
-                            );
+                        $tvitem->saveKardex(
+                            $item->producto_id,
+                            $item->almacen_id,
+                            $stock,
+                            $stock + $item->cantidad,
+                            $item->cantidad,
+                            Almacen::INGRESO_ALMACEN,
+                            Kardex::ENTRADA_GUIA,
+                            $this->seriecomprobante->serie . '-' . $contador
+                        );
 
-                            $producto->almacens()->updateExistingPivot($item->almacen_id, [
-                                'cantidad' => formatDecimalOrInteger($stock) - $item->cantidad,
-                            ]);
-                        }
-                    } else {
-                        $this->addError('items', 'Stock del producto ' . $producto->name . ' no disponible.');
-                        return false;
+                        $producto->almacens()->updateExistingPivot($item->almacen_id, [
+                            'cantidad' => $stock + $item->cantidad,
+                        ]);
                     }
                 }
             }
 
             $this->seriecomprobante->contador = $contador;
             $this->seriecomprobante->save();
+
+            Carshoop::with(['carshoopseries'])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
+                    $carshoop->carshoopseries()->delete();
+                    $carshoop->delete();
+                });
+
             DB::commit();
-            Session::forget('carguias');
             $this->resetValidation();
             $this->resetExcept('modalidadtransporte', 'motivotraslado', 'sucursal', 'empresa', 'seriecomprobante');
             $this->dispatchBrowserEvent('created');
-            return redirect()->route('admin.facturacion.guias.show', $guia);
+
+            if (auth()->user()->hasPermissionTo('admin.facturacion.guias.edit')) {
+                return redirect()->route('admin.facturacion.guias.edit', $guia);
+            } else {
+                return redirect()->route('admin.facturacion.guias');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -461,125 +434,142 @@ class CreateGuia extends Component
         }
     }
 
-
-    public function updatedTypecomprobanteId($value)
+    public function updatedSeriecomprobanteId()
     {
         $this->reset(['motivotraslado_id']);
-        // if (trim($value) !== '') {
-        // }
     }
 
     public function searchreferencia()
     {
         $this->referencia = mb_strtoupper(trim($this->referencia), "UTF-8");
-        $this->reset(['itemsconfirm']);
-        $this->validate(['referencia' => ['required', 'string', 'min:6', 'max:13']]);
+        $this->validate(['referencia' => [
+            'required', 'string', 'min:6', 'max:13'
+        ]]);
 
         if ($this->motivotraslado_id) {
             $this->motivotraslado = Motivotraslado::find($this->motivotraslado_id);
         }
 
-        $comprobante = Comprobante::with('facturable')->where('seriecompleta', $this->referencia)
+        $comprobante = Comprobante::with('facturable')->ventas()->where('seriecompleta', $this->referencia)
             ->where('sucursal_id', $this->sucursal->id)->withTrashed()->first();
-        if ($comprobante) {
-            if (is_null($comprobante->deleted_at)) {
-                if ($comprobante->facturable instanceof Venta) {
-                    $this->itemsconfirm = $comprobante->facturable->tvitems()->with('producto.unit', 'almacen', 'itemseries.serie')->get();
-                    if (count($this->itemsconfirm) > 0) {
-                        // dd($this->itemsconfirm);
-                        if ($this->motivotraslado->code == '03') {
-                            $this->documentcomprador = $comprobante->client->document;
-                            $this->namecomprador = $comprobante->client->name;
-                        } else {
-                            $this->documentdestinatario = $comprobante->client->document;
-                            $this->namedestinatario = $comprobante->client->name;
-                        }
 
-                        $this->dispatchBrowserEvent('confirmaritemsguia');
-                    } else {
-                        $this->addError('referencia', 'No se encontraron items del comprobante.');
-                    }
+        if ($comprobante) {
+            if ($comprobante->trashed()) {
+                $mensaje =  response()->json([
+                    'title' => 'COMPROBANTE ELECTRÓNICO SE ENCUENTRA ANULADO !',
+                    'text' => "Comprobante electrónico se encuentra anulado, ingrese un nuevo comprobante."
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
+            if ($comprobante->guia) {
+                $mensaje =  response()->json([
+                    'title' => 'COMPROBANTE YA SE ENCUENTRA RELACIONADO A UNA GRE !',
+                    'text' => "Comprobante electrónico se encuentra vinculado a la guía de remisión " . $comprobante->guia->seriecompleta . "."
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
+
+            $tvitems = $comprobante->facturable->tvitems()->with('producto.unit', 'almacen', 'itemseries.serie')->get();
+            if (count($tvitems) > 0) {
+                $this->sincronizecpe = true;
+                $this->comprobante_id = $comprobante->id;
+                if ($this->motivotraslado->code == '03') {
+                    $this->documentcomprador = $comprobante->client->document;
+                    $this->namecomprador = $comprobante->client->name;
                 } else {
-                    $this->addError('referencia', 'Comprobante referenciado no es una venta.');
+                    $this->documentdestinatario = $comprobante->client->document;
+                    $this->namedestinatario = $comprobante->client->name;
                 }
+
+                $this->confirmaradditemsguia($tvitems);
+                $this->dispatchBrowserEvent('toast', toastJSON('Detalle del comprobante agregado correctamente'));
             } else {
-                $this->addError('referencia', 'Comprobante se encuentra anulado.');
+                $this->addError('referencia', 'No se encontraron items del comprobante.');
             }
         } else {
             $this->addError('referencia', 'No se encontraron resultados.');
         }
     }
 
-    public function confirmaradditemsguia()
+    public function confirmaradditemsguia($tvitems)
     {
-
-        $carritoSesion = Session::get('carguias', []);
-        if (!is_array($carritoSesion)) {
-            $carritoSesion = json_decode($carritoSesion, true);
-        }
-        $i = 1;
-        foreach ($this->itemsconfirm as $item) {
-            $id = rand();
-            $nuevaSerie = [];
+        foreach ($tvitems as $item) {
+            $date = now('America/Lima');
+            $carshoop = Carshoop::create([
+                'date' => $date,
+                'cantidad' =>  $item->cantidad,
+                'pricebuy' => $item->producto->pricebuy,
+                'price' => 0,
+                'igv' => 0,
+                'subtotal' => 0,
+                'total' => 0,
+                'gratuito' => 0,
+                'status' => 0,
+                'producto_id' => $item->producto_id,
+                'almacen_id' => $item->almacen_id,
+                'moneda_id' => null,
+                'user_id' => auth()->user()->id,
+                'sucursal_id' => $this->sucursal->id,
+                'mode' => Almacen::NO_ALTERAR_STOCK,
+                'cartable_type' => Guia::class,
+            ]);
 
             if (count($item->itemseries) > 0) {
-                foreach ($item->itemseries as $serie) {
-                    $serie = [
-                        'id' => $serie->serie->id,
-                        'serie' => $serie->serie->serie
-                    ];
-                    $nuevaSerie[] = $serie;
+                foreach ($item->itemseries as $itemserie) {
+                    if (Carshoopserie::where('serie_id', $itemserie->serie_id)->exists()) {
+                        $mensaje =  response()->json([
+                            'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN LOS ITEMS !',
+                            'text' => "La serie " . $itemserie->serie->serie . " ya se encuentra registrado en los items de la Guía."
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+
+                    $carshoop->carshoopseries()->create([
+                        'date' =>  $date,
+                        'serie_id' => $itemserie->serie_id,
+                        'user_id' => auth()->user()->id
+                    ]);
                 }
             }
-
-            $nuevoItem = [
-                'id' => $id,
-                'item' => $i,
-                'producto_id' => $item->producto_id,
-                'producto' => $item->producto->name,
-                'cantidad' => formatDecimalOrInteger($item->cantidad, 0),
-                'sucursal_id' => $this->sucursal->id,
-                'user_id' => auth()->user()->id,
-                'almacen_id' => $item->almacen_id,
-                'almacen' => $item->almacen->name,
-                'unit' => $item->producto->unit->name,
-                'alterstock' => 0,
-                'referencia' => $item->tvitemable->code ?? null,
-                // 'series' => [],
-            ];
-
-            $nuevoItem['series'] = $nuevaSerie;
-            $carritoSesion[$id] = $nuevoItem;
-            $i++;
-            // dd($nuevoItem);
         }
+    }
 
-        $carritoJSON = response()->json($carritoSesion)->getContent();
-        Session::put('carguias', $carritoJSON);
+    public function desvincularcpe()
+    {
+        $this->reset(['referencia', 'sincronizecpe', 'comprobante_id']);
     }
 
     public function addtoguia()
     {
-
-        $this->alterstock = $this->alterstock ? 1 : 0;
+        $this->mode = $this->mode > 0 ? $this->mode : 0;
         $this->validate([
-            'producto_id' => ['required', 'integer', 'min:1'],
-            'almacen_id' => ['required', 'integer', 'min:1'],
+            'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
+            'producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'cantidad' => [
-                'nullable', Rule::requiredIf(count($this->series) == 0),
-                'integer', 'min:1', $this->alterstock ? new ValidateStock($this->producto_id, $this->almacen_id) : ''
+                'nullable', Rule::requiredIf(count($this->series) == 0 || in_array($this->mode, [Almacen::NO_ALTERAR_STOCK, Almacen::INCREMENTAR_STOCK])),
+                'integer', 'min:1',
+                in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK]) ? new ValidateStock($this->producto_id, $this->almacen_id) : ''
             ],
             'serie_id' => [
-                'nullable', Rule::requiredIf(count($this->series) > 0), 'integer', 'min:1'
+                'nullable',
+                Rule::requiredIf(count($this->series) > 0 && in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])),
+                'integer', 'min:1', 'exists:series,id'
             ],
-            'alterstock' => ['required', 'integer', 'min:0', 'max:1'],
+            'mode' => [
+                'nullable', 'integer', 'min:0', 'max:3',
+                Rule::in([Almacen::NO_ALTERAR_STOCK, Almacen::RESERVAR_STOCK, Almacen::INCREMENTAR_STOCK, Almacen::DISMINUIR_STOCK])
+            ],
         ]);
 
-        $producto = Producto::find($this->producto_id);
-        $almacen = Almacen::find($this->almacen_id);
+        $producto = Producto::with('almacens')->find($this->producto_id);
+        $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
 
-        if ($this->alterstock) {
-            $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
+        if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
             if ($stock && $stock > 0) {
                 if (($stock - $this->cantidad) < 0) {
                     $this->addError('cantidad', 'Cantidad supera el stock');
@@ -588,87 +578,298 @@ class CreateGuia extends Component
             }
         }
 
-        $nuevaSerie = [];
-        if ($this->serie_id) {
-            $this->cantidad = 1;
-            $serie = Serie::find($this->serie_id);
-            $nuevaSerie = [
-                'id' => $this->serie_id,
-                'serie' => $serie->serie
-            ];
-        }
+        DB::beginTransaction();
+        try {
 
-        // $series = response()->json($nuevaSerie)->getData();
-        $carritoSesion = Session::get('carguias', []);
+            $existskardex = false;
+            $date = now('America/Lima');
+            $existsInCart = Carshoop::where('producto_id', $this->producto_id)
+                ->where('almacen_id', $this->almacen_id)
+                ->whereNull('moneda_id')->where('gratuito', 0)
+                ->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)
+                ->where('mode', $this->mode)
+                ->where('cartable_type', Guia::class);
 
-        if (!is_array($carritoSesion)) {
-            $carritoSesion = json_decode($carritoSesion, true);
-        }
 
-        $id = rand();
-        $nuevoItem = [
-            'id' => $id,
-            'item' => count($carritoSesion) + 1,
-            'producto_id' => $this->producto_id,
-            'producto' => $producto->name,
-            'cantidad' => $this->cantidad,
-            'sucursal_id' => $this->sucursal->id,
-            'user_id' => auth()->user()->id,
-            'almacen_id' => $this->almacen_id,
-            'almacen' => $almacen->name,
-            'unit' => $producto->unit->name,
-            'alterstock' => $this->alterstock,
-            'referencia' => null,
-            // 'series' => $nuevaSerie,
-        ];
+            if ($existsInCart->exists()) {
+                $cantidad = $this->serie_id ? 1 : $this->cantidad;
+                $carshoop = $existsInCart->first();
+                $carshoop->cantidad = $carshoop->cantidad + $cantidad;
+                $carshoop->pricebuy = $producto->pricebuy;
+                $carshoop->save();
 
-        $seriescarrito = $this->getseriecarrito($carritoSesion);
-        $productExists = false;
-        foreach ($carritoSesion as $key => $item) {
-            if (
-                $item['producto_id'] == $nuevoItem['producto_id'] && $item['almacen_id'] == $nuevoItem['almacen_id']
-                && $item['sucursal_id'] == $nuevoItem['sucursal_id'] && $item['alterstock'] == $nuevoItem['alterstock']
-            ) {
+                if ($carshoop->kardex) {
+                    $existskardex = true;
+                    $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
+                    $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
+                    $carshoop->kardex->save();
+                }
+            } else {
+                $carshoop = Carshoop::create([
+                    'date' => $date,
+                    'cantidad' => $this->serie_id ? 1 : $this->cantidad,
+                    'pricebuy' => $producto->pricebuy,
+                    'price' => 0,
+                    'igv' => 0,
+                    'subtotal' => 0,
+                    'total' => 0,
+                    'gratuito' => 0,
+                    'status' => 0,
+                    'producto_id' => $this->producto_id,
+                    'almacen_id' => $this->almacen_id,
+                    'moneda_id' => null,
+                    'user_id' => auth()->user()->id,
+                    'sucursal_id' => $this->sucursal->id,
+                    'mode' => $this->mode,
+                    'cartable_type' => Guia::class,
+                ]);
+            }
 
-                $productExists = true;
-                $carritoSesion[$key]['cantidad'] += $nuevoItem['cantidad'];
+            if ($this->serie_id) {
+                $serie = Serie::find($this->serie_id);
 
-                if (count($nuevaSerie) > 0) {
-                    if (count($carritoSesion[$key]['series']) > 0) {
-                        $serieExistente = in_array($nuevaSerie['id'], $seriescarrito);
-                        if ($serieExistente) {
-                            $this->addError('serie_id', 'La serie ya se encuentra agregada a la guía');
-                            return false;
-                            // die();
-                        } else {
-                            $carritoSesion[$key]['series'][] = $nuevaSerie;
-                        }
+                if (Carshoopserie::where('serie_id', $this->serie_id)->exists()) {
+                    $mensaje =  response()->json([
+                        'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN LOS ITEMS !',
+                        'text' => "La serie $serie->serie ya se encuentra registrado en los items de la Guía."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+
+                if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
+                    if ($serie->isDisponible()) {
+                        $serie->status = ($this->mode == Almacen::RESERVAR_STOCK) ? 1 : 2;
+                        $serie->dateout = $date;
+                        $serie->save();
                     } else {
-                        $carritoSesion[$key]['series'][] = $nuevaSerie;
+                        $mensaje =  response()->json([
+                            'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
+                            'text' => "La serie $serie->serie ya no se encuentra disponible en este momento."
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
                     }
                 }
-                // break;
+
+                $carshoop->carshoopseries()->create([
+                    'date' =>  $date,
+                    'serie_id' => $this->serie_id,
+                    'user_id' => auth()->user()->id
+                ]);
             }
+
+            if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
+                if (!$existskardex) {
+                    $cantidad = $this->serie_id ? 1 : $this->cantidad;
+                    $producto = Producto::with('almacens')->find($this->producto_id);
+                    $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
+
+                    $carshoop->saveKardex(
+                        $this->producto_id,
+                        $this->almacen_id,
+                        $stock,
+                        $stock - $cantidad,
+                        $cantidad,
+                        Almacen::SALIDA_ALMACEN,
+                        Kardex::ADD_GUIA,
+                        null
+                    );
+                }
+
+                $producto->almacens()->updateExistingPivot($this->almacen_id, [
+                    'cantidad' => $stock - $cantidad,
+                ]);
+            }
+
+            DB::commit();
+            $this->dispatchBrowserEvent('created');
+            if ($this->clearaftersave) {
+                $this->reset(['serie_id', 'producto_id', 'almacen_id', 'alterstock', 'mode', 'cantidad']);
+            } else {
+                $this->reset(['serie_id', 'cantidad']);
+                $this->series = Serie::disponibles()->where('almacen_id', $this->almacen_id)
+                    ->where('producto_id', $this->producto_id)
+                    ->orderBy('serie', 'asc')->get();
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
+    }
 
-        if (!$productExists) {
-            count($nuevaSerie) > 0 ? $nuevoItem['series'][] = $nuevaSerie : $nuevoItem['series'] = $nuevaSerie;
-            $carritoSesion[$id] = $nuevoItem;
+    public function delete(Carshoop $carshoop)
+    {
+        DB::beginTransaction();
+        try {
+            if (count($carshoop->carshoopseries) > 0) {
+                $carshoop->carshoopseries()->each(function ($carshoopserie) use ($carshoop) {
+                    if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+                        $carshoopserie->serie->dateout = null;
+                        $carshoopserie->serie->status = 0;
+                        $carshoopserie->serie->save();
+                    }
+                    $carshoopserie->delete();
+                });
+            }
+
+            if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+                $stock = $carshoop->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
+                $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+                    'cantidad' => $stock + $carshoop->cantidad,
+                ]);
+            }
+
+            if ($carshoop->kardex) {
+                $carshoop->kardex->delete();
+            }
+
+            $carshoop->delete();
+            if ($this->producto_id && $this->almacen_id) {
+                $query = Serie::where('almacen_id', $this->almacen_id)
+                    ->where('producto_id', $this->producto_id);
+
+                if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
+                    $query->disponibles();
+                }
+                $this->series = $query->orderBy('serie', 'asc')->get();
+            }
+            DB::commit();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
+    }
 
-        // dd($carritoSesion);
+    public function deleteserie(Carshoopserie $carshoopserie)
+    {
+        DB::beginTransaction();
+        try {
+            if ($carshoopserie->carshoop->isDiscountStock() || $carshoopserie->carshoop->isReservedStock()) {
+                $carshoopserie->serie->dateout = null;
+                $carshoopserie->serie->status = 0;
+                $carshoopserie->serie->save();
+                $carshoopserie->carshoop->cantidad = $carshoopserie->carshoop->cantidad - 1;
+                $carshoopserie->carshoop->save();
 
-        $carritoJSON = response()->json($carritoSesion)->getContent();
-        Session::put('carguias', $carritoJSON);
-        $seriescarrito = $this->getseriecarrito($carritoSesion);
+                $stock = $carshoopserie->carshoop->producto->almacens->find($carshoopserie->carshoop->almacen_id)->pivot->cantidad;
+                $carshoopserie->carshoop->producto->almacens()->updateExistingPivot($carshoopserie->carshoop->almacen_id, [
+                    'cantidad' => $stock + 1,
+                ]);
+            }
 
-        if ($this->clearaftersave) {
-            $this->reset(['series', 'serie_id', 'producto_id', 'almacen_id', 'alterstock', 'cantidad']);
-        } else {
-            $this->reset(['series', 'serie_id', 'cantidad']);
+            if ($carshoopserie->carshoop->kardex) {
+                $carshoopserie->carshoop->kardex->cantidad = $carshoopserie->carshoop->kardex->cantidad - 1;
+                $carshoopserie->carshoop->kardex->newstock = $carshoopserie->carshoop->kardex->newstock + 1;
+                $carshoopserie->carshoop->kardex->save();
+            }
+
+            $carshoopserie->delete();
+
+            if ($this->producto_id && $this->almacen_id) {
+                $query = Serie::where('almacen_id', $this->almacen_id)
+                    ->where('producto_id', $this->producto_id);
+
+                if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
+                    $query->disponibles();
+                }
+                $this->series = $query->orderBy('serie', 'asc')->get();
+            }
+            DB::commit();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-        // $this->loadproductos();
-        $this->loadseries();
+    }
+
+    public function deleteallcarshoop()
+    {
+        try {
+            DB::beginTransaction();
+            Carshoop::with(['carshoopseries'])->guias()->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
+                    $this->delete($carshoop);
+                });
+            DB::commit();
+            $this->resetValidation();
+            $this->dispatchBrowserEvent('toast', toastJSON('Carrito de guías eliminado correctamente'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function updatedDisponibles($value)
+    {
+        $this->reset(['productos', 'producto_id', 'series', 'serie_id']);
+        if ($this->almacen_id) {
+            $this->productos = Producto::withWhereHas('almacens', function ($query) use ($value) {
+                $query->where('almacens.id', $this->almacen_id);
+                if ($value) {
+                    $query->where('cantidad', '>', 0);
+                }
+            })->orderBy('name', 'asc')->get();
+        }
+    }
+
+    public function updatedMode($value)
+    {
+        $this->reset(['serie_id']);
+        if ($this->producto_id && $this->almacen_id) {
+            $query = Serie::where('almacen_id', $this->almacen_id)
+                ->where('producto_id', $this->producto_id);
+
+            if (in_array($value, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
+                $query->disponibles();
+            }
+
+            $this->series = $query->orderBy('serie', 'asc')->get();
+        }
+    }
+
+    public function updatedAlmacenId($value)
+    {
+        $this->reset(['productos', 'almacen_id', 'series', 'serie_id']);
+        if ($value) {
+            $this->almacen_id = $value;
+            $this->productos = Producto::withWhereHas('almacens', function ($query) use ($value) {
+                $query->where('almacens.id', $value);
+                if ($this->disponibles) {
+                    $query->where('cantidad', '>', 0);
+                }
+            })->orderBy('name', 'asc')->get();
+        }
+    }
+
+    public function updatedProductoId($value)
+    {
+        $this->reset(['series', 'serie_id']);
+        if ($value) {
+            $this->producto_id = $value;
+            $query = Serie::where('almacen_id', $this->almacen_id)
+                ->where('producto_id', $this->producto_id);
+
+            if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
+                $query->disponibles();
+            }
+
+            $this->series = $query->orderBy('serie', 'asc')->get();
+        }
     }
 
     public function addplacavehiculo()
@@ -704,104 +905,6 @@ class CreateGuia extends Component
     public function deleteplacavehiculo($id)
     {
         unset($this->placavehiculos[$id]);
-    }
-
-    public function getseriecarrito($carrito)
-    {
-        $arraySeries = [];
-
-        if (count($carrito) > 0) {
-            foreach ($carrito as $key => $item) {
-                if (count($carrito[$key]['series']) > 0) {
-                    foreach ($carrito[$key]['series'] as $serie) {
-                        array_push($arraySeries, $serie['id']);
-                    }
-                }
-            }
-        }
-
-        return $arraySeries;
-    }
-
-    public function delete($id)
-    {
-        $carrito = Session::pull('carguias');
-        if (!is_array($carrito)) {
-            $carrito = json_decode($carrito, true);
-            unset($carrito[$id]);
-        }
-
-        $carritoJSON = response()->json($carrito)->getContent();
-        Session::put('carguias', $carritoJSON);
-        $this->loadseries();
-    }
-
-    public function deleteserie($idItem, $idSerie)
-    {
-
-        $carritoSesion = Session::pull('carguias');
-        if (!is_array($carritoSesion)) {
-            $carritoSesion = json_decode($carritoSesion, true);
-        }
-
-        $existSerie = false;
-        $arrayseries = $carritoSesion[$idItem]['series'] ?? [];
-
-        if (count($arrayseries) > 0) {
-            foreach ($arrayseries as $key => $serie) {
-                if ($serie['id'] == $idSerie) {
-                    $existSerie = true;
-                    unset($arrayseries[$key]);
-                    // unset($carritoSesion[$idItem]['series'][$key]);
-                }
-            }
-
-            // dd($arrayseries);
-            if ($existSerie) {
-                $carritoSesion[$idItem]['series'] = [];
-                foreach ($arrayseries as $serie) {
-                    $carritoSesion[$idItem]['series'][] = $serie;
-                }
-
-                $carritoSesion[$idItem]['cantidad'] -= 1;
-            }
-        }
-
-        // dd($carritoSesion[$idItem]);
-
-        $carritoJSON = response()->json($carritoSesion)->getContent();
-        Session::put('carguias', $carritoJSON);
-        $this->loadseries();
-    }
-
-    public function loadproductos()
-    {
-
-        $productos = Producto::withWhereHas('almacens', function ($query) {
-            $query->where('almacens.id', $this->almacen_id);
-            if ($this->disponibles) {
-                $query->where('cantidad', '>', 0);
-            }
-        })->orderBy('name', 'asc')->get();
-        $this->dispatchBrowserEvent('loadproductos', $productos);
-    }
-
-    public function loadseries()
-    {
-        $this->reset(['series', 'serie_id']);
-        $carritoSesion = Session::get('carguias', []);
-        if (!is_array($carritoSesion)) {
-            $carritoSesion = json_decode($carritoSesion, true);
-        }
-        $seriescarrito = $this->getseriecarrito($carritoSesion);
-        $this->seriescarrito = $seriescarrito;
-
-        // if ($this->producto_id && $this->almacen_id) {
-        $this->series = Serie::disponibles()->where('almacen_id', $this->almacen_id)
-            ->where('producto_id', $this->producto_id)
-            ->whereNotIn('id', $seriescarrito)->get();
-        $this->dispatchBrowserEvent('loadseries', $this->series);
-        // }
     }
 
     public function getProveedor()
@@ -940,59 +1043,8 @@ class CreateGuia extends Component
         }
     }
 
-    public function loadprovinciasorigen($value)
-    {
-        if ($value) {
-            $this->provinciasorigen = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
-        }
-    }
-
-    public function updatedRegionorigenId($value)
-    {
-        $this->reset(['provinciasorigen', 'distritosorigen', 'provinciaorigen_id', 'distritoorigen_id']);
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        // $this->loadprovinciasdestino($this->regiondestino_id);
-    }
-
-    public function updatedProvinciaorigenId($value)
-    {
-        $this->reset(['distritosorigen', 'distritoorigen_id']);
-        if ($value) {
-            $this->distritosorigen = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciaorigen_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        }
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        // $this->loadprovinciasdestino($this->regiondestino_id);
-    }
-
-
-    public function loadprovinciasdestino($value)
-    {
-        if ($value) {
-            $this->provinciasdestino = Ubigeo::select('provincia_inei', 'provincia')->where('departamento_inei', $value)->groupBy('provincia_inei', 'provincia')->orderBy('provincia', 'asc')->get();
-        }
-    }
-
-    public function updatedRegiondestinoId($value)
-    {
-        $this->reset(['provinciasdestino', 'distritosdestino', 'provinciadestino_id', 'distritodestino_id']);
-        $this->loadprovinciasdestino($this->regiondestino_id);
-        // $this->loadprovinciasorigen($this->regionorigen_id);
-    }
-
-    public function updatedProvinciadestinoId($value)
-    {
-        $this->reset(['distritosdestino', 'distritodestino_id']);
-        if ($value) {
-            $this->distritosdestino = Ubigeo::select('id', 'distrito')->where('provincia_inei', $this->provinciadestino_id)->groupBy('id', 'distrito')->orderBy('distrito', 'asc')->get();
-        }
-        $this->loadprovinciasdestino($this->regiondestino_id);
-        // $this->loadprovinciasorigen($this->regionorigen_id);
-    }
-
     public function hydrate()
     {
-        $this->loadprovinciasorigen($this->regionorigen_id);
-        $this->loadprovinciasdestino($this->regiondestino_id);
         $this->dispatchBrowserEvent('renderselect2');
     }
 }

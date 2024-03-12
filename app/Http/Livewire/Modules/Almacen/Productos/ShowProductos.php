@@ -3,12 +3,8 @@
 namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Models\Almacen;
-use App\Models\Almacenarea;
 use App\Models\Category;
-use App\Models\Estante;
-use App\Models\Marca;
 use App\Models\Producto;
-use App\Models\Unit;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -81,7 +77,9 @@ class ShowProductos extends Component
         $marcaGroup = Producto::select('marca_id')->whereNotNull('marca_id')->groupBy('marca_id')->get();
         $categoriaGroup = Producto::select('category_id')->whereNotNull('category_id')->groupBy('category_id')->get();
         $subcategoriaGroup = Producto::select('subcategory_id')->whereNotNull('subcategory_id')->groupBy('subcategory_id')->paginate(10, ['*'], 'page-subcategory');
-        $almacenGroup = Almacen::whereHas('productos')->where('sucursal_id', auth()->user()->sucursal_id)->get();
+        $almacenGroup = Almacen::whereHas('productos')->withWhereHas('sucursals', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        })->get();
 
         return view('livewire.modules.almacen.productos.show-productos', compact('productos', 'marcaGroup', 'categoriaGroup', 'subcategoriaGroup', 'almacenGroup'));
     }

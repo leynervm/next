@@ -1,7 +1,5 @@
 <x-app-layout>
-
     <x-slot name="breadcrumb">
-
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
@@ -33,14 +31,15 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mt-3">
-        @livewire('admin.units.create-unit')
-    </div>
+    @can('admin.administracion.units.create')
+        <div class="mt-3">
+            @livewire('admin.units.create-unit')
+        </div>
+    @endcan
 
-    {{-- <x-title-next titulo="Unidades medida" class="mt-5" /> --}}
-
-    <div class="mt-3">
-        @livewire('admin.units.show-units')
-    </div>
-
+    @can('admin.administracion.units')
+        <div class="mt-3">
+            @livewire('admin.units.show-units')
+        </div>
+    @endcan
 </x-app-layout>

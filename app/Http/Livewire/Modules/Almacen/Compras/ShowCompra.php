@@ -2,61 +2,35 @@
 
 namespace App\Http\Livewire\Modules\Almacen\Compras;
 
+use App\Enums\MovimientosEnum;
 use App\Models\Cajamovimiento;
 use App\Models\Concept;
-use App\Models\Cuota;
-use App\Models\Empresa;
 use App\Models\Kardex;
 use App\Models\Methodpayment;
-use App\Models\Moneda;
-use App\Models\Opencaja;
-use App\Models\Proveedor;
-use App\Models\Typepayment;
-use App\Rules\ValidateNumericEquals;
-use Carbon\Carbon;
+use App\Models\Monthbox;
+use App\Models\Openbox;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Almacen\Entities\Compra;
 
 class ShowCompra extends Component
 {
 
+    use AuthorizesRequests;
+
     public $compra;
     public $open = false;
-
     public $paymentactual = 0;
     public $pendiente = 0;
-    public $opencaja, $methodpayment_id, $concept_id, $detalle;
+    public $openbox, $monthbox, $methodpayment_id, $concept_id, $detalle;
 
-    protected function rules()
-    {
-        return [
-            'compra.proveedor_id' => ['required', 'integer', 'min:1', 'exists:proveedors,id'],
-            'compra.sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
-            'compra.date' => ['required', 'date'],
-            'compra.moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
-            'compra.referencia' => ['required', 'string', 'min:3'],
-            'compra.tipocambio' => [
-                'nullable', Rule::requiredIf($this->compra->moneda->code == 'USD'),
-            ],
-            'compra.guia' => ['nullable', 'string', 'min:3'],
-            'compra.gravado' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
-            'compra.exonerado' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
-            'compra.igv' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
-            'compra.descuento' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
-            'compra.otros' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
-            'compra.total' => ['required', 'numeric', 'gt:0', 'decimal:0,4'],
-            'compra.typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
-            'compra.detalle' => ['nullable', 'string'],
-            'compra.counter' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
-        ];
-    }
 
-    public function mount(Compra $compra, Opencaja $opencaja)
+    public function mount(Compra $compra)
     {
         $this->compra = $compra;
-        $this->opencaja = $opencaja;
+        $this->openbox = Openbox::mybox(auth()->user()->sucursal_id)->first();
+        $this->monthbox = Monthbox::usando($this->compra->sucursal_id)->first();
         $this->pendiente = $compra->total - $this->compra->cajamovimientos()->sum('amount');
     }
 
@@ -66,39 +40,10 @@ class ShowCompra extends Component
         return view('livewire.modules.almacen.compras.show-compra', compact('methodpayments'));
     }
 
-    public function calculartotal()
-    {
-        $this->compra->total = number_format(($this->compra->gravado + $this->compra->igv + $this->compra->exonerado + $this->compra->otros) - $this->compra->descuento, 4, '.', '');
-    }
-
-    public function update()
-    {
-        $validateData = $this->validate();
-        $this->calculartotal();
-        DB::beginTransaction();
-        try {
-            $this->compra->save();
-
-            if ($this->compra->cajamovimiento) {
-                $this->compra->cajamovimiento->amount = $this->compra->total;
-                $this->compra->cajamovimiento->save();
-            }
-            DB::commit();
-            $this->compra->refresh();
-            $this->resetValidation();
-            $this->dispatchBrowserEvent('updated');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
     public function delete()
     {
 
+        $this->authorize('admin.almacen.compras.delete');
         if ($this->compra->compraitems->count() > 0) {
             $seriesouts = $this->compra->compraitems()
                 ->WhereHas('series', function ($query) {
@@ -172,44 +117,91 @@ class ShowCompra extends Component
 
     public function openmodal()
     {
+        $this->authorize('admin.almacen.compras.pagos');
         $this->pendiente = $this->compra->total - $this->compra->cajamovimientos()->sum('amount');
-        $this->paymentactual = $this->pendiente;
+        $this->paymentactual = number_format($this->pendiente, 3, '.', '');
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->open = true;
     }
 
     public function savepayment()
     {
-        if (!verifyOpencaja($this->opencaja->id)) {
+        $this->authorize('admin.almacen.compras.pagos');
+        if ($this->compra->sucursal_id <> auth()->user()->sucursal_id) {
+            $mensaje =  response()->json([
+                'title' => 'SUCURSAL DE COMPRA DIFERENTE A SUCURSAL DE APERTURA DE CAJA !',
+                'text' => "No se pueden realizar movimientos en caja de una sucursal diferente a caja aperturada."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!$this->monthbox->isUsing()) {
+            $mensaje =  response()->json([
+                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
+                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
 
-        $this->concept_id = Concept::Compra()->first()->id;
-
+        $this->concept_id = Concept::Compra()->first()->id ?? null;
         $this->validate([
             'paymentactual' => ['required', 'numeric', 'min:1', 'decimal:0,4', 'lte:' . $this->pendiente, 'regex:/^\d{0,8}(\.\d{0,4})?$/',],
-            'opencaja.id' => ['required', 'integer', 'min:1', 'exists:opencajas,id'],
+            'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
+            'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
             'concept_id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
             'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
             'detalle' => ['nullable'],
         ]);
 
-        DB::beginTransaction();
         try {
-            $this->compra->cajamovimientos()->create([
-                'date' => now('America/Lima'),
-                'amount' => number_format($this->paymentactual, 4, '.', ''),
-                'referencia' => $this->compra->referencia,
-                'detalle' => trim($this->detalle),
-                'moneda_id' => $this->compra->moneda_id,
-                'methodpayment_id' => $this->methodpayment_id,
-                'typemovement' => Cajamovimiento::EGRESO,
-                'concept_id' => $this->concept_id,
-                'opencaja_id' => $this->opencaja->id,
-                'sucursal_id' => $this->compra->sucursal->id,
-                'user_id' => auth()->user()->id,
-            ]);
 
+            DB::beginTransaction();
+            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
+            $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
+                $query->where('type', $methodpayment);
+            })->where('sucursal_id', $this->compra->sucursal_id)
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->where('moneda_id', $this->compra->moneda_id)
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->first()->diferencia ?? 0;
+            $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
+            $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
+            $amountsaldo = $this->compra->moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+
+            if (($amountsaldo - $this->paymentactual) < 0) {
+                $mensaje =  response()->json([
+                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA !',
+                    'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
+            $descontar = $saldocaja - $this->paymentactual;
+            if ($descontar < 0) {
+                $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
+                $this->openbox->save();
+            }
+
+            $this->compra->savePayment(
+                $this->compra->sucursal_id,
+                number_format($this->paymentactual, 3, '.', ''),
+                $this->compra->moneda_id,
+                $this->methodpayment_id,
+                MovimientosEnum::EGRESO->value,
+                $this->concept_id,
+                $this->openbox->id,
+                $this->monthbox->id,
+                $this->compra->referencia,
+                trim($this->detalle)
+            );
             DB::commit();
             $this->resetValidation();
             $this->reset(['open', 'methodpayment_id', 'detalle', 'paymentactual']);
@@ -228,6 +220,7 @@ class ShowCompra extends Component
     public function deletepay(Cajamovimiento $cajamovimiento)
     {
 
+        $this->authorize('admin.almacen.compras.pagos');
         DB::beginTransaction();
         try {
             $cajamovimiento->delete();
@@ -241,5 +234,13 @@ class ShowCompra extends Component
             DB::rollBack();
             throw $e;
         }
+    }
+
+    public function closecompra()
+    {
+        $this->authorize('admin.almacen.compras.close');
+        $this->compra->status = 1;
+        $this->compra->save();
+        $this->dispatchBrowserEvent('updated');
     }
 }

@@ -8,11 +8,13 @@ use App\Rules\Letter;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use App\Models\Typegarantia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\WithPagination;
 
 class ShowTypeGarantias extends Component
 {
 
+    use AuthorizesRequests;
     use WithPagination;
 
     public $open = false;
@@ -24,7 +26,7 @@ class ShowTypeGarantias extends Component
     {
         return [
             'typegarantia.name' => [
-                'required', 'min:3', 'max:100', new CampoUnique('typegarantias', 'name', $this->typegarantia->id, true),
+                'required', 'min:3', 'max:100', new CampoUnique('typegarantias', 'name', $this->typegarantia->id),
             ],
             'typegarantia.datecode' => [
                 'required', 'string', 'min:2', 'max:4',
@@ -48,22 +50,27 @@ class ShowTypeGarantias extends Component
 
     public function edit(Typegarantia $typegarantia)
     {
+        $this->authorize('admin.almacen.typegarantias.edit');
         $this->typegarantia = $typegarantia;
         $this->open = true;
     }
 
     public function update()
     {
+        $this->authorize('admin.almacen.typegarantias.edit');
         $this->typegarantia->name = trim($this->typegarantia->name);
         $this->typegarantia->datecode = trim($this->typegarantia->datecode);
         $this->typegarantia->time = $this->typegarantia->time;
         $this->validate();
         $this->typegarantia->save();
         $this->reset(['open']);
+        $this->dispatchBrowserEvent('updated');
     }
 
     public function delete(Typegarantia $typegarantia)
     {
+
+        $this->authorize('admin.almacen.typegarantias.delete');
         $productos = $typegarantia->garantiaproductos()->count();
         $cadena = FormatoPersonalizado::extraerMensaje([
             'Garantia_Productos' => $productos

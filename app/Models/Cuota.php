@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Cajamovimiento;
 use App\Models\User;
+use App\Traits\CajamovimientoTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Cuota extends Model
 {
     use HasFactory;
+    use CajamovimientoTrait;
 
     protected $guarded = ['created_at', 'updated_at'];
 
@@ -30,5 +32,15 @@ class Cuota extends Model
     public function userpay(): BelongsTo
     {
         return $this->belongsTo(User::class, 'userpayment_id');
+    }
+
+    public function moneda(): BelongsTo
+    {
+        return $this->belongsTo(Moneda::class);
+    }
+
+    public function sucursal(): BelongsTo
+    {
+        return $this->belongsTo(Sucursal::class);
     }
 }

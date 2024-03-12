@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Pricetypes;
 use App\Models\Pricetype;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -13,6 +14,7 @@ use Livewire\WithPagination;
 class ShowPricetypes extends Component
 {
     use WithPagination;
+    use AuthorizesRequests;
 
     public $open = false;
     public $pricetype;
@@ -69,11 +71,13 @@ class ShowPricetypes extends Component
 
     public function update()
     {
+
+        $this->authorize('admin.administracion.pricetypes.edit');
         $this->pricetype->web = $this->pricetype->web == 1 ? 1 : 0;
         $this->pricetype->default = $this->pricetype->default == 1 ? 1 : 0;
         $this->pricetype->name = trim($this->pricetype->name);
         $this->pricetype->defaultlogin = $this->pricetype->defaultlogin == 1 ? 1 : 0;
-        
+
         $this->pricetype->startdate = $this->pricetype->temporal  == true ? $this->pricetype->startdate : null;
         $this->pricetype->expiredate = $this->pricetype->temporal == true ? $this->pricetype->expiredate : null;
         $this->pricetype->temporal = $this->pricetype->temporal == true ? 1 : 0;
@@ -98,7 +102,7 @@ class ShowPricetypes extends Component
     public function delete(Pricetype $pricetype)
     {
 
-
+        $this->authorize('admin.administracion.pricetypes.delete');
         $clients = $pricetype->clients()->exists();
         $productos = $pricetype->productos()->exists();
         // dd($clients, $productos);

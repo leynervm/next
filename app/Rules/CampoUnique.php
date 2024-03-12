@@ -40,11 +40,17 @@ class CampoUnique implements Rule
      */
     public function passes($attribute, $value)
     {
-        $query = DB::table($this->table)
-            ->whereRaw('UPPER(' . $this->column . ') = ?', [mb_strtoupper($value, "UTF-8")]);
+        $query = DB::table($this->table);
 
-        if (!is_null($this->columnOptional)) {
-            $query->where($this->columnOptional, mb_strtoupper($this->valueOptional, "UTF-8"));
+        if (is_numeric($value)) {
+            $query->whereRaw($this->column . '= ?', [$value]);
+        } else {
+            $query->whereRaw('UPPER(' . $this->column . ') = ?', [mb_strtoupper($value, "UTF-8")]);
+        }
+
+        if (!is_null($this->valueOptional)) {
+            $valueoptional = is_numeric($this->valueOptional) ? $this->valueOptional : mb_strtoupper($this->valueOptional, "UTF-8");
+            $query->where($this->columnOptional, $valueoptional);
         }
 
         if ($this->softDeleted) {
@@ -65,6 +71,6 @@ class CampoUnique implements Rule
      */
     public function message()
     {
-        return 'El campo :attribute ya está en uso.';
+        return 'El campo :attribute ya existe.';
     }
 }

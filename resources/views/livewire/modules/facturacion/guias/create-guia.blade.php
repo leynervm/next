@@ -7,18 +7,19 @@
                     <div class="w-full xs:col-span-2 md:col-span-1">
                         <x-label value="Tipo guía :" />
                         <x-select class="block w-full uppercase" id="motivotraslado_id"
-                            wire:model.lazy="typecomprobante_id" @change="resetMotivotraslado($event.target)">
+                            wire:model.lazy="seriecomprobante_id" @change="resetMotivotraslado($event.target)">
                             <x-slot name="options">
-                                @if (count($typecomprobantes))
-                                    @foreach ($typecomprobantes as $item)
-                                        <option value="{{ $item->id }}" data-sendsunat="{{ $item->sendsunat }}">
-                                            {{ $item->name }}
+                                @if (count($seriecomprobantes) > 0)
+                                    @foreach ($seriecomprobantes as $item)
+                                        <option value="{{ $item->id }}"
+                                            data-sendsunat="{{ $item->typecomprobante->sendsunat }}">
+                                            [{{ $item->serie }}] - {{ $item->typecomprobante->descripcion }}
                                         </option>
                                     @endforeach
                                 @endif
                             </x-slot>
                         </x-select>
-                        <x-jet-input-error for="typecomprobante_id" />
+                        <x-jet-input-error for="seriecomprobante_id" />
                         <x-jet-input-error for="seriecomprobante.id" />
                     </div>
 
@@ -85,22 +86,35 @@
                         <x-jet-input-error for="note" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label value="Comprobante referencia emitido :" />
-                        <div class="w-full inline-flex">
-                            <x-input class="block w-full prevent" wire:model.defer="referencia"
-                                wire:keydown.enter="searchreferencia" minlength="0" maxlength="11" />
-                            <x-button-add class="px-2" wire:click="searchreferencia" wire:loading.attr="disable">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <path d="m21 21-4.3-4.3" />
-                                </svg>
-                            </x-button-add>
+                    @if ($sincronizecpe)
+                        <div class="w-full">
+                            <x-label value="Comprobante referencia emitido :" />
+                            <div class="w-full inline-flex relative">
+                                <x-disabled-text :text="$referencia" class="w-full block" />
+                                <x-button-close-modal
+                                    class="hover:animate-none !text-red-500 hover:bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                    wire:click="desvincularcpe" wire:loading.attr="disabled" />
+                            </div>
+                            <x-jet-input-error for="referencia" />
                         </div>
-                        <x-jet-input-error for="referencia" />
-                    </div>
+                    @else
+                        <div class="w-full" x-show="codemotivotraslado == '01' || codemotivotraslado == '03'">
+                            <x-label value="Comprobante referencia emitido :" />
+                            <div class="w-full inline-flex">
+                                <x-input class="block w-full prevent" wire:model.defer="referencia"
+                                    wire:keydown.enter="searchreferencia" minlength="6" maxlength="13" />
+                                <x-button-add class="px-2" wire:click="searchreferencia" wire:loading.attr="disable">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.3-4.3" />
+                                    </svg>
+                                </x-button-add>
+                            </div>
+                            <x-jet-input-error for="referencia" />
+                        </div>
+                    @endif
 
                     <div class="w-full animate__animated animate__fadeInDown" x-show="vehiculosml">
                         <x-label value="Placa vehículo (Opcional) :" />
@@ -128,7 +142,7 @@
                     </div>
                 </div>
 
-                <div wire:loading.flex wire:target="save, searchreferencia, typecomprobante_id"
+                <div wire:loading.flex wire:target="save, searchreferencia, seriecomprobante_id"
                     class="loading-overlay rounded hidden">
                     <x-loading-next />
                 </div>
@@ -264,53 +278,30 @@
 
         <x-form-card titulo="LUGAR DE EMISIÓN">
             <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-1">
                     <div class="w-full">
-                        <x-label value="Departamento :" />
-                        <x-select class="block w-full" id="regionorigen_id" wire:model.lazy="regionorigen_id">
-                            <x-slot name="options">
-                                @if (count($regiones))
-                                    @foreach ($regiones as $item)
-                                        <option value="{{ $item->departamento_inei }}">
-                                            {{ $item->region }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="regionorigen_id" />
+                        <x-label value="Lugar emisión :" />
+                        <div class="relative" id="parentuborig" x-data="{ ubigeoorigen_id: @entangle('ubigeoorigen_id').defer }" x-init="SelectUbigeoOrigen"
+                            wire:ignore>
+                            <x-select class="block w-full" id="uborig" x-ref="selectubigeoorigen"
+                                data-minimum-results-for-search="3">
+                                <x-slot name="options">
+                                    @if (count($ubigeos))
+                                        @foreach ($ubigeos as $item)
+                                            <option value="{{ $item->id }}">
+                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                                / {{ $item->ubigeo_reniec }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="ubigeoorigen_id" />
                     </div>
 
                     <div class="w-full">
-                        <x-label value="Provincia :" />
-                        <x-select class="block w-full" id="provinciaorigen_id" wire:model.lazy="provinciaorigen_id">
-                            <x-slot name="options">
-                                @if (count($provinciasorigen))
-                                    @foreach ($provinciasorigen as $item)
-                                        <option value="{{ $item->provincia_inei }}">
-                                            {{ $item->provincia }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="provinciaorigen_id" />
-                    </div>
-
-                    <div class="w-full">
-                        <x-label value="Distrito :" />
-                        <x-select class="block w-full" id="distritoorigen_id" wire:model.defer="distritoorigen_id">
-                            <x-slot name="options">
-                                @if (count($distritosorigen))
-                                    @foreach ($distritosorigen as $item)
-                                        <option value="{{ $item->id }}">{{ $item->distrito }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="distritoorigen_id" />
-                    </div>
-
-                    <div class="w-full" :class="codemotivotraslado == '04' ? 'lg:col-span-2' : 'lg:col-span-3'">
                         <x-label value="Direccion origen :" />
                         <x-input class="block w-full" wire:model.defer="direccionorigen"
                             placeholder="Dirección del punto de partida..." />
@@ -334,54 +325,30 @@
 
         <x-form-card titulo="LUGAR DE DESTINO">
             <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+                <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-1">
                     <div class="w-full">
-                        <x-label value="Departamento :" />
-                        <x-select class="block w-full" id="regiondestino_id" wire:model.lazy="regiondestino_id">
-                            <x-slot name="options">
-                                @if (count($regiones))
-                                    @foreach ($regiones as $item)
-                                        <option value="{{ $item->departamento_inei }}">
-                                            {{ $item->region }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="regiondestino_id" />
+                        <x-label value="Lugar destino :" />
+                        <div class="relative" id="parentubdest" x-data="{ ubigeodestino_id: @entangle('ubigeodestino_id').defer }" x-init="SelectUbigeoDestino"
+                            wire:ignore>
+                            <x-select class="block w-full" id="ubdest" x-ref="selectubigeodest"
+                                data-minimum-results-for-search="3">
+                                <x-slot name="options">
+                                    @if (count($ubigeos))
+                                        @foreach ($ubigeos as $item)
+                                            <option value="{{ $item->id }}">
+                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                                / {{ $item->ubigeo_reniec }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="ubigeodestino_id" />
                     </div>
 
                     <div class="w-full">
-                        <x-label value="Provincia :" />
-                        <x-select class="block w-full" id="provinciadestino_id"
-                            wire:model.lazy="provinciadestino_id">
-                            <x-slot name="options">
-                                @if (count($provinciasdestino))
-                                    @foreach ($provinciasdestino as $item)
-                                        <option value="{{ $item->provincia_inei }}">
-                                            {{ $item->provincia }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="provinciadestino_id" />
-                    </div>
-
-                    <div class="w-full">
-                        <x-label value="Distrito :" />
-                        <x-select class="block w-full" id="distritodestino_id" wire:model.defer="distritodestino_id">
-                            <x-slot name="options">
-                                @if (count($distritosdestino))
-                                    @foreach ($distritosdestino as $item)
-                                        <option value="{{ $item->id }}">{{ $item->distrito }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="distritodestino_id" />
-                    </div>
-
-                    <div class="w-full" :class="codemotivotraslado == '04' ? 'lg:col-span-2' : 'lg:col-span-3'">
                         <x-label value="Direccion destino :" />
                         <x-input class="block w-full" wire:model.defer="direcciondestino"
                             placeholder="Direccion del punto de llegada.." />
@@ -545,10 +512,25 @@
     <x-form-card titulo="PRODUCTOS VINCULADOS" class="mt-3">
         <div class="w-full relative rounded flex flex-col gap-3">
             <form wire:submit.prevent="addtoguia" class="w-full flex flex-col gap-2">
-                <div class="w-full grid grid-cols-1 sm:grid-cols-4 gap-1">
+                <div class="w-full grid lg:grid-cols-3 gap-2">
+                    <div class="w-full">
+                        <x-label value="ALterar stock :" />
+                        <div class="relative" x-init="select2Stock" id="parentstock" wire:ignore>
+                            <x-select class="block w-full uppercase" id="stock" x-ref="selectstock">
+                                <x-slot name="options">
+                                    <option value="0">NO ALTERAR STOCK</option>
+                                    <option value="1">RESERVAR STOCK</option>
+                                    <option value="2">INCREMENTAR STOCK</option>
+                                    <option value="3">DISMINUIR STOCK</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="mode" />
+                    </div>
                     <div class="w-full">
                         <x-label value="Almacén :" />
-                        <div class="relative" x-init="select2Almacen" id="parentalmacenguia_id" wire:ignore>
+                        <div class="relative" x-init="select2Almacen" id="parentalmacenguia_id">
                             <x-select class="block w-full uppercase" id="almacenguia_id" x-ref="selectalmacen"
                                 data-placeholder="null">
                                 <x-slot name="options">
@@ -565,14 +547,16 @@
                         </div>
                         <x-jet-input-error for="almacen_id" />
                     </div>
+                </div>
 
+                <div class="w-full grid sm:grid-cols-3 gap-2">
                     <div class="w-full sm:col-span-2">
                         <x-label value="Descripción del producto :" />
-                        <div class="w-full relative" x-init="select2Producto" id="parentguiaproducto_id" wire:ignore>
+                        <div class="w-full relative" x-init="select2Producto" id="parentguiaproducto_id">
                             <x-select class="block w-full uppercase" x-ref="selectprod"
                                 data-minimum-results-for-search="3" id="guiaproducto_id">
                                 <x-slot name="options">
-                                    @if (count($productos))
+                                    @if (count($productos) > 0)
                                         @foreach ($productos as $item)
                                             <option value="{{ $item->id }}">
                                                 {{ $item->name }}
@@ -586,10 +570,10 @@
                         <x-jet-input-error for="producto_id" />
                     </div>
 
-                    @if (count($series))
+                    @if (count($series) > 0 && in_array($mode, ['1', '3']))
                         <div class="w-full">
                             <x-label value="Seleccionar serie :" />
-                            <div class="w-full relative" id="parentguiaserie_id" x-init="select2Serie" wire:ignore>
+                            <div class="w-full relative" id="parentguiaserie_id" x-init="select2Serie">
                                 <x-select class="block w-full" x-ref="selectserie"
                                     data-minimum-results-for-search="3" id="guiaserie_id">
                                     <x-slot name="options">
@@ -604,93 +588,103 @@
                             </div>
                             <x-jet-input-error for="serie_id" />
                         </div>
+                    @else
+                        <div class="w-full">
+                            <x-label value="Cantidad :" />
+                            <x-input class="block w-full" wire:key="{{ rand() }}" wire:model.defer="cantidad"
+                                placeholder="0" type="number" min="1" step="1" />
+                            <x-jet-input-error for="cantidad" />
+                        </div>
                     @endif
-
-                    <div class="w-full @if (count($series) > 0) hidden @endif">
-                        <x-label value="Cantidad :" />
-                        <x-input class="block w-full" wire:model.defer="cantidad" placeholder="0" type="number"
-                            min="1" step="1" />
-                        <x-jet-input-error for="cantidad" />
-                    </div>
                 </div>
 
                 <div class="w-full flex justify-between items-start">
                     <div class="w-full">
                         <x-label-check for="disponibles">
-                            <x-input wire:model.defer="disponibles" @change="toggledisponibles" name="disponibles"
+                            <x-input wire:model.lazy="disponibles" @change="toggledisponibles" name="disponibles"
                                 type="checkbox" id="disponibles" />
-                            MOSTRAR SOLAMENTE PRODUCTOS DISPONIBLES
-                        </x-label-check>
-                        <x-label-check for="alterstock">
-                            <x-input wire:model.defer="alterstock" name="alterstock" value="true" type="checkbox"
-                                id="alterstock" />
-                            ALTERAR STOCK
-                        </x-label-check>
+                            MOSTRAR SOLAMENTE PRODUCTOS DISPONIBLES</x-label-check>
+
                         <x-label-check for="clearaftersave">
                             <x-input wire:model.defer="clearaftersave" name="clearaftersave" value="true"
                                 type="checkbox" id="clearaftersave" />
-                            LIMPIAR FORMULARIO DESPUES AGREGAR
-                        </x-label-check>
+                            LIMPIAR FORMULARIO DESPUES AGREGAR</x-label-check>
                     </div>
                     <x-button type="submit" wire:loading.attr="disabled">{{ __('AGREGAR') }}</x-button>
                 </div>
             </form>
 
-            <div class="w-full flex flex-wrap gap-2 relative rounded">
-                @foreach ($carrito as $item)
-                    <x-card-producto :name="$item->producto" :almacen="$item->almacen" :category="$item->referencia">
-                        <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
-                            <x-span-text :text="$item->cantidad . ' ' . $item->unit" class="leading-3 !tracking-normal" />
-                            {{-- <x-span-text :text="'SUCURSAL ' . $item->sucursal_id" class="leading-3 !tracking-normal" /> --}}
-                            {{-- <x-span-text :text="$item->almacen" class="leading-3 !tracking-normal" /> --}}
-                            <x-span-text :text="$item->alterstock == '0' ? 'NO ALTERÓ STOCK' : 'STOCK ALTERADO'" class="leading-3 !tracking-normal" />
+            @if (count($carshoops) > 0)
+                <div class="w-full flex flex-wrap gap-2 relative rounded">
+                    @foreach ($carshoops as $item)
+                        @php
+                            $image = null;
 
-                            {{-- {{ print_r($item->series) }} --}}
-                            @if (count($item->series) == 1)
-                                <x-span-text :text="'SERIE : ' . $item->series[0]->serie" class="leading-3 !tracking-normal" />
-                            @endif
-                        </div>
-                        @if (count($item->series) > 1)
-                            <div x-data="{ showForm: false }" class="mt-1">
-                                <x-button @click="showForm = !showForm" class="whitespace-nowrap">
-                                    {{ __('VER SERIES') }}
-                                </x-button>
-                                <div x-show="showForm" x-transition:enter="transition ease-out duration-300 transform"
-                                    x-transition:enter-start="opacity-0 translate-y-[-10%]"
-                                    x-transition:enter-end="opacity-100 translate-y-0"
-                                    x-transition:leave="transition ease-in duration-300 transform"
-                                    x-transition:leave-start="opacity-100 translate-y-0"
-                                    x-transition:leave-end="opacity-0 translate-y-[-10%]"
-                                    class="block w-full rounded mt-1">
-                                    <div class="w-full flex flex-wrap gap-1">
-                                        @foreach ($item->series as $serie)
-                                            <span
-                                                class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-md">
-                                                {{ $serie->serie }}
-                                                <x-button-delete
-                                                    wire:click="deleteserie('{{ $item->id }}', {{ $serie->id }})"
-                                                    wire:loading.attr="disabled" />
-                                            </span>
-                                        @endforeach
+                            if (count($item->producto->images)) {
+                                if (count($item->producto->defaultImage)) {
+                                    $image = asset('storage/productos/' . $item->producto->defaultImage->first()->url);
+                                } else {
+                                    $image = asset('storage/productos/' . $item->producto->images->first()->url);
+                                }
+                            }
+                        @endphp
+
+                        <x-card-producto :name="$item->producto->name" :image="$image ?? null" :almacen="$item->almacen->name" :category="$item->producto->category->name">
+                            <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
+                                <x-span-text :text="$item->cantidad . ' ' . $item->producto->unit->name" class="leading-3 !tracking-normal" />
+
+                                @if ($item->isNoAlterStock())
+                                    <x-span-text text="NO ALTERA STOCK" class="leading-3 !tracking-normal" />
+                                @elseif ($item->isReservedStock())
+                                    <x-span-text text="STOCK RESERVADO" class="leading-3 !tracking-normal"
+                                        type="orange" />
+                                @elseif ($item->isIncrementStock())
+                                    <x-span-text text="INCREMENTA STOCK" class="leading-3 !tracking-normal"
+                                        type="green" />
+                                @elseif($item->isDiscountStock())
+                                    <x-span-text text="DISMINUYE STOCK" class="leading-3 !tracking-normal"
+                                        type="red" />
+                                @endif
+
+                                @if (count($item->carshoopseries) == 1)
+                                    <x-span-text :text="'SERIE : ' . $item->carshoopseries()->first()->serie->serie" class="leading-3 !tracking-normal" />
+                                @endif
+                            </div>
+
+                            @if (count($item->carshoopseries) > 1)
+                                <div x-data="{ showForm: false }" class="mt-1">
+                                    <x-button @click="showForm = !showForm" class="whitespace-nowrap">
+                                        {{ __('VER SERIES') }}
+                                    </x-button>
+                                    <div x-show="showForm" x-transition class="block w-full rounded mt-1">
+                                        <div class="w-full flex flex-wrap gap-1">
+                                            @foreach ($item->carshoopseries as $itemserie)
+                                                <span
+                                                    class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-md">
+                                                    {{ $itemserie->serie->serie }}
+                                                    <x-button-delete wire:click="deleteserie({{ $itemserie->id }})"
+                                                        wire:loading.attr="disabled" />
+                                                </span>
+                                            @endforeach
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        @endif
+                            @endif
 
-                        <x-slot name="footer">
-                            <x-button-delete wire:click="delete('{{ $item->id }}')"
-                                wire:loading.attr="disabled" />
-                        </x-slot>
-                    </x-card-producto>
-                @endforeach
-
-                {{-- {{ print_r($seriescarrito) }} --}}
-                {{-- @if (count($series))
-                    @foreach ($series as $item)
-                        {{ $item }}
+                            <x-slot name="footer">
+                                <x-button-delete wire:click="delete({{ $item->id }})"
+                                    wire:loading.attr="disabled" />
+                            </x-slot>
+                        </x-card-producto>
                     @endforeach
-                @endif --}}
-            </div>
+                </div>
+
+                <div class="w-full flex justify-end">
+                    <x-button-secondary onclick="confirmDeleteAllCarshoop()" wire:loading.attr="disabled"
+                        class="inline-block">ELIMINAR TODO</x-button-secondary>
+                </div>
+            @endif
+
             <div wire:loading.flex class="loading-overlay rounded hidden">
                 <x-loading-next />
             </div>
@@ -698,14 +692,65 @@
     </x-form-card>
 
     <script>
+        function select2Stock() {
+            this.selectSTK = $(this.$refs.selectstock).select2();
+            this.selectSTK.val(this.mode).trigger("change");
+            this.selectSTK.on("select2:select", (event) => {
+                this.mode = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("mode", (value) => {
+                this.selectSTK.val(value).trigger("change");
+            });
+        }
+
+        function SelectUbigeoDestino() {
+            this.selectUD = $(this.$refs.selectubigeodest).select2();
+            this.selectUD.val(this.ubigeodestino_id).trigger("change");
+            this.selectUD.on("select2:select", (event) => {
+                this.ubigeodestino_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("ubigeodestino_id", (value) => {
+                this.selectUD.val(value).trigger("change");
+            });
+            // Livewire.hook('message.processed', () => {
+            //     this.selectUD.select2('destroy');
+            //     this.selectUD.select2().val(this.ubigeodestino_id).trigger('change');
+            // });
+        }
+
+        function SelectUbigeoOrigen() {
+            this.selectUO = $(this.$refs.selectubigeoorigen).select2();
+            this.selectUO.val(this.ubigeoorigen_id).trigger("change");
+            this.selectUO.on("select2:select", (event) => {
+                this.ubigeoorigen_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("ubigeoorigen_id", (value) => {
+                this.selectUO.val(value).trigger("change");
+            });
+            // Livewire.hook('message.processed', () => {
+            //     this.selectUO.select2('destroy');
+            //     this.selectUO.select2().val(this.ubigeoorigen_id).trigger('change');
+            // });
+        }
+
         function select2Almacen() {
             this.selectA = $(this.$refs.selectalmacen).select2();
             this.selectA.val(this.almacen_id).trigger("change");
             this.selectA.on("select2:select", (event) => {
-                this.producto_id = null;
                 this.almacen_id = event.target.value == "" ? null : event.target.value;
-                @this.loadproductos();
-                @this.loadseries();
+                this.producto_id = null;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -714,6 +759,10 @@
             this.$watch("almacen_id", (value) => {
                 this.selectA.val(value).trigger("change");
             });
+            Livewire.hook('message.processed', () => {
+                this.selectA.select2('destroy');
+                this.selectA.select2().val(this.almacen_id).trigger('change');
+            });
         }
 
         function select2Producto() {
@@ -721,7 +770,6 @@
             this.selectP.val(this.producto_id).trigger("change");
             this.selectP.on("select2:select", (event) => {
                 this.producto_id = event.target.value;
-                @this.loadseries();
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -732,6 +780,10 @@
                 if (value == null) {
                     this.selectP.empty();
                 }
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectP.select2('destroy');
+                this.selectP.select2().val(this.producto_id).trigger('change');
             });
         }
 
@@ -748,32 +800,16 @@
             this.$watch("serie_id", (value) => {
                 this.selectS.val(value).trigger("change");
             });
+            Livewire.hook('message.processed', () => {
+                this.selectS.select2('destroy');
+                this.selectS.select2().val(this.serie_id).trigger('change');
+            });
         }
 
-        window.addEventListener('loadproductos', productos => {
-            let selectprod = document.querySelector('[x-ref="selectprod"]');
-            $(selectprod).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
-            productos.detail.forEach(product => {
-                let option = new Option(product.name, product.id, false, false);
-                $(selectprod).append(option);
-            });
-            $(selectprod).select2().trigger('change');
-        })
-
-        window.addEventListener('loadseries', series => {
-            let selectserie = document.querySelector('[x-ref="selectserie"]');
-            $(selectserie).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
-            series.detail.forEach(serie => {
-                let option = new Option(serie.serie, serie.id, false, false);
-                $(selectserie).append(option);
-            });
-            $(selectserie).select2().trigger('change');
-        })
-
-        window.addEventListener('confirmaritemsguia', () => {
+        function confirmDeleteAllCarshoop() {
             swal.fire({
-                title: 'Agregar items del comprobante a la Guía ?',
-                text: "Se agregarán todos los items encontrados en el comprobante de referencia.",
+                title: 'Eliminar carrito de guías de remisión ?',
+                text: "Se eliminarán todos los productos del carrito de guías de remisión y se actualizará su stock correspondientes.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',
@@ -782,11 +818,10 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.confirmaradditemsguia();
+                    @this.deleteallcarshoop();
                 }
             })
-
-        })
+        }
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('loader', () => ({
@@ -807,10 +842,13 @@
                 rucproveedor: @entangle('rucproveedor').defer,
                 nameproveedor: @entangle('nameproveedor').defer,
 
+                alterstock: null,
+                mode: @entangle('mode'),
+
                 // disponibles: @entangle('disponibles'),
                 serie_id: @entangle('serie_id').defer,
-                almacen_id: @entangle('almacen_id').defer,
-                producto_id: @entangle('producto_id').defer,
+                almacen_id: @entangle('almacen_id'),
+                producto_id: @entangle('producto_id'),
 
                 init() {
                     console.log("loaded Alpine on create-guia");
@@ -932,8 +970,8 @@
                 },
                 toggledisponibles() {
                     this.producto_id = null;
-                    @this.loadproductos();
-                    @this.loadseries();
+                    // @this.loadproductos();
+                    // @this.loadseries();
                 },
                 resetMotivotraslado(target) {
                     this.local = target.options[target.selectedIndex].getAttribute(
@@ -949,7 +987,7 @@
                         this.loadingprivate = false;
                         this.loadingpublic = false;
                     }
-                    
+
                     if (this.local == '0') {
                         this.loadingdestinatario = true;
                     }

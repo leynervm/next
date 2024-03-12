@@ -14,13 +14,13 @@
                 DETALLES DEL PAGO</h1>
 
             <div class="w-full flex flex-wrap gap-1 text-[10px]">
-                <x-span-text :text="formatDate($detallepago->date, 'DD MMMM Y')" class="leading-3 inline-block !text-[9px]" />
-                <x-span-text :text="$detallepago->methodpayment->name" class="leading-3 inline-block !text-[9px]" />
-                    <x-span-text :text="$detallepago->opencaja->caja->name" class="leading-3 inline-block !text-[9px]" />
-                <x-span-text :text="'USUARIO :' . $detallepago->user->name" class="leading-3 inline-block !text-[9px]" />
+                <x-span-text :text="formatDate($detallepago->date, 'DD MMMM Y')" class="leading-3 inline-block !tracking-normal" />
+                <x-span-text :text="$detallepago->methodpayment->name" class="leading-3 inline-block !tracking-normal" />
+                <x-span-text :text="$detallepago->openbox->box->name" class="leading-3 inline-block !tracking-normal" />
+                <x-span-text :text="'USUARIO :' . $detallepago->user->name" class="leading-3 inline-block !tracking-normal" />
 
                 @if ($detallepago->detalle)
-                    <x-span-text :text="$detallepago->detalle" class="leading-3 inline-block !text-[9px]" />
+                    <x-span-text :text="$detallepago->detalle" class="leading-3 inline-block !tracking-normal" />
                 @endif
             </div>
         @endif

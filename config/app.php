@@ -180,6 +180,9 @@ return [
         // Debuger 
         Barryvdh\Debugbar\ServiceProvider::class,
 
+        // Laravel Permission
+        Spatie\Permission\PermissionServiceProvider::class,
+
     ],
 
     /*

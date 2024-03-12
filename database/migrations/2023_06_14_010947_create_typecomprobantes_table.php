@@ -18,6 +18,7 @@ class CreateTypecomprobantesTable extends Migration
             $table->string('code', 2);
             $table->string('name', 100);
             $table->string('descripcion', 100);
+            $table->string('referencia', 2)->nullable();
             $table->integer('sendsunat')->default(0);
             $table->softDeletes();
         });

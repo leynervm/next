@@ -15,14 +15,14 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Nwidart\Modules\Facades\Module;
 use Illuminate\Database\Query\Builder;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ShowProducto extends Component
 {
 
-    use WithFileUploads;
+    use AuthorizesRequests;
 
     public $producto, $almacen;
     public $isUploading = false;
@@ -84,18 +84,11 @@ class ShowProducto extends Component
 
     public function updatedProductoPublicado($value)
     {
+        $this->authorize('admin.almacen.productos.edit');
         $this->producto->publicado = $value ? $value : 0;
         $this->producto->save();
         $this->dispatchBrowserEvent('updated');
     }
-
-    // public function updatedProductoCategoryId($value)
-    // {
-    //     $this->reset(['subcategories']);
-    //     if (trim($value) !== "") {
-    //         $this->subcategories = Category::find($value)->subcategories;
-    //     }
-    // }
 
     public function setCategory($value)
     {
@@ -105,13 +98,13 @@ class ShowProducto extends Component
         if ($value) {
             $category = Category::find($value);
             $this->subcategories = $category->subcategories;
-            $this->dispatchBrowserEvent('loadsubcategories', $category->subcategories->toArray());
         }
     }
 
     public function update()
     {
 
+        $this->authorize('admin.almacen.productos.edit');
         $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;
         $this->producto->almacenarea_id = !empty(trim($this->producto->almacenarea_id)) ? trim($this->producto->almacenarea_id) : null;
         $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
@@ -122,10 +115,9 @@ class ShowProducto extends Component
 
     public function openmodal()
     {
+        $this->authorize('admin.almacen.productos.almacen');
         $this->almacen = new Almacen();
-        $this->almacens = Almacen::WhereHas('sucursal', function ($query) {
-            $query->whereNull('deleted_at');
-        })->whereNotIn('id', $this->producto->almacens->pluck('id'))
+        $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
             ->orderBy('name', 'asc')->get();
         $this->resetValidation();
         $this->reset(['newcantidad', 'almacen_id']);
@@ -134,6 +126,7 @@ class ShowProducto extends Component
 
     public function savealmacen()
     {
+        $this->authorize('admin.almacen.productos.almacen');
         $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'almacen_id' => [
@@ -165,9 +158,9 @@ class ShowProducto extends Component
                     if ($this->newcantidad <> $stock) {
                         // dd($stock, $this->newcantidad);
                         if ($this->newcantidad > $stock) {
-                            $this->producto->saveKardex($this->almacen->sucursal_id, $this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $this->newcantidad - $stock, '+', Kardex::ACTUALIZACION_MANUAL, null);
+                            $this->producto->saveKardex($this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $this->newcantidad - $stock, '+', Kardex::ACTUALIZACION_MANUAL, null);
                         } else {
-                            $this->producto->saveKardex($this->almacen->sucursal_id, $this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $stock - $this->newcantidad, '-', Kardex::ACTUALIZACION_MANUAL, null);
+                            $this->producto->saveKardex($this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $stock - $this->newcantidad, '-', Kardex::ACTUALIZACION_MANUAL, null);
                         }
                     }
                 } else {
@@ -176,18 +169,18 @@ class ShowProducto extends Component
                 }
             } else {
 
-                $almacen = Almacen::find($this->almacen_id);
+                // $almacen = Almacen::find($this->almacen_id);
                 $this->producto->almacens()->attach($this->almacen_id, [
                     'cantidad' => $this->newcantidad,
                 ]);
-                $this->producto->saveKardex($almacen->sucursal_id, $this->producto->id, $this->almacen_id, 0, $this->newcantidad, $this->newcantidad, '+', Kardex::ENTRADA_PRODUCTO, null);
+                $this->producto->saveKardex($this->producto->id, $this->almacen_id, 0, $this->newcantidad, $this->newcantidad, '+', Kardex::ENTRADA_PRODUCTO, null);
             }
 
             DB::commit();
             $this->reset(['newcantidad', 'almacen_id', 'open']);
             $this->resetValidation();
             $this->producto->refresh();
-            $this->dispatchBrowserEvent('resetfilter',  $this->producto->almacens->toArray());
+            $this->dispatchBrowserEvent('resetfilter');
             $this->dispatchBrowserEvent($event);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -200,6 +193,7 @@ class ShowProducto extends Component
 
     public function editalmacen(Almacen $almacen)
     {
+        $this->authorize('admin.almacen.productos.almacen');
         $this->almacen = $almacen;
         $this->almacen_id = $almacen->id;
         $this->newcantidad = $this->producto->almacens()->find($almacen->id)->pivot->cantidad;
@@ -210,53 +204,26 @@ class ShowProducto extends Component
 
     public function deletealmacen(Almacen $almacen)
     {
-
-        $series = $this->producto->almacens()->find($almacen->id);
-        $seriesout = $series->series()->salidas()->count();
-        $tvitems = $this->producto->almacens()->find($almacen->id)->tvitems()->count();
-
-        $cadena = extraerMensaje([
-            'Series' => $seriesout,
-            'Items_Venta' => $tvitems,
-        ]);
-
-        if ($seriesout > 0 || $tvitems > 0) {
-            $mensaje = response()->json([
-                'title' => 'No se puede eliminar registro, ' . $almacen->name,
-                'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-        } else {
-
+        $this->authorize('admin.almacen.productos.almacen');
+        try {
             DB::beginTransaction();
-            try {
-
-                $carshoops = $this->producto->carshoops();
-                if ($carshoops->exists()) {
-                    foreach ($carshoops->get() as $carshoop) {
-                        $carshoop->carshoopseries()->delete();
-                        $carshoop->delete();
-                    }
-                }
-
-                $series->series()->forceDelete();
-                $this->producto->almacens()->detach($almacen);
-                DB::commit();
-                $this->producto->refresh();
-                $this->dispatchBrowserEvent('resetfilter', $this->producto->almacens->toArray());
-                $this->dispatchBrowserEvent('deleted');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
+            $this->producto->almacens()->detach($almacen->id);
+            DB::commit();
+            $this->producto->refresh();
+            $this->dispatchBrowserEvent('resetfilter');
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 
     public function delete()
     {
+        $this->authorize('admin.almacen.productos.delete');
         $ofertasdisponibles = $this->producto->ofertasdisponibles()->count();
         $tvitems = $this->producto->tvitems()->count();
         $compraitems = $this->producto->compraitems()->count();

@@ -7,6 +7,13 @@ use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.administracion.empresa.create')->only('create');
+        $this->middleware('can:admin.administracion.empresa.edit')->only('edit');
+    }
+
     public function index()
     {
         return view('admin.empresas.index');
@@ -17,7 +24,7 @@ class EmpresaController extends Controller
         return view('admin.empresas.create');
     }
 
-    public function show()
+    public function edit()
     {
         $empresa = Empresa::first();
         return view('admin.empresas.show', compact('empresa'));

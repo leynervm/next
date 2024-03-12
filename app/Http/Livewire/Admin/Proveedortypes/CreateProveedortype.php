@@ -4,11 +4,14 @@ namespace App\Http\Livewire\Admin\Proveedortypes;
 
 use App\Models\Proveedortype;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateProveedortype extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name;
@@ -31,6 +34,7 @@ class CreateProveedortype extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.proveedores.tipos.create');
             $this->resetValidation();
             $this->reset();
         }
@@ -38,6 +42,7 @@ class CreateProveedortype extends Component
 
     public function save()
     {
+        $this->authorize('admin.proveedores.tipos.create');
         $this->name = trim($this->name);
         $this->validate();
 

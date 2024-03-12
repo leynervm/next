@@ -2,17 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Ramsey\Uuid\Type\Integer;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
-use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
+
+    public function __construct()
+    {
+
+        // $this->middleware(function ($request, $next) {
+        //     if (!auth()->user()->isAdmin()) {
+        //         if (!auth()->user()->hasPermissionTo('admin.users')) {
+        //             abort(403, 'THIS ACTION IS UNAUTHORIZED.');
+        //         }
+        //     }
+        //     return $next($request);
+        // });
+
+
+        $this->middleware('can:admin.users')->only('index');
+        $this->middleware('can:admin.users.create')->only('create');
+        $this->middleware('can:admin.users.edit')->only('edit');
+    }
 
     public function index()
     {
@@ -81,7 +94,7 @@ class UserController extends Controller
 
         // try {
         //     DB::beginTransaction();
-            
+
         //     $almacen_id = null;
         //     if ($request->sucursal_id) {
         //         if (!empty($request->sucursal_id)) {
@@ -113,16 +126,6 @@ class UserController extends Controller
     {
         // $user->delete();
         // return redirect()->route('admin.users')->with('mensaje', 'nuevo usuario registrado correctamente !');
-    }
-
-    public function permisos()
-    {
-        return view('admin.permisos.index');
-    }
-
-    public function roles()
-    {
-        return view('admin.roles.index');
     }
 
     public function history()

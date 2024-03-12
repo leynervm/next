@@ -6,29 +6,32 @@ use App\Models\Cajamovimiento;
 use App\Models\Cuota;
 use App\Models\Moneda;
 use App\Models\Proveedor;
-use App\Models\Serie;
 use App\Models\Sucursal;
 use App\Models\Typepayment;
 use App\Models\User;
+use App\Traits\CajamovimientoTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Compra extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use CajamovimientoTrait;
 
     protected $fillable = [
         'date', 'referencia', 'guia', 'detalle', 'tipocambio', 'gravado',
         'exonerado', 'igv', 'descuento', 'otros', 'total', 'moneda_id',
-        'typepayment_id', 'proveedor_id', 'user_id',
+        'typepayment_id', 'proveedor_id', 'user_id', 'status',
         'sucursal_id'
     ];
+
+    const OPEN = '0';
+    const CLOSE = '1';
 
     public static function boot()
     {
@@ -52,6 +55,16 @@ class Compra extends Model
     public function setDescripcionAttribute($value)
     {
         $this->attributes['descripcion'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function isOpen()
+    {
+        return $this->status == self::OPEN;
+    }
+
+    public function isClose()
+    {
+        return $this->status == self::CLOSE;
     }
 
     public function sucursal(): BelongsTo

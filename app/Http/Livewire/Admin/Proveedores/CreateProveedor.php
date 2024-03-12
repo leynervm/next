@@ -8,14 +8,17 @@ use App\Models\Proveedortype;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateProveedor extends Component
 {
 
+    use AuthorizesRequests;
+
     public $document, $name, $direccion, $ubigeo_id,
-    $proveedortype_id, $telefono, $email, $document2, $name2, $telefono2;
+        $proveedortype_id, $telefono, $email, $document2, $name2, $telefono2;
 
 
     protected function rules()
@@ -44,6 +47,7 @@ class CreateProveedor extends Component
     public function save()
     {
 
+        $this->authorize('admin.proveedores.create');
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
@@ -87,6 +91,7 @@ class CreateProveedor extends Component
     public function searchclient()
     {
 
+        $this->authorize('admin.proveedores.create');
         $this->document = trim($this->document);
         $this->validate([
             'document' => ['required', 'numeric', new ValidateDocument]
@@ -122,6 +127,7 @@ class CreateProveedor extends Component
     public function searchcontacto()
     {
 
+        $this->authorize('admin.proveedores.create');
         $this->document2 = trim($this->document2);
         $this->validate([
             'document2' => ['required', 'numeric', 'digits:8']

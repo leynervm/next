@@ -5,10 +5,13 @@ namespace Modules\Almacen\Http\Livewire\Almacenareas;
 use App\Models\Almacenarea;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 
 class CreateAlmacenarea extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name;
@@ -17,7 +20,7 @@ class CreateAlmacenarea extends Component
     {
         return [
             'name' => [
-                'required', 'min:1', 'max:100', new Letter,
+                'required', 'min:1', 'max:100',
                 new CampoUnique('almacenareas', 'name', null, true),
             ]
         ];
@@ -31,6 +34,7 @@ class CreateAlmacenarea extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.almacen.almacenareas.create');
             $this->resetValidation();
             $this->reset('name', 'open');
         }
@@ -38,11 +42,13 @@ class CreateAlmacenarea extends Component
 
     public function save()
     {
+
+        $this->authorize('admin.almacen.almacenareas.create');
         $this->name = trim($this->name);
         $this->validate();
 
         $almacenarea = Almacenarea::withTrashed()
-        ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
+            ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
 
         if ($almacenarea) {
             $almacenarea->restore();
@@ -53,6 +59,7 @@ class CreateAlmacenarea extends Component
         }
 
         $this->emitTo('almacen::almacenareas.show-almacenareas', 'render');
-        $this->reset('name', 'open');
+        $this->reset();
+        $this->dispatchBrowserEvent('created');
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Cuenta;
 use App\Models\Methodpayment;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,11 +14,11 @@ use Livewire\WithPagination;
 class ShowMethodpayments extends Component
 {
 
+    use AuthorizesRequests;
     use WithPagination;
 
     public $methodpayment;
     public $open = false;
-    public $selectedCuentas = [];
 
     protected $listeners = ['render'];
 
@@ -27,6 +28,9 @@ class ShowMethodpayments extends Component
             'methodpayment.name' => [
                 'required', 'min:3', 'max:100',
                 new CampoUnique('methodpayments', 'name', $this->methodpayment->id, true),
+            ],
+            'methodpayment.type' => [
+                'required', 'integer', 'min:0', 'max:1',
             ],
             'methodpayment.default' => [
                 'required', 'integer', 'min:0', 'max:1',
@@ -43,27 +47,26 @@ class ShowMethodpayments extends Component
     public function render()
     {
         $methodpayments = Methodpayment::orderBy('name', 'asc')->paginate();
-        $cuentas = Cuenta::orderBy('account', 'asc')->get();
-        return view('livewire.admin.methodpayments.show-methodpayments',  compact('methodpayments', 'cuentas'));
+        return view('livewire.admin.methodpayments.show-methodpayments',  compact('methodpayments'));
     }
 
     public function edit(Methodpayment $methodpayment)
     {
-        $this->selectedCuentas = $methodpayment->cuentas->pluck('id');
-        $this->methodpayment = $methodpayment;
+        $this->authorize('admin.cajas.methodpayments.edit');
         $this->resetValidation();
+        $this->methodpayment = $methodpayment;
         $this->open = true;
     }
 
     public function update()
     {
         try {
+            $this->authorize('admin.cajas.methodpayments.edit');
             DB::beginTransaction();
             $this->methodpayment->default = $this->methodpayment->default == 1 ? 1 : 0;
             $this->methodpayment->name = trim($this->methodpayment->name);
             $this->validate();
             $this->methodpayment->save();
-            $this->methodpayment->cuentas()->sync($this->selectedCuentas);
             DB::commit();
             $this->dispatchBrowserEvent('updated');
             $this->reset();
@@ -76,14 +79,10 @@ class ShowMethodpayments extends Component
         }
     }
 
-    public function confirmDelete(Methodpayment $methodpayment)
-    {
-        $this->dispatchBrowserEvent('methodpayments.confirmDelete', $methodpayment);
-    }
-
     public function delete(Methodpayment $methodpayment)
     {
-        $methodpayment->deleteOrFail();
+        $this->authorize('admin.cajas.methodpayments.delete');
+        $methodpayment->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 }

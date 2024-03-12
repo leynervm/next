@@ -1,9 +1,9 @@
 <?php
 
-use App\Models\Concept;
+use App\Enums\DefaultConceptsEnum;
 use App\Models\Empresa;
 use App\Models\Guia;
-use App\Models\Opencaja;
+use App\Models\Pricetype;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +31,7 @@ function formatDecimalOrInteger($numero, $decimals = 2)
     return intval($numero) == floatval($numero) ? intval($numero) : number_format($numero, $decimals, '.', '');
 }
 
-function formatDate($date, $format = "DD MMMM YYYY hh:m A")
+function formatDate($date, $format = "DD MMMM YYYY hh:mm A")
 {
     return !is_null($date) ? Str::upper(Carbon::parse($date)->locale('es')->isoformat($format)) : null;
 }
@@ -95,11 +95,21 @@ function toastJSON($title, $icon = 'success')
     ])->getData();
 }
 
-
-function verifyOpencaja($opencajaId)
+function getTiypemovimientos()
 {
-    $opencaja = Opencaja::find($opencajaId);
-    return $opencaja->isActivo();
+    return \App\Enums\MovimientosEnum::cases() ?? [];
+}
+
+
+function verifyMonthbox($monthbox)
+{
+    return $monthbox->isUsing();
+}
+
+
+function verifyOpencaja($openbox)
+{
+    return $openbox->isActivo();
 }
 
 function mi_empresa()
@@ -111,21 +121,27 @@ function mi_empresa()
 function getTextConcept($value)
 {
     switch ($value) {
-        case '1': //Concept::VENTAS;
+        case  DefaultConceptsEnum::VENTAS->value;
             $text = 'VENTA FÍSICA';
             break;
-        case '2': //Concept::INTERNET;
+        case DefaultConceptsEnum::INTERNET->value;
             $text = 'PAGO INTERNET';
             break;
-        case '3': //Concept::PAYCUOTA;
+        case DefaultConceptsEnum::PAYCUOTA->value;
             $text = 'PAGO CUOTA';
             break;
-        case '4': //Concept::COMPRA;
+        case DefaultConceptsEnum::COMPRA->value;
             $text = 'COMPRA';
             break;
-        case '5': //Concept::PAYCUOTACOMPRA;
+        case DefaultConceptsEnum::PAYCUOTACOMPRA->value;
             $text = 'PAGO CUOTA COMPRA';
             break;
+        case DefaultConceptsEnum::PAYEMPLOYER->value;
+            $text = 'PAGO MENSUALIDAD PERSONAL';
+            break;
+            // case DefaultConceptsEnum::APERTURA->value;
+            //     $text = 'APERTURA CAJA DIARIA';
+            //     break;
         default:
             $text = null;
             break;
@@ -249,5 +265,210 @@ function getTotalCarrito($sesionName)
     // $this->gratuito = Carshoop::Micarrito()
     //     ->where('sucursal_id', $this->sucursal->id)
     //     ->where('gratuito', 1)->sum('total') ?? 0;
+}
 
+
+
+
+function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
+{
+
+    try {
+        $datosRango = [];
+        $name = null;
+        $decimal = 2;
+        $roundedTo = 0;
+        $rangoexists = false;
+        $precioManual = null;
+        $oldPrecioSalida = null;
+        $precioCompra = number_format($producto->pricebuy, $decimal, '.', '');
+        $descuento = number_format(0, 2);
+        $amountDescuento = number_format(0, 2);
+        $tipocambio = $preciotipocambio == null ? 0 : (float) $preciotipocambio;
+        $isRemate = false;
+        // $precioVenta = number_format($producto->pricebuy, $decimal, '.', '');
+        // $precioDescuento = number_format($precioVenta, $decimal, '.', '');
+
+        $amountDescuentoDolar = number_format(0, $decimal, '.', '');
+        $precioVentaDolar = number_format(0, $decimal, '.', '');
+        $precioDescuentoDolar = number_format($precioVentaDolar, $decimal, '.', '');
+
+        // if (count($producto->ofertasdisponibles)) {
+        //     $descuento = $producto->ofertasdisponibles()->first()->descuento;
+        // }
+        // $descuentos = $producto->promocions()->descuentos()->disponibles();
+        $promociones = $producto->promocions()->activos();
+        if ($promociones->descuentos()->exists()) {
+            $descuento = $promociones->descuentos()->first()->descuento ?? 0;
+        }
+
+        $remates = $producto->promocions()->activos();
+        if ($remates->remates()->exists()) {
+            $isRemate = true;
+        }
+
+        if ($priceSelected) {
+
+            $pricetype = Pricetype::with(['rangos' => function ($query) use ($producto) {
+                $query->where('desde', '<=', $producto->pricebuy)
+                    ->where('hasta', '>=', $producto->pricebuy);
+            }])->find($priceSelected);
+
+
+            $name = $pricetype->name;
+            $decimal = $pricetype->decimals;
+            $roundedTo = $pricetype->rounded;
+
+            $precioVenta = number_format(0, $pricetype->decimals, '.', '');
+            $amountDescuento = number_format(0, $pricetype->decimals, '.', '');
+            $precioDescuento = number_format(0, $pricetype->decimals, '.', '');
+            $amountDescuentoDolar = number_format(0, $pricetype->decimals, '.', '');
+            $precioVentaDolar = number_format(0, $pricetype->decimals, '.', '');
+            $precioDescuentoDolar = number_format(0, $pricetype->decimals, '.', '');
+            $oldPrecioSalida = number_format(0, $pricetype->decimals, '.', '');
+
+            $priceManual = $producto->pricetypes()
+                ->where('pricetype_id', $priceSelected)->first();
+
+            if ($priceManual) {
+                $precioManual = number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
+
+                $amountDescuento = number_format(($priceManual->pivot->price * $descuento) / 100, $pricetype->decimals, '.', '');
+                $precioVenta = number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
+                $precioDescuento = number_format($priceManual->pivot->price - $amountDescuento, $pricetype->decimals, '.', '');
+
+                if ($tipocambio > 0) {
+                    $amountDescuentoDolar = number_format((($precioVenta / $tipocambio) * $descuento) / 100, $pricetype->decimals, '.', '');
+                    $precioVentaDolar = number_format($precioVenta / $tipocambio, $pricetype->decimals, '.', '');
+                    $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $pricetype->decimals, '.', '');
+                    $oldPrecioSalida = number_format($priceManual->pivot->price, $pricetype->decimals, '.', '');
+                }
+            }
+
+            if (count($pricetype->rangos) > 0) {
+                // $rangoPrice = $pricetype->rangos;
+                // if (count($pricetype->rangos)) {
+                foreach ($pricetype->rangos as $rango) {
+                    if ($producto->pricebuy >= $rango->desde && $producto->pricebuy <= $rango->hasta) {
+
+                        $ganancia = number_format($rango->pivot->ganancia ?? 0, 2, '.', '');
+                        $precioCompra = number_format($precioCompra + (($precioCompra * $rango->incremento) / 100), $pricetype->decimals, '.', '');
+                        $oldPrecioSalida = number_format($precioCompra + ($precioCompra * $ganancia) / 100, $pricetype->decimals, '.', '');
+                        // $priceSelect = $priceManual->pivot->price ?? $oldPrecioSalida;
+                        $precioVenta = number_format($priceManual->pivot->price ?? $oldPrecioSalida, $pricetype->decimals, '.', '');
+
+
+                        // SI DESCUENTO > 0 Y GANANCIA > 0 ENTONCES APLICAMOS DSCT 
+                        // AL % GANANCIA Y LUEGO EL RESULTADO RESTAMOS CON EL % GANANCIA
+                        if ($descuento > 0 && $ganancia > 0) {
+                            $descuentoGanacia = number_format(($ganancia * $descuento) / 100, 2, '.', '');
+                            $ganancia = number_format($ganancia - $descuentoGanacia, 2, '.', '');
+                            $priceAntesDSCTO = $priceManual->pivot->price ?? $precioCompra;
+
+                            $precioDescuento = number_format(($priceAntesDSCTO + ($priceAntesDSCTO * $ganancia) / 100), $pricetype->decimals, '.', '');
+                            $amountDescuento = number_format($precioVenta - $precioDescuento, $pricetype->decimals, '.', '');
+                        }
+
+                        $rangoexists = true;
+                        $datosRango = $rango;
+
+                        if ($isRemate) {
+                            $precioVenta = $precioCompra;
+                        }
+
+                        if ($pricetype->rounded > 0) {
+                            $precioVenta = round_decimal($precioVenta, $roundedTo);
+                            $oldPrecioSalida = round_decimal($oldPrecioSalida, $roundedTo);
+                            $precioDescuento = number_format(round_decimal($precioDescuento, $roundedTo), $pricetype->decimals, '.', '');
+                        }
+
+                        if ($tipocambio > 0) {
+                            // $precioVenta = number_format($precioVenta, $pricetype->decimals, '.', '');
+                            // $precioDescuento = number_format($precioVenta - $amountDescuento, $pricetype->decimals, '.', '');
+                            $amountDescuentoDolar = number_format($amountDescuento > 0 ? $amountDescuento / $tipocambio : 0, $pricetype->decimals, '.', '');
+                            $precioVentaDolar = number_format($precioVenta > 0 ? $precioVenta / $tipocambio : 0, $pricetype->decimals, '.', '');
+                            $precioDescuentoDolar = number_format($precioDescuento > 0 ? $precioDescuento / $tipocambio : 0, $pricetype->decimals, '.', '');
+                            // $oldPrecioSalida = number_format($oldPrecioSalida, $pricetype->decimals, '.', '');
+                        }
+                    }
+                }
+            }
+            // else {
+
+            // $amountDescuento = number_format(($precioVenta * $descuento) / 100, $pricetype->decimals, '.', '');
+            // $precioVenta = number_format($precioVenta, $pricetype->decimals, '.', '');
+            // $precioDescuento = number_format($precioVenta - $amountDescuento, $pricetype->decimals, '.', '');
+
+            // if ($tipocambio > 0) {
+            //     $amountDescuentoDolar = number_format((($precioVenta / $tipocambio) * $descuento) / 100, $pricetype->decimals, '.', '');
+            //     $precioVentaDolar = number_format($precioVenta / $tipocambio, $pricetype->decimals, '.', '');
+            //     $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $pricetype->decimals, '.', '');
+            //     $oldPrecioSalida = number_format(0, $pricetype->decimals, '.', '');
+            // }
+            // }
+        } else {
+
+            $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
+            $precioDescuento = number_format($producto->pricesale, $decimal, '.', '');
+            // $diferenciaGan = number_format($precioVenta - $precioCompra, '.', '');
+
+
+            if ($producto->pricesale > 0) {
+                $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
+                $diferenciaGan = number_format(($precioVenta - $precioCompra), $decimal, '.', '');
+
+                // $amountDescuento = number_format(($producto->pricesale * $descuento) / 100, $decimal, '.', '');
+                $amountDescuento = number_format(($diferenciaGan * $descuento) / 100, $decimal, '.', '');
+                $precioDescuento = number_format($producto->pricesale - $amountDescuento, $decimal, '.', '');
+
+                if ($tipocambio > 0) {
+                    // $amountDescuentoDolar = number_format((($producto->pricesale / $tipocambio) * $descuento) / 100, $decimal, '.', '');
+                    $amountDescuentoDolar = number_format((($diferenciaGan / $tipocambio) * $descuento) / 100, $decimal, '.', '');
+                    $precioVentaDolar = number_format(($precioVenta / $tipocambio), $decimal, '.', '');
+                    $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $decimal, '.', '');
+                }
+            }
+        }
+
+        $json = [
+            'success' => true,
+            'pricebuy' => $precioCompra,
+            'pricesale' => $precioVenta,
+            'oldPrice' => $oldPrecioSalida,
+            'pricewithdescount' => $precioDescuento,
+            'pricemanual' => $precioManual,
+            'amountDescuento' => $amountDescuento,
+            'decimal' => $decimal,
+            'descuento' => $descuento,
+            'priceDolar' => $tipocambio > 0 ? $precioVentaDolar : '0.00',
+            'amountDescuentoDolar' => $tipocambio == 1 ? '0.00' : $amountDescuentoDolar,
+            'pricewithdescountDolar' => $tipocambio == 1 ? '0.00' : $precioDescuentoDolar,
+            'existsrango' => $rangoexists,
+            'roundedInteger' => $roundedTo,
+            'rango' => $datosRango,
+            'tipocambio' => $tipocambio > 0 ?  $tipocambio : '0.00',
+            'name' => $name,
+            'isRemate' => $isRemate,
+        ];
+
+        return response()->json($json, 200);
+    } catch (\Exception $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+        throw $e;
+    } catch (\Throwable $e) {
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 400);
+        throw $e;
+    }
+}
+
+function round_decimal($value, $roundedTo = 1)
+{
+    $result = $value - floor($value);
+    $rounded = $roundedTo == 1 ? 0.5 : 1;
+
+    if ($result > 0) {
+        return ($result <= 0.5) ? (float) (floor($value) + $rounded) : round($value);
+    } else {
+        return (float) $value;
+    }
 }

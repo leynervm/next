@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\DefaultConceptsEnum;
+use App\Enums\MovimientosEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,9 +16,10 @@ class CreateConceptsTable extends Migration
     public function up()
     {
         Schema::create('concepts', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->string('name', 100);
-            $table->integer('default')->default(0);
+            $table->string('typemovement', 7);
+            $table->string('default', 2)->default(DefaultConceptsEnum::DEFAULT->value);
             $table->softDeletes();
         });
     }

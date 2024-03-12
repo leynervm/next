@@ -97,7 +97,7 @@ class Producto extends Model
 
     public function seriesdisponibles(): HasMany
     {
-        return $this->hasMany(Serie::class)->where('status', 0);
+        return $this->hasMany(Serie::class)->where('status', Serie::DISPONIBLE);
     }
 
     public function garantiaproductos(): HasMany
@@ -133,12 +133,12 @@ class Producto extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class)->withTrashed();
+        return $this->belongsTo(Category::class);
     }
 
     public function subcategory(): BelongsTo
     {
-        return $this->belongsTo(Subcategory::class)->withTrashed();
+        return $this->belongsTo(Subcategory::class);
     }
 
     public function unit(): BelongsTo
@@ -203,6 +203,16 @@ class Producto extends Model
     {
         return $this->hasMany(Promocion::class)->disponibles();
     }
+
+    public function descuentosactivos()
+    {
+        return $this->hasMany(Promocion::class)->descuentosDisponibles();
+    }
+
+    // public function scoopeCombos()
+    // {
+    //     return $this->hasMany(Promocion::class)->descuentosDisponibles();
+    // }
 
     public function existStock(): BelongsToMany
     {

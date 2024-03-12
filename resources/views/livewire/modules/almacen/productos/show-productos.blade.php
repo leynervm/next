@@ -1,10 +1,4 @@
 <div>
-    {{-- <div class="sm:flex sm:items-center gap-1">
-        <h2 class="text-lg font-medium text-gray-800">Productos</h2>
-        <span class="px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full">240
-            vendors</span>
-    </div> --}}
-
     @if ($productos->hasPages())
         <div class="w-full pb-2">
             {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
@@ -158,7 +152,7 @@
                     PRECIO COMPRA
                 </th>
 
-                @if (mi_empresa()->uselistprice)
+                @if (mi_empresa()->uselistprice == '0')
                     <th scope="col" class="p-2 font-medium">
                         PRECIO VENTA
                     </th>
@@ -206,13 +200,17 @@
                                     </button>
                                 @endif
                                 <div class="flex-shrink-1">
-                                    <a href="{{ route('admin.almacen.productos.show', $item) }}"
-                                        class="inline-block font-medium break-words underline text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
-                                        {{ $item->name }}</a>
+                                    @can('admin.almacen.productos.edit')
+                                        <a href="{{ route('admin.almacen.productos.edit', $item) }}"
+                                            class="inline-block font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                            {{ $item->name }}</a>
+                                    @endcan
 
-                                    {{-- <a href="{{ route('admin.almacen.productos.show', $item) }}"
-                                        class="font-medium break-words underline text-blue-500 cursor-pointer hover:text-indigo-800 transition-all ease-in-out duration-150">
-                                        {{ $item->name }}</a> --}}
+                                    @cannot('admin.almacen.productos.edit')
+                                        <h1 class="inline-block font-medium break-words text-linktable">
+                                            {{ $item->name }}</h1>
+                                    @endcannot
+
                                     <p class="text-xs">
                                         {{ $item->marca->name }} / MODELO : {{ $item->modelo }}</p>
                                 </div>
@@ -253,12 +251,12 @@
                         @endif
 
                         <td class="p-2 text-xs text-center">
-                            {{ $item->pricebuy }}
+                            {{ number_format($item->pricebuy, 3, '.', ', ') }}
                         </td>
 
-                        @if (mi_empresa()->uselistprice)
+                        @if (mi_empresa()->uselistprice == '0')
                             <td class="p-2 text-xs text-center">
-                                {{ $item->pricesale }}
+                                {{ number_format($item->pricesale, 3, '.', ', ') }}
                             </td>
                         @endif
 

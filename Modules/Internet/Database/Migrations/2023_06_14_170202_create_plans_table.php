@@ -22,17 +22,14 @@ class CreatePlansTable extends Migration
             $table->decimal('disponibilidad', 5, 2);
             $table->decimal('tasagarantizada', 5, 2);
             $table->decimal('price', 8, 2);
-            $table->integer('delete')->default(0);
             $table->bigInteger('typenetwork_id')->nullable();
             $table->bigInteger('zona_id')->nullable();
             $table->bigInteger('unit_id')->nullable();
-            $table->bigInteger('tribute_id')->nullable();
             $table->bigInteger('user_id')->nullable();
 
             $table->foreign('typenetwork_id')->on('typenetworks')->references('id');
             $table->foreign('zona_id')->on('zonas')->references('id');
             $table->foreign('unit_id')->on('units')->references('id');
-            $table->foreign('tribute_id')->on('tributes')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->timestamps();
         });

@@ -3,8 +3,6 @@
 
 <head>
     <meta charset="utf-8">
-
-
     @if (mi_empresa())
         @if (mi_empresa()->icono)
             <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . mi_empresa()->icono) }}">
@@ -118,12 +116,12 @@
                                     <div class="text-xs px-3">
                                         <p class="text-right">{{ Auth::user()->name }}</p>
 
-                                        @if (Auth::user()->sucursal)
+                                        @if (Auth::user()->employer)
                                             <small
-                                                class="font-medium text-[10px]">[{{ Auth::user()->sucursal->name }}]</small>
+                                                class="font-medium text-[10px]">[{{ Auth::user()->employer->sucursal->name }}]</small>
                                         @else
-                                            <small class="font-medium text-[10px] text-next-500">[SUCURSAL NO
-                                                ASIGNADA]</small>
+                                            <small class="font-medium text-[10px] text-next-500">
+                                                [SUCURSAL NO ASIGNADA]</small>
                                         @endif
 
                                     </div>
@@ -214,6 +212,7 @@
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/sortableJS/Sortable.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     {{-- <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script> --}}
     {{-- <script src="https://cdn.ckeditor.com/ckeditor5/38.1.1/super-build/ckeditor.js"></script> --}}
@@ -268,6 +267,18 @@
             title: 'Eliminado correctamente'
         });
     })
+
+    window.addEventListener('birthday', data => {
+        console.log(data);
+        swal.fire({
+            title: 'FELÍZ CUMPLEAÑOS, ' + data.detail,
+            // text: data.detail.text,
+            // html: data.detail.text,
+            icon: 'success',
+            confirmButtonColor: '#0FB9B9',
+            confirmButtonText: 'Gracias',
+        })
+    });
 
     window.addEventListener('validation', data => {
         console.log(data.detail);
@@ -383,7 +394,6 @@
 
         localStorage.setItem('isSidebarMobileOpen', !sidebar.classList.contains(
             '-translate-x-full'));
-
     })
 
 
@@ -391,8 +401,7 @@
 
     elementos.forEach(elemento => {
         elemento.addEventListener("keydown", (e) => {
-            if (e.key == "Enter") {
-                // console.log(e.key);
+            if (e.key == "Enter" || e.keyCode == 13) {
                 e.preventDefault();
                 return false;
             }
@@ -443,6 +452,49 @@
         //     event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
         // }
     }
+
+
+    // SI FUNCIONA PROVADO EN ONKEYPRERSS DEL INPUT
+    //onkeypress="return validarNumeroDecimal(event)"
+    function validarDecimal(event, maxlenth = 0) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var charTyped = String.fromCharCode(charCode);
+        var regex = /^[0-9.]+$/;
+
+        if (maxlenth > 0) {
+            if (event.target.value.length >= maxlenth) {
+                return charCode == 13 ? true : false;
+            }
+        }
+
+        if (regex.test(charTyped)) {
+            if (charTyped === '.' && event.target.value.includes('.')) {
+                return false;
+            }
+            return true;
+        }
+        //permitir hacer enter en input
+        return charCode == 13 ? true : false;
+    }
+
+    function validarNumero(event, maxlenth = 0) {
+        var charCode = (event.which) ? event.which : event.keyCode;
+        var charTyped = String.fromCharCode(charCode);
+        var regex = /^[0-9]+$/;
+
+        if (maxlenth > 0) {
+            if (event.target.value.length >= maxlenth) {
+                return charCode == 13 ? true : false;
+            }
+        }
+
+        if (regex.test(charTyped)) {
+            return true;
+        }
+        //permitir hacer enter en input
+        return charCode == 13 ? true : false;
+    }
+
 
     // $('.numeric').on('keydown', function(event) {
     //     if (event.key === 'e' || event.key === 'E') {

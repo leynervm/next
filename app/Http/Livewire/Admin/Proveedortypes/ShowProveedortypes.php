@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Admin\Proveedortypes;
 
 use App\Models\Proveedortype;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -11,12 +12,13 @@ class ShowProveedortypes extends Component
 {
 
     use WithPagination;
+    use AuthorizesRequests;
 
     public $proveedortype;
     public $open = false;
     public $name;
 
-    protected $listeners = ['render', 'delete'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
@@ -41,6 +43,7 @@ class ShowProveedortypes extends Component
 
     public function edit(Proveedortype $proveedortype)
     {
+        $this->authorize('admin.proveedores.tipos.edit');
         $this->proveedortype = $proveedortype;
         $this->resetValidation();
         $this->open = true;
@@ -48,6 +51,7 @@ class ShowProveedortypes extends Component
 
     public function update()
     {
+        $this->authorize('admin.proveedores.tipos.edit');
         $this->proveedortype->name = trim($this->proveedortype->name);
         $this->validate();
         $this->proveedortype->save();
@@ -57,7 +61,8 @@ class ShowProveedortypes extends Component
 
     public function delete(Proveedortype $proveedortype)
     {
-        $proveedortype->deleteOrFail();
+        $this->authorize('admin.proveedores.tipos.delete');
+        $proveedortype->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 }

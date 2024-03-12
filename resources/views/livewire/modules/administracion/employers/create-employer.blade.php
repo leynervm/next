@@ -1,4 +1,4 @@
-<div>
+<div x-data="createemployer">
     <x-button-next titulo="Registrar" wire:click="$set('open', true)">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
@@ -13,13 +13,14 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" class="relative" x-data="data">
+            <form wire:submit.prevent="save" class="relative block w-full">
                 <div class="w-full grid xs:grid-cols-2 gap-2">
                     <div class="w-full">
                         <x-label value="DNI :" />
                         <div class="w-full inline-flex gap-1">
                             <x-input class="block w-full prevent" wire:model.defer="document"
-                                wire:keydown.enter="getClient" placeholder="DNI..." />
+                                wire:keydown.enter="getClient" placeholder="DNI..." type="number"
+                                onkeypress="return validarNumero(event, 11)" />
                             <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled"
                                 wire:target="getClient">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -46,6 +47,7 @@
                             <x-select class="block w-full" wire:model.defer="sexo" id="sexoemp_id"
                                 data-dropdown-parent="null" x-ref="select">
                                 <x-slot name="options">
+                                    <option value="E">EMPRESARIAL</option>
                                     <option value="M">MASCULINO</option>
                                     <option value="F">FEMENINO</option>
                                 </x-slot>
@@ -64,14 +66,15 @@
 
                     <div class="w-full">
                         <x-label value="Teléfono :" />
-                        <x-input class="block w-full" wire:model.defer="telefono" placeholder="+51 999 999 999"
-                            maxlength="9" />
+                        <x-input class="block w-full" wire:model.defer="telefono" placeholder="" maxlength="9"
+                            onkeypress="return validarNumero(event, 9)" />
                         <x-jet-input-error for="telefono" />
                     </div>
 
                     <div class="w-full">
                         <x-label value="Sueldo :" />
-                        <x-input class="block w-full" wire:model.defer="sueldo" type="numeric" placeholder="0.00" />
+                        <x-input class="block w-full" wire:model.defer="sueldo" type="number" placeholder="0.00"
+                            onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="sueldo" />
                     </div>
 
@@ -87,7 +90,7 @@
                         <x-jet-input-error for="horasalida" />
                     </div>
 
-                    <div class="w-full xs:grid-cols-2">
+                    <div class="w-full xs:col-span-2">
                         <x-label value="Área de trabajo :" />
                         <div class="relative" id="parentareawork" x-data="{ areawork_id: @entangle('areawork_id').defer }" x-init="select2Areawork"
                             wire:ignore>
@@ -106,34 +109,131 @@
                         <x-jet-input-error for="areawork_id" />
                     </div>
 
-                    <div class="w-full xs:grid-cols-2">
+                    <div class="w-full xs:col-span-2">
                         <x-label value="Sucursal :" />
-                        <div class="relative" x-data="{ sucursal_id: @entangle('sucursal_id').defer }" x-init="select2Sucursal" wire:ignore>
-                            <x-select class="block w-full" x-ref="selectsuc" wire:model.defer="sucursal_id"
-                                id="ubigeoclient_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
-                                <x-slot name="options">
-                                    @if (count($sucursals))
-                                        @foreach ($sucursals as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
+                        @if ($user)
+                            @if ($user->sucursal)
+                                <x-disabled-text :text="$user->sucursal->name" />
+                            @else
+                                <div class="relative" x-data="{ sucursal_id: @entangle('sucursal_id').defer }" x-init="select2Sucursal" wire:ignore>
+                                    <x-select class="block w-full" x-ref="selectsuc" wire:model.defer="sucursal_id"
+                                        id="sucursal_id" data-minimum-results-for-search="3"
+                                        data-dropdown-parent="null">
+                                        <x-slot name="options">
+                                            @if (count($sucursals))
+                                                @foreach ($sucursals as $item)
+                                                    <option value="{{ $item->id }}">
+                                                        {{ $item->name }}
+                                                    </option>
+                                                @endforeach
+                                            @endif
+                                        </x-slot>
+                                    </x-select>
+                                    <x-icon-select />
+                                </div>
+                            @endif
+                        @else
+                            <div class="relative" x-data="{ sucursal_id: @entangle('sucursal_id').defer }" x-init="select2Sucursal" wire:ignore>
+                                <x-select class="block w-full" x-ref="selectsuc" wire:model.defer="sucursal_id"
+                                    id="sucursal_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
+                                    <x-slot name="options">
+                                        @if (count($sucursals))
+                                            @foreach ($sucursals as $item)
+                                                <option value="{{ $item->id }}">
+                                                    {{ $item->name }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                        @endif
                         <x-jet-input-error for="sucursal_id" />
                     </div>
                 </div>
 
+                <div class="w-full">
+                    <div class="mt-2">
+                        <x-label-check for="adduser">
+                            <x-input wire:model.defer="adduser" x-model="adduser" name="adduser" type="checkbox"
+                                id="adduser" />
+                            AGREGAR DATOS DE ACCESO
+                        </x-label-check>
+                    </div>
+
+                    <x-form-card titulo="PERFIL USUARIO ACCESO" x-show="adduser"
+                        class="mt-5 animate__animated animate__fadeInDown animate__faster">
+                        @if ($user)
+                            <x-simple-card class="w-full flex flex-col gap-1 rounded-md cursor-default p-3">
+                                <div class="w-full">
+                                    <h1 class="font-semibold text-sm leading-4 text-primary">
+                                        {{ $user->name }}</h1>
+
+                                    <h1 class="text-colorlabel font-medium text-xs">
+                                        CORREO : {{ $user->email }} </h1>
+                                </div>
+                                <div class="w-full flex justify-end">
+                                    <x-button-delete wire:click="clearuser" wire:loading.attr="disabled"
+                                        wire:key="{{ rand() }}" />
+                                </div>
+                                <x-jet-input-error for="email" />
+                            </x-simple-card>
+                        @else
+                            <div class="w-full grid grid-cols-2 gap-2">
+                                <div class="w-full">
+                                    <x-label value="Correo :" />
+                                    <x-input class="block w-full" name="email" wire:model.defer="email"
+                                        placeholder="Correo de acceso..." />
+                                    <x-jet-input-error for="email" />
+                                </div>
+                                <div class="w-full">
+                                    <x-label value="Contraseña :" />
+                                    <x-input type="password" class="block w-full" name="password"
+                                        wire:model.defer="password" placeholder="Ingrese contraseña..." />
+                                    <x-jet-input-error for="password" />
+                                </div>
+                                <div class="w-full">
+                                    <x-label value="Confirmar contraseña :" />
+                                    <x-input type="password" class="block w-full" name="password_confirmation"
+                                        wire:model.defer="password_confirmation"
+                                        placeholder="Confirmar contraseña..." />
+                                    <x-jet-input-error for="password_confirmation" />
+                                </div>
+                            </div>
+                        @endif
+                    </x-form-card>
+
+                    @if (!$user)
+                        <x-form-card titulo="ROLES" x-show="adduser"
+                            class="mt-5 animate__animated animate__fadeInDown animate__faster">
+                            <div class="w-full">
+                                @if (count($roles))
+                                    <div class="w-full flex flex-wrap gap-2">
+                                        @foreach ($roles as $item)
+                                            <x-input-radio class="py-2" :for="'role_' . $item->id" :text="$item->name">
+                                                <input class="sr-only peer peer-disabled:opacity-25" type="checkbox"
+                                                    id="role_{{ $item->id }}" name="roles[]"
+                                                    value="{{ $item->id }}" wire:model.defer="selectedRoles" />
+                                            </x-input-radio>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                <x-jet-input-error for="selectedRoles" />
+                            </div>
+                        </x-form-card>
+                    @endif
+                </div>
+
                 <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled">
+                    <x-button type="submit" wire:loading.attr="disabled" class="inline-block">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>
 
-                <div wire:loading.flex class="loading-overlay rounded hidden">
+                {{-- {{ print_r($errors->all()) }} --}}
+
+                <div wire:loading.flex wire:target="save" class="loading-overlay rounded hidden">
                     <x-loading-next />
                 </div>
             </form>
@@ -142,6 +242,12 @@
 
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('createemployer', () => ({
+                adduser: @entangle('adduser').defer,
+            }))
+        })
+
         function select2Sucursal() {
             this.selectSuc = $(this.$refs.selectsuc).select2();
             this.selectSuc.val(this.sucursal_id).trigger("change");
@@ -172,7 +278,6 @@
             });
         }
 
-
         function select2Areawork() {
             this.selectA = $(this.$refs.selecta).select2();
             this.selectA.val(this.areawork_id).trigger("change");
@@ -187,71 +292,5 @@
                 this.selectA.val(value).trigger("change");
             });
         }
-
-
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('data', () => ({
-                contact: false,
-                document: @entangle('document').defer,
-
-                toggle() {
-                    if (this.document.trim().length == 11) {
-                        this.contact = true;
-                    } else {
-                        this.contact = false;
-                    }
-                }
-            }))
-        });
-
-
-        // window.addEventListener('render-client-select2', () => {
-        //     renderSelect2();
-        // });
-
-        document.addEventListener("livewire:load", () => {
-
-            // renderSelect2();
-
-            // $("#ubigeoclient_id").on("change", (e) => {
-            //     deshabilitarSelects();
-            //     @this.ubigeo_id = e.target.value;
-            // });
-
-            // $("#pricetype_id").on("change", (e) => {
-            //     deshabilitarSelects();
-            //     @this.pricetype_id = e.target.value;
-            // });
-
-            // $("#sexoclient_id").on("change", (e) => {
-            //     deshabilitarSelects();
-            //     @this.sexo = e.target.value;
-            // });
-
-
-
-            // function renderSelect2() {
-            //     var formulario = document.getElementById("form_create_client");
-            //     var selects = formulario.getElementsByTagName("select");
-
-            //     for (var i = 0; i < selects.length; i++) {
-            //         if (selects[i].id !== "") {
-            //             $("#" + selects[i].id).select2();
-            //         }
-            //     }
-            // }
-
-            // function deshabilitarSelects() {
-            //     var formulario = document.getElementById("form_create_client");
-            //     var selects = formulario.getElementsByTagName("select");
-
-            //     for (var i = 0; i < selects.length; i++) {
-            //         selects[i].disabled = true;
-            //     }
-            // }
-
-        })
     </script>
-
-
 </div>

@@ -1,5 +1,4 @@
 <x-app-layout>
-
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -46,26 +45,34 @@
         </x-link-breadcrumb>
     </x-slot>
 
-
     <div
         class="mx-auto lg:max-w-4xl xl:max-w-7xl flex flex-col gap-8 animate__animated animate__fadeIn animate__faster">
-        <div>
-            <livewire:admin.sucursales.show-sucursal :sucursal="$sucursal">
-        </div>
-
-        @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
+        @can('admin.administracion.sucursales.edit')
             <div>
-                <livewire:admin.sucursales.show-almacens :sucursal="$sucursal">
+                <livewire:admin.sucursales.show-sucursal :sucursal="$sucursal">
             </div>
-        @endif
+        @endcan
 
-        @if (Module::isEnabled('Ventas') || Module::isEnabled('Facturacion'))
+        @can('admin.administracion.sucursales.almacenes')
+            @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
+                <div>
+                    <livewire:admin.sucursales.show-almacens :sucursal="$sucursal">
+                </div>
+            @endif
+        @endcan
+
+        @can('admin.administracion.sucursales.seriecomprobantes')
+            @if (Module::isEnabled('Ventas') || Module::isEnabled('Facturacion'))
+                <div>
+                    <livewire:admin.sucursales.show-seriecomprobantes :sucursal="$sucursal">
+                </div>
+            @endif
+        @endcan
+
+        @can('admin.administracion.sucursales.boxes')
             <div>
-                <livewire:admin.sucursales.show-seriecomprobantes :sucursal="$sucursal">
+                <livewire:admin.sucursales.show-cajas :sucursal="$sucursal">
             </div>
-        @endif
-        <div>
-            <livewire:admin.sucursales.show-cajas :sucursal="$sucursal">
-        </div>
+        @endcan
     </div>
 </x-app-layout>

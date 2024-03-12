@@ -6,10 +6,12 @@ use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Livewire\Component;
 use App\Models\Typegarantia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CreateTypeGarantia extends Component
 {
 
+    use AuthorizesRequests;
     public $open = false;
     public $name, $datecode, $time;
 
@@ -17,14 +19,10 @@ class CreateTypeGarantia extends Component
     {
         return [
             'name' => [
-                'required', 'min:3', 'max:100', new CampoUnique('typegarantias', 'name', null, false),
+                'required', 'min:3', 'max:100', new CampoUnique('typegarantias', 'name', null),
             ],
-            'datecode' => [
-                'required', 'string', 'min:2', 'max:4',
-            ],
-            'time' => [
-                'required', 'integer', 'min:1', 'max:100'
-            ]
+            'datecode' => ['required', 'string', 'min:2', 'max:4',],
+            'time' => ['required', 'integer', 'min:1', 'max:100']
         ];
     }
 
@@ -37,6 +35,7 @@ class CreateTypeGarantia extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.almacen.typegarantias.create');
             $this->resetValidation();
             $this->reset('name', 'datecode', 'time', 'open');
         }
@@ -44,6 +43,7 @@ class CreateTypeGarantia extends Component
 
     public function save()
     {
+        $this->authorize('admin.almacen.typegarantias.create');
         $this->name = trim($this->name);
         $this->datecode = trim($this->datecode);
         $this->time = trim($this->time);
@@ -56,6 +56,8 @@ class CreateTypeGarantia extends Component
         ]);
 
         $this->emitTo('almacen::garantias.show-type-garantias', 'render');
-        $this->reset('name', 'datecode', 'time', 'open');
+        $this->reset();
+        $this->resetValidation();
+        $this->dispatchBrowserEvent('created');
     }
 }

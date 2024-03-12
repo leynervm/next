@@ -1,7 +1,7 @@
 <div>
     <div class="flex flex-col xl:flex-row gap-8 animate__animated animate__fadeIn animate__faster">
         <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto registrado.">
-            <div class="w-full flex flex-col gap-3 bg-body p-3 rounded">
+            <div class="w-full flex flex-col gap-3 rounded h-full">
                 @if (count($producto->especificaciones))
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->especificaciones as $item)
@@ -9,17 +9,21 @@
                                 class="text-[10px] inline-flex gap-2 items-center justify-between p-1 font-medium rounded-md bg-fondospancardproduct text-textspancardproduct">
                                 {{ $item->caracteristica->name }} : {{ $item->name }}
 
-                                <x-button-delete
-                                    wire:click="$emit('producto.confirmDeleteEspecificacion',{{ $item }})"
-                                    wire:loading.attr="disabled" />
+                                @can('admin.almacen.productos.especificaciones')
+                                    <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
+                                        wire:loading.attr="disabled" />
+                                @endcan
                             </span>
                         @endforeach
                     </div>
                 @endif
-                <div class="w-full pt-4 flex justify-end">
-                    <x-button wire:click="openmodal" wire:loading.attr="disabled">
-                        AÑADIR ESPECIFICACIÓN</x-button>
-                </div>
+
+                @can('admin.almacen.productos.especificaciones')
+                    <div class="w-full pt-4 flex justify-end mt-auto">
+                        <x-button wire:click="openmodal" wire:loading.attr="disabled">
+                            AÑADIR ESPECIFICACIÓN</x-button>
+                    </div>
+                @endcan
             </div>
         </x-form-card>
 
@@ -35,10 +39,11 @@
                                         class="w-full h-full object-cover">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">
-                                    <x-span-text :text="$item->url" class="truncate" />
-                                    <x-button-delete
-                                        wire:click="$emit('producto.confirmDeleteImage',{{ $item->id }})"
-                                        wire:loading.attr="disabled" />
+                                    <x-span-text :text="$item->url" class="truncate leading-3" />
+                                    @can('admin.almacen.productos.images')
+                                        <x-button-delete onclick="confirmDeleteImage({{ $item->id }})"
+                                            wire:loading.attr="disabled" />
+                                    @endcan
                                 </div>
                                 @if ($item->default == 1)
                                     <span
@@ -50,24 +55,28 @@
                                         </svg>
                                     </span>
                                 @else
-                                    <button type="button" wire:loading.attr="disabled"
-                                        wire:click="defaultimage({{ $item->id }})"
-                                        class="absolute top-1 -left-7 w-6 h-6 group-hover:translate-x-8 rounded-full bg-green-500 p-1 text-white focus:ring-2 focus:ring-green-300 transition ease-out duration-150 hover:scale-110 disabled:opacity-25">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
-                                    </button>
+                                    @can('admin.almacen.productos.images')
+                                        <button type="button" wire:loading.attr="disabled"
+                                            wire:click="defaultimage({{ $item->id }})"
+                                            class="absolute top-1 -left-7 w-6 h-6 group-hover:translate-x-8 rounded-full bg-green-500 p-1 text-white focus:ring-2 focus:ring-green-300 transition ease-out duration-150 hover:scale-110 disabled:opacity-25">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                        </button>
+                                    @endcan
                                 @endif
                             </div>
                         @endforeach
                     </div>
                 @endif
 
-                <div class="w-full pt-4 flex justify-end">
-                    <x-button wire:click="openmodalimage" wire:loading.attr="disabled">AÑADIR IMAGEN</x-button>
-                </div>
+                @can('admin.almacen.productos.images')
+                    <div class="w-full pt-4 flex justify-end">
+                        <x-button wire:click="openmodalimage" wire:loading.attr="disabled">AÑADIR IMAGEN</x-button>
+                    </div>
+                @endcan
             </div>
         </x-form-card>
     </div>
@@ -84,7 +93,7 @@
                     @if (count($caracteristicas))
                         @foreach ($caracteristicas as $item)
                             <fieldset class="w-full border p-2 rounded border-primary mb-2">
-                                <legend class="text-primary text-sm px-1">{{ $item->name }}</legend>
+                                <legend class="text-colorlabel text-xs px-1">{{ $item->name }}</legend>
                                 <div class="w-full flex gap-2 flex-wrap">
                                     @if (count($item->especificacions))
                                         @foreach ($item->especificacions as $especificacion)
@@ -120,52 +129,56 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="saveimage">
-                <div x-data="{ isUploading: false, progress: 0 }" x-on:livewire-upload-start="isUploading = true"
-                    x-on:livewire-upload-finish="isUploading = false"
-                    x-on:livewire-upload-error="$emit('errorImage'), isUploading = false"
-                    x-on:livewire-upload-progress="progress = $event.detail.progress" class="w-full relative">
-
+                <div class="w-full relative">
                     @if (isset($imagen))
-                        <div
-                            class="w-full h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300">
-                            <img class="w-full h-full object-scale-down" src="{{ $imagen->temporaryUrl() }}"
-                                alt="">
-                        </div>
+                        <x-simple-card
+                            class="w-full h-60 md:max-w-md mx-auto mb-1 border border-borderminicard animate__animated animate__fadeIn animate__faster">
+                            <img src="{{ $imagen->temporaryUrl() }}"
+                                class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
+                        </x-simple-card>
                     @else
-                        <div
-                            class="w-full flex items-center justify-center h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard mb-1">
-                            <svg class="text-neutral-500 w-24 h-24" xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path
-                                    d="M13 3.00231C12.5299 3 12.0307 3 11.5 3C7.02166 3 4.78249 3 3.39124 4.39124C2 5.78249 2 8.02166 2 12.5C2 16.9783 2 19.2175 3.39124 20.6088C4.78249 22 7.02166 22 11.5 22C15.9783 22 18.2175 22 19.6088 20.6088C20.9472 19.2703 20.998 17.147 20.9999 13" />
-                                <path
-                                    d="M2 14.1354C2.61902 14.0455 3.24484 14.0011 3.87171 14.0027C6.52365 13.9466 9.11064 14.7729 11.1711 16.3342C13.082 17.7821 14.4247 19.7749 15 22" />
-                                <path
-                                    d="M21 16.8962C19.8246 16.3009 18.6088 15.9988 17.3862 16.0001C15.5345 15.9928 13.7015 16.6733 12 18" />
-                                <path
-                                    d="M17 4.5C17.4915 3.9943 18.7998 2 19.5 2M22 4.5C21.5085 3.9943 20.2002 2 19.5 2M19.5 2V10" />
-                            </svg>
-                        </div>
+                        <x-icon-file-upload class="w-full h-60 text-gray-300" />
                     @endif
 
-                    <div x-show="isUploading" wire:loading.flex class="loading-overlay rounded">
+                    <div wire:loading.flex class="loading-overlay rounded hidden">
                         <x-loading-next />
                     </div>
 
-                    <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
-                        wire:target="imagen">
-                        <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"
-                            accept="image/jpg, image/jpeg, image/png" />
+                    <div class="w-full flex flex-wrap gap-2 justify-center">
+                        <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
+                            wire:target="imagen">
+                            <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"
+                                accept="image/jpg, image/jpeg, image/png" />
+                        </x-input-file>
 
                         @if (isset($imagen))
-                            <x-slot name="clear">
-                                <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
-                                    REGISTRAR</x-button>
-                                <x-button class="inline-flex" wire:loading.attr="disabled" wire:target="clearImage"
-                                    wire:click="clearImage">LIMPIAR</x-button>
-                            </x-slot>
+                            <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
+                                GUARDAR
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
+                                    <path
+                                        d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
+                                </svg>
+                            </x-button>
+
+                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:target="clearImage"
+                                wire:click="clearImage">LIMPIAR
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M3 6h18" />
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                    <line x1="10" x2="10" y1="11" y2="17" />
+                                    <line x1="14" x2="14" y1="11" y2="17" />
+                                </svg>
+                            </x-button>
                         @endif
-                    </x-input-file>
+                    </div>
+
                 </div>
                 <x-jet-input-error wire:loading.remove wire:target="imagen" for="imagen" class="text-center" />
                 <x-jet-input-error for="producto.id" />
@@ -175,40 +188,38 @@
 
 
     <script>
-        document.addEventListener("livewire:load", () => {
-            Livewire.on("producto.confirmDeleteEspecificacion", data => {
-                swal.fire({
-                    title: 'Eliminar especificación del producto ' + data.name,
-                    text: "Se eliminará un registro de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
-            });
+        function confirmDeleteImage(image) {
+            swal.fire({
+                title: 'Eliminar imágen del producto',
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deleteimage(image);
+                }
+            })
+        }
 
-            Livewire.on("producto.confirmDeleteImage", data => {
-                swal.fire({
-                    title: 'Eliminar imágen del producto',
-                    text: "Se eliminará un registro de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deleteimage(data);
-                    }
-                })
-            });
-        })
+        function confirmDeleteEspecificacion(especificacion) {
+            swal.fire({
+                title: 'Eliminar especificación ' + especificacion.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(especificacion.id);
+                }
+            })
+        }
     </script>
 </div>

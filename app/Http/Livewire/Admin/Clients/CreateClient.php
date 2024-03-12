@@ -5,13 +5,12 @@ namespace App\Http\Livewire\Admin\Clients;
 use App\Helpers\GetClient;
 use App\Models\Client;
 use App\Models\Pricetype;
-use App\Models\Telephone;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateContacto;
 use App\Rules\ValidateDocument;
 use App\Rules\ValidateNacimiento;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -19,12 +18,14 @@ use Livewire\Component;
 class CreateClient extends Component
 {
 
+    use AuthorizesRequests;
+
     public $open = false;
 
     public $document, $name, $ubigeo_id, $direccion, $email,
         $sexo, $nacimiento, $pricetype_id, $telefono;
-
     public $documentContact, $nameContact, $telefonoContact;
+    public $exists = false;
 
     protected function rules()
     {
@@ -37,13 +38,29 @@ class CreateClient extends Component
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'direccion' => ['required', 'string', 'min:3'],
             'email' => ['nullable', 'min:6', 'email'],
-            'sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])],
-            'nacimiento' => ['nullable', 'date', new ValidateNacimiento(10)],
-            'pricetype_id' => ['nullable', Rule::requiredIf(mi_empresa()->uselistprice == 1), 'integer', 'min:1', 'exists:pricetypes,id'],
+            'sexo' => [
+                'required', 'string', 'min:1', 'max:1',
+                Rule::in(['M', 'F', 'E'])
+            ],
+            'nacimiento' => [
+                'nullable', 'date',
+                // new ValidateNacimiento(10)
+            ],
+            'pricetype_id' => [
+                'nullable',
+                Rule::requiredIf(mi_empresa()->usarlista()),
+                'integer', 'min:1', 'exists:pricetypes,id'
+            ],
             'telefono' => ['required', 'numeric', 'digits_between:7,9'],
-            'documentContact' => [new ValidateContacto($this->document)],
-            'nameContact' => [new ValidateContacto($this->document)],
-            'telefonoContact' => [new ValidateContacto($this->document)],
+            'documentContact' => [
+                new ValidateContacto($this->document)
+            ],
+            'nameContact' => [
+                new ValidateContacto($this->document)
+            ],
+            'telefonoContact' => [
+                new ValidateContacto($this->document)
+            ],
         ];
     }
 
@@ -57,14 +74,21 @@ class CreateClient extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.clientes.create');
             $this->resetValidation();
             $this->reset();
         }
     }
 
+    public function limpiarcliente()
+    {
+        $this->reset(['document', 'name', 'direccion', 'ubigeo_id', 'exists']);
+    }
+
     public function save()
     {
 
+        $this->authorize('admin.clientes.create');
         if (strlen(trim($this->document)) == 11) {
             $this->sexo = 'E';
         }
@@ -137,6 +161,7 @@ class CreateClient extends Component
     public function searchclient()
     {
 
+        $this->authorize('admin.clientes.create');
         $this->document = trim($this->document);
         $this->validate([
             'document' => [
@@ -145,27 +170,17 @@ class CreateClient extends Component
             ]
         ]);
 
-        $this->name = null;
-        $this->direccion = null;
-        $this->telefono = null;
-        $this->pricetype_id = null;
-        $this->ubigeo_id = null;
-
-        $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'pricetype_id', 'ubigeo_id']);
-
+        $this->resetValidation();
+        $this->reset(['name', 'direccion', 'ubigeo_id']);
         $http = new GetClient();
-        $response = $http->getClient($this->document);
+        $response = $http->getSunat($this->document);
 
         if ($response->getData()) {
             if ($response->getData()->success) {
+                $this->exists = true;
                 $this->name = $response->getData()->name;
                 $this->direccion = $response->getData()->direccion;
-                $this->pricetype_id = $response->getData()->pricetype_id;
-                $this->telefono = $response->getData()->telefono;
-
-                if ($response->getData()->ubigeo) {
-                    $this->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
-                }
+                $this->ubigeo_id = $response->getData()->ubigeo_id;
             } else {
                 $this->addError('document', $response->getData()->message);
             }
@@ -177,6 +192,7 @@ class CreateClient extends Component
     public function searchcontacto()
     {
 
+        $this->authorize('admin.clientes.create');
         $this->documentContact = trim($this->documentContact);
         $this->validate([
             'documentContact' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/']
@@ -187,7 +203,7 @@ class CreateClient extends Component
         $this->resetValidation(['documentContact', 'nameContact', 'telefonoContact']);
 
         $http = new GetClient();
-        $response = $http->getClient($this->documentContact);
+        $response = $http->getClient($this->documentContact, false);
 
         if ($response->getData()) {
             if ($response->getData()->success) {

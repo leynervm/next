@@ -29,7 +29,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UbigeoSeeder::class); //Requerido
         $this->call(TypecomprobanteSeeder::class); //Requerido
         // $this->call(EmpresaSeeder::class);
-        $this->call(UserSeeder::class); 
+        $this->call(UserSeeder::class);
         // $this->call(AreaSeeder::class);
         $this->call(MonedaSeeder::class); //Requerido
         // $this->call(CuentaSeeder::class);
@@ -68,5 +68,8 @@ class DatabaseSeeder extends Seeder
 
             // $this->call(ProductoSeeder::class);
         }
+
+        $this->call(RoleSeeder::class); //Requerido
+
     }
 }

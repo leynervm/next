@@ -21,7 +21,7 @@ class VerifyAlmacen
 
         if (!$exists) {
             $mensaje = response()->json([
-                'title' => 'REGISTRAR ALMACÉN EN SUCURSAL',
+                'title' => 'ASIGNAR ALMACÉN A SUCURSAL',
                 'text' => 'Registrar al menos un almacén en sucursal para continuar.',
                 'type' => 'warning'
             ]);

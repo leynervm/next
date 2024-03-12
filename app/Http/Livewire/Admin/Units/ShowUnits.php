@@ -4,13 +4,14 @@ namespace App\Http\Livewire\Admin\Units;
 
 use App\Models\Unit;
 use App\Rules\CampoUnique;
-use App\Rules\Letter;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowUnits extends Component
 {
 
+    use AuthorizesRequests;
     use WithPagination;
 
     public $open = false;
@@ -24,9 +25,6 @@ class ShowUnits extends Component
             'unit.name' => [
                 'required', 'min:2', 'max:100', new CampoUnique('units', 'name', $this->unit->id, true),
             ],
-            // 'unit.abreviatura' => [
-            //     'required', 'min:2', 'max:4'
-            // ],
             'unit.code' => [
                 'required', 'min:1', 'max:4', new CampoUnique('units', 'code', $this->unit->id, true)
             ]
@@ -46,12 +44,14 @@ class ShowUnits extends Component
 
     public function edit(Unit $unit)
     {
+        $this->authorize('admin.administracion.units.edit');
         $this->unit = $unit;
         $this->open = true;
     }
 
     public function update()
     {
+        $this->authorize('admin.administracion.units.edit');
         $this->unit->name = trim($this->unit->name);
         $this->unit->code = trim($this->unit->code);
         $this->validate();
@@ -61,7 +61,8 @@ class ShowUnits extends Component
 
     public function delete(Unit $unit)
     {
-        $unit->deleteOrFail();
+        $this->authorize('admin.administracion.units.delete');
+        $unit->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 }

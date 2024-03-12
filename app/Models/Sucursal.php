@@ -49,11 +49,6 @@ class Sucursal extends Model
         return $this->status == $this::ACTIVO;
     }
 
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class);
-    }
-
     public function ubigeo(): BelongsTo
     {
         return $this->belongsTo(Ubigeo::class);
@@ -64,9 +59,15 @@ class Sucursal extends Model
         return $this->belongsTo(Empresa::class);
     }
 
-    public function almacens(): HasMany
+    public function almacens(): BelongsToMany
     {
-        return $this->hasMany(Almacen::class)->orderBy('name', 'asc');
+        return $this->belongsToMany(Almacen::class)
+            ->orderBy('default', 'desc')->orderBy('name', 'asc');
+    }
+
+    public function monthboxes(): HasMany
+    {
+        return $this->hasMany(Monthbox::class)->orderBy('name', 'asc');
     }
 
     public function almacenDefault()
@@ -74,9 +75,9 @@ class Sucursal extends Model
         return $this->almacens()->where('default', $this::DEFAULT);
     }
 
-    public function cajas(): HasMany
+    public function boxes(): HasMany
     {
-        return $this->hasMany(Caja::class)->withTrashed()->orderBy('name', 'asc');
+        return $this->hasMany(Box::class)->withTrashed()->orderBy('name', 'asc');
     }
 
     public function ventas(): HasMany
@@ -104,14 +105,23 @@ class Sucursal extends Model
         return $this->hasMany(Cajamovimiento::class);
     }
 
-    public function seriecomprobantes(): BelongsToMany
+    public function seriecomprobantes(): HasMany
     {
-        return $this->belongsToMany(Seriecomprobante::class)->withPivot('default');
+        return $this->hasMany(Seriecomprobante::class);
+    }
+
+    public function employers(): HasMany
+    {
+        return $this->hasMany(Employer::class);
     }
 
     public function kardexes()
     {
         return $this->hasMany(Kardex::class);
     }
-    
+
+    public function users()
+    {
+        return $this->hasMany(User::class);
+    }
 }

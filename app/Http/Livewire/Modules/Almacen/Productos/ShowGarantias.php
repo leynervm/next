@@ -7,11 +7,14 @@ use App\Models\Garantiaproducto;
 use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Typegarantia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class ShowGarantias extends Component
 {
+
+    use AuthorizesRequests;
 
     public $producto, $typegarantia, $pricetype;
     public $typegarantia_id, $time;
@@ -42,6 +45,7 @@ class ShowGarantias extends Component
 
     public function save()
     {
+        $this->authorize('admin.almacen.productos.garantias.edit');
         $validatedata = $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'typegarantia_id' => [
@@ -65,13 +69,15 @@ class ShowGarantias extends Component
 
     public function delete(Garantiaproducto $garantiaproducto)
     {
-        $garantiaproducto->deleteOrFail();
+        $this->authorize('admin.almacen.productos.garantias.edit');
+        $garantiaproducto->delete();
         $this->producto->refresh();
         $this->dispatchBrowserEvent('deleted');
     }
 
     public function cambiarprecioventa(Pricetype $pricetype)
     {
+        $this->authorize('admin.administracion.pricetypes.productos');
         $this->reset(['newprice', 'priceold']);
         $this->resetValidation();
         $this->pricetype = $pricetype;
@@ -85,6 +91,7 @@ class ShowGarantias extends Component
     public function saveprecioventa()
     {
 
+        $this->authorize('admin.administracion.pricetypes.productos');
         $this->validate([
             'pricetype.id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
@@ -104,6 +111,7 @@ class ShowGarantias extends Component
 
     public function deletepricemanual()
     {
+        $this->authorize('admin.administracion.pricetypes.productos');
         if ($this->pricemanual) {
             $this->producto->pricetypes()->detach($this->pricetype->id);
             $this->resetValidation();
@@ -114,6 +122,7 @@ class ShowGarantias extends Component
 
     public function savedetalle()
     {
+        $this->authorize('admin.almacen.productos.especificaciones');
         $validateData = $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'descripcion' => ['required', 'string']

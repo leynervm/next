@@ -6,15 +6,15 @@ use App\Models\Pricetype;
 use App\Models\Rango;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
-use App\Rules\Letter;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\RequiredIf;
 use Livewire\Component;
 
 class CreatePricetype extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $show = false;
@@ -37,6 +37,7 @@ class CreatePricetype extends Component
             'name' => ['required', 'string', 'min:3', 'max:100', new CampoUnique('pricetypes', 'name', null, true)],
             'rounded' => ['required', 'integer', 'min:0', 'max:2'],
             'decimals' => ['required', 'integer', 'min:0', 'max:4'],
+            'default' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('pricetypes', 'default', null, true)],
             'web' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('pricetypes', 'web', null, true)],
             'defaultlogin' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('pricetypes', 'defaultlogin', null, true)],
             'temporal' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('pricetypes', 'temporal', null, true)],
@@ -60,6 +61,7 @@ class CreatePricetype extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.administracion.pricetypes.create');
             $this->resetValidation();
             $this->reset();
         }
@@ -67,6 +69,7 @@ class CreatePricetype extends Component
 
     public function save()
     {
+        $this->authorize('admin.administracion.pricetypes.create');
         $this->name = trim($this->name);
         $this->web = $this->web == 1 ? 1 : 0;
         $this->default = $this->default == 1 ? 1 : 0;
@@ -93,9 +96,9 @@ class CreatePricetype extends Component
                     'name' => $this->name,
                     'rounded' => $this->rounded,
                     'decimals' => $this->decimals,
+                    'default' => $this->default,
                     'web' => $this->web,
                     'defaultlogin' => $this->defaultlogin,
-                    'default' => $this->default,
                 ]);
             }
 

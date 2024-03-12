@@ -44,7 +44,8 @@
                                 @if (count($ubigeos))
                                     @foreach ($ubigeos as $item)
                                         <option value="{{ $item->id }}">
-                                            {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                            {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }} /
+                                            {{ $item->ubigeo_reniec }}
                                         </option>
                                     @endforeach
                                 @endif
@@ -93,8 +94,7 @@
             </div>
         </x-form-card>
 
-        <x-form-card titulo="CONTACTO"
-            subtitulo="Nos permitirá contactarse con el proveedor.">
+        <x-form-card titulo="CONTACTO" subtitulo="Nos permitirá contactarse con el proveedor.">
 
             <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
                 <div class="w-full">

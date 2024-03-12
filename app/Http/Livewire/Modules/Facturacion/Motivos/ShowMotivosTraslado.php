@@ -4,13 +4,14 @@ namespace App\Http\Livewire\Modules\Facturacion\Motivos;
 
 use App\Models\Motivotraslado;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowMotivosTraslado extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     protected $listeners = ['render'];
 
@@ -40,6 +41,7 @@ class ShowMotivosTraslado extends Component
 
     public function edit(Motivotraslado $motivotraslado)
     {
+        $this->authorize('admin.facturacion.guias.motivos.edit');
         $this->resetValidation();
         $this->motivotraslado = $motivotraslado;
         $this->open = true;
@@ -47,6 +49,7 @@ class ShowMotivosTraslado extends Component
 
     public function update()
     {
+        $this->authorize('admin.facturacion.guias.motivos.edit');
         $this->motivotraslado->name = trim($this->motivotraslado->name);
         $this->validate();
         $this->motivotraslado->save();
@@ -57,6 +60,7 @@ class ShowMotivosTraslado extends Component
 
     public function delete(Motivotraslado $motivotraslado)
     {
+        $this->authorize('admin.facturacion.guias.motivos.delete');
         $motivotraslado->delete();
         $this->dispatchBrowserEvent('deleted');
     }

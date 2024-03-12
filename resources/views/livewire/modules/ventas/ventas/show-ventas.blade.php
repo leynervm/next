@@ -70,12 +70,14 @@
         @endif
     </div>
 
-    <div class="w-full mt-1">
-        <x-label-check for="eliminados">
-            <x-input wire:model.lazy="deletes" name="deletes" value="true" type="checkbox" id="eliminados" />
-            MOSTRAR VENTAS ELIMINADAS
-        </x-label-check>
-    </div>
+    @can('admin.ventas.deletes')
+        <div class="w-full mt-1">
+            <x-label-check for="eliminados">
+                <x-input wire:model.lazy="deletes" name="deletes" value="true" type="checkbox" id="eliminados" />
+                MOSTRAR VENTAS ELIMINADAS
+            </x-label-check>
+        </div>
+    @endcan
 
     @if ($ventas->hasPages())
         <div class="pt-3 pb-1">
@@ -135,10 +137,6 @@
 
                     <th scope="col" class="p-2 font-medium text-center">
                         SUCURSAL</th>
-
-                    <th scope="col"class="p-2 font-medium">
-                        USUARIO</th>
-
                 </tr>
             </x-slot>
 
@@ -148,31 +146,41 @@
                         <td class="p-2 text-[10px]">
                             @if ($item->trashed())
                                 <p class="block w-full leading-3 text-linktable mb-1">
-                                    {{ $item->code }}
+                                    {{ $item->seriecompleta }}
                                     <br>
                                     {{ $item->seriecomprobante->typecomprobante->descripcion }}
                                 </p>
                                 <x-span-text :text="'ELIMINADO ' . formatDate($item->deleted_at, 'DD MMMM YYYY')" type="red" class="leading-3 !tracking-normal" />
                             @else
-                                <a href="{{ route('admin.ventas.show', $item) }}"
-                                    class="text-linktable hover:text-hoverlinktable inline-block transition-colors ease-out duration-150">
-                                    {{ $item->code }}
-                                    <br>
-                                    {{ $item->seriecomprobante->typecomprobante->descripcion }}
-                                </a>
+                                @can('admin.ventas.edit')
+                                    <a href="{{ route('admin.ventas.edit', $item) }}"
+                                        class="text-linktable hover:text-hoverlinktable inline-block transition-colors ease-out duration-150">
+                                        {{ $item->seriecompleta }}
+                                        <br>
+                                        {{ $item->seriecomprobante->typecomprobante->descripcion }}
+                                    </a>
+                                @endcan
+
+                                @cannot('admin.ventas.edit')
+                                    <p class="text-linktable ">
+                                        {{ $item->seriecompleta }}
+                                        <br>
+                                        {{ $item->seriecomprobante->typecomprobante->descripcion }}
+                                    </p>
+                                @endcannot
                             @endif
                         </td>
                         {{-- <td class="p-2 text-[10px]">
                                 {{ $item->comprobante->seriecompleta }}
                             </td> --}}
                         <td class="p-2 text-center">
-                            {{ formatDate($item->date) }}
+                            <p> {{ formatDate($item->date, 'DD MMMM Y') }}</p>
+                            <p> {{ formatDate($item->date, 'H:m A') }}</p>
                         </td>
-                        <td class="p-2 s">
-                            <div>
-                                <h4 class="">{{ $item->client->document }}</h4>
-                                <p class=" text-xs">{{ $item->client->name }}</p>
-                            </div>
+                        <td class="p-2 ">
+                            <p class="">{{ $item->client->name }}</p>
+                            <p class="text-[10px]">{{ $item->client->document }}</p>
+                            <p class="text-[10px] text-colorsubtitleform">{{ $item->direccion }}</p>
                         </td>
                         <td class="p-2 ">
                             {{ $item->moneda->simbolo }}
@@ -214,9 +222,7 @@
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ $item->user->name }}
+                            <p class="text-[10px] text-colorsubtitleform">USUARIO : {{ $item->user->name }}</p>
                         </td>
                     </tr>
                 @endforeach

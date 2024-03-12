@@ -39,9 +39,14 @@
                         </div>
 
                         <div class="">
-                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            <x-button-delete wire:loading.attr="disabled"
-                                wire:click="$emit('pricetypes.confirmDelete',{{ $item }})" />
+                            @can('admin.administracion.pricetypes.edit')
+                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                            @endcan
+
+                            @can('admin.administracion.pricetypes.delete')
+                                <x-button-delete wire:loading.attr="disabled"
+                                    onclick="confirmDelete({{ $item }})" />
+                            @endcan
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -154,6 +159,24 @@
 
 
     <script>
+        function confirmDelete(pricetype) {
+            swal.fire({
+                title: 'Eliminar lista de precio, ' + pricetype.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(pricetype.id);
+                }
+            })
+        }
+
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('loaderpricetypes', () => ({
                 rounded: @entangle('pricetype.rounded').defer,
@@ -181,25 +204,6 @@
                     });
                 },
             }));
-        })
-
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('pricetypes.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar lista de precio, ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
-            })
         })
     </script>
 </div>

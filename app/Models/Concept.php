@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\DefaultConceptsEnum;
+use App\Enums\MovimientosEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,13 +14,12 @@ class Concept extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'default'];
+    protected $fillable = ['name', 'typemovement', 'default'];
 
-    const VENTAS = "1";
-    const INTERNET = "2";
-    const PAYCUOTA = "3";
-    const COMPRA = "4";
-    const PAYCUOTACOMPRA = "5";
+    protected $casts = [
+        'typemovement' => MovimientosEnum::class,
+        'default' => DefaultConceptsEnum::class
+    ];
 
     public function setNameAttribute($value)
     {
@@ -30,28 +31,54 @@ class Concept extends Model
         return $this->hasMany(Cajamovimiento::class);
     }
 
-    public function scopeDefaultConceptVentas($query)
+    public function scopeVentas($query)
     {
-        return $query->where('default', $this::VENTAS);
+        return $query->where('default', DefaultConceptsEnum::VENTAS);
     }
 
-    public function scopeDefaultConceptInternet($query)
+    public function scopeInternet($query)
     {
-        return $query->where('default', $this::INTERNET);
+        return $query->where('default', DefaultConceptsEnum::INTERNET);
     }
 
-    public function scopeDefaultPaycuota($query)
+    public function scopePaycuota($query)
     {
-        return $query->where('default', $this::PAYCUOTA);
+        return $query->where('default', DefaultConceptsEnum::PAYCUOTA);
     }
 
     public function scopeCompra($query)
     {
-        return $query->where('default', $this::COMPRA);
+        return $query->where('default', DefaultConceptsEnum::COMPRA);
     }
 
     public function scopePaycuotaCompra($query)
     {
-        return $query->where('default', $this::PAYCUOTACOMPRA);
+        return $query->where('default', DefaultConceptsEnum::PAYCUOTACOMPRA);
+    }
+
+    public function scopeAdelantoemployer($query)
+    {
+        return $query->where('default', DefaultConceptsEnum::ADELANTOEMPLOYER);
+    }
+
+    public function scopePayemployer($query)
+    {
+        return $query->where('default', DefaultConceptsEnum::PAYEMPLOYER);
+    }
+
+    public function isDefault()
+    {
+        return $this->default == DefaultConceptsEnum::DEFAULT;
+    }
+
+    public function isIngreso()
+    {
+        return $this->typemovement == MovimientosEnum::INGRESO;
+    }
+
+    public function isDeletemanual()
+    {
+        return $this->default == DefaultConceptsEnum::DEFAULT ||
+            $this->default == DefaultConceptsEnum::ADELANTOEMPLOYER;
     }
 }

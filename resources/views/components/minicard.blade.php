@@ -17,7 +17,7 @@
         {{ $slot }}
 
         @if (isset($content))
-            <p class="text-center"><x-span-text :text="$content" /></p>
+            <p class="text-center"><x-span-text :text="$content" class="!tracking-normal" /></p>
         @endif
     </div>
 

@@ -13,49 +13,28 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save">
-                <x-label value="Descripción concepto :" />
-                <x-input class="block w-full" wire:model.defer="name" placeholder="Descripción del concepto pago..." />
-                <x-jet-input-error for="name" />
-
-                <x-title-next titulo="VALOR PREDETERMINADO" class="mt-3" />
-
-                <div class="w-full flex gap-1 items-start p-1">
-
-                    <div class="block">
-                        <x-label-check for="ninguno">
-                            <x-input wire:model.defer="default" name="default" type="radio" value="0"
-                                id="ninguno" class="checked:rounded-full" />
-                            NINGUNO
-                        </x-label-check>
-                    </div>
-
-                    <div class="block">
-                        <x-label-check for="ventas">
-                            <x-input wire:model.defer="default" name="default" type="radio" value="1"
-                                id="ventas" class="checked:rounded-full" />
-                            PAGO VENTAS
-                        </x-label-check>
-                    </div>
-
-                    <div class="block">
-                        <x-label-check for="internet">
-                            <x-input wire:model.defer="default" name="default" type="radio" value="2"
-                                id="internet" class="checked:rounded-full" />
-                            PAGO INTERNET
-                        </x-label-check>
-                    </div>
-
-                    <div class="block">
-                        <x-label-check for="cuota">
-                            <x-input wire:model.defer="default" name="default" type="radio" value="3"
-                                id="cuota" class="checked:rounded-full" />
-                            PAGO CUOTA
-                        </x-label-check>
-                    </div>
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+                <div class="w-full">
+                    <x-label value="Tipo movimiento :" />
+                    @if (count(getTiypemovimientos()))
+                        <div class="w-full flex flex-wrap gap-2 items-start">
+                            @foreach (getTiypemovimientos() as $movimiento)
+                                <x-input-radio class="py-2" for="{{ $movimiento->value }}" :text="$movimiento->value">
+                                    <input wire:model.defer="typemovement" class="sr-only peer peer-disabled:opacity-25"
+                                        type="radio" id="{{ $movimiento->value }}" name="typemovement"
+                                        value="{{ $movimiento->value }}" />
+                                </x-input-radio>
+                            @endforeach
+                        </div>
+                    @endif
+                    <x-jet-input-error for="typemovement" />
                 </div>
-                <x-jet-input-error for="default" />
-
+                <div class="w-full">
+                    <x-label value="Descripción concepto :" />
+                    <x-input class="block w-full" wire:model.defer="name"
+                        placeholder="Descripción del concepto pago..." />
+                    <x-jet-input-error for="name" />
+                </div>
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">

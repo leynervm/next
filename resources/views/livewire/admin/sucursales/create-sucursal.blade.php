@@ -28,23 +28,28 @@
 
                 <div class="w-full">
                     <x-label value="Ubigeo :" />
-                    <x-select class="block w-full" wire:model.defer="ubigeo_id" id="ubigeosucursal_id"
-                        data-dropdown-parent="null" data-minimum-results-for-search="3">
-                        <x-slot name="options">
-                            @if (count($ubigeos))
-                                @foreach ($ubigeos as $item)
-                                    <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }}
-                                        / {{ $item->distrito }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
+                    <div class="relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }" x-init="selectUbigeos" id="parentubigeosucursal_id"
+                        wire:ignore>
+                        <x-select class="block w-full" id="ubigeosucursal_id" data-dropdown-parent="null"
+                            data-minimum-results-for-search="3" x-ref="selectub">
+                            <x-slot name="options">
+                                @if (count($ubigeos))
+                                    @foreach ($ubigeos as $item)
+                                        <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }}
+                                            / {{ $item->distrito }}</option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
                     <x-jet-input-error for="ubigeo_id" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Código anexo :" />
-                    <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..." maxlength="4" />
+                    <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..."
+                        maxlength="4" />
                     <x-jet-input-error for="codeanexo" />
                 </div>
 
@@ -68,16 +73,19 @@
 
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            $('#ubigeosucursal_id').select2().on("change", function(e) {
-                $('#ubigeosucursal_id').attr("disabled", true);
-                @this.set('ubigeo_id', e.target.value);
+        function selectUbigeos() {
+            this.selectUB = $(this.$refs.selectub).select2();
+            this.selectUB.val(this.ubigeo_id).trigger("change");
+            this.selectUB.on("select2:select", (event) => {
+                this.ubigeo_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
             });
-
-            document.addEventListener('render-create-sucursal', () => {
-                $('#ubigeosucursal_id').select2();
+            this.$watch("ubigeo_id", (value) => {
+                this.selectUB.val(value).trigger("change");
             });
-
-        })
+        }
     </script>
 </div>

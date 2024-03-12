@@ -12,18 +12,18 @@ class Methodpayment extends Model
     use HasFactory;
     use SoftDeletes;
 
+    public $timestamps = false;
+    protected $fillable = ['name', 'type', 'default'];
+
     const DEFAULT = '1';
 
-    protected $guarded = ['created_at', 'updated_at'];
+    const EFECTIVO = '0';
+    const TRANSFERENCIA = '1';
+
 
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
-    }
-
-    public function scopeDefaultMethodpayment($query)
-    {
-        return $query->where('default', self::DEFAULT);
     }
 
     public function scopeDefault($query)
@@ -31,9 +31,14 @@ class Methodpayment extends Model
         return $query->where('default', self::DEFAULT);
     }
 
-    public function cuentas(): BelongsToMany
+    public function scopeEfectivo($query)
     {
-        return $this->belongsToMany(Cuenta::class);
+        return $query->where('type', self::EFECTIVO);
+    }
+
+    public function scopeTransferencia($query)
+    {
+        return $query->where('type', self::TRANSFERENCIA);
     }
 
     public function cajamovimientos()

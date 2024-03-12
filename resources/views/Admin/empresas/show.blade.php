@@ -32,10 +32,17 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    @if ($empresa)
-        <div
-            class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
+    <div
+        class="w-full flex flex-col gap-8 mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
+        <div>
             <livewire:admin.empresas.show-empresa :empresa="$empresa" />
         </div>
-    @endif
+
+        @if (Module::isEnabled('Facturacion'))
+            <div>
+                <livewire:admin.empresas.configuracion-facturacion :empresa="$empresa" />
+            </div>
+        @endif
+
+    </div>
 </x-app-layout>

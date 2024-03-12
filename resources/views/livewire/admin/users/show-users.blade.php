@@ -24,7 +24,6 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     CORREO</th>
 
@@ -35,24 +34,25 @@
                     STATUS</th>
 
                 <th scope="col" class="p-2 font-medium">
-                    ROL</th>
-
+                    ACCESO</th>
+                <th scope="col" class="p-2 font-medium">ROLES</th>
                 <th scope="col" class="p-2 font-medium">
-                    SUCURSALES</th>
+                    SUCURSAL</th>
 
                 <th scope="col" class="p-2 font-medium text-left">
                     TEMA</th>
-
-                <th scope="col" class="p-2 relative">
-                    <span class="sr-only">OPCIONES</span>
-                </th>
+                @can('admin.users.delete')
+                    <th scope="col" class="p-2 relative">
+                        <span class="sr-only">OPCIONES</span>
+                    </th>
+                @endcan
             </tr>
         </x-slot>
         @if (count($users))
             <x-slot name="body">
                 @foreach ($users as $item)
                     <tr>
-                        <td class="p-2 text-xs">
+                        <td class="p-2">
                             <div class="flex items-center gap-2">
                                 <div class="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden">
                                     @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
@@ -60,17 +60,31 @@
                                             src="{{ $item->profile_photo_url }}" alt="{{ $item->name }}" />
                                     @endif
                                 </div>
-                                <a class="w-full text-linktable hover:underline hover:text-hoverlinktable"
-                                    href="{{ route('admin.users.edit', $item) }}">
-                                    {{ $item->name }}</a>
+
+                                @can('admin.users.edit')
+                                    <a class="w-full inline-block text-linktable hover:text-hoverlinktable"
+                                        href="{{ route('admin.users.edit', $item) }}">
+                                        {{ $item->document }}
+                                        <p>{{ $item->name }}</p>
+                                    </a>
+                                @endcan
+
+                                @cannot('admin.users.edit')
+                                    <h1 class="w-full inline-block text-linktable">
+                                        {{ $item->document }}
+                                        <p>{{ $item->name }}</p>
+                                    </h1>
+                                @endcannot
+
+
                             </div>
                         </td>
 
-                        <td class="p-2 text-xs">
+                        <td class="p-2">
                             {{ $item->email }}
                         </td>
 
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             @if ($item->email_verified_at)
                                 <x-icon-default class="inline-block" />
                             @else
@@ -78,7 +92,7 @@
                             @endif
                         </td>
 
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             @if ($item->deleted_at)
                                 <x-span-text text="BAJA" type="red" class="leading-3 !tracking-normal" />
                             @else
@@ -86,18 +100,34 @@
                             @endif
                         </td>
 
-                        <td class="p-2 text-xs">
+                        <td class="p-2 text-center">
+                            @if ($item->employer)
+                                <x-span-text text="DASHBOARD" type="next"
+                                    class="leading-3 !tracking-normal inline-block" />
+                            @else
+                                <x-span-text text="WEB" class="leading-3 !tracking-normal inline-block" />
+                            @endif
+                        </td>
+
+                        <td class="p-2">
                             @if (count($item->roles))
-                                <div class="flex flex-wrap gap-1">
+                                <div class="flex flex-wrap justify-center items-center gap-1">
                                     @foreach ($item->roles as $rol)
                                         <div
-                                            class="inline-flex items-center justify-center gap-1 bg-fondospancardproduct text-textspancardproduct p-1 rounded">
+                                            class="inline-flex items-center justify-center gap-1 bg-fondospancardproduct text-textspancardproduct p-1 rounded-md">
                                             <span class="w-3 h-3 block">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full scale-125"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                                     <path
-                                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                                        d="M12.5 22H6.59087C5.04549 22 3.81631 21.248 2.71266 20.1966C0.453365 18.0441 4.1628 16.324 5.57757 15.4816C7.97679 14.053 10.8425 13.6575 13.5 14.2952">
+                                                    </path>
+                                                    <path
+                                                        d="M16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2C14.4853 2 16.5 4.01472 16.5 6.5Z">
+                                                    </path>
+                                                    <path stroke-width=".3" fill="currentColor"
+                                                        d="M16.0803 21.8573L15.7761 22.5428L15.7761 22.5428L16.0803 21.8573ZM15.1332 20.8425L14.4337 21.113H14.4337L15.1332 20.8425ZM21.8668 20.8425L22.5663 21.113L22.5663 21.113L21.8668 20.8425ZM20.9197 21.8573L21.2239 22.5428L21.2239 22.5428L20.9197 21.8573ZM20.9197 16.5177L21.2239 15.8322L20.9197 16.5177ZM21.8668 17.5325L22.5663 17.262L22.5663 17.262L21.8668 17.5325ZM16.0803 16.5177L15.7761 15.8322L16.0803 16.5177ZM15.1332 17.5325L14.4337 17.262L15.1332 17.5325ZM16 16.375C16 16.7892 16.3358 17.125 16.75 17.125C17.1642 17.125 17.5 16.7892 17.5 16.375H16ZM19.5 16.375C19.5 16.7892 19.8358 17.125 20.25 17.125C20.6642 17.125 21 16.7892 21 16.375H19.5ZM17.625 17.125H19.375V15.625H17.625V17.125ZM19.375 21.25H17.625V22.75H19.375V21.25ZM17.625 21.25C17.2063 21.25 16.9325 21.2495 16.7222 21.2342C16.5196 21.2193 16.4338 21.1936 16.3845 21.1718L15.7761 22.5428C16.0484 22.6637 16.3272 22.7093 16.6128 22.7302C16.8905 22.7505 17.2283 22.75 17.625 22.75V21.25ZM14.25 19.1875C14.25 19.6147 14.2496 19.9702 14.2682 20.2611C14.2871 20.5577 14.3278 20.839 14.4337 21.113L15.8328 20.5721C15.8054 20.5014 15.7795 20.3921 15.7651 20.1658C15.7504 19.9336 15.75 19.6339 15.75 19.1875H14.25ZM16.3845 21.1718C16.1471 21.0664 15.9427 20.8566 15.8328 20.5721L14.4337 21.113C14.6789 21.7474 15.1559 22.2676 15.7761 22.5428L16.3845 21.1718ZM21.25 19.1875C21.25 19.6339 21.2496 19.9336 21.2349 20.1658C21.2205 20.3921 21.1946 20.5014 21.1672 20.5721L22.5663 21.113C22.6722 20.839 22.7129 20.5577 22.7318 20.2611C22.7504 19.9702 22.75 19.6147 22.75 19.1875H21.25ZM19.375 22.75C19.7717 22.75 20.1095 22.7505 20.3872 22.7302C20.6728 22.7093 20.9516 22.6637 21.2239 22.5428L20.6155 21.1718C20.5662 21.1936 20.4804 21.2193 20.2778 21.2342C20.0675 21.2495 19.7937 21.25 19.375 21.25V22.75ZM21.1672 20.5721C21.0573 20.8566 20.8529 21.0664 20.6155 21.1718L21.2239 22.5428C21.8441 22.2676 22.3211 21.7474 22.5663 21.113L21.1672 20.5721ZM19.375 17.125C19.7937 17.125 20.0675 17.1255 20.2778 17.1408C20.4804 17.1557 20.5662 17.1814 20.6155 17.2032L21.2239 15.8322C20.9516 15.7113 20.6728 15.6657 20.3872 15.6448C20.1095 15.6245 19.7717 15.625 19.375 15.625V17.125ZM22.75 19.1875C22.75 18.7603 22.7504 18.4048 22.7318 18.1139C22.7129 17.8173 22.6722 17.536 22.5663 17.262L21.1672 17.8029C21.1946 17.8736 21.2205 17.9829 21.2349 18.2092C21.2496 18.4414 21.25 18.7411 21.25 19.1875H22.75ZM20.6155 17.2032C20.8529 17.3086 21.0573 17.5184 21.1672 17.8029L22.5663 17.262C22.3211 16.6277 21.8441 16.1074 21.2239 15.8322L20.6155 17.2032ZM17.625 15.625C17.2283 15.625 16.8905 15.6245 16.6128 15.6448C16.3272 15.6657 16.0484 15.7113 15.7761 15.8322L16.3845 17.2032C16.4338 17.1814 16.5196 17.1557 16.7222 17.1408C16.9325 17.1255 17.2063 17.125 17.625 17.125V15.625ZM15.75 19.1875C15.75 18.7411 15.7504 18.4414 15.7651 18.2092C15.7795 17.9829 15.8054 17.8736 15.8328 17.8029L14.4337 17.262C14.3278 17.536 14.2871 17.8173 14.2682 18.1139C14.2496 18.4048 14.25 18.7603 14.25 19.1875H15.75ZM15.7761 15.8322C15.1559 16.1074 14.6789 16.6277 14.4337 17.262L15.8328 17.8029C15.9427 17.5184 16.1471 17.3086 16.3845 17.2032L15.7761 15.8322ZM17.5 16.375V14.6875H16V16.375H17.5ZM19.5 14.6875V16.375H21V14.6875H19.5ZM18.5 13.75C19.0782 13.75 19.5 14.1952 19.5 14.6875H21C21 13.3158 19.8548 12.25 18.5 12.25V13.75ZM17.5 14.6875C17.5 14.1952 17.9218 13.75 18.5 13.75V12.25C17.1452 12.25 16 13.3158 16 14.6875H17.5Z">
+                                                    </path>
                                                 </svg>
                                             </span>
                                             <span class="text-[10px]">{{ $rol->name }}</span>
@@ -107,19 +137,23 @@
                             @endif
                         </td>
 
-                        <td class="p-2 text-xs">
+                        <td class="p-2 text-center">
                             @if ($item->sucursal)
-                                <x-span-text :text="$item->sucursal->name" class="leading-3 !tracking-normal" />
+                                {{ $item->sucursal->name }}
+                                @if ($item->sucursal->trashed())
+                                    <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
+                                @endif
                             @endif
                         </td>
-                        <td class="p-2 text-xs">
+                        <td class="p-2">
                             {{ $item->theme_id }}
                         </td>
-                        <td class="p-2 whitespace-nowrap">
-                            <div class="flex gap-1 justify-center items-center">
-                                <x-button-delete />
-                            </div>
-                        </td>
+                        @can('admin.users.delete')
+                            <td class="p-2 text-center">
+                                <x-button-delete wire:loading.attr="disabled"
+                                    onclick="confirmDelete({{ $item }})" />
+                            </td>
+                        @endcan
                     </tr>
                 @endforeach
             </x-slot>
@@ -127,24 +161,23 @@
     </x-table>
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('users.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.emitTo('admin.users.show-users', 'delete', data
-                            .id);
-                    }
-                })
+        function confirmDelete(user) {
+            swal.fire({
+                title: 'Realizar baja de usuario ' + user.name,
+                text: "Se dará de baja un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(user.id);
+                }
             })
-        })
+        }
+
+        // document.addEventListener('livewire:load', function() {})
     </script>
 </div>

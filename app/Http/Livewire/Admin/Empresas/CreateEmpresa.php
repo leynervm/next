@@ -18,19 +18,11 @@ class CreateEmpresa extends Component
 
     use WithFileUploads;
 
+    public $icono, $logo, $cert, $idcert, $idlogo, $idicono;
 
-    public $isUploadingLogo = false;
-    public $isUploadingIcono = false;
-    public $isUploadingPublicKey = false;
-    public $isUploadingPrivateKey = false;
-
-    public $icono, $logo, $iconobase64;
-    protected $listeners = ['erroricono', 'iconloaded'];
-
-    public $idlogo, $idicono, $idpublickey, $publickey, $idprivatekey, $privatekey;
     public $document, $name, $direccion, $telefono, $ubigeo_id,
         $estado, $condicion, $email, $web, $montoadelanto;
-    public $usuariosol, $clavesol;
+    public $usuariosol, $clavesol, $passwordcert, $sendmode, $clientid, $clientsecret;
 
     public $validatemail;
     public $dominiocorreo;
@@ -54,19 +46,23 @@ class CreateEmpresa extends Component
             'web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             'telefono' => ['numeric', 'digits_between:6,9', 'regex:/^\d{6,9}$/'],
             'igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
-            'usuariosol' => ['nullable', 'string'],
-            'clavesol' => ['nullable', 'string'],
             'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
-            'publickey' => ['nullable', 'file', new ValidateFileKey("pem")],
-            'privatekey' => ['nullable', 'file',  new ValidateFileKey("pem")],
+
             // 'validatemail' => ['integer', 'min:0', 'max:1'],
             // 'dominiocorreo' => ['nullable', 'required_if:validatemail,1'],
             'uselistprice' => ['integer', 'min:0', 'max:1'],
             'usepricedolar' => ['integer', 'min:0', 'max:1'],
             'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'viewpricedolar' => ['integer', 'min:0', 'max:1'],
-            'tipocambioauto' => ['integer', 'min:0', 'max:1']
+            'tipocambioauto' => ['integer', 'min:0', 'max:1'],
+            'sendmode' => ['integer', 'min:0', 'max:1'],
+            'usuariosol' => ['nullable',  'required_if:sendmode,1', 'string'],
+            'clavesol' => ['nullable',  'required_if:sendmode,1', 'string'],
+            'passwordcert' => ['nullable',  'required_if:sendmode,1', 'string', 'min:3'],
+            'clientid' => ['nullable',  'required_if:sendmode,1', 'string', 'min:3'],
+            'clientsecret' => ['nullable', 'required_if:sendmode,1', 'string', 'min:3'],
+            'cert' => ['nullable', 'required_if:sendmode,1', 'file',  new ValidateFileKey("pfx")],
         ];
     }
 
@@ -74,8 +70,7 @@ class CreateEmpresa extends Component
     {
         $this->idlogo = rand();
         $this->idicono = rand();
-        $this->idpublickey = rand();
-        $this->idprivatekey = rand();
+        $this->idcert = rand();
     }
 
     public function render()
@@ -116,8 +111,7 @@ class CreateEmpresa extends Component
             }
 
             $urlicono = $this->icono ?? null;
-            $urlpublickey = $this->publickey ?? null;
-            $urlprivatekey = $this->privatekey ?? null;
+            $urlcert = $this->cert ?? null;
 
             if ($this->icono) {
 
@@ -132,17 +126,11 @@ class CreateEmpresa extends Component
                 }
             }
 
-            if ($this->publickey) {
-                $extpublic = FormatoPersonalizado::getExtencionFile($this->publickey->getClientOriginalName());
-                $urlpublickey = 'public_' . $this->document . '.' . $extpublic;
-                $this->publickey->storeAs('company/pem/', $urlpublickey, 'local');
-                // Storage::disk('local')->putFileAs('company/pem/', $this->publickey, $urlpublickey);
-            }
 
-            if ($this->privatekey) {
-                $extprivate = FormatoPersonalizado::getExtencionFile($this->privatekey->getClientOriginalName());
-                $urlprivatekey = 'private_' . $this->document . '.' . $extprivate;
-                $this->privatekey->storeAs('company/pem/', $urlprivatekey, 'local');
+            if ($this->cert) {
+                $extcert = FormatoPersonalizado::getExtencionFile($this->cert->getClientOriginalName());
+                $urlcert = 'cert_' . $this->document . '.' . $extcert;
+                $this->cert->storeAs('company/cert/', $urlcert, 'local');
             }
 
             $empresa = Empresa::create([
@@ -154,10 +142,6 @@ class CreateEmpresa extends Component
                 'email' => $this->email,
                 'web' => $this->web,
                 'icono' => $urlicono,
-                'privatekey' => $urlprivatekey,
-                'publickey' => $urlpublickey,
-                'usuariosol' => $this->usuariosol,
-                'clavesol' => $this->clavesol,
                 'montoadelanto' => $this->montoadelanto,
                 'uselistprice' => $this->uselistprice,
                 'usepricedolar' => $this->usepricedolar,
@@ -167,6 +151,13 @@ class CreateEmpresa extends Component
                 'default' => 1,
                 'igv' => $this->igv,
                 'ubigeo_id' => $this->ubigeo_id,
+                'sendmode' => $this->sendmode,
+                'passwordcert' => $this->passwordcert,
+                'usuariosol' => $this->usuariosol,
+                'clavesol' => $this->clavesol,
+                'clientid' => $this->clientid,
+                'clientsecret' => $this->clientsecret,
+                'cert' => $urlcert,
             ]);
 
             $empresa->sucursals()->create([
@@ -188,9 +179,7 @@ class CreateEmpresa extends Component
                     ->resize(300, 300, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
-                    })
-                    ->orientate()
-                    ->encode('jpg', 30);
+                    })->orientate()->encode('jpg', 30);
 
                 $urlLogo = uniqid() . '.' . $this->logo->getClientOriginalExtension();
                 $compressedImage->save(public_path('storage/images/company/' . $urlLogo));
@@ -248,7 +237,7 @@ class CreateEmpresa extends Component
         $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'ubigeo_id', 'estado', 'condicion']);
 
         $http = new GetClient();
-        $response = $http->getClient($this->document);
+        $response = $http->getSunat($this->document);
 
         if ($response->getData()) {
             if ($response->getData()->success) {
@@ -259,7 +248,6 @@ class CreateEmpresa extends Component
 
                 if (isset($response->getData()->ubigeo)) {
                     $this->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
-                    $this->dispatchBrowserEvent('selectubigeo', $this->ubigeo_id);
                 }
             } else {
                 $this->addError('document', $response->getData()->message);
@@ -282,6 +270,12 @@ class CreateEmpresa extends Component
         }
     }
 
+    public function clearCert()
+    {
+        $this->reset(['cert']);
+        $this->idcert = rand();
+    }
+
     public function clearLogo()
     {
         $this->reset(['logo']);
@@ -294,28 +288,14 @@ class CreateEmpresa extends Component
         $this->idicono = rand();
     }
 
-    public function clearPublickey()
+    public function updatedLogo($file)
     {
-        $this->idpublickey = rand();
-        $this->reset(['publickey']);
-    }
-
-    public function clearPrivatekey()
-    {
-        $this->idprivatekey = rand();
-        $this->reset(['privatekey']);
-    }
-
-    public function erroricono()
-    {
-        $this->isUploadingIcono = false;
-        $this->reset(['icono']);
-        $this->idicono = rand();
-        $this->addError('icono', 'Error al cargar ícono');
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-select-empresa');
+        try {
+            $url = $file->temporaryUrl();
+        } catch (\Exception $e) {
+            $this->reset(['logo']);
+            $this->addError('logo', $e->getMessage());
+            return;
+        }
     }
 }

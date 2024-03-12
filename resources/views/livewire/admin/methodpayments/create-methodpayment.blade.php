@@ -13,33 +13,35 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save">
-                <x-label value="Forma pago :" />
-                <x-input class="block w-full" wire:model.defer="name"
-                    placeholder="Ingrese descripción de forma pago..." />
-                <x-jet-input-error for="name" />
-
-
-                <div class="block mt-1">
-                    <x-label-check for="default">
-                        <x-input wire:model.defer="default" name="default" value="1" type="checkbox"
-                            id="default" />SELECCIONAR COMO PREDETERMINADO </x-label-check>
-                    <x-jet-input-error for="default" />
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+                <div class="w-full">
+                    <x-label value="Forma pago :" />
+                    <div class="w-full flex flex-wrap gap-2">
+                        <x-input-radio class="py-2" for="efectivo" text="EFECTIVO">
+                            <input wire:model.defer="type" class="sr-only peer peer-disabled:opacity-25"
+                                type="radio" id="efectivo" name="type" value="0" />
+                        </x-input-radio>
+                        <x-input-radio class="py-2" for="transferencia" text="TRANSFERENCIA">
+                            <input wire:model.defer="type" class="sr-only peer peer-disabled:opacity-25"
+                                type="radio" id="transferencia" name="type" value="1" />
+                        </x-input-radio>
+                    </div>
+                    <x-jet-input-error for="type" />
                 </div>
 
-                <x-label value="Asignar cuentas pago :" class="mt-2 underline" />
+                <div class="w-full">
+                    <x-label value="Medio pago :" />
+                    <x-input class="block w-full" wire:model.defer="name"
+                        placeholder="Ingrese descripción del pago..." />
+                    <x-jet-input-error for="name" />
+                </div>
 
-                @if (count($cuentas))
-                    <div class="w-full flex gap-1 flex-wrap mt-1">
-                        @foreach ($cuentas as $item)
-                            <x-label-check for="{{ $item->id }}">
-                                <x-input wire:model.defer="selectedCuentas" name="default" value="{{ $item->id }}"
-                                    type="checkbox" id="{{ $item->id }}" />
-                                {{ $item->account }} ({{ $item->descripcion }} - {{ $item->banco->name }})
-                            </x-label-check>
-                        @endforeach
-                    </div>
-                @endif
+                <div class="block">
+                    <x-label-check for="default">
+                        <x-input wire:model.defer="default" name="default" value="1" type="checkbox"
+                            id="default" />SELECCIONAR COMO PREDETERMINADO</x-label-check>
+                    <x-jet-input-error for="default" />
+                </div>
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">

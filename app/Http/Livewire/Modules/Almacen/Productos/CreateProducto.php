@@ -15,16 +15,15 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Almacenarea;
 use App\Models\Estante;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Intervention\Image\ImageManagerStatic as Image;
 
 class CreateProducto extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, AuthorizesRequests;
 
     public $imagen;
     public $identificador;
-    public $isUploading = false;
-
     public $subcategories = [];
     public $selectedAlmacens = [];
 
@@ -72,9 +71,7 @@ class CreateProducto extends Component
         $categories = Category::orderBy('name', 'asc')->get();
         $almacenareas = Almacenarea::orderBy('name', 'asc')->get();
         $estantes = Estante::orderBy('name', 'asc')->get();
-        $almacens = Almacen::whereHas('sucursal', function ($query) {
-            $query->whereNull('deleted_at');
-        })->orderBy('name', 'asc')->get();
+        $almacens = auth()->user()->sucursal->almacens;
 
         return view('livewire.modules.almacen.productos.create-producto', compact('marcas', 'units', 'categories', 'almacenareas', 'estantes', 'almacens'));
     }
@@ -92,6 +89,7 @@ class CreateProducto extends Component
 
     public function save()
     {
+        $this->authorize('admin.almacen.productos.create');
         $this->name = trim($this->name);
         $this->modelo = trim($this->modelo);
         $this->codefabricante = trim($this->codefabricante);
@@ -163,8 +161,12 @@ class CreateProducto extends Component
             DB::commit();
             $this->resetValidation();
             $this->reset();
-
-            return redirect()->route('admin.almacen.productos.show', ['producto' => $producto]);
+            $this->dispatchBrowserEvent('created');
+            if (auth()->user()->hasPermissionTo('admin.almacen.productos.edit')) {
+                return redirect()->route('admin.almacen.productos.edit', ['producto' => $producto]);
+            } else {
+                return redirect()->route('admin.almacen.productos');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -179,5 +181,16 @@ class CreateProducto extends Component
         $this->reset(['imagen']);
         $this->resetValidation();
         $this->identificador = rand();
+    }
+
+    public function updatedImagen($file)
+    {
+        try {
+            $url = $file->temporaryUrl();
+        } catch (\Exception $e) {
+            $this->reset(['imagen']);
+            $this->addError('imagen', $e->getMessage());
+            return;
+        }
     }
 }

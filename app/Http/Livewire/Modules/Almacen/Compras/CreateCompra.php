@@ -2,14 +2,13 @@
 
 namespace App\Http\Livewire\Modules\Almacen\Compras;
 
-use App\Models\Cajamovimiento;
-use App\Models\Concept;
 use App\Models\Methodpayment;
 use App\Models\Moneda;
-use App\Models\Opencaja;
 use App\Models\Proveedor;
 use App\Models\Sucursal;
 use App\Models\Typepayment;
+use App\Rules\ValidateReferenciaCompra;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -18,6 +17,7 @@ use Modules\Almacen\Entities\Compra;
 class CreateCompra extends Component
 {
 
+    use AuthorizesRequests;
 
     public $moneda;
     public $date, $proveedor_id, $moneda_id, $referencia, $guia,
@@ -28,18 +28,21 @@ class CreateCompra extends Component
     public $igv = 0;
     public $otros = 0;
     public $descuento = 0;
+    public $subtotal = 0;
     public $total = 0;
-    public $counter = 0;
 
     protected function rules()
     {
         return [
             'sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'proveedor_id' => ['required', 'integer', 'min:1', 'exists:proveedors,id'],
-            'date' => ['required', 'date'],
+            'date' => ['required', 'date', 'before_or_equal:today'],
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'tipocambio' => ['nullable', Rule::requiredIf($this->moneda->code == 'USD'), 'regex:/^\d{0,3}(\.\d{0,3})?$/'],
-            'referencia' => ['required', 'string', 'min:3'],
+            'referencia' => [
+                'required', 'string', 'min:3',
+                new ValidateReferenciaCompra($this->proveedor_id, $this->sucursal_id)
+            ],
             'guia' => ['nullable', 'string', 'min:3'],
             'gravado' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'exonerado' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
@@ -49,7 +52,6 @@ class CreateCompra extends Component
             'total' => ['required', 'numeric', 'gt:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             'detalle' => ['nullable', 'string'],
-            'counter' => ['required', 'integer', 'min:0'],
         ];
     }
 
@@ -73,18 +75,20 @@ class CreateCompra extends Component
     public function save()
     {
 
+        $this->authorize('admin.almacen.compras.create');
         if ($this->moneda_id) {
             $this->moneda = Moneda::find($this->moneda_id);
         }
-        $this->calculartotal();
+
         $validateData = $this->validate();
         DB::beginTransaction();
         try {
             $compra = Compra::create($validateData);
             DB::commit();
+            $this->dispatchBrowserEvent('created');
             $this->resetValidation();
             $this->resetExcept(['moneda']);
-            return redirect()->route('admin.almacen.compras.show', $compra);
+            return redirect()->route('admin.almacen.compras.edit', $compra);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -92,10 +96,5 @@ class CreateCompra extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function calculartotal()
-    {
-        $this->total = number_format($this->gravado + $this->igv + $this->exonerado + $this->otros - $this->descuento, 4, '.', '');
     }
 }

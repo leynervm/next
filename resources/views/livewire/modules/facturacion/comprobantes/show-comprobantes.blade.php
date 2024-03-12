@@ -110,11 +110,9 @@
             <tr>
                 <th scope="col" class="p-2 font-medium text-left">
                     SERIE</th>
-
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>FECHA</span>
-
                         <svg class="h-3 w-3" viewBox="0 0 10 11" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                             fill="currentColor" stroke="currentColor" stroke-width="0.1">
                             <path
@@ -127,50 +125,33 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     CLIENTE</th>
-
-
                 <th scope="col" class="p-2 font-medium">
                     GRAVADO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     EXONERADO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     IGV</th>
-
                 <th scope="col" class="p-2 font-medium">
                     GRATUITO</th>
 
                 {{-- <th scope="col" class="p-2 font-medium">
                     OTROS</th> --}}
-
                 <th scope="col" class="p-2 font-medium">
                     TOTAL</th>
-
                 <th scope="col" class="p-2 font-medium">
                     TIPO PAGO</th>
-
-                {{-- <th scope="col" class="p-2 font-medium">
-                    MONEDA</th> --}}
-
                 <th scope="col" class="p-2 font-medium text-center">
                     REFERENCIA</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SUCURSAL</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    USUARIO</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    SUNAT</th>
-
+                @can('admin.facturacion.sunat')
+                    <th scope="col" class="p-2 font-medium">
+                        SUNAT</th>
+                @endcan
                 <th scope="col" class="p-2 font-medium">
                     DESCRIPCIÓN SUNAT</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     OPCIONES</th>
             </tr>
@@ -184,11 +165,11 @@
                             <p class="leading-3">{{ $item->seriecomprobante->typecomprobante->descripcion }}</p>
                         </td>
                         <td class="p-2 uppercase">
-                            {{ formatDate($item->date, 'DD MMMM YYYY hh:ss A') }}
+                            {{ formatDate($item->date) }}
                         </td>
                         <td class="p-2 text-left">
-                            <p class="">{{ $item->client->document }}</p>
                             <p class="text-[10px] leading-3">{{ $item->client->name }}</p>
+                            <p class="">{{ $item->client->document }}</p>
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
@@ -228,15 +209,12 @@
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ $item->user->name }}
+                            <p class="text-[10px] text-colorsubtitleform">{{ $item->user->name }}</p>
                         </td>
                         <td class="p-2 text-center">
                             {{-- {{ $item->deleted_at }} --}}
-                            @if ($item->deleted_at)
-                                <small class="p-1 text-[10px] leading-3 rounded text-white inline-block bg-red-500">
-                                    ANULADO</small>
+                            @if ($item->trashed())
+                                <x-span-text text="ANULADO" type="red" class="leading-3 !tracking-normal" />
                             @else
                                 @if ($item->seriecomprobante->typecomprobante->sendsunat)
                                     @if ($item->codesunat == '0')
@@ -244,10 +222,11 @@
                                             class="p-1 text-[10px] leading-3 rounded text-white inline-block bg-green-500">
                                             ENVIADO</small>
                                     @else
-                                        <x-button wire:click="enviarsunat({{ $item->id }})"
-                                            wire:loading.attr="disabled" class="inline-block">
-                                            ENVIAR
-                                        </x-button>
+                                        @can('admin.facturacion.sunat')
+                                            <x-button wire:click="enviarsunat({{ $item->id }})"
+                                                wire:loading.attr="disabled" class="inline-block">
+                                                ENVIAR</x-button>
+                                        @endcan
                                     @endif
                                 @else
                                     <small
@@ -260,7 +239,7 @@
                             @if ($item->codesunat != '0')
                                 <p>{{ $item->codesunat }}</p>
                             @endif
-                            <p class="leading-3">{{ $item->descripcion }}</p>
+                            <p class="leading-3 max-w-[150px]">{{ $item->descripcion }}</p>
                         </td>
                         <td class="p-2 align-middle">
                             <div class="flex items-center justify-end gap-1">
@@ -280,14 +259,6 @@
                                     class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
                                     <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
                                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                        {{-- <path
-                                        d="M22 8.87895C21.9331 7.33687 21.7456 6.33298 21.2203 5.53884C20.9181 5.08196 20.5428 4.68459 20.1112 4.36468C18.9447 3.5 17.299 3.5 14.0078 3.5H9.99305C6.70178 3.5 5.05614 3.5 3.88962 4.36468C3.45805 4.68459 3.08267 5.08196 2.78047 5.53884C2.25526 6.33289 2.06776 7.33665 2.00083 8.87843C1.98938 9.14208 2.21648 9.34375 2.46531 9.34375C3.85109 9.34375 4.97449 10.533 4.97449 12C4.97449 13.467 3.85109 14.6562 2.46531 14.6562C2.21648 14.6562 1.98938 14.8579 2.00083 15.1216C2.06776 16.6634 2.25526 17.6671 2.78047 18.4612C3.08267 18.918 3.45805 19.3154 3.88962 19.6353C5.05614 20.5 6.70178 20.5 9.99306 20.5H14.0078C17.299 20.5 18.9447 20.5 20.1112 19.6353C20.5428 19.3154 20.9181 18.918 21.2203 18.4612C21.7456 17.667 21.9331 16.6631 22 15.1211V8.87895Z" />
-                                    <path d="M13 12L17 12" />
-                                    <path d="M9 16L17 16" /> --}}
-                                        {{-- <path stroke-width="0" stroke="none" fill="currentColor"
-                                        d="M5.25 17C5.25 17.4142 5.58579 17.75 6 17.75C6.41421 17.75 6.75 17.4142 6.75 17H5.25ZM21.1213 2.87868L21.6517 2.34835V2.34835L21.1213 2.87868ZM16.2022 18.9846L16.9337 18.8191V18.8191L16.2022 18.9846ZM2.17264 18.9846L1.44113 19.1501L2.17264 18.9846ZM2.19447 17.3756L2.77981 17.8445L2.19447 17.3756ZM12 2.75H16V1.25H12V2.75ZM21.25 8V18H22.75V8H21.25ZM6.75 17V8H5.25V17H6.75ZM12 1.25C10.607 1.25 9.48678 1.24841 8.60825 1.36652C7.70814 1.48754 6.95027 1.74643 6.34835 2.34835L7.40901 3.40901C7.68577 3.13225 8.07435 2.9518 8.80812 2.85315C9.56347 2.75159 10.5646 2.75 12 2.75V1.25ZM6.75 8C6.75 6.56458 6.75159 5.56347 6.85315 4.80812C6.9518 4.07434 7.13225 3.68577 7.40901 3.40901L6.34835 2.34835C5.74643 2.95027 5.48754 3.70814 5.36652 4.60825C5.24841 5.48678 5.25 6.60699 5.25 8H6.75ZM16 2.75C17.4354 2.75 18.4365 2.75159 19.1919 2.85315C19.9257 2.9518 20.3142 3.13225 20.591 3.40901L21.6517 2.34835C21.0497 1.74643 20.2919 1.48754 19.3918 1.36652C18.5132 1.24841 17.393 1.25 16 1.25V2.75ZM22.75 8C22.75 6.60699 22.7516 5.48678 22.6335 4.60825C22.5125 3.70814 22.2536 2.95027 21.6517 2.34835L20.591 3.40901C20.8678 3.68577 21.0482 4.07434 21.1469 4.80812C21.2484 5.56347 21.25 6.56458 21.25 8H22.75ZM21.25 18C21.25 19.0355 21.0607 19.867 20.6999 20.417C20.3709 20.9185 19.8613 21.25 18.9937 21.25V22.75C20.3398 22.75 21.3334 22.186 21.9541 21.2398C22.543 20.3422 22.75 19.1736 22.75 18H21.25ZM18.9937 21.25C18.466 21.25 18.0603 21.0267 17.7233 20.618C17.3689 20.1881 17.1009 19.5582 16.9337 18.8191L15.4707 19.1501C15.6671 20.0185 16.0087 20.8963 16.566 21.5722C17.1408 22.2694 17.9489 22.75 18.9937 22.75V21.25ZM4.96411 21.25C4.43641 21.25 4.0307 21.0267 3.69378 20.618C3.33932 20.1881 3.07136 19.5582 2.90415 18.8191L1.44113 19.1501C1.63758 20.0185 1.97915 20.8963 2.53641 21.5722C3.1112 22.2694 3.91939 22.75 4.96411 22.75V21.25ZM4.96411 22.75H18.9937V21.25H4.96411V22.75ZM3.96199 17.75H13.9831V16.25H3.96199V17.75ZM2.90415 18.8191C2.80483 18.3801 2.75633 18.1518 2.7505 17.9862C2.7466 17.8755 2.7631 17.8654 2.77981 17.8445L1.60913 16.9067C1.32496 17.2614 1.23753 17.6446 1.25143 18.039C1.26339 18.3784 1.35442 18.7668 1.44113 19.1501L2.90415 18.8191ZM3.96199 16.25C3.49923 16.25 3.059 16.2476 2.70126 16.3071C2.3029 16.3734 1.91089 16.53 1.60913 16.9067L2.77981 17.8445C2.78888 17.8332 2.79271 17.8307 2.8012 17.8264C2.81587 17.8189 2.85623 17.802 2.94755 17.7868C3.15391 17.7524 3.447 17.75 3.96199 17.75V16.25ZM16.9337 18.8191C16.8204 18.3182 16.7246 17.8912 16.6188 17.5654C16.5168 17.2517 16.3636 16.8863 16.0455 16.6326L15.1101 17.8052C15.0665 17.7704 15.1088 17.7723 15.1921 18.0288C15.2716 18.2734 15.3507 18.6198 15.4707 19.1501L16.9337 18.8191ZM13.9831 17.75C14.4403 17.75 14.7226 17.751 14.9274 17.7731C15.1245 17.7943 15.136 17.8258 15.1101 17.8052L16.0455 16.6326C15.7453 16.3931 15.3995 16.3152 15.0879 16.2817C14.784 16.249 14.4062 16.25 13.9831 16.25V17.75Z" />
-                                    <path d="M10.5 7H17.5" />
-                                    <path d="M10.5 11H14" />      --}}
                                         <path
                                             d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
                                         <path

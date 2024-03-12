@@ -17,16 +17,11 @@ class Category extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['name', 'code'];
+    protected $fillable = ['name', 'order'];
 
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
-    }
-
-    public function setCodeAttribute($value)
-    {
-        $this->attributes['code'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function subcategories(): BelongsToMany

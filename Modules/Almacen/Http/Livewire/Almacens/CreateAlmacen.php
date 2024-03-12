@@ -8,9 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use App\Models\Almacen;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class CreateAlmacen extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name, $sucursal_id;
@@ -44,6 +47,7 @@ class CreateAlmacen extends Component
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.almacen.create');
             $this->resetValidation();
             $this->reset(['name', 'default', 'sucursal_id', 'open']);
         }
@@ -51,7 +55,7 @@ class CreateAlmacen extends Component
 
     public function save()
     {
-
+        $this->authorize('admin.almacen.create');
         $this->name = trim($this->name);
         $this->default = $this->default == 1 ? 1 : 0;
         $validateData = $this->validate();

@@ -5,13 +5,14 @@ namespace App\Http\Livewire\Modules\Almacen\Productos;
 use App\Models\Producto;
 use App\Models\Serie;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowSeries extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
     public $producto;
 
     public $searchseriealmacen = [];
@@ -72,11 +73,11 @@ class ShowSeries extends Component
     {
         $this->reset(['searchseriealmacen', 'disponibles', 'almacen_id']);
         $this->resetPage();
-        // $this->render();
     }
 
     public function save()
     {
+        $this->authorize('admin.almacen.productos.series.edit');
         $this->serie = trim(mb_strtoupper($this->serie, "UTF-8"));
         $this->validate();
 
@@ -107,8 +108,8 @@ class ShowSeries extends Component
     public function delete(Serie $serie)
     {
 
+        $this->authorize('admin.almacen.productos.series.edit');
         $itemseries = $serie->itemserie()->exists();
-
         $cadena = extraerMensaje([
             'Items_ventas' => $itemseries,
         ]);

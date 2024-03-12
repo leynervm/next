@@ -10,11 +10,12 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Almacen;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ShowAlmacens extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $open = false;
     public $openalmacen = false;
@@ -58,6 +59,7 @@ class ShowAlmacens extends Component
 
     public function openalmacen(Sucursal $sucursal)
     {
+        $this->authorize('admin.almacen.edit');
         $this->sucursal = $sucursal;
         $this->almacen = new Almacen();
         $this->open = true;
@@ -65,6 +67,7 @@ class ShowAlmacens extends Component
 
     public function edit(Sucursal $sucursal, Almacen $almacen)
     {
+        $this->authorize('admin.almacen.edit');
         $this->resetValidation();
         $this->reset(['name', 'default']);
         $this->sucursal = $sucursal;
@@ -77,6 +80,7 @@ class ShowAlmacens extends Component
     public function update()
     {
 
+        $this->authorize('admin.almacen.edit');
         $this->default = $this->default == 1 ? 1 : 0;
         $this->validate();
         DB::beginTransaction();
@@ -107,6 +111,7 @@ class ShowAlmacens extends Component
 
     public function delete(Almacen $almacen)
     {
+        $this->authorize('admin.almacen.delete');
         $series = $almacen->series()->count();
         $productos = $almacen->productos()->count();
         $tvitems = $almacen->tvitems()->count();

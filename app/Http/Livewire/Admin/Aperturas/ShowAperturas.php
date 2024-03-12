@@ -2,32 +2,29 @@
 
 namespace App\Http\Livewire\Admin\Aperturas;
 
-use App\Models\Opencaja;
+use App\Models\Openbox;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowAperturas extends Component
 {
 
+    use AuthorizesRequests;
     use WithPagination;
 
     public $open = false;
-    public $opencaja;
+    public $openbox;
     public $searchcaja = '';
     public $searchsucursal = '';
 
-    protected $listeners = ['render', 'close'];
+    protected $listeners = ['render'];
 
     protected function rules()
     {
         return [
-            'opencaja.caja_id' => [
-                'required', 'integer', 'min:1', 'exists:cajas,id',
-            ],
-            'opencaja.expiredate' => [
-                'required', 'date', 'after:startdate', 'after_or_equal:' . now('America/Lima')->format('Y-m-d H:i')
-            ],
-            'opencaja.startmount' => [
+            'openbox.apertura' => [
                 'required', 'numeric', 'min:0', 'decimal:0,4'
             ],
         ];
@@ -35,12 +32,12 @@ class ShowAperturas extends Component
 
     public function mount()
     {
-        $this->opencaja = new Opencaja();
+        $this->openbox = new Openbox();
     }
 
     public function render()
     {
-        $aperturas = Opencaja::withWhereHas('caja', function ($query) {
+        $openboxes = Openbox::withWhereHas('box', function ($query) {
             $query->withTrashed()->withWhereHas('sucursal', function ($query) {
                 $query->withTrashed();
                 if (trim($this->searchsucursal !== '')) {
@@ -54,31 +51,45 @@ class ShowAperturas extends Component
                 $query->where('id', $this->searchcaja);
             }
         })->orderBy('startdate', 'desc')->paginate();
-        return view('livewire.admin.aperturas.show-aperturas', compact('aperturas'));
+        return view('livewire.admin.aperturas.show-aperturas', compact('openboxes'));
     }
 
-    public function edit(Opencaja $opencaja)
+    public function edit(Openbox $openbox)
     {
+        $this->authorize('admin.cajas.aperturas.edit');
         $this->resetValidation();
-        $this->opencaja = $opencaja;
+        $this->openbox = $openbox;
         $this->open = true;
     }
 
     public function update()
     {
+        $this->authorize('admin.cajas.aperturas.edit');
         $this->validate();
-        $this->opencaja->save();
+        $this->openbox->save();
         $this->resetValidation();
         $this->open = false;
         $this->dispatchBrowserEvent('updated');
     }
 
-    public function close(Opencaja $opencaja)
+    public function close(Openbox $openbox)
     {
-        $this->opencaja = $opencaja;
-        $this->opencaja->closedate = now("America/Lima");
-        $this->opencaja->status = 1;
-        $this->opencaja->save();
-        $this->dispatchBrowserEvent('updated');
+        try {
+            $this->authorize('admin.cajas.aperturas.close');
+            $this->openbox = $openbox;
+            $this->openbox->closedate = now("America/Lima");
+            $this->openbox->status = 1;
+            $this->openbox->save();
+            $this->openbox->box->user_id = null;
+            $this->openbox->box->update();
+            DB::commit();
+            $this->dispatchBrowserEvent('updated');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

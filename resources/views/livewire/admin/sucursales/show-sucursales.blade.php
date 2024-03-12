@@ -34,9 +34,12 @@
                 <th scope="col" class="p-2 font-medium">
                     ESTADO</th>
 
-                <th scope="col" class="p-2 font-medium text-center">
-                    OPCIONES
-                </th>
+                @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
+                    'admin.administracion.sucursales.restore'])
+                    <th scope="col" class="p-2 font-medium text-center">
+                        OPCIONES
+                    </th>
+                @endcanany
             </tr>
         </x-slot>
         @if (count($sucursales))
@@ -82,30 +85,38 @@
                             @endif
                         </td>
 
-                        <td class="p-2 align-middle text-center space-x-3">
-                            @if ($item->default == 0 && $item->deleted_at == null)
-                                <x-icon-default wire:click="$emit('sucursales.confirmSetDefault', {{ $item }})"
-                                    wire:loading.attr="disabled"
-                                    class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
-                            @endif
+                        @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
+                            'admin.administracion.sucursales.restore'])
+                            <td class="p-2 align-middle text-center space-x-3">
+                                @can('admin.administracion.sucursales.edit')
+                                    @if ($item->default == 0 && $item->deleted_at == null)
+                                        <x-icon-default onclick="confirmSetDefault({{ $item }})"
+                                            wire:loading.attr="disabled"
+                                            class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
+                                    @endif
+                                @endcan
 
-                            @if ($item->deleted_at == null)
-                                <x-button-delete wire:click="$emit('sucursales.confirmDelete', {{ $item }})"
-                                    wire:loading.attr="disabled" />
-                            @else
-                                <button wire:click="$emit('sucursales.restoreSucursal', {{ $item }})"
-                                    wire:loading.attr="disabled">
-                                    <svg class="w-4 h-4 scale-125 inline-block" viewBox="0 0 24 24" fill="none"
-                                        xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path fill="currentColor"
-                                            d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                        <path
-                                            d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                    </svg>
-                                </button>
-                            @endif
-                        </td>
+                                @if ($item->deleted_at == null)
+                                    @can('admin.administracion.sucursales.delete')
+                                        <x-button-delete onclick="confirmDelete({{ $item }})"
+                                            wire:loading.attr="disabled" />
+                                    @endcan
+                                @else
+                                    @can('admin.administracion.sucursales.restore')
+                                        <button onclick="restoreSucursal({{ $item }})" wire:loading.attr="disabled">
+                                            <svg class="w-4 h-4 scale-125 inline-block" viewBox="0 0 24 24" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path fill="currentColor"
+                                                    d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
+                                                <path
+                                                    d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
+                                            </svg>
+                                        </button>
+                                    @endcan
+                                @endif
+                            </td>
+                        @endcanany
                     </tr>
                 @endforeach
             </x-slot>
@@ -113,59 +124,58 @@
     </x-table>
 
     <script>
+        function confirmDelete(sucursal) {
+            swal.fire({
+                title: 'Deshabilitar sucursal, ' + sucursal.name,
+                text: "El registro seleccionado dejará de estar disponible en la base de datos,",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(sucursal.id);
+                }
+            })
+        }
+
+        function confirmSetDefault(sucursal) {
+            swal.fire({
+                title: 'Seleccionar ' + sucursal.name + ' como principal ?',
+                text: "Se actualizará un registro en la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.setsucursaldefault(sucursal.id);
+                }
+            })
+        }
+
+        function restoreSucursal(sucursal) {
+            swal.fire({
+                title: 'Habilitar sucursal, ' + sucursal.name + ' ?',
+                text: "Se actualizará un registro en la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.restoreSucursal(sucursal.id);
+                }
+            })
+        }
+
         document.addEventListener('livewire:load', function() {
-
-            Livewire.on('sucursales.confirmDelete', data => {
-                swal.fire({
-                    title: 'Deshabilitar sucursal, ' + data.name,
-                    text: "Se eliminará un registro en la base de datos,",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
-            })
-
-            Livewire.on('sucursales.confirmSetDefault', data => {
-                swal.fire({
-                    title: 'Seleccionar ' + data.name + ' como sucursal principal ?',
-                    text: "Se actualizarán los registro de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.setsucursaldefault(data.id);
-                    }
-                })
-            })
-
-            Livewire.on('sucursales.restoreSucursal', data => {
-                swal.fire({
-                    title: 'Habilitar sucursal, ' + data.name + ' ?',
-                    text: "Se actualizará un registro en la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.restoreSucursal(data.id);
-                    }
-                })
-            })
-
             Livewire.on('sucursales.existUserSucursals', data => {
                 swal.fire({
                     title: 'Sucursal, ' + data.name + ' se encuentra vinculado a usuarios  ?',

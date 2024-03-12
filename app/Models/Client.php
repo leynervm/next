@@ -29,7 +29,7 @@ class Client extends Model
 
     public function direccions(): MorphMany
     {
-        return $this->morphMany(Direccion::class, 'direccionable');
+        return $this->morphMany(Direccion::class, 'direccionable')->orderBy('default', 'desc');
     }
 
     public function telephones(): MorphMany

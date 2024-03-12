@@ -6,15 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\Almacen\Entities\Producto;
 
 class Especificacion extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['name', 'caracteristica_id'];
+    public $timestamps = false;
 
     public function setNameAttribute($value)
     {

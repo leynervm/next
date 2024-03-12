@@ -71,6 +71,8 @@ module.exports = {
                 textactiveselect2: "var(--color-active-select2)",
                 fondoactiveselect2: "var(--fondo-active-select2)",
                 shadowselect2: "var(--shadow-select2)",
+                subtitleselect2: "var(--color-subtitle-select2)",
+                subtitleactiveselect2: "var(--color-active-subtitle-select2)",
 
                 textheadertable: "var(--text-header-table)",
                 fondoheadertable: "var(--fondo-header-table)",

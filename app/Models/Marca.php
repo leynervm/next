@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Marca extends Model
@@ -23,5 +24,11 @@ class Marca extends Model
     public function image()
     {
         return $this->morphOne(Image::class, "imageable");
+    }
+
+
+    public function productos(): HasMany
+    {
+        return $this->hasMany(Producto::class);
     }
 }

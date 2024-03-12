@@ -16,35 +16,35 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save">
+            <form wire:submit.prevent="save" x-data="data">
                 <div class="w-full">
                     <x-label value="Seleccionar caja :" />
-                    <div x-data="{ caja_id: @entangle('caja_id') }" x-init="select2CajaAlpine" wire:ignore class="relative">
+                    <div x-init="select2Box" class="relative">
                         <x-select class="block w-full" x-ref="select" id="aperturacaja_id" data-dropdown-parent="null">
                             <x-slot name="options">
-                                @if (count($cajas))
-                                    @foreach ($cajas as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                @if (count($boxes) > 0)
+                                    @foreach ($boxes as $item)
+                                        @php
+                                            $nameuser = !is_null($item->user) ? $item->user->name : '<span class="bg-green-500 leading-3 rounded-md p-1 text-white text-[10px]">DISPONIBLE</span>';
+                                        @endphp
+                                        <option {{ $item->user ? 'disabled' : '' }} value="{{ $item->id }}"
+                                            title="{{ $nameuser }}" data-apertura="{{ $item->apertura }}">
+                                            {{ $item->name }}</option>
                                     @endforeach
                                 @endif
                             </x-slot>
                         </x-select>
                         <x-icon-select />
                     </div>
-                    <x-jet-input-error for="caja_id" />
+                    <x-jet-input-error for="box_id" />
                 </div>
 
                 <div class="w-full mt-2">
-                    <x-label value="Fecha cierre :" />
-                    <x-input class="block w-full" wire:model.defer="expiredate" type="datetime-local" />
-                    <x-jet-input-error for="expiredate" />
-                </div>
-
-                <div class="w-full mt-2">
-                    <x-label value="Saldo inicial :" />
-                    <x-input class="block w-full" wire:model.defer="startmount" type="number" step="0.01"
-                        min="0" />
-                    <x-jet-input-error for="startmount" />
+                    <x-label value="Saldo apertura :" />
+                    <x-input class="block w-full" x-model="apertura" wire:model.defer="apertura" type="number"
+                        step="0.01" min="0" onkeypress="return validarDecimal(event, 8)" />
+                    <x-jet-input-error for="apertura" />
+                    <x-jet-input-error for="employer.id" />
                 </div>
 
                 <div class="w-full flex pt-4 justify-end">
@@ -57,15 +57,39 @@
     </x-jet-dialog-modal>
 
     <script>
-        function select2CajaAlpine() {
-            this.select2 = $(this.$refs.select).select2();
-            this.select2.val(this.caja_id).trigger("change");
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('data', () => ({
+                box_id: @entangle('box_id').defer,
+                apertura: @entangle('apertura').defer,
+            }))
+        })
+
+        function select2Box() {
+            this.select2 = $(this.$refs.select).select2({
+                templateResult: formatOption
+            });
+            this.select2.val(this.box_id).trigger("change");
             this.select2.on("select2:select", (event) => {
-                this.caja_id = event.target.value;
+                this.box_id = event.target.value;
+                this.apertura = event.target.options[event.target.selectedIndex].getAttribute('data-apertura');
             })
-            this.$watch('caja_id', (value) => {
+            this.$watch('box_id', (value) => {
                 this.select2.val(value).trigger("change");
             });
+
+            Livewire.hook('message.processed', () => {
+                // this.select2.select2('destroy');
+                this.select2.select2({
+                    templateResult: formatOption
+                }).val(this.box_id).trigger('change');
+            });
         }
+
+        function formatOption(option) {
+            var $option = $(
+                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title + '</p>'
+            );
+            return $option;
+        };
     </script>
 </div>

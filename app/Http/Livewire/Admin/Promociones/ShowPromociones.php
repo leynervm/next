@@ -3,7 +3,6 @@
 namespace App\Http\Livewire\Admin\Promociones;
 
 use App\Models\Pricetype;
-use App\Models\Producto;
 use App\Models\Promocion;
 use Livewire\Component;
 use Livewire\WithPagination;

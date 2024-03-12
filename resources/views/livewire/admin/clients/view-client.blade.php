@@ -1,5 +1,4 @@
 <div class="w-full flex flex-col gap-8">
-
     <x-form-card titulo="DATOS CLIENTE">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
             <div class="w-full sm:grid grid-cols-3 gap-2">
@@ -25,35 +24,6 @@
                     <x-input class="block w-full" wire:model.defer="client.name"
                         placeholder="Razón social del cliente" />
                     <x-jet-input-error for="client.name" />
-                </div>
-
-                <div class="w-full sm:col-span-3">
-                    <x-label value="Dirección, calle, avenida :" />
-                    <x-input class="block w-full" wire:model.defer="direccion.name"
-                        placeholder="Dirección del cliente..." />
-                    <x-jet-input-error for="direccion.name" />
-                </div>
-
-                <div class="w-full sm:col-span-2">
-                    <x-label value="Ubigeo :" />
-                    <div id="parentClient1" class="relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }" x-init="select2UbigeoAlpine"
-                        wire:ignore>
-                        <x-select class="block w-full" x-ref="select" wire:model.defer="ubigeo_id"
-                            id="editubigeoclient_id" data-placeholder="Seleccionar" data-minimum-results-for-search="3"
-                            data-dropdown-parent="#parentClient1">
-                            <x-slot name="options">
-                                @if (count($ubigeos))
-                                    @foreach ($ubigeos as $item)
-                                        <option value="{{ $item->id }}">
-                                            {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
-                    </div>
-                    <x-jet-input-error for="ubigeo_id" />
                 </div>
 
                 @if (mi_empresa()->uselistprice == 1)
@@ -100,8 +70,10 @@
             </div>
 
             <div class="w-full pt-4 flex gap-2 justify-end">
-                <x-button-secondary wire:click="$emit('client.confirmDelete', {{ $client }})"
-                    wire:loading.attr="disabled">{{ __('ELIMINAR CLIENTE ') }}</x-button-secondary>
+                @can('admin.clientes.delete')
+                    <x-button-secondary onclick="confirmDelete({{ $client }})"
+                        wire:loading.attr="disabled">{{ __('ELIMINAR CLIENTE ') }}</x-button-secondary>
+                @endcan
 
                 <x-button type="submit" wire:loading.attr="disabled" wire:target="update">
                     {{ __('ACTUALIZAR') }}
@@ -114,77 +86,133 @@
         </form>
     </x-form-card>
 
-    <x-form-card titulo="TELÉFONOS CLIENTE">
-        @if (count($client->telephones))
+    @can('admin.clientes.phones')
+        <x-form-card titulo="TELÉFONOS">
+            @if (count($client->telephones) > 0)
+                <div class="w-full flex flex-wrap gap-1">
+                    @foreach ($client->telephones as $item)
+                        <x-minicard-phone phone="{{ $item->phone }}">
+                            @can('admin.clientes.phones.edit')
+                                <x-slot name="footer">
+                                    <x-button-edit wire:click="editphone({{ $item->id }})" wire:loading.attr="disabled"
+                                        wire:key="editphone_{{ $item->id }}" />
+                                    <x-button-delete onclick="confirmDeletephone({{ $item }})"
+                                        wire:loading.attr="disabled" wire:key="deletephone_{{ $item->id }}" />
+                                </x-slot>
+                            @endcan
+                        </x-minicard-phone>
+                    @endforeach
+                </div>
+            @endif
+
+            @can('admin.clientes.phones.edit')
+                <div class="w-full pt-4 flex justify-end">
+                    <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
+                        AGREGAR TELEFONO</x-button>
+                </div>
+            @endcan
+        </x-form-card>
+    @endcan
+
+    <x-form-card titulo="DIRECCIONES">
+        @if (count($client->direccions) > 0)
             <div class="w-full flex flex-wrap gap-1">
-                @foreach ($client->telephones as $item)
-                    <x-minicard-phone phone="{{ $item->phone }}">
-                        <x-slot name="footer">
-                            <x-button-edit wire:click="editphone({{ $item->id }})" wire:loading.attr="disabled" />
-                            <x-button-delete wire:click="$emit('client.confirmDeletephone',{{ $item }})"
-                                wire:loading.attr="disabled" />
-                        </x-slot>
-                    </x-minicard-phone>
+                @foreach ($client->direccions as $item)
+                    <div class="w-full text-xs bg-body rounded p-2 shadow-md shadow-shadowform">
+
+                        <p class="text-colorlabel text-[10px] font-medium">
+                            {{ $item->name }}</p>
+
+                        @if ($item->ubigeo)
+                            <p class="text-colorsubtitleform text-[10px] font-medium">
+                                {{ $item->ubigeo->region }},
+                                {{ $item->ubigeo->provincia }},
+                                {{ $item->ubigeo->distrito }} -
+                                {{ $item->ubigeo->ubigeo_reniec }}
+                            </p>
+                        @endif
+
+                        {{-- @can('admin.clientes.contacts.edit') --}}
+                        <div class="w-full flex gap-1 items-end justify-between">
+                            @if ($item->isDefault())
+                                <x-icon-default />
+                            @else
+                                <x-icon-default wire:click="usedefault({{ $item->id }})"
+                                    wire:loading.attr="disabled"
+                                    class="!text-gray-500 hover:!text-gray-400 cursor-pointer transition ease-in-out duration-150" />
+                            @endif
+
+                            <div class="inline-flex gap-2">
+                                <x-button-edit wire:click="editdireccion({{ $item->id }})"
+                                    wire:loading.attr="disabled" wire:key="editdireccion_{{ $item->id }}" />
+                                <x-button-delete onclick="confirmDeleteDireccion({{ $item }})"
+                                    wire:loading.attr="disabled" wire:key="deletedireccion_{{ $item->id }}" />
+                            </div>
+                        </div>
+                        {{-- @endcan --}}
+                    </div>
                 @endforeach
             </div>
         @endif
 
+        {{-- @can('admin.clientes.phones.edit') --}}
         <div class="w-full pt-4 flex justify-end">
-            <x-button wire:click="openmodalphone" wire:loading.attr="disabled" class="text-[10px]">
-                {{-- <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M16.243 5.243h3m3 0h-3m0 0v-3m0 3v3M18.118 14.702L14 15.5c-2.782-1.396-4.5-3-5.5-5.5l.77-4.13L7.815 2H4.064c-1.128 0-2.016.932-1.847 2.047.42 2.783 1.66 7.83 5.283 11.453 3.805 3.805 9.286 5.456 12.302 6.113 1.165.253 2.198-.655 2.198-1.848v-3.584l-3.882-1.479z" />
-                </svg> --}}
-                AGREGAR TELEFONO
-            </x-button>
+            <x-button wire:click="$toggle('opendireccion')" wire:loading.attr="disabled">
+                AGREGAR DIRECCIÓN</x-button>
         </div>
+        {{-- @endcan --}}
     </x-form-card>
 
-    @if (count($client->contacts) || strlen(trim($client->document)) == 11)
-        <x-form-card titulo="CONTACTOS" subtitulo="Nos permitirá contactarse con la empresa.">
-            <div class="w-full h-full flex flex-col">
-                @if (count($client->contacts))
-                    <div class="w-full flex flex-col gap-2">
-                        @foreach ($client->contacts as $item)
-                            <div class="w-full text-xs bg-body rounded p-2 shadow-md shadow-shadowform">
 
-                                <p class="text-colorsubtitleform text-[10px] font-semibold">
-                                    <span class="text-colortitleform">({{ $item->document }}) </span>
-                                    {{ $item->name }}
-                                </p>
+    @can('admin.clientes.contacts')
+        @if (count($client->contacts) || strlen(trim($client->document)) == 11)
+            <x-form-card titulo="CONTACTOS" subtitulo="Nos permitirá contactarse con la empresa.">
+                <div class="w-full h-full flex flex-col">
+                    @if (count($client->contacts))
+                        <div class="w-full flex flex-col gap-2">
+                            @foreach ($client->contacts as $item)
+                                <div class="w-full text-xs bg-body rounded p-2 shadow-md shadow-shadowform">
 
-                                @if ($item->telephone)
-                                    <x-span-text :text="'TELÉFONO :' . $item->telephone->phone" class="leading-3" />
-                                @endif
+                                    <p class="text-colorsubtitleform text-[10px] font-medium">
+                                        <span class="text-colortitleform">({{ $item->document }}) </span>
+                                        {{ $item->name }}
+                                    </p>
 
-                                <div class="w-full flex flex-wrap gap-1 items-end justify-end mt-1">
-                                    <x-button-edit wire:click="editcontacto({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
-                                    <x-button-delete
-                                        wire:click="$emit('client.confirmDeletecontacto',{{ $item }})"
-                                        wire:loading.attr="disabled" />
+                                    @if ($item->telephone)
+                                        <x-span-text :text="'TELÉFONO : ' . formatTelefono($item->telephone->phone)" class="leading-3 !tracking-normal" />
+                                    @endif
+
+                                    @can('admin.clientes.contacts.edit')
+                                        <div class="w-full flex flex-wrap gap-1 items-end justify-end mt-1">
+                                            <x-button-edit wire:click="editcontacto({{ $item->id }})"
+                                                wire:loading.attr="disabled" wire:key="editcontact_{{ $item->id }}" />
+                                            <x-button-delete onclick="confirmDeletecontacto({{ $item }})"
+                                                wire:loading.attr="disabled" wire:key="deletecontact_{{ $item->id }}" />
+                                        </div>
+                                    @endcan
                                 </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
+                            @endforeach
+                        </div>
+                    @endif
 
-                <div class="w-full flex pt-4 justify-end">
-                    <x-button wire:click="openmodalcontacto" wire:loading.attr="disabled"
-                        wire:target="openmodalcontacto">
-                        {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                    @can('admin.clientes.contacts.edit')
+                        <div class="w-full flex pt-4 justify-end">
+                            <x-button wire:click="openmodalcontacto" wire:loading.attr="disabled"
+                                wire:target="openmodalcontacto">
+                                {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M1 20v-1a7 7 0 017-7v0a7 7 0 017 7v1" />
                             <path d="M13 14v0a5 5 0 015-5v0a5 5 0 015 5v.5" />
                             <path d="M8 12a4 4 0 100-8 4 4 0 000 8zM18 9a3 3 0 100-6 3 3 0 000 6z" />
                         </svg> --}}
-                        AGREGAR CONTACTO
-                    </x-button>
+                                AGREGAR CONTACTO
+                            </x-button>
+                        </div>
+                    @endcan
                 </div>
-            </div>
-        </x-form-card>
-    @endif
+            </x-form-card>
+        @endif
+    @endcan
 
     @if ($client->user)
         <x-card-next titulo="USUARIO WEB" class="w-96 mt-3">
@@ -220,9 +248,9 @@
                         <x-label value="DNI :" />
                         <div class="w-full inline-flex gap-1">
                             <x-input class="block w-full prevent" wire:model.defer="document2" maxlength="8"
-                                wire:keydown.enter="searchcontacto" />
-                            <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled"
-                                wire:target="searchcontacto">
+                                wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
+                                type="number" />
+                            <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -244,7 +272,7 @@
                 <div class="w-full sm:w-64">
                     <x-label value="Teléfono :" />
                     <x-input class="block w-full" wire:model.defer="telefono2" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                        maxlength="9" onkeypress="return validarNumero(event, 9)" type="number" />
                     <x-jet-input-error for="telefono2" />
                 </div>
 
@@ -270,7 +298,11 @@
 
     <x-jet-dialog-modal wire:model="openphone" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
-            {{ __('Teléfono') }}
+            @if ($telephone)
+                {{ __('Actualir teléfono') }}
+            @else
+                {{ __('Registrar nuevo teléfono') }}
+            @endif
             <x-button-close-modal wire:click="$toggle('openphone')" wire:loading.attr="disabled" />
         </x-slot>
 
@@ -279,12 +311,12 @@
                 <div class="w-full">
                     <x-label value="Teléfono :" />
                     <x-input class="block w-full" wire:model.defer="newtelefono" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                        maxlength="9" onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="newtelefono" />
                 </div>
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" wire:loading.attr="disabled" wire:target="savephone">
+                <div class="w-full flex justify-end pt-4">
+                    <x-button type="submit" wire:loading.attr="disabled">
                         @if ($telephone)
                             {{ __('ACTUALIZAR') }}
                         @else
@@ -296,8 +328,130 @@
         </x-slot>
     </x-jet-dialog-modal>
 
+    <x-jet-dialog-modal wire:model="opendireccion" maxWidth="xl" footerAlign="justify-end">
+        <x-slot name="title">
+            @if ($direccion)
+                {{ __('Actualir dirección') }}
+            @else
+                {{ __('Registrar dirección') }}
+            @endif
+            <x-button-close-modal wire:click="$toggle('opendireccion')" wire:loading.attr="disabled" />
+        </x-slot>
+
+        <x-slot name="content">
+            <form wire:submit.prevent="savedireccion" class="w-full flex flex-col gap-2">
+                <div class="w-full">
+                    <x-label value="Dirección, calle, avenida :" />
+                    <x-input class="block w-full" wire:model.defer="namedireccion"
+                        placeholder="Dirección del cliente..." maxlength="255" />
+                    <x-jet-input-error for="namedireccion" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Ubigeo :" />
+                    <div id="parentubgcl" class="relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }" x-init="select2Ubigeo"
+                        wire:ignore>
+                        <x-select class="block w-full" x-ref="select" wire:model.defer="ubigeo_id" id="ubgcl"
+                            data-placeholder="Seleccionar" data-minimum-results-for-search="3"
+                            data-dropdown-parent="null">
+                            <x-slot name="options">
+                                @if (count($ubigeos))
+                                    @foreach ($ubigeos as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="ubigeo_id" />
+                </div>
+
+                <div class="w-full flex justify-end gap-2">
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        @if ($direccion)
+                            {{ __('ACTUALIZAR') }}
+                        @else
+                            {{ __('REGISTRAR') }}
+                        @endif
+                    </x-button>
+                </div>
+            </form>
+        </x-slot>
+    </x-jet-dialog-modal>
+
     <script>
-        function select2UbigeoAlpine() {
+        function confirmDelete(client) {
+            swal.fire({
+                title: 'Eliminar cliente ' + client.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(client.id);
+                }
+            })
+        }
+
+        function confirmDeletecontacto(contact) {
+            swal.fire({
+                title: 'Eliminar contacto ' + contact.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletecontacto(contact.id);
+                }
+            })
+        }
+
+        function confirmDeletephone(phone) {
+            swal.fire({
+                title: 'Eliminar número telefónico ' + phone.phone,
+                text: "Se eliminará un registro de la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletephone(phone.id);
+                }
+            })
+        }
+
+        function confirmDeleteDireccion(direccion) {
+            swal.fire({
+                title: 'Eliminar dirección ' + direccion.name,
+                text: "Se eliminará un registro de dirección del cliente en la base de datos",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletedireccion(direccion.id);
+                }
+            })
+        }
+
+        function select2Ubigeo() {
             this.select = $(this.$refs.select).select2();
             this.select.val(this.ubigeo_id).trigger("change");
             this.select.on("select2:select", (event) => {
@@ -311,99 +465,5 @@
                 this.select.val(value).trigger("change");
             });
         }
-
-
-        document.addEventListener("livewire:load", () => {
-
-            // $("#editubigeoclient_id").select2()
-            //     .on("change", (e) => {
-            //         $('.select2').attr("disabled", true);
-            //         @this.set('direccion.ubigeo_id', e.target.value);
-            //     }).on('select2:open', function(e) {
-            //         const evt = "scroll.select2";
-            //         $(e.target).parents().off(evt);
-            //         $(window).off(evt);
-            //     });
-
-            // $("#edit_sexo").select2()
-            //     .on("change", (e) => {
-            //         $('.select2').attr("disabled", true);
-            //         @this.set('client.sexo', e.target.value);
-            //     }).on('select2:open', function(e) {
-            //         const evt = "scroll.select2";
-            //         $(e.target).parents().off(evt);
-            //         $(window).off(evt);
-            //     });
-
-            // $("#editpricetypeclient_id").select2()
-            //     .on("change", (e) => {
-            //         $('.select2').attr("disabled", true);
-            //         @this.set('client.pricetype_id', e.target.value);
-            //     }).on('select2:open', function(e) {
-            //         const evt = "scroll.select2";
-            //         $(e.target).parents().off(evt);
-            //         $(window).off(evt);
-            //     });
-
-
-
-
-
-            Livewire.on('client.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.emitTo('admin.clients.view-client', 'delete', data.id);
-                    }
-                })
-            })
-
-            Livewire.on('client.confirmDeletecontacto', data => {
-                swal.fire({
-                    title: 'Eliminar registro con nombre: ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.emitTo('admin.clients.view-client', 'deletecontacto', data.id);
-                    }
-                })
-            })
-
-            Livewire.on('client.confirmDeletephone', data => {
-                swal.fire({
-                    title: 'Eliminar número telefónico: ' + data.phone,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Livewire.emitTo('admin.clients.view-client', 'deletephone', data.id);
-                    }
-                })
-            })
-
-            // window.addEventListener('render-editclient-select2', () => {
-            //     $('.select2').select2();
-            // });
-
-        })
     </script>
 </div>

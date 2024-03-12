@@ -263,7 +263,7 @@ class createXML
                </cac:InvoiceLine>';
       }
 
-      $xml .= "</Invoice>";
+      $xml .= '</Invoice>';
 
       $doc->loadXML($xml);
       $xmlString = $doc->saveXML();
@@ -570,13 +570,15 @@ class createXML
       }
 
       // ValidacionesGREv20221020_publicacion.xlsx
-      if ($guia->comprobante) {
-         $code = $guia->comprobante->seriecomprobante->typecomprobante->code;
+      // dd($guia->guiable->seriecomprobante->typecomprobante);
+      if ($guia->guiable) {
+         // dd($comprobante->guiable instanceof Comprobante);
+         $code = $guia->guiable->seriecomprobante->typecomprobante->code;
          if ($code == "01" || $code == "03" || $code == "04" || $code == "09" || $code == "31") {
             $xml .= '<cac:AdditionalDocumentReference>
-                  <cbc:ID>' . $guia->comprobante->seriecompleta . '</cbc:ID>
+                  <cbc:ID>' . $guia->guiable->seriecompleta . '</cbc:ID>
                   <cbc:DocumentTypeCode listAgencyName="PE:SUNAT" listName="Documento relacionado al transporte" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo61">' . $code . '</cbc:DocumentTypeCode>
-                  <cbc:DocumentType>' . $guia->comprobante->seriecomprobante->typecomprobante->name . '</cbc:DocumentType>
+                  <cbc:DocumentType>' . $guia->guiable->seriecomprobante->typecomprobante->name . '</cbc:DocumentType>
                   <cac:IssuerParty>
                      <cac:PartyIdentification>
                      <cbc:ID schemeID="6" schemeAgencyName="PE:SUNAT" schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06">' . $emisor->document . '</cbc:ID>

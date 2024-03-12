@@ -9,35 +9,29 @@
     @if (count($methodpayments))
         <div class="flex gap-3 flex-wrap justify-start mt-3">
             @foreach ($methodpayments as $item)
-                <div
-                    class="w-full xs:w-60 flex flex-col items-center justify-between bg-fondominicard p-2 rounded-md shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard">
-                    <div>
-                        <h1 class="text-xs text-colorlinknav">{{ $item->name }}</h1>
-                        @if (count($item->cuentas))
-                            <div class="space-y-1 mt-3">
-                                <h1
-                                    class="text-[10px] text-colorsubtitleform font-semibold tracking-widest relative before:absolute before:bottom-0 before:w-12 before:h-0.5 before:bg-colorsubtitleform">
-                                    CUENTAS</h1>
-                                @foreach ($item->cuentas as $account)
-                                    <p class="text-[10px] text-colorminicard leading-3">
-                                        [ {{ $account->account }}] - {{ $account->descripcion }}
-                                    </p>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-                    <div class="w-full flex items-center gap-2 {{ $item->default ? 'justify-between' : 'justify-end' }}">
+                @php
+                    $tipo = $item->type == '1' ? 'TRANSFERENCIA' : 'EFECTIVO';
+                @endphp
+                <x-minicard :title="$item->name" :content="$tipo" size="md"
+                    alignFooter="{{ $item->default == '1' ? 'justify-between' : 'justify-end' }}">
+                    <x-slot name="buttons">
                         @if ($item->default)
                             <x-icon-default class="inline-block" />
                         @endif
 
                         <div class="flex gap-2">
-                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            <x-button-delete wire:loading.attr="disabled"
-                                wire:click="$emit('methodpayments.confirmDelete', {{ $item }})" />
+                            @can('admin.cajas.methodpayments.edit')
+                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
+                                    wire:key="editmethod_{{ $item->id }}" />
+                            @endcan
+
+                            @can('admin.cajas.methodpayments.delete')
+                                <x-button-delete wire:loading.attr="disabled" onclick="confirmDelete({{ $item }})"
+                                    wire:key="deletemethod_{{ $item->id }}" />
+                            @endcan
                         </div>
-                    </div>
-                </div>
+                    </x-slot>
+                </x-minicard>
             @endforeach
         </div>
     @endif
@@ -50,32 +44,35 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update">
-                <x-label value="Forma pago :" />
-                <x-input class="block w-full" wire:model.defer="methodpayment.name"
-                    placeholder="Ingrese descripción de forma pago..." />
-                <x-jet-input-error for="methodpayment.name" />
+            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
+                <div class="w-full">
+                    <x-label value="Forma pago :" />
+                    <div class="w-full flex flex-wrap gap-2">
+                        <x-input-radio class="py-2" for="edit_efectivo" text="EFECTIVO">
+                            <input wire:model.defer="methodpayment.type" class="sr-only peer peer-disabled:opacity-25"
+                                type="radio" id="edit_efectivo" name="type" value="0" />
+                        </x-input-radio>
+                        <x-input-radio class="py-2" for="edit_transferencia" text="TRANSFERENCIA">
+                            <input wire:model.defer="methodpayment.type" class="sr-only peer peer-disabled:opacity-25"
+                                type="radio" id="edit_transferencia" name="type" value="1" />
+                        </x-input-radio>
+                    </div>
+                    <x-jet-input-error for="methodpayment.type" />
+                </div>
 
-                <div class="block mt-1">
+                <div>
+                    <x-label value="Medio pago :" />
+                    <x-input class="block w-full" wire:model.defer="methodpayment.name"
+                        placeholder="Ingrese descripción del pago..." />
+                    <x-jet-input-error for="methodpayment.name" />
+                </div>
+
+                <div class="block">
                     <x-label-check for="default_edit">
                         <x-input wire:model.defer="methodpayment.default" name="default" value="1" type="checkbox"
                             id="default_edit" />SELECCIONAR COMO PREDETERMINADO </x-label-check>
                     <x-jet-input-error for="methodpayment.default" />
                 </div>
-
-                <x-label value="Asignar cuentas pago :" class="mt-2 underline" />
-
-                @if (count($cuentas))
-                    <div class="w-full flex gap-1 flex-wrap mt-1">
-                        @foreach ($cuentas as $item)
-                            <x-label-check for="edit_{{ $item->id }}">
-                                <x-input wire:model.defer="selectedCuentas" name="default" value="{{ $item->id }}"
-                                    type="checkbox" id="edit_{{ $item->id }}" />
-                                {{ $item->account }} ({{ $item->descripcion }} - {{ $item->banco->name }})
-                            </x-label-check>
-                        @endforeach
-                    </div>
-                @endif
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
@@ -86,23 +83,21 @@
         </x-slot>
     </x-jet-dialog-modal>
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('methodpayments.confirmDelete', data => {
-                swal.fire({
-                    title: 'Eliminar forma de pago, ' + data.name,
-                    text: "Se eliminará un registro de la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                    }
-                })
+        function confirmDelete(methodpayment) {
+            swal.fire({
+                title: 'Eliminar forma de pago ' + methodpayment.name,
+                text: "Se eliminará un registro de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(methodpayment.id);
+                }
             })
-        })
+        }
     </script>
 </div>

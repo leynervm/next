@@ -1,12 +1,11 @@
 <div
     {{ $attributes->merge([
         'class' =>
-            'w-full xs:w-52 bg-fondominicard flex flex-col justify-between p-1 text-xs relative group rounded shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
+            'w-full xs:w-56 bg-fondominicard flex flex-col justify-between p-1 text-xs relative group rounded shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
     ]) }}>
 
     <div class="w-full flex flex-col gap-2">
         <div class="w-full relative">
-
             @if (isset($category) || isset($almacen))
                 <div class="w-full absolute bottom-0 left-0 flex flex-wrap gap-1 justify-between p-1">
                     @if (isset($category))
@@ -19,14 +18,10 @@
                     @endif
                 </div>
             @endif
-
-            @if (isset($image))
-                <div
-                    class="w-full h-36 xs:h-32 rounded shadow shadow-shadowminicard border border-borderminicard overflow-hidden">
+            <div class="w-full h-40 rounded shadow shadow-shadowminicard border border-borderminicard overflow-hidden">
+                @if (isset($image))
                     <img src="{{ $image }}" alt="" class="w-full h-full object-cover">
-                </div>
-            @else
-                <div class="w-full h-24 xs:h-32 rounded shadow shadow-shadowminicard border border-borderminicard">
+                @else
                     <svg class="w-full h-full text-neutral-500 block" xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -40,8 +35,8 @@
                             d="M20.0002 16C20.5427 16 21.048 16.2945 21.3967 16.5638C21.5 15.3693 21.5 13.8825 21.5 12C21.5 7.52166 21.5 5.28249 20.1088 3.89124C18.7175 2.5 16.4783 2.5 12 2.5C9.59086 2.5 7.82972 2.5 6.5 2.71659" />
                         <path d="M2 2L22 22" />
                     </svg>
-                </div>
-            @endif
+                @endif
+            </div>
         </div>
 
         <div class="w-full">
@@ -78,22 +73,51 @@
         </div>
     @endif
 
-    @if (isset($discount))
-        <div
-            class="absolute top-1 left-1 w-10 h-10 group-hover:shadow group-hover:shadow-red-500 flex flex-col items-center justify-center rounded-full bg-red-500 text-white bg-opacity-80 group-hover:bg-opacity-100 transition-all ease-in-out duration-150">
-            <h1 class="font-semibold leading-3 text-[9px]">
-                {{ \App\Helpers\FormatoPersonalizado::getValue($discount) }}%</h1>
-            <p class="leading-3 text-[7px]">DSCT</p>
+    @if (isset($promocion))
+        @php
+            $fondopromocion = $promocion->isRemate() ? 'text-amber-400' : 'text-red-600';
+            $colorpromocion = $promocion->isRemate() ? 'text-red-600' : 'text-white';
+        @endphp
+        <div class="absolute -top-1 -left-1">
+            <span class="w-14 h-14 block relative">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    class="w-full h-full {{ $fondopromocion }}" fill="currentColor" stroke="currentColor"
+                    stroke-width="0">
+                    <path fill="currentColor"
+                        d="M18.9905 19H19M18.9905 19C18.3678 19.6175 17.2393 19.4637 16.4479 19.4637C15.4765 19.4637 15.0087 19.6537 14.3154 20.347C13.7251 20.9374 12.9337 22 12 22C11.0663 22 10.2749 20.9374 9.68457 20.347C8.99128 19.6537 8.52349 19.4637 7.55206 19.4637C6.76068 19.4637 5.63218 19.6175 5.00949 19C4.38181 18.3776 4.53628 17.2444 4.53628 16.4479C4.53628 15.4414 4.31616 14.9786 3.59938 14.2618C2.53314 13.1956 2.00002 12.6624 2 12C2.00001 11.3375 2.53312 10.8044 3.59935 9.73817C4.2392 9.09832 4.53628 8.46428 4.53628 7.55206C4.53628 6.76065 4.38249 5.63214 5 5.00944C5.62243 4.38178 6.7556 4.53626 7.55208 4.53626C8.46427 4.53626 9.09832 4.2392 9.73815 3.59937C10.8044 2.53312 11.3375 2 12 2C12.6625 2 13.1956 2.53312 14.2618 3.59937C14.9015 4.23907 15.5355 4.53626 16.4479 4.53626C17.2393 4.53626 18.3679 4.38247 18.9906 5C19.6182 5.62243 19.4637 6.75559 19.4637 7.55206C19.4637 8.55858 19.6839 9.02137 20.4006 9.73817C21.4669 10.8044 22 11.3375 22 12C22 12.6624 21.4669 13.1956 20.4006 14.2618C19.6838 14.9786 19.4637 15.4414 19.4637 16.4479C19.4637 17.2444 19.6182 18.3776 18.9905 19Z" />
+                </svg>
+                <h1
+                    class="absolute {{ $colorpromocion }} top-0 left-0 w-full h-full flex flex-col text-center justify-center items-center font-semibold">
+                    @if ($promocion->isDescuento())
+                        <p class="text-xs leading-[0.5rem]">{{ formatDecimalOrInteger($promocion->descuento) }}
+                            <small class="">%</small>
+                        </p>
+                        <small class="w-full text-[7px] leading-[0.5rem]">DSCT</small>
+                    @elseif ($promocion->isCombo())
+                        <small class="w-full text-[10px] leading-[0.6rem]">COM<br />BO</small>
+                    @else
+                        <small class="w-full text-[10px] leading-[0.5rem]">REM<br />ATE</small>
+                    @endif
+                </h1>
+            </span>
         </div>
-        {{-- <h1
-            class="absolute w-8 h-8 top-1 left-1 flex flex-col items-center justify-center p-1 rounded-full bg-green-500 text-white transition-all ease-in-out duration-150">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-2 h-2 block" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 11l6-6 6 6M6 19l6-6 6 6" />
-            </svg>
-            <p class="font-semibold text-[8px]">
-                {{ \App\Helpers\FormatoPersonalizado::getValue($discount) }} %</p>
-        </h1> --}}
+
+        {{-- <div class="absolute top-0 left-0">
+            <span class="w-14 h-14 block relative">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    class="w-full h-full text-red-600" fill="currentColor" stroke="currentColor" stroke-width="0">
+                    <path fill="currentColor"
+                        d="M18.9905 19H19M18.9905 19C18.3678 19.6175 17.2393 19.4637 16.4479 19.4637C15.4765 19.4637 15.0087 19.6537 14.3154 20.347C13.7251 20.9374 12.9337 22 12 22C11.0663 22 10.2749 20.9374 9.68457 20.347C8.99128 19.6537 8.52349 19.4637 7.55206 19.4637C6.76068 19.4637 5.63218 19.6175 5.00949 19C4.38181 18.3776 4.53628 17.2444 4.53628 16.4479C4.53628 15.4414 4.31616 14.9786 3.59938 14.2618C2.53314 13.1956 2.00002 12.6624 2 12C2.00001 11.3375 2.53312 10.8044 3.59935 9.73817C4.2392 9.09832 4.53628 8.46428 4.53628 7.55206C4.53628 6.76065 4.38249 5.63214 5 5.00944C5.62243 4.38178 6.7556 4.53626 7.55208 4.53626C8.46427 4.53626 9.09832 4.2392 9.73815 3.59937C10.8044 2.53312 11.3375 2 12 2C12.6625 2 13.1956 2.53312 14.2618 3.59937C14.9015 4.23907 15.5355 4.53626 16.4479 4.53626C17.2393 4.53626 18.3679 4.38247 18.9906 5C19.6182 5.62243 19.4637 6.75559 19.4637 7.55206C19.4637 8.55858 19.6839 9.02137 20.4006 9.73817C21.4669 10.8044 22 11.3375 22 12C22 12.6624 21.4669 13.1956 20.4006 14.2618C19.6838 14.9786 19.4637 15.4414 19.4637 16.4479C19.4637 17.2444 19.6182 18.3776 18.9905 19Z" />
+                </svg>
+                <h1
+                    class="absolute text-colortitleform  top-0 left-0 w-full h-full flex flex-col text-center justify-center items-center font-semibold leading-3">
+                    <p class="text-xs leading-3">{{ formatDecimalOrInteger($discount) }}
+                        <small class="">%</small>
+                    </p>
+                    <small class="w-full text-[8px]">DSCT</small>
+                </h1>
+            </span>
+        </div> --}}
     @endif
 
     @if (isset($increment))
@@ -105,7 +129,7 @@
                     <path d="M6 11l6-6 6 6M6 19l6-6 6 6" />
                 </svg>
                 <p class="text-[8px] text-center leading-3">
-                    {{ \App\Helpers\FormatoPersonalizado::getValue($increment) }}
+                    {{ formatDecimalOrInteger($increment) }}
                     %
                 </p>
             </h1>

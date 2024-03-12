@@ -18,8 +18,11 @@ return new class extends Migration
             $table->string('serie', 4);
             $table->string('code', 2)->nullable();
             $table->integer('contador')->default(0);
-            $table->unsignedTinyInteger('typecomprobante_id')->nullable();
+            $table->string('default', 1)->default(0);
+            $table->unsignedTinyInteger('typecomprobante_id');
+            $table->unsignedTinyInteger('sucursal_id');
             $table->foreign('typecomprobante_id')->on('typecomprobantes')->references('id');
+            $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->softDeletes();
         });
     }

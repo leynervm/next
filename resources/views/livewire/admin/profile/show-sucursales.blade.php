@@ -1,4 +1,4 @@
-<x-jet-form-section submit="updateProfileSucursal">
+<x-jet-form-section submit="update">
     <x-slot name="title">
         {{ __('Sucursals asigned') }}
     </x-slot>

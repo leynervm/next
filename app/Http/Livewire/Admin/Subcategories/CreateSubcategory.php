@@ -5,13 +5,14 @@ namespace App\Http\Livewire\Admin\Subcategories;
 use App\Models\Category;
 use App\Models\Subcategory;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class CreateSubcategory extends Component
 {
 
+    use AuthorizesRequests;
     public $open = false;
     public $name;
     public $selectedCategories = [];
@@ -20,8 +21,8 @@ class CreateSubcategory extends Component
     {
         return [
             'name' => [
-                'required', 'string', 'min:3', 'max:100',
-                new CampoUnique('subcategories', 'name', null, true),
+                'required', 'string', 'min:2', 'max:100',
+                new CampoUnique('subcategories', 'name', null, false),
             ],
             'selectedCategories' => ['required', 'array', 'min:1']
         ];
@@ -30,13 +31,14 @@ class CreateSubcategory extends Component
 
     public function render()
     {
-        $categories = Category::orderBy('name', 'asc')->get();
+        $categories = Category::orderBy('order', 'asc')->orderBy('name', 'asc')->get();
         return view('livewire.admin.subcategories.create-subcategory', compact('categories'));
     }
 
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.almacen.subcategorias.create');
             $this->resetValidation();
             $this->reset('name', 'selectedCategories');
         }
@@ -44,24 +46,16 @@ class CreateSubcategory extends Component
 
     public function save()
     {
+        $this->authorize('admin.almacen.subcategorias.create');
         $this->name = trim($this->name);
         $this->validate();
-
         DB::beginTransaction();
-
         try {
-            $subcategory = Subcategory::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
-
-            if ($subcategory) {
-                $subcategory->restore();
-            } else {
-                $subcategory = Subcategory::create([
-                    'name' => $this->name,
-                    'code' => Str::random(4)
-                ]);
-            }
-
+            $order = Subcategory::max('order') ?? 0;
+            $subcategory = Subcategory::create([
+                'name' => $this->name,
+                'order' => $order + 1
+            ]);
             $subcategory->categories()->sync($this->selectedCategories);
             DB::commit();
             $this->reset();

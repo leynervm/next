@@ -6,14 +6,17 @@ use App\Models\Cuenta;
 use App\Models\Methodpayment;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateMethodpayment extends Component
 {
 
+    use AuthorizesRequests;
+
     public $open = false;
-    public $name;
+    public $name, $type;
     public $default = 0;
     public $selectedCuentas = [];
 
@@ -24,6 +27,9 @@ class CreateMethodpayment extends Component
                 'required', 'min:3', 'max:100',
                 new CampoUnique('methodpayments', 'name', null, true),
             ],
+            'type' => [
+                'required', 'integer', 'min:0', 'max:1',
+            ],
             'default' => [
                 'required', 'integer', 'min:0', 'max:1',
                 new DefaultValue('methodpayments', 'default', null, true)
@@ -33,13 +39,13 @@ class CreateMethodpayment extends Component
 
     public function render()
     {
-        $cuentas = Cuenta::orderBy('account', 'asc')->get();
-        return view('livewire.admin.methodpayments.create-methodpayment', compact('cuentas'));
+        return view('livewire.admin.methodpayments.create-methodpayment');
     }
 
     public function updatingOpen()
     {
         if ($this->open == false) {
+            $this->authorize('admin.cajas.methodpayments.create');
             $this->resetValidation();
             $this->reset();
         }
@@ -47,28 +53,28 @@ class CreateMethodpayment extends Component
 
     public function save()
     {
+        $this->authorize('admin.cajas.methodpayments.create');
         $this->name = trim($this->name);
         $this->default = $this->default == 1 ? 1 : 0;
         $this->validate();
 
         try {
             DB::beginTransaction();
-            $methodpayment = Methodpayment::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
+            $methodpayment = Methodpayment::onlyTrashed()
+                ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])
+                ->first();
 
             if ($methodpayment) {
                 $methodpayment->default = $this->default;
-                $methodpayment->type = 0;
+                $methodpayment->type = $this->type;
                 $methodpayment->restore();
             } else {
-                $methodpayment = Methodpayment::create([
+                Methodpayment::create([
                     'name' => $this->name,
-                    'type' => 0,
+                    'type' => $this->type,
                     'default' => $this->default,
                 ]);
             }
-
-            $methodpayment->cuentas()->sync($this->selectedCuentas);
 
             DB::commit();
             $this->emitTo('admin.methodpayments.show-methodpayments', 'render');

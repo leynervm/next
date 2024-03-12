@@ -80,7 +80,6 @@
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>FECHA</span>
-
                         <svg class="h-3 w-3" viewBox="0 0 10 11" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                             fill="currentColor" stroke="currentColor" stroke-width="0.1">
                             <path
@@ -93,28 +92,18 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium">
                     PRODUCTO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     STOCK ANTERIOR</th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     CANTIDAD</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     NUEVO STOCK</th>
-
                 <th scope="col" class="p-2 font-medium">
                     TIPO MOVIMIENTO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     REFERENCIA</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    USUARIO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SUCURSAL</th>
             </tr>
@@ -177,10 +166,9 @@
                             {{ $item->reference }}
                         </td>
                         <td class="p-2 text-center">
-                            {{ $item->user->name }}
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ $item->sucursal->name }}
+                            <p>{{ $item->sucursal->name }}</p>
+                            <p class="text-colorsubtitleform text-[10px] leading-3">
+                                USUARIO : {{ $item->user->name }}</p>
                         </td>
                     </tr>
                 @endforeach

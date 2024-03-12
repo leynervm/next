@@ -1,36 +1,38 @@
 <div>
     <x-form-card titulo="SERIES" subtitulo="Administrar series del producto." class="relative">
         <div class="w-full h-full rounded flex flex-wrap lg:flex-nowrap gap-3">
-            <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
-                <form wire:submit.prevent="save" class="flex flex-col gap-2" x-data="almacendata">
-                    <div class="w-full">
-                        <x-label value="Almacén :" />
-                        <div id="parentalmacen_id" class="relative" wire:ignore>
-                            <x-select class="block w-full" id="almacen_id" x-ref="select" data-placeholder="null">
-                                <x-slot name="options">
-                                    @if (count($producto->almacens))
-                                        @foreach ($producto->almacens as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
+            @can('admin.almacen.productos.series.edit')
+                <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
+                    <form wire:submit.prevent="save" class="flex flex-col gap-2">
+                        <div class="w-full">
+                            <x-label value="Almacén :" />
+                            <div id="parentalmacenprod" class="relative" x-data="{ almacenserie_id: @entangle('almacen_id').defer }" x-init="selectAlmacenSerie">
+                                <x-select class="block w-full" id="almacenprod" x-ref="selectaserie"
+                                    data-placeholder="null">
+                                    <x-slot name="options">
+                                        @if (count($producto->almacens))
+                                            @foreach ($producto->almacens as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="almacen_id" />
                         </div>
-                        <x-jet-input-error for="almacen_id" />
-                    </div>
-                    <div class="w-full">
-                        <x-label value="Serie :" />
-                        <x-input class="block w-full" placeholder="Ingresar serie..." wire:model.defer="serie" />
-                        <x-jet-input-error for="serie" />
-                    </div>
-                    <div class="w-full mt-3 flex justify-end">
-                        <x-button type="submit" wire:loading.atrr="disabled">
-                            REGISTRAR
-                        </x-button>
-                    </div>
-                </form>
-            </div>
+                        <div class="w-full">
+                            <x-label value="Serie :" />
+                            <x-input class="block w-full" placeholder="Ingresar serie..." wire:model.defer="serie" />
+                            <x-jet-input-error for="serie" />
+                        </div>
+                        <div class="w-full mt-3 flex justify-end">
+                            <x-button type="submit" wire:loading.atrr="disabled">
+                                REGISTRAR</x-button>
+                        </div>
+                    </form>
+                </div>
+            @endcan
             @if (count($producto->series))
                 <div class="w-full relative bg-body p-3 rounded">
                     <div class="w-full flex items-end gap-1 mb-2">
@@ -103,9 +105,10 @@
                                     class="inline-flex gap-2 items-center justify-between p-1 font-medium rounded-md bg-fondospancardproduct text-textspancardproduct">
                                     <small
                                         class="text-[10px] font-medium {{ $textclass }}">{{ $item->serie }}</small>
-                                    <x-button-delete
-                                        wire:click="$emit('producto.confirmDeleteSerie',{{ $item }})"
-                                        wire:loading.attr="disabled" />
+                                    @can('admin.almacen.productos.series.edit')
+                                        <x-button-delete onclick="confirmDeleteSerie({{ $item }})"
+                                            wire:loading.attr="disabled" />
+                                    @endcan
                                 </span>
                             @endforeach
                         </div>
@@ -122,59 +125,43 @@
     </x-form-card>
 
     <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('almacendata', () => ({
-                almacen_id: @entangle('almacen_id').defer,
-
-                init() {
-                    this.select2AlmacenAlpine();
-                    window.addEventListener('created', () => {
-                        this.select2.val(this.almacen_id).trigger("change");
-                    });
-                },
-                select2AlmacenAlpine() {
-                    this.select2 = $(this.$refs.select).select2();
-                    this.select2.val(this.almacen_id).trigger("change");
-                    this.select2.on("select2:select", (event) => {
-                        this.almacen_id = event.target.value;
-                    }).on('select2:open', function(e) {
-                        const evt = "scroll.select2";
-                        $(e.target).parents().off(evt);
-                        $(window).off(evt);
-                    });
-                }
-            }));
-        })
+        function selectAlmacenSerie() {
+            this.selectAS = $(this.$refs.selectaserie).select2();
+            this.selectAS.val(this.almacenserie_id).trigger("change");
+            this.selectAS.on("select2:select", (event) => {
+                this.almacenserie_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("almacenserie_id", (value) => {
+                this.selectAS.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectAS.select2().val(this.almacenserie_id).trigger('change');
+            });
+        }
 
         window.addEventListener('resetfilter', almacens => {
             @this.resetfilter();
-            let selectalmacen = document.querySelector('[x-ref="select"]');
-            $(selectalmacen).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
-            almacens.detail.forEach(almacen => {
-                let option = new Option(almacen.name, almacen.id, false, false);
-                $(selectalmacen).append(option);
-            });
-            $(selectalmacen).select2().trigger('change');
         })
 
-        document.addEventListener("livewire:load", () => {
-            Livewire.on("producto.confirmDeleteSerie", data => {
-                swal.fire({
-                    title: 'Eliminar serie ' + data.serie,
-                    text: "Se eliminará un registro de la base de datos, incluyendo todos los datos relacionados.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.delete(data.id);
-                        // Livewire.emitTo('almacen.productos.show-series', 'delete', data.id);
-                    }
-                })
-            });
-        })
+        function confirmDeleteSerie(serie) {
+            swal.fire({
+                title: 'Eliminar serie ' + serie.serie,
+                text: "Se eliminará un registro de la base de datos, incluyendo todos los datos relacionados.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(serie.id);
+                }
+            })
+        }
     </script>
 </div>

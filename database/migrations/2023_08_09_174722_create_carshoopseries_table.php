@@ -16,12 +16,10 @@ return new class extends Migration
         Schema::create('carshoopseries', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->bigInteger('serie_id')->nullable();
-            $table->bigInteger('carshoop_id')->nullable();
-
+            $table->unsignedBigInteger('serie_id');
+            $table->unsignedBigInteger('carshoop_id');
             $table->foreign('serie_id')->on('series')->references('id');
             $table->foreign('carshoop_id')->on('carshoops')->references('id');
-            $table->timestamps();
         });
     }
 

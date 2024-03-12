@@ -27,4 +27,19 @@ class Itempromo extends Model
     {
         return $this->belongsTo(Producto::class);
     }
+
+    public function isSinDescuento()
+    {
+        return $this->typecombo == self::SIN_DESCUENTO;
+    }
+
+    public function isDescuento()
+    {
+        return $this->typecombo == self::DESCUENTO;
+    }
+
+    public function isGratuito()
+    {
+        return $this->typecombo == self::GRATIS;
+    }
 }

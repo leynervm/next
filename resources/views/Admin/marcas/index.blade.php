@@ -29,12 +29,15 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full">
-        @livewire('admin.marcas.create-marca')
-    </div>
+    @can('admin.almacen.marcas.create')
+        <div class="w-full">
+            <livewire:admin.marcas.create-marca />
+        </div>
+    @endcan
 
-    {{-- <x-title-next titulo="Formas pago" class="mt-5" /> --}}
-    <div class="w-full">
-        @livewire('admin.marcas.show-marcas')
-    </div>
+    @can('admin.almacen.marcas')
+        <div class="w-full">
+            <livewire:admin.marcas.show-marcas />
+        </div>
+    @endcan
 </x-app-layout>

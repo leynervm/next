@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Promociones;
 use App\Models\Producto;
 use App\Models\Promocion;
 use App\Rules\ValidatePrincipalCombo;
+use App\Rules\ValidateSecondaryCombo;
 use App\Rules\ValidateStockCombo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -211,6 +212,7 @@ class CreatePromocion extends Component
             ],
             'productosec_id' => [
                 'required', 'integer', 'min:1', 'exists:productos,id', 'different:producto_id',
+                new ValidateSecondaryCombo()
             ],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'],
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],

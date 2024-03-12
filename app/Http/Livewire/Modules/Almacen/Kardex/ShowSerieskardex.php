@@ -53,14 +53,12 @@ class ShowSerieskardex extends Component
                     $query->where('almacen_id', $this->searchalmacen);
                 }
 
-                $query->withWhereHas('sucursal', function ($query) {
-                    $query->withTrashed();
-                    if ($this->searchsucursal !== '') {
-                        $query->where('id', $this->searchsucursal);
-                    } else {
-                        $query->where('id', auth()->user()->sucursal_id);
-                    }
-                });
+                // if ($this->searchsucursal !== '') {
+                //     $query->where('id', $this->searchsucursal);
+                // } else {
+                //     $query->where('id', auth()->user()->sucursal_id);
+                // }
+
             });
 
         if ($this->searchserie !== '') {

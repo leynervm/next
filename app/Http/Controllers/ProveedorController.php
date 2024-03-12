@@ -8,6 +8,17 @@ use App\Models\Ubigeo;
 
 class ProveedorController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.proveedores')->only('index');
+        $this->middleware('can:admin.proveedores.create')->only('create');
+        $this->middleware('can:admin.proveedores.edit')->only('edit');
+        $this->middleware('can:admin.proveedores.historial')->only('history');
+        $this->middleware('can:admin.proveedores.pedidos')->only('pedidos');
+        $this->middleware('can:admin.proveedores.tipos')->only('proveedortypes');
+    }
+
     public function index()
     {
         return view('admin.proveedores.index');
@@ -20,7 +31,7 @@ class ProveedorController extends Controller
         return view('admin.proveedores.create', compact('ubigeos', 'proveedortypes'));
     }
 
-    public function show(Proveedor $proveedor)
+    public function edit(Proveedor $proveedor)
     {
         return view('admin.proveedores.show', compact('proveedor'));
     }

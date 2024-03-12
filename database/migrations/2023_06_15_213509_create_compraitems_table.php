@@ -21,7 +21,9 @@ class CreateCompraitemsTable extends Migration
             $table->decimal('cantidad', 10, 2);
             $table->decimal('pricebuy', 10, 4);
             $table->decimal('igv', 10, 4);
+            $table->decimal('descuento', 10, 4);
             $table->decimal('subtotal', 10, 4);
+            $table->decimal('total', 10, 4);
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('compra_id')->nullable();

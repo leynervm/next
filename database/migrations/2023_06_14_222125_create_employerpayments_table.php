@@ -15,19 +15,13 @@ class CreateEmployerpaymentsTable extends Migration
     {
         Schema::create('employerpayments', function (Blueprint $table) {
             $table->id();
-            $table->dateTime('date');
-            $table->decimal('adelanto', 8, 2);
-            $table->decimal('descuento', 8, 2)->default(0);
-            $table->decimal('saldo', 8, 2);
-            $table->string('datemonth', 7);
-            $table->integer('delete')->default(0);
-            $table->bigInteger('employer_id')->nullable();
-            $table->bigInteger('cajamovimiento_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->string('month', 7);
+            $table->decimal('adelantos', 10, 2)->default(0);
+            $table->decimal('descuentos', 10, 2)->default(0);
+            $table->decimal('bonus', 10, 2)->default(0);
+            $table->decimal('amount', 10, 2);
+            $table->unsignedBigInteger('employer_id');
             $table->foreign('employer_id')->on('employers')->references('id');
-            $table->foreign('cajamovimiento_id')->on('cajamovimientos')->references('id');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

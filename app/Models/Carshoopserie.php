@@ -11,7 +11,9 @@ class Carshoopserie extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    public $timestamps = false;
+
+    protected $fillable = ['date', 'serie_id', 'carshoop_id'];
 
     public function serie(): BelongsTo
     {

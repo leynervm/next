@@ -1,5 +1,4 @@
 <x-app-layout>
-
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -33,8 +32,9 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mt-3">
-        <livewire:admin.typecomprobantes.show-typecomprobantes />
-    </div>
-
+    @can('admin.administracion.typecomprobantes')
+        <div class="mt-3">
+            <livewire:admin.typecomprobantes.show-typecomprobantes />
+        </div>
+    @endcan
 </x-app-layout>
