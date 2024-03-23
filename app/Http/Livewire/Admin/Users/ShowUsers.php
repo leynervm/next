@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Admin\Users;
 
+use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -13,13 +14,28 @@ class ShowUsers extends Component
     use WithPagination;
 
     public $open = false;
+    public $search = '';
+    public $searchsucursal = '';
 
     public function render()
     {
         $users = User::with(['employer'])->with(['sucursal' => function ($query) {
             $query->withTrashed();
-        }])->orderBy('name', 'asc')->paginate();
-        return view('livewire.admin.users.show-users', compact('users'));
+        }]);
+        // ->whereNotNull('sucursal_id');
+
+        if (trim($this->search) != '') {
+            $users->where('document', 'ilike', '%' . $this->search . '%')
+                ->orWhere('name', 'ilike', '%' . $this->search . '%');
+        }
+
+        if (trim($this->searchsucursal) != '') {
+            $users->where('sucursal_id', $this->searchsucursal);
+        }
+
+        $sucursals = Sucursal::whereHas('users')->orderBy('name', 'asc')->get();
+        $users = $users->orderBy('name', 'asc')->paginate();
+        return view('livewire.admin.users.show-users', compact('users', 'sucursals'));
     }
 
     public function delete(User $user)

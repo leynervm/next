@@ -46,7 +46,7 @@
             @endcan
 
             <div class="w-full">
-                @if (count($seriecomprobantes))
+                @if (count($seriecomprobantes) > 0)
                     <x-table>
                         <x-slot name="header">
                             <tr>
@@ -89,11 +89,12 @@
 
 
                                     <td class="p-2 text-center">
-                                        @if ($item->default)
+                                        @if ($item->isDefault())
                                             <x-icon-default class="inline-block" />
-                                        @elseif ($item->default == '0' && !in_array($item->typecomprobante->code, ['09', '07']))
+                                        @elseif (!$item->trashed() && !$item->isDefault() && !in_array($item->typecomprobante->code, ['09', '07']))
                                             @can('admin.administracion.sucursales.seriecomprobantes.edit')
                                                 <x-icon-default wire:click="setcomprobantedefault({{ $item->id }})"
+                                                    wire:key="default_{{ $item->id }}"
                                                     class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
                                             @endcan
                                         @endif

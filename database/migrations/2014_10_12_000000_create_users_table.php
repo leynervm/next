@@ -23,7 +23,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->char('status', 1)->default(0);
             $table->char('admin', 1)->default(0);
-            $table->unsignedTinyInteger('role_id')->nullable();
             $table->unsignedTinyInteger('theme_id')->nullable();
             $table->unsignedTinyInteger('sucursal_id')->nullable();
             $table->foreignId('current_team_id')->nullable();

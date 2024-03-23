@@ -5,10 +5,10 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full numeric prevent" wire:keydown.enter="searchclient" type="number"
-                            wire:model.defer="document" onkeypress="return validarNumero(event, 11)" />
-                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
-                            wire:target="searchclient">
+                        <x-input class="block w-full" wire:keydown.enter="searchclient" type="number"
+                            wire:model.defer="document" onkeypress="return validarNumero(event, 11)"
+                            onkeydown="disabledEnter(event)" />
+                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -41,7 +41,7 @@
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)
                                     <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }} /
-                                        {{ $item->distrito }} /  {{ $item->ubigeo_reniec }}</option>
+                                        {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                 @endforeach
                             </x-slot>
                         </x-select>
@@ -52,7 +52,8 @@
 
                 <div class="w-full">
                     <x-label value="Teléfono /Celular :" />
-                    <x-input class="block w-full" wire:model.defer="telefono" placeholder="Teléfono / Celaular..." />
+                    <x-input class="block w-full" wire:model.defer="telefono" type="number"
+                        onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono" />
                 </div>
 
@@ -345,6 +346,8 @@
                 </div>
             </x-form-card>
         @endif
+
+        {{ print_r($errors->all()) }}
 
         <div class="w-full flex justify-end">
             <x-button type="submit">REGISTRAR</x-button>

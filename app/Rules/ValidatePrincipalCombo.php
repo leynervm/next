@@ -39,13 +39,13 @@ class ValidatePrincipalCombo implements Rule
         //         ->where('producto_id', $this->producto_id);
         // }
 
-        $promocions = Promocion::activos()->where('producto_id', $this->producto_id)->exists();
+        $promocions = Promocion::disponibles()->where('producto_id', $this->producto_id)->exists();
         if ($promocions) {
             $this->mensaje = 'Producto ya tiene promociones activas.';
             return false;
         }
 
-        $itemcombos = Promocion::activos()->withWhereHas('itempromos', function ($query) {
+        $itemcombos = Promocion::disponibles()->withWhereHas('itempromos', function ($query) {
             $query->where('producto_id', $this->producto_id);
         })->exists();
 

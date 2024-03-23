@@ -88,8 +88,7 @@ class ShowEspecificaciones extends Component
         $validatedata = $this->validate([
             'name' => [
                 'required', 'min:2',
-                Rule::unique('especificacions', 'name')
-                    ->where('caracteristica_id', $this->caracteristica->id)
+                new CampoUnique('especificacions', 'name', null, false, 'caracteristica_id', $this->caracteristica->id)
             ]
         ]);
 

@@ -18,33 +18,30 @@ class PricetypeSeeder extends Seeder
     {
         $listafinal = Pricetype::create([
             'name' => 'LISTA FINAL',
-            'ganancia' => 30,
-            'decimalrounded' => 1,
+            'rounded' => 1,
             'decimals' => 2,
             'default' => 1,
             'web' => 0,
+            'defaultlogin' => 1,
         ]);
 
         $listaweb = Pricetype::create([
             'name' => 'LISTA WEB',
-            'ganancia' => 25,
-            'decimalrounded' => 1,
+            'rounded' => 1,
             'decimals' => 2,
             'web' => 1,
         ]);
 
         $listatecnico = Pricetype::create([
             'name' => 'LISTA TECNICO',
-            'ganancia' => 20,
-            'decimalrounded' => 0,
+            'rounded' => 0,
             'decimals' => 2,
             'web' => 0,
         ]);
 
         $listadistribucion = Pricetype::create([
             'name' => 'LISTA DISTRIBUCION',
-            'ganancia' => 10,
-            'decimalrounded' => 0,
+            'rounded' => 0,
             'decimals' => 4,
             'web' => 0,
         ]);
@@ -55,7 +52,7 @@ class PricetypeSeeder extends Seeder
         $gananciatecnico = 30;
         $gananciadistribucion = 15;
 
-        if (count($rangos)) {
+        if (count($rangos) > 0) {
             foreach ($rangos as $rango) {
 
                 $rango->pricetypes()->attach([

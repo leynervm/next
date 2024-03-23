@@ -14,7 +14,7 @@ class Kardex extends Model
     protected $fillable = [
         'date', 'cantidad', 'oldstock', 'newstock', 'simbolo', 'detalle',
         'reference', 'producto_id', 'almacen_id', 'sucursal_id',
-        'user_id', 'kardeable_id', 'kardeable_type'
+        'user_id', 'promocion_id', 'kardeable_id', 'kardeable_type'
     ];
 
 
@@ -22,6 +22,7 @@ class Kardex extends Model
     const ENTRADA_PRODUCTO = 'INGRESO NUEVO ALMACÉN';
     const ENTRADA_DEVOLUCION = 'INGRESO POR DEVOLUCIÓN';
     const SALIDA_VENTA = 'SALIDA VENTA FÍSICA';
+    const SALIDA_COMBO_VENTA = 'SALIDA COMBO VENTA FÍSICA';
     const SALIDA_SOPORTE = 'SALIDA SOPORTE TÉCNICO';
     const SALIDA_GUIA = 'SALIDA GUÍA REMISIÓN';
     const RESERVADO_GUIA = 'RESERVADO GUÍA REMISIÓN';
@@ -50,6 +51,7 @@ class Kardex extends Model
     {
         return $this->belongsTo(Almacen::class);
     }
+
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
@@ -58,6 +60,11 @@ class Kardex extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function promocion(): BelongsTo
+    {
+        return $this->belongsTo(Promocion::class);
     }
 
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)

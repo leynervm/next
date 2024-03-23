@@ -1,4 +1,4 @@
-<div>
+<div x-data="loadproductos">
     @if ($productos->hasPages())
         <div class="w-full pb-2">
             {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
@@ -6,105 +6,104 @@
     @endif
 
     <div class="flex flex-wrap items-center gap-2 mt-4 ">
-        <div class="relative flex items-center">
-            <span class="absolute">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                    stroke="currentColor" class="w-4 h-4 mx-3 text-next-300">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-            </span>
-            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model.lazy="search">
-            </x-input>
+        <div class="w-full max-w-lg">
+            <x-label value="Buscar producto :" />
+            <div class="relative flex items-center">
+                <span class="absolute">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4 mx-3 text-next-300">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                </span>
+                <x-input placeholder="Buscar" class="block w-full pl-9" wire:model.lazy="search">
+                </x-input>
+            </div>
         </div>
-        @if (count($marcaGroup) > 0)
-            <x-dropdown titulo="Marca">
-                <x-slot name="items">
-                    @foreach ($marcaGroup as $item)
-                        <li>
-                            <x-link-dropdown :for="'searchmarca_' . $item->marca_id">
-                                <input id="searchmarca_{{ $item->marca_id }}" type="checkbox"
-                                    value="{{ $item->marca->name }}" name="searchmarca[]" wire:loading.attr="disabled"
-                                    wire:model.lazy="searchmarca"
-                                    class="w-4 h-4 mr-1 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                {{ $item->marca->name }}
-                            </x-link-dropdown>
-                        </li>
-                    @endforeach
-                </x-slot>
-            </x-dropdown>
+
+        @if (count($marcas) > 1)
+            <div class="w-full max-w-xs">
+                <x-label value="Marca :" />
+                <div class="relative" id="parentmarca" x-init="selectMarca">
+                    <x-select class="block w-full" id="marca" x-ref="selectmarca" data-placeholder="null"
+                        data-minimum-results-for-search="2">
+                        <x-slot name="options">
+                            @foreach ($marcas as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+                <x-jet-input-error for="searchmarca" />
+            </div>
         @endif
 
-        @if (count($categoriaGroup))
-            <x-dropdown titulo="Categoría">
-                <x-slot name="items">
-                    @foreach ($categoriaGroup as $item)
-                        <li>
-                            <x-link-dropdown :for="'searchcategory_' . $item->category_id">
-                                <input id="searchcategory_{{ $item->category_id }}" type="checkbox"
-                                    value="{{ $item->category->name }}" name="searchcategory[]"
-                                    wire:loading.attr="disabled" wire:model.lazy="searchcategory"
-                                    class="w-4 h-4 mr-1 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                {{ $item->category->name }}
-                            </x-link-dropdown>
-                        </li>
-                    @endforeach
-                </x-slot>
-            </x-dropdown>
+        @if (count($categorias) > 1)
+            <div class="w-full max-w-xs">
+                <x-label value="Categoría :" />
+                <div class="relative" id="parentcategory" x-init="selectCategory">
+                    <x-select class="block w-full" id="category" x-ref="selectcategory" data-placeholder="null"
+                        data-minimum-results-for-search="2">
+                        <x-slot name="options">
+                            @foreach ($categorias as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+                <x-jet-input-error for="searchcategory" />
+            </div>
         @endif
 
-        @if (count($subcategoriaGroup))
-            <x-dropdown titulo="Subcategoría">
-                <x-slot name="pages">
-                    <div class="w-full pb-2">
-                        {{ $subcategoriaGroup->onEachSide(0)->links('livewire::pagination-default') }}
-                    </div>
-                </x-slot>
-                <x-slot name="items">
-                    @foreach ($subcategoriaGroup as $item)
-                        <li>
-                            <x-link-dropdown :for="'searchsubcategory_' . $item->subcategory_id">
-                                <input id="searchsubcategory_{{ $item->subcategory_id }}" type="checkbox"
-                                    value="{{ $item->subcategory->name }}" name="searchsubcategory[]"
-                                    wire:loading.attr="disabled" wire:model.lazy="searchsubcategory"
-                                    class="w-4 h-4 mr-1 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                {{ $item->subcategory->name }}
-                            </x-link-dropdown>
-                        </li>
-                    @endforeach
-                </x-slot>
-                <x-slot name="loading">
-                    <div wire:loading.flex wire:target="searchsubcategory" class="loading-overlay rounded hidden">
-                        <x-loading-next />
-                    </div>
-                </x-slot>
-            </x-dropdown>
+        @if (count($subcategories) > 1)
+            <div class="w-full max-w-xs">
+                <x-label value="Subcategoría :" />
+                <div class="relative" id="parentsubcategory" x-init="selectSubcategory">
+                    <x-select class="block w-full" id="subcategory" x-ref="selectsubcategory" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($subcategories as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+                <x-jet-input-error for="searchsubcategory" />
+            </div>
         @endif
 
-        @if (count($almacenGroup) > 1)
-            <x-dropdown titulo="Almacén">
-                <x-slot name="items">
-                    @foreach ($almacenGroup as $item)
-                        <li>
-                            <x-link-dropdown :for="'searchalmacen_' . $item->id">
-                                <input id="searchalmacen_{{ $item->id }}" type="checkbox"
-                                    value="{{ $item->name }}" wire:loading.attr="disabled"
-                                    wire:model.lazy="searchalmacen" name="almacenSearch[]"
-                                    class="w-4 h-4 mr-1 text-primary border-next-300 cursor-pointer rounded focus:ring-0 focus:ring-transparent disabled:opacity-25">
-                                {{ $item->name }}
-                            </x-link-dropdown>
-                        </li>
-                    @endforeach
-                </x-slot>
-            </x-dropdown>
+        @if (count($almacens) > 1)
+            <div class="w-full max-w-xs">
+                <x-label value="Almacén :" />
+                <div class="relative" id="parentalmacen" x-init="selectAlmacen">
+                    <x-select class="block w-full" id="almacen" x-ref="selectalmacen" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($almacens as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+                <x-jet-input-error for="searchalmacen" />
+            </div>
         @endif
 
-        <x-select class="" wire:model.lazy="publicado" id="searchpublicado">
-            <x-slot name="options">
-                <option value="0">NO DISPONIBLE TIENDA WEB</option>
-                <option value="1">DISPONIBLE TIENDA WEB</option>
-            </x-slot>
-        </x-select>
+        <div class="w-full max-w-xs">
+            <x-label value="Estado web :" />
+            <div class="relative" id="parentweb" x-init="selectWeb">
+                <x-select class="block w-full" id="web" x-ref="selectweb" data-placeholder="null">
+                    <x-slot name="options">
+                        <option value="0">NO DISPONIBLE TIENDA WEB</option>
+                        <option value="1">DISPONIBLE TIENDA WEB</option>
+                    </x-slot>
+                </x-select>
+                <x-icon-select />
+            </div>
+            <x-jet-input-error for="publicado" />
+        </div>
     </div>
 
     <x-table class="mt-1">
@@ -163,9 +162,6 @@
                         ÚLT. INGRESO</th>
 
                     <th scope="col" class="p-2 font-medium">
-                        PROVEEDOR</th>
-
-                    <th scope="col" class="p-2 font-medium">
                         AREA</th>
 
                     <th scope="col"class="p-2 font-medium">
@@ -178,8 +174,8 @@
             <x-slot name="body">
                 @foreach ($productos as $item)
                     <tr>
-                        <td class="p-2 text-xs">
-                            <div class="inline-flex gap-2 items-center justify-start">
+                        <td class="p-2">
+                            <div class="inline-flex gap-2 items-start justify-start">
                                 @if (count($item->images))
                                     <button
                                         class="block rounded overflow-hidden w-16 h-16 flex-shrink-0 shadow relative hover:shadow-lg cursor-pointer">
@@ -194,7 +190,7 @@
 
                                         @if (count($item->images) > 1)
                                             <p
-                                                class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-xs text-textspantable bg-fondospantable rounded-full">
+                                                class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-textspantable bg-fondospantable rounded-full">
                                                 +{{ count($item->images) - 1 }}</p>
                                         @endif
                                     </button>
@@ -202,7 +198,7 @@
                                 <div class="flex-shrink-1">
                                     @can('admin.almacen.productos.edit')
                                         <a href="{{ route('admin.almacen.productos.edit', $item) }}"
-                                            class="inline-block font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                            class="inline-block leading-3 text-[10px] font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
                                             {{ $item->name }}</a>
                                     @endcan
 
@@ -211,22 +207,22 @@
                                             {{ $item->name }}</h1>
                                     @endcannot
 
-                                    <p class="text-xs">
+                                    <p class="text-[10px] text-colorsubtitleform">
                                         {{ $item->marca->name }} / MODELO : {{ $item->modelo }}</p>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->code }}
                         </td>
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ $item->codefabricante }}
                         </td>
-                        <td class="p-2 text-xs">
+                        <td class="p-2">
                             <div>
                                 <h4>{{ $item->category->name }}</h4>
                                 @if ($item->subcategory)
-                                    <p class="text-linktable text-[10px]">{{ $item->subcategory->name }}</p>
+                                    <p class="text-colorsubtitleform text-[10px]">{{ $item->subcategory->name }}</p>
                                 @endif
                             </div>
                         </td>
@@ -234,7 +230,10 @@
                             @if (count($item->almacens))
                                 <div class="flex flex-wrap items-center justify-center gap-1">
                                     @foreach ($item->almacens as $almacen)
-                                        <x-span-text :text="$almacen->name"
+                                        <x-span-text :text="$almacen->name .
+                                            ' [' .
+                                            formatDecimalOrInteger($almacen->pivot->cantidad) .
+                                            ']'"
                                             class="whitespace-nowrap leading-3 !tracking-normal" />
                                     @endforeach
                                 </div>
@@ -250,35 +249,32 @@
                             </td>
                         @endif
 
-                        <td class="p-2 text-xs text-center">
+                        <td class="p-2 text-center">
                             {{ number_format($item->pricebuy, 3, '.', ', ') }}
                         </td>
 
-                        @if (mi_empresa()->uselistprice == '0')
-                            <td class="p-2 text-xs text-center">
+                        @if (!mi_empresa()->usarLista())
+                            <td class="p-2 text-center">
                                 {{ number_format($item->pricesale, 3, '.', ', ') }}
                             </td>
                         @endif
 
                         @if (Module::isEnabled('Almacen'))
-                            <td class="p-2 text-xs">
+                            <td class="p-2">
                                 @if (count($item->compraitems) > 0)
-                                    {{ \Carbon\Carbon::parse($item->compraitems->first()->compra->date)->format('d/m/Y') }}
+                                    <p>
+                                        {{ \Carbon\Carbon::parse($item->compraitems->first()->compra->date)->format('d/m/Y') }}
+                                    </p>
+                                    <p>{{ $item->compraitems->first()->compra->proveedor->name }}</p>
                                 @endif
                             </td>
 
-                            <td class="p-2 text-xs">
-                                @if (count($item->compraitems) > 0)
-                                    {{ $item->compraitems->first()->compra->proveedor->name }}
-                                @endif
-                            </td>
-
-                            <td class="p-2 text-xs">
+                            <td class="p-2">
                                 @if ($item->almacenarea)
                                     {{ $item->almacenarea->name }}
                                 @endif
                             </td>
-                            <td class="p-2 text-xs">
+                            <td class="p-2">
                                 @if ($item->estante)
                                     {{ $item->estante->name }}
                                 @endif
@@ -290,11 +286,122 @@
         @endif
 
         <x-slot name="loading">
-            <div wire:loading.flex
-                wire:target="search, searchalmacen, searchmarca, searchcategory, gotoPage, nextPage, previousPage, publicado"
-                class="loading-overlay rounded hidden">
+            <div wire:loading.flex class="loading-overlay rounded hidden">
                 <x-loading-next />
             </div>
         </x-slot>
     </x-table>
+
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('loadproductos', () => ({
+                searchmarca: @entangle('searchmarca'),
+                searchcategory: @entangle('searchcategory'),
+                searchsubcategory: @entangle('searchsubcategory'),
+                searchalmacen: @entangle('searchalmacen'),
+                publicado: @entangle('publicado'),
+
+                init() {
+                    // selectMarca();
+                },
+
+            }));
+        })
+
+        function selectMarca() {
+            this.selectM = $(this.$refs.selectmarca).select2();
+            this.selectM.val(this.searchmarca).trigger("change");
+            this.selectM.on("select2:select", (event) => {
+                this.searchmarca = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchmarca", (value) => {
+                this.selectM.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectM.select2().val(this.searchmarca).trigger('change');
+            });
+        }
+
+        function selectCategory() {
+            this.selectC = $(this.$refs.selectcategory).select2();
+            this.selectC.val(this.searchcategory).trigger("change");
+            this.selectC.on("select2:select", (event) => {
+                this.searchcategory = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchcategory", (value) => {
+                this.selectC.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectC.select2().val(this.searchcategory).trigger('change');
+            });
+        }
+
+        function selectSubcategory() {
+            this.selectSC = $(this.$refs.selectsubcategory).select2();
+            this.selectSC.val(this.searchsubcategory).trigger("change");
+            this.selectSC.on("select2:select", (event) => {
+                this.searchsubcategory = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchsubcategory", (value) => {
+                this.selectSC.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectSC.select2().val(this.searchsubcategory).trigger('change');
+            });
+        }
+
+        function selectAlmacen() {
+            this.selectA = $(this.$refs.selectalmacen).select2();
+            this.selectA.val(this.searchalmacen).trigger("change");
+            this.selectA.on("select2:select", (event) => {
+                this.searchalmacen = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchalmacen", (value) => {
+                this.selectA.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectA.select2().val(this.searchalmacen).trigger('change');
+            });
+        }
+
+        function selectWeb() {
+            this.selectW = $(this.$refs.selectweb).select2();
+            this.selectW.val(this.publicado).trigger("change");
+            this.selectW.on("select2:select", (event) => {
+                this.publicado = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("publicado", (value) => {
+                this.selectW.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectW.select2().val(this.publicado).trigger('change');
+            });
+        }
+    </script>
 </div>

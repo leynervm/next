@@ -168,45 +168,51 @@ class ShowComprobantes extends Component
         $nombreXML = $comprobante->sucursal->empresa->document . '-' . $codetypecomprobante . '-' . $comprobante->seriecompleta;
         $ruta = 'xml/' . $codetypecomprobante . '/';
 
-        verificarCarpeta($ruta, 'local');
-        $xml = new createXML();
+        try {
+            verificarCarpeta($ruta, 'local');
+            $xml = new createXML();
 
-        if ($codetypecomprobante == '07') {
-            $xml->notaCreditoXML($ruta . $nombreXML, $comprobante->sucursal->empresa, $comprobante->client, $comprobante);
-        } else {
-            $xml->comprobanteVentaXML($ruta . $nombreXML, $comprobante->sucursal->empresa, $comprobante->client, $comprobante);
-        }
+            if ($codetypecomprobante == '07') {
+                $xml->notaCreditoXML($ruta . $nombreXML, $comprobante->sucursal->empresa, $comprobante->client, $comprobante);
+            } else {
+                $xml->comprobanteVentaXML($ruta . $nombreXML, $comprobante->sucursal->empresa, $comprobante->client, $comprobante);
+            }
 
-        $objApi = new SendXML();
-        $pass_firma = $comprobante->sucursal->empresa->passwordcert;
-        $response = $objApi->enviarComprobante($comprobante->sucursal->empresa, $nombreXML, storage_path('app/company/cert/' . $comprobante->sucursal->empresa->cert), $pass_firma, storage_path('app/' . $ruta), storage_path('app/' . $ruta));
+            $objApi = new SendXML();
+            $pass_firma = $comprobante->sucursal->empresa->passwordcert;
+            $response = $objApi->enviarComprobante($comprobante->sucursal->empresa, $nombreXML, storage_path('app/company/cert/' . $comprobante->sucursal->empresa->cert), $pass_firma, storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
-        if ($response->code == '0') {
-            $comprobante->codesunat = $response->code;
-            if ($response->notes !== '') {
-                $mensaje = response()->json([
-                    'title' => $response->descripcion,
-                    'text' => $response->notes,
-                ]);
-                $this->dispatchBrowserEvent('validation', $mensaje->getData());
-                $comprobante->notasunat = $response->notes;
+            if ($response->code == '0') {
+                $comprobante->codesunat = $response->code;
+                if ($response->notes !== '') {
+                    $mensaje = response()->json([
+                        'title' => $response->descripcion,
+                        'text' => $response->notes,
+                    ]);
+                    $this->dispatchBrowserEvent('validation', $mensaje->getData());
+                    $comprobante->notasunat = $response->notes;
+                } else {
+                    $mensaje = response()->json([
+                        'title' => $response->descripcion,
+                        'icon' => 'success'
+                    ]);
+                    $this->dispatchBrowserEvent('toast', $mensaje->getData());
+                }
             } else {
                 $mensaje = response()->json([
                     'title' => $response->descripcion,
-                    'icon' => 'success'
+                    'text' => 'Código de respuesta : ' . $response->code,
                 ]);
-                $this->dispatchBrowserEvent('toast', $mensaje->getData());
+                $this->dispatchBrowserEvent('validation', $mensaje->getData());
             }
-        } else {
-            $mensaje = response()->json([
-                'title' => $response->descripcion,
-                'text' => 'Código de respuesta : ' . $response->code,
-            ]);
-            $this->dispatchBrowserEvent('validation', $mensaje->getData());
-        }
 
-        // dd($mensaje->getData());
-        $comprobante->descripcion = $response->descripcion;
-        $comprobante->save();
+            // dd($mensaje->getData());
+            $comprobante->descripcion = $response->descripcion;
+            $comprobante->save();
+        } catch (\Exception $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw $e;
+        }
     }
 }

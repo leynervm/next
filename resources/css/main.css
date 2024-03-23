@@ -94,7 +94,9 @@
     --fondo-header-table: theme("colors.next.500");
     --text-body-table: theme("colors.neutral.700");
     --fondo-body-table: theme("colors.transparent");
-    --divide-table: theme("colors.next.300");
+    --text-hover-table: theme("colors.next.500");
+    --fondo-hover-table: theme("colors.neutral.200");
+    --divide-table: theme("colors.neutral.200");
     --text-span-table: theme("colors.white");
     --fondo-span-table: theme("colors.next.500");
     --link-table: theme("colors.next.500");
@@ -184,7 +186,9 @@
     --fondo-header-table: theme("colors.neutral.500");
     --text-body-table: theme("colors.white");
     --fondo-body-table: theme("colors.transparent");
-    --divide-table: theme("colors.neutral.300");
+    --text-hover-table: theme("colors.white");
+    --fondo-hover-table: theme("colors.neutral.500");
+    --divide-table: theme("colors.neutral.500");
     --text-span-table: theme("colors.white");
     --fondo-span-table: theme("colors.next.500");
     --link-table: theme("colors.next.500");

@@ -137,7 +137,25 @@ class ShowSeriecomprobantes extends Component
     public function delete(Seriecomprobante $seriecomprobante)
     {
         $this->authorize('admin.administracion.sucursales.seriecomprobantes.edit');
-        $seriecomprobante->delete();
+
+        if (Module::isEnabled('Facturacion')) {
+            $comprobantes = $seriecomprobante->comprobantes()->exists();
+            $guias = $seriecomprobante->guias()->exists();
+            $ventas = $seriecomprobante->ventas()->exists();
+            if ($comprobantes || $ventas || $guias) {
+                $seriecomprobante->delete();
+            } else {
+                $seriecomprobante->forceDelete();
+            }
+        } else {
+            $ventas = $seriecomprobante->ventas()->exists();
+            if ($ventas) {
+                $seriecomprobante->delete();
+            } else {
+                $seriecomprobante->forceDelete();
+            }
+        }
+
         $this->sucursal->refresh();
         $this->dispatchBrowserEvent('deleted');
     }

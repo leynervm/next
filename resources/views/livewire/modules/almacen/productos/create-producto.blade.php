@@ -1,5 +1,5 @@
 <div>
-    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8 relative">
+    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid xl:grid-cols-3 gap-2" x-data="createproducto">
                 <div class="w-full xs:col-span-2 xl:col-span-3">
@@ -55,7 +55,7 @@
 
                 <div class="w-full">
                     <x-label value="Categoría :" />
-                    <div class="relative" id="parentctgpdto" x-data="selectCategory" wire:ignore>
+                    <div class="relative" id="parentctgpdto" x-data="selectCategory">
                         <x-select class="block w-full" id="ctgpdto" x-ref="selectcat"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
@@ -73,7 +73,7 @@
 
                 <div class="w-full">
                     <x-label value="Subcategoría :" />
-                    <div class="relative" id="parentsubcpdto" x-init="selectSubcategory" wire:ignore>
+                    <div class="relative" id="parentsubcpdto" x-init="selectSubcategory">
                         <x-select class="block w-full" id="subcpdto" x-ref="selectsub" data-placeholder="null">
                             <x-slot name="options">
                                 @if (count($subcategories))
@@ -228,19 +228,17 @@
         <div class="w-full flex pt-4 gap-2 justify-end">
             <x-button type="submit" wire:loading.attr="disabled">{{ __('REGISTRAR') }}</x-button>
         </div>
-
-        <div wire:loading.flex wire:target="save, category_id" class="loading-overlay rounded hidden">
-            <x-loading-next />
-        </div>
     </form>
-
+    <div wire:loading.flex class="loading-overlay rounded hidden">
+        <x-loading-next />
+    </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('createproducto', () => ({
                 marca_id: @entangle('marca_id').defer,
                 unit_id: @entangle('unit_id').defer,
-                category_id: @entangle('category_id').defer,
+                category_id: @entangle('category_id'),
                 subcategory_id: @entangle('subcategory_id').defer,
                 almacenarea_id: @entangle('almacenarea_id').defer,
                 estante_id: @entangle('estante_id').defer,
@@ -287,7 +285,6 @@
             this.selectC.val(this.category_id).trigger("change");
             this.selectC.on("select2:select", (event) => {
                 this.category_id = event.target.value;
-                @this.setCategory(event.target.value);
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -295,6 +292,10 @@
             });
             this.$watch("category_id", (value) => {
                 this.selectC.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectC.select2().val(this.category_id).trigger('change');
             });
         }
 
@@ -310,6 +311,10 @@
             });
             this.$watch("subcategory_id", (value) => {
                 this.selectS.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectS.select2().val(this.subcategory_id).trigger('change');
             });
         }
 
@@ -342,16 +347,6 @@
                 this.selectE.val(value).trigger("change");
             });
         }
-
-        window.addEventListener('loadsubcategories', subcategories => {
-            let subcat = document.querySelector('[x-ref="selectsub"]');
-            $(subcat).val(null).empty().append('<option value="" selected>SELECCIONAR...</option>');
-            subcategories.detail.forEach(subcateg => {
-                let option = new Option(subcateg.name, subcateg.id, false, false);
-                $(subcat).append(option);
-            });
-            $(subcat).select2().trigger('change');
-        })
     </script>
 
 </div>

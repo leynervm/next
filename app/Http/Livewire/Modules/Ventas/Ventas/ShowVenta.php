@@ -6,10 +6,10 @@ use App\Enums\MovimientosEnum;
 use App\Models\Concept;
 use App\Models\Cuota;
 use App\Models\Itemserie;
-use App\Models\Kardex;
 use App\Models\Methodpayment;
 use App\Models\Monthbox;
 use App\Models\Openbox;
+use App\Models\Tvitem;
 use App\Rules\ValidateNumericEquals;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -30,6 +30,7 @@ class ShowVenta extends Component
     public $cuotas = [];
     public $amountcuotas = 0;
     public $countcuotas = 0;
+    public $tvitem = [];
 
     protected function rules()
     {
@@ -48,6 +49,8 @@ class ShowVenta extends Component
         'cuotas.*.date.required' => 'Fecha de pago de cuota requerido',
         'cuotas.*.date.after_or_equal' => 'Fecha de pago debe ser mayor igual a la actual',
         'cuotas.*.amount.required' => 'Monto de cuota requerido',
+        'tvitem.*.serie.required' => 'Serie del producto requerido',
+        'tvitem.*.tvitem_id.exists' => 'Tvitem no existe en la base de datos',
     ];
 
     public function mount(Venta $venta, Concept $concept)
@@ -166,7 +169,7 @@ class ShowVenta extends Component
                 $sendsunat = $venta->seriecomprobante->typecomprobante->sendsunat ?? 0;
 
                 if ($sendsunat) {
-                    if ($venta->comprobante->codesunat == "0") {
+                    if ($venta->comprobante->isSendSunat()) {
 
                         if (Carbon::parse($venta->date)->diffInDays(Carbon::now()) > 7) {
                             $mensaje = response()->json([
@@ -177,11 +180,11 @@ class ShowVenta extends Component
                             return false;
                         }
 
-                        $codecomprobante = $venta->comprobante->seriecomprobante->typecomprobante->code;
+                        $codeCPE = $venta->comprobante->seriecomprobante->typecomprobante->code;
                         $serienotacredito = $venta->sucursal->seriecomprobantes()
-                            ->withWhereHas('typecomprobante', function ($query) {
-                                $query->where('code', '07');
-                            })->where('code', $codecomprobante)->first();
+                            ->withWhereHas('typecomprobante', function ($query) use ($codeCPE) {
+                                $query->where('code', '07')->where('referencia', $codeCPE);
+                            })->first();
 
                         if ($serienotacredito) {
                             // dd($serienotacredito);
@@ -203,7 +206,7 @@ class ShowVenta extends Component
                                 'total' => $venta->comprobante->total,
                                 'paymentactual' => $venta->comprobante->paymentactual,
                                 'percent' => $venta->comprobante->percent,
-                                'referencia' => $venta->code,
+                                'referencia' => $venta->seriecompleta,
                                 'leyenda' => $venta->comprobante->leyenda,
                                 'client_id' => $venta->comprobante->client_id,
                                 'typepayment_id' => $venta->comprobante->typepayment_id,
@@ -275,36 +278,45 @@ class ShowVenta extends Component
             }
 
             $venta->cuotas()->delete();
-
             $venta->tvitems()->each(function ($tvitem) {
-                $stockPivot = $tvitem->producto->almacens()
-                    ->where('almacen_id', $tvitem->almacen_id)->first();
-
                 // dd($tvitem, $tvitem->tvitemable);
-                //INSERTA UN REGISTRO EN KARDEX Y DEVUELVE LOS ITEM AL ALMACEN
-                $tvitem->saveKardex(
-                    $tvitem->producto_id,
-                    $tvitem->almacen_id,
-                    $stockPivot->pivot->cantidad,
-                    $stockPivot->pivot->cantidad + $tvitem->cantidad,
-                    $tvitem->cantidad,
-                    '+',
-                    Kardex::REPOSICION_ANULACION,
-                    $tvitem->tvitemable->code
-                );
+                //SI ALTER STOCK REPONER ALMACEN SINO VERIFICAR KARDEX Y ELIMINAR ITEM
 
+                if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                    $stock = $tvitem->producto->almacens()->find($tvitem->almacen_id);
+                    $tvitem->producto->almacens()->updateExistingPivot($tvitem->almacen_id, [
+                        'cantidad' => $stock->pivot->cantidad + $tvitem->cantidad,
+                    ]);
 
-                $tvitem->producto->almacens()->updateExistingPivot($tvitem->almacen_id, [
-                    'cantidad' => $stockPivot->pivot->cantidad + $tvitem->cantidad,
-                ]);
+                    $tvitem->itemseries()->each(function ($itemserie) {
+                        $itemserie->serie->dateout = null;
+                        $itemserie->serie->status = 0;
+                        $itemserie->serie->save();
+                        $itemserie->delete();
+                    });
 
-                $tvitem->itemseries()->each(function ($itemserie) {
-                    $itemserie->serie->dateout = null;
-                    $itemserie->serie->status = 0;
-                    $itemserie->serie->save();
-                    $itemserie->delete();
-                });
+                    if ($tvitem->kardex) {
+                        if ($tvitem->kardex->promocion) {
+                            $tvitem->kardex->promocion->outs = $tvitem->kardex->promocion->outs - $tvitem->cantidad;
+                            $tvitem->kardex->promocion->save();
+                        }
+                    }
+                }
+
+                if ($tvitem->kardex) {
+                    $tvitem->kardex->delete();
+                }
                 $tvitem->delete();
+                // $tvitem->saveKardex(
+                //     $tvitem->producto_id,
+                //     $tvitem->almacen_id,
+                //     $stockPivot->pivot->cantidad,
+                //     $stockPivot->pivot->cantidad + $tvitem->cantidad,
+                //     $tvitem->cantidad,
+                //     '+',
+                //     Kardex::REPOSICION_ANULACION,
+                //     $tvitem->tvitemable->code
+                // );
             });
             $venta->delete();
             DB::commit();
@@ -457,6 +469,8 @@ class ShowVenta extends Component
             $itemserie->serie->status = 0;
             $itemserie->serie->dateout = null;
             $itemserie->serie->save();
+            $itemserie->tvitem->requireserie = Tvitem::PENDING_SERIE;
+            $itemserie->tvitem->save();
             $itemserie->delete();
             DB::commit();
             $this->venta->refresh();
@@ -503,8 +517,55 @@ class ShowVenta extends Component
         }
     }
 
-    public function hydrate()
+    public function saveserie(Tvitem $tvitem)
     {
-        $this->dispatchBrowserEvent('render-show-venta');
+
+        $this->tvitem[$tvitem->id]["tvitem_id"] = $tvitem->id;
+
+        DB::beginTransaction();
+        try {
+            $this->validate([
+                "tvitem.$tvitem->id.tvitem_id" => [
+                    'required', 'integer', 'min:1', 'exists:tvitems,id'
+                ],
+                "tvitem.$tvitem->id.serie" => [
+                    'required', 'string', 'min:4',
+                ],
+            ]);
+
+            $serie = trim(mb_strtoupper($this->tvitem[$tvitem->id]["serie"], "UTF-8"));
+            $query = $tvitem->producto->series()->disponibles()
+                ->where('almacen_id', $tvitem->almacen_id)
+                ->whereRaw('UPPER(serie) = ?', $serie);
+
+            if (!$query->exists()) {
+                $this->addError("tvitem.$tvitem->id.serie", 'Serie no se encuentra disponible');
+                return false;
+            }
+            $serieProducto = $query->first();
+            $tvitem->itemseries()->create([
+                'date' => now('America/Lima'),
+                'serie_id' => $serieProducto->id,
+                'user_id' => auth()->user()->id,
+            ]);
+            $serieProducto->status = 2;
+            $serieProducto->dateout = now('America/Lima');
+            $serieProducto->save();
+
+            if (formatDecimalOrInteger($tvitem->cantidad) == $tvitem->itemseries->count()) {
+                $tvitem->requireserie = 0;
+                $tvitem->save();
+            }
+            DB::commit();
+            $this->venta->refresh();
+            $this->reset(['tvitem']);
+            $this->dispatchBrowserEvent('created');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

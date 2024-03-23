@@ -112,10 +112,7 @@ class CreateProveedor extends Component
                 $this->name = $response->getData()->name;
                 $this->direccion = $response->getData()->direccion;
                 $this->telefono = $response->getData()->telefono;
-
-                if ($response->getData()->ubigeo) {
-                    $this->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
-                }
+                $this->ubigeo_id = $response->getData()->ubigeo_id ?? null;
             } else {
                 $this->addError('document', $response->getData()->message);
             }
@@ -150,10 +147,5 @@ class CreateProveedor extends Component
         } else {
             $this->addError('document2', 'Error al buscar datos del representante.');
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-select2-proveedores');
     }
 }

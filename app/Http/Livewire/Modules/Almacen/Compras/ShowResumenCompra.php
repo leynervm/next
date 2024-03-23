@@ -176,10 +176,8 @@ class ShowResumenCompra extends Component
 
             if ($this->compra->moneda->code == 'USD') {
                 $producto->pricebuy = $this->pricebuy * $this->compra->tipocambio;
-                $producto->priceusbuy = $this->pricebuy;
             } else {
                 $producto->pricebuy = $this->pricebuy;
-                $producto->priceusbuy = 0;
             }
 
             if ($this->compra->sucursal->empresa->uselistprice == 0) {

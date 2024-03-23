@@ -32,11 +32,19 @@ class VerifySucursal
         }
 
         if (auth()->user()->sucursal_id == null) {
-            $mensaje = response()->json([
-                'title' => 'PERFIL DE USUARIO NO TIENE ACCESO',
-                'text' => 'Usuario de acceso debe estar vinculado al personal de empresa, contáctese con su administrador.',
-                'type' => 'warning'
-            ]);
+            if (auth()->user()->isAdmin()) {
+                $mensaje = response()->json([
+                    'title' => 'SELECCIONAR SUCURSAL A USAR DE MANERA PREDETERMINADA',
+                    'text' => 'Usuario administrador logueado, seleccionar una sucursal para administrar los datos.',
+                    'type' => 'warning'
+                ]);
+            } else {
+                $mensaje = response()->json([
+                    'title' => 'PERFIL DE USUARIO NO TIENE ACCESO',
+                    'text' => 'Vincular usuario a un personal de trabajo para realizar acciones en el sistema, contáctese con su administrador.',
+                    'type' => 'warning'
+                ]);
+            }
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.ventas')->with('message', $mensaje);
         }

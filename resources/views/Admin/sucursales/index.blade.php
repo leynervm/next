@@ -31,11 +31,15 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    @can('admin.administracion.sucursales.create')
-        <div class="flex flex-wrap gap-2 mt-3">
-            <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
-        </div>
-    @endcan
+    @if (is_null(mi_empresa()->limitsucursals) ||
+            (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals->count() < mi_empresa()->limitsucursals))
+        @can('admin.administracion.sucursales.create')
+            <div class="flex flex-wrap gap-2 mt-3">
+                <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
+            </div>
+        @endcan
+    @endif
+
 
     {{-- <x-title-next titulo="Sucursales" class="mt-5" /> --}}
     @can('admin.administracion.sucursales')

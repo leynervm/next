@@ -20,12 +20,12 @@ class CreateCarshoopsTable extends Migration
         Schema::create('carshoops', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned();
             $table->dateTime('date');
-            $table->decimal('cantidad', 10, 2);
-            $table->decimal('pricebuy', 10, 4);
-            $table->decimal('price', 10, 4);
-            $table->decimal('igv', 10, 4);
-            $table->decimal('subtotal', 10, 4);
-            $table->decimal('total', 10, 4);
+            $table->unsignedDecimal('cantidad', 10, 2);
+            $table->unsignedDecimal('pricebuy', 12, 4);
+            $table->unsignedDecimal('price', 12, 4);
+            $table->unsignedDecimal('igv', 12, 4);
+            $table->unsignedDecimal('subtotal', 12, 4);
+            $table->unsignedDecimal('total', 12, 4);
             $table->char('gratuito', 1)->default(0);
             $table->char('status', 1)->default(0);
             $table->char('mode', 1)->default(0);

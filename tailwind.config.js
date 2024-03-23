@@ -78,6 +78,8 @@ module.exports = {
                 fondoheadertable: "var(--fondo-header-table)",
                 textbodytable: "var(--text-body-table)",
                 fondobodytable: "var(--fondo-body-table)",
+                texthovertable: "var(--text-hover-table)",
+                fondohovertable: "var(--fondo-hover-table)",
                 dividetable: "var(--divide-table)",
                 textspantable: "var(--text-span-table)",
                 fondospantable: "var(--fondo-span-table)",
@@ -104,7 +106,7 @@ module.exports = {
                 shadowform: "var(--shadow-form)",
 
                 next: {
-                    50: "f0f9f9",
+                    50: "#f0f9f9",
                     100: "#ebf5f5",
                     200: "#d3e6e6",
                     300: "#b2d6d6",

@@ -79,7 +79,7 @@
                     <div class="w-full">
                         <x-label value="Correo :" />
                         <x-input class="block w-full" wire:model.defer="proveedor.email"
-                            placeholder="Correo del cliente..." />
+                            placeholder="Correo del cliente..." type="email" />
                         <x-jet-input-error for="proveedor.email" />
                     </div>
                 </div>
@@ -87,14 +87,13 @@
                 <div class="w-full flex gap-2 justify-end">
                     @can('admin.proveedores.delete')
                         <x-button-secondary onclick="confirmDelete({{ $proveedor }})"
-                            wire:loading.attr="disabled">ELIMINAR PROVEEDOR</x-button-secondary>
+                            wire:loading.attr="disabled">ELIMINAR</x-button-secondary>
                     @endcan
 
                     <x-button type="submit" wire:loading.attr="disabled" wire:target="update">
                         {{ __('ACTUALIZAR') }}
                     </x-button>
                 </div>
-
             </form>
         </x-form-card>
 
@@ -144,7 +143,6 @@
                                         <x-span-text :text="'TELÉFONO :' . formatTelefono($item->telephone->phone)" class="leading-3 !tracking-normal" />
                                     @endif
 
-
                                     @can('admin.proveedores.contacts.edit')
                                         <div class="w-full flex flex-wrap gap-1 items-end justify-end mt-1">
                                             <x-button-edit wire:click="editrepresentante({{ $item->id }})"
@@ -190,7 +188,8 @@
                         <x-label value="DNI :" />
                         <div class="w-full inline-flex gap-1">
                             <x-input class="block w-full prevent" wire:model.defer="document2" maxlength="8"
-                                wire:keydown.enter="searchcontacto" />
+                                wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
+                                onkeydown="disabledEnter(event)" />
                             <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled"
                                 wire:target="searchcontacto">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -213,8 +212,8 @@
 
                 <div class="w-full sm:w-64">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono2" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                    <x-input class="block w-full" wire:model.defer="telefono2" type="number"
+                        onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono2" />
                 </div>
 
@@ -231,7 +230,6 @@
                 <div wire:loading.flex class="loading-overlay rounded hidden">
                     <x-loading-next />
                 </div>
-
             </form>
         </x-slot>
     </x-jet-dialog-modal>
@@ -246,8 +244,8 @@
             <form wire:submit.prevent="savephone">
                 <div class="w-full">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="newtelefono" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                    <x-input class="block w-full" wire:model.defer="newtelefono" type="number"
+                        onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="newtelefono" />
                 </div>
 
@@ -294,27 +292,6 @@
                 this.selectTP.val(value).trigger("change");
             });
         }
-
-        // $('#editubigeoproveedor_id').select2()
-        //     .on("change", function(e) {
-        //         $('.select2').attr("disabled", true);
-        //         @this.set('proveedor.ubigeo_id', e.target.value);
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-
-        // $('#editproveedortype_id').select2()
-        //     .on("change", function(e) {
-        //         $('.select2').attr("disabled", true);
-        //         @this.set('proveedor.proveedortype_id', e.target.value);
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-
 
         function confirmDelete(proveedor) {
             swal.fire({

@@ -62,7 +62,8 @@ class ShowProducto extends Component
         $this->almacen = new Almacen();
         // $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
         //     ->orderBy('name', 'asc')->get();
-        $this->subcategories = $this->producto->category->subcategories;
+        $this->subcategories = $this->producto->category->subcategories()
+            ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
     }
 
     public function render()
@@ -96,8 +97,9 @@ class ShowProducto extends Component
         $this->producto->subcategory_id = null;
 
         if ($value) {
-            $category = Category::find($value);
-            $this->subcategories = $category->subcategories;
+            $category = Category::with('subcategories')->find($value);
+            $this->subcategories = $category->subcategories()
+                ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         }
     }
 

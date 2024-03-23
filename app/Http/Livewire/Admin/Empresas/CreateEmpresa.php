@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Admin\Empresas;
 
 use App\Helpers\FormatoPersonalizado;
 use App\Helpers\GetClient;
+use App\Models\Almacen;
 use App\Models\Empresa;
 use App\Models\Ubigeo;
 use App\Rules\ValidateFileKey;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManagerStatic as Image;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Nwidart\Modules\Facades\Module;
 
 class CreateEmpresa extends Component
 {
@@ -82,6 +84,9 @@ class CreateEmpresa extends Component
     public function save()
     {
 
+        if (Module::isDisabled('Facturacion')) {
+            $this->sendmode = 0;
+        }
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
         $this->usepricedolar = $this->usepricedolar == true ?  1 : 0;
         $this->viewpricedolar = $this->viewpricedolar == true ?  1 : 0;
@@ -160,7 +165,7 @@ class CreateEmpresa extends Component
                 'cert' => $urlcert,
             ]);
 
-            $empresa->sucursals()->create([
+            $sucursalprincipal = $empresa->sucursals()->create([
                 'name' => $this->name,
                 'direccion' => $this->direccion,
                 'default' => 1,
@@ -194,6 +199,14 @@ class CreateEmpresa extends Component
                     'url' => $urlLogo,
                     'default' => 1
                 ]);
+            }
+
+            if (Module::isDisabled('Almacen') && Module::isEnabled('Ventas')) {
+                $almacen = Almacen::create([
+                    'name' => 'ALMACÉN PRINCIPAL',
+                    'default' => Almacen::DEFAULT
+                ]);
+                $sucursalprincipal->almacens()->attach($almacen->id);
             }
 
             DB::commit();
@@ -245,10 +258,7 @@ class CreateEmpresa extends Component
                 $this->direccion = $response->getData()->direccion;
                 $this->estado = $response->getData()->estado;
                 $this->condicion = $response->getData()->condicion;
-
-                if (isset($response->getData()->ubigeo)) {
-                    $this->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
-                }
+                $this->ubigeo_id = $response->getData()->ubigeo_id;
             } else {
                 $this->addError('document', $response->getData()->message);
             }

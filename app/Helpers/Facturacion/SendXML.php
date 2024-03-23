@@ -4,6 +4,7 @@ namespace App\Helpers\Facturacion;
 
 use App\Models\Empresa;
 use DOMDocument;
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Http;
 use ZipArchive;
@@ -18,23 +19,24 @@ class SendXML
         // $ruta_firma = $rutacertificado . 'certificado_prueba_sunat.pfx';
         $result = $objFirma->signatureXML($flg_firma, $ruta, $rutacertificado, $pass_firma);
 
-        if ($result->respuesta) {
-            $zip = new ZipArchive();
-            $nombrezip = $nombre . '.zip';
-            $rutazip = $ruta_archivo_xml . $nombrezip;
+        try {
+            if ($result->respuesta) {
+                $zip = new ZipArchive();
+                $nombrezip = $nombre . '.zip';
+                $rutazip = $ruta_archivo_xml . $nombrezip;
 
-            if ($zip->open($rutazip, ZipArchive::CREATE) == TRUE) {
-                $zip->addFile($ruta, $nombre . '.xml');
-                $zip->close();
-            }
+                if ($zip->open($rutazip, ZipArchive::CREATE) == TRUE) {
+                    $zip->addFile($ruta, $nombre . '.xml');
+                    $zip->close();
+                }
 
-            if ($emisor->isProduccion()) {
-                $ws = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService";
-            } else {
-                $ws = "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService";
-            }
+                if ($emisor->isProduccion()) {
+                    $ws = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService";
+                } else {
+                    $ws = "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService";
+                }
 
-            $xml_envio = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasisopen.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+                $xml_envio = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasisopen.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
                 <soapenv:Header>
                     <wsse:Security>
                         <wsse:UsernameToken>
@@ -51,76 +53,81 @@ class SendXML
                 </soapenv:Body>
             </soapenv:Envelope>';
 
-            $header = array(
-                "Content-type: text/xml; charset=\"utf-8\"",
-                "Accept: text/xml",
-                "Cache-Control: no-cache",
-                "Pragma: no-cache",
-                "SOAPAction: ",
-                "Content-lenght: " . strlen($xml_envio)
-            );
+                $header = array(
+                    "Content-type: text/xml; charset=\"utf-8\"",
+                    "Accept: text/xml",
+                    "Cache-Control: no-cache",
+                    "Pragma: no-cache",
+                    "SOAPAction: ",
+                    "Content-lenght: " . strlen($xml_envio)
+                );
 
-            $response = Http::withOptions([
-                'verify' => true,
-                'timeout' => 30,
-                'curl' => [
-                    // CURLOPT_CAINFO => storage_path('app/cert/cacert.pem'),
-                ],
-            ])->withHeaders($header)->withBody($xml_envio, 'application/xml')
-                ->post($ws);
+                $response = Http::withOptions([
+                    'verify' => true,
+                    'timeout' => 30,
+                    'curl' => [
+                        // CURLOPT_CAINFO => storage_path('app/cert/cacert.pem'),
+                    ],
+                ])->withHeaders($header)->withBody($xml_envio, 'application/xml')
+                    ->post($ws);
 
-            if ($response->status() == 200) {
+                if ($response->status() == 200) {
 
-                $doc = new DOMDocument();
-                $doc->loadXML($response->body());
+                    $doc = new DOMDocument();
+                    $doc->loadXML($response->body());
 
-                if (isset($doc->getElementsByTagName('applicationResponse')->item(0)->nodeValue)) {
-                    $cdr = base64_decode($doc->getElementsByTagName('applicationResponse')->item(0)->nodeValue);
-                    file_put_contents($ruta_archivo_cdr . "R-" . $nombrezip, $cdr);
-                    $zip = new ZipArchive();
-                    if ($zip->open($ruta_archivo_cdr . 'R-' . $nombrezip) == TRUE) {
-                        $zip->extractTo($ruta_archivo_cdr, 'R-' . $nombre . '.xml');
-                        $zip->close();
+                    if (isset($doc->getElementsByTagName('applicationResponse')->item(0)->nodeValue)) {
+                        $cdr = base64_decode($doc->getElementsByTagName('applicationResponse')->item(0)->nodeValue);
+                        file_put_contents($ruta_archivo_cdr . "R-" . $nombrezip, $cdr);
+                        $zip = new ZipArchive();
+                        if ($zip->open($ruta_archivo_cdr . 'R-' . $nombrezip) == TRUE) {
+                            $zip->extractTo($ruta_archivo_cdr, 'R-' . $nombre . '.xml');
+                            $zip->close();
+                        }
+
+                        $codeResponse = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'ResponseCode');
+                        $descripcion = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'Description');
+                        $notes = getNotesNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml');
+
+                        $mensaje = response()->json([
+                            'codRespuesta' => $response->status(),
+                            'code' => $codeResponse,
+                            'descripcion' => $descripcion,
+                            'notes' => $notes
+                        ]);
+                    } else {
+                        // dd($codigo, $mensaje);
+                        $mensaje = response()->json([
+                            'codRespuesta' => $response->status(),
+                            'code' => $doc->getElementsByTagName('faultcode')->item(0)->nodeValue,
+                            'descripcion' => $doc->getElementsByTagName('faultstring')->item(0)->nodeValue
+                        ]);
                     }
-
-                    $codeResponse = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'ResponseCode');
-                    $descripcion = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'Description');
-                    $notes = getNotesNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml');
-
-                    $mensaje = response()->json([
-                        'codRespuesta' => $response->status(),
-                        'code' => $codeResponse,
-                        'descripcion' => $descripcion,
-                        'notes' => $notes
-                    ]);
                 } else {
-                    // dd($codigo, $mensaje);
                     $mensaje = response()->json([
                         'codRespuesta' => $response->status(),
-                        'code' => $doc->getElementsByTagName('faultcode')->item(0)->nodeValue,
-                        'descripcion' => $doc->getElementsByTagName('faultstring')->item(0)->nodeValue
+                        'code' => $response->status(),
+                        'descripcion' => $response->body()
                     ]);
+                    // dd(curl_error($ch), "</br> Problema de conexión");
                 }
             } else {
                 $mensaje = response()->json([
-                    'codRespuesta' => $response->status(),
-                    'code' => $response->status(),
-                    'descripcion' => $response->body()
+                    'codRespuesta' => 'Error',
+                    'code' => $result->code,
+                    'descripcion' => $result->mensaje
                 ]);
-                // dd(curl_error($ch), "</br> Problema de conexión");
             }
-        } else {
+        } catch (Exception $error) {
             $mensaje = response()->json([
                 'codRespuesta' => 'Error',
-                'code' => $result->code,
-                'descripcion' => $result->mensaje
+                'code' => '0***',
+                'descripcion' => $error->getMessage()
             ]);
         }
 
         return $mensaje->getData();
     }
-
-
 
     public function enviarGuia($emisor, $nombre, $rutacertificado = "", $ruta_archivo_xml = "xml/", $ruta_archivo_cdr = "cdr/")
     {

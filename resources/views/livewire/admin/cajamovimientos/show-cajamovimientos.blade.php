@@ -172,7 +172,7 @@
                     <tr>
                         <td class="p-2 uppercase">
                             <p>{{ formatDate($item->date, 'DD MMMM Y') }}</p>
-                            <p>{{ formatDate($item->date, 'H:m A') }}</p>
+                            <p>{{ formatDate($item->date, 'hh:mm A') }}</p>
                         </td>
                         <td class="p-2">
                             {{ $item->moneda->simbolo }}

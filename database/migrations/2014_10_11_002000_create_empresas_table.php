@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Empresa;
+use App\Models\Sucursal;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -38,6 +40,7 @@ class CreateEmpresasTable extends Migration
             $table->integer('tipocambioauto')->default(0);
             $table->integer('sendmode')->default(0);
             $table->decimal('igv', 5, 2);
+            $table->unsignedTinyInteger('limitsucursals')->nullable()->default(Sucursal::LIMITE);
             $table->integer('status')->default(0);
             $table->integer('default')->default(1);
             $table->bigInteger('ubigeo_id')->nullable();

@@ -36,17 +36,6 @@ class UserSeeder extends Seeder
             'password' => bcrypt('12345678'),
         ]);
 
-
-        $sucursal = Sucursal::first();
-        $almacen = Almacen::first();
-
-        if ($sucursal && $almacen) {
-            $desarrollador->sucursals()->sync([$sucursal->id => [
-                'default' => 1,
-                'almacen_id' => $almacen->id,
-            ]]);
-        }
-
-        // User::factory(30)->create();
+        User::factory(10)->create();
     }
 }

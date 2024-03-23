@@ -15,7 +15,7 @@ class SortController extends Controller
         $sorts = $request->get('sorts');
         foreach ($sorts as $sort) {
             $category = Category::find($sort);
-            $category->order = $position;
+            $category->orden = $position;
             $category->save();
             $position++;
         }
@@ -27,7 +27,7 @@ class SortController extends Controller
         $sorts = $request->get('sorts');
         foreach ($sorts as $sort) {
             $category = Subcategory::find($sort);
-            $category->order = $position;
+            $category->orden = $position;
             $category->save();
             $position++;
         }

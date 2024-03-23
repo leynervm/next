@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Aperturas;
 
 use App\Models\Openbox;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
@@ -26,6 +27,9 @@ class ShowAperturas extends Component
         return [
             'openbox.apertura' => [
                 'required', 'numeric', 'min:0', 'decimal:0,4'
+            ],
+            'openbox.expiredate' => [
+                'required', 'date', 'after:' . Carbon::parse($this->openbox->startdate)->format('Y-m-d h:i'),
             ],
         ];
     }

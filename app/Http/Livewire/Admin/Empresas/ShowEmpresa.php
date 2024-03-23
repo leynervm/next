@@ -206,10 +206,7 @@ class ShowEmpresa extends Component
                 $this->empresa->direccion = $response->getData()->direccion;
                 $this->empresa->estado = $response->getData()->estado;
                 $this->empresa->condicion = $response->getData()->condicion;
-
-                if (isset($response->getData()->ubigeo)) {
-                    $this->empresa->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
-                }
+                $this->empresa->ubigeo_id = trim($response->getData()->ubigeo_id);
             } else {
                 $this->addError('empresa.document', $response->getData()->message);
             }

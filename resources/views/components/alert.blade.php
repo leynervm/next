@@ -34,19 +34,19 @@
 @endphp
 
 <div x-data="timer()" x-init="start()">
-    <div class="fixed z-50 border-stroke flex items-center rounded-md border border-l-[8px] {{ $borderalert }} bg-fondominicard p-3 w-full max-w-sm bg-opacity-80"
+    <div class="fixed z-50 border-stroke flex items-center rounded-md border border-l-[8px] {{ $borderalert }} bg-fondominicard p-2 w-full max-w-sm bg-opacity-80"
         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-show="open">
-        <div class="mr-5 flex items-center justify-center rounded-full {{ $bgalert }} text-white p-1">
+        <div class="mr-3 flex items-center justify-center rounded-full {{ $bgalert }} text-white p-1">
             @if (isset($icono))
                 {{ $icono }}
             @endif
         </div>
         <div class="w-full relative">
-            <h3 class="mb-1 text-sm font-medium leading-4 {{ $colortitlealert }}">
+            <h3 class="mb-1 text-xs font-semibold pr-2 {{ $colortitlealert }}">
                 {{ $titulo }}</h3>
-            <p class="text-textspancardproduct text-xs leading-3 font-medium ">
+            <p class="text-textspancardproduct text-xs leading-3 font-medium">
                 {{ $mensaje }}</p>
             <button class="hover:text-red-500 text-gray-400 absolute top-0 right-0" @click="open = false">
                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" stroke="none">

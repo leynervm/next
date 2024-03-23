@@ -1,9 +1,9 @@
 {
     "Soporte": true,
     "Internet": true,
-    "Almacen": true,
-    "Ventas": true,
-    "Facturacion": true,
+    "Almacen": false,
+    "Ventas": false,
+    "Facturacion": false,
     "Marketplace": true,
     "Negocios": true
 }

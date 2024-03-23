@@ -31,7 +31,7 @@ class CreateSubcategory extends Component
 
     public function render()
     {
-        $categories = Category::orderBy('order', 'asc')->orderBy('name', 'asc')->get();
+        $categories = Category::orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         return view('livewire.admin.subcategories.create-subcategory', compact('categories'));
     }
 
@@ -51,10 +51,10 @@ class CreateSubcategory extends Component
         $this->validate();
         DB::beginTransaction();
         try {
-            $order = Subcategory::max('order') ?? 0;
+            $orden = Subcategory::max('orden') ?? 0;
             $subcategory = Subcategory::create([
                 'name' => $this->name,
-                'order' => $order + 1
+                'orden' => $orden + 1
             ]);
             $subcategory->categories()->sync($this->selectedCategories);
             DB::commit();

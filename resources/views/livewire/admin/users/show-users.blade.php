@@ -1,11 +1,49 @@
 <div>
-    @if (count($users))
+    @if ($users->hasPages())
         <div class="pb-2">
             {{ $users->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
-    <x-table>
+    <div class="flex items-center gap-2 mt-4">
+        <div class="w-full max-w-sm">
+            <x-label value="Buscar usuario :" />
+            <div class="relative flex items-center">
+                <span class="absolute">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-4 h-4 mx-3 text-next-300">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                    </svg>
+                </span>
+                <x-input placeholder="Buscar documento, nombres del usuario..." class="block w-full pl-9"
+                    wire:model.lazy="search">
+                </x-input>
+            </div>
+        </div>
+
+        @if (count($sucursals) > 1)
+            <div class="w-full xs:max-w-sm">
+                <x-label value="Filtrar Sucursal :" />
+                <div class="relative" id="parentsearchsucursal" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="selectSearchsucursal">
+                    <x-select class="block w-full" x-ref="searchsuc" id="searchsucursal"
+                        data-minimum-results-for-search="3" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($sucursals as $item)
+                                <option value="{{ $item->id }}">
+                                    {{ $item->name }}
+                                </option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+                <x-jet-input-error for="searchsucursal" />
+            </div>
+        @endif
+    </div>
+
+    <x-table class="mt-1">
         <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium">
@@ -48,7 +86,7 @@
                 @endcan
             </tr>
         </x-slot>
-        @if (count($users))
+        @if (count($users) > 0)
             <x-slot name="body">
                 @foreach ($users as $item)
                     <tr>
@@ -75,8 +113,6 @@
                                         <p>{{ $item->name }}</p>
                                     </h1>
                                 @endcannot
-
-
                             </div>
                         </td>
 
@@ -101,7 +137,10 @@
                         </td>
 
                         <td class="p-2 text-center">
-                            @if ($item->employer)
+                            @if ($item->isAdmin())
+                                <x-span-text text="SUPER ADMIN" type="blue"
+                                    class="leading-3 !tracking-normal inline-block" />
+                            @elseif ($item->employer)
                                 <x-span-text text="DASHBOARD" type="next"
                                     class="leading-3 !tracking-normal inline-block" />
                             @else
@@ -118,7 +157,8 @@
                                             <span class="w-3 h-3 block">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full scale-125"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                                    stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round">
                                                     <path
                                                         d="M12.5 22H6.59087C5.04549 22 3.81631 21.248 2.71266 20.1966C0.453365 18.0441 4.1628 16.324 5.57757 15.4816C7.97679 14.053 10.8425 13.6575 13.5 14.2952">
                                                     </path>
@@ -150,14 +190,21 @@
                         </td>
                         @can('admin.users.delete')
                             <td class="p-2 text-center">
-                                <x-button-delete wire:loading.attr="disabled"
-                                    onclick="confirmDelete({{ $item }})" />
+                                @if (!$item->isAdmin())
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        onclick="confirmDelete({{ $item }})" />
+                                @endif
                             </td>
                         @endcan
                     </tr>
                 @endforeach
             </x-slot>
         @endif
+        <x-slot name="loading">
+            <div wire:loading.flex class="loading-overlay rounded hidden overflow-hidden">
+                <x-loading-next />
+            </div>
+        </x-slot>
     </x-table>
 
     <script>
@@ -178,6 +225,22 @@
             })
         }
 
-        // document.addEventListener('livewire:load', function() {})
+        function selectSearchsucursal() {
+            this.selectSS = $(this.$refs.searchsuc).select2();
+            this.selectSS.val(this.searchsucursal).trigger("change");
+            this.selectSS.on("select2:select", (event) => {
+                this.searchsucursal = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchsucursal", (value) => {
+                this.selectSS.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectSS.select2().val(this.searchsucursal).trigger('change');
+            });
+        }
     </script>
 </div>

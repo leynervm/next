@@ -28,6 +28,7 @@ class CreateTvitemsTable extends Migration
             $table->decimal('increment', 5, 2)->default(0);
             $table->char('alterstock', 1)->default(0);
             $table->char('gratuito', 1)->default(0);
+            $table->char('requireserie', 1)->default(0);
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('user_id')->nullable();

@@ -47,17 +47,17 @@ class CreateCategory extends Component
         $this->validate();
         DB::beginTransaction();
         try {
-            $order = Category::max('order') ?? 0;
+            $orden = Category::max('orden') ?? 0;
             $category = Category::withTrashed()
                 ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
 
             if ($category) {
-                $category->order = $order + 1;
+                $category->orden = $orden + 1;
                 $category->restore();
             } else {
                 Category::create([
                     'name' => $this->name,
-                    'order' => $order + 1
+                    'orden' => $orden + 1
                 ]);
             }
 

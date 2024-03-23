@@ -38,7 +38,7 @@ class ShowCategories extends Component
     public function render()
     {
 
-        $categories = Category::with('subcategories')->orderBy('order', 'asc')->orderBy('name', 'asc')->paginate();
+        $categories = Category::with('subcategories')->orderBy('orden', 'asc')->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.categories.show-categories', compact('categories'));
     }
 

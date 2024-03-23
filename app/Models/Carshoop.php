@@ -37,6 +37,11 @@ class Carshoop extends Model
         return $this->hasMany(Carshoopserie::class);
     }
 
+    public function carshoopitems(): HasMany
+    {
+        return $this->hasMany(Carshoopitem::class);
+    }
+
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Producto::class);

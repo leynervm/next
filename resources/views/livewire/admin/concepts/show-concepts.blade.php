@@ -9,20 +9,17 @@
         @if (count($concepts))
             @foreach ($concepts as $item)
                 <x-minicard :title="$item->name" alignFooter="justify-between" size="lg">
-                    @if ($item->default->value > 0)
+                    {{-- @if ($item->default->value > 0)
                         <p class="text-center">
                             <x-span-text :text="getTextConcept($item->default->value)" class="inline-block text-[9px] leading-3 !tracking-normal" />
                         </p>
-                    @endif
+                    @endif --}}
 
                     <x-slot name="buttons">
                         <div class="inline-flex">
                             <x-span-text :text="$item->typemovement->value" class="inline-block leading-3 !tracking-normal"
                                 type="{{ $item->isIngreso() ? 'green' : 'red' }}" />
 
-                            @if ($item->default == 1)
-                                <x-icon-default />
-                            @endif
                             @if ($item->web)
                                 <span
                                     class="bg-green-100 text-green-500 p-1 rounded-full @if ($item->default) absolute left-6 ring-2 ring-white @endif">
@@ -39,12 +36,12 @@
                         </div>
 
                         <div class="">
-                            @can('admin.cajas.conceptos.edit')
-                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            @endcan
+                            @if ($item->isDefault())
+                                @can('admin.cajas.conceptos.edit')
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                @endcan
 
-                            @can('admin.cajas.conceptos.delete')
-                                @if ($item->isDefault())
+                                @can('admin.cajas.conceptos.delete')
                                     <x-button-delete wire:loading.attr="disabled"
                                         wire:click="$emit('concept.confirmDelete',{{ $item }})" />
                                 @endif

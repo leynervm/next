@@ -28,7 +28,8 @@
                             <div class="w-full inline-flex gap-1">
                                 <x-input class="block w-full prevent" x-model="document"
                                     @keyup="togglecontact($event.target.value)" wire:model.defer="document"
-                                    wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)" />
+                                    wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
+                                    onkeydown="disabledEnter(event)" />
                                 <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -57,7 +58,7 @@
 
                     <div class="w-full sm:col-span-2 mt-2 sm:mt-0 relative">
                         <x-label value="Ubigeo :" />
-                        <div class="relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }" x-init="select2UbigeoAlpine" wire:ignore>
+                        <div class="relative" x-init="select2Ubigeo" wire:ignore>
                             <x-select class="block w-full" x-ref="select" wire:model.defer="ubigeo_id"
                                 id="ubigeoclient_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
                                 <x-slot name="options">
@@ -82,39 +83,43 @@
                     </div>
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Género :" />
-                        <x-select class="block w-full" wire:model.defer="sexo" id="sexoclient_id"
-                            data-dropdown-parent="null">
-                            <x-slot name="options">
-                                <option value="E">EMPRESARIAL</option>
-                                <option value="M">MASCULINO</option>
-                                <option value="F">FEMENINO</option>
-                            </x-slot>
-                        </x-select>
+                        <div class="relative" id="parentsexo_id" x-init="select2Sexo" wire:ignore>
+                            <x-select class="block w-full" id="sexo_id" x-ref="selectsexo"
+                                data-dropdown-parent="null">
+                                <x-slot name="options">
+                                    <option value="E">EMPRESARIAL</option>
+                                    <option value="M">MASCULINO</option>
+                                    <option value="F">FEMENINO</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                         <x-jet-input-error for="sexo" />
                     </div>
 
                     <div class="w-full mt-2 sm:mt-0">
                         <x-label value="Fecha nacimiento :" />
-                        <x-input type="date" class="block w-full" wire:model.defer="nacimiento"
-                            placeholder="Correo del cliente..." />
+                        <x-input type="date" class="block w-full" wire:model.defer="nacimiento" />
                         <x-jet-input-error for="nacimiento" />
                     </div>
 
-                    @if (mi_empresa()->uselistprice == 1)
-                        <div class="w-full mt-2 sm:mt-0">
-                            <x-label value="Lista precio :" />
-                            <x-select class="block w-full iconselect" wire:model.defer="pricetype_id"
-                                id="pricetype_id" data-dropdown-parent="null">
-                                <x-slot name="options">
-                                    @if (count($pricetypes))
-                                        @foreach ($pricetypes as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-jet-input-error for="pricetype_id" />
-                        </div>
+                    @if (Module::isEnabled('Ventas'))
+                        @if (mi_empresa()->usarlista())
+                            <div class="w-full mt-2 sm:mt-0">
+                                <x-label value="Lista precio :" />
+                                <x-select class="block w-full iconselect" wire:model.defer="pricetype_id"
+                                    id="pricetype_id" data-dropdown-parent="null">
+                                    <x-slot name="options">
+                                        @if (count($pricetypes))
+                                            @foreach ($pricetypes as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-jet-input-error for="pricetype_id" />
+                            </div>
+                        @endif
                     @endif
 
                     <div class="w-full mt-2 sm:mt-0">
@@ -132,8 +137,9 @@
                         <div class="w-full">
                             <x-label value="DNI :" />
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full" wire:model.defer="documentContact" maxlength="8"
-                                    onkeypress="return validarNumero(event, 8)" type="number" />
+                                <x-input class="block w-full" wire:model.defer="documentContact"
+                                    wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
+                                    type="number" onkeydown="disabledEnter(event)" />
                                 <x-button-add class="px-2" wire:click="searchcontacto"
                                     wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -154,8 +160,7 @@
                         </div>
                         <div class="w-full mt-2 sm:mt-0">
                             <x-label value="Teléfono :" />
-                            <x-input class="block w-full" wire:model.defer="telefonoContact"
-                                placeholder="+51 999 999 999" maxlength="9" type="number"
+                            <x-input class="block w-full" wire:model.defer="telefonoContact" type="number"
                                 onkeypress="return validarNumero(event, 9)" />
                             <x-jet-input-error for="telefonoContact" />
                         </div>
@@ -179,7 +184,7 @@
 
 
     <script>
-        function select2UbigeoAlpine() {
+        function select2Ubigeo() {
             this.select = $(this.$refs.select).select2();
             this.select.val(this.ubigeo_id).trigger("change");
             this.select.on("select2:select", (event) => {
@@ -194,15 +199,30 @@
             });
         }
 
+        function select2Sexo() {
+            this.selectS = $(this.$refs.selectsexo).select2();
+            this.selectS.val(this.sexo).trigger("change");
+            this.selectS.on("select2:select", (event) => {
+                this.sexo = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("sexo", (value) => {
+                this.selectS.val(value).trigger("change");
+            });
+        }
+
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 contact: false,
                 document: @entangle('document').defer,
+                ubigeo_id: @entangle('ubigeo_id').defer,
+                sexo: @entangle('sexo').defer,
 
                 togglecontact(value) {
-                    // console.log(value);
-                    // console.log(this.document);
                     if (value.trim().length == 11) {
                         this.contact = true;
                     } else {

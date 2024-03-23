@@ -6,6 +6,7 @@ use App\Models\Almacenarea;
 use App\Models\Category;
 use App\Models\Estante;
 use App\Models\Marca;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,40 +21,33 @@ class ProductoFactory extends Factory
      */
     public function definition()
     {
-        $tipocambio = 3.75;
-        $priceusbuy = $this->faker->randomFloat(2, 0.10, 1000);
-        $ganancia = number_format($priceusbuy * 0.10, 2, '.', '');
-        $categories = Category::all();
-        $almacenareas =  Almacenarea::all();
-        $estantes = Estante::all();
-        $marcas = Marca::all();
+        $pricebuy = $this->faker->randomFloat(2, 0.10, 1000);
+        $pricesale = $pricebuy + ($pricebuy * 30 / 100);
+        $category = Category::all()->random();
+        $subcategory = $category->subcategories()->inRandomOrder()->first();
+        $marca = Marca::all()->random();
 
-        if (count($categories) > 0) {
-            $category = $categories->random();
-            $subcategories = $category->subcategories;
-            if (count($subcategories) > 0) {
-                $subcategory = $subcategories->random()->id;
-            }
-        }
+        // $almacenareas =  Almacenarea::all();
+        // $estantes = Estante::all();
 
         return [
-            'name' => $this->faker->text(90),
+            'name' => $this->faker->text(120),
             'modelo' => $this->faker->word(),
-            'pricebuy' => number_format($priceusbuy * $tipocambio, 2, '.', ''),
-            'priceusbuy' => $priceusbuy,
-            'pricesale' => number_format(($priceusbuy + $ganancia) * $tipocambio, 2, '.', ''),
+            'pricebuy' => number_format($pricebuy, 2, '.', ''),
+            'pricesale' => number_format($pricesale, 2, '.', ''),
             'igv' => 0,
             'publicado' => $this->faker->randomElement([0, 1]),
-            'sku' => $this->faker->bothify('##??####??##??##'),
-            'views' => 0,
-            'minstock' => 5,
+            'code' => $this->faker->bothify('##??####??##??##'),
             'codefabricante' => $this->faker->bothify('????-########'),
-            'almacenarea_id' => count($almacenareas) > 0 ? $almacenareas->random()->id : null,
-            'estante_id' => count($estantes) > 0 ? $estantes->random()->id : null,
-            'marca_id' => count($marcas) > 0 ? $marcas->random()->id : null,
+            'views' => 0,
+            'minstock' => rand(1, 5),
+            'almacenarea_id' => null,
+            'estante_id' => null,
+            'marca_id' => $marca->id,
             'category_id' => $category->id ?? null,
-            'subcategory_id' => $subcategory ?? null,
+            'subcategory_id' => $subcategory->id ?? null,
             'unit_id' => 1,
+            'user_id' => User::all()->random()->id
         ];
     }
 }

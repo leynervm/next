@@ -292,33 +292,6 @@
         })
     })
 
-    document.addEventListener("DOMContentLoaded", () => {
-        Livewire.hook('element.updated', (el, component) => {
-            $('.select2').attr('disabled', false);
-        });
-    });
-
-    // window.addEventListener('validation-deleted', data => {
-    //     swal.fire({
-    //         title: data.detail,
-    //         text: "",
-    //         icon: 'question',
-    //         showCancelButton: false,
-    //         cancelButtonColor: '#d33',
-    //         confirmButtonText: 'Confirmar',
-    //         confirmButtonColor: '#0FB9B9',
-    //         confirmButtonText: 'Cerrar',
-    //     })
-    // });
-
-    // window.addEventListener('validation', event => {
-    //     toastMixin.fire({
-    //         title: event.detail,
-    //         icon: "warning",
-    //         timer: 3000,
-    //     });
-    // })
-
 
     const sidebar = document.getElementById('menu');
     const header_sidebar = document.getElementById('sidebar-header');
@@ -396,35 +369,6 @@
             '-translate-x-full'));
     })
 
-
-    const elementos = document.querySelectorAll(".prevent");
-
-    elementos.forEach(elemento => {
-        elemento.addEventListener("keydown", (e) => {
-            if (e.key == "Enter" || e.keyCode == 13) {
-                e.preventDefault();
-                return false;
-            }
-        });
-    });
-
-    const numericInputs = document.querySelectorAll(".numeric");
-
-    numericInputs.forEach(elemento => {
-        elemento.addEventListener("keydown", function(event) {
-            if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
-                event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
-            }
-        });
-
-        // elemento.addEventListener("input", function(event) {
-        //     let valor = event.target.value;
-        //     valor = valor.replace(/[e\+\-]/gi, '');
-        //     // valor = valor.replace(/e|\+|\-/g, '');
-        //     event.target.value = valor;
-        // });
-    })
-
     function valid(e) {
         let code = (e.which) ? e.which : e.keyCode;
         if (code == 8 || code == 13) {
@@ -436,23 +380,12 @@
         }
     }
 
-    function numeric(event) {
-        if (event.key === 'e' || event.key === 'E' || event.key === '+' || event.key === '-') {
-            event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
+    // SI FUNCIONA PROVADO EN ONKEYDOWN DEL INPUT
+    function disabledEnter(event) {
+        if (event.keyCode == 13) {
+            event.preventDefault();
         }
     }
-
-    function notsimbols(event) {
-        let valor = event.target.value;
-        valor = valor.replace(/[e\+\-]/gi, '');
-        // valor = valor.replace(/e|\+|\-/g, '');
-        event.target.value = valor;
-
-        // if (event.key === '+' || event.key === '-') {
-        //     event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
-        // }
-    }
-
 
     // SI FUNCIONA PROVADO EN ONKEYPRERSS DEL INPUT
     //onkeypress="return validarNumeroDecimal(event)"
@@ -494,15 +427,6 @@
         //permitir hacer enter en input
         return charCode == 13 ? true : false;
     }
-
-
-    // $('.numeric').on('keydown', function(event) {
-    //     if (event.key === 'e' || event.key === 'E') {
-    //         event.preventDefault(); // Evitar que la tecla 'e' tenga efecto
-    //     }
-    // })
-
-    // })
 </script>
 
 </html>

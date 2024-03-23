@@ -15,7 +15,6 @@ class ClientController extends Controller
         $this->middleware('can:admin.clientes.historial')->only('history');
     }
 
-
     public function index()
     {
         return view('admin.clients.index');

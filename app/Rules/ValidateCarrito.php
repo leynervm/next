@@ -70,7 +70,7 @@ class ValidateCarrito implements Rule
                 if ($countmoneda->first()->moneda_id == $this->moneda_id) {
                     return true;
                 } else {
-                    $this->mensaje = 'Noneda de venta diferente al carrito de ventas.';
+                    $this->mensaje = 'Moneda de venta diferente al carrito de ventas.';
                 }
             }
         }

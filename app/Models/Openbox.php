@@ -67,7 +67,7 @@ class Openbox extends Model
 
     public function isExpired()
     {
-        return $this->status == 0 && now('America/Lima') > $this->expiredate;
+        return $this->status == 0 && now('America/Lima') >= $this->expiredate;
     }
 
     public function isActivo()

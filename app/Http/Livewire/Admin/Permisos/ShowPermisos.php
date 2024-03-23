@@ -27,7 +27,7 @@ class ShowPermisos extends Component
 
     public function render()
     {
-        $permisos = Permission::orderBy('module', 'asc')->orderBy('id', 'asc')->get()->groupBy('module');
+        $permisos = Permission::orderBy('orden', 'asc')->orderBy('id', 'asc')->get()->groupBy('module');
         return view('livewire.admin.permisos.show-permisos', compact('permisos'));
     }
 

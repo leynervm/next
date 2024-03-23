@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('descripcion');
             $table->string('table');
             $table->string('module');
+            $table->unsignedInteger('orden');
             $table->string('guard_name'); // For MySQL 8.0 use string('guard_name', 125);
             $table->timestamps();
 

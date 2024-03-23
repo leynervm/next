@@ -1,9 +1,43 @@
 <div>
     <div class="flex flex-col xl:flex-row gap-8 animate__animated animate__fadeIn animate__faster">
-        <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto registrado.">
+        <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto.">
             <div class="w-full flex flex-col gap-3 rounded h-full">
                 @if (count($producto->especificaciones))
-                    <div class="w-full flex flex-wrap gap-1">
+
+                    <x-table class="">
+                        <x-slot name="header">
+                            <tr>
+                                <th scope="col" class="p-2 font-medium text-left text-[10px]">
+                                    ESPECIFICACION
+                                </th>
+                                <th scope="col" class="p-2 font-medium text-left text-[10px]">
+                                    DESCRIPCION
+                                </th>
+                                <th scope="col" class="p-2 font-medium text-end text-[10px] sr-only">
+                                    OPCIONES
+                                </th>
+                            </tr>
+                        </x-slot>
+                        <x-slot name="body">
+                            @foreach ($producto->especificaciones as $item)
+                                <tr class="border-none {{ $loop->index % 2 != 0 ? 'bg-fondohovertable' : '' }}">
+                                    <td class="p-1 text-[10px] text-textbodytable border-r border-dividetable">
+                                        {{ $item->caracteristica->name }}</td>
+                                    <td class="p-1 text-[10px] text-textbodytable">
+                                        {{ $item->name }}</td>
+                                    <td class="p-1 text-end">
+                                        @can('admin.almacen.productos.especificaciones')
+                                            <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
+                                                wire:loading.attr="disabled" />
+                                        @endcan
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </x-slot>
+                    </x-table>
+
+
+                    {{-- <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->especificaciones as $item)
                             <span
                                 class="text-[10px] inline-flex gap-2 items-center justify-between p-1 font-medium rounded-md bg-fondospancardproduct text-textspancardproduct">
@@ -15,19 +49,21 @@
                                 @endcan
                             </span>
                         @endforeach
-                    </div>
+                    </div> --}}
                 @endif
 
-                @can('admin.almacen.productos.especificaciones')
-                    <div class="w-full pt-4 flex justify-end mt-auto">
-                        <x-button wire:click="openmodal" wire:loading.attr="disabled">
-                            AÑADIR ESPECIFICACIÓN</x-button>
-                    </div>
-                @endcan
+                @if (count($caracteristicas) > 0)
+                    @can('admin.almacen.productos.especificaciones')
+                        <div class="w-full pt-4 flex justify-end mt-auto">
+                            <x-button wire:click="openmodal" wire:loading.attr="disabled">
+                                AÑADIR ESPECIFICACIÓN</x-button>
+                        </div>
+                    @endcan
+                @endif
             </div>
         </x-form-card>
 
-        <x-form-card titulo="IMÁGENES" subtitulo="Permite tener el mismo producto en múltiples amacénes.">
+        <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto.">
             <div class="w-full flex flex-col gap-3">
                 @if (count($producto->images))
                     <div class="w-full flex flex-wrap gap-1">
@@ -154,9 +190,9 @@
                         @if (isset($imagen))
                             <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
                                 GUARDAR
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <path
                                         d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
                                     <path

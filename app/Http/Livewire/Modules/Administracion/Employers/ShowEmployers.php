@@ -22,7 +22,7 @@ class ShowEmployers extends Component
     use AuthorizesRequests;
 
     public $open = false;
-    public $employer, $telefono, $email, $user;
+    public $employer, $telefono, $email;
     public $search = '';
     public $searchsucursal = '';
     public $deletes = false;
@@ -55,8 +55,7 @@ class ShowEmployers extends Component
             'employer.areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
             'employer.sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'employer.user_id' => [
-                'nullable', Rule::requiredIf(!empty($this->user)),
-                'integer', 'min:1', 'exists:users,id',
+                'nullable', 'integer', 'min:1', 'exists:users,id',
                 new CampoUnique('employers', 'user_id', $this->employer->id, true)
             ],
         ];
@@ -108,21 +107,9 @@ class ShowEmployers extends Component
 
     public function update()
     {
-        $this->employer->user_id = $this->user ? $this->user->id : $this->employer->user_id;
         try {
             DB::beginTransaction();
             $this->validate();
-            if ($this->user) {
-                if ($this->user->employer) {
-                    $this->addError('email', 'Perfil de acceso ya se encuentra vinculado a un personal.');
-                    return false;
-                }
-
-                $this->employer->user_id = $this->user->id;
-                $this->user->sucursal_id = $this->employer->sucursal_id;
-                $this->user->save();
-            }
-
             $this->employer->save();
             $this->employer->telephone()->updateOrCreate(
                 ['id' => $this->employer->telephone->id ?? null],
@@ -141,11 +128,6 @@ class ShowEmployers extends Component
         }
     }
 
-    public function clearuser()
-    {
-        $this->reset(['user']);
-    }
-
     public function desvincularuser()
     {
         try {
@@ -160,10 +142,15 @@ class ShowEmployers extends Component
                 return false;
             }
 
-            $this->employer->user->roles()->detach();
-            $this->employer->user->permissions()->detach();
-            $this->employer->user->sucursal_id = null;
-            $this->employer->user->save();
+            if ($this->employer->user) {
+                if (!$this->employer->user->isAdmin()) {
+                    $this->employer->user->roles()->detach();
+                    $this->employer->user->permissions()->detach();
+                    $this->employer->user->sucursal_id = null;
+                    $this->employer->user->save();
+                }
+            }
+
             $this->employer->user_id = null;
             $this->employer->save();
             DB::commit();
@@ -196,10 +183,12 @@ class ShowEmployers extends Component
                 }
 
                 if ($employer->user) {
-                    $employer->user->roles()->detach();
-                    $employer->user->permissions()->detach();
-                    $employer->user->sucursal_id = null;
-                    $employer->user->save();
+                    if (!$employer->user->isAdmin()) {
+                        $employer->user->roles()->detach();
+                        $employer->user->permissions()->detach();
+                        $employer->user->sucursal_id = null;
+                        $employer->user->save();
+                    }
                 }
                 $employer->user_id = null;
                 $employer->save();
@@ -235,25 +224,44 @@ class ShowEmployers extends Component
             ],
         ]);
 
-        $this->reset(['user']);
-        $user = User::whereDoesntHave('employer', function ($query) {
-            $query->where('document', $this->employer->document);
-        })->where('document', $this->employer->document)->first();
+        try {
+            DB::beginTransaction();
+            $user = User::whereDoesntHave('employer', function ($query) {
+                $query->where('document', $this->employer->document);
+            })->where('document', $this->employer->document)->first();
 
-        if ($user) {
-            if ($user->employer) {
-                $this->addError('email', 'Correo ya se encuentra vinculado a un usuario.');
+            if ($user) {
+                if ($user->employer) {
+                    $mensaje = response()->json([
+                        'title' => 'USUARIO ENCONTRADO YA SE ENCUENTRA VINCULADO A UN PERSONAL !',
+                        'text' => 'Usuario de acceso encontrado, ya se encuentra vinculado a un personal.',
+                        'type' => 'warning'
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                } else {
+                    $this->employer->user()->associate($user);
+                    $this->employer->save();
+                    $user->sucursal_id = $this->employer->sucursal_id;
+                    $user->save();
+                    $this->dispatchBrowserEvent('toast', toastJSON('Usuario vinculado correctamente'));
+                }
             } else {
-                $this->user = $user;
+                $mensaje = response()->json([
+                    'title' => 'NO SE ENCONTRARON USUARIOS CON LOS DATOS DEL PERSONAL !',
+                    'text' => 'Personal no cuenta con usuarios registrados que tengan el mismo número de documento a sincronizar.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
             }
-        } else {
-            $mensaje = response()->json([
-                'title' => 'NO SE ENCONTRARON DATOS DE ACCESO PARA EL PERSONAL !',
-                'text' => 'Personal no cuenta con usuario de acceso al sistema, para sincronizar los datos.',
-                'type' => 'warning'
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            $this->addError('email', 'No se encontraron registros.');
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }

@@ -22,7 +22,7 @@ class Empresa extends Model
         'usuariosol', 'clavesol', 'montoadelanto', 'uselistprice',
         'usepricedolar', 'viewpricedolar', 'tipocambio', 'tipocambioauto',
         'status', 'igv', 'default', 'ubigeo_id', 'cert', 'sendmode', 'passwordcert',
-        'clientid', 'clientsecret'
+        'clientid', 'clientsecret', 'limitsucursals'
     ];
 
     const PRODUCCION = '1';

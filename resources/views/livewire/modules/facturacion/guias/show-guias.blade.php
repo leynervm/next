@@ -258,14 +258,15 @@
                             @endif
                         </td>
                         <td class="p-2 text-center">
-                            <div class="max-w-[120px] group relative">
+                            <div class="max-w-[120px] relative" x-data="{ showmessage: false }" @mouseover="showmessage=true"
+                                @mouseover.away = "showmessage = false">
                                 <p class="truncate"> {{ $item->descripcion }}</p>
-                                @if ($item->codesunat != '0')
+                                @if (!$item->isSendSunat())
                                     <p>{{ $item->codesunat }}</p>
-                                    <small
-                                        class="opacity-0 cursor-pointer group-hover:opacity-100 absolute right-0 font-medium rounded-md p-0.5 bg-fondolinknav text-[9px] leading-3 whitespace-normal text-colorlinknav transition duration-150">
-                                        {{ $item->descripcion }}</small>
                                 @endif
+                                <small x-show="showmessage" x-transition
+                                    class="cursor-pointer absolute right-0 font-medium rounded-md p-0.5 bg-fondolinknav text-[9px] leading-3 whitespace-normal text-colorlinknav transition duration-150">
+                                    {{ $item->descripcion }}</small>
                             </div>
                         </td>
                         <td class="p-2 align-middle">

@@ -19,7 +19,6 @@ class CreateProductosTable extends Migration
             $table->string('slug')->unique();
             $table->string('modelo', 255)->nullable();
             $table->decimal('pricebuy', 10, 4);
-            $table->decimal('priceusbuy', 10, 4)->nullable()->default(0);
             $table->decimal('pricesale', 10, 4)->nullable()->default(0);
             $table->decimal('igv', 10, 4)->default(0);
             $table->integer('publicado')->default(0);

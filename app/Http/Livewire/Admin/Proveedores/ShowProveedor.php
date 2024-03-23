@@ -163,7 +163,7 @@ class ShowProveedor extends Component
     public function editphone(Telephone $telephone)
     {
         $this->authorize('admin.proveedores.phones.edit');
-        $this->reset(['newtelefono']);
+        $this->reset(['telephone', 'newtelefono']);
         $this->resetValidation(['telephone', 'newtelefono']);
         $this->telephone = $telephone;
         $this->newtelefono = trim($telephone->phone);
@@ -173,7 +173,7 @@ class ShowProveedor extends Component
     public function openmodalphone()
     {
         $this->authorize('admin.proveedores.phones.edit');
-        $this->reset(['newtelefono']);
+        $this->reset(['newtelefono', 'telephone']);
         $this->resetValidation(['telephone', 'newtelefono']);
         $this->openphone = true;
     }
@@ -240,7 +240,6 @@ class ShowProveedor extends Component
 
         $this->proveedor->name = null;
         $this->proveedor->direccion = null;
-        $this->proveedor->telefono = null;
         $this->proveedor->ubigeo_id = null;
 
         $this->resetValidation(['proveedor.document', 'proveedor.name', 'proveedor.direccion', 'telefono', 'proveedor.proveedor->ubigeo_id']);
@@ -253,10 +252,7 @@ class ShowProveedor extends Component
                 $this->proveedor->name = $response->getData()->name;
                 $this->proveedor->direccion = $response->getData()->direccion;
                 $this->proveedor->telefono = $response->getData()->telefono;
-
-                if ($response->getData()->ubigeo) {
-                    $this->proveedor->ubigeo_id = Ubigeo::where('ubigeo_inei', trim($response->getData()->ubigeo))->first()->id ?? null;
-                }
+                $this->proveedor->ubigeo_id = $response->getData()->ubigeo_id ?? null;
             } else {
                 $this->addError('proveedor.document', $response->getData()->message);
             }

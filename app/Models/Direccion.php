@@ -14,7 +14,7 @@ class Direccion extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'ubigeo_id', 'direccionable_id', 'direccionable_type'];
+    protected $fillable = ['name', 'ubigeo_id', 'default', 'direccionable_id', 'direccionable_type'];
     const DEFAULT = '1';
 
     public function setNameAttribute($value)

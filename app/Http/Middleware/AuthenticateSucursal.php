@@ -16,10 +16,7 @@ class AuthenticateSucursal
      */
     public function handle(Request $request, Closure $next)
     {
-
-
         dd($request->all());
-
         if (auth()->user()->sucursal_id == $request->sucursal_id) {
 
             $mensaje = response()->json([

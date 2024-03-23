@@ -68,7 +68,7 @@ class CreateProducto extends Component
     {
         $marcas = Marca::orderBy('name', 'asc')->get();
         $units = Unit::orderBy('name', 'asc')->get();
-        $categories = Category::orderBy('name', 'asc')->get();
+        $categories = Category::orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         $almacenareas = Almacenarea::orderBy('name', 'asc')->get();
         $estantes = Estante::orderBy('name', 'asc')->get();
         $almacens = auth()->user()->sucursal->almacens;
@@ -76,14 +76,14 @@ class CreateProducto extends Component
         return view('livewire.modules.almacen.productos.create-producto', compact('marcas', 'units', 'categories', 'almacenareas', 'estantes', 'almacens'));
     }
 
-    public function setCategory($value)
+    public function updatedCategoryId($value)
     {
         $this->reset(['subcategory_id', 'subcategories']);
 
         if ($value) {
-            $category = Category::find($value);
-            $this->subcategories = $category->subcategories;
-            $this->dispatchBrowserEvent('loadsubcategories', $category->subcategories->toArray());
+            $category = Category::with('subcategories')->find($value);
+            $this->subcategories = $category->subcategories()
+                ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         }
     }
 

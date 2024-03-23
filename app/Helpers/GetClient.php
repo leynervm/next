@@ -34,15 +34,17 @@ class GetClient
         $response = array();
 
         if ($usarlistaprecios) {
-            $listaprecios = Pricetype::orderBy('id', 'asc')->default();
-            if ($listaprecios->count() > 0) {
+            $listaprecios = Pricetype::orderBy('id', 'asc');
+            if ($listaprecios->default()->exists()) {
                 $pricetypeDefault = $listaprecios->first();
-                $pricetype_id = $pricetypeDefault->name;
-                $pricetypename = $pricetypeDefault->name;
-            } else {
-                $pricetypeDefault = Pricetype::orderBy('id', 'asc')->first();
                 $pricetype_id = $pricetypeDefault->id;
                 $pricetypename = $pricetypeDefault->name;
+            } else {
+                if ($listaprecios->exists()) {
+                    $pricetypeDefault = Pricetype::orderBy('id', 'asc')->first();
+                    $pricetype_id = $pricetypeDefault->id;
+                    $pricetypename = $pricetypeDefault->name;
+                }
             }
         }
 

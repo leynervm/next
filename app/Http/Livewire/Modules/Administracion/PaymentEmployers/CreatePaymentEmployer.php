@@ -54,8 +54,8 @@ class CreatePaymentEmployer extends Component
     public function mount(Employer $employer)
     {
         $this->employer = $employer;
-        $this->openbox =  Openbox::mybox(auth()->user()->employer->sucursal_id)->first();
-        $this->monthbox = Monthbox::usando(auth()->user()->employer->sucursal_id)->first();
+        $this->openbox =  Openbox::mybox(auth()->user()->sucursal_id)->first();
+        $this->monthbox = Monthbox::usando(auth()->user()->sucursal_id)->first();
         $this->concept_id = Concept::payemployer()->first()->id ?? null;
         $this->moneda_id = Moneda::default()->first()->id ?? null;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
@@ -103,7 +103,7 @@ class CreatePaymentEmployer extends Component
     public function save()
     {
 
-        if (!$this->monthbox->isUsing()) {
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
             $mensaje =  response()->json([
                 'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
                 'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
@@ -112,7 +112,7 @@ class CreatePaymentEmployer extends Component
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }

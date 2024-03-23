@@ -56,8 +56,8 @@ class ShowPaymentEmployers extends Component
     {
         $this->employerpayment = new Employerpayment();
         $this->employer = $employer;
-        $this->openbox =  Openbox::mybox(auth()->user()->employer->sucursal_id)->first();
-        $this->monthbox = Monthbox::usando(auth()->user()->employer->sucursal_id)->first();
+        $this->openbox =  Openbox::mybox(auth()->user()->sucursal_id)->first();
+        $this->monthbox = Monthbox::usando(auth()->user()->sucursal_id)->first();
         $this->concept_id = Concept::payemployer()->first()->id ?? null;
         $this->moneda_id = Moneda::default()->first()->id ?? null;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;

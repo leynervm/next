@@ -255,7 +255,7 @@
     </x-form-card>
 
     <x-form-card titulo="RESUMEN PRODUCTOS">
-        <div class="w-full">
+        <div class="w-full" x-data="{ showForm: false }">
             @if (count($venta->tvitems))
                 <div class="flex gap-2 flex-wrap justify-start mt-1">
                     @foreach ($venta->tvitems as $item)
@@ -269,8 +269,7 @@
                                 }
                             }
                         @endphp
-                        <x-card-producto :image="$image" :name="$item->producto->name" :category="$item->gratuito == 1 ? 'GRATUITO' : null" :increment="$item->increment ?? null"
-                            x-data="{ loadingproducto: false }">
+                        <x-card-producto :image="$image" :name="$item->producto->name" :category="$item->gratuito == 1 ? 'GRATUITO' : null" :increment="$item->increment ?? null">
                             <div class="w-full flex flex-wrap gap-1 justify-center mt-1">
                                 <x-label-price>
                                     <span>
@@ -303,42 +302,45 @@
                                 @endif
                             </div>
 
-                            <div class="w-full mt-1" x-data="{ showForm: false }">
+                            @if ($item->isPendingSerie())
+                                <div class="w-full mt-2" x-data="{ addserie: false }">
+                                    <form class="w-full inline-flex"
+                                        wire:submit.prevent="saveserie({{ $item->id }})">
+                                        <x-input class="block w-full"
+                                            wire:model.defer="tvitem.{{ $item->id }}.serie" minlength="1"
+                                            maxlength="255" />
+                                        <x-button-add class="px-2" wire:loading.attr="disabled" type="submit">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="11" cy="11" r="8" />
+                                                <path d="m21 21-4.3-4.3" />
+                                            </svg>
+                                        </x-button-add>
+                                    </form>
+                                    <x-jet-input-error for="tvitem.{{ $item->id }}.tvitem_id" />
+                                    <x-jet-input-error for="tvitem.{{ $item->id }}.serie" />
+                                </div>
+                            @endif
+
+                            <div class="w-full mt-1">
                                 @if (count($item->itemseries) > 1)
                                     <x-button @click="showForm = !showForm" class="whitespace-nowrap">
-                                        {{ __('VER SERIES') }}
-                                    </x-button>
+                                        {{ __('VER SERIES') }}</x-button>
                                 @endif
 
-                                <div x-show="showForm" x-transition class="block w-full rounded mt-1">
-                                    <div class="w-full flex flex-wrap gap-1">
-                                        @if (count($item->itemseries) > 1)
-                                            @foreach ($item->itemseries as $itemserie)
-                                                {{-- <x-label-check>
-                                                    MI SERIE
-                                                    <x-button-delete />
-                                                </x-label-check> --}}
-                                                <span
-                                                    class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
-                                                    {{ $itemserie->serie->serie }}
-                                                    <x-button-delete onclick="confirmDeleteSerie({{ $itemserie }})"
-                                                        wire:loading.attr="disabled" />
-                                                </span>
-                                            @endforeach
-                                        @endif
-                                    </div>
+                                <div x-show="showForm" x-transition class="w-full flex flex-wrap gap-1 rounded mt-1">
+                                    @if (count($item->itemseries) > 1)
+                                        @foreach ($item->itemseries as $itemserie)
+                                            <span
+                                                class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
+                                                {{ $itemserie->serie->serie }}
+                                                <x-button-delete onclick="confirmDeleteSerie({{ $itemserie }})"
+                                                    wire:loading.attr="disabled" />
+                                            </span>
+                                        @endforeach
+                                    @endif
                                 </div>
-                            </div>
-
-                            {{-- <x-slot name="footer">
-                                <x-button-delete
-                                    wire:click="$emit('compra.confirmDeleteItemCompra',({{ $item->id }}))"
-                                    wire:loading.attr="disabled"
-                                    wire:target="compra.confirmDeleteItemCompra, deleteitemcompra" />
-                            </x-slot> --}}
-
-                            <div x-show="loadingproducto" wire:loading.flex class="loading-overlay rounded">
-                                <x-loading-next />
                             </div>
                         </x-card-producto>
                     @endforeach
@@ -352,109 +354,114 @@
         </div>
     </x-form-card>
 
-    @if ($venta->comprobante)
-        @if ($venta->comprobante->guia)
-            <x-form-card titulo="GUÍA DE REMISIÓN">
-                <div class="w-full flex flex-col gap-2">
-                    <p class="text-colorminicard text-2xl font-semibold">
-                        {{ $venta->comprobante->guia->seriecompleta }}
-                        <small
-                            class="text-sm">{{ $venta->comprobante->guia->seriecomprobante->typecomprobante->descripcion }}</small>
-                    </p>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
-                        </svg>
-                        CLIENTE :
-                        <span class="font-medium inline-block">
-                            {{ $venta->comprobante->guia->client->document }},
-                            {{ $venta->comprobante->guia->client->name }}</span>
-                    </h1>
+    @if (Module::isEnabled('Facturacion'))
+        @if ($venta->comprobante)
+            @if ($venta->comprobante->guia)
+                <x-form-card titulo="GUÍA DE REMISIÓN">
+                    <div class="w-full flex flex-col gap-2">
+                        <p class="text-colorminicard text-2xl font-semibold">
+                            {{ $venta->comprobante->guia->seriecompleta }}
+                            <small
+                                class="text-sm">{{ $venta->comprobante->guia->seriecomprobante->typecomprobante->descripcion }}</small>
+                        </p>
 
-                    <div class="flex items-center justify-start gap-1">
-                        <button class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
-                            <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <h1 class="text-colorminicard text-xs font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path
-                                    d="M7 18V15.5M7 15.5V14C7 13.5286 7 13.2929 7.15377 13.1464C7.30754 13 7.55503 13 8.05 13H8.75C9.47487 13 10.0625 13.5596 10.0625 14.25C10.0625 14.9404 9.47487 15.5 8.75 15.5H7ZM21 13H19.6875C18.8625 13 18.4501 13 18.1938 13.2441C17.9375 13.4882 17.9375 13.881 17.9375 14.6667V15.5M17.9375 18V15.5M17.9375 15.5H20.125M15.75 15.5C15.75 16.8807 14.5747 18 13.125 18C12.7979 18 12.6343 18 12.5125 17.933C12.2208 17.7726 12.25 17.448 12.25 17.1667V13.8333C12.25 13.552 12.2208 13.2274 12.5125 13.067C12.6343 13 12.7979 13 13.125 13C14.5747 13 15.75 14.1193 15.75 15.5Z" />
-                                <path
-                                    d="M15 22H10.7273C7.46607 22 5.83546 22 4.70307 21.2022C4.37862 20.9736 4.09058 20.7025 3.8477 20.3971C3 19.3313 3 17.7966 3 14.7273V12.1818C3 9.21865 3 7.73706 3.46894 6.55375C4.22281 4.65142 5.81714 3.15088 7.83836 2.44135C9.09563 2 10.6698 2 13.8182 2C15.6173 2 16.5168 2 17.2352 2.2522C18.3902 2.65765 19.3012 3.5151 19.732 4.60214C20 5.27832 20 6.12494 20 7.81818V10" />
-                                <path
-                                    d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
+                                    d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
-                        </button>
-                        <button
-                            class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
-                            <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path
-                                    d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
-                                <path
-                                    d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
-                                <path
-                                    d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
-                            </svg>
-                        </button>
+                            CLIENTE :
+                            <span class="font-medium inline-block">
+                                {{ $venta->comprobante->guia->client->document }},
+                                {{ $venta->comprobante->guia->client->name }}</span>
+                        </h1>
 
+                        <div class="flex items-center justify-start gap-1">
+                            <button
+                                class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
+                                <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path
+                                        d="M7 18V15.5M7 15.5V14C7 13.5286 7 13.2929 7.15377 13.1464C7.30754 13 7.55503 13 8.05 13H8.75C9.47487 13 10.0625 13.5596 10.0625 14.25C10.0625 14.9404 9.47487 15.5 8.75 15.5H7ZM21 13H19.6875C18.8625 13 18.4501 13 18.1938 13.2441C17.9375 13.4882 17.9375 13.881 17.9375 14.6667V15.5M17.9375 18V15.5M17.9375 15.5H20.125M15.75 15.5C15.75 16.8807 14.5747 18 13.125 18C12.7979 18 12.6343 18 12.5125 17.933C12.2208 17.7726 12.25 17.448 12.25 17.1667V13.8333C12.25 13.552 12.2208 13.2274 12.5125 13.067C12.6343 13 12.7979 13 13.125 13C14.5747 13 15.75 14.1193 15.75 15.5Z" />
+                                    <path
+                                        d="M15 22H10.7273C7.46607 22 5.83546 22 4.70307 21.2022C4.37862 20.9736 4.09058 20.7025 3.8477 20.3971C3 19.3313 3 17.7966 3 14.7273V12.1818C3 9.21865 3 7.73706 3.46894 6.55375C4.22281 4.65142 5.81714 3.15088 7.83836 2.44135C9.09563 2 10.6698 2 13.8182 2C15.6173 2 16.5168 2 17.2352 2.2522C18.3902 2.65765 19.3012 3.5151 19.732 4.60214C20 5.27832 20 6.12494 20 7.81818V10" />
+                                    <path
+                                        d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
+                                </svg>
+                            </button>
+                            <button
+                                class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
+                                <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path
+                                        d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
+                                    <path
+                                        d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
+                                    <path
+                                        d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
+                                </svg>
+                            </button>
+
+                        </div>
                     </div>
-                </div>
-            </x-form-card>
-        @endif
-    @else
-        @if ($venta->guia)
-            <x-form-card titulo="GUÍA DE REMISIÓN">
-                <div class="w-full flex flex-col gap-2">
-                    <p class="text-colorminicard text-2xl font-semibold">
-                        {{ $venta->guia->seriecompleta }}
-                        <small
-                            class="text-sm">{{ $venta->guia->seriecomprobante->typecomprobante->descripcion }}</small>
-                    </p>
+                </x-form-card>
+            @endif
+        @else
+            @if ($venta->guia)
+                <x-form-card titulo="GUÍA DE REMISIÓN">
+                    <div class="w-full flex flex-col gap-2">
+                        <p class="text-colorminicard text-2xl font-semibold">
+                            {{ $venta->guia->seriecompleta }}
+                            <small
+                                class="text-sm">{{ $venta->guia->seriecomprobante->typecomprobante->descripcion }}</small>
+                        </p>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
-                        </svg>
-                        CLIENTE :
-                        <span class="font-medium inline-block">
-                            {{ $venta->guia->client->document }},
-                            {{ $venta->guia->client->name }}</span>
-                    </h1>
-
-                    <div class="flex items-center justify-start gap-1">
-                        <button class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
-                            <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <h1 class="text-colorminicard text-xs font-semibold">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path
-                                    d="M7 18V15.5M7 15.5V14C7 13.5286 7 13.2929 7.15377 13.1464C7.30754 13 7.55503 13 8.05 13H8.75C9.47487 13 10.0625 13.5596 10.0625 14.25C10.0625 14.9404 9.47487 15.5 8.75 15.5H7ZM21 13H19.6875C18.8625 13 18.4501 13 18.1938 13.2441C17.9375 13.4882 17.9375 13.881 17.9375 14.6667V15.5M17.9375 18V15.5M17.9375 15.5H20.125M15.75 15.5C15.75 16.8807 14.5747 18 13.125 18C12.7979 18 12.6343 18 12.5125 17.933C12.2208 17.7726 12.25 17.448 12.25 17.1667V13.8333C12.25 13.552 12.2208 13.2274 12.5125 13.067C12.6343 13 12.7979 13 13.125 13C14.5747 13 15.75 14.1193 15.75 15.5Z" />
-                                <path
-                                    d="M15 22H10.7273C7.46607 22 5.83546 22 4.70307 21.2022C4.37862 20.9736 4.09058 20.7025 3.8477 20.3971C3 19.3313 3 17.7966 3 14.7273V12.1818C3 9.21865 3 7.73706 3.46894 6.55375C4.22281 4.65142 5.81714 3.15088 7.83836 2.44135C9.09563 2 10.6698 2 13.8182 2C15.6173 2 16.5168 2 17.2352 2.2522C18.3902 2.65765 19.3012 3.5151 19.732 4.60214C20 5.27832 20 6.12494 20 7.81818V10" />
-                                <path
-                                    d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
+                                    d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
-                        </button>
-                        <button
-                            class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
-                            <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path
-                                    d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
-                                <path
-                                    d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
-                                <path
-                                    d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
-                            </svg>
-                        </button>
+                            CLIENTE :
+                            <span class="font-medium inline-block">
+                                {{ $venta->guia->client->document }},
+                                {{ $venta->guia->client->name }}</span>
+                        </h1>
 
+                        <div class="flex items-center justify-start gap-1">
+                            <button
+                                class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
+                                <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path
+                                        d="M7 18V15.5M7 15.5V14C7 13.5286 7 13.2929 7.15377 13.1464C7.30754 13 7.55503 13 8.05 13H8.75C9.47487 13 10.0625 13.5596 10.0625 14.25C10.0625 14.9404 9.47487 15.5 8.75 15.5H7ZM21 13H19.6875C18.8625 13 18.4501 13 18.1938 13.2441C17.9375 13.4882 17.9375 13.881 17.9375 14.6667V15.5M17.9375 18V15.5M17.9375 15.5H20.125M15.75 15.5C15.75 16.8807 14.5747 18 13.125 18C12.7979 18 12.6343 18 12.5125 17.933C12.2208 17.7726 12.25 17.448 12.25 17.1667V13.8333C12.25 13.552 12.2208 13.2274 12.5125 13.067C12.6343 13 12.7979 13 13.125 13C14.5747 13 15.75 14.1193 15.75 15.5Z" />
+                                    <path
+                                        d="M15 22H10.7273C7.46607 22 5.83546 22 4.70307 21.2022C4.37862 20.9736 4.09058 20.7025 3.8477 20.3971C3 19.3313 3 17.7966 3 14.7273V12.1818C3 9.21865 3 7.73706 3.46894 6.55375C4.22281 4.65142 5.81714 3.15088 7.83836 2.44135C9.09563 2 10.6698 2 13.8182 2C15.6173 2 16.5168 2 17.2352 2.2522C18.3902 2.65765 19.3012 3.5151 19.732 4.60214C20 5.27832 20 6.12494 20 7.81818V10" />
+                                    <path
+                                        d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
+                                </svg>
+                            </button>
+                            <button
+                                class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
+                                <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path
+                                        d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
+                                    <path
+                                        d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
+                                    <path
+                                        d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
+                                </svg>
+                            </button>
+
+                        </div>
                     </div>
-                </div>
-            </x-form-card>
+                </x-form-card>
+            @endif
         @endif
     @endif
 
@@ -537,9 +544,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <div class="w-full relative" x-data="{ updatingcuotas: false }">
-
-
+            <div class="w-full relative">
                 <h3 class="font-semibold text-3xl leading-normal text-colorlabel">
                     <small class="text-[10px] font-medium">MONTO : {{ $venta->moneda->simbolo }}</small>
                     {{ number_format($venta->total - $venta->paymentactual, 3, '.', ', ') }}
@@ -599,8 +604,8 @@
                     @endif
                 </form>
 
-                <div x-show="updatingcuotas" wire:loading wire:loading.flex
-                    wire:target="editcuotas, updatecuotas, addnewcuota" class="loading-overlay rounded">
+                <div wire:loading wire:loading.flex wire:target="editcuotas, updatecuotas, addnewcuota"
+                    class="loading-overlay rounded hidden">
                     <x-loading-next />
                 </div>
             </div>
@@ -626,7 +631,7 @@
 
         function confirmDelete(venta) {
             swal.fire({
-                title: 'Desea anular venta con serie ' + venta.code + ' ?',
+                title: 'Desea anular venta con serie ' + venta.seriecompleta + ' ?',
                 text: "Se eliminará un registro de la base de datos, incluyendo sus items del registro.",
                 icon: 'question',
                 showCancelButton: true,
@@ -693,57 +698,5 @@
                 }
             })
         }
-
-        document.addEventListener("livewire:load", () => {
-            renderSelect2();
-
-            $("#cuotamethodpayment_id").on("change", (e) => {
-                @this.methodpayment_id = e.target.value;
-            });
-
-            $("#ventamethodpayment_id").on("change", (e) => {
-                deshabilitarSelects();
-                @this.methodpaymentventa_id = e.target.value;
-            });
-
-            $("#cuentaventa_id").on("change", (e) => {
-                deshabilitarSelects();
-                @this.cuentaventa_id = e.target.value;
-            });
-
-            $("#cuentacuota_id").on("change", (e) => {
-                deshabilitarSelects();
-                @this.cuenta_id = e.target.value;
-            });
-
-            window.addEventListener('render-show-venta', () => {
-                renderSelect2();
-            });
-
-            function renderSelect2() {
-                $('#ventamethodpayment_id, #cuentaventa_id, #cuotamethodpayment_id, #cuentacuota_id')
-                    .select2().on('select2:open', function(e) {
-                        const evt = "scroll.select2";
-                        $(e.target).parents().off(evt);
-                        $(window).off(evt);
-                    });
-
-                $('#cuentaventa_id').on("change", (e) => {
-                    deshabilitarSelects();
-                    @this.cuentaventa_id = e.target.value;
-                });
-
-                $('#cuentacuota_id').on("change", (e) => {
-                    deshabilitarSelects();
-                    @this.cuenta_id = e.target.value;
-                });
-            }
-
-            function deshabilitarSelects() {
-                $("#cuotamethodpayment_id, #ventamethodpayment_id, #cuentaventa_id, #cuentacuota_id").attr(
-                    "disabled", true);
-            }
-
-        })
     </script>
 </div>

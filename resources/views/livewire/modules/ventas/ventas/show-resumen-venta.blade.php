@@ -1,5 +1,4 @@
 <div>
-    {{-- {{ $typecomprobante }} --}}
     <div class="w-full flex flex-col gap-8" x-data="loader">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
@@ -21,7 +20,7 @@
                         @if (count($monedas) > 1)
                             <div class="w-full">
                                 <x-label value="Moneda :" />
-                                <div id="parentmnd" class="relative" x-init="selectMoneda" wire:ignore>
+                                <div id="parentmnd" class="relative" x-init="selectMoneda">
                                     <x-select class="block w-full" x-ref="selectmoneda" id="mnd">
                                         <x-slot name="options">
                                             @if (count($monedas))
@@ -55,8 +54,8 @@
                             <div x-show="!incluyeguia" class="w-full">
                                 <x-label value="Buscar GRE :" />
                                 <div class="w-full inline-flex">
-                                    <x-input class="block w-full prevent" wire:model.defer="searchgre"
-                                        wire:keydown.enter="getGRE" minlength="0" maxlength="13" />
+                                    <x-input class="block w-full" wire:model.defer="searchgre" wire:keydown.enter="getGRE"
+                                        minlength="0" maxlength="13" onkeydown="disabledEnter(event)" />
                                     <x-button-add class="px-2" wire:click="getGRE" wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -83,9 +82,9 @@
                                 </div>
                             @else
                                 <div class="w-full inline-flex">
-                                    <x-input class="block w-full prevent numeric" wire:model.defer="document"
+                                    <x-input class="block w-full numeric prevent" wire:model.defer="document"
                                         wire:keydown.enter="getClient" minlength="8" maxlength="11"
-                                        onkeypress="return validarNumero(event, 11)" />
+                                        onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
                                     <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
@@ -227,17 +226,16 @@
                         </div>
                     </div>
 
-                    <div class="block relative">
-                        @can('admin.ventas.create.igv')
-                            <x-label-check for="incluyeigv">
-                                <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1" type="checkbox"
-                                    id="incluyeigv" />
-                                INCLUIR IGV</x-label-check>
-                            <x-jet-input-error for="incluyeigv" />
-                        @endcan
+                    @if (Module::isEnabled('Facturacion'))
+                        <div class="block relative">
+                            @can('admin.ventas.create.igv')
+                                <x-label-check for="incluyeigv">
+                                    <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1"
+                                        type="checkbox" id="incluyeigv" />INCLUIR IGV</x-label-check>
+                                <x-jet-input-error for="incluyeigv" />
+                            @endcan
 
-                        @can('admin.ventas.create.guias')
-                            @if (Module::isEnabled('Facturacion'))
+                            @can('admin.ventas.create.guias')
                                 @if (count($comprobantesguia) > 0)
                                     <div class="inline-block" x-show="!sincronizegre">
                                         <x-label-check for="incluyeguia" x-show="openguia">
@@ -561,9 +559,9 @@
                                         </div>
                                     </div>
                                 </div>
-                            @endif
-                        @endcan
-                    </div>
+                            @endcan
+                        </div>
+                    @endif
 
                     <div class="w-full flex flex-col gap-1">
                         <x-jet-input-error for="typepayment.id" />
@@ -585,18 +583,10 @@
                     </div>
                 </div>
             </form>
-            <div wire:loading.flex class="loading-overlay rounded z-50 hidden"
-                wire:target="save, typepayment_id, setTypepayment, methodpayment_id, getClient, getTransport, getDestinatario, getDriver">
-                <x-loading-next />
-            </div>
         </x-form-card>
 
-        <x-form-card titulo="RESUMEN DE VENTA">
-            <div wire:loading.flex class="loading-overlay rounded hidden" wire:target="save, setMoneda, setTotal">
-                <x-loading-next />
-            </div>
-
-            <div class="w-full text-colortitleform bg-body p-3 rounded-md">
+        <x-form-card titulo="RESUMEN DE VENTA" class="text-colorlabel">
+            <div class="w-full">
                 <p class="text-[10px]">
                     TOTAL EXONERADO : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($exonerado, 3, '.', ', ') }}</span>
@@ -640,41 +630,58 @@
         </x-form-card>
 
         @if (count($carshoops) > 0)
-            <x-form-card titulo="CARRITO">
-                <small
-                    class="text-white font-semibold absolute top-2 left-[70px] flex items-center justify-center w-5 h-5 p-0.5 leading-3 bg-orange-500 rounded-full text-[10px] animate-bounce">
-                    {{ count($carshoops) }}</small>
+            <div class="w-full" x-data="{ showcart: true }">
+                <div class="text-end px-3">
+                    <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer"
+                        @click="showcart=!showcart">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            class="w-full h-full block">
+                            <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" />
+                            <path d="M6 6H22" />
+                            <circle cx="6" cy="20" r="2" />
+                            <circle cx="17" cy="20" r="2" />
+                            <path d="M8 20L15 20" />
+                            <path
+                                d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" />
+                        </svg>
+                        <small
+                            class="bg-amber-500 text-white animate-bounce font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
+                            {{ count($carshoops) }}</small>
+                    </button>
+                </div>
+                <div class="w-full" x-show="showcart" x-transition>
+                    <div class="flex gap-2 flex-wrap justify-start">
+                        @foreach ($carshoops as $item)
+                            <x-simple-card
+                                class="w-full flex flex-col border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
 
-                <div class="flex gap-2 flex-wrap justify-start">
-                    @foreach ($carshoops as $item)
-                        <div
-                            class="w-full bg-body border border-borderminicard flex flex-col justify-between lg:w-60 xl:w-full group rounded shadow shadow-shadowminicard p-1 text-xs relative hover:shadow-md hover:shadow-shadowminicard cursor-pointer">
-                            <div class="w-full">
-                                <div class="w-full inline-flex gap-2 text-colorminicard">
-                                    <h1 class="w-full text-[10px] leading-3 text-left mt-1">
-                                        {{ $item->producto->name }}</h1>
-                                    <h1 class="whitespace-nowrap text-right text-[10px] text-xs leading-3">
-                                        {{ $item->moneda->simbolo }}
-                                        {{ number_format($item->total, 2) }}
-                                        <small class="text-[7px]">{{ $item->moneda->currency }}</small>
-                                    </h1>
-                                </div>
+                                <h1
+                                    class="text-colorlabel whitespace-nowrap text-right text-[10px] text-sm font-semibold">
+                                    <small class="text-[7px] font-medium">{{ $item->moneda->simbolo }}</small>
+                                    {{ number_format($item->total, 2) }}
+                                    <small class="text-[7px] font-medium">{{ $item->moneda->currency }}</small>
+                                </h1>
+                                <h1 class="text-colorlabel w-full text-[10px] leading-3 text-left z-[1]">
+                                    {{ $item->producto->name }}</h1>
 
-                                @if ($item->promocion)
-                                    @if ($item->promocion->isCombo())
-                                        <x-span-text text="COMBO" type="red"
-                                            class="leading-3 !tracking-normal" />
-                                        @if (count($item->promocion->itempromos) > 0)
-                                            <div class="w-full mb-2 mt-1">
-                                                @foreach ($item->promocion->itempromos as $itempromo)
-                                                    <h1 class="text-colorsubtitleform text-[10px] leading-3 text-left">
-                                                        <span
-                                                            class="w-1.5 h-1.5 bg-next-500 inline-block rounded-full"></span>
-                                                        {{ $itempromo->producto->name }}
-                                                    </h1>
-                                                @endforeach
-                                            </div>
-                                        @endif
+                                @if (count($item->carshoopitems) > 0)
+                                    <div
+                                        class="w-auto h-auto bg-red-600 px-7 absolute -left-7 top-1 -rotate-[35deg] leading-3">
+                                        <p class=" text-white text-[8px] inline-block font-semibold pb-0.5">
+                                            COMBO</p>
+                                    </div>
+
+                                    @if (count($item->carshoopitems) > 0)
+                                        <div class="w-full mb-2 mt-1">
+                                            @foreach ($item->carshoopitems as $itemcarshop)
+                                                <h1 class="text-next-500 text-[10px] leading-3 text-left">
+                                                    <span
+                                                        class="w-1.5 h-1.5 bg-next-500 inline-block rounded-full"></span>
+                                                    {{ $itemcarshop->producto->name }}
+                                                </h1>
+                                            @endforeach
+                                        </div>
                                     @endif
                                 @endif
 
@@ -735,35 +742,41 @@
                                         </div>
                                     </div>
                                 @endif
-                            </div>
 
-                            <div class="w-full flex items-end gap-2 justify-between mt-2">
-                                @can('admin.ventas.create.gratuito')
-                                    <div>
-                                        <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
-                                            <x-input wire:change="updategratis({{ $item->id }})" value="1"
-                                                type="checkbox" id="gratuito_{{ $item->id }}" :checked="$item->gratuito == '1'" />
-                                            GRATUITO</x-label-check>
-                                    </div>
-                                @endcan
-                                <x-button-delete onclick="confirmDeleteCarshoop({{ $item }})"
-                                    wire:loading.attr="disabled" />
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
 
-                <div class="w-full flex justify-end mt-2">
-                    <x-button-secondary onclick="confirmDeleteAllCarshoop()" wire:loading.attr="disabled"
-                        class="inline-block">ELIMINAR TODO</x-button-secondary>
-                </div>
+                                <div class="w-full flex items-end gap-2 justify-between mt-2">
+                                    @can('admin.ventas.create.gratuito')
+                                        <div>
+                                            <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
+                                                <x-input wire:change="updategratis({{ $item->id }})" value="1"
+                                                    type="checkbox" id="gratuito_{{ $item->id }}"
+                                                    :checked="$item->gratuito == '1'" />
+                                                GRATUITO</x-label-check>
+                                        </div>
+                                    @endcan
+                                    <x-button-delete onclick="confirmDeleteCarshoop({{ $item }})"
+                                        wire:loading.attr="disabled" />
+                                </div>
+                            </x-simple-card>
+                        @endforeach
+                    </div>
 
-                <div wire:loading.flex class="loading-overlay rounded hidden"
-                    wire:target="save, setTotal, delete, deleteserie, updategratis">
-                    <x-loading-next />
+                    <div class="w-full flex justify-end mt-2">
+                        <x-button-secondary onclick="confirmDeleteAllCarshoop()" wire:loading.attr="disabled"
+                            class="inline-block">ELIMINAR TODO</x-button-secondary>
+                    </div>
+
+                    {{-- <div wire:loading.flex class="loading-overlay rounded hidden"
+                        wire:target="save, setTotal, delete, deleteserie, updategratis">
+                        <x-loading-next />
+                    </div> --}}
                 </div>
-            </x-form-card>
+            </div>
         @endif
+    </div>
+
+    <div wire:loading.flex class="loading-overlay rounded hidden">
+        <x-loading-next />
     </div>
 
     <script>
@@ -869,7 +882,7 @@
                 sincronizegre: @entangle('sincronizegre').defer,
 
                 cotizacion_id: @entangle('cotizacion_id').defer,
-                moneda_id: @entangle('moneda_id').defer,
+                moneda_id: @entangle('moneda_id'),
                 seriecomprobante_id: @entangle('seriecomprobante_id').defer,
                 typepayment_id: @entangle('typepayment_id').defer,
                 methodpayment_id: @entangle('methodpayment_id').defer,
@@ -1012,8 +1025,8 @@
             this.selectMD = $(this.$refs.selectmoneda).select2();
             this.selectMD.val(this.moneda_id).trigger("change");
             this.selectMD.on("select2:select", (event) => {
-                // this.moneda_id = event.target.value;
-                @this.setMoneda(event.target.value);
+                this.moneda_id = event.target.value;
+                // @this.setMoneda(event.target.value);
                 window.dispatchEvent(new CustomEvent('setMoneda', {
                     detail: {
                         message: event.target.value
@@ -1026,6 +1039,10 @@
             });
             this.$watch("moneda_id", (value) => {
                 this.selectMD.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectMD.select2().val(this.moneda_id).trigger('change');
             });
         }
 

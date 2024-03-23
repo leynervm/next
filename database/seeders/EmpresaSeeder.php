@@ -2,7 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Almacen;
 use App\Models\Empresa;
+use App\Models\Sucursal;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Nwidart\Modules\Facades\Module;
@@ -17,132 +19,111 @@ class EmpresaSeeder extends Seeder
     public function run()
     {
         $empresa = Empresa::create([
-            'document' => '20538954099',
-            'name' => 'NEXT TECHNOLOGIES E.I.R.L',
+            'document' => '20601581125',
+            'name' => 'NEXT TECHNOLOGY S.A.C.',
             'estado' => 'ACTIVO',
             'condicion' => 'HABIDO',
-            'direccion' => 'Cal. Zarumilla Nro. 1375 Sector Pueblo Nuevo',
-            'email' => null,
-            'web' => 'next.net.pe',
+            'direccion' => 'AV. PASEO DE LA REPUBLICA NRO 4644 DEP. 404',
+            'email' => 'next@next.net.pe',
+            'web' => 'www.next.net.pe',
             'icono' => null,
-            'privatekey' => null,
-            'publickey' => null,
+            'cert' => null,
+            'passwordcert' => null,
             'usuariosol' => null,
             'clavesol' => null,
+            'clientid' => null,
+            'clientsecret' => null,
             'montoadelanto' => 300,
-            'uselistprice' => 1,
+            'uselistprice' => 0,
             'usepricedolar' => 0,
             'viewpricedolar' => 0,
             'tipocambio' => null,
             'tipocambioauto' => 0,
+            'limitsucursals' => Sucursal::LIMITE,
             'igv' => 18,
             'sendmode' => 0,
             'default' => 1,
             'ubigeo_id' => 636,
         ]);
 
-        $sucursal = $empresa->sucursals()->create([
-            'name' => 'NEXT TECHNOLOGIES E.I.R.L',
-            'direccion' => 'Cal. Zarumilla Nro. 1375 Sector Pueblo Nuevo',
+        $sucursalprincipal = $empresa->sucursals()->create([
+            'name' => 'NEXT TECHNOLOGY S.A.C.',
+            'direccion' => 'AV. PASEO DE LA REPUBLICA NRO 4644 DEP. 404',
             'codeanexo' => '0000',
-            'default' => 1,
-            'ubigeo_id' => 636,
+            'default' => Sucursal::DEFAULT,
+            'ubigeo_id' => 1302,
         ]);
 
-        $sucursalBagua = $empresa->sucursals()->create([
-            'name' => 'SUCURSAL BAGUA',
-            'direccion' => 'CALLE LOS PINOS CUADRA 8',
+        $trujillo = $empresa->sucursals()->create([
+            'name' => 'NEXT TECHNOLOGY S.A.C. - TRUJILLO',
+            'direccion' => 'CALLE LOS LAURELES CUDRA 936',
             'codeanexo' => '0002',
-            'ubigeo_id' => 22,
+            'ubigeo_id' => 1164,
         ]);
 
-        $sucursalTrujillo = $empresa->sucursals()->create([
-            'name' => 'SUCURSAL TRUJILLO',
-            'direccion' => 'AV. PRINCIPAL CARRETERA PANAMERICANA NORTE KM11',
+        $sanignacio = $empresa->sucursals()->create([
+            'name' => 'NEXT TECHNOLOGY S.A.C. - SAN IGNACIO',
+            'direccion' => 'CALLE 28 DE JULIO CUADRA 1620',
             'codeanexo' => '0001',
-            'ubigeo_id' => 1160,
-        ]);
-
-        $sucursalSanignacio = $empresa->sucursals()->create([
-            'name' => 'SUCURSAL SAN IGNACIO',
-            'direccion' => 'AV MESONES MURO CUADRA 6 MANZ. 12',
-            'codeanexo' => '0003',
             'ubigeo_id' => 648,
         ]);
 
-        $sucursal->cajas()->createMany([
+        $bagua = $empresa->sucursals()->create([
+            'name' => 'NEXT TECHNOLOGY S.A.C. - BAGUA',
+            'direccion' => 'CALLE LOS AROMOS URBANIZACION LAS FLORES CUADRA 270',
+            'codeanexo' => '0003',
+            'ubigeo_id' => 22,
+        ]);
+
+        $huabal = $empresa->sucursals()->create([
+            'name' => 'NEXT TECHNOLOGY S.A.C. - HUABAL',
+            'direccion' => 'CALLE 28 DE JULIO CUADRA 730',
+            'codeanexo' => '0004',
+            'ubigeo_id' => 640,
+        ]);
+
+        $sucursalprincipal->boxes()->createMany([
             [
                 'name' => 'CAJA J01',
+                'apertura' => 100,
             ],
             [
                 'name' => 'CAJA J02',
+                'apertura' => 100,
             ]
         ]);
 
-        $sucursalBagua->cajas()->createMany([
+        $bagua->boxes()->createMany([
             [
-                'name' => 'CAJA BH01',
+                'name' => 'CAJA BG01',
+                'apertura' => 100,
             ],
             [
-                'name' => 'CAJA BH02',
+                'name' => 'CAJA BG02',
+                'apertura' => 100,
             ]
         ]);
 
-        $sucursalTrujillo->cajas()->createMany([
+        $trujillo->boxes()->createMany([
             [
                 'name' => 'CAJA T01',
+                'apertura' => 50,
             ],
             [
                 'name' => 'CAJA T02',
+                'apertura' => 50,
             ]
         ]);
 
-        $sucursalSanignacio->cajas()->createMany([
+        $sanignacio->boxes()->createMany([
             [
                 'name' => 'CAJA SI01',
+                'apertura' => 50,
             ]
         ]);
 
-        // if (Module::isEnabled('Almacen')) {
-        $sucursal->almacens()->createMany([
-            [
-                'name' => 'ALMACEN J01',
-                'default' => 1,
-            ],
-            [
-                'name' => 'ALMACEN J02',
-                'default' => 0,
-            ]
-        ]);
-
-        $sucursalBagua->almacens()->createMany([
-            [
-                'name' => 'ALMACEN BH01',
-                'default' => 1,
-            ],
-            [
-                'name' => 'ALMACEN BH02',
-                'default' => 0,
-            ]
-        ]);
-
-        $sucursalTrujillo->almacens()->createMany([
-            [
-                'name' => 'ALMACEN T01',
-                'default' => 0,
-            ],
-        ]);
-
-        $sucursalSanignacio->almacens()->createMany([
-            [
-                'name' => 'ALMACEN SI01',
-                'default' => 0,
-            ],
-        ]);
-        // }
-
-        $sucursal->seriecomprobantes()->sync([1 => ['default' => 1], 2]);
-        $sucursalBagua->seriecomprobantes()->attach(1, ['default' => 1]);
-        $sucursalSanignacio->seriecomprobantes()->attach(1, ['default' => 1]);
+        if (Module::isDisabled('Almacen') && Module::isEnabled('Ventas')) {
+            $sucursalprincipal->almacens()->attach(Almacen::first()->id);
+        }
     }
 }

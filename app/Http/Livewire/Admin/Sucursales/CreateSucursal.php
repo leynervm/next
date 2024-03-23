@@ -70,6 +70,15 @@ class CreateSucursal extends Component
     public function save()
     {
         $this->authorize('admin.administracion.sucursales.create');
+        if (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals->count() >= mi_empresa()->limitsucursals) {
+            $mensaje = response()->json([
+                'title' => 'Has alcanzado el límite de sucursales permitido !',
+                'text' => "Se alcanzó el límite de sucursales permitidos por el sistema, contáctese con su proveedor del servicio."
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
         $this->default = $this->default == 1 ? 1 : 0;
@@ -106,10 +115,5 @@ class CreateSucursal extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-create-sucursal');
     }
 }

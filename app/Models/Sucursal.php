@@ -24,6 +24,8 @@ class Sucursal extends Model
     const BAJA = "1";
     const DEFAULT = "1";
 
+    const LIMITE = '2';
+
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
@@ -62,7 +64,7 @@ class Sucursal extends Model
     public function almacens(): BelongsToMany
     {
         return $this->belongsToMany(Almacen::class)
-            ->orderBy('default', 'desc')->orderBy('name', 'asc');
+            ->orderBy('default', 'desc')->orderBy('almacens.id', 'asc');
     }
 
     public function monthboxes(): HasMany

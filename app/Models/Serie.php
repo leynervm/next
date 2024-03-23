@@ -62,6 +62,11 @@ class Serie extends Model
         return $query->where('status', self::DISPONIBLE);
     }
 
+    public function scopeAlmacen($query, $almacen_id)
+    {
+        return $query->where('almacen_id', $almacen_id);
+    }
+
     public function itemserie(): HasOne
     {
         return $this->hasOne(Itemserie::class);

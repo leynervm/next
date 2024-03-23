@@ -16,7 +16,7 @@ class Typecomprobante extends Model
     const DEFAULT = "0";
 
     public $timestamps = false;
-    protected $fillable = ['code', 'descripcion', 'sendsunat'];
+    protected $fillable = ['code', 'descripcion', 'referencia', 'sendsunat'];
 
     public function isDefault()
     {

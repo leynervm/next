@@ -17,20 +17,29 @@
                 <div class="w-full grid xs:grid-cols-2 gap-2">
                     <div class="w-full">
                         <x-label value="DNI :" />
-                        <div class="w-full inline-flex gap-1">
-                            <x-input class="block w-full prevent" wire:model.defer="document"
-                                wire:keydown.enter="getClient" placeholder="DNI..." type="number"
-                                onkeypress="return validarNumero(event, 11)" />
-                            <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled"
-                                wire:target="getClient">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <circle cx="11" cy="11" r="8" />
-                                    <path d="m21 21-4.3-4.3" />
-                                </svg>
-                            </x-button-add>
-                        </div>
+                        @if ($exists)
+                            <div class="w-full inline-flex relative">
+                                <x-disabled-text :text="$document" class="w-full block" />
+                                <x-button-close-modal
+                                    class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                    wire:click="limpiaremployer" wire:loading.attr="disabled" />
+                            </div>
+                        @else
+                            <div class="w-full inline-flex gap-1">
+                                <x-input class="block w-full prevent" wire:model.defer="document"
+                                    wire:keydown.enter="getClient" placeholder="DNI..." type="number"
+                                    onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
+                                <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled"
+                                    wire:target="getClient">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.3-4.3" />
+                                    </svg>
+                                </x-button-add>
+                            </div>
+                        @endif
                         <x-jet-input-error for="document" />
                     </div>
 

@@ -53,13 +53,13 @@
             </div>
         @endcan
 
-        @can('admin.administracion.sucursales.almacenes')
-            @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
+        @if (Module::isEnabled('Almacen'))
+            @can('admin.administracion.sucursales.almacenes')
                 <div>
                     <livewire:admin.sucursales.show-almacens :sucursal="$sucursal">
                 </div>
-            @endif
-        @endcan
+            @endcan
+        @endif
 
         @can('admin.administracion.sucursales.seriecomprobantes')
             @if (Module::isEnabled('Ventas') || Module::isEnabled('Facturacion'))

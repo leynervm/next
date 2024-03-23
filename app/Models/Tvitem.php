@@ -22,6 +22,7 @@ class Tvitem extends Model
     protected $guarded = ['created_at', 'updated_at'];
 
     const GRATUITO = '1';
+    const PENDING_SERIE = '1';
 
     public function getGratuitoAttribute($value)
     {
@@ -81,5 +82,10 @@ class Tvitem extends Model
     public function isNoAlterStock()
     {
         return $this->alterstock == Almacen::NO_ALTERAR_STOCK;
+    }
+
+    public function isPendingSerie()
+    {
+        return $this->requireserie == self::PENDING_SERIE;
     }
 }

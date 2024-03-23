@@ -22,15 +22,18 @@
                                 <div
                                     class="w-full max-w-xs mx-auto h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
                                     @if ($producto)
-                                        @if (count($producto->images))
-                                            @if ($producto->defaultImage)
-                                                @if ($producto->defaultImage)
-                                                    <img src="{{ asset('storage/productos/' . $producto->defaultImage->first()->url) }}"
-                                                        alt="" class="w-full h-full object-cover">
-                                                @else
+                                        @if ($producto->images()->exists())
+                                            @if ($producto->images()->default()->exists())
+                                                {{-- @if ($producto->defaultImage) --}}
+                                                <img src="{{ asset('storage/productos/' . $producto->defaultImage->first()->url) }}"
+                                                    alt="" class="w-full h-full object-cover">
+                                                {{-- @else
                                                     <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
                                                         alt="" class="w-full h-full object-cover">
-                                                @endif
+                                                @endif --}}
+                                            @else
+                                                <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
+                                                    alt="" class="w-full h-full object-cover">
                                             @endif
                                         @endif
                                     @else

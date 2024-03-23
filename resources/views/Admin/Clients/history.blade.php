@@ -26,9 +26,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    {{-- {{ count($sumatorias) }} --}}
-
-    {{-- @if (count($sumatorias) > 0)
+    @if (count($sumatorias) > 0)
         <div class="w-full flex flex-wrap gap-5">
             @foreach ($sumatorias as $item)
                 <x-minicard :title="null" size="lg" class="cursor-pointer">
@@ -44,28 +42,35 @@
     @endif
 
 
-    @if (count($compras) > 0)
+    @if (count($ventas) > 0)
         <div class="w-full flex flex-col gap-5 mt-5">
-            @foreach ($compras as $item)
+            @foreach ($ventas as $item)
                 <div
                     class="w-full sm:flex sm:gap-3 rounded-md cursor-default bg-fondominicard shadow shadow-shadowminicard p-3 hover:shadow-md hover:shadow-shadowminicard">
                     <div class="w-full text-colortitleform">
-                        <h1 class="font-semibold text-sm leading-5">
+                        <h1 class="font-semibold text-xs">
+                            {{ $item->seriecompleta }} - {{ $item->seriecomprobante->typecomprobante->descripcion }}
+                        </h1>
+                        <h1 class="font-medium text-[10px]">FECHA VENTA : {{ formatDate($item->date, 'DD MMMM Y') }}
+                        </h1>
+                        <h1 class="font-medium text-[10px]">TIPO PAGO : {{ $item->typepayment->name }}
+                        </h1>
+
+                        <h1 class="font-medium text-[10px] text-colorsubtitleform">
                             {{ $item->sucursal->name }}
                             @if ($item->sucursal->trashed())
                                 <x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal inline-block" />
                             @endif
                         </h1>
-                        <h1 class="font-medium text-[10px]">FECHA COMPRA : {{ formatDate($item->date, 'DD MMMM Y') }}
-                        </h1>
-                        <div class="w-full text-[10px]">
-                            <h1 class="inline-block">REFERENCIA : {{ $item->referencia }}</h1>
-                            -
-                            <h1 class="inline-block">GUÍA : {{ $item->guia }}</h1>
-                        </div>
-                        <h1 class="text-colorsubtitleform font-medium text-xs">{{ $proveedor->name }}</h1>
-                        @if ($item->cuotas)
+
+                        @if (Module::isEnabled('Facturacion'))
+                            @if ($item->guia)
+                                <h1 class="inline-block">GUÍA REMISIÓN : {{ $item->guia->seriecompleta }}</h1>
+                            @endif
                         @endif
+
+                        {{-- @if ($item->cuotas)
+                        @endif --}}
                     </div>
 
                     <div class="w-full text-colortitleform">
@@ -76,6 +81,13 @@
                             class="font-semibold text-[10px] text-end leading-3 @if ($item->descuento > 0) text-green-500 @endif">
                             <small class="font-medium">DSCT</small>
                             {{ number_format($item->descuento, 2, '.', ', ') }}
+                            <small class="font-medium">{{ $item->moneda->currency }}</small>
+                        </h3>
+
+                        <h3
+                            class="font-semibold text-[10px] text-end leading-3 @if ($item->descuento > 0) text-green-500 @endif">
+                            <small class="font-medium">GRATUITO</small>
+                            {{ number_format($item->gratuito + $item->igvgratuito, 2, '.', ', ') }}
                             <small class="font-medium">{{ $item->moneda->currency }}</small>
                         </h3>
 
@@ -101,6 +113,6 @@
                 </div>
             @endforeach
         </div>
-    @endif --}}
+    @endif
 
 </x-app-layout>

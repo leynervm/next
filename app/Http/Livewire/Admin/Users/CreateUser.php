@@ -9,7 +9,6 @@ use App\Models\Sucursal;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
-use App\Rules\ValidateNacimiento;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -197,8 +196,8 @@ class CreateUser extends Component
             $this->addemployer = true;
             $this->sucursal_id = $this->employer->sucursal_id;
             $mensaje = response()->json([
-                'title' => 'SE ENCONTRARON DATOS DEL TRABAJADOR CON EL MISMO DOCUMENTO !',
-                'text' => 'vincular usuario de acceso con los datos del personal encontrado.',
+                'title' => 'DATOS DEL PERSONAL ENCONTRADO !',
+                'text' => 'Los datos del personal se vincularán al usuario de acceso a registrar.',
                 'type' => 'warning'
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);

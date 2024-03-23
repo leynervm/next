@@ -27,6 +27,8 @@ class Comprobante extends Model
     use HasFactory;
     use SoftDeletes;
 
+    const ENVIADO_SUNAT = '0';
+
     protected $guarded = ['created_at', 'updated_at'];
 
     public function setDireccionAttribute($value)
@@ -71,7 +73,7 @@ class Comprobante extends Model
 
     public function facturableitems(): HasMany
     {
-        return $this->hasMany(Facturableitem::class);
+        return $this->hasMany(Facturableitem::class)->orderBy('item', 'asc');
     }
 
     public function user()
@@ -108,5 +110,10 @@ class Comprobante extends Model
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
     {
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
+    }
+
+    public function isSendSunat()
+    {
+        return $this->codesunat == self::ENVIADO_SUNAT;
     }
 }

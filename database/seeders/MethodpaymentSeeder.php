@@ -18,38 +18,28 @@ class MethodpaymentSeeder extends Seeder
     {
         $efectivo = Methodpayment::create([
             'name' => 'EFECTIVO',
-            'type' => 1,
-            'default' => 1,
+            'type' => Methodpayment::EFECTIVO,
+            'default' => Methodpayment::DEFAULT,
         ]);
 
         $transferencia = Methodpayment::create([
             'name' => 'TRANSFERENCIA',
-            'type' => 1,
-            'default' => 0,
+            'type' => Methodpayment::TRANSFERENCIA,
         ]);
 
         $yape = Methodpayment::create([
             'name' => 'YAPE',
-            'type' => 1,
-            'default' => 0,
+            'type' => Methodpayment::TRANSFERENCIA,
         ]);
 
         $plin = Methodpayment::create([
             'name' => 'PLIN',
-            'type' => 1,
-            'default' => 0,
+            'type' => Methodpayment::TRANSFERENCIA,
         ]);
 
         $paypal = Methodpayment::create([
             'name' => 'PAYPAL',
-            'type' => 1,
-            'default' => 0,
+            'type' => Methodpayment::TRANSFERENCIA,
         ]);
-
-        $cuentas = Cuenta::all();
-        $transferencia->cuentas()->attach($cuentas->random());
-        $paypal->cuentas()->attach($cuentas->random());
-        $yape->cuentas()->attach(Cuenta::first());
-        $yape->cuentas()->attach(Cuenta::orderBy('id', 'desc')->first());
     }
 }

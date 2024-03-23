@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Ventas\Entities\Venta;
 
 class Client extends Model
 {
@@ -24,12 +26,19 @@ class Client extends Model
 
     public function direccion(): MorphOne
     {
-        return $this->morphOne(Direccion::class, 'direccionable');
+        return $this->morphOne(Direccion::class, 'direccionable')
+            ->orderBy('default', 'desc')->orderBy('id', 'desc');
     }
 
     public function direccions(): MorphMany
     {
-        return $this->morphMany(Direccion::class, 'direccionable')->orderBy('default', 'desc');
+        return $this->morphMany(Direccion::class, 'direccionable')
+            ->orderBy('default', 'desc')->orderBy('id', 'desc');
+    }
+    
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class);
     }
 
     public function telephones(): MorphMany

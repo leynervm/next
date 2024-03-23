@@ -5,10 +5,15 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full numeric prevent" wire:keydown.enter="searchclient" type="number"
-                            wire:model.defer="empresa.document" onkeypress="return validarNumero(event, 11)" />
-                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
-                            wire:target="searchclient">
+                        @if (auth()->user()->isAdmin())
+                            <x-input class="block w-full" wire:keydown.enter="searchclient" type="number"
+                                wire:model.defer="empresa.document" onkeypress="return validarNumero(event, 11)"
+                                onkeydown="disabledEnter(event)" />
+                        @else
+                            <x-disabled-text :text="$empresa->document" class="w-full block" />
+                        @endif
+
+                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -40,7 +45,8 @@
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)
-                                    <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
+                                    <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }} /
+                                        {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                 @endforeach
                             </x-slot>
                         </x-select>
@@ -156,7 +162,7 @@
                 <div class="w-full">
                     <x-label value="Monto máximo adelanto :" />
                     <x-input class="block w-full" wire:model.defer="empresa.montoadelanto" placeholder="0.00"
-                        type="number" />
+                        type="number" onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="empresa.montoadelanto" />
                 </div>
             </x-form-card>
@@ -369,8 +375,8 @@
             <form wire:submit.prevent="savetelefono">
                 <div class="w-full">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="phone" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                    <x-input class="block w-full" wire:model.defer="phone" type="number"
+                        onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="phone" />
                     <x-jet-input-error for="empresa.id" />
                 </div>

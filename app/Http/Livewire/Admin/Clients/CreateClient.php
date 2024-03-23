@@ -37,7 +37,7 @@ class CreateClient extends Component
             'name' => ['required', 'string', 'min:8'],
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'direccion' => ['required', 'string', 'min:3'],
-            'email' => ['nullable', 'min:6', 'email'],
+            'email' => ['nullable', 'email'],
             'sexo' => [
                 'required', 'string', 'min:1', 'max:1',
                 Rule::in(['M', 'F', 'E'])
@@ -99,7 +99,6 @@ class CreateClient extends Component
         $this->email = trim($this->email);
         $this->validate();
 
-
         DB::beginTransaction();
         try {
 
@@ -126,9 +125,11 @@ class CreateClient extends Component
                 ]);
             }
 
-            $client->direccion()->create([
+            $default = $client->direccions()->exists() ? 0 : 1;
+            $client->direccions()->create([
                 'name' => $this->direccion,
-                'ubigeo_id' => $this->ubigeo_id
+                'ubigeo_id' => $this->ubigeo_id,
+                'default' => $default,
             ]);
 
             $client->telephones()->create([
@@ -149,6 +150,7 @@ class CreateClient extends Component
             DB::commit();
             $this->emitTo('admin.clients.show-clients', 'render');
             $this->reset();
+            $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

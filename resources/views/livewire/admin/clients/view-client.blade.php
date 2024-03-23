@@ -26,27 +26,28 @@
                     <x-jet-input-error for="client.name" />
                 </div>
 
-                @if (mi_empresa()->uselistprice == 1)
-                    <div class="w-full">
-                        <x-label value="Lista precio :" />
-                        <x-select class="block w-full" wire:model.defer="client.pricetype_id"
-                            id="editpricetypeclient_id">
-                            <x-slot name="options">
-                                @if (count($pricetypes))
-                                    @foreach ($pricetypes as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-jet-input-error for="client.pricetype_id" />
-                    </div>
+                @if (Module::isEnabled('Ventas'))
+                    @if (mi_empresa()->usarLista())
+                        <div class="w-full">
+                            <x-label value="Lista precio :" />
+                            <x-select class="block w-full" wire:model.defer="client.pricetype_id"
+                                id="editpricetypeclient_id">
+                                <x-slot name="options">
+                                    @if (count($pricetypes))
+                                        @foreach ($pricetypes as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-jet-input-error for="client.pricetype_id" />
+                        </div>
+                    @endif
                 @endif
 
                 <div class="w-full">
                     <x-label value="F. Nacimiento :" />
-                    <x-input class="block w-full" type="date" wire:model.defer="client.nacimiento"
-                        placeholder="Correo del cliente..." />
+                    <x-input class="block w-full" type="date" wire:model.defer="client.nacimiento" />
                     <x-jet-input-error for="client.nacimiento" />
                 </div>
 

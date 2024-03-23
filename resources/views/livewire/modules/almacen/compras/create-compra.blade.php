@@ -84,42 +84,47 @@
                 <div class="w-full animate__animated animate__fadeInDown" x-show="open">
                     <x-label value="Tipo Cambio :" />
                     <x-input class="block w-full numeric" wire:model.defer="tipocambio" placeholder="0.00"
-                        type="number" min="0" step="0.0001" />
+                        type="number" min="0" step="0.0001" onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="tipocambio" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total exonerado :" />
                     <x-input class="block w-full" wire:model.defer="exonerado" x-model="exonerado" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001" />
+                        placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="exonerado" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total gravado :" />
                     <x-input class="block w-full numeric" wire:model.defer="gravado" x-model="gravado" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001" />
+                        placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="gravado" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total IGV :" />
                     <x-input class="block w-full numeric" wire:model.defer="igv" x-model="igv" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001" />
+                        placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="igv" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total descuento :" />
                     <x-input class="block w-full numeric" wire:model.defer="descuento" x-model="descuento"
-                        @change="sumar" placeholder="0.00" type="number" min="0" step="0.0001" />
+                        @change="sumar" placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="descuento" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total otros :" />
                     <x-input class="block w-full numeric" wire:model.defer="otros" x-model="otros" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001" />
+                        placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 11)" />
                     <x-jet-input-error for="otros" />
                 </div>
 

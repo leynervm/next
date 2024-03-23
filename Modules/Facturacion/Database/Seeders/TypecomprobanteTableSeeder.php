@@ -24,36 +24,46 @@ class TypecomprobanteTableSeeder extends Seeder
             'code' => '01',
             'name' => 'FACTURA VENTA',
             'descripcion' => 'FACTURA VENTA',
-            'sendsunat' => 1,
+            'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
         Typecomprobante::create([
             'code' => '03',
             'name' => 'BOLETA VENTA',
             'descripcion' => 'BOLETA VENTA',
-            'sendsunat' => 1,
+            'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
         Typecomprobante::create([
             'code' => '07',
             'name' => 'NOTA DE CREDITO',
             'descripcion' => 'NOTA DE CREDITO QUE ANULA FACTURA',
-            'sendsunat' => 1,
+            'referencia' => '01',
+            'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
         Typecomprobante::create([
             'code' => '07',
             'name' => 'NOTA DE CREDITO',
             'descripcion' => 'NOTA DE CREDITO QUE ANULA BOLETA',
-            'sendsunat' => 1,
+            'referencia' => '03',
+            'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
         $guiaremision = Typecomprobante::create([
             'code' => '09',
             'name' => 'GUIA DE REMISIÓN REMITENTE',
             'descripcion' => 'GUIA DE REMISIÓN REMITENTE',
-            'sendsunat' => 1,
+            'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
+
+        Typecomprobante::create([
+            'code' => '09',
+            'name' => 'GUIA INTERNA',
+            'descripcion' => 'GUIA INTERNA',
+            'sendsunat' => 0,
+        ]);
+
 
         // Typecomprobante::create([
         //     'code' => '14',

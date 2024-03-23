@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -21,14 +22,16 @@ return new class extends Migration {
             $table->char('simbolo', 1)->nullable();
             $table->string('detalle', 255);
             $table->string('reference', 255)->nullable();
-            $table->bigInteger('producto_id');
-            $table->tinyInteger('almacen_id');
-            $table->tinyInteger('sucursal_id')->nullable();
-            $table->bigInteger('user_id');
+            $table->unsignedBigInteger('producto_id');
+            $table->unsignedTinyInteger('almacen_id');
+            $table->unsignedTinyInteger('sucursal_id')->nullable();
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('promocion_id')->nullable();
             $table->foreign('producto_id')->on('productos')->references('id');
             $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
+            $table->foreign('promocion_id')->on('promocions')->references('id');
             $table->integer('kardeable_id');
             $table->string('kardeable_type', 255);
         });

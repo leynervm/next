@@ -15,7 +15,7 @@ class CreateSeriesTable extends Migration
     {
         Schema::create('series', function (Blueprint $table) {
             $table->id();
-            $table->string('serie', 50);
+            $table->string('serie', 50)->unique();
             $table->dateTime('dateout')->nullable();
             $table->integer('status')->default(0);
             $table->bigInteger('almacen_id')->nullable();

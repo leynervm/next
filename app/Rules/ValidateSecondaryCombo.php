@@ -27,7 +27,7 @@ class ValidateSecondaryCombo implements Rule
     public function passes($attribute, $value)
     {
         $value = empty($value) ? null : $value;
-        $promocions = Promocion::activos()->where('producto_id', $value);
+        $promocions = Promocion::disponibles()->where('producto_id', $value);
 
         return $promocions->exists() === false;
     }

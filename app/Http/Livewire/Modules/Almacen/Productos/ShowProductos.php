@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Models\Almacen;
 use App\Models\Category;
+use App\Models\Marca;
 use App\Models\Producto;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -15,54 +16,50 @@ class ShowProductos extends Component
 
     public $subcategories = [];
     public $search = '';
-    public $searchmarca = [];
-    public $searchcategory = [];
-    public $searchsubcategory = [];
-    public $searchalmacen = [];
+    public $searchmarca = '';
+    public $searchcategory = '';
+    public $searchsubcategory = '';
+    public $searchalmacen = '';
     public $page = 1;
     public $publicado = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'searchmarca' => ['except' => [], 'as' => 'marca'],
-        'searchcategory' => ['except' => [], 'as' => 'categoria'],
-        'searchsubcategory' => ['except' => [], 'as' => 'subcategoria'],
-        'searchalmacen' => ['except' => [], 'as' => 'almacen'],
+        'searchmarca' => ['except' => '', 'as' => 'marca'],
+        'searchcategory' => ['except' => '', 'as' => 'categoria'],
+        'searchsubcategory' => ['except' => '', 'as' => 'subcategoria'],
+        'searchalmacen' => ['except' => '', 'as' => 'almacen'],
         'publicado' => ['except' => '', 'as' => 'publicado'],
         'page' => ['except' => 1],
     ];
 
+    public function mount()
+    {
+        if (trim($this->searchcategory) !== '') {
+            $this->subcategories = Category::with('subcategories')->find($this->searchcategory)->subcategories;
+        }
+    }
+
     public function render()
     {
 
-        $productos = Producto::with('compraitems')->whereHas('almacens', function ($query) {
-            if (count($this->searchalmacen) > 0) {
-                $query->whereIn('almacens.name', $this->searchalmacen);
-            }
-        });
-
-        if (count($this->searchmarca) > 0) {
-            $productos->whereHas('marca', function ($query) {
-                // if (count($this->searchmarca) > 0) {
-                $query->whereIn('marcas.name', $this->searchmarca);
-                // }
+        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems'])
+            ->whereHas('almacens', function ($query) {
+                if (trim($this->searchalmacen) != '') {
+                    $query->where('almacens.id', $this->searchalmacen);
+                }
             });
+
+        if (trim($this->searchmarca) != '') {
+            $productos->where('marca_id', $this->searchmarca);
         }
 
-        if (count($this->searchcategory) > 0) {
-            $productos->whereHas('category', function ($query) {
-                // if (count($this->searchcategory) > 0) {
-                $query->whereIn('categories.name', $this->searchcategory);
-                // }
-            });
+        if (trim($this->searchcategory) != '') {
+            $productos->where('category_id', $this->searchcategory);
         }
 
-        if (count($this->searchsubcategory) > 0) {
-            $productos->whereHas('subcategory', function ($query) {
-                // if (count($this->searchsubcategory) > 0) {
-                $query->whereIn('subcategories.name', $this->searchsubcategory);
-                // }
-            });
+        if (trim($this->searchsubcategory) != '') {
+            $productos->where('subcategory_id', $this->searchsubcategory);
         }
 
         if ($this->search !== '') {
@@ -74,14 +71,15 @@ class ShowProductos extends Component
         }
 
         $productos = $productos->orderBy('name', 'asc')->paginate();
-        $marcaGroup = Producto::select('marca_id')->whereNotNull('marca_id')->groupBy('marca_id')->get();
-        $categoriaGroup = Producto::select('category_id')->whereNotNull('category_id')->groupBy('category_id')->get();
-        $subcategoriaGroup = Producto::select('subcategory_id')->whereNotNull('subcategory_id')->groupBy('subcategory_id')->paginate(10, ['*'], 'page-subcategory');
-        $almacenGroup = Almacen::whereHas('productos')->withWhereHas('sucursals', function ($query) {
-            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        $marcas = Marca::whereHas('productos')->orderBy('name', 'asc')->get();
+        $categorias = Category::whereHas('productos')->orderBy('orden', 'asc')->get();
+        $almacens = Almacen::whereHas('productos')->withWhereHas('sucursals', function ($query) {
+            if (!auth()->user()->isAdmin()) {
+                $query->where('sucursal_id', auth()->user()->sucursal_id);
+            }
         })->get();
 
-        return view('livewire.modules.almacen.productos.show-productos', compact('productos', 'marcaGroup', 'categoriaGroup', 'subcategoriaGroup', 'almacenGroup'));
+        return view('livewire.modules.almacen.productos.show-productos', compact('productos', 'marcas', 'categorias', 'almacens'));
     }
 
     public function updatedSearch($value)
@@ -102,19 +100,15 @@ class ShowProductos extends Component
     public function updatedSearchcategory($value)
     {
         $this->resetPage();
+        $this->reset(['subcategories']);
+        if (trim($value) !== "") {
+            $this->subcategories = Category::with('subcategories')->find($value)->subcategories;
+        }
     }
 
     public function updatedSearchsubcategory($value)
     {
         $this->resetPage();
-    }
-
-    public function updatedProductoCategoryId($value)
-    {
-        $this->reset(['subcategories']);
-        if (trim($value) !== "") {
-            $this->subcategories = Category::find($value)->subcategories;
-        }
     }
 
     public function updatedPublicado($value)

@@ -21,13 +21,5 @@ class TypecomprobanteSeeder extends Seeder
             'descripcion' => 'TICKET VENTA',
             'sendsunat' => 0,
         ]);
-
-        Typecomprobante::create([
-            'code' => '09',
-            'name' => 'GUIA INTERNA',
-            'descripcion' => 'GUIA INTERNA',
-            'sendsunat' => 0,
-        ]);
-
     }
 }

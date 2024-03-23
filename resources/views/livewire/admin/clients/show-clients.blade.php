@@ -25,7 +25,6 @@
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>CLIENTE</span>
-
                         <svg class="h-3 w-3" viewBox="0 0 10 11" fill="currentColor" xmlns="http://www.w3.org/2000/svg"
                             fill="currentColor" stroke="currentColor" stroke-width="0.1">
                             <path
@@ -38,22 +37,20 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     DIRECCIÓN</th>
-
                 <th scope="col" class="p-2 font-medium">
                     CORREO</th>
 
-                <th scope="col" class="p-2 font-medium">
-                    LISTA PRECIO</th>
+                @if (Module::isEnabled('Ventas'))
+                    <th scope="col" class="p-2 font-medium">
+                        LISTA PRECIO</th>
+                @endif
 
                 <th scope="col" class="p-2 font-medium">
                     F. NACIMIENTO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SEXO</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     TELEFONOS</th>
 
@@ -118,20 +115,19 @@
                         {{-- <td class="p-2 text-xs text-center">
                             {{ $item->channelsale->name }}
                         </td> --}}
-                        <td class="p-2 text-xs text-center">
-                            @if ($item->pricetype)
-                                {{ $item->pricetype->name }}
-                            @endif
-                        </td>
-
+                        @if (Module::isEnabled('Ventas'))
+                            <td class="p-2 text-xs text-center">
+                                @if ($item->pricetype)
+                                    {{ $item->pricetype->name }}
+                                @endif
+                            </td>
+                        @endif
                         <td class="p-2 text-xs text-center">
                             {{ $item->nacimiento }}
                         </td>
-
                         <td class="p-2 text-xs text-center">
                             {{ $item->sexo }}
                         </td>
-
                         <td class="p-2 text-xs">
                             @if (count($item->telephones))
                                 <div class="flex flex-wrap gap-1 justify-center">
@@ -156,8 +152,9 @@
                         @can('admin.clientes.historial')
                             @if (Module::isEnabled('Ventas'))
                                 <td class="p-2 text-xs text-center align-middle">
-                                    {{-- <x-link-button class="inline-block"
-                                    href="{{ route('admin.clientes.historial', $item) }}">VER VENTAS</x-link-button> --}}
+                                    <x-link-button class="inline-block"
+                                        href="{{ route('admin.clientes.historial', $item) }}">HISTORIAL
+                                        VENTAS</x-link-button>
                                 </td>
                             @endif
                         @endcan

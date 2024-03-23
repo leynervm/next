@@ -18,6 +18,7 @@ class CreateEmployer extends Component
 {
 
     public $open = false;
+    public $exists = false;
     public $adduser = false;
     public $user;
 
@@ -82,9 +83,14 @@ class CreateEmployer extends Component
         $this->name = trim($this->name);
         $this->telefono = trim($this->telefono);
         $this->sueldo = trim($this->sueldo);
-        if ($this->user) {
+        if ($this->adduser && $this->user) {
             if ($this->user->employer) {
-                $this->addError('email', 'Correo ya se encuentra vinculado.');
+                $mensaje = response()->json([
+                    'title' => 'EL USUARIO ENCONTRADO YA SE ENCUENTRA VINCULADO !',
+                    'text' => 'Usuario del personal encontrado ya se encuentra vinculado a un personal.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
         }
@@ -129,11 +135,10 @@ class CreateEmployer extends Component
 
                     if ($exists) {
                         $mensaje = response()->json([
-                            'title' => 'YA EXISTE UN USUARIO CON LOS MISMOS DATOS INGRESADOS !',
+                            'title' => 'YA EXISTE UN USUARIO CON El MISMO DOCUMENTO INGRESADO !',
                             'text' => 'Se encontraron registros de usuarios con los mismos datos ingresados.',
                             'type' => 'warning'
                         ])->getData();
-                        $this->addError('document', 'Ya existe un usuario con el mismo documento.');
                         $this->dispatchBrowserEvent('validation', $mensaje);
                         return false;
                     } else {
@@ -142,7 +147,6 @@ class CreateEmployer extends Component
                             'name' => $this->name,
                             'email' => $this->email,
                             'password' => bcrypt($this->password),
-                            'almacen_id' => null,
                             'sucursal_id' => $this->sucursal_id,
                         ]);
 
@@ -177,6 +181,11 @@ class CreateEmployer extends Component
         $this->reset(['user']);
     }
 
+    public function limpiaremployer()
+    {
+        $this->reset(['document', 'name', 'exists']);
+    }
+
     public function getClient()
     {
 
@@ -196,6 +205,7 @@ class CreateEmployer extends Component
             if ($response->getData()->success) {
                 $this->resetValidation(['document', 'name']);
                 $this->name = $response->getData()->name;
+                $this->exists = true;
                 if ($response->getData()->birthday) {
                     $this->dispatchBrowserEvent('birthday', $response->getData()->name);
                 }
@@ -207,40 +217,16 @@ class CreateEmployer extends Component
             $this->addError('document', 'Error de respuesta');
         }
 
-
         $user = User::whereDoesntHave('employer', function ($query) {
             $query->where('document', $this->document);
         })->where('document', $this->document)->first();
 
         if ($user) {
+            $this->reset(['email', 'password', 'password_confirmation']);
+            $this->user = $user;
             $this->adduser = true;
             $this->name = trim($this->name) == '' ? $user->name : $this->name;
-
-            if ($user->employer) {
-                $this->addError('email', 'Correo ya se encuentra vinculado a un usuario.');
-            } else {
-                $this->reset(['email', 'password', 'password_confirmation']);
-                $this->user = $user;
-            }
-        } else {
-            $this->addError('email', 'No se encontraron registros.');
+            $this->sucursal_id = $user->sucursal_id;
         }
     }
-
-    // public function getUser()
-    // {
-    //     $this->email = trim($this->email);
-    //     $this->validate(['email' => ['required', 'email']]);
-
-    //     $user = User::where('email', $this->email)->first();
-    //     if ($user) {
-    //         if ($user->employer) {
-    //             $this->addError('email', 'Correo ya se encuentra vinculado.');
-    //         } else {
-    //             $this->user = $user;
-    //         }
-    //     } else {
-    //         $this->addError('email', 'No se encontraron registros.');
-    //     }
-    // }
 }

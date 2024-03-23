@@ -170,6 +170,7 @@
                         <td class="p-2 text-left">
                             <p class="text-[10px] leading-3">{{ $item->client->name }}</p>
                             <p class="">{{ $item->client->document }}</p>
+                            <p class="text-[10px] text-colorsubtitleform">{{ $item->direccion }}</p>
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
@@ -185,7 +186,7 @@
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gratuito, 3, '.', ', ') }}
+                            {{ number_format($item->gratuito + $item->igvgratuito, 3, '.', ', ') }}
                         </td>
                         {{-- <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
@@ -236,10 +237,21 @@
                             @endif
                         </td>
                         <td class="p-2 text-center">
-                            @if ($item->codesunat != '0')
+                            {{-- @if ($item->codesunat != '0')
                                 <p>{{ $item->codesunat }}</p>
                             @endif
-                            <p class="leading-3 max-w-[150px]">{{ $item->descripcion }}</p>
+                            <p class="leading-3 max-w-[150px]">{{ $item->descripcion }}</p> --}}
+
+                            <div class="max-w-[120px] relative" x-data="{ showmessage: false }" @mouseover="showmessage=true"
+                                @mouseover.away = "showmessage = false">
+                                <p class="truncate">{{ $item->descripcion }}</p>
+                                @if (!$item->isSendSunat())
+                                    <p>{{ $item->codesunat }}</p>
+                                @endif
+                                <small x-show="showmessage" x-transition
+                                    class="cursor-pointer absolute right-0 font-medium rounded-md p-0.5 bg-fondolinknav text-[9px] leading-3 whitespace-normal text-colorlinknav z-10 transition duration-150">
+                                    {{ $item->descripcion }}</small>
+                            </div>
                         </td>
                         <td class="p-2 align-middle">
                             <div class="flex items-center justify-end gap-1">

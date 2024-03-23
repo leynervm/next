@@ -31,15 +31,15 @@ use Nwidart\Modules\Facades\Module;
 // ])->prefix('admin/')->group(function () {
 Route::get('/', [HomeController::class, 'index'])->name('admin');
 
-
-Route::get('/users', [UserController::class, 'index'])->name('admin.users');
-Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
-// Route::post('/users/store', [UserController::class, 'store'])->name('admin.users.store');
-Route::get('/users/edit/{user}', [UserController::class, 'edit'])->name('admin.users.edit');
-// Route::post('/users/update/{user}', [UserController::class, 'update'])->name('admin.users.update');
-Route::get('/users/historial', [UserController::class, 'history'])->name('admin.users.history');
-Route::get('/users/historial-reset-password', [UserController::class, 'historypassword'])->name('admin.users.historypassword');
-
+Route::prefix('users')->name('admin.users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/create', [UserController::class, 'create'])->name('.create');
+    Route::get('/edit/{user}', [UserController::class, 'edit'])->name('.edit');
+    Route::get('/historial', [UserController::class, 'history'])->name('.history');
+    Route::get('/historial-reset-password', [UserController::class, 'historypassword'])->name('.historypassword');
+    // Route::post('/users/store', [UserController::class, 'store'])->name('admin.users.store');
+    // Route::post('/users/update/{user}', [UserController::class, 'update'])->name('admin.users.update');
+});
 
 Route::get('/roles', [RoleController::class, 'index'])->name('admin.roles');
 Route::get('/roles/create', [RoleController::class, 'create'])->name('admin.roles.create');
@@ -47,52 +47,59 @@ Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('admin.r
 Route::get('/roles/permisos', [RoleController::class, 'permisos'])->name('admin.roles.permisos');
 
 
-Route::get('/clientes', [ClientController::class, 'index'])->name('admin.clientes')->middleware(['verifycompany']);
-Route::get('/clientes/{client:document}/edit', [ClientController::class, 'edit'])->name('admin.clientes.edit')->middleware(['verifycompany']);
-Route::get('/clientes/{client:document}/historial-ventas', [ClientController::class, 'show'])->name('admin.clientes.historial')->middleware(['verifycompany']);
+Route::prefix('clientes')->name('admin.clientes')->group(function () {
+    Route::get('/', [ClientController::class, 'index'])->middleware(['verifycompany']);
+    Route::get('/{client:document}/edit', [ClientController::class, 'edit'])->name('.edit')->middleware(['verifycompany']);
+    Route::get('/{client:document}/historial-ventas', [ClientController::class, 'history'])->name('.historial')->middleware(['verifycompany']);
+});
 
 
-Route::get('/proveedores', [ProveedorController::class, 'index'])->name('admin.proveedores');
-Route::get('/proveedores/create', [ProveedorController::class, 'create'])->name('admin.proveedores.create');
-Route::get('/proveedores/{proveedor:document}/edit', [ProveedorController::class, 'edit'])->name('admin.proveedores.edit');
-Route::get('/proveedores/tipos', [ProveedorController::class, 'proveedortypes'])->name('admin.proveedores.tipos');
-Route::get('/proveedores/{proveedor:document}/historial-compras', [ProveedorController::class, 'history'])->name('admin.proveedores.historial');
-Route::get('/proveedores/{proveedor:document}/historial-pedidos', [ProveedorController::class, 'pedidos'])->name('admin.proveedores.pedidos');
+Route::prefix('proveedores')->name('admin.proveedores')->group(function () {
+    Route::get('/', [ProveedorController::class, 'index'])->middleware(['verifycompany']);
+    Route::get('/create', [ProveedorController::class, 'create'])->name('.create')->middleware(['verifycompany']);
+    Route::get('/{proveedor:document}/edit', [ProveedorController::class, 'edit'])->name('.edit')->middleware(['verifycompany']);
+    Route::get('/tipos', [ProveedorController::class, 'proveedortypes'])->name('.tipos')->middleware(['verifycompany']);
+    Route::get('/{proveedor:document}/historial-compras', [ProveedorController::class, 'history'])->name('.historial')->middleware(['verifycompany']);
+    Route::get('/{proveedor:document}/historial-pedidos', [ProveedorController::class, 'pedidos'])->name('.pedidos')->middleware(['verifycompany']);
+});
 
 
-Route::get('/cajas', [CajaController::class, 'index'])->name('admin.cajas')->middleware(['verifysucursal', 'box']);
-Route::get('/cajas/aperturas', [CajaController::class, 'aperturas'])->name('admin.cajas.aperturas')->middleware(['verifysucursal', 'box']);
-Route::get('/cajas/conceptos', [CajaController::class, 'conceptos'])->name('admin.cajas.conceptos');
-Route::get('/cajas/movimientos', [CajaController::class, 'movimientos'])->name('admin.cajas.movimientos');
-Route::get('/cajas/forma-pago', [CajaController::class, 'methodpayments'])->name('admin.cajas.methodpayments');
-Route::get('/cajas/mensuales', [CajaController::class, 'mensuales'])->name('admin.cajas.mensuales')->middleware(['verifysucursal']);
+// Se quito middleware 'box'  de admin.cajas
+Route::prefix('cajas')->name('admin.cajas')->group(function () {
+    Route::get('/', [CajaController::class, 'index'])->middleware(['verifysucursal']);
+    Route::get('/aperturas', [CajaController::class, 'aperturas'])->name('.aperturas')->middleware(['verifysucursal', 'box']);
+    Route::get('/conceptos', [CajaController::class, 'conceptos'])->name('.conceptos');
+    Route::get('/movimientos', [CajaController::class, 'movimientos'])->name('.movimientos');
+    Route::get('/forma-pago', [CajaController::class, 'methodpayments'])->name('.methodpayments');
+    Route::get('/mensuales', [CajaController::class, 'mensuales'])->name('.mensuales')->middleware(['verifysucursal']);
+});
+
+Route::prefix('administracion')->name('admin.administracion')->group(function () {
+    Route::get('/', [HomeController::class, 'administracion']);
+    Route::get('/empresa/create', [EmpresaController::class, 'create'])->name('.empresa.create')->middleware(['registercompany']);
+    Route::get('/empresa/edit/', [EmpresaController::class, 'edit'])->name('.empresa')->middleware(['verifycompany']);
+    Route::get('/sucursales', [SucursalController::class, 'index'])->name('.sucursales')->middleware(['verifycompany']);
+    Route::get('/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('.sucursales.edit')->middleware(['verifycompany']);
+    Route::get('/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('.typecomprobantes')->middleware(['verifycompany']);
+    Route::get('/personal', [HomeController::class, 'employers'])->name('.employers')->middleware(['verifycompany']);
+    Route::get('/personal/{employer:document}/historial-pagos', [HomeController::class, 'payments'])->name('.employers.payments')->middleware(['verifycompany']);
+
+    Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units');
+    Route::get('/areas', [HomeController::class, 'areas'])->name('.areas');
+});
 
 
-Route::get('/administracion', [HomeController::class, 'administracion'])->name('admin.administracion');
-Route::get('/administracion/empresa/create', [EmpresaController::class, 'create'])->name('admin.administracion.empresa.create')->middleware(['registercompany']);
-Route::get('/administracion/empresa/edit/', [EmpresaController::class, 'edit'])->name('admin.administracion.empresa')->middleware(['verifycompany']);
-Route::get('/administracion/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('admin.administracion.typecomprobantes')->middleware(['verifycompany']);
-
-
-Route::get('/administracion/personal', [HomeController::class, 'employers'])->name('admin.administracion.employers')->middleware(['verifycompany']);
-Route::get('/administracion/personal/{employer:document}/historial-pagos', [HomeController::class, 'payments'])->name('admin.administracion.employers.payments')->middleware(['verifycompany', 'openbox']);
-
-Route::get('/administracion/sucursales', [SucursalController::class, 'index'])->name('admin.administracion.sucursales')->middleware(['verifycompany']);
-Route::get('/administracion/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('admin.administracion.sucursales.edit')->middleware(['verifycompany']);
-Route::get('/administracion/lista-precios', [HomeController::class, 'pricetypes'])->name('admin.administracion.pricetypes');
 
 Route::get('/marcas', [HomeController::class, 'marcas'])->name('admin.almacen.marcas');
 Route::get('/categorias', [AlmacenController::class, 'categorias'])->name('admin.almacen.categorias');
 Route::get('/subcategorias', [AlmacenController::class, 'subcategorias'])->name('admin.almacen.subcategorias');
 Route::get('/caracteristicas-&-especificaciones', [AlmacenController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
-Route::get('/administracion/unidades-medida', [AlmacenController::class, 'units'])->name('admin.administracion.units');
-Route::get('/administracion/areas', [HomeController::class, 'areas'])->name('admin.administracion.areas');
 
 Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('tipocambio');
 Route::get('consulta-sunat/{document?}', [HomeController::class, 'consultasunat'])->name('consultasunat');
 
 if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
-    Route::get('/almacen/productos', [ProductoController::class, 'index'])->name('admin.almacen.productos')->middleware(['verifysucursal']);
+    Route::get('/almacen/productos', [ProductoController::class, 'index'])->name('admin.almacen.productos');
     Route::get('/almacen/productos/create', [ProductoController::class, 'create'])->name('admin.almacen.productos.create')->middleware(['verifysucursal', 'verifyalmacen']);
     Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.edit')->middleware(['verifysucursal']);
 }

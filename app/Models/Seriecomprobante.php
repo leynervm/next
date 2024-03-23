@@ -51,6 +51,11 @@ class Seriecomprobante extends Model
 
     public function scopeDefault($query)
     {
-        return $query->withPivot('default', self::DEFAULT);
+        return $query->where('default', self::DEFAULT);
+    }
+
+    public function isDefault()
+    {
+        return $this->default ==  self::DEFAULT;
     }
 }

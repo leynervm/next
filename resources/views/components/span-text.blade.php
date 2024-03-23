@@ -23,6 +23,10 @@
             $fondo = 'bg-orange-500';
             break;
 
+        case 'amber':
+            $fondo = 'bg-amber-500';
+            break;
+
         default:
             $fondo = 'bg-fondospancardproduct';
             break;

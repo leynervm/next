@@ -85,10 +85,10 @@ class Producto extends Model
         return $this->belongsToMany(Almacen::class)->withPivot('cantidad')->orderByPivot('cantidad', 'desc',);
     }
 
-    public function disponibles()
-    {
-        return $this->almacens()->wherePivot('cantidad', '>', 0);
-    }
+    // public function disponibles()
+    // {
+    //     return $this->almacens()->wherePivot('cantidad', '>', 0);
+    // }
 
     public function series(): HasMany
     {
@@ -199,15 +199,15 @@ class Producto extends Model
         return $this->hasMany(Promocion::class);
     }
 
-    public function ofertasdisponibles(): HasMany
-    {
-        return $this->hasMany(Promocion::class)->disponibles();
-    }
+    // public function ofertasdisponibles(): HasMany
+    // {
+    //     return $this->hasMany(Promocion::class)->disponibles();
+    // }
 
-    public function descuentosactivos()
-    {
-        return $this->hasMany(Promocion::class)->descuentosDisponibles();
-    }
+    // public function descuentosactivos()
+    // {
+    //     return $this->hasMany(Promocion::class)->descuentos()->disponibles();
+    // }
 
     // public function scoopeCombos()
     // {

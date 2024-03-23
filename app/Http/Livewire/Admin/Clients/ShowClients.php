@@ -12,6 +12,7 @@ class ShowClients extends Component
     use WithPagination;
 
     public $search = '';
+    protected $listeners = ['render'];
     protected $queryString = ['search' => ['except' => '']];
 
 

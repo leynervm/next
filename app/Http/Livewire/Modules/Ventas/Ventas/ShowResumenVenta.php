@@ -239,28 +239,33 @@ class ShowResumenVenta extends Component
             ->orderBy('distrito', 'asc')->get();
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        $modalidadtransportes = Modalidadtransporte::orderBy('code', 'asc')->get();
-        $motivotraslados = Motivotraslado::whereIn('code', ['01', '03'])->orderBy('code', 'asc')->get();
 
-        $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()
-            ->withWhereHas('typecomprobante', function ($query) {
-                $query->whereNotIn('code', ['07', '09']);
-            });
-        $comprobantesguia = auth()->user()->sucursal->seriecomprobantes()
-            ->withWhereHas('typecomprobante', function ($query) {
-                $query->whereIn('code', ['09', '13']);
-            });
-
-        if (!Module::isEnabled('Facturacion')) {
-            $typecomprobantes = $typecomprobantes->default();
-            $comprobantesguia = $comprobantesguia->default();
+        if (Module::isEnabled('Facturacion')) {
+            $modalidadtransportes = Modalidadtransporte::orderBy('code', 'asc')->get();
+            $motivotraslados = Motivotraslado::whereIn('code', ['01', '03'])->orderBy('code', 'asc')->get();
+        } else {
             $modalidadtransportes = [];
             $motivotraslados = [];
         }
 
+        $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()
+            ->withWhereHas('typecomprobante', function ($query) {
+                $query->whereNotIn('code', ['07', '09']);
+                if (Module::isDisabled('Facturacion')) {
+                    $query->default();
+                }
+            });
+        $comprobantesguia = auth()->user()->sucursal->seriecomprobantes()
+            ->withWhereHas('typecomprobante', function ($query) {
+                $query->whereIn('code', ['09', '13']);
+                if (Module::isDisabled('Facturacion')) {
+                    $query->default();
+                }
+            });
+
         $typecomprobantes = $typecomprobantes->orderBy('code', 'asc')->get();
         $comprobantesguia = $comprobantesguia->orderBy('code', 'asc')->get();
-        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen', 'promocion'])
+        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen', 'promocion', 'promocion.itempromos'])
             ->ventas()->where('user_id', auth()->user()->id)
             ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('id', 'asc')->paginate();
 
@@ -328,10 +333,11 @@ class ShowResumenVenta extends Component
         }
     }
 
-    public function setMoneda($value)
+    public function updatedMonedaId($value)
     {
         if ($value) {
-            $this->moneda = Moneda::findOrFail($value);
+            $this->moneda = Moneda::find($value);
+            // $this->dispatchBrowserEvent('setMoneda', $value);
         }
     }
 
@@ -476,6 +482,8 @@ class ShowResumenVenta extends Component
 
             $gratuito = 0;
             $total = 0;
+            $totalcomboGRA = 0;
+            $totalIGVcomboGRA = 0;
 
             if (count($sumatorias) > 0) {
                 foreach ($sumatorias as $item) {
@@ -755,7 +763,104 @@ class ShowResumenVenta extends Component
                         ]);
                     }
                 }
+
                 $counter++;
+
+                if (count($item->carshoopitems) > 0) {
+                    // $countercombo = $counter;
+                    foreach ($item->carshoopitems as $carshoopitem) {
+                        $stockCombo = $carshoopitem->producto->almacens->find($item->almacen_id)->pivot->cantidad;
+
+                        $pricesaleCombo = $this->incluyeigv ? ($carshoopitem->price * 100) / (100 + $this->empresa->igv) : $carshoopitem->price;
+                        $igvCombo = $this->incluyeigv ? $carshoopitem->price - $pricesaleCombo : 0;
+                        $subtotalItemIGVCombo = $this->incluyeigv ? $igvCombo * $item->cantidad : 0;
+                        $subtotalItemCombo = number_format($pricesaleCombo * $item->cantidad, 3, '.', '');
+                        $totalItemCombo = number_format($subtotalItemCombo + $subtotalItemIGVCombo, 3, '.', '');
+                        $totalIGVcomboGRA = $totalIGVcomboGRA + $subtotalItemIGVCombo;
+                        $totalcomboGRA = $totalcomboGRA + $subtotalItemCombo;
+
+                        $itemcombo = [
+                            'date' => now('America/Lima'),
+                            'cantidad' => $item->cantidad,
+                            'pricebuy' => $carshoopitem->pricebuy,
+                            'price' => number_format($pricesaleCombo, 3, '.', ''),
+                            'igv' => number_format($igvCombo, 3, '.', ''),
+                            'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
+                            'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
+                            'total' => number_format($totalItemCombo, 3, '.', ''),
+                            'status' => 0,
+                            'alterstock' => Almacen::DISMINUIR_STOCK,
+                            'gratuito' => Tvitem::GRATUITO,
+                            'increment' => 0,
+                            'requireserie' => $carshoopitem->requireserie,
+                            'almacen_id' => $item->almacen_id,
+                            'producto_id' => $carshoopitem->producto_id,
+                            'user_id' => auth()->user()->id
+                        ];
+
+                        $tvitem = $venta->tvitems()->create($itemcombo);
+                        if ($this->incluyeguia) {
+                            $tvitemguia = $guia->tvitems()->create($itemcombo);
+                        }
+
+                        if (Module::isEnabled('Facturacion')) {
+                            if ($seriecomprobante->typecomprobante->sendsunat) {
+                                $comprobante->facturableitems()->create([
+                                    'item' => $counter,
+                                    'descripcion' => $carshoopitem->producto->name,
+                                    'code' => $carshoopitem->producto->code,
+                                    'cantidad' => $item->cantidad,
+                                    'price' => number_format($pricesaleCombo, 2, '.', ''),
+                                    'igv' => number_format($igvCombo, 2, '.', ''),
+                                    'subtotaligv' => number_format($subtotalItemIGVCombo, 2, '.', ''),
+                                    'subtotal' => number_format($subtotalItemCombo, 2, '.', ''),
+                                    'total' => number_format($totalItemCombo, 2, '.', ''),
+                                    'unit' => $item->producto->unit->code,
+                                    'codetypeprice' => '02',
+                                    'afectacion' => $this->incluyeigv ? '15' : '21',
+                                    'codeafectacion' => '9996',
+                                    'nameafectacion' => 'GRA',
+                                    'typeafectacion' => 'FRE',
+                                    'abreviatureafectacion' => 'Z',
+                                    'percent' => $this->incluyeigv ? $this->empresa->igv : 0,
+                                ]);
+                            }
+                        }
+
+                        // GUARDAMOS EN KARDEX YA QUE CUANDO AGREGAMOS AL CARRITO
+                        // SOLAMENTE DESCUENTA STOCK MAS NO REGISTRA EN KARDEX
+                        // LE AUMENTO EL STOCK EN KARDEX PORQUE SE SUPONE QUE HUBO 
+                        // EN ALMACEN EL STOCK ACTUAL MAS LO DESCONTADO Y ESTOCK ES EL ACTUAL
+                        $tvitem->saveKardex(
+                            $carshoopitem->producto_id,
+                            $item->almacen_id,
+                            $stockCombo + $item->cantidad,
+                            $stockCombo,
+                            $item->cantidad,
+                            Almacen::SALIDA_ALMACEN,
+                            Kardex::SALIDA_COMBO_VENTA,
+                            $seriecomprobante->serie . '-' . $numeracion,
+                            $item->promocion_id,
+                        );
+
+                        $carshoopitem->delete();
+                        $counter++;
+                    }
+
+                    if ($totalcomboGRA > 0 || $totalIGVcomboGRA > 0) {
+                        $venta->gratuito = number_format($venta->gratuito + $totalcomboGRA, 4, '.', '');
+                        $venta->igvgratuito = number_format($venta->igvgratuito + $totalIGVcomboGRA, 4, '.', '');
+                        $venta->save();
+
+                        if (Module::isEnabled('Facturacion')) {
+                            if ($seriecomprobante->typecomprobante->sendsunat) {
+                                $comprobante->gratuito = number_format($comprobante->gratuito + $totalcomboGRA, 4, '.', '');
+                                $comprobante->igvgratuito = number_format($comprobante->igvgratuito + $totalIGVcomboGRA, 4, '.', '');
+                                $comprobante->save();
+                            }
+                        }
+                    }
+                }
             }
 
             if ($this->typepayment->paycuotas) {
@@ -815,6 +920,21 @@ class ShowResumenVenta extends Component
     {
         DB::beginTransaction();
         try {
+            if (count($carshoop->carshoopitems) > 0) {
+                foreach ($carshoop->carshoopitems as $carshoopitem) {
+                    $stockCombo = $carshoopitem->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
+                    $carshoopitem->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+                        'cantidad' => $stockCombo + $carshoop->cantidad,
+                    ]);
+                    $carshoopitem->delete();
+                }
+            }
+
+            if ($carshoop->promocion) {
+                $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
+                $carshoop->promocion->save();
+            }
+
             if (count($carshoop->carshoopseries) > 0) {
                 $carshoop->carshoopseries()->each(function ($carshoopserie) use ($carshoop) {
                     if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
@@ -1098,7 +1218,7 @@ class ShowResumenVenta extends Component
                     $this->direccion = $response->getData()->direccion;
                 }
 
-                if ($this->empresa->usarlista()) {
+                if ($this->empresa->usarLista()) {
                     if ($response->getData()->pricetype_id) {
                         $this->pricetypeasigned = $response->getData()->pricetypeasigned;
                         $this->dispatchBrowserEvent('setPricetypeId', $response->getData()->pricetype_id);

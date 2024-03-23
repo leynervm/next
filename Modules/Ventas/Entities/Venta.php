@@ -55,7 +55,7 @@ class Venta extends Model
 
     public function tvitems(): MorphMany
     {
-        return $this->morphMany(Tvitem::class, 'tvitemable');
+        return $this->morphMany(Tvitem::class, 'tvitemable')->orderBy('id', 'asc');
     }
 
     public function cajamovimiento(): MorphOne

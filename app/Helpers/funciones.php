@@ -4,6 +4,8 @@ use App\Enums\DefaultConceptsEnum;
 use App\Models\Empresa;
 use App\Models\Guia;
 use App\Models\Pricetype;
+use App\Models\Producto;
+use App\Models\Promocion;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -139,9 +141,9 @@ function getTextConcept($value)
         case DefaultConceptsEnum::PAYEMPLOYER->value;
             $text = 'PAGO MENSUALIDAD PERSONAL';
             break;
-            // case DefaultConceptsEnum::APERTURA->value;
-            //     $text = 'APERTURA CAJA DIARIA';
-            //     break;
+        case DefaultConceptsEnum::ADELANTOEMPLOYER->value;
+            $text = 'ADELANTO PAGO PERSONAL';
+            break;
         default:
             $text = null;
             break;
@@ -281,10 +283,12 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
         $rangoexists = false;
         $precioManual = null;
         $oldPrecioSalida = null;
+        $tipocambio = $preciotipocambio == null ? 0 : (float) $preciotipocambio;
         $precioCompra = number_format($producto->pricebuy, $decimal, '.', '');
+        $precioCompraDolar = $precioCompra > 0 && $tipocambio > 0  ? number_format($precioCompra / $tipocambio, 2, '.', '') : 0;
         $descuento = number_format(0, 2);
         $amountDescuento = number_format(0, 2);
-        $tipocambio = $preciotipocambio == null ? 0 : (float) $preciotipocambio;
+
         $isRemate = false;
         // $precioVenta = number_format($producto->pricebuy, $decimal, '.', '');
         // $precioDescuento = number_format($precioVenta, $decimal, '.', '');
@@ -297,15 +301,22 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
         //     $descuento = $producto->ofertasdisponibles()->first()->descuento;
         // }
         // $descuentos = $producto->promocions()->descuentos()->disponibles();
-        $promociones = $producto->promocions()->activos();
-        if ($promociones->descuentos()->exists()) {
-            $descuento = $promociones->descuentos()->first()->descuento ?? 0;
+        $descuentos = $producto->promocions()->descuentos()->disponibles();
+        if ($descuentos->exists()) {
+            $descuentoactivo = $descuentos->first();
+            if (!is_null($descuentoactivo->limit)) {
+                if ($descuentoactivo->outs < $descuentoactivo->limit) {
+                    $descuento = $descuentoactivo->descuento ?? 0;
+                }
+            } else {
+                $descuento = $descuentoactivo->descuento ?? 0;
+            }
         }
 
-        $remates = $producto->promocions()->activos();
-        if ($remates->remates()->exists()) {
-            $isRemate = true;
-        }
+        $isRemate = $producto->promocions()->remates()->disponibles()->exists();
+        // if ($remates->remates()->exists()) {
+        //     $isRemate = true;
+        // }
 
         if ($priceSelected) {
 
@@ -353,6 +364,7 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
 
                         $ganancia = number_format($rango->pivot->ganancia ?? 0, 2, '.', '');
                         $precioCompra = number_format($precioCompra + (($precioCompra * $rango->incremento) / 100), $pricetype->decimals, '.', '');
+                        $precioCompraDolar = $precioCompra > 0 && $tipocambio > 0  ? number_format($precioCompra / $tipocambio, $pricetype->decimals, '.', '') : 0;
                         $oldPrecioSalida = number_format($precioCompra + ($precioCompra * $ganancia) / 100, $pricetype->decimals, '.', '');
                         // $priceSelect = $priceManual->pivot->price ?? $oldPrecioSalida;
                         $precioVenta = number_format($priceManual->pivot->price ?? $oldPrecioSalida, $pricetype->decimals, '.', '');
@@ -377,8 +389,8 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
                         }
 
                         if ($pricetype->rounded > 0) {
-                            $precioVenta = round_decimal($precioVenta, $roundedTo);
-                            $oldPrecioSalida = round_decimal($oldPrecioSalida, $roundedTo);
+                            $precioVenta = number_format(round_decimal($precioVenta, $roundedTo), $pricetype->decimals, '.', '');
+                            $oldPrecioSalida = number_format(round_decimal($oldPrecioSalida, $roundedTo), $pricetype->decimals, '.', '');
                             $precioDescuento = number_format(round_decimal($precioDescuento, $roundedTo), $pricetype->decimals, '.', '');
                         }
 
@@ -408,6 +420,7 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
             // }
         } else {
 
+            $oldPrecioSalida = number_format($precioCompra, $decimal, '.', '');
             $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
             $precioDescuento = number_format($producto->pricesale, $decimal, '.', '');
             // $diferenciaGan = number_format($precioVenta - $precioCompra, '.', '');
@@ -433,6 +446,7 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
         $json = [
             'success' => true,
             'pricebuy' => $precioCompra,
+            'pricebuyDolar' => $precioCompraDolar,
             'pricesale' => $precioVenta,
             'oldPrice' => $oldPrecioSalida,
             'pricewithdescount' => $precioDescuento,
@@ -471,4 +485,88 @@ function round_decimal($value, $roundedTo = 1)
     } else {
         return (float) $value;
     }
+}
+
+function precio_producto(Producto $producto, $precios, $tipocambio = null)
+{
+    $priceAntesPEN = null;
+    $priceAntesUSD = null;
+    $pricePEN = null;
+    $priceUSD = null;
+    $promocions = $producto->promocions()->disponibles()->with('itempromos.producto');
+
+    if ($promocions->exists()) {
+        $promocion = $promocions->first();
+        if ($promocion->isCombo()) {
+            $pricePEN = $precios->pricemanual == null ? $precios->pricesale : $precios->pricemanual;
+            $priceUSD = $precios->priceDolar;
+        } elseif ($promocion->isDescuento()) {
+            $priceAntesPEN = $precios->pricesale;
+            $pricePEN = $precios->pricewithdescount;
+            $priceUSD = $precios->pricewithdescountDolar;
+        } elseif ($promocion->isRemate()) {
+            $priceAntesPEN = $precios->oldPrice;
+            $pricePEN = $precios->pricebuy;
+            $priceUSD = $precios->pricebuyDolar;
+        } else {
+            // $pricePEN = $precios->pricesale;
+            $pricePEN = $precios->pricemanual == null ? $precios->pricesale : $precios->pricemanual;
+            $priceUSD = $precios->priceDolar;
+        }
+    } else {
+        // $pricePEN = $precios->pricesale;
+        $pricePEN = $precios->pricemanual == null ? $precios->pricesale : $precios->pricemanual;
+        $priceUSD = $precios->priceDolar;
+    }
+
+    // return response()->json([
+    //     'pricePEN' => $pricePEN,
+    //     'priceUSD' => $priceUSD,
+    //     'tipocambio' => $tipocambio
+    // ], 200);
+
+    return response()->json([
+        'priceAntesPEN' => $priceAntesPEN,
+        'priceAntesUSD' => $priceAntesUSD,
+        'pricePEN' => $pricePEN,
+        'priceUSD' => $priceUSD,
+        'tipocambio' => $tipocambio,
+    ])->getData();
+}
+
+function get_sumatoria_combos(Promocion $promocion, $pricetype_id = null, $tipocambio = null)
+{
+    $sumatoriaPEN = 0;
+    $sumatoriaUSD = 0;
+    $preciosArray = [];
+
+    if (count($promocion->itempromos) > 0) {
+        foreach ($promocion->itempromos as $itempromo) {
+            $precios = getPrecio($itempromo->producto, $pricetype_id, $tipocambio)->getData();
+            $preciosArray = array();
+            if ($precios->success) {
+                $precioProducto = precio_producto($itempromo->producto, $precios, $tipocambio);
+                $precioPEN =  $precioProducto->pricePEN;
+                $precioUSD = $precioProducto->priceUSD;
+                if ($itempromo->isDescuento()) {
+                    $descuentoitemPEN = number_format((($precioPEN - $precios->pricebuy) * $itempromo->descuento) / 100, $precios->decimal, '.', '');
+                    $descuentoitemUSD = number_format((($precioUSD - $precios->pricebuyDolar) * $itempromo->descuento) / 100, $precios->decimal, '.', '');
+
+                    $precioPEN = number_format($precioPEN - $descuentoitemPEN, $precios->decimal, '.', '');
+                    $precioUSD = number_format($precioUSD - $descuentoitemUSD, $precios->decimal, '.', '');
+                }
+                // $preciosArray[] = $precios;
+                $preciosArray[] = $precioProducto;
+
+                $sumatoriaPEN = $sumatoriaPEN + $precioPEN;
+                $sumatoriaUSD = $sumatoriaUSD + $precioUSD;
+            }
+        }
+    }
+    return response()->json([
+        'sumatoriaPEN' => $sumatoriaPEN,
+        'sumatoriaUSD' => $sumatoriaUSD,
+        'tipocambio' => $tipocambio,
+        'preciosArray' => $preciosArray,
+    ])->getData();
 }

@@ -21,7 +21,7 @@ class CreateEspecificacion extends Component
     {
         return [
             'name' => [
-                'required', 'min:3', 'max:100',
+                'required', 'min:2', 'max:100',
                 new CampoUnique('caracteristicas', 'name', null),
             ],
             'view' => ['nullable', 'integer', 'min:0', 'max:1',]

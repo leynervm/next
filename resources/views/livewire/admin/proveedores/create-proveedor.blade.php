@@ -7,8 +7,9 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full prevent" wire:model.defer="document"
-                            wire:keydown.enter="searchclient" />
+                        <x-input class="block w-full" type="number" wire:model.defer="document"
+                            wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
+                            onkeydown="disabledEnter(event)" />
                         <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
                             wire:target="searchclient">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -77,20 +78,17 @@
 
                 <div class="w-full">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                    <x-input class="block w-full" wire:model.defer="telefono" type="number"
+                        onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Correo :" />
-                    <x-input class="block w-full" wire:model.defer="email" placeholder="Correo del cliente..." />
+                    <x-input class="block w-full" wire:model.defer="email" placeholder="Correo del cliente..."
+                        type="email" />
                     <x-jet-input-error for="email" />
                 </div>
-            </div>
-
-            <div wire:loading wire:loading.flex wire:target="searchclient" class="loading-overlay rounded hidden">
-                <x-loading-next />
             </div>
         </x-form-card>
 
@@ -100,8 +98,9 @@
                 <div class="w-full">
                     <x-label value="DNI :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full prevent" wire:model.defer="document2" maxlength="8"
-                            wire:keydown.enter="searchcontacto" />
+                        <x-input class="block w-full prevent" wire:model.defer="document2" type="number"
+                            wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
+                            onkeydown="disabledEnter(event)" />
                         <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled"
                             wire:target="searchcontacto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -124,8 +123,7 @@
 
                 <div class="w-full mt-2 sm:mt-0">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono2" placeholder="+51 999 999 999"
-                        maxlength="9" />
+                    <x-input class="block w-full" wire:model.defer="telefono2" type="number" onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono2" />
                 </div>
             </div>
@@ -137,11 +135,11 @@
                 {{ __('REGISTRAR') }}
             </x-button>
         </div>
-
-        <div wire:loading.flex class="loading-overlay rounded hidden">
-            <x-loading-next />
-        </div>
     </form>
+
+    <div wire:loading.flex class="loading-overlay rounded hidden">
+        <x-loading-next />
+    </div>
 
     <script>
         function select2UbigeoAlpine() {
@@ -173,33 +171,6 @@
                 this.selectTP.val(value).trigger("change");
             });
         }
-        // $('#ubigeoproveedor_id').select2()
-        //     .on("change", function(e) {
-        //         $('.select2').attr("disabled", true);
-        //         @this.ubigeo_id = e.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-
-        // $('#proveedortype_id').select2()
-        //     .on("change", function(e) {
-        //         $('.select2').attr("disabled", true);
-        //         @this.proveedortype_id = e.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-
-        // document.addEventListener('render-select2-proveedores', () => {
-        //     $('.select2').select2();
-        // });
-
-        // $("#btnsearchproveedor").click(function() {
-        //     consultasunat($('#documentproveedor').val().trim());
-        // });
 
         // function consultasunat(document) {
         //     $('#searchingclient').toggleClass('hidden');

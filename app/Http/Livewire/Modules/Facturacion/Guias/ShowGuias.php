@@ -188,10 +188,8 @@ class ShowGuias extends Component
             $guia->descripcion = $response->descripcion;
             $guia->save();
         } catch (\Exception $e) {
-
             throw $e;
         } catch (\Throwable $e) {
-
             throw $e;
         }
     }

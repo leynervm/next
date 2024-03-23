@@ -7,6 +7,7 @@ use App\Models\Promocion;
 use App\Rules\ValidatePrincipalCombo;
 use App\Rules\ValidateSecondaryCombo;
 use App\Rules\ValidateStockCombo;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
@@ -14,6 +15,8 @@ use Livewire\Component;
 
 class CreatePromocion extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $agotarstock = false;
@@ -57,7 +60,7 @@ class CreatePromocion extends Component
 
     public function render()
     {
-        $productos = Producto::whereHas('almacens', function ($query) {
+        $productos = Producto::with(['almacens', 'images'])->whereHas('almacens', function ($query) {
             // $query->where('id', );
         })->orderBy('name', 'asc')->get();
         return view('livewire.admin.promociones.create-promocion', compact('productos'));
@@ -118,6 +121,8 @@ class CreatePromocion extends Component
     public function confirmar()
     {
 
+        $this->authorize('admin.promociones.create');
+
         if (!empty($this->producto_id) && $this->agotarstock == false) {
             $this->limitstock =  formatDecimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));;
         }
@@ -168,6 +173,7 @@ class CreatePromocion extends Component
 
     public function save()
     {
+        $this->authorize('admin.promociones.create');
         $this->itempromos = getCombo()->get('comboitems');
         $validateData = $this->validate();
 
@@ -198,6 +204,8 @@ class CreatePromocion extends Component
 
     public function add()
     {
+        $this->authorize('admin.promociones.create');
+
         if (!empty($this->producto_id)) {
             $this->limitstock = formatDecimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));
         }
@@ -264,6 +272,8 @@ class CreatePromocion extends Component
 
     public function deleteitem($id)
     {
+        $this->authorize('admin.promociones.create');
+
         $comboCollect = getCombo();
         $comboitems = collect($comboCollect->get('comboitems') ?? []);
         $newscomboitems = $comboitems->reject(function ($item, $key) use ($id) {
@@ -281,6 +291,7 @@ class CreatePromocion extends Component
 
     public function  cancelcombo()
     {
+        $this->authorize('admin.promociones.create');
         Session::forget('combo');
         $this->resetValidation();
         $this->resetExcept('open');

@@ -39,6 +39,7 @@ class Guia extends Model
     const IND_REG_VEHIC_COND_TRANSP = 'SUNAT_Envio_IndicadorVehiculoConductoresTransp';
     const NAME_IND_REG_VEHIC_COND_TRANSP = 'Registrar vehículos y conductores del transportista';
 
+    const ENVIADO_SUNAT = '0';
 
     public function getDatetrasladoAttribute($value)
     {
@@ -174,5 +175,10 @@ class Guia extends Model
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
     {
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
+    }
+
+    public function isSendSunat()
+    {
+        return $this->codesunat == self::ENVIADO_SUNAT;
     }
 }

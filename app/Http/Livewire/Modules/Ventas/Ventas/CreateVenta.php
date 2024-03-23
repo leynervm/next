@@ -28,7 +28,6 @@ class CreateVenta extends Component
     public $empresa, $sucursal, $pricetype, $moneda, $producto;
     public $open = false;
     public $disponibles = 1;
-    public $readyToLoad = false;
     public $almacendefault;
     public $producto_id, $serie_id, $almacen_id, $pricetype_id;
 
@@ -68,8 +67,8 @@ class CreateVenta extends Component
         $this->pricetype_id = $pricetype->id ?? null;
 
         if (trim($this->searchcategory) !== '') {
-            $this->subcategories = Category::find($this->searchcategory)->subcategories()
-                ->whereHas('productos')->get();
+            $this->subcategories = Category::with('subcategories')->find($this->searchcategory)->subcategories()
+                ->whereHas('productos')->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         }
 
         if (count(auth()->user()->sucursal->almacens) > 0) {
@@ -96,10 +95,11 @@ class CreateVenta extends Component
             if ($this->disponibles) {
                 $query->where('cantidad', '>', 0);
             }
-        })->with('seriesdisponibles', function ($query) use ($almacens) {
-            $query->whereIn('almacen_id', $almacens);
+        })->with('seriesdisponibles', function ($query) {
+            // $query->whereIn('almacen_id', $almacens);
+            $query->where('almacen_id', $this->almacen_id);
         })->with('promocions', function ($query) {
-            $query->activos();
+            $query->disponibles();
         })->with(['images', 'category', 'marca', 'unit']);
 
         if (trim($this->search) !== "") {
@@ -120,7 +120,7 @@ class CreateVenta extends Component
 
         $productos = $productos->orderBy('name', 'asc')->paginate();
         $marcas = Marca::whereHas('productos')->orderBy('name', 'asc')->get();
-        $categories = Category::whereHas('productos')->orderBy('order', 'asc')->get();
+        $categories = Category::whereHas('productos')->orderBy('orden', 'asc')->get();
         $pricetypes = Pricetype::orderBy('id', 'asc')->get();
         $almacens = Almacen::whereHas('productos')->orderBy('name', 'asc')->get();
 
@@ -138,8 +138,8 @@ class CreateVenta extends Component
         $this->reset(['searchsubcategory', 'subcategories']);
         $this->resetValidation();
         if (trim($value) !== '') {
-            $this->subcategories = Category::find($value)->subcategories()
-                ->whereHas('productos')->get();
+            $this->subcategories = Category::with('subcategories')->find($value)->subcategories()
+                ->whereHas('productos')->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         }
     }
 
@@ -186,6 +186,8 @@ class CreateVenta extends Component
         $cantidad = 1;
         $existskardex = false;
         $date = now('America/Lima');
+        $promocion_id = null;
+        $carshoopitems = collect([]);
 
         DB::beginTransaction();
         try {
@@ -242,106 +244,215 @@ class CreateVenta extends Component
                 }
             }
 
-            $existsInCart = Carshoop::where('producto_id', $serieProducto->producto_id)
-                ->where('almacen_id', $serieProducto->almacen_id)
-                ->where('moneda_id', $this->moneda->id)
-                ->where('gratuito', '0')
-                ->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)
-                ->where('mode', Almacen::DISMINUIR_STOCK)
-                ->where('cartable_type', Venta::class);
-
-            $precios = GetPrice::getPriceProducto($serieProducto->producto, mi_empresa()->uselistprice ? $this->pricetype_id : null)->getData();
+            $precios = getPrecio($serieProducto->producto, $this->sucursal->empresa->usarLista() ? $this->pricetype_id : null,  $this->sucursal->empresa->tipocambio)->getData();
 
             if ($precios->success) {
-                if (mi_empresa()->uselistprice) {
-                    if (!$precios->existsrango) {
+                if ($this->sucursal->empresa->usarLista() && !$precios->existsrango) {
+                    $mensaje =  response()->json([
+                        'title' => 'RANGO DE PRECIO DEL PRODUCTO NO DISPONIBLE !',
+                        'text' => "No se encontraron rangos de precio de compra del producto."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+
+                $precioProducto = precio_producto($serieProducto->producto, $precios, $this->sucursal->empresa->tipocambio);
+                if ($precioProducto->pricePEN > 0) {
+                    $price = $this->moneda->code == 'USD' ? $precioProducto->priceUSD : $precioProducto->pricePEN;
+                } else {
+                    $mensaje =  response()->json([
+                        'title' => 'NO SE PUDO OBTENER PRECIO DE VENTA DEL PRODUCTO !',
+                        'text' => "No se encontraron registros de precios del producto seleccionado $precios->error"
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+
+                $promocioncombos = $serieProducto->producto->promocions()->disponibles()->combos()->with('itempromos.producto');
+                if ($promocioncombos->exists()) {
+                    $comboProducto = $promocioncombos->first();
+
+                    if ($comboProducto->limit > 0 && $cantidad + $comboProducto->outs > $comboProducto->limit) {
                         $mensaje =  response()->json([
-                            'title' => 'RANGO DE PRECIO DEL PRODUCTO NO DISPONIBLE !',
-                            'text' => "No se encontraron rangos de precio de compra del producto."
+                            'title' => "CANTIDAD SOBREPASA EL STOCK DEL PRODUCTO EN PROMOCIÓN !",
+                            'text' => "La cantidad sobrepasa el límite de unidades en promoción del producto [" . $comboProducto->limit - $comboProducto->outs . " " . $comboProducto->producto->unit->name . " DISPONIBLES]."
                         ])->getData();
                         $this->dispatchBrowserEvent('validation', $mensaje);
                         return false;
                     }
-                    if ($this->moneda->code == 'USD') {
-                        $price =  $precios->pricewithdescountDolar ??  $precios->priceDolar;
-                    } else {
-                        $price = !is_null($precios->pricemanual) ? $precios->pricemanual : $precios->pricewithdescount ?? $precios->pricesale;
+
+                    if ($comboProducto->limit > 0 && $comboProducto->outs >= $comboProducto->limit) {
+                        $mensaje =  response()->json([
+                            'title' => "STOCK DEL PRODUCTO EN PROMOCIÓN AGOTADO !",
+                            'text' => "Límite de unidades en promoción del producto agotado."
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
                     }
-                } else {
-                    if ($this->moneda->code  == 'USD') {
-                        $price = $precios->pricewithdescountDolar ?? $precios->priceDolar;
-                    } else {
-                        $price = $precios->pricewithdescount ?? $precios->pricesale;
+
+                    $promocion_id = $comboProducto->id;
+                    $comboProducto->outs = $comboProducto->outs + $cantidad;
+                    $comboProducto->save();
+
+                    $sumatoriaComboProducto = 0;
+
+                    if (count($comboProducto->itempromos) > 0) {
+                        foreach ($comboProducto->itempromos as $itempromo) {
+                            $priceItemCombo = 0;
+                            $stockCombo = $itempromo->producto->almacens->find($this->almacen_id)->pivot->cantidad ?? 0;
+                            if ($stockCombo && $stockCombo > 0) {
+                                if (($stockCombo - $cantidad) < 0) {
+                                    $mensaje =  response()->json([
+                                        'title' => "CANTIDAD DEL PRODUCTO EN COMBO SUPERA EL STOCK DISPONIBLE EN ALMACÉN !",
+                                        'text' => "La cantidad del producto $itempromo->producto->name ,en combo supera el stock disponible en almacén seleccionado."
+                                    ])->getData();
+                                    $this->dispatchBrowserEvent('validation', $mensaje);
+                                    return false;
+                                }
+                            } else {
+                                $mensaje =  response()->json([
+                                    'title' => "STOCK DEL PRODUCTO EN COMBO AGOTADO EN ALMACÉN !",
+                                    'text' => "La cantidad del producto " . $itempromo->producto->name . ", en combo está agotado para almacén " . $this->almacendefault->name
+                                ])->getData();
+                                $this->dispatchBrowserEvent('validation', $mensaje);
+                                return false;
+                            }
+
+                            $preciosCombo = getPrecio($itempromo->producto, $this->sucursal->empresa->usarLista() ? $this->pricetype_id : null, $this->sucursal->empresa->tipocambio)->getData();
+                            if ($preciosCombo->success) {
+                                $precioProducto = precio_producto($itempromo->producto, $preciosCombo, $this->sucursal->empresa->tipocambio);
+                                $priceItemCombo = $this->moneda->code == 'USD' ? $precioProducto->priceUSD : $precioProducto->pricePEN;
+                                if ($itempromo->isDescuento()) {
+                                    $pricebuyCombo = $this->moneda->code == 'USD' ? $preciosCombo->pricebuyDolar : $preciosCombo->pricebuy;
+                                    $descuentocombo = number_format((($priceItemCombo - $pricebuyCombo) * $itempromo->descuento) / 100, $preciosCombo->decimal, '.', '');
+                                    $priceItemCombo = number_format($priceItemCombo - $descuentocombo, $preciosCombo->decimal, '.', '');
+                                }
+                                $sumatoriaComboProducto = $sumatoriaComboProducto + $priceItemCombo;
+                            }
+
+                            $seriesdisponibles =  $itempromo->producto->series()->disponibles()
+                                ->where('almacen_id', $this->almacen_id)->exists();
+
+                            $carshoopitems->push([
+                                'date' => now('America/Lima'),
+                                'pricebuy' => $itempromo->producto->pricebuy,
+                                'price' => $priceItemCombo,
+                                'stock' => $stockCombo,
+                                'requireserie' => $seriesdisponibles ? 1 : 0,
+                                'newstock' => $stockCombo - $cantidad,
+                                'producto_id' => $itempromo->producto_id
+                            ]);
+
+                            $itempromo->producto->almacens()->updateExistingPivot($this->almacen_id, [
+                                'cantidad' => $stockCombo - $cantidad,
+                            ]);
+                        }
+                        // $sumatoriaComboProducto = get_sumatoria_combos($comboProducto, $this->sucursal->empresa->usarLista() ? $this->pricetype_id : null, $this->sucursal->empresa->tipocambio);
+                        $price = number_format($price + $sumatoriaComboProducto, $precios->decimal, '.', '');
                     }
                 }
+
+                $existsInCart = Carshoop::where('producto_id', $serieProducto->producto_id)
+                    ->where('almacen_id', $serieProducto->almacen_id)
+                    ->where('moneda_id', $this->moneda->id)
+                    ->where('gratuito', '0')
+                    ->where('user_id', auth()->user()->id)
+                    ->where('sucursal_id', auth()->user()->sucursal_id)
+                    ->where('mode', Almacen::DISMINUIR_STOCK)
+                    ->where('promocion_id', $promocion_id)
+                    ->where('cartable_type', Venta::class);
+
+                if ($existsInCart->exists()) {
+                    $carshoop = $existsInCart->first();
+                    $carshoop->cantidad = $carshoop->cantidad + $cantidad;
+                    $carshoop->pricebuy = $serieProducto->producto->pricebuy;
+                    $carshoop->price = $price;
+                    $carshoop->subtotal =  $price * $carshoop->cantidad;
+                    $carshoop->total = $price * $carshoop->cantidad;
+                    $carshoop->save();
+
+                    if ($carshoop->kardex) {
+                        $existskardex = true;
+                        $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
+                        $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
+                        $carshoop->kardex->save();
+                    }
+
+                    if ($carshoopitems->count() > 0) {
+                        if (count($carshoop->carshoopitems) == 0) {
+                            foreach ($carshoopitems as $itemcombo) {
+                                $carshoop->carshoopitems()->create([
+                                    'pricebuy' => $itemcombo["pricebuy"],
+                                    'price' => $itemcombo["price"],
+                                    'requireserie' => $itemcombo["requireserie"],
+                                    'producto_id' => $itemcombo["producto_id"]
+                                ]);
+                            }
+                        }
+                    }
+                } else {
+                    $carshoop = Carshoop::create([
+                        'date' => $date,
+                        'cantidad' => $cantidad,
+                        'pricebuy' => $serieProducto->producto->pricebuy,
+                        'price' => $price,
+                        'igv' => 0,
+                        'subtotal' => $price * $cantidad,
+                        'total' => $price * $cantidad,
+                        'gratuito' => 0,
+                        'status' => 0,
+                        'promocion_id' => $promocion_id,
+                        'producto_id' => $serieProducto->producto_id,
+                        'almacen_id' => $serieProducto->almacen_id,
+                        'moneda_id' => $this->moneda->id,
+                        'user_id' => auth()->user()->id,
+                        'sucursal_id' => $this->sucursal->id,
+                        'mode' => Almacen::DISMINUIR_STOCK,
+                        'cartable_type' => Venta::class,
+                    ]);
+
+                    if ($carshoopitems->count() > 0) {
+                        foreach ($carshoopitems as $itemcombo) {
+                            $carshoop->carshoopitems()->create([
+                                'pricebuy' => $itemcombo["pricebuy"],
+                                'price' => $itemcombo["price"],
+                                'requireserie' => $itemcombo["requireserie"],
+                                'producto_id' => $itemcombo["producto_id"]
+                            ]);
+                        }
+                    }
+                }
+
+                $carshoop->carshoopseries()->create([
+                    'date' =>  $date,
+                    'serie_id' => $serieProducto->id,
+                    'user_id' => auth()->user()->id
+                ]);
+
+                if (!$existskardex) {
+                    $carshoop->saveKardex(
+                        $serieProducto->producto_id,
+                        $serieProducto->almacen_id,
+                        $stock,
+                        $stock - $cantidad,
+                        $cantidad,
+                        Almacen::SALIDA_ALMACEN,
+                        Kardex::ADD_VENTAS,
+                        null
+                    );
+                }
+
+                $serieProducto->producto->almacens()->updateExistingPivot($serieProducto->almacen_id, [
+                    'cantidad' => $stock - $cantidad,
+                ]);
             } else {
                 $mensaje =  response()->json([
-                    'title' => 'NO SE PUDO OBTENER PRECIO DEL PRODUCTO !',
+                    'title' => 'NO SE PUDO OBTENER PRECIO DE VENTA DEL PRODUCTO !',
                     'text' => "No se encontraron registros de precios del producto seleccionado $precios->error"
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
-
-            if ($existsInCart->exists()) {
-                $carshoop = $existsInCart->first();
-                $carshoop->cantidad = $carshoop->cantidad + $cantidad;
-                $carshoop->pricebuy = $serieProducto->producto->pricebuy;
-                $carshoop->price = $price;
-                $carshoop->subtotal =  $price * $carshoop->cantidad;
-                $carshoop->total = $price * $carshoop->cantidad;
-                $carshoop->save();
-
-                if ($carshoop->kardex) {
-                    $existskardex = true;
-                    $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
-                    $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
-                    $carshoop->kardex->save();
-                }
-            } else {
-                $carshoop = Carshoop::create([
-                    'date' => $date,
-                    'cantidad' => $cantidad,
-                    'pricebuy' => $serieProducto->producto->pricebuy,
-                    'price' => $price,
-                    'igv' => 0,
-                    'subtotal' => $price * $cantidad,
-                    'total' => $price * $cantidad,
-                    'gratuito' => 0,
-                    'status' => 0,
-                    'producto_id' => $serieProducto->producto_id,
-                    'almacen_id' => $serieProducto->almacen_id,
-                    'moneda_id' => $this->moneda->id,
-                    'user_id' => auth()->user()->id,
-                    'sucursal_id' => $this->sucursal->id,
-                    'mode' => Almacen::DISMINUIR_STOCK,
-                    'cartable_type' => Venta::class,
-                ]);
-            }
-
-            $carshoop->carshoopseries()->create([
-                'date' =>  $date,
-                'serie_id' => $serieProducto->id,
-                'user_id' => auth()->user()->id
-            ]);
-
-            if (!$existskardex) {
-                $carshoop->saveKardex(
-                    $serieProducto->producto_id,
-                    $serieProducto->almacen_id,
-                    $stock,
-                    $stock - $cantidad,
-                    $cantidad,
-                    Almacen::SALIDA_ALMACEN,
-                    Kardex::ADD_VENTAS,
-                    null
-                );
-            }
-
-            $serieProducto->producto->almacens()->updateExistingPivot($serieProducto->almacen_id, [
-                'cantidad' => $stock - $cantidad,
-            ]);
             DB::commit();
             $this->reset(['searchserie']);
             $this->resetValidation();
@@ -363,6 +474,7 @@ class CreateVenta extends Component
         $serie = $formData["serie"] ?? null;
         $cantidad = $formData["cantidad"] ?? 1;
         $promocion_id = null;
+        $carshoopitems = collect([]);
 
         $this->cart[$producto->id]["price"] = $price;
         $this->cart[$producto->id]["almacen_id"] = $this->almacen_id;
@@ -412,28 +524,35 @@ class CreateVenta extends Component
         DB::beginTransaction();
         try {
             // $promocion = $producto->promocions->first();
-            $promocioncombos = $producto->promocions()->activos()->combos()->with('itempromos.producto');
+            $promocioncombos = $producto->promocions()->disponibles()->combos()->with('itempromos.producto');
             if ($promocioncombos->exists()) {
                 $comboProducto = $promocioncombos->first();
 
-                if ($comboProducto->limit > 0) {
-                    if ($comboProducto->outs < $comboProducto->limit) {
-                        $comboProducto->outs = $comboProducto->outs + $cantidad;
-                        $comboProducto->save();
-                    } else {
-                        $mensaje =  response()->json([
-                            'title' => "STOCK DEL PRODUCTO EN PROMOCIÓN AGOTADO !",
-                            'text' => "Límite de unidades en promoción del producto agotado."
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
+                if ($comboProducto->limit > 0 && $cantidad + $comboProducto->outs > $comboProducto->limit) {
+                    $mensaje =  response()->json([
+                        'title' => "CANTIDAD SOBREPASA EL STOCK DEL PRODUCTO EN PROMOCIÓN !",
+                        'text' => "La cantidad sobrepasa el límite de unidades en promoción del producto [" . $comboProducto->limit - $comboProducto->outs . " " . $producto->unit->name . " DISPONIBLES]."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+
+                if ($comboProducto->limit > 0 && $comboProducto->outs >= $comboProducto->limit) {
+                    $mensaje =  response()->json([
+                        'title' => "STOCK DEL PRODUCTO EN PROMOCIÓN AGOTADO !",
+                        'text' => "Límite de unidades en promoción del producto agotado."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
                 }
 
                 $promocion_id = $comboProducto->id;
+                $comboProducto->outs = $comboProducto->outs + $cantidad;
+                $comboProducto->save();
+
                 if (count($comboProducto->itempromos) > 0) {
                     foreach ($comboProducto->itempromos as $itempromo) {
-
+                        $priceItemCombo = 0;
                         $stockCombo = $itempromo->producto->almacens->find($this->almacen_id)->pivot->cantidad ?? 0;
 
                         if ($stockCombo && $stockCombo > 0) {
@@ -454,33 +573,35 @@ class CreateVenta extends Component
                             return false;
                         }
 
-                        if ($comboProducto->kardex) {
-                            $comboProducto->kardex->cantidad = $comboProducto->kardex->cantidad +  $cantidad;
-                            $comboProducto->kardex->newstock = $comboProducto->kardex->newstock - $cantidad;
-                            $comboProducto->kardex->save();
-                        } else {
-                            $comboProducto->saveKardex(
-                                $comboProducto->producto_id,
-                                $this->almacen_id,
-                                $stockCombo,
-                                $stockCombo - $cantidad,
-                                $cantidad,
-                                Almacen::SALIDA_ALMACEN,
-                                Kardex::ADD_VENTAS,
-                                null
-                            );
+                        $preciosCombo = getPrecio($itempromo->producto, $this->sucursal->empresa->usarLista() ? $this->pricetype_id : null, $this->sucursal->empresa->tipocambio)->getData();
+                        if ($preciosCombo->success) {
+                            $precioProducto = precio_producto($itempromo->producto, $preciosCombo, $this->sucursal->empresa->tipocambio);
+                            $priceItemCombo = $this->moneda->code == 'USD' ? $precioProducto->priceUSD : $precioProducto->pricePEN;
+                            if ($itempromo->isDescuento()) {
+                                $pricebuyCombo = $this->moneda->code == 'USD' ? $preciosCombo->pricebuyDolar : $preciosCombo->pricebuy;
+                                $descuentocombo = number_format((($priceItemCombo - $pricebuyCombo) * $itempromo->descuento) / 100, $preciosCombo->decimal, '.', '');
+                                $priceItemCombo = number_format($priceItemCombo - $descuentocombo, $preciosCombo->decimal, '.', '');
+                            }
                         }
+
+                        $seriesdisponibles =  $itempromo->producto->series()->disponibles()
+                            ->where('almacen_id', $this->almacen_id)->exists();
+
+                        $carshoopitems->push([
+                            'date' => now('America/Lima'),
+                            'pricebuy' => $itempromo->producto->pricebuy,
+                            'price' => $priceItemCombo,
+                            'stock' => $stockCombo,
+                            'requireserie' => $seriesdisponibles ? 1 : 0,
+                            'newstock' => $stockCombo - $cantidad,
+                            'producto_id' => $itempromo->producto_id
+                        ]);
 
                         $itempromo->producto->almacens()->updateExistingPivot($this->almacen_id, [
                             'cantidad' => $stockCombo - $cantidad,
                         ]);
                     }
                 }
-                // $this->resetValidation();
-                // $this->producto = $producto;
-                // $this->producto->price = $price;
-                // $this->open = true;
-                // return false;
             }
 
             $existskardex = false;
@@ -494,6 +615,8 @@ class CreateVenta extends Component
                 ->where('sucursal_id', auth()->user()->sucursal_id)
                 ->where('mode', Almacen::DISMINUIR_STOCK)
                 ->where('cartable_type', Venta::class);
+
+            // dd($promocion_id);
 
             if ($existsInCart->exists()) {
                 $carshoop = $existsInCart->first();
@@ -509,6 +632,19 @@ class CreateVenta extends Component
                     $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
                     $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
                     $carshoop->kardex->save();
+                }
+
+                if ($carshoopitems->count() > 0) {
+                    if (count($carshoop->carshoopitems) == 0) {
+                        foreach ($carshoopitems as $itemcombo) {
+                            $carshoop->carshoopitems()->create([
+                                'pricebuy' => $itemcombo["pricebuy"],
+                                'price' => $itemcombo["price"],
+                                'requireserie' => $itemcombo["requireserie"],
+                                'producto_id' => $itemcombo["producto_id"]
+                            ]);
+                        }
+                    }
                 }
             } else {
                 $carshoop = Carshoop::create([
@@ -530,6 +666,17 @@ class CreateVenta extends Component
                     'promocion_id' => $promocion_id,
                     'cartable_type' => Venta::class,
                 ]);
+
+                if ($carshoopitems->count() > 0) {
+                    foreach ($carshoopitems as $itemcombo) {
+                        $carshoop->carshoopitems()->create([
+                            'pricebuy' => $itemcombo["pricebuy"],
+                            'price' => $itemcombo["price"],
+                            'requireserie' => $itemcombo["requireserie"],
+                            'producto_id' => $itemcombo["producto_id"]
+                        ]);
+                    }
+                }
             }
 
             if (!empty($serie)) {

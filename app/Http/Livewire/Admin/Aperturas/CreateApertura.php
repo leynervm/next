@@ -62,8 +62,8 @@ class CreateApertura extends Component
         $this->authorize('admin.cajas.aperturas.create');
         if (auth()->user()->employer()->exists() == false) {
             $mensaje = response()->json([
-                'title' => 'USUARIO NO ESTÁ VINCULADO A UN PERSONAL DE TRABAJO !',
-                'text' => 'Para aperturar nueva caja, el usuario debe estar vinculado a un personal de trabajo, contáctese con su administrador.',
+                'title' => 'VINCULAR USUARIO A UN PERSONAL DE TRABAJO !',
+                'text' => 'Para aperturar nueva caja, el usuario debe estar vinculado a un personal, y poder asignar los horarios de apertura y cierre de caja automático.',
                 'type' => 'warning'
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);

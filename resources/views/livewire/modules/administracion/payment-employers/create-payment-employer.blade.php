@@ -36,11 +36,16 @@
                     </div>
                 @endif
 
-                <p class="text-colorminicard text-md md:text-3xl font-semibold">
-                    <small class="text-[10px] font-medium w-full block leading-3">MES PAGO</small>
-                    {{ formatDate($monthbox->month, 'MMMM Y') }}
-                    <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
-                </p>
+                @if ($openbox)
+                    <p class="text-colorminicard text-md md:text-3xl font-semibold">
+                        <small class="text-[10px] font-medium w-full block leading-3">MES PAGO</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px]">APERTURA DE CAJA NO DISPONIBLE...</p>
+                @endif
+
 
                 <p class="text-colorminicard text-md md:text-3xl font-semibold">
                     <small class="text-[10px] font-medium w-full block leading-3">TOTAL PAGAR</small>

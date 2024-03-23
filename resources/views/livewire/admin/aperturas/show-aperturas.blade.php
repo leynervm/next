@@ -16,7 +16,7 @@
                     <th scope="col" class="p-2 font-medium">EFECTIVO</th>
                     <th scope="col" class="p-2 font-medium">TRANSFERENCIAS</th>
                     <th scope="col" class="p-2 font-medium">USUARIO</th>
-                    <th scope="col" class="p-2 font-medium">CIERRE CAJA</th>
+                    <th scope="col" class="p-2 font-medium">CERRAR CAJA</th>
                     <th scope="col" class="p-2 font-medium">ESTADO</th>
                     <th scope="col" class="p-2 font-medium">SUCURSAL</th>
                     @can('admin.cajas.aperturas.edit')
@@ -54,10 +54,9 @@
                                     {{ formatDate($item->closedate) }}
                                 @else
                                     @if ($item->isUsing())
-                                        @if ($item->isExpired())
+                                        @if ($item->isExpired() || auth()->user()->isAdmin())
                                             @can('admin.cajas.aperturas.close')
-                                                <x-button class="inline-block"
-                                                    wire:click="$emit('openbox.confirmClose',{{ $item }})"
+                                                <x-button class="inline-block" onclick="confirmClose({{ $item }})"
                                                     wire:loading.attr="disabled">CERRAR CAJA</x-button>
                                             @endcan
                                         @else
@@ -84,8 +83,8 @@
                             </td>
                             @can('admin.cajas.aperturas.edit')
                                 <td class="p-2 text-center">
-                                    @if ($item->isUsing())
-                                        @if ($item->closedate == null)
+                                    @if ($item->isUsing() || auth()->user()->isAdmin())
+                                        @if (is_null($item->closedate))
                                             <x-button-edit wire:click="edit({{ $item->id }})"
                                                 wire:loading.attr="disabled" />
                                         @endif
@@ -121,17 +120,22 @@
 
                 <div class="w-full">
                     <x-label value="Fecha cierre :" />
-                    <x-disabled-text :text="formatDate($openbox->expiredate)" />
+                    @if ($openbox->isClosed())
+                        <x-disabled-text :text="formatDate($openbox->expiredate)" />
+                    @else
+                        <x-input class="block w-full" wire:model.defer="openbox.expiredate" type="datetime-local" />
+                    @endif
+                    <x-jet-input-error for="openbox.expiredate" />
                 </div>
 
                 <div class="w-full">
-                    <x-label value="Saldo apertura :" />
-                    @if ($openbox->isClosed())
-                        <x-disabled-text :text="$openbox->startmount" />
-                    @else
+                    <x-label value="Monto apertura :" />
+                    {{-- @if ($openbox->isClosed()) --}}
+                    <x-disabled-text :text="$openbox->apertura" />
+                    {{-- @else
                         <x-input class="block w-full" wire:model.defer="openbox.apertura" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 8)" />
-                    @endif
+                    @endif --}}
                     <x-jet-input-error for="openbox.apertura" />
                 </div>
 
@@ -145,23 +149,21 @@
     </x-jet-dialog-modal>
 
     <script>
-        document.addEventListener('livewire:load', function() {
-            Livewire.on('openbox.confirmClose', data => {
-                swal.fire({
-                    title: 'Cerrar apertura ' + data.box.name,
-                    text: "Se actualizará un registro en la base de datos",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.close(data.id);
-                    }
-                })
+        function confirmClose(openbox) {
+            swal.fire({
+                title: 'Cerrar apertura ' + openbox.box.name,
+                text: "La apertura de caja dejará de estar disponible para realizar cualquier tipo de movimientos de pagos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.close(openbox.id);
+                }
             })
-        })
+        }
     </script>
 </div>

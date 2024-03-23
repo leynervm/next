@@ -5,9 +5,9 @@
                 <div class="w-full">
                     <x-label value="Documento :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full prevent" wire:model.defer="document"
-                            wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
-                            type="number" />
+                        <x-input class="block w-full" wire:model.defer="document" wire:keydown.enter="searchclient"
+                            onkeypress="return validarNumero(event, 11)" type="number"
+                            onkeydown="disabledEnter(event)" />
                         <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -58,8 +58,8 @@
         <x-form-card titulo="PERFIL TRABAJADOR" style="display: none;" x-show="show"
             class="animate__animated animate__fadeInDown animate__faster">
             @if ($employer)
-                <x-simple-card class="w-full flex flex-col gap-1 rounded-md cursor-default p-3">
-                    <div class="w-full">
+                <div class="w-full flex flex-col gap-1 rounded-md cursor-default">
+                    <div class="w-full flex flex-col gap-1">
                         <h1 class="font-semibold text-sm leading-4 text-primary">
                             {{ $employer->name }}</h1>
 
@@ -93,7 +93,7 @@
                     <div class="w-full flex justify-end">
                         <x-button-delete wire:click="deleteemployer" wire:loading.attr="disabled" />
                     </div>
-                </x-simple-card>
+                </div>
             @else
                 <div class="w-full grid sm:grid-cols-2 gap-2">
                     <div class="w-full">

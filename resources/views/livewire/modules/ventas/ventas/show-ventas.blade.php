@@ -145,7 +145,7 @@
                     <tr>
                         <td class="p-2 text-[10px]">
                             @if ($item->trashed())
-                                <p class="block w-full leading-3 text-linktable mb-1">
+                                <p class="block w-full leading-3 text-colorsubtitleform mb-1">
                                     {{ $item->seriecompleta }}
                                     <br>
                                     {{ $item->seriecomprobante->typecomprobante->descripcion }}
@@ -182,23 +182,23 @@
                             <p class="text-[10px]">{{ $item->client->document }}</p>
                             <p class="text-[10px] text-colorsubtitleform">{{ $item->direccion }}</p>
                         </td>
-                        <td class="p-2 ">
+                        <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->exonerado, 3, '.', ', ') }}
                         </td>
-                        <td class="p-2 ">
+                        <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->gravado, 3, '.', ', ') }}
                         </td>
-                        <td class="p-2 ">
+                        <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->igv, 3, '.', ', ') }}
                         </td>
-                        <td class="p-2 ">
+                        <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gratuito, 3, '.', ', ') }}
+                            {{ number_format($item->gratuito + $item->igvgratuito, 3, '.', ', ') }}
                         </td>
-                        <td class="p-2">
+                        <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->total, 3, '.', ', ') }}
                         </td>

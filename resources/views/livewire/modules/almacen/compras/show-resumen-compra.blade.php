@@ -1,27 +1,26 @@
 <div>
     <x-form-card titulo="RESUMEN COMPRA" subtitulo="Resumen de productos adquiridos en la compra.">
         <div class="w-full relative flex flex-col gap-2">
-            @if (count($compra->compraitems))
+            @if (count($compra->compraitems) > 0)
                 <div class="w-full flex gap-2 flex-wrap justify-around xl:justify-start">
                     @foreach ($compra->compraitems as $item)
                         @php
                             $image = null;
-                            if (count($item->producto->images)) {
-                                if (count($item->producto->defaultImage)) {
-                                    $image = asset('storage/productos/' . $item->producto->defaultImage->first()->url);
-                                } else {
-                                    $image = asset('storage/productos/' . $item->producto->images->first()->url);
-                                }
-                            }
+                            // if ($item->producto->images > 0) {
+                            //     if (count($item->producto->defaultImage) > 0) {
+                            //         $image = asset('storage/productos/' . $item->producto->defaultImage->first()->url);
+                            //     } else {
+                            //         $image = asset('storage/productos/' . $item->producto->images->first()->url);
+                            //     }
+                            // }
 
-                            $discount = count($item->producto->descuentosactivos)
-                                ? $item->producto->descuentosactivos()->first()->descuento
+                            $discount = $item->producto->promocions()->descuentos()->disponibles()->exists()
+                                ? $item->producto->promocions()->descuentos()->disponibles()->first()->descuento
                                 : null;
                         @endphp
 
                         <x-card-producto :image="$image" :name="$item->producto->name" :discount="$discount ?? null" x-data="{ loadingproducto: false }">
                             <div class="w-full flex flex-wrap gap-1 justify-center mt-1">
-
                                 <x-label-price>
                                     <span>
                                         {{ $item->compra->moneda->simbolo }}
@@ -29,18 +28,6 @@
                                         {{ $item->compra->moneda->currency }}
                                     </span>
                                 </x-label-price>
-
-                                {{-- @if ($empresa->viewpricedolar)
-                                        @if ($item->compra->moneda->code == 'USD')
-                                            <h1 class="text-xs font-semibold leading-3 text-green-500">
-                                                <span>
-                                                    S/.
-                                                    {{ number_format(($item->subtotal + $item->igv) * $item->compra->tipocambio, 4, '.', ', ') }}
-                                                    SOLES
-                                                </span>
-                                            </h1>
-                                        @endif
-                                    @endif --}}
                             </div>
 
                             <div class="w-full flex flex-wrap gap-1 items-start mt-2 text-[10px]">
@@ -72,8 +59,6 @@
                                                 wire:loading.attr="disabled" />
                                         @endcan
                                     </span>
-
-                                    {{-- <x-span-text :text="'SERIE: ' . $item->series->first()->serie" class="leading-3" /> --}}
                                 @endif
                             </div>
 
@@ -103,14 +88,12 @@
 
                                     <x-button @click="showPrices = !showPrices" class="whitespace-nowrap"
                                         wire:loading.attr="disabled">
-                                        {{-- {{ __('VER PRECIOS') }} --}}
                                         <span x-text="showPrices ? 'OCULTAR PRECIOS' : 'VER PRECIOS'"></span>
                                     </x-button>
 
                                     @if (count($item->series) > 1)
                                         <x-button @click="showForm = !showForm" class="whitespace-nowrap"
                                             wire:loading.attr="disabled">
-                                            {{-- {{ __('VER SERIES') }} --}}
                                             <span x-text="showPrices ? 'OCULTAR SERIES' : 'VER SERIES'"></span>
                                         </x-button>
                                     @endif
@@ -141,7 +124,7 @@
                                         $empresa = $compra->sucursal->empresa;
                                     @endphp
                                     @if ($empresa->usarLista())
-                                        @if (count($pricetypes))
+                                        @if (count($pricetypes) > 0)
                                             <div class="w-full grid xs:grid-cols-2 lg:grid-cols-1 gap-1">
                                                 @foreach ($pricetypes as $lista)
                                                     @php
@@ -243,36 +226,20 @@
                                                         class="w-full flex font-semibold gap-1 items-center justify-between mt-1">
                                                         <h1 class="text-xs font-semibold leading-3 text-green-500">
                                                             $.
-                                                            {{-- {{ number_format($precios->pricewithdescountDolar, $precios->decimal, '.', ', ') }} --}}
                                                             {{ number_format($precios->priceDolar, $precios->decimal, '.', ', ') }}
                                                             <small> DÓLARES</small>
                                                         </h1>
-
-                                                        {{-- @if (count($item->producto->descuentosactivos))
-                                                        <p
-                                                            class="text-[10px] inline-block leading-3 bg-red-100 p-0.5 rounded text-red-500">
-                                                            <small>ANTES : </small>$.
-                                                            {{ number_format($precios->priceDolar, $precios->decimal, '.', ', ') }}
-                                                        </p>
-                                                    @endif --}}
                                                     </div>
                                                 @endif
 
-                                                @if (count($item->producto->descuentosactivos))
+                                                @if ($item->producto->promocions()->descuentos()->disponibles()->exists())
                                                     <div
                                                         class="w-full flex font-semibold gap-1 items-center justify-between mt-1">
                                                         <h1 class="text-xs leading-3 text-green-500">
                                                             S/.
                                                             {{ number_format($precios->pricesale, $precios->decimal, '.', ', ') }}
-                                                            {{-- {{ number_format($precios->pricewithdescount, $precios->decimal, '.', ', ') }} --}}
                                                             <small> SOLES</small>
                                                         </h1>
-
-                                                        {{-- <p
-                                                        class="text-[10px] inline-block leading-3 bg-red-100 p-0.5 rounded text-red-500">
-                                                        <small>ANTES : </small>S/.
-                                                        {{ number_format($precios->pricesale, $precios->decimal, '.', ', ') }}
-                                                    </p> --}}
                                                     </div>
                                                 @else
                                                     <h1 class="text-xs font-semibold leading-3 text-green-500 mt-1">

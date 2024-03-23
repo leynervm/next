@@ -15,7 +15,7 @@ class Subcategory extends Model
     use HasFactory;
     
     public $timestamps = false;
-    protected $fillable = ['name', 'order'];
+    protected $fillable = ['name', 'orden'];
 
     public function setNameAttribute($value)
     {
