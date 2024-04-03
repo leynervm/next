@@ -27,6 +27,11 @@ class Cajamovimiento extends Model
         'typemovement' => MovimientosEnum::class
     ];
 
+    public function setDetalleAttribute($value)
+    {
+        $this->attributes['detalle'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
     public function typepayment(): BelongsTo
     {
         return $this->belongsTo(Typepayment::class);
@@ -81,4 +86,15 @@ class Cajamovimiento extends Model
     {
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
     }
+
+    public function isIngreso()
+    {
+        return $this->typemovement == MovimientosEnum::INGRESO;
+    }
+
+    public function isEgreso()
+    {
+        return $this->typemovement == MovimientosEnum::EGRESO;
+    }
+    
 }

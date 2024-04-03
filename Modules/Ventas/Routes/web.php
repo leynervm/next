@@ -39,3 +39,11 @@ Route::middleware([
 
     Route::get('/administracion/lista-precios', [HomeController::class, 'pricetypes'])->name('admin.administracion.pricetypes');
 });
+
+Route::middleware([
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    // 'verified'
+])->middleware(['auth'])->group(function () {
+    Route::get('admin/ventas/{venta}/imprimir-A4', [VentaController::class, 'imprimirA4'])->name('admin.ventas.print.a4');
+});

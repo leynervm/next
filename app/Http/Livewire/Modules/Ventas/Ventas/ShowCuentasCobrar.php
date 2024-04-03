@@ -29,10 +29,9 @@ class ShowCuentasCobrar extends Component
 
         $sumatorias = Cuota::with(['moneda', 'sucursal' => function ($query) {
             $query->withTrashed();
-        }])->whereHasMorph('cuotable', Venta::class)
-            ->doesntHave('cajamovimiento')
-            ->selectRaw('moneda_id, SUM(amount) as total')->groupBy('moneda_id')
-            ->orderBy('total', 'desc')->get();
+        }])->whereHasMorph('cuotable', Venta::class)->doesntHave('cajamovimiento')
+            ->selectRaw('moneda_id, SUM(amount) as total')
+            ->groupBy('moneda_id')->orderBy('total', 'desc')->get();
 
         $cuotas = Venta::withWhereHas('client', function ($query) {
             if (trim($this->search) !== '') {
@@ -48,7 +47,7 @@ class ShowCuentasCobrar extends Component
         });
 
         if (trim($this->comprobante) !== '') {
-            $cuotas->where('code', 'ILIKE', '%' . $this->comprobante . '%');
+            $cuotas->where('seriecompleta', 'ILIKE', '%' . $this->comprobante . '%');
             // $cuotas->whereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
         }
 

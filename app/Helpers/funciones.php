@@ -155,10 +155,19 @@ function getTextConcept($value)
 function getMessageOpencaja()
 {
     return response()->json([
-        'title' => 'APERTURAR NUEVA CAJA !',
+        'title' => 'APERTURAR NUEVA CAJA DIARIA !',
         'text' => "La apertura de caja no se encuentra disponible en este momento, o ha sido cerrada."
     ])->getData();
 }
+
+function getMessageMonthbox()
+{
+    return response()->json([
+        'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
+        'text' => "No se encontraron cajas mensuales aperturadas para registrar movimientos."
+    ])->getData();
+}
+
 
 function getIndicadorTransbProg()
 {
@@ -290,33 +299,27 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
         $amountDescuento = number_format(0, 2);
 
         $isRemate = false;
-        // $precioVenta = number_format($producto->pricebuy, $decimal, '.', '');
-        // $precioDescuento = number_format($precioVenta, $decimal, '.', '');
-
         $amountDescuentoDolar = number_format(0, $decimal, '.', '');
         $precioVentaDolar = number_format(0, $decimal, '.', '');
         $precioDescuentoDolar = number_format($precioVentaDolar, $decimal, '.', '');
 
-        // if (count($producto->ofertasdisponibles)) {
-        //     $descuento = $producto->ofertasdisponibles()->first()->descuento;
-        // }
-        // $descuentos = $producto->promocions()->descuentos()->disponibles();
-        $descuentos = $producto->promocions()->descuentos()->disponibles();
-        if ($descuentos->exists()) {
-            $descuentoactivo = $descuentos->first();
-            if (!is_null($descuentoactivo->limit)) {
-                if ($descuentoactivo->outs < $descuentoactivo->limit) {
-                    $descuento = $descuentoactivo->descuento ?? 0;
-                }
-            } else {
+        $promodescuentos = $producto->promocions()->descuentos()->disponibles();
+        if ($promodescuentos->exists()) {
+            $descuentoactivo = $promodescuentos->first();
+
+            if ($descuentoactivo->isDisponible() && $descuentoactivo->isAvailable()) {
                 $descuento = $descuentoactivo->descuento ?? 0;
             }
         }
 
-        $isRemate = $producto->promocions()->remates()->disponibles()->exists();
-        // if ($remates->remates()->exists()) {
-        //     $isRemate = true;
-        // }
+        $promoremates = $producto->promocions()->remates()->disponibles();
+        if ($promoremates->exists()) {
+            $remateactivo = $promoremates->first();
+
+            if ($remateactivo->isDisponible() && $remateactivo->isAvailable()) {
+                $isRemate = true;
+            }
+        }
 
         if ($priceSelected) {
 
@@ -357,8 +360,6 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
             }
 
             if (count($pricetype->rangos) > 0) {
-                // $rangoPrice = $pricetype->rangos;
-                // if (count($pricetype->rangos)) {
                 foreach ($pricetype->rangos as $rango) {
                     if ($producto->pricebuy >= $rango->desde && $producto->pricebuy <= $rango->hasta) {
 
@@ -369,6 +370,13 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
                         // $priceSelect = $priceManual->pivot->price ?? $oldPrecioSalida;
                         $precioVenta = number_format($priceManual->pivot->price ?? $oldPrecioSalida, $pricetype->decimals, '.', '');
 
+                        // ASIGNO POR DEFECTO EL PRECIODESCUENTO IGUAL A PRECIOVENTA
+                        // EN CASO DE Q PIVOT GANANCIA SEA CERO TOMARA EL MISMO VALOR 
+                        // AL PRECIO DE VENTA
+                        $precioDescuento = number_format($precioVenta, $pricetype->decimals, '.', '');
+                        if ($tipocambio > 0) {
+                            $precioDescuentoDolar = number_format($precioVenta > 0 ? $precioVenta / $tipocambio : 0, $pricetype->decimals, '.', '');
+                        }
 
                         // SI DESCUENTO > 0 Y GANANCIA > 0 ENTONCES APLICAMOS DSCT 
                         // AL % GANANCIA Y LUEGO EL RESULTADO RESTAMOS CON EL % GANANCIA
@@ -405,19 +413,6 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
                     }
                 }
             }
-            // else {
-
-            // $amountDescuento = number_format(($precioVenta * $descuento) / 100, $pricetype->decimals, '.', '');
-            // $precioVenta = number_format($precioVenta, $pricetype->decimals, '.', '');
-            // $precioDescuento = number_format($precioVenta - $amountDescuento, $pricetype->decimals, '.', '');
-
-            // if ($tipocambio > 0) {
-            //     $amountDescuentoDolar = number_format((($precioVenta / $tipocambio) * $descuento) / 100, $pricetype->decimals, '.', '');
-            //     $precioVentaDolar = number_format($precioVenta / $tipocambio, $pricetype->decimals, '.', '');
-            //     $precioDescuentoDolar = number_format($precioVentaDolar - $amountDescuentoDolar, $pricetype->decimals, '.', '');
-            //     $oldPrecioSalida = number_format(0, $pricetype->decimals, '.', '');
-            // }
-            // }
         } else {
 
             $oldPrecioSalida = number_format($precioCompra, $decimal, '.', '');
@@ -475,17 +470,7 @@ function getPrecio($producto, $priceSelected = null, $preciotipocambio = null)
     }
 }
 
-function round_decimal($value, $roundedTo = 1)
-{
-    $result = $value - floor($value);
-    $rounded = $roundedTo == 1 ? 0.5 : 1;
 
-    if ($result > 0) {
-        return ($result <= 0.5) ? (float) (floor($value) + $rounded) : round($value);
-    } else {
-        return (float) $value;
-    }
-}
 
 function precio_producto(Producto $producto, $precios, $tipocambio = null)
 {
@@ -497,6 +482,8 @@ function precio_producto(Producto $producto, $precios, $tipocambio = null)
 
     if ($promocions->exists()) {
         $promocion = $promocions->first();
+
+
         if ($promocion->isCombo()) {
             $pricePEN = $precios->pricemanual == null ? $precios->pricesale : $precios->pricemanual;
             $priceUSD = $precios->priceDolar;
@@ -519,12 +506,6 @@ function precio_producto(Producto $producto, $precios, $tipocambio = null)
         $priceUSD = $precios->priceDolar;
     }
 
-    // return response()->json([
-    //     'pricePEN' => $pricePEN,
-    //     'priceUSD' => $priceUSD,
-    //     'tipocambio' => $tipocambio
-    // ], 200);
-
     return response()->json([
         'priceAntesPEN' => $priceAntesPEN,
         'priceAntesUSD' => $priceAntesUSD,
@@ -534,7 +515,7 @@ function precio_producto(Producto $producto, $precios, $tipocambio = null)
     ])->getData();
 }
 
-function get_sumatoria_combos(Promocion $promocion, $pricetype_id = null, $tipocambio = null)
+function get_sumatoria_combos(Promocion $promocion, $pricetype_id = null, $tipocambio = null, $code_moneda = 'PEN')
 {
     $sumatoriaPEN = 0;
     $sumatoriaUSD = 0;
@@ -555,8 +536,14 @@ function get_sumatoria_combos(Promocion $promocion, $pricetype_id = null, $tipoc
                     $precioPEN = number_format($precioPEN - $descuentoitemPEN, $precios->decimal, '.', '');
                     $precioUSD = number_format($precioUSD - $descuentoitemUSD, $precios->decimal, '.', '');
                 }
+
+                if ($itempromo->isGratuito()) {
+                    $precioPEN =  $precios->pricebuy;
+                    $precioUSD = $precios->pricebuyDolar;
+                }
+
                 // $preciosArray[] = $precios;
-                $preciosArray[] = $precioProducto;
+                // $preciosArray[] = $precioProducto;
 
                 $sumatoriaPEN = $sumatoriaPEN + $precioPEN;
                 $sumatoriaUSD = $sumatoriaUSD + $precioUSD;
@@ -567,6 +554,18 @@ function get_sumatoria_combos(Promocion $promocion, $pricetype_id = null, $tipoc
         'sumatoriaPEN' => $sumatoriaPEN,
         'sumatoriaUSD' => $sumatoriaUSD,
         'tipocambio' => $tipocambio,
-        'preciosArray' => $preciosArray,
+        // 'preciosArray' => $preciosArray,
     ])->getData();
+}
+
+function round_decimal($value, $roundedTo = 1)
+{
+    $result = $value - floor($value);
+    $rounded = $roundedTo == 1 ? 0.5 : 1;
+
+    if ($result > 0) {
+        return ($result <= 0.5) ? (float) (floor($value) + $rounded) : round($value);
+    } else {
+        return (float) $value;
+    }
 }

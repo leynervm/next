@@ -2,43 +2,46 @@
     <x-form-card titulo="ALMACENES">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
             @can('admin.administracion.sucursales.almacenes.edit')
-                @if (Module::isEnabled('Almacen'))
-                    <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 relative" x-data="{ savingalmacen: false }">
-                        <form wire:submit.prevent="save" class="flex flex-col gap-2">
-                            <div class="w-full">
-                                <x-label value="Almacén :" />
-                                <div id="parentalmacen_id" class="relative" x-data="{ almacen_id: @entangle('almacen_id').defer }" x-init="select2Almacen">
-                                    <x-select class="block w-full" id="almacen_id" x-ref="searcha"
-                                        wire:model.defer="almacen_id">
-                                        <x-slot name="options">
-                                            @if (count($almacens))
+                @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
+                    @if (count($almacens) > 0)
+                        <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 relative" x-data="{ savingalmacen: false }">
+                            <form wire:submit.prevent="save" class="flex flex-col gap-2">
+                                <div class="w-full">
+                                    <x-label value="Almacén :" />
+                                    <div id="parentalmacen_id" class="relative" x-data="{ almacen_id: @entangle('almacen_id').defer }"
+                                        x-init="select2Almacen">
+                                        <x-select class="block w-full" id="almacen_id" x-ref="searcha"
+                                            wire:model.defer="almacen_id">
+                                            <x-slot name="options">
+
                                                 @foreach ($almacens as $item)
                                                     <option value="{{ $item->id }}">{{ $item->name }}</option>
                                                 @endforeach
-                                            @endif
-                                        </x-slot>
-                                    </x-select>
-                                    <x-icon-select />
+
+                                            </x-slot>
+                                        </x-select>
+                                        <x-icon-select />
+                                    </div>
+                                    <x-jet-input-error for="almacen_id" />
                                 </div>
-                                <x-jet-input-error for="almacen_id" />
-                            </div>
 
-                            <div class="w-full flex pt-4 justify-end">
-                                <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
-                                    {{ __('REGISTRAR') }}
-                                </x-button>
-                            </div>
-                        </form>
+                                <div class="w-full flex pt-4 justify-end">
+                                    <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
+                                        {{ __('REGISTRAR') }}
+                                    </x-button>
+                                </div>
+                            </form>
 
-                        <div x-show="savingalmacen" class="loading-overlay rounded" wire:loading wire:loading.flex>
-                            <x-loading-next />
+                            <div x-show="savingalmacen" class="loading-overlay rounded" wire:loading wire:loading.flex>
+                                <x-loading-next />
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 @endif
             @endcan
 
             <div class="w-full">
-                @if (count($sucursal->almacens))
+                @if (count($sucursal->almacens) > 0)
                     <div class="w-full flex flex-wrap gap-2">
                         @foreach ($sucursal->almacens as $item)
                             <x-minicard :title="null" size="lg"
@@ -62,9 +65,9 @@
                                         @if ($item->default)
                                             <x-icon-default />
                                         @endif
-                                        @if (Module::isEnabled('Almacen'))
+                                        @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
                                             <x-button-delete onclick="confirmDeleteAlmacen({{ $item }})"
-                                                wire:loading.attr="disabled" />
+                                                wire:loading.attr="disabled" wire:key="desvincular_{{ $item->id }}" />
                                         @endif
                                     </x-slot>
                                 @endcan
@@ -129,8 +132,8 @@
 
         function confirmDeleteAlmacen(almacen) {
             swal.fire({
-                title: 'Desvincular almacén, ' + almacen.name,
-                text: "Almacén dejará de estar disponble en sucursal, y sus registros vinculados se seguiran mostrando.",
+                title: 'Desvincular registro de ' + almacen.name + ' de la sucursal ?',
+                text: "Almacén seleccionado dejará de estar disponible en sucursal, y el stock de los productos vinculados se eliminarán.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

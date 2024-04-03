@@ -15,8 +15,8 @@ class CreateRangosTable extends Migration
     {
         Schema::create('rangos', function (Blueprint $table) {
             $table->smallIncrements('id')->unsigned();
-            $table->decimal('desde', 10, 4);
-            $table->decimal('hasta', 10, 4);
+            $table->decimal('desde', 18, 3);
+            $table->decimal('hasta', 18, 3);
             $table->decimal('incremento', 10, 3);
         });
     }

@@ -1,8 +1,11 @@
 <div>
-    <form wire:submit.prevent="save" class="w-full relative flex flex-col gap-8">
+    <div wire:loading.flex class="fixed loading-overlay rounded hidden h-screen">
+        <x-loading-next />
+    </div>
+
+    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="REGISTRAR PROVEEDOR"
             subtitulo="Complete todos los campos para registrar un nuevo proveedor.">
-
             <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
                 <div class="w-full">
                     <x-label value="RUC :" />
@@ -93,7 +96,6 @@
         </x-form-card>
 
         <x-form-card titulo="CONTACTO" subtitulo="Nos permitirá contactarse con el proveedor.">
-
             <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
                 <div class="w-full">
                     <x-label value="DNI :" />
@@ -123,23 +125,19 @@
 
                 <div class="w-full mt-2 sm:mt-0">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono2" type="number" onkeypress="return validarNumero(event, 9)" />
+                    <x-input class="block w-full" wire:model.defer="telefono2" type="number"
+                        onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono2" />
                 </div>
             </div>
-
         </x-form-card>
 
         <div class="w-full flex pt-4 justify-end">
-            <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
+            <x-button type="submit" wire:loading.attr="disabled">
                 {{ __('REGISTRAR') }}
             </x-button>
         </div>
     </form>
-
-    <div wire:loading.flex class="loading-overlay rounded hidden">
-        <x-loading-next />
-    </div>
 
     <script>
         function select2UbigeoAlpine() {

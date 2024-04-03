@@ -45,4 +45,14 @@ class Methodpayment extends Model
     {
         return $this->hasMany(Cajamovimiento::class);
     }
+
+    public function isEfectivo()
+    {
+        return $this->type == self::EFECTIVO;
+    }
+
+    public function isTransferencia()
+    {
+        return $this->type == self::TRANSFERENCIA;
+    }
 }

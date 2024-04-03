@@ -13,8 +13,8 @@ class HomeController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:admin.administracion.employers')->only('employers');
-        $this->middleware('can:admin.administracion.employers.payments')->only('payments');
+        // $this->middleware('can:admin.administracion.employers')->only('employers');
+        // $this->middleware('can:admin.administracion.employers.payments')->only('payments');
         $this->middleware('can:admin.administracion.typecomprobantes')->only('typecomprobantes');
         $this->middleware('can:admin.almacen.marcas')->only('marcas');
         $this->middleware('can:admin.promociones')->only('promociones');
@@ -56,16 +56,16 @@ class HomeController extends Controller
         return view('admin.marcas.index');
     }
 
-    public function employers()
-    {
-        return view('admin.employers.index');
-    }
+    // public function employers()
+    // {
+    //     return view('admin.employers.index');
+    // }
 
-    public function payments(Employer $employer)
-    {
-        $this->authorize('sucursal', $employer);
-        return view('admin.employers.payments', compact('employer'));
-    }
+    // public function payments(Employer $employer)
+    // {
+    //     $this->authorize('sucursal', $employer);
+    //     return view('admin.employers.payments', compact('employer'));
+    // }
 
     public function promociones()
     {

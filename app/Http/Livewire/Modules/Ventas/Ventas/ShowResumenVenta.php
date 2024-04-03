@@ -217,8 +217,8 @@ class ShowResumenVenta extends Component
         $this->modalidadtransporte = new Modalidadtransporte();
         $this->typepayment = new Typepayment();
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
-        $this->sucursal = auth()->user()->employer->sucursal;
-        $this->empresa = auth()->user()->employer->sucursal->empresa;
+        $this->sucursal = auth()->user()->sucursal;
+        $this->empresa = auth()->user()->sucursal->empresa;
         $this->monthbox = Monthbox::usando($this->sucursal->id)->first();
         $this->openbox = Openbox::mybox($this->sucursal->id)->first();
         $this->typepayment_id = Typepayment::default()->first()->id ?? null;
@@ -378,16 +378,12 @@ class ShowResumenVenta extends Component
     public function save()
     {
 
-        if (!$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
@@ -880,6 +876,8 @@ class ShowResumenVenta extends Component
                             'cuota' => $i,
                             'amount' => number_format($amountCuota, 2, '.', ''),
                             'expiredate' => $date,
+                            'moneda_id' => $this->moneda_id,
+                            'sucursal_id' => $this->sucursal->id,
                             'user_id' => auth()->user()->id,
                         ]);
                         $date = Carbon::parse($date)->addMonth()->format('Y-m-d');

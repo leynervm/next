@@ -210,7 +210,7 @@
                     <x-loading-next />
                 </div>
 
-                @if (count($producto->almacens))
+                @if (count($producto->almacens) > 0)
                     <div class="w-full flex flex-wrap gap-2">
                         @foreach ($producto->almacens as $item)
                             <div
@@ -250,14 +250,14 @@
                     </div>
                 @endif
 
-                {{-- @if (Module::isEnabled('Almacen')) --}}
-                @can('admin.almacen.productos.almacen')
-                    <div class="flex justify-end mt-auto">
-                        <x-button wire:click="openmodal" wire:target="openmodal" wire:loading.attr="disabled">
-                            AÑADIR ALMACEN</x-button>
-                    </div>
-                @endcan
-                {{-- @endif --}}
+                @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
+                    @can('admin.almacen.productos.almacen')
+                        <div class="flex justify-end mt-auto">
+                            <x-button wire:click="openmodal" wire:loading.attr="disabled">
+                                AÑADIR ALMACEN</x-button>
+                        </div>
+                    @endcan
+                @endif
             </div>
         </x-form-card>
     </div>

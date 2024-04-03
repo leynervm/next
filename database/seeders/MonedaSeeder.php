@@ -15,14 +15,14 @@ class MonedaSeeder extends Seeder
      */
     public function run()
     {
-        Moneda::create([
+        Moneda::firstOrCreate([
             'currency' => 'SOLES',
             'code' => 'PEN',
             'simbolo' => 'S/.',
             'default' => 1,
         ]);
 
-        Moneda::create([
+        Moneda::firstOrCreate([
             'currency' => 'DÓLARES',
             'code' => 'USD',
             'simbolo' => '$.',

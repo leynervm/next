@@ -157,8 +157,7 @@
                     <div class="w-full xs:col-span-2 xl:col-span-3">
                         <x-label-check for="publicado">
                             <x-input wire:model.defer="publicado" name="publicado" value="1" type="checkbox"
-                                id="publicado" />
-                            DISPONIBLE TIENDA WEB
+                                id="publicado" />DISPONIBLE TIENDA WEB
                         </x-label-check>
                     </div>
                 @endif

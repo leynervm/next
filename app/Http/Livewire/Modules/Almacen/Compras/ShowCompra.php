@@ -77,17 +77,9 @@ class ShowCompra extends Component
                     ->where('almacen_id', $compraitem->almacen_id)->first();
 
                 // $compraitem->deleteKardex($compraitem->id);
-                $compraitem->saveKardex(
-                    $this->compra->sucursal_id,
-                    $compraitem->producto_id,
-                    $compraitem->almacen_id,
-                    $productoAlmacen->pivot->cantidad,
-                    $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
-                    $compraitem->cantidad,
-                    '-',
-                    Kardex::SALIDA_ANULACION_COMPRA,
-                    $this->compra->referencia
-                );
+                if ($compraitem->kardex) {
+                    $compraitem->kardex()->delete();
+                }
 
                 $compraitem->producto->almacens()->updateExistingPivot($compraitem->almacen_id, [
                     'cantidad' => $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
@@ -136,16 +128,12 @@ class ShowCompra extends Component
             return false;
         }
 
-        if (!$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
@@ -163,31 +151,23 @@ class ShowCompra extends Component
         try {
 
             DB::beginTransaction();
-            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
+            $methodpayment = Methodpayment::find($this->methodpayment_id);
             $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment);
+                $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->compra->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->compra->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
-            $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
-            $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
-            $amountsaldo = $this->compra->moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+            $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($amountsaldo - $this->paymentactual) < 0) {
+            if (($saldocaja - $this->paymentactual) < 0) {
                 $mensaje =  response()->json([
-                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA !',
+                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA MEDIANTE ' . $forma . ' !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
-            }
-
-            $descontar = $saldocaja - $this->paymentactual;
-            if ($descontar < 0) {
-                $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
-                $this->openbox->save();
             }
 
             $this->compra->savePayment(

@@ -19,16 +19,12 @@ class ShowMounthboxes extends Component
     protected $listeners = ['render'];
 
     protected $queryString = [
-        'search' => ['except' => '', 'as' => 'buscar'],
-        'searchsucursal' => ['except' => '', 'as' => 'sucursal'],
+        'searchmonth' => ['except' => '', 'as' => 'mes'],
     ];
 
     public $open = false;
     public $monthbox;
-
-    public $search = '';
-    public $searchsucursal = '';
-
+    public $searchmonth = '';
 
     protected function rules()
     {
@@ -55,18 +51,12 @@ class ShowMounthboxes extends Component
 
         $sucursalboxes = Sucursal::whereHas('monthboxes')->orderBy('name', 'asc')->get();
         $monthboxes = Monthbox::withTrashed()->withWhereHas('sucursal', function ($query) {
-            $query->withTrashed();
-            if ($this->searchsucursal !== '') {
-                $query->where('id', $this->searchsucursal);
-            } else {
-                // $query->where('id', auth()->user()->sucursal_id);
-            }
+            $query->where('id', auth()->user()->sucursal_id)->withTrashed();
         });
 
-        if (trim($this->search) !== '') {
-            $monthboxes->where('month', $this->search);
+        if (trim($this->searchmonth) !== '') {
+            $monthboxes->where('month', $this->searchmonth);
         }
-
         $monthboxes =  $monthboxes->orderBy('month', 'desc')->paginate();
 
         return view('livewire.admin.mounthboxes.show-mounthboxes', compact('monthboxes', 'sucursalboxes'));
@@ -133,17 +123,53 @@ class ShowMounthboxes extends Component
         // }
     }
 
+    public function activemonthbox(Monthbox $monthbox)
+    {
+        $monthboxactives = Monthbox::usando(auth()->user()->sucursal_id)->exists();
+        if ($monthboxactives) {
+            $mensaje = response()->json([
+                'title' => 'EXISTEN CAJAS MENSUALES ACTIVAS EN USO !',
+                'text' => 'Existen cajas mensuales activas, primero debe cerrar las cajas activas para aperturar una nueva.'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        // SI FECHA ACTUAL ES MENOR A FECHA DE INICIO DE MONTHBOX ENTONCES NO APERTURAR
+        if (Carbon::parse(Carbon::now('America/Lima')->format('Y-m-d H:i'))->lt(Carbon::parse($monthbox->startdate)->format('Y-m-d H:i'))) {
+            $mensaje = response()->json([
+                'title' => 'FECHA ACTUAL MENOR A FECHA DE APERTURA DE CAJA MENSUAL SELECCIONADA !',
+                'text' => 'La fecha de apertura de caja mensual seleccionada debe ser menor o igual a la fecha actual para aperturar nueva caja mensual.'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        $monthbox->status  =  Monthbox::EN_USO;
+        $monthbox->save();
+        $this->dispatchBrowserEvent('toast', toastJSON('Caja mensual aperturada correctamente'));
+    }
+
     public function closemonthbox(Monthbox $monthbox)
     {
 
         $this->authorize('admin.cajas.mensuales.close');
         if (Carbon::parse($monthbox->expiredate)->lessThanOrEqualTo(Carbon::now()->format('Y-m-d H:i'))) {
+            if ($monthbox->openboxes()->open()->exists()) {
+                $mensaje = response()->json([
+                    'title' => 'CERRAR CAJAS DIARIAS ACTIVAS DEL MES DE ' . formatDate($monthbox->month, 'MMMM Y') . ' !',
+                    'text' => 'Existen cajas diarias activas vinculados a la caja mensual a cerrar, primero debe cerrar las cajas diarias.'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
             $monthbox->status  =  Monthbox::CERRADO;
             $monthbox->save();
             $this->dispatchBrowserEvent('toast', toastJSON('Caja mensual cerrada correctamente'));
         } else {
             $mensaje = response()->json([
-                'title' => 'No se pudo cerrar caja, ' . formatDate($monthbox->month, 'MMMM Y'),
+                'title' => 'FECHA DE CIERRE DE CAJA ' . formatDate($monthbox->month, 'MMMM Y') . ' AÚN NO SE HA COMPLETADO !',
                 'text' => 'Fecha de cierre es mayor a la fecha actual.'
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
@@ -156,7 +182,7 @@ class ShowMounthboxes extends Component
         $this->authorize('admin.cajas.mensuales.delete');
         if ($monthbox->isUsing()) {
             $mensaje = response()->json([
-                'title' => 'La caja actualmente se encuentra activa',
+                'title' => 'CAJA MENSUAL SELECCIONADA ACTUALMENTE SE ENCUENTRA ACTIVA',
                 'text' => 'No se puede eliminar una caja mensual cuando se encuentra activa.'
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);

@@ -53,7 +53,7 @@
             </div>
         @endcan
 
-        @if (Module::isEnabled('Almacen'))
+        @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
             @can('admin.administracion.sucursales.almacenes')
                 <div>
                     <livewire:admin.sucursales.show-almacens :sucursal="$sucursal">

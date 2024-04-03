@@ -15,13 +15,13 @@ class TypepaymentSeeder extends Seeder
      */
     public function run()
     {
-        Typepayment::create([
+        Typepayment::firstOrCreate([
             'name' => 'Contado',
             'paycuotas' => 0,
             'default' => 1,
         ]);
 
-        Typepayment::create([
+        Typepayment::firstOrCreate([
             'name' => 'Credito',
             'paycuotas' => 1,
             'default' => 0,

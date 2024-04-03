@@ -13,9 +13,9 @@
                     <th scope="col" class="p-2 font-medium text-center">FECHA APERTURA</th>
                     <th scope="col" class="p-2 font-medium text-center">FECHA CIERRE</th>
                     <th scope="col" class="p-2 font-medium">APERTURA</th>
-                    <th scope="col" class="p-2 font-medium">EFECTIVO</th>
-                    <th scope="col" class="p-2 font-medium">TRANSFERENCIAS</th>
-                    <th scope="col" class="p-2 font-medium">USUARIO</th>
+                    {{-- <th scope="col" class="p-2 font-medium">EFECTIVO</th>
+                    <th scope="col" class="p-2 font-medium">TRANSFERENCIAS</th> --}}
+                    {{-- <th scope="col" class="p-2 font-medium">USUARIO</th> --}}
                     <th scope="col" class="p-2 font-medium">CERRAR CAJA</th>
                     <th scope="col" class="p-2 font-medium">ESTADO</th>
                     <th scope="col" class="p-2 font-medium">SUCURSAL</th>
@@ -30,6 +30,7 @@
                         <tr>
                             <td class="p-2">
                                 {{ $item->box->name }}
+                                <p class="text-[10px] text-colorsubtitleform">{{ formatDate($item->monthbox->month, "MMMM Y") }}</p>
                             </td>
                             <td class="p-2 text-center uppercase">
                                 {{ formatDate($item->startdate) }}
@@ -40,15 +41,15 @@
                             <td class="p-2 text-center">
                                 {{ $item->apertura }}
                             </td>
-                            <td class="p-2 text-center">
+                            {{-- <td class="p-2 text-center">
                                 {{ $item->totalcash }}
                             </td>
                             <td class="p-2 text-center">
                                 {{ $item->totalcash }}
-                            </td>
-                            <td class="p-2 text-center">
+                            </td> --}}
+                            {{-- <td class="p-2 text-center">
                                 {{ $item->user->name }}
-                            </td>
+                            </td> --}}
                             <td class="p-2 text-center uppercase">
                                 @if ($item->isClosed())
                                     {{ formatDate($item->closedate) }}
@@ -80,6 +81,8 @@
                             </td>
                             <td class="p-2 text-center">
                                 {{ $item->sucursal->name }}
+                                <p class="text-[10px] leading-3 text-colorsubtitleform">
+                                    USUARIO : {{ $item->user->name }}</p>
                             </td>
                             @can('admin.cajas.aperturas.edit')
                                 <td class="p-2 text-center">

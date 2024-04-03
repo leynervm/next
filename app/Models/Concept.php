@@ -66,6 +66,11 @@ class Concept extends Model
         return $query->where('default', DefaultConceptsEnum::PAYEMPLOYER);
     }
 
+    public function scopeOpenbox($query)
+    {
+        return $query->where('default', DefaultConceptsEnum::OPENBOX);
+    }
+
     public function isDefault()
     {
         return $this->default == DefaultConceptsEnum::DEFAULT;
@@ -74,6 +79,11 @@ class Concept extends Model
     public function isIngreso()
     {
         return $this->typemovement == MovimientosEnum::INGRESO;
+    }
+
+    public function isEgreso()
+    {
+        return $this->typemovement == MovimientosEnum::EGRESO;
     }
 
     public function isDeletemanual()

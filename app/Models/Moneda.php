@@ -12,6 +12,7 @@ class Moneda extends Model
     use SoftDeletes;
 
     public $timestamps = false;
+    const DEFAULT = '1';
 
     protected $fillable = ['currency', 'code', 'simbolo', 'default'];
 
@@ -25,13 +26,18 @@ class Moneda extends Model
         $this->attributes['currency'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    public function scopeDefaultMoneda($query)
-    {
-        return $query->where('default', 1);
-    }
-
     public function scopeDefault($query)
     {
-        return $query->where('default', 1);
+        return $query->where('default', self::DEFAULT);
+    }
+
+    public function isDefault()
+    {
+        return $this->code == self::DEFAULT;
+    }
+
+    public function isLocal()
+    {
+        return $this->code == 'PEN';
     }
 }

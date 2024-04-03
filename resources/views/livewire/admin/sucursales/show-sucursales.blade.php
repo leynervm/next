@@ -24,25 +24,21 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     DIRECCIÓN</th>
-
                 <th scope="col" class="p-2 font-medium">
                     CÓDIGO ANEXO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     ESTADO</th>
-
                 @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
                     'admin.administracion.sucursales.restore'])
                     <th scope="col" class="p-2 font-medium text-center">
-                        OPCIONES
+                        <span class="sr-only">OPCIONES</span>
                     </th>
                 @endcanany
             </tr>
         </x-slot>
-        @if (count($sucursales))
+        @if (count($sucursales) > 0)
             <x-slot name="body">
                 @foreach ($sucursales as $item)
                     <tr>
@@ -87,7 +83,7 @@
 
                         @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
                             'admin.administracion.sucursales.restore'])
-                            <td class="p-2 align-middle text-center space-x-3">
+                            <td class="p-2 align-middle flex justify-end items-center gap-2 gap-x-5 ">
                                 @can('admin.administracion.sucursales.edit')
                                     @if ($item->default == 0 && $item->deleted_at == null)
                                         <x-icon-default onclick="confirmSetDefault({{ $item }})"
@@ -96,23 +92,17 @@
                                     @endif
                                 @endcan
 
-                                @if ($item->deleted_at == null)
-                                    @can('admin.administracion.sucursales.delete')
-                                        <x-button-delete onclick="confirmDelete({{ $item }})"
-                                            wire:loading.attr="disabled" />
+                                @if ($item->trashed())
+                                    @can('admin.administracion.sucursales.restore')
+                                        <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200" onclick="restoreSucursal({{ $item }})"
+                                            wire:loading.attr="disabled"
+                                            wire:key="restoresuc_{{ $item->id }}">DESACTIVAR</x-button-toggle>
                                     @endcan
                                 @else
-                                    @can('admin.administracion.sucursales.restore')
-                                        <button onclick="restoreSucursal({{ $item }})" wire:loading.attr="disabled">
-                                            <svg class="w-4 h-4 scale-125 inline-block" viewBox="0 0 24 24" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <path fill="currentColor"
-                                                    d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                                <path
-                                                    d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                            </svg>
-                                        </button>
+                                    @can('admin.administracion.sucursales.delete')
+                                        <x-button-toggle class="text-green-500" onclick="confirmDelete({{ $item }})"
+                                            wire:loading.attr="disabled"
+                                            wire:key="seletesuc_{{ $item->id }}">DESACTIVAR</x-button-toggle>
                                     @endcan
                                 @endif
                             </td>

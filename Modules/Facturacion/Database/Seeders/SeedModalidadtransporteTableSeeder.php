@@ -18,12 +18,12 @@ class SeedModalidadtransporteTableSeeder extends Seeder
         Model::unguard();
         // $this->call("OthersTableSeeder");
 
-        Modalidadtransporte::create([
+        Modalidadtransporte::firstOrCreate([
             'code' => '01',
             'name' => 'Transporte público'
         ]);
 
-        Modalidadtransporte::create([
+        Modalidadtransporte::firstOrCreate([
             'code' => '02',
             'name' => 'Transporte privado'
         ]);

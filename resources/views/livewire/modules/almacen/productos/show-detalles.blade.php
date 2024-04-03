@@ -65,7 +65,7 @@
 
         <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto.">
             <div class="w-full flex flex-col gap-3">
-                @if (count($producto->images))
+                @if (count($producto->images) > 0)
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->images as $item)
                             <div
@@ -81,25 +81,17 @@
                                             wire:loading.attr="disabled" />
                                     @endcan
                                 </div>
-                                @if ($item->default == 1)
-                                    <span
-                                        class="absolute top-1 left-1 w-6 h-6 rounded-full bg-green-400 p-1 text-white">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <polyline points="20 6 9 17 4 12" />
-                                        </svg>
+                                @if ($item->isDefault())
+                                    <span class="absolute top-1 left-1 w-5 h-5 rounded-full">
+                                        <x-icon-default class="w-full h-full block" />
                                     </span>
                                 @else
                                     @can('admin.almacen.productos.images')
-                                        <button type="button" wire:loading.attr="disabled"
-                                            wire:click="defaultimage({{ $item->id }})"
-                                            class="absolute top-1 -left-7 w-6 h-6 group-hover:translate-x-8 rounded-full bg-green-500 p-1 text-white focus:ring-2 focus:ring-green-300 transition ease-out duration-150 hover:scale-110 disabled:opacity-25">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="20 6 9 17 4 12" />
-                                            </svg>
+                                        <button wire:key="defaultimage_{{ $item->id }}"
+                                            wire:click="defaultimage({{ $item->id }})" type="button"
+                                            wire:loading.attr="disabled"
+                                            class="absolute top-1 -left-7 w-5 h-5 group-hover:translate-x-8 rounded-full transition ease-out duration-150 hover:scale-110 disabled:opacity-25">
+                                            <x-icon-default class="w-full h-full block !text-neutral-500" />
                                         </button>
                                     @endcan
                                 @endif
@@ -190,9 +182,9 @@
                         @if (isset($imagen))
                             <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
                                 GUARDAR
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
                                     <path
                                         d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
                                     <path

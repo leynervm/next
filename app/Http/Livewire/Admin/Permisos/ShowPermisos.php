@@ -2,9 +2,10 @@
 
 namespace App\Http\Livewire\Admin\Permisos;
 
+use App\Models\Permission;
 use App\Rules\CampoUnique;
 use Livewire\Component;
-use Spatie\Permission\Models\Permission;
+use Nwidart\Modules\Facades\Module;
 use Spatie\Permission\Models\Role;
 
 class ShowPermisos extends Component
@@ -27,7 +28,8 @@ class ShowPermisos extends Component
 
     public function render()
     {
-        $permisos = Permission::orderBy('orden', 'asc')->orderBy('id', 'asc')->get()->groupBy('module');
+        $permisos = Permission::modulesActivePermission()->orderBy('orden', 'asc')
+            ->orderBy('table', 'asc')->orderBy('id', 'asc')->get()->groupBy('module');
         return view('livewire.admin.permisos.show-permisos', compact('permisos'));
     }
 

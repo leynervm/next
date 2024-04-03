@@ -2563,6 +2563,9 @@ select {
 .h-9 {
   height: 2.25rem;
 }
+.h-\[calc\(100vh-10px\)\] {
+  height: calc(100vh - 10px);
+}
 .h-auto {
   height: auto;
 }
@@ -3151,12 +3154,18 @@ select {
 .border-transparent {
   border-color: transparent;
 }
+.border-fondobutton {
+  border-color: var(--fondo-button);
+}
 .\!bg-body {
   background-color: var(--body) !important;
 }
 .\!bg-red-50 {
   --tw-bg-opacity: 1 !important;
   background-color: rgb(254 242 242 / var(--tw-bg-opacity)) !important;
+}
+.\!bg-transparent {
+  background-color: transparent !important;
 }
 .bg-amber-200 {
   --tw-bg-opacity: 1;
@@ -3647,6 +3656,9 @@ select {
 .font-semibold {
   font-weight: 600;
 }
+.\!font-medium {
+  font-weight: 500 !important;
+}
 .uppercase {
   text-transform: uppercase;
 }
@@ -3919,6 +3931,16 @@ select {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity));
 }
+.text-fondobutton {
+  color: var(--fondo-button);
+}
+.\!text-neutral-500 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(115 115 115 / var(--tw-text-opacity)) !important;
+}
+.text-current {
+  color: currentColor;
+}
 .underline {
   text-decoration-line: underline;
 }
@@ -3991,6 +4013,10 @@ select {
 }
 .shadow-shadowminicard {
   --tw-shadow-color: var(--shadow-minicard);
+  --tw-shadow: var(--tw-shadow-colored);
+}
+.shadow-fondobutton {
+  --tw-shadow-color: var(--fondo-button);
   --tw-shadow: var(--tw-shadow-colored);
 }
 .outline-0 {
@@ -4279,6 +4305,13 @@ select {
 .hover\:text-colortitleform:hover {
   color: var(--color-title-form);
 }
+.hover\:text-fondobutton:hover {
+  color: var(--fondo-button);
+}
+.hover\:text-gray-200:hover {
+  --tw-text-opacity: 1;
+  color: rgb(229 231 235 / var(--tw-text-opacity));
+}
 .hover\:text-gray-400:hover {
   --tw-text-opacity: 1;
   color: rgb(156 163 175 / var(--tw-text-opacity));
@@ -4340,6 +4373,10 @@ select {
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.hover\:shadow-fondobutton:hover {
+  --tw-shadow-color: var(--fondo-button);
+  --tw-shadow: var(--tw-shadow-colored);
 }
 .hover\:shadow-orange-500:hover {
   --tw-shadow-color: #f97316;
@@ -4494,6 +4531,10 @@ select {
 .focus\:bg-red-700:focus {
   --tw-bg-opacity: 1;
   background-color: rgb(185 28 28 / var(--tw-bg-opacity));
+}
+.focus\:text-gray-200:focus {
+  --tw-text-opacity: 1;
+  color: rgb(229 231 235 / var(--tw-text-opacity));
 }
 .focus\:text-gray-500:focus {
   --tw-text-opacity: 1;
@@ -4906,10 +4947,6 @@ select {
   }
 }
 @media (min-width: 640px) {
-
-  .sm\:col-span-1 {
-    grid-column: span 1 / span 1;
-  }
 
   .sm\:col-span-2 {
     grid-column: span 2 / span 2;

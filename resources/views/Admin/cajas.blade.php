@@ -51,9 +51,11 @@
                         <livewire:admin.cajamovimientos.create-cajamovimento />
                     @endcan
 
-                    @can('admin.administracion.employers.adelantos.create')
-                        <livewire:modules.administracion.payment-employers.create-adelanto-employer />
-                    @endcan
+                    @if (Module::isEnabled('Employer'))
+                        @can('admin.administracion.employers.adelantos.create')
+                            <livewire:modules.administracion.payment-employers.create-adelanto-employer />
+                        @endcan
+                    @endif
 
                     @can('admin.cajas.aperturas')
                         <x-link-next href="{{ route('admin.cajas.aperturas') }}" titulo="Apertura de cajas">

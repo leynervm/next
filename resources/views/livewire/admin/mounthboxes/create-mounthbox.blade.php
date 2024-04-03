@@ -42,7 +42,7 @@
 
                     <div class="w-full xs:col-span-2" x-data="checksucursals">
                         <x-title-next titulo="SELECCIONAR SUCURSALES" class="my-3" />
-                        @if (count($sucursals))
+                        @if (count($sucursals) > 0)
                             <div class="w-full flex flex-wrap gap-2">
                                 @foreach ($sucursals as $item)
                                     <x-input-radio class="py-2" :for="'sucursal_' . $item->id" :text="$item->name">
@@ -53,34 +53,14 @@
                                     </x-input-radio>
                                 @endforeach
                             </div>
-                            <x-label-check for="allsucursals" class="mt-2">
-                                <x-input x-model="allsucursals" name="all" type="checkbox" id="allsucursals"
-                                    @change="all" />
-                                SELECCIONAR TODO
-                            </x-label-check>
+                            @if (count($sucursals) > 1)
+                                <x-label-check for="allsucursals" class="mt-2">
+                                    <x-input x-model="allsucursals" name="all" type="checkbox" id="allsucursals"
+                                        @change="all" />SELECCIONAR TODO</x-label-check>
+                            @endif
                         @endif
                         <x-jet-input-error for="sucursalselected" />
                     </div>
-
-                    {{-- <div class="w-full xs:col-span-2">
-                        <x-label value="Sucursal :" />
-                        <div class="relative" x-data="{ sucursal_id: @entangle('sucursal_id').defer }" x-init="select2Sucursal" wire:ignore>
-                            <x-select class="block w-full" x-ref="selectsuc" wire:model.defer="sucursal_id"
-                                id="sucursal_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
-                                <x-slot name="options">
-                                    @if (count($sucursals))
-                                        @foreach ($sucursals as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="sucursal_id" />
-                    </div> --}}
                 </div>
 
                 <div class="w-full flex pt-4 justify-end">

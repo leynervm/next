@@ -20,21 +20,21 @@ class TypecomprobanteTableSeeder extends Seeder
 
         // $this->call("OthersTableSeeder");
 
-        Typecomprobante::create([
+        Typecomprobante::firstOrCreate([
             'code' => '01',
             'name' => 'FACTURA VENTA',
             'descripcion' => 'FACTURA VENTA',
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
-        Typecomprobante::create([
+        Typecomprobante::firstOrCreate([
             'code' => '03',
             'name' => 'BOLETA VENTA',
             'descripcion' => 'BOLETA VENTA',
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
-        Typecomprobante::create([
+        Typecomprobante::firstOrCreate([
             'code' => '07',
             'name' => 'NOTA DE CREDITO',
             'descripcion' => 'NOTA DE CREDITO QUE ANULA FACTURA',
@@ -42,7 +42,7 @@ class TypecomprobanteTableSeeder extends Seeder
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
-        Typecomprobante::create([
+        Typecomprobante::firstOrCreate([
             'code' => '07',
             'name' => 'NOTA DE CREDITO',
             'descripcion' => 'NOTA DE CREDITO QUE ANULA BOLETA',
@@ -50,14 +50,14 @@ class TypecomprobanteTableSeeder extends Seeder
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
-        $guiaremision = Typecomprobante::create([
+        $guiaremision = Typecomprobante::firstOrCreate([
             'code' => '09',
             'name' => 'GUIA DE REMISIÓN REMITENTE',
             'descripcion' => 'GUIA DE REMISIÓN REMITENTE',
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
-        Typecomprobante::create([
+        Typecomprobante::firstOrCreate([
             'code' => '09',
             'name' => 'GUIA INTERNA',
             'descripcion' => 'GUIA INTERNA',
@@ -73,67 +73,67 @@ class TypecomprobanteTableSeeder extends Seeder
         // ]);
 
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '01',
             'name' => 'VENTA'
         ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '02',
             'name' => 'COMPRA'
         ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '03',
             'name' => 'VENTA CON ENTREGA A TERCEROS'
         ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '04',
             'name' => 'TRASLADO ENTRE ESTABLECIMIENTOS DE LA MISMA EMPRESA'
         ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '05',
             'name' => 'CONSIGNACIóN'
         ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '06',
             'name' => 'DEVOLUCIÓN'
         ]);
 
-        // $guiaremision->motivotraslados()->create([
+        // $guiaremision->motivotraslados()->firstOrCreate([
         //     'code' => '07',
         //     'name' => 'RECOJO DE BIENES TRANSFORMADOS'
         // ]);
 
-        // $guiaremision->motivotraslados()->create([
+        // $guiaremision->motivotraslados()->firstOrCreate([
         //     'code' => '08',
         //     'name' => 'IMPORTACION'
         // ]);
 
-        // $guiaremision->motivotraslados()->create([
+        // $guiaremision->motivotraslados()->firstOrCreate([
         //     'code' => '09',
         //     'name' => 'EXPORTACION'
         // ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '13',
             'name' => 'OTROS'
         ]);
 
-        $guiaremision->motivotraslados()->create([
+        $guiaremision->motivotraslados()->firstOrCreate([
             'code' => '14',
             'name' => 'VENTA SUJETA A CONFIRMACIÓN DEL COMPRADOR'
         ]);
 
-        // $guiaremision->motivotraslados()->create([
+        // $guiaremision->motivotraslados()->firstOrCreate([
         //     'code' => '18',
         //     'name' => 'TRASLADO EMISOR ITINERANTE CP'
         // ]);
 
-        // $guiaremision->motivotraslados()->create([
+        // $guiaremision->motivotraslados()->firstOrCreate([
         //     'code' => '19',
         //     'name' => 'TRASLADO A ZONA PRIMARIA'
         // ]);

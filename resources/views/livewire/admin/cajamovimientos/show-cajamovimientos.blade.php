@@ -1,4 +1,8 @@
-<div class="relative">
+<div>
+    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+        <x-loading-next />
+    </div>
+
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
         <div class="w-full xs:w-60">
             <x-label value="Fecha :" />
@@ -12,7 +16,7 @@
 
         <div class="w-full sm:max-w-xs">
             <x-label value="Movimiento :" />
-            <div x-data="{ searchtype: @entangle('searchtype') }" x-init="select2TypeAlpine" class="relative" id="parentsearchtype" wire:ignore>
+            <div x-data="{ searchtype: @entangle('searchtype') }" x-init="select2Type" class="relative" id="parentsearchtype" wire:ignore>
                 <x-select id="searchtype" x-ref="select" data-placeholder="null">
                     <x-slot name="options">
                         <option value="INGRESO">INGRESO</option>
@@ -23,43 +27,44 @@
             </div>
         </div>
 
-        <div class="w-full sm:max-w-xs">
-            <x-label value="Método pago :" />
-            <div class="relative" x-data="{ searchmethodpayment: @entangle('searchmethodpayment') }" x-init="select2MethodpayAlpine" id="parentsearchmethodpayment"
-                wire:ignore>
-                <x-select id="searchmethodpayment" x-ref="select" data-placeholder="null">
-                    <x-slot name="options">
-                        @if (count($methodpayments))
+        @if (count($methodpayments) > 1)
+            <div class="w-full sm:max-w-xs">
+                <x-label value="Método pago :" />
+                <div class="relative" x-data="{ searchmethodpayment: @entangle('searchmethodpayment') }" x-init="select2Methodpay" id="parentsearchmethodpayment"
+                    wire:ignore>
+                    <x-select id="searchmethodpayment" x-ref="select" data-placeholder="null">
+                        <x-slot name="options">
                             @foreach ($methodpayments as $item)
                                 <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
-                        @endif
-                    </x-slot>
-                </x-select>
-                <x-icon-select />
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
             </div>
-        </div>
+        @endif
 
-        <div class="w-full sm:max-w-xs">
-            <x-label value="Concepto :" />
-            <div class="relative" x-data="{ searchconcept: @entangle('searchconcept') }" x-init="select2ConceptAlpine" id="parentsearchconcept" wire:ignore>
-                <x-select id="searchconcept" x-ref="select" data-placeholder="null">
-                    <x-slot name="options">
-                        @if (count($concepts))
+        @if (count($concepts) > 1)
+            <div class="w-full sm:max-w-xs">
+                <x-label value="Concepto :" />
+                <div class="relative" x-data="{ searchconcept: @entangle('searchconcept') }" x-init="select2Concept" id="parentsearchconcept"
+                    wire:ignore>
+                    <x-select id="searchconcept" x-ref="select" data-placeholder="null">
+                        <x-slot name="options">
                             @foreach ($concepts as $item)
                                 <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
-                        @endif
-                    </x-slot>
-                </x-select>
-                <x-icon-select />
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
             </div>
-        </div>
+        @endif
 
         @if (count($users) > 1)
             <div class="w-full sm:max-w-xs">
                 <x-label value="Usuario :" />
-                <div class="relative" x-data="{ searchuser: @entangle('searchuser') }" x-init="select2UserAlpine" id="parentsearchuser" wire:ignore>
+                <div class="relative" x-data="{ searchuser: @entangle('searchuser') }" x-init="select2User" id="parentsearchuser" wire:ignore>
                     <x-select id="searchuser" x-ref="select" data-placeholder="null">
                         <x-slot name="options">
                             @foreach ($users as $item)
@@ -72,27 +77,10 @@
             </div>
         @endif
 
-        @if (count($sucursals) > 1)
-            <div class="w-full sm:max-w-xs">
-                <x-label value="Sucursal :" />
-                <div class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal"
-                    wire:ignore>
-                    <x-select id="searchsucursal" x-ref="selectsucursal" data-placeholder="null">
-                        <x-slot name="options">
-                            @foreach ($sucursals as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </x-slot>
-                    </x-select>
-                    <x-icon-select />
-                </div>
-            </div>
-        @endif
-
         @if (count($boxes) > 1)
             <div class="w-full sm:max-w-xs">
                 <x-label value="Caja :" />
-                <div class="relative" x-data="{ searchcaja: @entangle('searchcaja') }" x-init="select2CajaAlpine" id="parentsearchcaja" wire:ignore>
+                <div class="relative" x-data="{ searchcaja: @entangle('searchcaja') }" x-init="select2Caja" id="parentsearchcaja" wire:ignore>
                     <x-select id="searchcaja" x-ref="selectcaja" data-placeholder="null">
                         <x-slot name="options">
                             @foreach ($boxes as $item)
@@ -151,9 +139,7 @@
                 <th scope="col" class="p-2 font-medium text-left">
                     MONTO</th>
                 <th scope="col" class="p-2 font-medium">
-                    TIPO MOVIMIENTO</th>
-                <th scope="col" class="p-2 font-medium">
-                    FORMA PAGO</th>
+                    MOVIMIENTO</th>
                 <th scope="col" class="p-2 font-medium">
                     CONCEPTO</th>
                 <th scope="col" class="p-2 font-medium text-center">
@@ -166,7 +152,7 @@
                     ELIMINAR</th>
             </tr>
         </x-slot>
-        @if (count($movimientos))
+        @if (count($movimientos) > 0)
             <x-slot name="body">
                 @foreach ($movimientos as $item)
                     <tr>
@@ -178,17 +164,22 @@
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->amount, 2, '.', ', ') }}
                             <small class="text-[8px]">{{ $item->moneda->currency }}</small>
+                            @if ($item->openbox->isActivo() && $item->openbox->isUsing())
+                                <p class="text-next-500 text-[10px]">CAJA ACTUAL</p>
+                            @endif
                         </td>
                         <td class="p-2 text-center">
-                            <x-span-text :text="$item->typemovement->value" class="leading-3 !tracking-normal" :type="$item->typemovement->value == 'INGRESO' ? 'green' : 'red'" />
-                        </td>
-                        <td class="p-2 text-center">
-                            <p>{{ $item->methodpayment->name }}</p>
-                            <p class="text-colorsubtitleform text-[10px]">
-                                {{ $item->methodpayment->type == '0' ? 'EFECTIVO' : 'TRANSFERENCIA' }}</p>
+                            <x-span-text :text="$item->typemovement->value" class="!leading-3 !tracking-normal"
+                                type="{{ $item->isIngreso() ? 'green' : 'red' }}" />
+                            {{-- <p class="{{ $item->isIngreso() ? 'text-green-500' : 'text-red-500' }}">
+                                {{ $item->typemovement->value }}</p> --}}
+                            <p class="text-[10px]">{{ $item->methodpayment->name }}</p>
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->concept->name }}
+                            @if (!empty($item->detalle))
+                                <p class="text-[10px] leading-3 text-colorsubtitleform">{{ $item->detalle }}</p>
+                            @endif
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->referencia }}
@@ -205,8 +196,10 @@
                         </td>
                         <td class="p-2 text-center">
                             @if ($item->concept->isDeletemanual())
-                                <x-button-delete onclick="confirmDelete({{ $item->id }})"
-                                    wire:loading.attr="disabled" />
+                                @if (auth()->user()->isAdmin() || $item->user_id == auth()->user()->id)
+                                    <x-button-delete onclick="confirmDelete({{ $item->id }})"
+                                        wire:loading.attr="disabled" wire:key="deletecjmv_{{ $item->id }}" />
+                                @endif
                             @endif
                         </td>
                     </tr>
@@ -214,11 +207,6 @@
             </x-slot>
         @endif
     </x-table>
-
-    <div wire:loading wire:loading.flex class="loading-overlay rounded hidden">
-        <x-loading-next />
-    </div>
-
     <script>
         function select2Monthbox() {
             this.selectMB = $(this.$refs.selectmb).select2();
@@ -235,7 +223,7 @@
             });
         }
 
-        function select2TypeAlpine() {
+        function select2Type() {
             this.selectT = $(this.$refs.select).select2();
             this.selectT.val(this.searchtype).trigger("change");
             this.selectT.on("select2:select", (event) => {
@@ -250,7 +238,7 @@
             });
         }
 
-        function select2MethodpayAlpine() {
+        function select2Methodpay() {
             this.selectM = $(this.$refs.select).select2();
             this.selectM.val(this.searchmethodpayment).trigger("change");
             this.selectM.on("select2:select", (event) => {
@@ -265,7 +253,7 @@
             });
         }
 
-        function select2ConceptAlpine() {
+        function select2Concept() {
             this.selectCo = $(this.$refs.select).select2();
             this.selectCo.val(this.searchconcept).trigger("change");
             this.selectCo.on("select2:select", (event) => {
@@ -295,7 +283,7 @@
             });
         }
 
-        function select2UserAlpine() {
+        function select2User() {
             this.select2 = $(this.$refs.select).select2();
             this.select2.val(this.searchuser).trigger("change");
             this.select2.on("select2:select", (event) => {
@@ -310,7 +298,7 @@
             });
         }
 
-        function select2CajaAlpine() {
+        function select2Caja() {
             this.selectC = $(this.$refs.selectcaja).select2();
             this.selectC.val(this.searchcaja).trigger("change");
             this.selectC.on("select2:select", (event) => {
@@ -340,11 +328,6 @@
                     @this.delete(cajamovimiento_id);
                 }
             })
-        }
-
-        function disableselect2(estado = true) {
-            $('#searchsucursal, #searchtype, #searchmethodpayment, #searchconcept, #searchuser, #searchcaja')
-                .attr('disabled', estado);
         }
     </script>
 </div>

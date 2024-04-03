@@ -6,6 +6,7 @@ use App\Models\Almacen;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateAlmacen extends Component
@@ -52,20 +53,29 @@ class CreateAlmacen extends Component
         $this->name = trim($this->name);
         $this->default = $this->default == '1' ? 1 : 0;
         $validateData = $this->validate();
+        DB::beginTransaction();
+        try {
 
-        $almacen = Almacen::onlyTrashed()
-            ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])
-            ->first();
+            $almacen = Almacen::onlyTrashed()
+                ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])
+                ->first();
 
-        if ($almacen) {
-            $almacen->restore();
-        } else {
-            Almacen::create($validateData);
+            if ($almacen) {
+                $almacen->restore();
+            } else {
+                Almacen::create($validateData);
+            }
+            DB::commit();
+            $this->dispatchBrowserEvent('created');
+            $this->emitTo('admin.almacens.show-almacens', 'render');
+            $this->resetValidation();
+            $this->reset();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $this->dispatchBrowserEvent('created');
-        $this->emitTo('admin.almacens.show-almacens', 'render');
-        $this->resetValidation();
-        $this->reset();
     }
 }

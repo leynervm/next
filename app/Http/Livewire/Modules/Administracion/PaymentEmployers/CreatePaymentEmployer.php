@@ -35,7 +35,7 @@ class CreatePaymentEmployer extends Component
         return [
             'amount' => [
                 'required', 'numeric', $this->amountmax > 0 ? 'gt:0' : 'min:0', 'decimal:0,4', 'max:' . $this->amountmax,
-                new ValidateEmployerpayment($this->employer->id, $this->monthbox->month)
+                $this->monthbox ?  new ValidateEmployerpayment($this->employer->id, $this->monthbox->month) : ''
             ],
             'descuentos' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
             'adelantos' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
@@ -59,10 +59,7 @@ class CreatePaymentEmployer extends Component
         $this->concept_id = Concept::payemployer()->first()->id ?? null;
         $this->moneda_id = Moneda::default()->first()->id ?? null;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
-        $this->adelantos =   $employer->cajamovimientos()
-            ->where('monthbox_id', $this->monthbox->id)->sum('amount');
     }
-
 
     public function render()
     {
@@ -77,9 +74,10 @@ class CreatePaymentEmployer extends Component
             $this->resetValidation();
             $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         }
-
-        $this->adelantos = $this->employer->cajamovimientos()
-            ->where('monthbox_id', $this->monthbox->id)->sum('amount');
+        if ($this->monthbox) {
+            $this->adelantos = $this->employer->cajamovimientos()
+                ->where('monthbox_id', $this->monthbox->id)->sum('amount');
+        }
     }
 
     public function updatedBonus($value)
@@ -104,11 +102,7 @@ class CreatePaymentEmployer extends Component
     {
 
         if (!$this->monthbox || !$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
@@ -124,32 +118,23 @@ class CreatePaymentEmployer extends Component
 
             DB::beginTransaction();
 
-            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
-            $moneda = Moneda::find($this->moneda_id);
+            $methodpayment = Methodpayment::find($this->methodpayment_id);
             $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment);
+                $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->employer->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
-            $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
-            $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
-            $amountsaldo = $moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+            $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($amountsaldo - $this->amount) < 0) {
+            if (($saldocaja - $this->amount) < 0) {
                 $mensaje =  response()->json([
                     'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DEL PERSONAL !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
-            }
-
-            $descontar = $saldocaja - $this->amount;
-            if ($descontar < 0) {
-                $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
-                $this->openbox->save();
             }
 
             $employerpayment = $this->employer->employerpayments()->create($validateData);

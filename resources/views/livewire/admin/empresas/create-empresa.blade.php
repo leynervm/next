@@ -260,9 +260,8 @@
                     <div class="w-full grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
                         <div class="w-full">
                             <x-label value="Modo envío SUNAT :" />
-                            <div class="w-full relative" x-init="SelectMode" wire:ignore>
-                                <x-select class="block w-full" x-ref="selectmode" id="sendmode"
-                                    data-dropdown-parent="null">
+                            <div class="w-full relative" id="parentsendmode" x-init="SelectMode" wire:ignore>
+                                <x-select class="block w-full" x-ref="selectmode" id="sendmode">
                                     <x-slot name="options">
                                         <option value="0">MODO PRUEBAS</option>
                                         <option value="1">MODO PRODUCCIÓN</option>

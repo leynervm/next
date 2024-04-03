@@ -6,7 +6,7 @@
             <line x1="5" x2="19" y1="12" y2="12" />
         </svg>
     </x-button-next>
-    <x-jet-dialog-modal wire:model="open" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo pago personal') }}
             <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
@@ -14,40 +14,46 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="save" class="relative w-full flex flex-col gap-2">
-                <p class="text-colorminicard text-md font-semibold">
+                @if ($monthbox)
+                    <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                        <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        @if ($openbox)
+                            <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                        @else
+                            <small class="text-colorerror w-full block font-medium text-[10px] leading-3">
+                                APERTURA DE CAJA DIARIA NO DISPONIBLE...
+                            </small>
+                        @endif
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+                @endif
+
+                <p class="text-colorlabel text-md font-semibold text-end">
                     <small class="text-[10px] font-medium w-full block leading-3">SUELDO</small>
                     {{ number_format($employer->sueldo, 2, '.', ', ') }}
                 </p>
 
-                <p class="text-colorminicard text-md font-semibold">
+                <p class="text-colorlabel text-md font-semibold text-end">
                     <small class="text-[10px] font-medium w-full block leading-3">TOTAL ADELANTOS</small>
                     {{ number_format($adelantos, 2, '.', ', ') }}
                 </p>
 
                 @if (count($employer->cajamovimientos))
-                    <div class="w-full flex flex-wrap gap-2">
+                    <div class="w-full flex flex-wrap justify-end gap-2">
                         @foreach ($employer->cajamovimientos as $item)
-                            <div
-                                class="bg-transparent border border-borderminicard shadow shadow-shadowminicard text-textspancardproduct rounded-md text-xs p-2">
+                            <x-simple-card
+                                class="!bg-transparent border border-borderminicard text-colorlabel rounded-md p-3">
                                 <p class="text-[10px]">{{ formatDate($item->date, 'DD MMMM Y') }}</p>
-                                <p class="text-right font-semibold">{{ number_format($item->amount, 2, '.', ', ') }}</p>
-                            </div>
+                                <p class="text-right font-semibold text-xl">
+                                    {{ number_format($item->amount, 2, '.', ', ') }}</p>
+                            </x-simple-card>
                         @endforeach
                     </div>
                 @endif
 
-                @if ($openbox)
-                    <p class="text-colorminicard text-md md:text-3xl font-semibold">
-                        <small class="text-[10px] font-medium w-full block leading-3">MES PAGO</small>
-                        {{ formatDate($monthbox->month, 'MMMM Y') }}
-                        <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
-                    </p>
-                @else
-                    <p class="text-colorerror text-[10px]">APERTURA DE CAJA NO DISPONIBLE...</p>
-                @endif
-
-
-                <p class="text-colorminicard text-md md:text-3xl font-semibold">
+                <p class="text-colorlabel text-md md:text-3xl font-semibold">
                     <small class="text-[10px] font-medium w-full block leading-3">TOTAL PAGAR</small>
                     {{ number_format($employer->sueldo + $bonus - ($descuentos + $adelantos), 2, '.', ', ') }}
                 </p>

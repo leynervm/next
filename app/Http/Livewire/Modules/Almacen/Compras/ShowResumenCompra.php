@@ -33,6 +33,7 @@ class ShowResumenCompra extends Component
     public $almacens = [];
 
     public $stock = 0;
+    public $pricetype_id;
 
     protected $listeners = ['updatecompraitem'];
 
@@ -41,11 +42,24 @@ class ShowResumenCompra extends Component
         $this->producto = new Producto();
         $this->pricetype = new Pricetype();
         $this->tipocambio = $this->compra->tipocambio ?? 0;
+
+        if ($this->compra->sucursal->empresa->usarLista()) {
+            $pricetypes = Pricetype::default()->orderBy('id', 'asc');
+            if ($pricetypes->exists()) {
+                $this->pricetype_id = $pricetypes->first()->id ?? null;
+                $this->pricetype = $pricetypes->first();
+            } else {
+                $this->pricetype = Pricetype::orderBy('id', 'asc')->first();
+                $this->pricetype_id = $this->pricetype->id ?? null;
+            }
+        }
     }
 
     public function render()
     {
-        $productos = Producto::select('id', 'name')
+        $productos = Producto::with(['promocions' => function ($query) {
+            $query->disponibles();
+        }])->select('id', 'name')
             ->withWhereHas('almacens')->orderBy('name', 'asc')->get();
         $pricetypes = Pricetype::orderBy('id', 'asc')->get();
         return view('livewire.modules.almacen.compras.show-resumen-compra', compact('productos', 'pricetypes'));
@@ -226,10 +240,10 @@ class ShowResumenCompra extends Component
             if ($compraitem->producto) {
                 if ($this->compra->moneda->code == 'USD') {
                     $compraitem->producto->pricebuy = $this->pricebuy * $this->compra->tipocambio;
-                    $compraitem->producto->priceusbuy = $this->pricebuy;
+                    // $compraitem->producto->priceusbuy = $this->pricebuy;
                 } else {
                     $compraitem->producto->pricebuy = $this->pricebuy;
-                    $compraitem->producto->priceusbuy = 0;
+                    // $compraitem->producto->priceusbuy = 0;
                 }
 
                 if ($this->compra->sucursal->empresa->uselistprice == 0) {
@@ -239,7 +253,12 @@ class ShowResumenCompra extends Component
                 $compraitem->producto->save();
             }
 
-            $compraitem->updateKardex($compraitem->id, $cantidad);
+            if ($compraitem->kardex) {
+                $compraitem->kardex->cantidad = $compraitem->kardex->cantidad + $cantidad;
+                $compraitem->kardex->newstock = $compraitem->kardex->newstock + $cantidad;
+                $compraitem->kardex->save();
+            }
+
             $compraitem->producto->almacens()->updateExistingPivot($compraitem->almacen_id, [
                 'cantidad' => $productoAlmacen->pivot->cantidad + $cantidad,
             ]);
@@ -270,16 +289,9 @@ class ShowResumenCompra extends Component
                 $productoAlmacen = $compraitem->producto->almacens()
                     ->where('almacen_id', $compraitem->almacen_id)->first();
 
-                $compraitem->saveKardex(
-                    $compraitem->producto_id,
-                    $compraitem->almacen_id,
-                    $productoAlmacen->pivot->cantidad,
-                    $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
-                    $compraitem->cantidad,
-                    '-',
-                    Kardex::SALIDA_ANULACION_ITEMCOMPRA,
-                    $this->compra->referencia
-                );
+                if ($compraitem->kardex) {
+                    $compraitem->kardex()->delete();
+                }
 
                 $compraitem->producto->almacens()->updateExistingPivot($compraitem->almacen_id, [
                     'cantidad' => $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
@@ -405,8 +417,11 @@ class ShowResumenCompra extends Component
         }
     }
 
-    public function hydrate()
+    public function updatedPricetypeId($value)
     {
-        $this->dispatchBrowserEvent('render-show-resumen-compra');
+        if ($value) {
+            $this->pricetype = Pricetype::find($value);
+            $this->pricetype_id = $this->pricetype->id;
+        }
     }
 }

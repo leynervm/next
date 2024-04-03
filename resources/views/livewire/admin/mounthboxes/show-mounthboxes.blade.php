@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+        <x-loading-next />
+    </div>
+
     @if ($monthboxes->hasPages())
         <div class="pb-2">
             {{ $monthboxes->onEachSide(0)->links('livewire::pagination-default') }}
@@ -8,29 +12,8 @@
     <div class="flex items-center gap-2 mt-4 mb-1">
         <div class="w-full sm:max-w-xs">
             <x-label value="Filtrar Mes :" />
-            <x-input class="block w-full" wire:model="search" type="month" />
+            <x-input class="block w-full" wire:model.lazy="searchmonth" type="month" />
         </div>
-
-        @if (count($sucursalboxes) > 1)
-            <div class="w-full xs:max-w-sm">
-                <x-label value="Filtrar Sucursal :" />
-                <div class="relative" id="parentsearchsucursal" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="selectSearchsucursal"
-                    wire:ignore>
-                    <x-select class="block w-full" x-ref="searchsuc" wire:model.lazy="searchsucursal"
-                        id="searchsucursal" data-minimum-results-for-search="3" data-placeholder="null">
-                        <x-slot name="options">
-                            @foreach ($sucursalboxes as $item)
-                                <option value="{{ $item->id }}">
-                                    {{ $item->name }}
-                                </option>
-                            @endforeach
-                        </x-slot>
-                    </x-select>
-                    <x-icon-select />
-                </div>
-                <x-jet-input-error for="searchsucursal" />
-            </div>
-        @endif
     </div>
 
     <x-table class="relative">
@@ -51,27 +34,25 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium">
                     MES</th>
-
                 <th scope="col" class="p-2 font-medium">
                     FECHA INICIO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     FECHA CIERRE</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     ESTADO</th>
-
                 <th scope="col" class="p-2 relative">
                     <span class="sr-only">OPCIONES</span>
                 </th>
             </tr>
         </x-slot>
-        @if (count($monthboxes))
+        @if (count($monthboxes) > 0)
             <x-slot name="body">
                 @foreach ($monthboxes as $item)
+                    @php
+                        $mesStr = formatDate($item->month, 'MMMM Y');
+                    @endphp
                     <tr>
                         <td class="p-2">
                             <p>{{ $item->name }}</p>
@@ -90,41 +71,35 @@
                             {{ formatDate($item->expiredate) }}
                         </td>
                         <td class="p-2 text-center">
-                            @if ($item->isActive())
-                                <span class="block w-full p-0.5 rounded-sm text-green-500 disabled:opacity-75">
-                                    <svg class="inline-block w-5 h-5 scale-125 rounded-sm text-center"
-                                        viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
-                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path fill="currentColor"
-                                            d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                        <path
-                                            d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                    </svg>
-                                </span>
-
-                                @can('admin.cajas.mensuales.close')
-                                    @if ($item->isExpired())
-                                        <x-button onclick="confirmClose({{ $item }})" wire:key="{{ rand() }}"
-                                            class="inline-block">CERRAR CAJA</x-button>
+                            @if ($item->isRegister())
+                                <x-span-text text="REGISTRADO" class="!tracking-normal leading-3" type="blue" />
+                                @if ($monthboxes->where('status', \App\Models\Monthbox::EN_USO)->count() == 0)
+                                    @if (\Carbon\Carbon::now()->addMonths(1)->format('Y-m') == $item->month)
+                                        @can('admin.cajas.mensuales.close')
+                                            <div class="w-full block mt-1">
+                                                <x-button
+                                                    onclick="confirmActive({{ $item->id }}, '{{ $mesStr }}')"
+                                                    wire:key="activemonthbox_{{ $item->id }}"
+                                                    wire:loading.attr="disabled" class="inline-block">
+                                                    APERTURAR MES</x-button>
+                                            </div>
+                                        @endcan
                                     @endif
-                                @endcan
-                            @elseif ($item->isRegister())
-                                @can('admin.cajas.mensuales.edit')
-                                    <button wire:click="usemonthbox({{ $item->id }})" wire:loading.attr="disabled"
-                                        type="button"
-                                        class="inline-block p-0.5 rounded-sm text-neutral-300 disabled:opacity-75">
-                                        <svg class="w-5 h-5 scale-125 rounded-sm " viewBox="0 0 24 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path fill="currentColor"
-                                                d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                            <path
-                                                d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                        </svg>
-                                    </button>
-                                @endcan
-                            @else
+                                @endif
+                            @elseif ($item->isActive())
+                                @if ($item->isUsing())
+                                    <x-span-text text="ACTUAL" class="!tracking-normal leading-3" type="green" />
+                                @elseif ($item->isExpired())
+                                    <x-span-text text="EXPIRADO" class="!tracking-normal leading-3" type="orange" />
+                                    @can('admin.cajas.mensuales.close')
+                                        <div class="w-full block mt-1">
+                                            <x-button onclick="confirmClose({{ $item->id }}, '{{ $mesStr }}')"
+                                                wire:key="closemonthbox_{{ $item->id }}" wire:loading.attr="disabled"
+                                                class="inline-block">CERRAR MES</x-button>
+                                        </div>
+                                    @endcan
+                                @endif
+                            @elseif ($item->isClose())
                                 <x-span-text text="CERRADO" type="red" class="leading-3 !tracking-normal" />
                             @endif
                         </td>
@@ -144,6 +119,18 @@
                                         </svg>
                                     </button>
                                 @endcan
+                                {{-- <button wire:click="usemonthbox({{ $item->id }})" wire:loading.attr="disabled"
+                                        type="button"
+                                        class="inline-block p-0.5 rounded-sm text-neutral-300 disabled:opacity-75">
+                                        <svg class="w-5 h-5 scale-125 rounded-sm " viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="2"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <path fill="currentColor"
+                                                d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
+                                            <path
+                                                d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
+                                        </svg>
+                                    </button> --}}
                             @else
                                 @can('admin.cajas.mensuales.edit')
                                     <x-button-edit wire:click="edit({{ $item->id }})"
@@ -255,9 +242,26 @@
             })
         }
 
-        function confirmClose(monthbox) {
+        function confirmActive(monthbox_id, month) {
             swal.fire({
-                title: 'Cerrar caja mensual, ' + monthbox.month,
+                title: 'ACTIVAR CAJA MENSUAL ' + month + ' ?',
+                text: "Caja mensual seleccionada será asignada por defecto para registrar movimientos en caja.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.activemonthbox(monthbox_id);
+                }
+            })
+        }
+
+        function confirmClose(monthbox_id, mes) {
+            swal.fire({
+                title: 'CERRAR CAJA MENSUAL DE ' + mes,
                 text: "Se actualizará el estado de la caja mensual, además dejará de estar disponible para registrar movimientos.",
                 icon: 'question',
                 showCancelButton: true,
@@ -267,24 +271,9 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.closemonthbox(monthbox.id);
+                    @this.closemonthbox(monthbox_id);
                 }
             })
-        }
-
-        function selectSearchsucursal() {
-            this.selectSearch = $(this.$refs.searchsuc).select2();
-            this.selectSearch.val(this.searchsucursal).trigger("change");
-            this.selectSearch.on("select2:select", (event) => {
-                this.searchsucursal = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("searchsucursal", (value) => {
-                this.selectSearch.val(value).trigger("change");
-            });
         }
 
         function selectSucursal() {

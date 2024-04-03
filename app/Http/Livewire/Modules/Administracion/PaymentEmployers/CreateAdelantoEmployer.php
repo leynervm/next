@@ -44,12 +44,11 @@ class CreateAdelantoEmployer extends Component
     public function mount()
     {
         $this->employer = new Employer();
-        $this->openbox =  Openbox::mybox(auth()->user()->employer->sucursal_id)->first();
-        $this->monthbox = Monthbox::usando(auth()->user()->employer->sucursal_id)->first();
+        $this->openbox =  Openbox::mybox(auth()->user()->sucursal_id)->first();
+        $this->monthbox = Monthbox::usando(auth()->user()->sucursal_id)->first();
         $this->concept_id = Concept::adelantoemployer()->first()->id ?? null;
         $this->moneda_id = Moneda::default()->first()->id ?? null;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
-        $this->adelantomaximo = mi_empresa()->montoadelanto > 0 ? mi_empresa()->montoadelanto : null;
     }
 
     public function render()
@@ -59,19 +58,17 @@ class CreateAdelantoEmployer extends Component
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
         $monedas = Moneda::orderBy('code', 'asc')->get();
 
-        $sumatorias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-            $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-        })->selectRaw('moneda_id, typemovement, SUM(amount) as total')->groupBy('moneda_id')
-            ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-            ->groupBy('typemovement')->orderBy('total', 'desc')->get();
+        if ($this->monthbox) {
+            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END) as diferencia")
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+        } else {
+            $diferencias = [];
+        }
 
-        $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-            $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-        })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END) as diferencia")
-            ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-            ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
-
-        return view('livewire.modules.administracion.payment-employers.create-adelanto-employer', compact('employers', 'methodpayments', 'monedas', 'sumatorias', 'diferencias'));
+        return view('livewire.modules.administracion.payment-employers.create-adelanto-employer', compact('employers', 'methodpayments', 'monedas', 'diferencias'));
     }
 
     public function updatingOpen()
@@ -90,6 +87,7 @@ class CreateAdelantoEmployer extends Component
         if ($value) {
             $this->employer = Employer::find($value);
             $this->adelantos = $this->employer->cajamovimientos()->where('monthbox_id', $this->monthbox->id)->get();
+            // $this->amount = number_format($this->employer->sueldo - $this->adelantos->sum() ?? 0, 2, '.', '');
         }
     }
 
@@ -108,20 +106,18 @@ class CreateAdelantoEmployer extends Component
             }
         }
 
-        if (!$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
 
+        $mi_empresa = mi_empresa();
+        $this->adelantomaximo = $mi_empresa->montoadelanto > 0 ? $mi_empresa->montoadelanto : null;
         $adelantos = $this->employer->cajamovimientos()
             ->where('monthbox_id', $this->monthbox->id)->sum('amount');
         if ($this->adelantomaximo) {
@@ -150,32 +146,23 @@ class CreateAdelantoEmployer extends Component
 
         try {
 
-            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
-            $moneda = Moneda::find($this->moneda_id);
+            $methodpayment = Methodpayment::find($this->methodpayment_id);
             $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment);
+                $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->employer->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
-            $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
-            $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
-            $amountsaldo = $moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+            $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($amountsaldo - $this->amount) < 0) {
+            if (($saldocaja - $this->amount) < 0) {
                 $mensaje =  response()->json([
-                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DEL TRABAJADOR !',
+                    'title' => 'SALDO INSUFICIENTE PARA REALIZAR ADELANTO DE PAGO DEL PERSONAL !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
-            }
-
-            $descontar = $saldocaja - $this->amount;
-            if ($descontar < 0) {
-                $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
-                $this->openbox->save();
             }
 
             $this->employer->savePayment(

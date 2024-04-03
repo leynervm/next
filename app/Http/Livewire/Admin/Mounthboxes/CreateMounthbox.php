@@ -45,7 +45,11 @@ class CreateMounthbox extends Component
 
     public function render()
     {
-        $sucursals = Sucursal::orderBy('name', 'asc')->get();
+        if (auth()->user()->isAdmin()) {
+            $sucursals = Sucursal::orderBy('name', 'asc')->get();
+        } else {
+            $sucursals = Sucursal::where('id', auth()->user()->sucursal_id)->orderBy('name', 'asc')->get();
+        }
         return view('livewire.admin.mounthboxes.create-mounthbox', compact('sucursals'));
     }
 

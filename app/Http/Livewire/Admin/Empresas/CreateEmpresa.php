@@ -6,6 +6,7 @@ use App\Helpers\FormatoPersonalizado;
 use App\Helpers\GetClient;
 use App\Models\Almacen;
 use App\Models\Empresa;
+use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Rules\ValidateFileKey;
 use Illuminate\Support\Facades\DB;
@@ -168,7 +169,7 @@ class CreateEmpresa extends Component
             $sucursalprincipal = $empresa->sucursals()->create([
                 'name' => $this->name,
                 'direccion' => $this->direccion,
-                'default' => 1,
+                'default' => Sucursal::DEFAULT,
                 'codeanexo' => '0000',
                 'ubigeo_id' => $this->ubigeo_id,
             ]);
@@ -201,11 +202,13 @@ class CreateEmpresa extends Component
                 ]);
             }
 
+
+            $almacen = Almacen::create([
+                'name' => 'ALMACÉN PRINCIPAL',
+                'default' => Almacen::DEFAULT
+            ]);
+
             if (Module::isDisabled('Almacen') && Module::isEnabled('Ventas')) {
-                $almacen = Almacen::create([
-                    'name' => 'ALMACÉN PRINCIPAL',
-                    'default' => Almacen::DEFAULT
-                ]);
                 $sucursalprincipal->almacens()->attach($almacen->id);
             }
 

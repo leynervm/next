@@ -7,12 +7,14 @@
             </div>
         @endif
 
-        <p class="relative text-[10px] leading-3 font-semibold text-center break-words">
-            {{ $title }}
-            @if (isset($spanColor))
-                {{ $spanColor }}
-            @endif
-        </p>
+        @if (isset($title) || isset($spanColor))
+            <p class="relative text-[10px] leading-3 font-semibold text-center break-words">
+                {{ $title }}
+                @if (isset($spanColor))
+                    {{ $spanColor }}
+                @endif
+            </p>
+        @endif
 
         {{ $slot }}
 

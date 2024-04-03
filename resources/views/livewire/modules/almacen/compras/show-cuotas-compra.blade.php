@@ -1,6 +1,6 @@
 <div>
     <x-form-card titulo="CUOTAS PAGO" subtitulo="Información de cuotas de pago de la compra.">
-        @if (count($compra->cuotas))
+        @if (count($compra->cuotas) > 0)
             <div class="w-full flex flex-col gap-2">
                 <div class="w-full flex gap-2 flex-wrap justify-start">
                     @foreach ($compra->cuotas as $item)
@@ -8,7 +8,7 @@
                             :wire:key="'cardcuota-'.$item->id">
                             <p class="text-colorminicard text-xl font-semibold text-center">
                                 <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
-                                {{ number_format($item->amount, 2, '.', ', ') }}
+                                {{ number_format($item->amount, 3, '.', ', ') }}
                                 <small class="text-[10px] font-medium">{{ $compra->moneda->currency }}</small>
                             </p>
 
@@ -18,36 +18,37 @@
                             </div>
 
                             <x-slot name="footer">
-                                @if ($item->cajamovimiento)
-                                    <div class="w-full flex gap-2 flex-wrap items-end justify-between">
-                                        <x-mini-button>
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
-                                                fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <path
-                                                    d="M17.571 18H20.4a.6.6 0 00.6-.6V11a4 4 0 00-4-4H7a4 4 0 00-4 4v6.4a.6.6 0 00.6.6h2.829M8 7V3.6a.6.6 0 01.6-.6h6.8a.6.6 0 01.6.6V7" />
-                                                <path
-                                                    d="M6.098 20.315L6.428 18l.498-3.485A.6.6 0 017.52 14h8.96a.6.6 0 01.594.515L17.57 18l.331 2.315a.6.6 0 01-.594.685H6.692a.6.6 0 01-.594-.685z" />
-                                                <path d="M17 10.01l.01-.011" />
-                                            </svg>
-                                        </x-mini-button>
-                                        <x-button-delete
-                                            wire:click="$emit('compra.confirmDeletePay', {{ $item }})"
-                                            wire:loading.attr="disabled" />
-                                    </div>
-                                @else
-                                    @can('admin.almacen.compras.pagos')
+                                @if (auth()->user()->sucursal_id == $compra->sucursal_id)
+                                    @if ($item->cajamovimiento)
                                         <div class="w-full flex gap-2 flex-wrap items-end justify-between">
-                                            <x-button wire:key="paycuota_{{ $item->id }}"
-                                                wire:click="paycuota({{ $item->id }})"
-                                                wire:loading.attr="disabled">PAGAR</x-button>
-
-                                            <x-button-delete
-                                                wire:click="$emit('compra.confirmDeleteCuota', {{ $item }})"
-                                                wire:loading.attr="disabled" />
-
+                                            <x-mini-button>
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path
+                                                        d="M17.571 18H20.4a.6.6 0 00.6-.6V11a4 4 0 00-4-4H7a4 4 0 00-4 4v6.4a.6.6 0 00.6.6h2.829M8 7V3.6a.6.6 0 01.6-.6h6.8a.6.6 0 01.6.6V7" />
+                                                    <path
+                                                        d="M6.098 20.315L6.428 18l.498-3.485A.6.6 0 017.52 14h8.96a.6.6 0 01.594.515L17.57 18l.331 2.315a.6.6 0 01-.594.685H6.692a.6.6 0 01-.594-.685z" />
+                                                    <path d="M17 10.01l.01-.011" />
+                                                </svg>
+                                            </x-mini-button>
+                                            <x-button-delete onclick="confirmDeletePay( {{ $item }})"
+                                                wire:loading.attr="disabled" wire:key="deletepay_{{ $item->id }}" />
                                         </div>
-                                    @endcan
+                                    @else
+                                        @can('admin.almacen.compras.pagos')
+                                            <div class="w-full flex gap-2 flex-wrap items-end justify-between">
+
+                                                <x-button wire:key="paycuota_{{ $item->id }}"
+                                                    wire:click="paycuota({{ $item->id }})"
+                                                    wire:loading.attr="disabled">PAGAR</x-button>
+
+                                                <x-button-delete onclick="confirmDeleteCuota({{ $item }})"
+                                                    wire:loading.attr="disabled"
+                                                    wire:key="deletecuota_{{ $item->id }}" />
+                                            </div>
+                                        @endcan
+                                    @endif
                                 @endif
                             </x-slot>
 
@@ -90,11 +91,11 @@
                             @foreach ($cuotas as $item)
                                 <x-card-cuota :titulo="substr('000' . $item['cuota'], -3)" class="w-full sm:w-48">
 
-                                    <x-label value="Fecha pago :" textSize="[10px]" />
+                                    <x-label value="Fecha pago :" />
                                     <x-input class="block w-full" type="date"
                                         wire:model.defer="cuotas.{{ $loop->iteration - 1 }}.date" />
 
-                                    <x-label value="Monto Cuota :" textSize="[10px]" />
+                                    <x-label value="Monto Cuota :" />
                                     <x-input class="block w-full numeric" type="number" min="1" step="0.001"
                                         wire:model.defer="cuotas.{{ $loop->iteration - 1 }}.amount" />
 
@@ -132,10 +133,26 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="savepayment" class="w-full flex flex-col gap-1">
+                @if ($monthbox)
+                    <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                        <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        @if ($openbox)
+                            <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                        @else
+                            <small class="text-colorerror w-full block font-medium text-[10px] leading-3">
+                                APERTURA DE CAJA DIARIA NO DISPONIBLE...
+                            </small>
+                        @endif
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+                @endif
+
                 <div class="w-full">
-                    <p class="text-colorminicard text-xl font-semibold">
+                    <p class="text-colorlabel text-3xl font-semibold">
                         <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
-                        {{ number_format($cuota->amount, 2, '.', ', ') }}
+                        {{ number_format($cuota->amount, 3, '.', ', ') }}
                         <small class="text-[10px] font-medium">{{ $compra->moneda->currency }}</small>
                     </p>
                 </div>
@@ -192,7 +209,7 @@
         <x-slot name="content">
             <div class="w-full flex flex-col gap-3 relative">
                 <form wire:submit.prevent="updatecuotas" class="w-full flex flex-wrap justify-around gap-2">
-                    @if (count($cuotas))
+                    @if (count($cuotas) > 0)
                         <div class="w-full flex flex-wrap gap-1">
                             @foreach ($cuotas as $item)
                                 <x-card-cuota :titulo="substr('000' . $item['cuota'], -3)" class="w-full sm:w-60">
@@ -201,7 +218,7 @@
                                         <p class="text-colorminicard text-xl font-semibold text-center">
                                             <small
                                                 class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
-                                            {{ number_format($item['amount'], 2, '.', ', ') }}
+                                            {{ number_format($item['amount'], 3, '.', ', ') }}
                                             <small
                                                 class="text-[10px] font-medium">{{ $compra->moneda->currency }}</small>
                                         </p>
@@ -253,26 +270,6 @@
     </x-jet-dialog-modal>
 
     <script>
-        // function deletecuota(data) {
-        //     console.log(data);
-        //     // const cuotastr = '000' + data.cuota;
-        //     swal.fire({
-        //         title: 'Desea eliminar cuota ?',
-        //         text: "Se eliminará un registro de pago de la base de datos.",
-        //         icon: 'question',
-        //         showCancelButton: true,
-        //         confirmButtonColor: '#0FB9B9',
-        //         cancelButtonColor: '#d33',
-        //         confirmButtonText: 'Confirmar',
-        //         cancelButtonText: 'Cancelar'
-        //     }).then((result) => {
-        //         if (result.isConfirmed) {
-        //             // console.log('Delete');
-        //             @this.deletecuota(data);
-        //         }
-        //     })
-        // }
-
         function select2Methodpayment() {
             this.selectS = $(this.$refs.select).select2();
             this.selectS.val(this.methodpayment_id).trigger("change");
@@ -288,87 +285,40 @@
             });
         }
 
-        document.addEventListener("livewire:load", () => {
+        function confirmDeletePay(cuota) {
+            const cuotastr = '000' + cuota.cuota;
+            swal.fire({
+                title: 'Desea anular el pago de la Cuota' + cuotastr.substr(-3) + '?',
+                text: "Se eliminará un registro de pago de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletepaycuota(cuota.id);
+                }
+            })
+        }
 
-            // renderSelect2();
-
-            // $('#editproveedorcompra_id').on("change", function(e) {
-            //     disabledSelect();
-            //     @this.set('compra.proveedor_id', e.target.value);
-            // });
-
-            // $('#editcompramethodpayment_id').on("change", function(e) {
-            //     disabledSelect();
-            //     @this.set('methodpayment_id', e.target.value);
-            // });
-
-            // $('#editcompracuenta_id').on("change", function(e) {
-            //     disabledSelect();
-            //     @this.set('cuenta_id', e.target.value);
-            // });
-
-            // document.addEventListener('render-select2-editcompra', () => {
-            //     renderSelect2();
-            // });
-
-            Livewire.on('compra.confirmDeletePay', data => {
-                const cuotastr = '000' + data.cuota;
-                swal.fire({
-                    title: 'Desea anular el pago de la Cuota' + cuotastr.substr(-3) + '?',
-                    text: "Se eliminará un registro de pago de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        @this.deletepaycuota(data.id);
-                    }
-                })
-            });
-
-
-            Livewire.on('compra.confirmDeleteCuota', data => {
-                const cuotastr = '000' + data.cuota;
-                swal.fire({
-                    title: 'Desea eliminar la Cuota' + cuotastr.substr(-3) + '?',
-                    text: "Se eliminará un registro de pago de la base de datos.",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0FB9B9',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Confirmar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // console.log('Delete');
-                        @this.deletecuota(data.id);
-                    }
-                })
-            });
-
-            // function renderSelect2() {
-            //     $('#editproveedorcompra_id,#editmonedacompra_id,#editcompramethodpayment_id, #editcompracuenta_id')
-            //         .select2()
-            //         .on('select2:open', function(e) {
-            //             const evt = "scroll.select2";
-            //             $(e.target).parents().off(evt);
-            //             $(window).off(evt);
-            //         });
-
-            //     $('#editcompracuenta_id').on("change", function(e) {
-            //         disabledSelect();
-            //         @this.set('cuenta_id', e.target.value);
-            //     });
-            // }
-
-            // function disabledSelect() {
-            //     $('#editproveedorcompra_id,#editmonedacompra_id,#editcompramethodpayment_id, #editcompracuenta_id')
-            //         .attr("disabled", true);
-            // }
-
-        })
+        function confirmDeleteCuota(cuota) {
+            const cuotastr = '000' + cuota.cuota;
+            swal.fire({
+                title: 'Desea eliminar la Cuota' + cuotastr.substr(-3) + '?',
+                text: "Se eliminará un registro de pago de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletecuota(cuota.id);
+                }
+            })
+        }
     </script>
 </div>

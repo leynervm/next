@@ -15,13 +15,13 @@ class CreateCuotasTable extends Migration
     {
         Schema::create('cuotas', function (Blueprint $table) {
             $table->id();
-            $table->integer('cuota');
-            $table->decimal('amount', 12, 4);
+            $table->unsignedTinyInteger('cuota');
+            $table->unsignedDecimal('amount', 18, 4);
             $table->date('expiredate');
-            $table->bigInteger('moneda_id')->nullable();
-            $table->bigInteger('sucursal_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
-            $table->integer('cuotable_id');
+            $table->unsignedTinyInteger('moneda_id');
+            $table->unsignedTinyInteger('sucursal_id');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('cuotable_id');
             $table->string('cuotable_type');
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('sucursal_id')->on('sucursals')->references('id');

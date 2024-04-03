@@ -6,7 +6,7 @@
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
-        @if (count($roles))
+        @if (count($roles) > 0)
             @foreach ($roles as $item)
                 <x-minicard :title="null" size="lg">
                     <div class="text-center">
@@ -27,7 +27,7 @@
                                     <path
                                         d="M15.6702 18.444C15.9702 18.588 16.3422 18.96 16.5222 19.26C16.5822 19.68 16.8822 18.06 18.3462 17.1M21.0002 18C21.0002 20.2091 19.2094 22 17.0002 22C14.7911 22 13.0002 20.2091 13.0002 18C13.0002 15.7909 14.7911 14 17.0002 14C19.2094 14 21.0002 15.7909 21.0002 18Z" />
                                 </svg>
-                                <x-span-text :text="count($item->permissions)" class="leading-3 " type="green" />
+                                <x-span-text :text="$item->permissions()->modulesActivePermission()->count()" class="leading-3 " type="green" />
                                 PERMISOS
                             </h1>
                         @endcannot
@@ -45,7 +45,7 @@
                                     <path
                                         d="M15.6702 18.444C15.9702 18.588 16.3422 18.96 16.5222 19.26C16.5822 19.68 16.8822 18.06 18.3462 17.1M21.0002 18C21.0002 20.2091 19.2094 22 17.0002 22C14.7911 22 13.0002 20.2091 13.0002 18C13.0002 15.7909 14.7911 14 17.0002 14C19.2094 14 21.0002 15.7909 21.0002 18Z" />
                                 </svg>
-                                <x-span-text :text="count($item->permissions)" class="leading-3 " type="green" />
+                                <x-span-text :text="$item->permissions()->modulesActivePermission()->count()" class="leading-3 " type="green" />
                                 PERMISOS</a>
                         @endcan
                     </div>

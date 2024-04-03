@@ -53,10 +53,6 @@ class ShowCajamovimientos extends Component
             'except' => '',
             'as' => 'usuario'
         ],
-        'searchsucursal' => [
-            'except' => '',
-            'as' => 'sucursal'
-        ],
         'searchcaja' => [
             'except' => '',
             'as' => 'caja'
@@ -72,21 +68,27 @@ class ShowCajamovimientos extends Component
     {
 
         $methodpayments = Methodpayment::whereHas('cajamovimientos')->get();
-        $concepts = Concept::whereHas('cajamovimientos')->get();
-        $monthboxes = Monthbox::whereHas('cajamovimientos')->get();
-        $users = User::whereHas('cajamovimientos')->get();
-        $sucursals = Sucursal::withTrashed()->whereHas('cajamovimientos')->get();
+        $concepts = Concept::whereHas('cajamovimientos', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        })->get();
+        $monthboxes = Monthbox::whereHas('cajamovimientos', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        })->get();
+        $users = User::whereHas('cajamovimientos', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        })->orderBy('name', 'asc')->get();
         $boxes = Box::whereHas('openboxes', function ($query) {
-            $query->whereHas('cajamovimientos');
+            $query->whereHas('cajamovimientos', function ($query) {
+                $query->where('sucursal_id', auth()->user()->sucursal_id);
+            });
         })->withTrashed()->get();
 
-        $movimientos = Cajamovimiento::with(['sucursal', 'concept', 'methodpayment', 'user', 'openbox', 'monthbox', 'moneda',])
+        $movimientos = Cajamovimiento::with(['sucursal', 'concept', 'methodpayment', 'user', 'monthbox', 'moneda',])
             ->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed();
-                if ($this->searchsucursal !== '') {
-                    $query->where('id', $this->searchsucursal);
-                } else {
-                    $query->where('id', auth()->user()->sucursal_id);
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+            })->withWhereHas('openbox', function ($query) {
+                if ($this->searchcaja !== '') {
+                    $query->where('box_id', $this->searchcaja);
                 }
             });
 
@@ -110,26 +112,17 @@ class ShowCajamovimientos extends Component
             $movimientos->where('user_id', $this->searchuser);
         }
 
-        if ($this->searchcaja !== '') {
-            $movimientos->where('box_id', $this->searchcaja);
-        }
-
         if ($this->searchmonthbox !== '') {
             $movimientos->where('monthbox_id', $this->searchmonthbox);
         }
 
         $movimientos = $movimientos->orderBy('date', 'desc')->paginate();
-        return view('livewire.admin.cajamovimientos.show-cajamovimientos', compact('movimientos', 'methodpayments', 'concepts', 'users', 'sucursals', 'boxes', 'monthboxes', 'movimientos'));
+        return view('livewire.admin.cajamovimientos.show-cajamovimientos', compact('movimientos', 'methodpayments', 'concepts', 'users', 'boxes', 'monthboxes', 'movimientos'));
     }
 
     public function delete(Cajamovimiento $cajamovimiento)
     {
         $cajamovimiento->forceDelete();
-        $this->dispatchBrowserEvent('celeted');
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-show-movimientos');
+        $this->dispatchBrowserEvent('deleted');
     }
 }

@@ -52,6 +52,14 @@ class Monthbox extends Model
             ->where('sucursal_id', $sucursal_id);
     }
 
+    // public function scopeActive($query, $sucursal_id)
+    // {
+    //     return $query->where('status', self::EN_USO)
+    //         ->where('sucursal_id', $sucursal_id)
+    //         ->where('startdate', '<=', now('America/Lima')->format('Y-m-d H:i'))
+    //         ->where('expiredate', '>=', now('America/Lima')->format('Y-m-d H:i'));
+    // }
+
     public function isRegister()
     {
         return $this->status == self::REGISTRADO;
@@ -65,8 +73,10 @@ class Monthbox extends Model
     public function isUsing()
     {
         return Carbon::parse(Carbon::parse($this->expiredate)->format('Y-m-d H:i'))
-            ->greaterThanOrEqualTo(Carbon::now()->format('Y-m-d H:i'))
-            && $this->status == self::EN_USO;
+            ->greaterThanOrEqualTo(Carbon::now('America/Lima')->format('Y-m-d H:i'))
+            && Carbon::parse(Carbon::parse($this->startdate)->format('Y-m-d H:i'))
+            ->lessThanOrEqualTo(Carbon::now('America/Lima')->format('Y-m-d H:i'))
+            &&  $this->status == self::EN_USO;
     }
 
     public function isClose()

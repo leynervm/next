@@ -2,9 +2,9 @@
 
 namespace App\Http\Livewire\Admin\Roles;
 
+use App\Models\Permission;
 use App\Rules\CampoUnique;
 use Livewire\Component;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 class CreateRol extends Component
@@ -24,7 +24,8 @@ class CreateRol extends Component
 
     public function render()
     {
-        $permisos = Permission::orderBy('orden', 'asc')->orderBy('id', 'asc')->get()->groupBy('module');
+        $permisos = Permission::modulesActivePermission()->orderBy('orden', 'asc')
+            ->orderBy('table', 'asc')->orderBy('id', 'asc')->get()->groupBy('module');
         return view('livewire.admin.roles.create-rol', compact('permisos'));
     }
 

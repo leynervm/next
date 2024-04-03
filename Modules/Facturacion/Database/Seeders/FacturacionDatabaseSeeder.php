@@ -4,6 +4,7 @@ namespace Modules\Facturacion\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
+use Nwidart\Modules\Facades\Module;
 
 class FacturacionDatabaseSeeder extends Seeder
 {
@@ -16,13 +17,14 @@ class FacturacionDatabaseSeeder extends Seeder
     {
         Model::unguard();
 
-        // $this->call("OthersTableSeeder");
+        if (Module::isEnabled('Facturacion')) {
+            // DATA VACIO
+            $this->call(SeedRoleTableSeeder::class);
+            $this->call(TypecomprobanteTableSeeder::class); //Requerido
+            $this->call(SeedModalidadtransporteTableSeeder::class); //Requerido
 
-        // DATA VACIO
-        $this->call(TypecomprobanteTableSeeder::class); //Requerido
-        $this->call(SeedModalidadtransporteTableSeeder::class); //Requerido
-
-        //Para tipocomprobantes con series
-        // $this->call(SeriecomprobanteTableSeeder::class);
+            //Para tipocomprobantes con series
+            // $this->call(SeriecomprobanteTableSeeder::class);
+        }
     }
 }

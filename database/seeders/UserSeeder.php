@@ -21,7 +21,7 @@ class UserSeeder extends Seeder
     public function run()
     {
 
-        $desarrollador = User::create([
+        User::updateOrCreate([
             'document' => '74495914',
             'name' => 'LEINER VEGA MEJIA',
             'email' => 'admin@gmail.com',
@@ -29,13 +29,20 @@ class UserSeeder extends Seeder
             'admin' => 1,
         ]);
 
-        $admin = User::create([
+        User::updateOrCreate([
+            'document' => '00000000',
+            'name' => 'LEINER VEGA MEJIA',
+            'email' => 'leyner@gmail.com',
+            'password' => bcrypt('12345678'),
+        ]);
+
+        User::updateOrCreate([
             'document' => '20538954099',
             'name' => 'NEXT TECHNOLOGIES',
             'email' => 'next@gmail.com',
             'password' => bcrypt('12345678'),
         ]);
 
-        User::factory(10)->create();
+        // User::factory(10)->create();
     }
 }

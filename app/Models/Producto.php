@@ -126,10 +126,11 @@ class Producto extends Model
             ->orderBy('default', 'desc')->orderBy('id', 'asc');
     }
 
-    public function defaultImage(): MorphMany
-    {
-        return $this->morphMany(Image::class, 'imageable')->where('default', 1);
-    }
+    // public function defaultImage(): MorphMany
+    // {
+    //     return $this->morphMany(Image::class, 'imageable')->where('default', 1);
+    // }
+
 
     public function category(): BelongsTo
     {

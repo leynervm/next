@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Ventas\Entities\Venta;
-use Nwidart\Modules\Facades\Module;
 
 class ShowVentas extends Component
 {
@@ -18,7 +17,6 @@ class ShowVentas extends Component
     public $search = '';
     public $date = '';
     public $dateto = '';
-    public $searchsucursal = '';
     public $searchuser = '';
     public $deletes = false;
 
@@ -26,7 +24,6 @@ class ShowVentas extends Component
         'search' => ['except' => '', 'as' => 'buscar'],
         'date' => ['except' => '', 'as' => 'fecha'],
         'dateto' => ['except' => '', 'as' => 'hasta'],
-        'searchsucursal' => ['except' => '', 'as' => 'sucursal'],
         'searchuser' => ['except' => '', 'as' => 'usuario'],
         'deletes' => ['except' => false, 'as' => 'eliminados'],
     ];
@@ -34,23 +31,19 @@ class ShowVentas extends Component
 
     public function render()
     {
-        $sucursals = Sucursal::withTrashed()->whereHas('ventas')->get();
-        $users = User::whereHas('ventas')->orderBy('name', 'asc')->get();
+        $users = User::whereHas('ventas', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        })->orderBy('name', 'asc')->get();
         $ventas = Venta::with(['sucursal', 'user', 'client', 'typepayment', 'cajamovimiento', 'cuotas'])
             ->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed();
-                if ($this->searchsucursal !== '') {
-                    $query->where('id', $this->searchsucursal);
-                } else {
-                    $query->where('id', auth()->user()->sucursal_id);
-                }
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
             });
 
         if (trim($this->search) !== '') {
             $ventas->whereHas('client', function ($query) {
                 $query->where('document', 'ilike', '%' . $this->search . '%')
                     ->orWhere('name', 'ilike', '%' . $this->search . '%');
-            })->orWhere('code', 'ilike', ['%' . $this->search . '%']);
+            })->orWhere('seriecompleta', 'ilike', ['%' . $this->search . '%']);
             // ->orWhereRaw("CONCAT(code, '-', id) ILIKE ?", ['%' . $this->search . '%']);
         }
 
@@ -73,7 +66,7 @@ class ShowVentas extends Component
 
         $ventas = $ventas->orderBy('date', 'desc')->paginate();
 
-        return view('livewire.modules.ventas.ventas.show-ventas', compact('ventas', 'sucursals', 'users'));
+        return view('livewire.modules.ventas.ventas.show-ventas', compact('ventas', 'users'));
     }
 
     public function updatedSearch()
@@ -99,11 +92,6 @@ class ShowVentas extends Component
     public function updatedDeletes()
     {
         $this->authorize('admin.ventas.deletes');
-        $this->resetPage();
-    }
-
-    public function updatedSearchsucursal()
-    {
         $this->resetPage();
     }
 }

@@ -72,39 +72,26 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     AREA TRABAJO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     FECHA NACIMIENTO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SUELDO</th>
-
                 <th scope="col" class="p-2 font-medium">
-                    HORA INGRESO</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    HORA SALIDA</th>
-
+                    TURNO</th>
                 <th scope="col" class="p-2 font-medium">
                     SEXO</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     ACCESO</th>
-
                 @can('admin.administracion.employers.payments')
                     <th scope="col" class="p-2 font-medium text-center">
                         TELÉFONO</th>
                 @endcan
-
                 <th scope="col" class="p-2 font-medium text-center">
                     PAGOS</th>
-
                 <th scope="col" class="p-2 font-medium text-center">
                     SUCURSAL</th>
-
                 <th scope="col" class="p-2 relative">
                     <span class="sr-only">OPCIONES</span>
                 </th>
@@ -130,10 +117,14 @@
                             {{ number_format($item->sueldo, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
-                            {{ formatDate($item->horaingreso, 'hh:ss A') }}
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ formatDate($item->horasalida, 'hh:ss A') }}
+                            @if ($item->turno)
+                                <p>{{ $item->turno->name }}</p>
+                                <p class="text-colorsubtitleform text-[10px]">
+                                    {{ formatDate($item->turno->horaingreso, 'hh:ss A') }}
+                                    -
+                                    {{ formatDate($item->turno->horasalida, 'hh:ss A') }}
+                                </p>
+                            @endif
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->sexo }}
@@ -218,7 +209,7 @@
 
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
-            {{ __('Actulizar personal') }}
+            {{ __('Actualizar personal') }}
             <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
@@ -235,10 +226,10 @@
 
                     <div class="w-full">
                         <x-label value="Género :" />
-                        <div class="relative" id="parenteditsexoemp_id" x-data="{ sexo: @entangle('employer.sexo').defer }"
-                            x-init="selectSexo" wire:ignore>
-                            <x-select class="block w-full" wire:model.defer="employer.sexo" id="editsexoemp_id"
-                                data-dropdown-parent="null" x-ref="editselect">
+                        <div class="relative" id="parenteditsexoemp_id" x-data="{ sexoedit: @entangle('employer.sexo').defer }"
+                            x-init="selectSexo">
+                            <x-select class="block w-full" id="editsexoemp_id" data-dropdown-parent="null"
+                                x-ref="editselectsexo">
                                 <x-slot name="options">
                                     <option value="M">MASCULINO</option>
                                     <option value="F">FEMENINO</option>
@@ -270,17 +261,26 @@
                         <x-jet-input-error for="employer.sueldo" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label value="Hora ingreso :" />
-                        <x-input class="block w-full" wire:model.defer="employer.horaingreso" type="time" />
-                        <x-jet-input-error for="employer.horaingreso" />
+                    <div class="w-full xs:col-span-2">
+                        <x-label value="Turno laboral :" />
+                        <div class="relative" id="parentturnoe_id" x-data="{ turno_id: @entangle('employer.turno_id').defer }" x-init="select2TurnoE">
+                            <x-select class="block w-full" x-ref="selectturno" id="turnoe_id"
+                                data-dropdown-parent="null">
+                                <x-slot name="options">
+                                    @if (count($turnos) > 0)
+                                        @foreach ($turnos as $item)
+                                            <option value="{{ $item->id }}"
+                                                title="{{ formatDate($item->horaingreso, 'hh:ss A') . ' - ' . formatDate($item->horasalida, 'hh:ss A') }}">
+                                                {{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="employer.turno_id" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label value="Hora salida :" />
-                        <x-input class="block w-full" wire:model.defer="employer.horasalida" type="time" />
-                        <x-jet-input-error for="employer.horasalida" />
-                    </div>
 
                     <div class="w-full xs:col-span-2">
                         <x-label value="Área de trabajo :" />
@@ -476,18 +476,42 @@
             });
         }
 
-        function selectSexo() {
-            this.selectS = $(this.$refs.editselect).select2();
-            this.selectS.val(this.sexo).trigger("change");
-            this.selectS.on("select2:select", (event) => {
-                this.sexo = event.target.value;
+        function select2TurnoE() {
+            this.selectTur = $(this.$refs.selectturno).select2();
+            this.selectTur.val(this.turno_id).trigger("change");
+            this.selectTur.on("select2:select", (event) => {
+                this.turno_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("sexo", (value) => {
-                this.selectS.val(value).trigger("change");
+            this.$watch("turno_id", (value) => {
+                this.selectTur.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectTur.select2({
+                    templateResult: formatOption
+                }).val(this.turno_id).trigger('change');
+            });
+        }
+
+        function selectSexo() {
+            this.selectSexo = $(this.$refs.editselectsexo).select2();
+            this.selectSexo.val(this.sexoedit).trigger("change");
+            this.selectSexo.on("select2:select", (event) => {
+                this.sexoedit = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("sexoedit", (value) => {
+                this.selectSexo.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectSexo.select2().val(this.sexoedit).trigger('change');
             });
         }
 
@@ -505,5 +529,12 @@
                 this.selectA.val(value).trigger("change");
             });
         }
+
+        function formatOption(option) {
+            var $option = $(
+                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title + '</p>'
+            );
+            return $option;
+        };
     </script>
 </div>

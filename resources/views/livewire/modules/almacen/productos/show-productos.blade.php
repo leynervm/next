@@ -151,10 +151,12 @@
                     PRECIO COMPRA
                 </th>
 
-                @if (mi_empresa()->uselistprice == '0')
-                    <th scope="col" class="p-2 font-medium">
-                        PRECIO VENTA
-                    </th>
+                @if (mi_empresa())
+                    @if (!mi_empresa()->usarLista())
+                        <th scope="col" class="p-2 font-medium">
+                            PRECIO VENTA
+                        </th>
+                    @endif
                 @endif
 
                 @if (Module::isEnabled('Almacen'))
@@ -170,31 +172,39 @@
             </tr>
         </x-slot>
 
-        @if (count($productos))
+        @if (count($productos) > 0)
             <x-slot name="body">
                 @foreach ($productos as $item)
                     <tr>
                         <td class="p-2">
                             <div class="inline-flex gap-2 items-start justify-start">
-                                @if (count($item->images))
-                                    <button
-                                        class="block rounded overflow-hidden w-16 h-16 flex-shrink-0 shadow relative hover:shadow-lg cursor-pointer">
+                                @php
+                                    $image = null;
+                                    if (count($item->images) > 0) {
+                                        if ($item->images()->default()->exists()) {
+                                            $image = $item->images()->default()->first()->url;
+                                        } else {
+                                            $image = $item->images->first()->url;
+                                        }
+                                    }
+                                @endphp
 
-                                        @if (count($item->defaultImage))
-                                            <img src="{{ asset('storage/productos/' . $item->defaultImage->first()->url) }}"
-                                                alt="" class="w-full h-full object-cover">
-                                        @else
-                                            <img src="{{ asset('storage/productos/' . $item->images->first()->url) }}"
-                                                alt="" class="w-full h-full object-cover">
-                                        @endif
+                                <button
+                                    class="block rounded overflow-hidden w-16 h-16 flex-shrink-0 shadow relative hover:shadow-lg cursor-pointer">
+                                    @if ($image)
+                                        <img src="{{ asset('storage/productos/' . $image) }}" alt=""
+                                            class="w-full h-full object-cover">
+                                    @else
+                                        <x-icon-image-unknown class="w-full h-full" />
+                                    @endif
 
-                                        @if (count($item->images) > 1)
-                                            <p
-                                                class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-textspantable bg-fondospantable rounded-full">
-                                                +{{ count($item->images) - 1 }}</p>
-                                        @endif
-                                    </button>
-                                @endif
+                                    @if (count($item->images) > 1)
+                                        <p
+                                            class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-textspantable bg-fondospantable rounded-full">
+                                            +{{ count($item->images) - 1 }}</p>
+                                    @endif
+                                </button>
+
                                 <div class="flex-shrink-1">
                                     @can('admin.almacen.productos.edit')
                                         <a href="{{ route('admin.almacen.productos.edit', $item) }}"
@@ -208,7 +218,9 @@
                                     @endcannot
 
                                     <p class="text-[10px] text-colorsubtitleform">
-                                        {{ $item->marca->name }} / MODELO : {{ $item->modelo }}</p>
+                                        <span class="font-semibold"> MARCA:</span> {{ $item->marca->name }} <span
+                                            class="font-semibold">MODELO:</span> {{ $item->modelo }}
+                                    </p>
                                 </div>
                             </div>
                         </td>
@@ -253,17 +265,19 @@
                             {{ number_format($item->pricebuy, 3, '.', ', ') }}
                         </td>
 
-                        @if (!mi_empresa()->usarLista())
-                            <td class="p-2 text-center">
-                                {{ number_format($item->pricesale, 3, '.', ', ') }}
-                            </td>
+                        @if (mi_empresa())
+                            @if (!mi_empresa()->usarLista())
+                                <td class="p-2 text-center">
+                                    {{ number_format($item->pricesale, 3, '.', ', ') }}
+                                </td>
+                            @endif
                         @endif
 
                         @if (Module::isEnabled('Almacen'))
                             <td class="p-2">
                                 @if (count($item->compraitems) > 0)
                                     <p>
-                                        {{ \Carbon\Carbon::parse($item->compraitems->first()->compra->date)->format('d/m/Y') }}
+                                        {{ formatDate($item->compraitems->first()->compra->date, 'DD MMMM Y') }}
                                     </p>
                                     <p>{{ $item->compraitems->first()->compra->proveedor->name }}</p>
                                 @endif

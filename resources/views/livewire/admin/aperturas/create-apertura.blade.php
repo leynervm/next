@@ -25,7 +25,9 @@
                                 @if (count($boxes) > 0)
                                     @foreach ($boxes as $item)
                                         @php
-                                            $nameuser = !is_null($item->user) ? $item->user->name : '<span class="bg-green-500 leading-3 rounded-md p-1 text-white text-[10px]">DISPONIBLE</span>';
+                                            $nameuser = !is_null($item->user)
+                                                ? $item->user->name
+                                                : '<span class="bg-green-500 leading-3 rounded-md p-1 text-white text-[10px]">DISPONIBLE</span>';
                                         @endphp
                                         <option {{ $item->user ? 'disabled' : '' }} value="{{ $item->id }}"
                                             title="{{ $nameuser }}" data-apertura="{{ $item->apertura }}">
@@ -44,7 +46,22 @@
                     <x-input class="block w-full" x-model="apertura" wire:model.defer="apertura" type="number"
                         step="0.01" min="0" onkeypress="return validarDecimal(event, 8)" />
                     <x-jet-input-error for="apertura" />
+                </div>
+
+                @if (Module::isDisabled('Employer'))
+                    <div class="w-full mt-2">
+                        <x-label value="fecha cierre :" />
+                        <x-input class="block w-full" wire:model.defer="expiredate" type="datetime-local" />
+                        <x-jet-input-error for="expiredate" />
+                    </div>
+                @endif
+
+                <div>
+                    <x-jet-input-error for="monthbox.id" />
                     <x-jet-input-error for="employer.id" />
+                    <x-jet-input-error for="concept_id" />
+                    <x-jet-input-error for="moneda_id" />
+                    <x-jet-input-error for="methodpayment_id" />
                 </div>
 
                 <div class="w-full flex pt-4 justify-end">

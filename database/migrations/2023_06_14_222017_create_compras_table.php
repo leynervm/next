@@ -20,12 +20,12 @@ class CreateComprasTable extends Migration
             $table->string('guia', 32);
             $table->string('detalle', 255)->nullable();
             $table->decimal('tipocambio', 7, 4)->nullable();
-            $table->decimal('gravado', 12, 4)->default(0);
-            $table->decimal('exonerado', 12, 4)->default(0);
-            $table->decimal('igv', 12, 4)->default(0);
+            $table->decimal('gravado', 18, 4)->default(0);
+            $table->decimal('exonerado', 18, 4)->default(0);
+            $table->decimal('igv', 18, 4)->default(0);
             $table->decimal('descuento', 10, 4)->default(0);
-            $table->decimal('otros', 12, 4)->default(0);
-            $table->decimal('total', 12, 4)->default(0);
+            $table->decimal('otros', 18, 4)->default(0);
+            $table->decimal('total', 18, 4)->default(0);
             $table->char('status', 1)->default(0);
             $table->tinyInteger('moneda_id')->nullable();
             $table->tinyInteger('typepayment_id')->nullable();

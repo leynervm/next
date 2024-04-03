@@ -16,10 +16,10 @@ class CreatePricetypeRangoTable extends Migration
         Schema::create('pricetype_rango', function (Blueprint $table) {
             $table->id();
             $table->decimal('ganancia', 10, 2);
-            $table->unsignedSmallInteger('pricetype_id')->nullable();
-            $table->unsignedSmallInteger('rango_id')->nullable();
-            $table->foreign('pricetype_id')->on('pricetypes')->references('id');
-            $table->foreign('rango_id')->on('rangos')->references('id');
+            $table->unsignedSmallInteger('pricetype_id');
+            $table->unsignedSmallInteger('rango_id');
+            $table->foreign('pricetype_id')->on('pricetypes')->references('id')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('rango_id')->on('rangos')->references('id')->onDelete('cascade')->onUpdate('cascade');
         });
     }
 

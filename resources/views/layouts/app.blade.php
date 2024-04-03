@@ -30,7 +30,7 @@
     <!-- Scripts -->
 </head>
 
-<body class="{{ config('app.theme') }}">
+<body class="{{ config('app.theme') }}  animate__animated animate__fadeIn animate__faster">
     <div class="relative flex h-screen min-h-screen overflow-hidden">
         @auth
             <div class="w-16 h-16 flex md:hidden fixed z-20 text-center p-1 justify-center items-center">
@@ -116,9 +116,9 @@
                                     <div class="text-xs px-3">
                                         <p class="text-right">{{ Auth::user()->name }}</p>
 
-                                        @if (Auth::user()->employer)
+                                        @if (Auth::user()->sucursal)
                                             <small
-                                                class="font-medium text-[10px]">[{{ Auth::user()->employer->sucursal->name }}]</small>
+                                                class="font-medium text-[10px]">[{{ Auth::user()->sucursal->name }}]</small>
                                         @else
                                             <small class="font-medium text-[10px] text-next-500">
                                                 [SUCURSAL NO ASIGNADA]</small>

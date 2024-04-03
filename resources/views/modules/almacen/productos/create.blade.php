@@ -18,7 +18,9 @@
                     </x-slot>
                 </x-link-breadcrumb>
             @endcan
+        @endif
 
+        @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
             @can('admin.almacen.productos')
                 <x-link-breadcrumb text="PRODUCTOS" route="admin.almacen.productos">
                     <x-slot name="icon">

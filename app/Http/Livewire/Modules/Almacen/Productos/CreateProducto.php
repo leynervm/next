@@ -51,7 +51,7 @@ class CreateProducto extends Component
             'unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
             'subcategory_id' => ['nullable', 'integer', 'min:1', 'exists:subcategories,id'],
-            'selectedAlmacens' => ['required', 'array', 'min:1', 'exists:almacens,id'],
+            'selectedAlmacens' => ['nullable', 'array', 'exists:almacens,id'],
             'almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'publicado' => ['nullable', 'integer', 'min:0', 'max:1'],

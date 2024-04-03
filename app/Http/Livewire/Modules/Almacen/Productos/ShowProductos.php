@@ -43,12 +43,13 @@ class ShowProductos extends Component
     public function render()
     {
 
-        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems'])
-            ->whereHas('almacens', function ($query) {
-                if (trim($this->searchalmacen) != '') {
-                    $query->where('almacens.id', $this->searchalmacen);
-                }
+        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems']);
+
+        if (trim($this->searchalmacen) != '') {
+            $productos->whereHas('almacens', function ($query) {
+                $query->where('almacens.id', $this->searchalmacen);
             });
+        }
 
         if (trim($this->searchmarca) != '') {
             $productos->where('marca_id', $this->searchmarca);

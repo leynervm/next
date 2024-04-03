@@ -15,7 +15,7 @@ class TypecomprobanteSeeder extends Seeder
      */
     public function run()
     {
-        Typecomprobante::create([
+        Typecomprobante::firstOrCreate([
             'code' => 'VT',
             'name' => 'TICKET VENTA',
             'descripcion' => 'TICKET VENTA',

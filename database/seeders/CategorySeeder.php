@@ -19,28 +19,26 @@ class CategorySeeder extends Seeder
     public function run()
     {
 
-        DB::select("INSERT INTO categories (id, name, orden) 
-            VALUES
-            (1, 'LAPTOPS', 1),
-            (2, 'IMPRESORAS', 2),
-            (3, 'MONITORES', 3),
-            (4, 'PARLANTES', 4),
-            (5, 'AUDIFONOS', 5),
-            (6, 'MOUSE', 6),
-            (7, 'ACCESORIOS', 7),
-            (8, 'CAMARAS DE SEGURIDAD', 8),
-            (9, 'SENSORES', 9),
-            (10, 'ROUTERS', 10),
-            (11, 'TECLADOS', 11),
-            (12, 'SOFTWARE', 12),
-            (13, 'SERVIDORES',13),
-            (14, 'GRAVADORES',14),
-            (15, 'SWITCH', 15),
-            (16, 'ANTENAS', 16),
-            (17, 'CASES', 17),
-            (18, 'CONECTORES', 18),
-            (19, 'ESTABILIZADORES', 19),
-            (20, 'AIRE ACONDICIONADO', 20)");
+        Category::firstOrCreate(['name' => 'LAPTOPS', 'orden' => 1]);
+        Category::firstOrCreate(['name' => 'IMPRESORAS', 'orden' => 2]);
+        Category::firstOrCreate(['name' => 'MONITORES', 'orden' => 3]);
+        Category::firstOrCreate(['name' => 'PARLANTES', 'orden' => 4]);
+        Category::firstOrCreate(['name' => 'AUDIFONOS', 'orden' => 5]);
+        Category::firstOrCreate(['name' => 'MOUSE', 'orden' => 6]);
+        Category::firstOrCreate(['name' => 'ACCESORIOS', 'orden' => 7]);
+        Category::firstOrCreate(['name' => 'CAMARAS DE SEGURIDAD', 'orden' => 8]);
+        Category::firstOrCreate(['name' => 'SENSORES', 'orden' => 9]);
+        Category::firstOrCreate(['name' => 'ROUTERS', 'orden' => 10]);
+        Category::firstOrCreate(['name' => 'TECLADOS', 'orden' => 11]);
+        Category::firstOrCreate(['name' => 'SOFTWARE', 'orden' => 12]);
+        Category::firstOrCreate(['name' => 'SERVIDORES', 'orden' => 13]);
+        Category::firstOrCreate(['name' => 'GRAVADORES', 'orden' => 14]);
+        Category::firstOrCreate(['name' => 'SWITCH', 'orden' => 15]);
+        Category::firstOrCreate(['name' => 'ANTENAS', 'orden' => 16]);
+        Category::firstOrCreate(['name' => 'CASES', 'orden' => 17]);
+        Category::firstOrCreate(['name' => 'CONECTORES', 'orden' => 18]);
+        Category::firstOrCreate(['name' => 'ESTABILIZADORES', 'orden' => 19]);
+        Category::firstOrCreate(['name' => 'AIRE ACONDICIONADO', 'orden' => 20]);
 
         DB::select("INSERT INTO category_subcategory (id, category_id, subcategory_id) 
             VALUES
@@ -106,7 +104,7 @@ class CategorySeeder extends Seeder
             (60, 17, 9),
             (61, 17, 22),
             (62, 18, 23),
-            (63, 18, 24),
+            (63, 18, 23),
             (64, 19, 2),
             (65, 19, 22),
             (66, 20, 2),

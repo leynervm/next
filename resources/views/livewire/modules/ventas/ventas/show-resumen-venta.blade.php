@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="fixed loading-overlay rounded hidden">
+        <x-loading-next />
+    </div>
+
     <div class="w-full flex flex-col gap-8" x-data="loader">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
@@ -765,19 +769,12 @@
                         <x-button-secondary onclick="confirmDeleteAllCarshoop()" wire:loading.attr="disabled"
                             class="inline-block">ELIMINAR TODO</x-button-secondary>
                     </div>
-
-                    {{-- <div wire:loading.flex class="loading-overlay rounded hidden"
-                        wire:target="save, setTotal, delete, deleteserie, updategratis">
-                        <x-loading-next />
-                    </div> --}}
                 </div>
             </div>
         @endif
     </div>
 
-    <div wire:loading.flex class="loading-overlay rounded hidden">
-        <x-loading-next />
-    </div>
+    
 
     <script>
         function confirmDeleteSerie(itemserie) {

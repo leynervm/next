@@ -58,7 +58,6 @@ class ShowVenta extends Component
         $this->cuota = new Cuota();
         $this->openbox = Openbox::mybox($venta->sucursal_id)->first();
         $this->monthbox = Monthbox::usando($venta->sucursal_id)->first();
-        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->venta = $venta;
         $this->concept = $concept;
     }
@@ -74,22 +73,19 @@ class ShowVenta extends Component
         $this->authorize('admin.ventas.payments.edit');
         $this->resetValidation();
         $this->cuota = $cuota;
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->open = true;
     }
 
     public function savepayment()
     {
         $this->authorize('admin.ventas.payments.edit');
-        if (!$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
@@ -365,7 +361,7 @@ class ShowVenta extends Component
                     'cuota' => $cuota->cuota,
                     'date' => $cuota->expiredate,
                     'cajamovimiento_id' => $cuota->cajamovimiento->id ?? null,
-                    'amount' => $cuota->amount,
+                    'amount' => number_format($cuota->amount, 3, '.', ''),
                 ];
             }
         }
@@ -408,10 +404,10 @@ class ShowVenta extends Component
             'cuotas.*.id' => ['nullable', 'integer', 'min:1', 'exists:cuotas,id'],
             'cuotas.*.cuota' => ['required', 'integer', 'min:1'],
             'cuotas.*.date' => ['required', 'date'],
-            'cuotas.*.amount' => ['required', 'numeric', 'min:1', 'decimal:0,4'],
+            'cuotas.*.amount' => ['required', 'min:0', 'gt:0', 'numeric', 'decimal:0,3'],
             'cuotas.*.cajamovimiento_id' => ['nullable', 'integer', 'min:1', 'exists:cajamovimientos,id'],
             'amountcuotas' => [
-                'required', 'numeric', 'min:1', 'decimal:0,4',
+                'required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3',
                 new ValidateNumericEquals($amountcuotas)
             ]
         ]);
@@ -497,16 +493,16 @@ class ShowVenta extends Component
             $sumaCuotas = 0.00;
 
             for ($i = 1; $i <= $this->countcuotas; $i++) {
-                $sumaCuotas = number_format($sumaCuotas + $amountCuota, 2, '.', '');
+                $sumaCuotas = number_format($sumaCuotas + $amountCuota, 3, '.', '');
                 if ($i == $this->countcuotas) {
-                    $result = number_format($amountcuotas - $sumaCuotas, 2, '.', '');
-                    $amountCuota = number_format($amountCuota + ($result), 2, '.', '');
+                    $result = number_format($amountcuotas - $sumaCuotas, 3, '.', '');
+                    $amountCuota = number_format($amountCuota + ($result), 3, '.', '');
                 }
 
                 $this->cuotas[] = [
                     'id' => null,
                     'cuota' => $i,
-                    'amount' => number_format($amountCuota, 2, '.', ''),
+                    'amount' => number_format($amountCuota, 3, '.', ''),
                     'date' => $date,
                     'cajamovimiento_id' => null,
                 ];

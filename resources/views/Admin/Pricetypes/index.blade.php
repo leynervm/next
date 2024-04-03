@@ -46,7 +46,7 @@
     @endcan
 
     @can('admin.administracion.rangos')
-        <x-title-next titulo="RANGO PRECIOS COMPRA" class="mt-5" />
+        <x-title-next titulo="RANGO DE PRECIOS COMPRA" class="mt-5" />
         <div class="mt-3">
             <livewire:admin.rangos.show-rangos />
         </div>

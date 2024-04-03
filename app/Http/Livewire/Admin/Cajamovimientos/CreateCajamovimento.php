@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Cajamovimientos;
 
 use App\Enums\DefaultConceptsEnum;
+use App\Enums\MovimientosEnum;
 use App\Models\Cajamovimiento;
 use App\Models\Concept;
 use App\Models\Methodpayment;
@@ -48,17 +49,25 @@ class CreateCajamovimento extends Component
         $concepts = Concept::where('default', DefaultConceptsEnum::DEFAULT)->get();
         $monedas = Moneda::orderBy('id', 'asc')->get();
 
-        $sumatorias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-            $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-        })->selectRaw('moneda_id, typemovement, SUM(amount) as total')->groupBy('moneda_id')
-            ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-            ->groupBy('typemovement')->orderBy('total', 'desc')->get();
+        if ($this->monthbox) {
+            $sumatorias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+            })->selectRaw('moneda_id, typemovement, SUM(amount) as total')->groupBy('moneda_id')
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->groupBy('typemovement')->orderBy('total', 'desc')->get();
+        } else {
+            $sumatorias = [];
+        }
 
-        $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-            $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-        })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END) as diferencia")
-            ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-            ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+        if ($this->monthbox) {
+            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END) as diferencia")
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+        } else {
+            $diferencias = [];
+        }
 
         return view('livewire.admin.cajamovimientos.create-cajamovimento', compact('methodpayments', 'concepts', 'monedas', 'sumatorias', 'diferencias'));
     }
@@ -78,16 +87,12 @@ class CreateCajamovimento extends Component
     {
 
         $this->authorize('admin.cajas.movimientos.create');
-        if (!$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales activas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
@@ -100,35 +105,26 @@ class CreateCajamovimento extends Component
         DB::beginTransaction();
         try {
 
-            $typemovement = Concept::find($this->concept_id)->typemovement->value;
-            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
+            $typemovement = Concept::find($this->concept_id);
+            $methodpayment = Methodpayment::find($this->methodpayment_id);
             $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment);
+                $query->where('type', $methodpayment->type);
             })->where('sucursal_id', auth()->user()->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
 
-            if ($typemovement == 'EGRESO') {
-                $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
-                $moneda = Moneda::find($this->moneda_id);
-                $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
-                $amountsaldo = $moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+            if ($typemovement->isEgreso()) {
+                $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-                if (($amountsaldo - $this->amount) < 0) {
+                if (($saldocaja - $this->amount) < 0) {
                     $mensaje =  response()->json([
-                        'title' => 'SU SALDO ES INSUFICIENTE PARA LLAMAR MI ATENCIÓN !',
+                        'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR OPERACIÓN MEDIANTE ' . $forma . ' !',
                         'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
                     ])->getData();
                     $this->dispatchBrowserEvent('validation', $mensaje);
                     return false;
-                }
-
-                $descontar = $saldocaja - $this->amount;
-                if ($descontar < 0) {
-                    $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
-                    $this->openbox->save();
                 }
             }
 
@@ -137,7 +133,7 @@ class CreateCajamovimento extends Component
                 number_format($this->amount, 3, '.', ''),
                 $this->moneda_id,
                 $this->methodpayment_id,
-                $typemovement,
+                $typemovement->typemovement->value,
                 $this->concept_id,
                 $this->openbox->id,
                 $this->monthbox->id,

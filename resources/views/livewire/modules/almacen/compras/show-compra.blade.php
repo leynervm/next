@@ -155,8 +155,24 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="savepayment" class="w-full flex flex-col gap-1">
+                @if ($monthbox)
+                    <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                        <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        @if ($openbox)
+                            <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                        @else
+                            <small class="text-colorerror w-full block font-medium text-[10px] leading-3">
+                                APERTURA DE CAJA DIARIA NO DISPONIBLE...
+                            </small>
+                        @endif
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+                @endif
+
                 <div class="w-full">
-                    <p class="text-colorminicard text-xl font-semibold">
+                    <p class="text-colorlabel text-3xl font-semibold">
                         <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
                         {{ number_format($compra->total, 3, '.', ', ') }}
                         <small class="text-[10px] font-medium">{{ $compra->moneda->currency }}</small>

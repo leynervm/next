@@ -19,8 +19,7 @@ class Employer extends Model
     use CajamovimientoTrait;
 
     protected $fillable = [
-        'document', 'name', 'nacimiento', 'sexo', 'sueldo', 'horaingreso',
-        'horasalida', 'areawork_id', 'sucursal_id', 'user_id'
+        'document', 'name', 'nacimiento', 'sexo', 'sueldo', 'turno_id', 'areawork_id', 'sucursal_id', 'user_id'
     ];
     public $timestamps = false;
 
@@ -29,19 +28,24 @@ class Employer extends Model
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    public function getHoraingresoAttribute($value)
-    {
-        return Carbon::parse($value)->format('H:i');
-    }
+    // public function getHoraingresoAttribute($value)
+    // {
+    //     return Carbon::parse($value)->format('H:i');
+    // }
 
-    public function getHorasalidaAttribute($value)
-    {
-        return Carbon::parse($value)->format('H:i');
-    }
+    // public function getHorasalidaAttribute($value)
+    // {
+    //     return Carbon::parse($value)->format('H:i');
+    // }
 
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class);
+    }
+
+    public function turno(): BelongsTo
+    {
+        return $this->belongsTo(Turno::class);
     }
 
     public function areawork(): BelongsTo

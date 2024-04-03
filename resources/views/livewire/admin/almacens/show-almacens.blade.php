@@ -79,8 +79,8 @@
     <script>
         function confirmDelete(almacen) {
             swal.fire({
-                title: 'Eliminar almacén ' + almacen.name,
-                text: "Almacén seleccionado dejará de estar disponible, pero seguirán mostrandose los registros vinculados.",
+                title: 'Eliminar registro de ' + almacen.name + ' ?',
+                text: "Almacén seleccionado dejará de estar disponible, además se eliminará el stock disponible de los productos vinculados.",
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

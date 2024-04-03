@@ -17,13 +17,13 @@ class CreateTvitemsTable extends Migration
         Schema::create('tvitems', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->decimal('cantidad', 12, 4);
-            $table->decimal('pricebuy', 12, 4);
-            $table->decimal('price', 12, 4);
-            $table->decimal('igv', 12, 4);
-            $table->decimal('subtotaligv', 12, 4);
-            $table->decimal('subtotal', 12, 4);
-            $table->decimal('total', 12, 4);
+            $table->decimal('cantidad', 18, 4);
+            $table->decimal('pricebuy', 18, 4);
+            $table->decimal('price', 18, 4);
+            $table->decimal('igv', 18, 4);
+            $table->decimal('subtotaligv', 18, 4);
+            $table->decimal('subtotal', 18, 4);
+            $table->decimal('total', 18, 4);
             $table->integer('status')->default(0);
             $table->decimal('increment', 5, 2)->default(0);
             $table->char('alterstock', 1)->default(0);

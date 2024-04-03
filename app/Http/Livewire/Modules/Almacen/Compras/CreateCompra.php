@@ -67,7 +67,12 @@ class CreateCompra extends Component
         $monedas = Moneda::all();
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        $sucursals = Sucursal::orderBy('codeanexo', 'asc')->get();
+
+        if (auth()->user()->isAdmin()) {
+            $sucursals = Sucursal::orderBy('codeanexo', 'asc')->get();
+        } else {
+            $sucursals = auth()->user()->sucursal()->get();
+        }
 
         return view('livewire.modules.almacen.compras.create-compra', compact('proveedores', 'typepayments', 'monedas', 'methodpayments', 'sucursals'));
     }

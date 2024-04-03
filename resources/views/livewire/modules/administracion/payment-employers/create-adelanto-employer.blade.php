@@ -21,15 +21,11 @@
             @if (count($diferencias) > 0)
                 <div class="w-full flex flex-wrap gap-2 justify-end">
                     @foreach ($diferencias as $item)
-                        <x-minicard :title="null" size="lg" class="cursor-pointer text-colortitleform">
+                        <x-minicard :title="null" size="lg" class="cursor-pointer text-colorlabel">
                             <div class="text-xs font-medium text-center">
                                 <small>SALDO CAJA</small>
                                 <h3 class="font-semibold text-xl">
-                                    @if ($item->moneda->code == 'PEN')
-                                        {{ number_format($item->diferencia + $openbox->apertura, 2, '.', ', ') }}
-                                    @else
-                                        {{ number_format($item->diferencia, 2, '.', ', ') }}
-                                    @endif
+                                    {{ number_format($item->diferencia, 2, '.', ', ') }}
                                 </h3>
                                 <small>{{ $item->moneda->currency }}</small>
                             </div>
@@ -38,11 +34,15 @@
                 </div>
             @endif
 
-            <p class="text-colorminicard text-md md:text-3xl font-semibold text-end mt-2 mb-5">
-                <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
-                {{ formatDate($monthbox->month, 'MMMM Y') }}
-                <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
-            </p>
+            @if ($monthbox)
+                <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                    <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                    {{ formatDate($monthbox->month, 'MMMM Y') }}
+                    <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                </p>
+            @else
+                <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+            @endif
 
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
                 <div class="w-full">

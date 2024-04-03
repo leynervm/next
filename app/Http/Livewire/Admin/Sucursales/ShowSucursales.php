@@ -74,26 +74,33 @@ class ShowSucursales extends Component
         // ]);
 
         // dd($sucursal->getRelations());
-
-        $this->authorize('admin.administracion.sucursales.delete');
-        if ($confirmation) {
-            User::query()->where('sucursal_id', $sucursal->id)->update([
-                'sucursal_id' => null,
-                'almacen_id' => null
-            ]);
-            $sucursal->default = 0;
-            $sucursal->save();
-            $sucursal->delete();
-            $this->dispatchBrowserEvent('deleted');
-        } else {
-            if ($sucursal->users()->count() > 0) {
-                $this->emit('sucursales.existUserSucursals', $sucursal);
-            } else {
+        try {
+            DB::beginTransaction();
+            $this->authorize('admin.administracion.sucursales.delete');
+            if ($confirmation) {
+                User::query()->where('sucursal_id', $sucursal->id)->update([
+                    'sucursal_id' => null,
+                ]);
+                $sucursal->default = 0;
+                $sucursal->save();
                 $sucursal->delete();
                 $this->dispatchBrowserEvent('deleted');
+            } else {
+                if ($sucursal->users()->count() > 0) {
+                    $this->emit('sucursales.existUserSucursals', $sucursal);
+                } else {
+                    $sucursal->delete();
+                    $this->dispatchBrowserEvent('deleted');
+                }
             }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
 
         // if ($users > 0 || $almacens > 0 || $ventas > 0 || $comprobantes  || $users) {
         //     $mensaje = response()

@@ -6,6 +6,7 @@ use App\Helpers\GetClient;
 use App\Models\Areawork;
 use App\Models\Employer;
 use App\Models\Sucursal;
+use App\Models\Turno;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateNacimiento;
@@ -22,8 +23,8 @@ class CreateEmployer extends Component
     public $adduser = false;
     public $user;
 
-    public $document, $name, $nacimiento, $sueldo, $horaingreso, $horasalida,
-        $sexo, $areawork_id, $sucursal_id, $telefono;
+    public $document, $name, $nacimiento, $sueldo,
+        $sexo, $areawork_id, $turno_id, $sucursal_id, $telefono;
     public $email, $password, $password_confirmation;
     public $selectedRoles = [];
 
@@ -32,7 +33,8 @@ class CreateEmployer extends Component
         return [
             'document' => [
                 'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
-                new CampoUnique('employers', 'document', null, true)
+                new CampoUnique('employers', 'document', null, true),
+                $this->adduser && is_null($this->user) ? new CampoUnique('users', 'document', null, true) : '',
             ],
             'name' => ['required', 'string', 'min:6'],
             'nacimiento' => [
@@ -42,9 +44,8 @@ class CreateEmployer extends Component
             'telefono' => ['required', 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
             'sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])],
             'sueldo' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
-            'horaingreso' => ['required', 'date_format:H:i'],
-            'horasalida' => ['required', 'date_format:H:i'],
             'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
+            'turno_id' => ['required', 'integer', 'min:1', 'exists:turnos,id'],
             'sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
 
             'email' => [
@@ -63,9 +64,10 @@ class CreateEmployer extends Component
     {
         $sucursals = Sucursal::orderBy('name', 'asc')->get();
         $areaworks = Areawork::orderBy('name', 'asc')->get();
+        $turnos = Turno::orderBy('horaingreso', 'asc')->get();
         $roles = Role::all();
 
-        return view('livewire.modules.administracion.employers.create-employer', compact('sucursals', 'areaworks', 'roles'));
+        return view('livewire.modules.administracion.employers.create-employer', compact('sucursals', 'areaworks', 'turnos', 'roles'));
     }
 
     public function updatingOpen()
@@ -103,8 +105,7 @@ class CreateEmployer extends Component
             if ($employer) {
                 $employer->nacimiento = $this->nacimiento;
                 $employer->sueldo = $this->sueldo;
-                $employer->horaingreso = $this->horaingreso;
-                $employer->horasalida = $this->horasalida;
+                $employer->turno_id = $this->turno_id;
                 $employer->areawork_id = $this->areawork_id;
                 $employer->sucursal_id = $this->sucursal_id;
                 $employer->restore();
@@ -115,8 +116,7 @@ class CreateEmployer extends Component
                     'nacimiento' => $this->nacimiento,
                     'sexo' => $this->sexo,
                     'sueldo' => $this->sueldo,
-                    'horaingreso' => $this->horaingreso,
-                    'horasalida' => $this->horasalida,
+                    'turno_id' => $this->turno_id,
                     'areawork_id' => $this->areawork_id,
                     'sucursal_id' => $this->sucursal_id,
                 ]);

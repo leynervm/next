@@ -179,7 +179,7 @@
                 </x-button>
             </div>
         </form>
-        <div wire:loading.flex class="loading-overlay rounded hidden">
+        <div wire:loading.flex class="fixed loading-overlay rounded hidden">
             <x-loading-next />
         </div>
     </x-form-card>

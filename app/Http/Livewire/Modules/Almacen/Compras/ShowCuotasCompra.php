@@ -44,7 +44,7 @@ class ShowCuotasCompra extends Component
     public function render()
     {
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
-        $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
+        $methodpayments = Methodpayment::orderBy('default', 'desc')->orderBy('name', 'asc')->get();
 
         return view('livewire.modules.almacen.compras.show-cuotas-compra', compact('typepayments', 'methodpayments'));
     }
@@ -69,16 +69,16 @@ class ShowCuotasCompra extends Component
         ]);
 
         // $totalAmount = number_format($this->compra->moneda->code == "USD" ? $this->compra->totalpayus : $this->compra->totalpay, 2, '.', '');
-        $amountCuota = number_format($this->compra->total / $this->countcuotas, 4, '.', '');
+        $amountCuota = number_format($this->compra->total / $this->countcuotas, 3, '.', '');
         $date = Carbon::now('America/Lima')->format('Y-m-d');
 
         $sumaCuotas = 0.00;
         for ($i = 1; $i <= $this->countcuotas; $i++) {
-            $sumaCuotas = number_format($sumaCuotas + $amountCuota, 4, '.', '');
+            $sumaCuotas = number_format($sumaCuotas + $amountCuota, 3, '.', '');
 
             if ($i == $this->countcuotas) {
-                $result = number_format($this->compra->total - $sumaCuotas, 4, '.', '');
-                $amountCuota = number_format($amountCuota + ($result), 4, '.', '');
+                $result = number_format($this->compra->total - $sumaCuotas, 3, '.', '');
+                $amountCuota = number_format($amountCuota + ($result), 3, '.', '');
             }
 
             $this->cuotas[] = [
@@ -98,7 +98,7 @@ class ShowCuotasCompra extends Component
         $this->authorize('admin.almacen.compras.create');
         $arrayamountcuotas = array_column($this->cuotas, 'amount');
         $this->resetValidation(['cuotas']);
-        $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 4, '.', '');
+        $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 3, '.', '');
 
         $this->validate([
             'compra.id' => ['required', 'integer', 'min:1', 'exists:compras,id'],
@@ -106,9 +106,9 @@ class ShowCuotasCompra extends Component
             'cuotas' => ['required', 'array', 'min:1'],
             "cuotas.*.cuota" => ['required', 'integer', 'min:1'],
             "cuotas.*.date" => ['required', 'date', 'after_or_equal:today'],
-            "cuotas.*.amount" => ['required', 'numeric', 'min:1', 'decimal:0,4'],
+            "cuotas.*.amount" => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3'],
             'amountcuotas' => [
-                'required', 'numeric', 'min:1', 'decimal:0,4',
+                'required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3',
                 new ValidateNumericEquals($this->compra->total)
             ]
         ]);
@@ -148,7 +148,7 @@ class ShowCuotasCompra extends Component
                     'cuota' => $cuota->cuota,
                     'date' => $cuota->expiredate,
                     'cajamovimiento_id' => $cuota->cajamovimiento->id ?? null,
-                    'amount' => $cuota->amount,
+                    'amount' => number_format($cuota->amount, 3, '.', ''),
                 ];
             }
         }
@@ -183,7 +183,7 @@ class ShowCuotasCompra extends Component
         $this->authorize('admin.almacen.compras.create');
         $arrayamountcuotas = array_column($this->cuotas, 'amount');
         $this->resetValidation(['cuotas']);
-        $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 2, '.', '');
+        $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 3, '.', '');
 
         $this->validate([
             'compra.id' => ['required', 'integer', 'min:1', 'exists:compras,id'],
@@ -262,16 +262,12 @@ class ShowCuotasCompra extends Component
             return false;
         }
 
-        if (!$this->monthbox->isUsing()) {
-            $mensaje =  response()->json([
-                'title' => 'APERTURAR NUEVA CAJA MENSUAL !',
-                'text' => "No se encontraron cajas mensuales aperturadas para registrar movimiento."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
         }
 
-        if (!$this->openbox->isActivo()) {
+        if (!$this->openbox || !$this->openbox->isActivo()) {
             $this->dispatchBrowserEvent('validation', getMessageOpencaja());
             return false;
         }
@@ -289,31 +285,23 @@ class ShowCuotasCompra extends Component
         DB::beginTransaction();
         try {
 
-            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
+            $methodpayment = Methodpayment::find($this->methodpayment_id);
             $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment);
+                $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->compra->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->compra->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
-            $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
-            $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
-            $amountsaldo = $this->compra->moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+            $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($amountsaldo - $this->amount) < 0) {
+            if (($saldocaja - $this->cuota->amount) < 0) {
                 $mensaje =  response()->json([
-                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DEL TRABAJADOR !',
+                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA MEDIANTE ' . $forma . ' !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
-            }
-
-            $descontar = $saldocaja - $this->amount;
-            if ($descontar < 0) {
-                $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
-                $this->openbox->save();
             }
 
             $this->cuota->savePayment(
@@ -378,10 +366,5 @@ class ShowCuotasCompra extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-select2-editcompra');
     }
 }

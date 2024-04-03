@@ -1,7 +1,10 @@
 <div>
+    <div wire:loading.flex class="fixed loading-overlay rounded hidden">
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="PRODUCTOS">
         <div class="w-full">
-            {{-- @if (!$empresa->uselistprice || ($empresa->uselistprice && count($pricetypes))) --}}
             <div class="w-full flex flex-col gap-2 md:flex-row md:flex-shrink">
                 <div class="w-full flex-shrink-1">
                     <x-label value="Descripcion producto :" />
@@ -138,9 +141,9 @@
                                 $promocion = null;
                                 $sumatoriacombos = 0;
 
-                                if (count($item->images)) {
-                                    if (count($item->defaultImage)) {
-                                        $image = asset('storage/productos/' . $item->defaultImage->first()->url);
+                                if (count($item->images) > 0) {
+                                    if ($item->images()->default()->exists()) {
+                                        $image = asset('storage/productos/' . $item->images()->default()->first()->url);
                                     } else {
                                         $image = asset('storage/productos/' . $item->images->first()->url);
                                     }
@@ -151,12 +154,11 @@
                                     $almacenStock = $almacendefault->name . " [$stock " . $item->unit->name . ']';
                                 }
 
-                                $promociones = count($item->promocions) > 0 ? $item->promocions->first() : null;
-                                if ($promociones) {
+                                $firstpromocion = count($item->promocions) > 0 ? $item->promocions->first() : null;
+                                if ($firstpromocion) {
                                     $promocion =
-                                        $promociones->limit == null ||
-                                        ($promociones->limit > 0 && $promociones->outs < $promociones->limit)
-                                            ? $item->promocions->first()
+                                        $firstpromocion->isDisponible() && $firstpromocion->isAvailable()
+                                            ? $firstpromocion
                                             : null;
                                 }
 
@@ -174,63 +176,52 @@
                                 <p class="text-colorlabel text-[9px]">
                                     {{-- {{ var_dump($precioProducto) }}</p> --}}
                                     {{-- <p class="text-colorlabel text-[9px]">{{ var_dump($precios) }}</p> --}}
-                                    @if (count($item->promocions) > 0)
-                                        <div class="w-full my-2">
-                                            @if ($item->promocions()->disponibles()->with('itempromos.producto.unit')->first()->isCombo())
-                                                @php
-                                                    $mipromocion = $item->promocions->first();
-                                                @endphp
-                                                @if ($mipromocion->limit = null || ($mipromocion->limit > 0 && $mipromocion->outs < $mipromocion->limit))
-                                                    @foreach ($item->promocions->first()->itempromos as $itempromo)
-                                                        @php
-                                                            $stockCombo = formatDecimalOrInteger(
-                                                                $itempromo->producto->almacens->find($almacen_id)->pivot
-                                                                    ->cantidad ?? 0,
-                                                            );
-                                                            $colorstock =
-                                                                $stockCombo > 0 ? 'text-next-500' : 'text-colorerror';
-                                                            $fondostock =
-                                                                $stockCombo > 0 ? 'bg-green-500' : 'bg-red-500';
-
-                                                            $preciosCI = getPrecio(
-                                                                $itempromo->producto,
-                                                                $empresa->usarLista() ? $pricetype_id : null,
-                                                                $empresa->tipocambio,
-                                                            )->getData();
-
-                                                        @endphp
-                                                        <h1
-                                                            class="{{ $colorstock }} text-[10px] leading-3 text-left">
-                                                            <span
-                                                                class="w-1.5 h-1.5 inline-block rounded-full {{ $fondostock }}"></span>
-                                                            {{ $itempromo->producto->name }}
-                                                            <span class="font-semibold">[{{ $stockCombo }}
-                                                                {{ $itempromo->producto->unit->name }}]</span>
-                                                        </h1>
-                                                    @endforeach
-
+                                    @if ($promocion)
+                                        @if ($promocion->isCombo())
+                                            <div class="w-full my-2">
+                                                @foreach ($promocion->itempromos as $itempromo)
                                                     @php
-                                                        $sumatoriaComboProducto = get_sumatoria_combos(
-                                                            $item
-                                                                ->promocions()
-                                                                ->disponibles()
-                                                                ->with('itempromos.producto.unit')
-                                                                ->first(),
+                                                        $stockCombo = formatDecimalOrInteger(
+                                                            $itempromo->producto->almacens->find($almacen_id)->pivot
+                                                                ->cantidad ?? 0,
+                                                        );
+                                                        $colorstock =
+                                                            $stockCombo > 0 ? 'text-next-500' : 'text-colorerror';
+                                                        $fondostock = $stockCombo > 0 ? 'bg-green-500' : 'bg-red-500';
+
+                                                        $preciosCI = getPrecio(
+                                                            $itempromo->producto,
                                                             $empresa->usarLista() ? $pricetype_id : null,
                                                             $empresa->tipocambio,
-                                                        );
-                                                        $sumatoriacombos = number_format(
-                                                            $moneda->code == 'USD'
-                                                                ? $sumatoriaComboProducto->sumatoriaUSD
-                                                                : $sumatoriaComboProducto->sumatoriaPEN,
-                                                            $precios->decimal,
-                                                            '.',
-                                                            '',
-                                                        );
+                                                        )->getData();
+
                                                     @endphp
-                                                @endif
-                                            @endif
-                                        </div>
+                                                    <h1 class="{{ $colorstock }} text-[10px] leading-3 text-left">
+                                                        <span
+                                                            class="w-1.5 h-1.5 inline-block rounded-full {{ $fondostock }}"></span>
+                                                        {{ $itempromo->producto->name }}
+                                                        <span class="font-semibold">[{{ $stockCombo }}
+                                                            {{ $itempromo->producto->unit->name }}]</span>
+                                                    </h1>
+                                                @endforeach
+
+                                                @php
+                                                    $sumatoriaComboProducto = get_sumatoria_combos(
+                                                        $promocion,
+                                                        $empresa->usarLista() ? $pricetype_id : null,
+                                                        $empresa->tipocambio,
+                                                    );
+                                                    $sumatoriacombos = number_format(
+                                                        $moneda->code == 'USD'
+                                                            ? $sumatoriaComboProducto->sumatoriaUSD
+                                                            : $sumatoriaComboProducto->sumatoriaPEN,
+                                                        $precios->decimal,
+                                                        '.',
+                                                        '',
+                                                    );
+                                                @endphp
+                                            </div>
+                                        @endif
                                     @endif
 
                                     <x-prices-card-product :name="$empresa->usarLista() ? $pricetype->name : null">
@@ -353,10 +344,6 @@
             @endif
         </div>
     </x-form-card>
-
-    <div wire:loading.flex class="loading-overlay rounded hidden">
-        <x-loading-next />
-    </div>
 
 
     <script>

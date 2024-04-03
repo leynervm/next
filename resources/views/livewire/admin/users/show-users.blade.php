@@ -104,6 +104,13 @@
                                         href="{{ route('admin.users.edit', $item) }}">
                                         {{ $item->document }}
                                         <p>{{ $item->name }}</p>
+                                        {{-- @if (Module::isEnabled('Employer')) --}}
+                                        @if ($item->employer)
+                                            @if ($item->employer->areawork)
+                                                <p>AREA : {{ $item->employer->areawork->name }}</p>
+                                            @endif
+                                        @endif
+                                        {{-- @endif --}}
                                     </a>
                                 @endcan
 

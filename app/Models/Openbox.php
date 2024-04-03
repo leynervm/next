@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\CajamovimientoTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Openbox extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use CajamovimientoTrait;
 
     const ACTIVO = '0';
     const INACTIVO = '1';
@@ -38,9 +42,19 @@ class Openbox extends Model
         return $this->belongsTo(Box::class)->withTrashed();
     }
 
+    public function monthbox(): BelongsTo
+    {
+        return $this->belongsTo(Monthbox::class)->withTrashed();
+    }
+
     public function sucursal(): BelongsTo
     {
         return $this->belongsTo(Sucursal::class)->withTrashed();
+    }
+
+    public function cajamovimiento(): MorphOne
+    {
+        return $this->morphOne(cajamovimiento::class, 'cajamovimientable');
     }
 
     public function cajamovimientos(): HasMany

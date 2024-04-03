@@ -31,17 +31,29 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    @if (is_null(mi_empresa()->limitsucursals) ||
-            (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals->count() < mi_empresa()->limitsucursals))
-        @can('admin.administracion.sucursales.create')
-            <div class="flex flex-wrap gap-2 mt-3">
-                <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
-            </div>
-        @endcan
-    @endif
+    <div class="w-full flex flex-wrap gap-2 items-start">
+        @if (is_null(mi_empresa()->limitsucursals) ||
+                (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals()->withTrashed()->count() < mi_empresa()->limitsucursals))
+            @can('admin.administracion.sucursales.create')
+                <div class="inline-block">
+                    <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
+                </div>
+            @endcan
+        @endif
+
+        <x-minicard :title="null">
+            @if (is_null(mi_empresa()->limitsucursals))
+                <p class="text-colorlabel text-center font-medium text-[10px] leading-3">
+                    SUCURSALES ILIMITADAS</p>
+            @else
+                <h1 class="text-colorlabel text-center font-medium text-3xl">{{ mi_empresa()->limitsucursals }}</h1>
+                <p class="text-colorlabel text-center font-medium text-[10px] leading-3">
+                    SUCURSALES PERMITIDOS</p>
+            @endif
+        </x-minicard>
+    </div>
 
 
-    {{-- <x-title-next titulo="Sucursales" class="mt-5" /> --}}
     @can('admin.administracion.sucursales')
         <div class="mt-3">
             <livewire:admin.sucursales.show-sucursales>

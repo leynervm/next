@@ -20,11 +20,11 @@ class CreateEmployersTable extends Migration
             $table->date('nacimiento');
             $table->string('sexo', 1);
             $table->decimal('sueldo', 12, 2);
-            $table->time('horaingreso');
-            $table->time('horasalida');
+            $table->unsignedSmallInteger('turno_id')->nullable();
             $table->unsignedTinyInteger('areawork_id')->nullable();
             $table->unsignedBigInteger('sucursal_id');
             $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('turno_id')->on('turnos')->references('id');
             $table->foreign('areawork_id')->on('areaworks')->references('id');
             $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->foreign('user_id')->on('users')->references('id');

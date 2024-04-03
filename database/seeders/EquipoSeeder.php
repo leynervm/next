@@ -14,16 +14,16 @@ class EquipoSeeder extends Seeder
      */
     public function run()
     {
-        Equipo::create([
+        Equipo::firstOrCreate([
             'name' => 'LAPTOP',
         ]);
-        Equipo::create([
+        Equipo::firstOrCreate([
             'name' => 'IMPRESORA',
         ]);
-        Equipo::create([
+        Equipo::firstOrCreate([
             'name' => 'COMPUTADORA',
         ]);
-        Equipo::create([
+        Equipo::firstOrCreate([
             'name' => 'TABLET',
         ]);
     }

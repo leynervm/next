@@ -52,37 +52,33 @@
                 @endphp
                 <x-simple-card class="w-72 relative flex flex-col gap-2 justify-between">
                     <div class="w-full">
-                        @if (count($item->producto->images))
+                        @php
+                            $image = null;
+                            if (count($item->producto->images) > 0) {
+                                if ($item->producto->images()->default()->exists()) {
+                                    $image = $item->producto->images()->default()->first()->url;
+                                } else {
+                                    $image = $item->producto->images->first()->url;
+                                }
+                            }
+                        @endphp
+
+                        @if ($image)
                             <button
                                 class="block rounded overflow-hidden w-full h-48 shadow relative hover:shadow-lg cursor-pointer">
-                                @if (count($item->producto->defaultImage))
-                                    <img src="{{ asset('storage/productos/' . $item->producto->defaultImage->first()->url) }}"
-                                        alt="" class="w-full h-full object-cover">
-                                @else
-                                    <img src="{{ asset('storage/productos/' . $item->producto->images->first()->url) }}"
-                                        alt="" class="w-full h-full object-cover">
-                                @endif
+                                <img src="{{ asset('storage/productos/' . $image) }}" alt=""
+                                    class="w-full h-full object-cover">
                             </button>
+                        @else
+                            <div class="block rounded overflow-hidden w-full h-48 shadow relative cursor-pointer">
+                                <x-icon-image-unknown class="w-full h-full" />
+                            </div>
                         @endif
+
 
                         <div class="p-1">
                             <h1 class="text-colorlabel text-[10px] text-center leading-3 mb-2">
                                 {{ $item->producto->name }}</h1>
-
-                            {{-- @php
-
-                                if (mi_empresa()->uselistprice) {
-                                    if ($precios->existsrango) {
-                                        $priceDolar = $precios->pricewithdescountDolar ?? $precios->priceDolar;
-                                        $price = !is_null($precios->pricemanual)
-                                            ? $precios->pricemanual
-                                            : $precios->pricewithdescount ?? $precios->pricesale;
-                                    }
-                                } else {
-                                    $priceDolar = $precios->pricewithdescountDolar ?? $precios->priceDolar;
-                                    $price = $precios->pricewithdescount ?? $precios->pricesale;
-                                }
-                            @endphp --}}
 
                             @if ($empresa->usarLista())
                                 @if (!empty($pricetype_id))
@@ -198,14 +194,23 @@
                                 <div class="w-full flex gap-2 bg-body rounded relative">
                                     <div
                                         class="block rounded overflow-hidden flex-shrink-0 w-16 h-16 shadow relative hover:shadow-lg cursor-pointer">
-                                        @if (count($itempromo->producto->defaultImage))
-                                            <img src="{{ asset('storage/productos/' . $itempromo->producto->defaultImage->first()->url) }}"
-                                                alt=""
+                                        @php
+                                            $imageCombo = null;
+                                            if (count($itempromo->producto->images) > 0) {
+                                                if ($itempromo->producto->images()->default()->exists()) {
+                                                    $imageCombo = $itempromo->producto->images()->default()->first()
+                                                        ->url;
+                                                } else {
+                                                    $imageCombo = $itempromo->producto->images->first()->url;
+                                                }
+                                            }
+                                        @endphp
+
+                                        @if ($imageCombo)
+                                            <img src="{{ asset('storage/productos/' . $imageCombo) }}" alt=""
                                                 class="w-full h-full object-scale-down hover:scale-125 hover:object-cover transition duration-300">
                                         @else
-                                            <img src="{{ asset('storage/productos/' . $itempromo->producto->images->first()->url) }}"
-                                                alt=""
-                                                class="w-full h-full object-scale-down hover:scale-125 hover:object-cover transition duration-300">
+                                            <x-icon-image-unknown class="w-full h-full text-neutral-500" />
                                         @endif
                                     </div>
                                     <div class="p-1">
@@ -237,6 +242,10 @@
                                                         '.',
                                                         '',
                                                     );
+                                                }
+
+                                                if ($itempromo->isGratuito()) {
+                                                    $priceitem = $precioscombo->pricebuy;
                                                 }
 
                                                 $price = $price + $priceitem;
@@ -292,6 +301,10 @@
                                                         '.',
                                                         '',
                                                     );
+                                                }
+
+                                                if ($itempromo->isGratuito()) {
+                                                    $priceitem = $precioscombo->pricebuy;
                                                 }
 
                                                 $price = $price + $priceitem;

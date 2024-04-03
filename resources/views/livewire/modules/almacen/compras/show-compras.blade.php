@@ -90,11 +90,9 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium">
                     PROVEEDOR
                 </th>
-
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>FECHA COMPRA</span>
@@ -110,31 +108,21 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium">
                     DOC. REFERENCIA</th>
-
-
                 <th scope="col" class="p-2 font-medium">
                     TOTAL COMPRA</th>
-
                 <th scope="col" class="p-2 font-medium">
                     TIPO MONEDA</th>
-
                 {{-- <th scope="col" class="p-2 font-medium">
                     TIPO CAMBIO</th> --}}
-
                 <th scope="col" class="p-2 font-medium">
                     TIPO PAGO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     ESTADO PAGO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SUCURSAL</th>
 
-                <th scope="col"class="p-2 font-medium">
-                    USUARIO</th>
 
                 {{-- <th scope="col" class="p-2 relative">
                     <span class="sr-only">OPCIONES</span>
@@ -206,9 +194,7 @@
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
-                        </td>
-                        <td class="p-2 align-middle text-center">
-                            {{ $item->user->name }}
+                            <p class="text-[10px] text-colorsubtitleform">USUARIO:  {{ $item->user->name }}</p>
                         </td>
                     </tr>
                 @endforeach

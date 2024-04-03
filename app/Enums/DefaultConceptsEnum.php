@@ -12,5 +12,5 @@ enum DefaultConceptsEnum: String
     case PAYCUOTACOMPRA = "5";
     case PAYEMPLOYER = "6";
     case ADELANTOEMPLOYER = "7";
-    // case APERTURA = "7";
+    case OPENBOX = "8";
 }

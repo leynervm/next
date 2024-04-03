@@ -73,16 +73,6 @@ class Promocion extends Model
             ->orderBy('startdate', 'desc');
     }
 
-    // public function scopeDescuentosDisponibles($query)
-    // {
-    //     return $query->descuentos()->disponibles()->orderBy('id', 'asc');
-    // }
-
-    // public function isActivo()
-    // {
-    //     return $this->status == self::ACTIVO;
-    // }
-
     public function isDisponible()
     {
         return
@@ -90,6 +80,16 @@ class Promocion extends Model
             $this->status == self::ACTIVO && $this->startdate == null && $this->expiredate >= Carbon::now('America/Lima')->format('Y-m-d') ||
             $this->status == self::ACTIVO && $this->startdate <= Carbon::now('America/Lima')->format('Y-m-d') && $this->expiredate == null ||
             $this->status == self::ACTIVO && Carbon::parse($this->startdate)->lte(Carbon::now('America/Lima')->format('Y-m-d')) && Carbon::parse($this->expiredate)->gte(Carbon::now('America/Lima')->format('Y-m-d'));
+    }
+
+    public function isAvailable()
+    {
+        return $this->limit == null || $this->limit > 0 && $this->outs < $this->limit;
+    }
+
+    public function isAgotado()
+    {
+        return $this->limit > 0 && $this->outs >= $this->limit;
     }
 
     public function isDescuento()

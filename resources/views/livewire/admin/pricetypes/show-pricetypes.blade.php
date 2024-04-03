@@ -7,7 +7,7 @@
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
-        @if (count($pricetypes))
+        @if (count($pricetypes) > 0)
             @foreach ($pricetypes as $item)
                 <x-minicard :title="$item->name" :content="$item->decimals . ' decimales'" :alignFooter="$item->default == 1 || $item->web == 1 ? 'justify-between' : 'justify-end'" size="lg">
                     @if ($item->rounded > 0)
@@ -15,7 +15,8 @@
                             $stringrounded = $item->rounded == 1 ? '(+0.5)' : '(+1)';
                         @endphp
                         <p class="text-center">
-                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green" class="leading-3 inline-block" />
+                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green"
+                                class="leading-3 !tracking-normal inline-block" />
                         </p>
                     @endif
 
@@ -78,7 +79,7 @@
                 <div class="w-full">
                     <x-label value="Cantidad decimales :" />
                     <x-input class="block w-full" wire:model.defer="pricetype.decimals" type="number" step="1"
-                        min="0" max="4" />
+                        min="0" max="4" onkeypress="return validarDecimal(event, 1)" />
                     <x-jet-input-error for="pricetype.decimals" />
                 </div>
 

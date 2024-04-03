@@ -71,6 +71,6 @@ class CampoUnique implements Rule
      */
     public function message()
     {
-        return 'El campo :attribute ya existe.';
+        return "El campo :attribute ya existe en la tabla $this->table.";
     }
 }

@@ -15,15 +15,15 @@ class CreateCompraitemsTable extends Migration
     {
         Schema::create('compraitems', function (Blueprint $table) {
             $table->id();
-            $table->decimal('oldstock', 10, 2);
-            $table->decimal('oldpricebuy', 10, 2);
-            $table->decimal('oldpricesale', 10, 2);
-            $table->decimal('cantidad', 10, 2);
-            $table->decimal('pricebuy', 10, 4);
-            $table->decimal('igv', 10, 4);
-            $table->decimal('descuento', 10, 4);
-            $table->decimal('subtotal', 10, 4);
-            $table->decimal('total', 10, 4);
+            $table->decimal('oldstock', 12, 2);
+            $table->decimal('oldpricebuy', 18, 2);
+            $table->decimal('oldpricesale', 18, 2);
+            $table->decimal('cantidad', 12, 2);
+            $table->decimal('pricebuy', 18, 4);
+            $table->decimal('igv', 18, 4);
+            $table->decimal('descuento', 18, 4);
+            $table->decimal('subtotal', 18, 4);
+            $table->decimal('total', 18, 4);
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('compra_id')->nullable();

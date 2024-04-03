@@ -24,4 +24,9 @@ class Image extends Model
     {
         return $query->where('default', self::DEFAULT);
     }
+
+    public function isDefault()
+    {
+        return $this->default == self::DEFAULT;
+    }
 }

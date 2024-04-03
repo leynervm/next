@@ -1,4 +1,5 @@
-<button {{ $attributes->merge(['class' => 'inline-block p-0.5 rounded-sm disabled:opacity-75 ', 'type' => 'button']) }}>
+<button
+    {{ $attributes->merge(['class' => 'inline-block p-0.5 rounded-sm disabled:opacity-75 transition ease-in-out duration-150', 'type' => 'button']) }}>
     <svg class="w-5 h-5 scale-125" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path fill="currentColor"

@@ -49,7 +49,7 @@
         <x-form-card titulo="RESUMEN PAGO" class="flex flex-col gap-1 rounded-md cursor-default p-3">
             <div class="w-full text-colortitleform">
                 <h1 class="font-semibold text-sm leading-4">
-                    <span class="text-3xl">{{ $venta->cajamovimiento->openbox->box->name }}</span>
+                    <span class="text-3xl">{{ $venta->cajamovimiento->monthbox->name }}</span>
                     <span class="font-medium"> {{ $venta->cajamovimiento->openbox->box->name }}</span>
                 </h1>
 
@@ -66,14 +66,14 @@
     @if ($venta->typepayment->isCredito())
         <x-form-card titulo="CUOTAS PAGO">
 
-            @if (count($venta->cuotas))
+            @if (count($venta->cuotas) > 0)
                 <div class="w-full flex flex-col gap-2">
                     <div class="w-full flex gap-2 flex-wrap justify-start">
                         @foreach ($venta->cuotas as $item)
                             <x-card-cuota class="w-full xs:w-60" :titulo="null" :detallepago="$item->cajamovimiento">
                                 <p class="text-colorminicard text-xl font-semibold text-center">
                                     <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
-                                    {{ number_format($item->amount, 2, '.', ', ') }}
+                                    {{ number_format($item->amount, 3, '.', ', ') }}
                                     <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                                 </p>
 
@@ -83,36 +83,40 @@
                                 </div>
 
                                 <x-slot name="footer">
-                                    @if ($item->cajamovimiento)
-                                        <div class="w-full flex gap-2 flex-wrap items-end justify-between">
-                                            <x-mini-button>
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <path
-                                                        d="M17.571 18H20.4a.6.6 0 00.6-.6V11a4 4 0 00-4-4H7a4 4 0 00-4 4v6.4a.6.6 0 00.6.6h2.829M8 7V3.6a.6.6 0 01.6-.6h6.8a.6.6 0 01.6.6V7" />
-                                                    <path
-                                                        d="M6.098 20.315L6.428 18l.498-3.485A.6.6 0 017.52 14h8.96a.6.6 0 01.594.515L17.57 18l.331 2.315a.6.6 0 01-.594.685H6.692a.6.6 0 01-.594-.685z" />
-                                                    <path d="M17 10.01l.01-.011" />
-                                                </svg>
-                                            </x-mini-button>
-                                            @can('admin.ventas.payments.edit')
-                                                <x-button-delete onclick="confirmDeletePay({{ $item }})"
-                                                    wire:loading.attr="disabled" />
-                                            @endcan
-                                        </div>
-                                    @else
-                                        <div class="w-full flex gap-2 flex-wrap items-end justify-between">
-                                            @can('admin.ventas.payments.edit')
-                                                <x-button wire:click="pay({{ $item->id }})"
-                                                    wire:key="pay{{ $item->id }}"
-                                                    wire:loading.attr="disabled">PAGAR</x-button>
-                                            @endcan
-                                            @can('admin.ventas.create')
-                                                <x-button-delete onclick="confirmDeleteCuota({{ $item }})"
-                                                    wire:loading.attr="disabled" />
-                                            @endcan
-                                        </div>
+                                    @if (auth()->user()->sucursal_id == $venta->sucursal_id)
+                                        @if ($item->cajamovimiento)
+                                            <div class="w-full flex gap-2 flex-wrap items-end justify-between">
+                                                <x-mini-button>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
+                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path
+                                                            d="M17.571 18H20.4a.6.6 0 00.6-.6V11a4 4 0 00-4-4H7a4 4 0 00-4 4v6.4a.6.6 0 00.6.6h2.829M8 7V3.6a.6.6 0 01.6-.6h6.8a.6.6 0 01.6.6V7" />
+                                                        <path
+                                                            d="M6.098 20.315L6.428 18l.498-3.485A.6.6 0 017.52 14h8.96a.6.6 0 01.594.515L17.57 18l.331 2.315a.6.6 0 01-.594.685H6.692a.6.6 0 01-.594-.685z" />
+                                                        <path d="M17 10.01l.01-.011" />
+                                                    </svg>
+                                                </x-mini-button>
+                                                @can('admin.ventas.payments.edit')
+                                                    <x-button-delete wire:key="deletecuota_{{ $item->id }}"
+                                                        onclick="confirmDeletePay({{ $item }})"
+                                                        wire:loading.attr="disabled" />
+                                                @endcan
+                                            </div>
+                                        @else
+                                            <div class="w-full flex gap-2 flex-wrap items-end justify-between">
+                                                @can('admin.ventas.payments.edit')
+                                                    <x-button wire:click="pay({{ $item->id }})"
+                                                        wire:key="pay_{{ $item->id }}"
+                                                        wire:loading.attr="disabled">PAGAR</x-button>
+                                                @endcan
+                                                @can('admin.ventas.create')
+                                                    <x-button-delete wire:key="deletecuota_{{ $item->id }}"
+                                                        onclick="confirmDeleteCuota({{ $item }})"
+                                                        wire:loading.attr="disabled" />
+                                                @endcan
+                                            </div>
+                                        @endif
                                     @endif
                                 </x-slot>
                             </x-card-cuota>
@@ -159,7 +163,7 @@
 
                                                 <x-label value="Monto Cuota :" />
                                                 <x-input class="block w-full numeric" type="number" min="1"
-                                                    step="0.0001"
+                                                    step="0.001"
                                                     wire:model.defer="cuotas.{{ $loop->iteration - 1 }}.amount" />
 
                                                 <x-jet-input-error for="cuotas.{{ $item['cuota'] - 1 }}.cuota" />
@@ -235,7 +239,7 @@
                     @php
                         $amountIncr = number_format(
                             (($venta->total - $venta->paymentactual) * $venta->increment) / (100 + $venta->increment),
-                            4,
+                            3,
                             '.',
                             '',
                         );
@@ -244,7 +248,7 @@
                     @if ($venta->increment > 0)
                         {{ number_format($venta->total - $venta->paymentactual - $amountIncr, 3, '.', ', ') }}
                         + {{ formatDecimalOrInteger($venta->increment) }}%
-                        ({{ number_format($amountIncr, 2, '.', ', ') }})
+                        ({{ number_format($amountIncr, 3, '.', ', ') }})
                     @endif
                     : {{ $venta->moneda->simbolo }}
                     <span
@@ -261,9 +265,11 @@
                     @foreach ($venta->tvitems as $item)
                         @php
                             $image = null;
-                            if (count($item->producto->images)) {
-                                if (count($item->producto->defaultImage)) {
-                                    $image = asset('storage/productos/' . $item->producto->defaultImage->first()->url);
+                            if (count($item->producto->images) > 0) {
+                                if ($item->producto->images()->default()->exists()) {
+                                    $image = asset(
+                                        'storage/productos/' . $item->producto->images()->default()->first()->url,
+                                    );
                                 } else {
                                     $image = asset('storage/productos/' . $item->producto->images->first()->url);
                                 }
@@ -467,7 +473,7 @@
 
     <x-form-card titulo="OPCIONES">
         <div class="w-full flex gap-2 items-start justify-end">
-            <x-button>IMPRIMIR A4</x-button>
+            <x-link-button href="{{ route('admin.ventas.print.a4', $venta) }}">IMPRIMIR A4</x-link-button>
             <x-button>IMPRIMIR TICKET</x-button>
             @if (Module::isEnabled('Facturacion'))
                 @can('admin.facturacion.sunat')
@@ -487,12 +493,27 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="savepayment" class="flex flex-col gap-2">
+                @if ($monthbox)
+                    <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                        <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        @if ($openbox)
+                            <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                        @else
+                            <small class="text-colorerror w-full block font-medium text-[10px] leading-3">
+                                APERTURA DE CAJA DIARIA NO DISPONIBLE...
+                            </small>
+                        @endif
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+                @endif
 
                 <div class="w-full">
                     <x-span-text :text="'Cuota' . substr('000' . $cuota->cuota, -3)" />
-                    <p class="text-colorminicard text-xl font-semibold">
+                    <p class="text-colorminicard text-3xl font-semibold">
                         <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
-                        {{ number_format($cuota->amount, 2, '.', ', ') }}
+                        {{ number_format($cuota->amount, 3, '.', ', ') }}
                         <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                     </p>
 
@@ -552,7 +573,7 @@
                 </h3>
 
                 <form wire:submit.prevent="updatecuotas" class="w-full flex flex-wrap justify-around gap-2">
-                    @if (count($cuotas))
+                    @if (count($cuotas) > 0)
                         <div class="w-full flex flex-wrap gap-1">
                             @foreach ($cuotas as $item)
                                 <x-card-cuota :titulo="substr('000' . $item['cuota'], -3)" class="w-full sm:w-48">
@@ -560,7 +581,7 @@
                                         <p class="text-colorminicard text-xl font-semibold text-center">
                                             <small
                                                 class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
-                                            {{ number_format($item['amount'], 2, '.', ', ') }}
+                                            {{ number_format($item['amount'], 3, '.', ', ') }}
                                             <small
                                                 class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                                         </p>
@@ -577,7 +598,7 @@
 
                                     @if (is_null($item['cajamovimiento_id']))
                                         <x-label value="Monto Cuota :" />
-                                        <x-input class="block w-full" type="number" min="1" step="0.0001"
+                                        <x-input class="block w-full" type="number" min="1" step="0.001"
                                             wire:model.lazy="cuotas.{{ $loop->iteration - 1 }}.amount" />
                                     @endif
 
@@ -611,7 +632,6 @@
             </div>
         </x-slot>
     </x-jet-dialog-modal>
-
 
     <script>
         function selectCuotaMethodpayment() {

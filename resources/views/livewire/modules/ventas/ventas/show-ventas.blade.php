@@ -1,4 +1,8 @@
-<div class="relative" x-data="{ loading: false }">
+<div>
+    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+        <x-loading-next />
+    </div>
+
     <div class="flex flex-wrap gap-2 mt-3">
         <div class="w-full xs:max-w-sm">
             <x-label value="Buscar cliente / comprobante :" />
@@ -43,23 +47,6 @@
                     <x-select id="searchuser" x-ref="select" data-placeholder="null">
                         <x-slot name="options">
                             @foreach ($users as $item)
-                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                            @endforeach
-                        </x-slot>
-                    </x-select>
-                    <x-icon-select />
-                </div>
-            </div>
-        @endif
-
-        @if (count($sucursals) > 1)
-            <div class="w-full xs:max-w-xs">
-                <x-label value="Sucursal :" />
-                <div class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal"
-                    wire:ignore>
-                    <x-select id="searchsucursal" x-ref="selects" data-placeholder="null">
-                        <x-slot name="options">
-                            @foreach ($sucursals as $item)
                                 <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
                         </x-slot>
@@ -231,11 +218,6 @@
     @else
         <x-span-text text="NO EXISTEN REGISTROS DE VENTAS..." class="mt-3 bg-transparent" />
     @endif
-
-    <div x-show="loading" wire:loading wire:loading.flex class="loading-overlay rounded">
-        <x-loading-next />
-    </div>
-
 
     <script>
         function select2SucursalAlpine() {

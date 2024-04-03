@@ -88,38 +88,40 @@ class ShowPaymentEmployers extends Component
 
     public function save()
     {
+
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
+            return false;
+        }
+
+        if (!$this->openbox || !$this->openbox->isActivo()) {
+            $this->dispatchBrowserEvent('validation', getMessageOpencaja());
+            return false;
+        }
+
         $this->amountmax = ($this->employer->sueldo + $this->employerpayment->bonus) - ($this->employerpayment->amount + $this->employerpayment->adelantos + $this->employerpayment->descuentos);
         $validateData = $this->validate();
         // dd($validateData, $this->amountmax);
         try {
 
             DB::beginTransaction();
-            $methodpayment = Methodpayment::find($this->methodpayment_id)->type;
-            $moneda = Moneda::find($this->moneda_id);
+            $methodpayment = Methodpayment::find($this->methodpayment_id);
             $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment);
+                $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->employerpayment->employer->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
-            $saldocaja = $saldocaja < 0 ? 0 : $saldocaja;
-            $forma = $methodpayment == Methodpayment::EFECTIVO ? 'EFECTIVO' : 'TRANSFERENCIAS';
-            $amountsaldo = $moneda->code == 'PEN' ? $saldocaja + $this->openbox->aperturarestante : $saldocaja;
+            $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($amountsaldo - $this->amount) < 0) {
+            if (($saldocaja - $this->amount) < 0) {
                 $mensaje =  response()->json([
-                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DEL TRABAJADOR !',
+                    'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DEL PERSONAL !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
-            }
-
-            $descontar = $saldocaja - $this->amount;
-            if ($descontar < 0) {
-                $this->openbox->aperturarestante = $this->openbox->aperturarestante + ($descontar);
-                $this->openbox->save();
             }
 
             $this->employerpayment->savePayment(

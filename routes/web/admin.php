@@ -31,7 +31,7 @@ use Nwidart\Modules\Facades\Module;
 // ])->prefix('admin/')->group(function () {
 Route::get('/', [HomeController::class, 'index'])->name('admin');
 
-Route::prefix('users')->name('admin.users')->group(function () {
+Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('/create', [UserController::class, 'create'])->name('.create');
     Route::get('/edit/{user}', [UserController::class, 'edit'])->name('.edit');
@@ -81,8 +81,8 @@ Route::prefix('administracion')->name('admin.administracion')->group(function ()
     Route::get('/sucursales', [SucursalController::class, 'index'])->name('.sucursales')->middleware(['verifycompany']);
     Route::get('/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('.sucursales.edit')->middleware(['verifycompany']);
     Route::get('/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('.typecomprobantes')->middleware(['verifycompany']);
-    Route::get('/personal', [HomeController::class, 'employers'])->name('.employers')->middleware(['verifycompany']);
-    Route::get('/personal/{employer:document}/historial-pagos', [HomeController::class, 'payments'])->name('.employers.payments')->middleware(['verifycompany']);
+    // Route::get('/personal', [HomeController::class, 'employers'])->name('.employers')->middleware(['verifycompany']);
+    // Route::get('/personal/{employer:document}/historial-pagos', [HomeController::class, 'payments'])->name('.employers.payments')->middleware(['verifycompany']);
 
     Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units');
     Route::get('/areas', [HomeController::class, 'areas'])->name('.areas');

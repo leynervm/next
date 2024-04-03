@@ -5,11 +5,13 @@ namespace App\Http\Livewire\Admin\Users;
 use App\Models\Areawork;
 use App\Models\Employer;
 use App\Models\Sucursal;
+use App\Models\Turno;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Nwidart\Modules\Facades\Module;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -17,8 +19,8 @@ class ShowUser extends Component
 {
 
     public $user;
-    public $sexo, $nacimiento, $telefono, $sueldo, $horaingreso,
-        $horasalida, $areawork_id, $sucursal_id;
+    public $sexo, $nacimiento, $telefono, $sueldo, $turno_id,
+        $areawork_id, $sucursal_id;
     public $selectedRoles = [];
     public $addemployer = false;
 
@@ -28,9 +30,11 @@ class ShowUser extends Component
         return [
             'user.name' => ['required', 'string', 'min:3', 'string'],
             'user.email' => ['required', 'email', new CampoUnique('users', 'email', $this->user->id, true)],
-            'user.sucursal_id' => ['nullable', 'integer', 'min:1', 'exists:sucursals,id'],
-            // 'user.almacen_id' => ['nullable', 'integer', 'min:1', 'exists:almacens,id']
-
+            'user.sucursal_id' => [
+                'nullable',
+                Rule::requiredIf(Module::isEnabled('employer') && $this->addemployer || Module::isEnabled('employer') && $this->user->employer()->exists()),
+                'integer', 'min:1', 'exists:sucursals,id'
+            ],
             'nacimiento' => [
                 'nullable', Rule::requiredIf($this->addemployer),
                 'date', 'date_format:Y-m-d', 'before:today',
@@ -48,19 +52,19 @@ class ShowUser extends Component
                 'nullable', Rule::requiredIf($this->addemployer),
                 'numeric', 'min:0', 'gt:0', 'decimal:0,2'
             ],
-            'horaingreso' => [
+            // 'horaingreso' => [
+            //     'nullable', Rule::requiredIf($this->addemployer),
+            //     'date_format:H:i'
+            // ],
+            // 'horasalida' => [
+            //     'nullable', Rule::requiredIf($this->addemployer),
+            //     'date_format:H:i'
+            // ],
+            'turno_id' => [
                 'nullable', Rule::requiredIf($this->addemployer),
-                'date_format:H:i'
-            ],
-            'horasalida' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'date_format:H:i'
+                'integer', 'min:1', 'exists:turnos,id'
             ],
             'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
-            'sucursal_id' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'integer', 'min:1', 'exists:sucursals,id'
-            ],
         ];
     }
 
@@ -75,7 +79,8 @@ class ShowUser extends Component
         $permisos = Permission::all();
         $sucursales = Sucursal::orderBy('id', 'asc')->get();
         $areaworks = Areawork::orderBy('name', 'asc')->get();
-        return view('livewire.admin.users.show-user', compact('roles', 'sucursales', 'areaworks'));
+        $turnos = Turno::orderBy('horaingreso', 'asc')->get();
+        return view('livewire.admin.users.show-user', compact('roles', 'sucursales', 'turnos', 'areaworks'));
     }
 
     public function update()
@@ -83,44 +88,59 @@ class ShowUser extends Component
 
         $this->user->name = trim($this->user->name);
         $this->user->email = trim($this->user->email);
+        $this->user->sucursal_id = empty($this->user->sucursal_id) ? null : $this->user->sucursal_id;
+
         $this->validate();
         try {
             DB::beginTransaction();
-            if ($this->addemployer) {
-                $exists = Employer::with(['sucursal', 'areawork'])->whereDoesntHave('user', function ($query) {
-                    $query->where('document', $this->user->document);
-                })->where('document', $this->user->document)->exists();
 
-                if ($exists) {
-                    $mensaje = response()->json([
-                        'title' => 'YA EXISTE UN PERSONAL CON LOS MISMOS DATOS INGRESADOS !',
-                        'text' => 'Se encontraron registros de trabajadores con los mismos datos ingresados.',
-                        'type' => 'warning'
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                } else {
-                    $employer = $this->user->employer()->create([
-                        'document' => $this->user->document,
-                        'name' => $this->user->name,
-                        'nacimiento' => $this->nacimiento,
-                        'sexo' => $this->sexo,
-                        'sueldo' => $this->sueldo,
-                        'horaingreso' => $this->horaingreso,
-                        'horasalida' => $this->horasalida,
-                        'areawork_id' => $this->areawork_id,
-                        'sucursal_id' => $this->sucursal_id,
-                    ]);
+            if (Module::isEnabled('Employer')) {
+                if ($this->user->employer) {
+                    $this->user->employer->sucursal_id = $this->user->sucursal_id;
+                    $this->user->employer->user_id = $this->user->sucursal_id == null ? null : $this->user->id;
+                    $this->user->employer->save();
+                }
 
-                    if (!empty($this->telefono)) {
-                        $employer->telephone()->create([
-                            'phone' => $this->telefono,
+                if ($this->addemployer) {
+                    $exists = Employer::with(['sucursal', 'areawork'])->whereDoesntHave('user', function ($query) {
+                        $query->where('document', $this->user->document);
+                    })->where('document', $this->user->document)->exists();
+
+                    if ($exists) {
+                        $mensaje = response()->json([
+                            'title' => 'YA EXISTE UN PERSONAL CON LOS MISMOS DATOS INGRESADOS !',
+                            'text' => 'Se encontraron registros de trabajadores con los mismos datos ingresados.',
+                            'type' => 'warning'
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    } else {
+                        $employer = $this->user->employer()->create([
+                            'document' => $this->user->document,
+                            'name' => $this->user->name,
+                            'nacimiento' => $this->nacimiento,
+                            'sexo' => $this->sexo,
+                            'sueldo' => $this->sueldo,
+                            'turno_id' => $this->turno_id,
+                            'areawork_id' => $this->areawork_id,
+                            'sucursal_id' => $this->user->sucursal_id,
                         ]);
+
+                        if (!empty($this->telefono)) {
+                            $employer->telephone()->create([
+                                'phone' => $this->telefono,
+                            ]);
+                        }
                     }
-                    $this->user->roles()->sync($this->selectedRoles);
-                    $this->user->sucursal_id = $employer->sucursal_id;
                 }
             }
+
+            if (empty($this->user->sucursal_id)) {
+                $this->user->roles()->sync([]);
+            } else {
+                $this->user->roles()->sync($this->selectedRoles);
+            }
+
             $this->user->save();
             DB::commit();
             $this->resetValidation();
@@ -137,51 +157,56 @@ class ShowUser extends Component
 
     public function deleteemployer()
     {
-        if ($this->user->employer) {
-            $this->user->employer->user_id = null;
-            $this->user->employer->save();
+
+        if (Module::isEnabled('Employer')) {
+            if ($this->user->employer) {
+                $this->user->employer->user_id = null;
+                $this->user->employer->save();
+            }
+            $this->user->sucursal_id = null;
+            $this->user->save();
+            $this->user->refresh();
+            $this->dispatchBrowserEvent('delete');
         }
-        $this->user->sucursal_id = null;
-        $this->user->save();
-        $this->user->refresh();
-        $this->dispatchBrowserEvent('delete');
     }
 
     public function searchemployer()
     {
-        $this->resetValidation(['document', 'name']);
-        $this->user->document = trim($this->user->document);
-        $this->validate([
-            'user.document' => ['required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/']
-        ]);
+        if (Module::isEnabled('Employer')) {
+            $this->resetValidation(['document', 'name']);
+            $this->user->document = trim($this->user->document);
+            $this->validate([
+                'user.document' => ['required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/']
+            ]);
 
-        try {
-            DB::beginTransaction();
-            $employer = Employer::with(['sucursal', 'areawork'])->whereDoesntHave('user', function ($query) {
-                $query->where('document', $this->user->document);
-            })->where('document', $this->user->document)->first();
-            if ($employer) {
-                $employer->user()->associate($this->user);
-                $employer->save();
-                $this->user->sucursal_id = $employer->sucursal_id;
-                $this->user->save();
-                $this->user->refresh();
-                $this->dispatchBrowserEvent('toast', toastJSON('Personal vinculado correctamente'));
-            } else {
-                $mensaje = response()->json([
-                    'title' => 'NO SE ENCONTRARON DATOS DEL PERSONAL !',
-                    'text' => 'No se encontraron registros de personal con los datos del usuario.',
-                    'type' => 'warning'
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
+            try {
+                DB::beginTransaction();
+                $employer = Employer::with(['sucursal', 'areawork'])->whereDoesntHave('user', function ($query) {
+                    $query->where('document', $this->user->document);
+                })->where('document', $this->user->document)->first();
+                if ($employer) {
+                    $employer->user()->associate($this->user);
+                    $employer->save();
+                    $this->user->sucursal_id = $employer->sucursal_id;
+                    $this->user->save();
+                    $this->user->refresh();
+                    $this->dispatchBrowserEvent('toast', toastJSON('Personal vinculado correctamente'));
+                } else {
+                    $mensaje = response()->json([
+                        'title' => 'NO SE ENCONTRARON DATOS DEL PERSONAL !',
+                        'text' => 'No se encontraron registros de personal con los datos del usuario.',
+                        'type' => 'warning'
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                }
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
             }
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
         }
     }
 }

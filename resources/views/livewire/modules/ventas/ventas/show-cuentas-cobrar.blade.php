@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+        <x-loading-next />
+    </div>
+
     @if (count($sumatorias) > 0)
         <div class="w-full flex flex-wrap gap-5">
             @foreach ($sumatorias as $item)
@@ -32,15 +36,15 @@
             </div>
         </div>
 
-        <div class="w-full sm:max-w-[200px]">
+        <div class="w-full sm:max-w-xs">
             <x-label value="Comprobante :" />
             <x-input placeholder="Buscar comprobante..." class="block w-full" wire:model.lazy="comprobante">
             </x-input>
         </div>
 
-        <div>
+        <div class="w-full max-w-xs">
             <x-label value="Fecha pago :" />
-            <x-input type="date" wire:model.lazy="datepay" />
+            <x-input type="date" wire:model.lazy="datepay" class="w-full block" />
         </div>
     </div>
 
@@ -50,7 +54,7 @@
         </div>
     @endif
 
-    <div class="w-full relative mt-1" x-data="{ loading: false }">
+    <div class="w-full relative mt-1">
         <x-table class="w-full relative mt-1">
             <x-slot name="header">
                 <tr>
@@ -75,17 +79,13 @@
                     <th scope="col" class="p-2 font-medium">
                         CLIENTE
                     </th>
-
                     <th scope="col" class="p-2 font-medium">
                         PRÓXIMA FECHA PAGO
                     </th>
-
                     <th scope="col" class="p-2 font-medium">
                         MONTO</th>
-
                     <th scope="col" class="p-2 font-medium">
                         SALDO PENDIENTE</th>
-
                     <th scope="col" class="p-2 font-medium">
                         MONTO TOTAL</th>
                 </tr>
@@ -94,11 +94,11 @@
                 <x-slot name="body">
                     @foreach ($cuotas as $item)
                         <tr>
-                            <td class="p-2">
+                            <td class="p-2 text-[10px]">
                                 @can('admin.ventas.edit')
                                     <a class="inline-block text-linktable hover:text-hoverlinktable transition-all ease-in-out duration-150"
                                         href="{{ route('admin.ventas.edit', $item->id) }}">
-                                        {{ $item->code }}
+                                        {{ $item->seriecompleta }}
                                         <br>
                                         {{ $item->comprobante->seriecomprobante->typecomprobante->descripcion }}
                                     </a>
@@ -106,7 +106,7 @@
 
                                 @cannot('admin.ventas.edit')
                                     <a class="inline-block text-linktable">
-                                        {{ $item->code }}
+                                        {{ $item->seriecompleta }}
                                         <br>
                                         {{ $item->comprobante->seriecomprobante->typecomprobante->descripcion }}
                                     </a>
@@ -163,8 +163,5 @@
                 </x-slot>
             @endif
         </x-table>
-        <div x-show="loading" wire:loading wire:loading.flex class="loading-overlay rounded">
-            <x-loading-next />
-        </div>
     </div>
 </div>

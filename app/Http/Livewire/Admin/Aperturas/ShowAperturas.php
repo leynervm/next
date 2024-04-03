@@ -41,11 +41,13 @@ class ShowAperturas extends Component
 
     public function render()
     {
-        $openboxes = Openbox::withWhereHas('box', function ($query) {
+        $openboxes = Openbox::with('monthbox')->withWhereHas('box', function ($query) {
             $query->withTrashed()->withWhereHas('sucursal', function ($query) {
                 $query->withTrashed();
-                if (trim($this->searchsucursal !== '')) {
-                    $query->where('id', $this->searchsucursal);
+                if (auth()->user()->isAdmin()) {
+                    if (trim($this->searchsucursal !== '')) {
+                        $query->where('id', $this->searchsucursal);
+                    }
                 } else {
                     $query->where('id', auth()->user()->sucursal_id);
                 }

@@ -56,7 +56,6 @@
                             <x-select class="block w-full" wire:model.defer="sexo" id="sexoemp_id"
                                 data-dropdown-parent="null" x-ref="select">
                                 <x-slot name="options">
-                                    <option value="E">EMPRESARIAL</option>
                                     <option value="M">MASCULINO</option>
                                     <option value="F">FEMENINO</option>
                                 </x-slot>
@@ -87,16 +86,25 @@
                         <x-jet-input-error for="sueldo" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label value="Hora ingreso :" />
-                        <x-input class="block w-full" wire:model.defer="horaingreso" type="time" />
-                        <x-jet-input-error for="horaingreso" />
-                    </div>
-
-                    <div class="w-full">
-                        <x-label value="Hora salida :" />
-                        <x-input class="block w-full" wire:model.defer="horasalida" type="time" />
-                        <x-jet-input-error for="horasalida" />
+                    <div class="w-full xs:col-span-2">
+                        <x-label value="Turno laboral :" />
+                        <div class="relative" id="parentturnoemployer_id" x-data="{ turno_id: @entangle('turno_id').defer }"
+                            x-init="select2Turno">
+                            <x-select class="block w-full" x-ref="selectturno" id="turnoemployer_id"
+                                data-dropdown-parent="null">
+                                <x-slot name="options">
+                                    @if (count($turnos) > 0)
+                                        @foreach ($turnos as $item)
+                                            <option value="{{ $item->id }}"
+                                                title="{{ formatDate($item->horaingreso, 'hh:ss A') . ' - ' . formatDate($item->horasalida, 'hh:ss A') }}">
+                                                {{ $item->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="turno_id" />
                     </div>
 
                     <div class="w-full xs:col-span-2">
@@ -257,6 +265,13 @@
             }))
         })
 
+        function formatOption(option) {
+            var $option = $(
+                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title + '</p>'
+            );
+            return $option;
+        };
+
         function select2Sucursal() {
             this.selectSuc = $(this.$refs.selectsuc).select2();
             this.selectSuc.val(this.sucursal_id).trigger("change");
@@ -269,6 +284,28 @@
             });
             this.$watch("sucursal_id", (value) => {
                 this.selectSuc.val(value).trigger("change");
+            });
+        }
+
+        function select2Turno() {
+            this.selectTurno = $(this.$refs.selectturno).select2({
+                templateResult: formatOption
+            });
+            this.selectTurno.val(this.turno_id).trigger("change");
+            this.selectTurno.on("select2:select", (event) => {
+                this.turno_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("turno_id", (value) => {
+                this.selectTurno.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectTurno.select2({
+                    templateResult: formatOption
+                }).val(this.turno_id).trigger('change');
             });
         }
 

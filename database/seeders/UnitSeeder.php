@@ -14,22 +14,22 @@ class UnitSeeder extends Seeder
      */
     public function run()
     {
-        Unit::create([
+        Unit::firstOrCreate([
             'code' => 'NIU',
             'name' => 'UND',
         ]);
 
-        Unit::create([
+        Unit::firstOrCreate([
             'code' => 'ZZ',
             'name' => 'SERVICIO',
         ]);
 
-        Unit::create([
+        Unit::firstOrCreate([
             'code' => 'MTR',
             'name' => 'METRO',
         ]);
 
-        Unit::create([
+        Unit::firstOrCreate([
             'code' => 'CEN',
             'name' => 'CIENTO DE UNIDADES',
         ]);

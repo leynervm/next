@@ -29,8 +29,7 @@
         @endcan
     </x-slot>
 
-    <div
-        class="w-full flex flex-wrap xl:flex-nowrap gap-8 xl:h-[calc(100vh_-_4rem)] animate__animated animate__fadeIn animate__faster">
+    <div class="w-full flex flex-wrap xl:flex-nowrap gap-8 xl:h-[calc(100vh_-_4rem)]">
         <div class="w-full xl:flex-shrink-0 xl:w-96 xl:overflow-y-auto soft-scrollbar h-full">
             <livewire:modules.ventas.ventas.show-resumen-venta :seriecomprobante="$seriecomprobante" :moneda="$moneda" :concept="$concept" />
         </div>

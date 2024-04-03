@@ -23,7 +23,7 @@
                 <div class="w-full">
                     <x-label value="Cantidad decimales :" />
                     <x-input class="block w-full" wire:model.defer="decimals" type="number" step="1"
-                        min="0" max="4" />
+                        min="0" max="4" onkeypress="return validarDecimal(event, 1)" />
                     <x-jet-input-error for="decimals" />
                 </div>
 

@@ -17,7 +17,7 @@ class CreateCajamovimientosTable extends Migration
         Schema::create('cajamovimientos', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->decimal('amount', 10, 4);
+            $table->decimal('amount', 18, 4);
             $table->string('typemovement', 7);
             $table->string('referencia', 255)->nullable();
             $table->string('detalle', 255)->nullable();

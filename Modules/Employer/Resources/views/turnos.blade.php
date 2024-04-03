@@ -16,29 +16,32 @@
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
-        <x-link-breadcrumb text="PERSONAL EMPRESA" active>
+        <x-link-breadcrumb text="TURNOS LABORALES" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 9H18" />
-                    <path d="M14 12.5H17" />
-                    <rect x="2" y="3" width="20" height="18" rx="5" />
-                    <path d="M5 16C6.20831 13.4189 10.7122 13.2491 12 16" />
+                    <path d="M18 2V4M6 2V4" />
+                    <path d="M11.9955 13H12.0045M11.9955 17H12.0045M15.991 13H16M8 13H8.00897M8 17H8.00897"
+                        stroke-width="2" />
+                    <path d="M3.5 8H20.5" />
                     <path
-                        d="M10.5 9C10.5 10.1046 9.60457 11 8.5 11C7.39543 11 6.5 10.1046 6.5 9C6.5 7.89543 7.39543 7 8.5 7C9.60457 7 10.5 7.89543 10.5 9Z" />
+                        d="M2.5 12.2432C2.5 7.88594 2.5 5.70728 3.75212 4.35364C5.00424 3 7.01949 3 11.05 3H12.95C16.9805 3 18.9958 3 20.2479 4.35364C21.5 5.70728 21.5 7.88594 21.5 12.2432V12.7568C21.5 17.1141 21.5 19.2927 20.2479 20.6464C18.9958 22 16.9805 22 12.95 22H11.05C7.01949 22 5.00424 22 3.75212 20.6464C2.5 19.2927 2.5 17.1141 2.5 12.7568V12.2432Z" />
+                    <path d="M3 8H21" />
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
     </x-slot>
 
-    @can('admin.administracion.employers.create')
-        <div class="">
-            @livewire('modules.administracion.employers.create-employer')
-        </div>
-    @endcan
+    <div class="w-full flex flex-wrap gap-2">
+        @can('admin.administracion.turnos.create')
+            <div class="">
+                @livewire('modules.administracion.turnos.create-turno')
+            </div>
+        @endcan
+    </div>
 
     <div class="mt-1">
-        @livewire('modules.administracion.employers.show-employers')
+        @livewire('modules.administracion.turnos.show-turnos')
     </div>
 
 </x-app-layout>

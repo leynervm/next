@@ -7,8 +7,10 @@ use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Models\Pricetype;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
 use Modules\Ventas\Entities\Venta;
 use Nwidart\Modules\Facades\Module;
 
@@ -66,5 +68,18 @@ class VentaController extends Controller
     public function cobranzas()
     {
         return view('ventas::ventas.cobranzas');
+    }
+
+    public function imprimirA4(Venta $venta)
+    {
+
+        $pdf =  PDF::loadView('ventas::pdf.a4', compact('venta'));
+        if (Module::isEnabled('Facturacion')) {
+            if ($venta->comprobante) {
+                $comprobante = $venta->comprobante;
+                $pdf = PDF::loadView('facturacion::pdf.a4', compact('comprobante'));
+            }
+        }
+        return $pdf->stream();
     }
 }

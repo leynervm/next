@@ -87,7 +87,7 @@
             </div>
         </x-form-card>
 
-        <div class="grid gap-8 lg:grid-cols-2">
+        <div class="grid gap-8 {{ Module::isEnabled('Employer') ? 'lg:grid-cols-2' : '' }}">
             <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
                 <div class="w-full items-start flex flex-col gap-1">
                     @if (Module::isEnabled('Ventas'))
@@ -158,14 +158,16 @@
                 </div>
             </x-form-card>
 
-            <x-form-card titulo="CONFIGURAR ADELANTO PERSONAL">
-                <div class="w-full">
-                    <x-label value="Monto máximo adelanto :" />
-                    <x-input class="block w-full" wire:model.defer="empresa.montoadelanto" placeholder="0.00"
-                        type="number" onkeypress="return validarDecimal(event, 11)" />
-                    <x-jet-input-error for="empresa.montoadelanto" />
-                </div>
-            </x-form-card>
+            @if (Module::isEnabled('Employer'))
+                <x-form-card titulo="CONFIGURAR ADELANTO PERSONAL">
+                    <div class="w-full">
+                        <x-label value="Monto máximo adelanto :" />
+                        <x-input class="block w-full" wire:model.defer="empresa.montoadelanto" placeholder="0.00"
+                            type="number" onkeypress="return validarDecimal(event, 11)" />
+                        <x-jet-input-error for="empresa.montoadelanto" />
+                    </div>
+                </x-form-card>
+            @endif
         </div>
 
         <div class="w-full flex justify-end">

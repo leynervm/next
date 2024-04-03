@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Modules\Administracion\Employers;
 use App\Models\Areawork;
 use App\Models\Employer;
 use App\Models\Sucursal;
+use App\Models\Turno;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateNacimiento;
@@ -47,11 +48,10 @@ class ShowEmployers extends Component
                 'required', 'date', 'before:today',
                 // new ValidateNacimiento(13)
             ],
-            'employer.sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])],
+            'employer.sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F'])],
             'telefono' => ['required', 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
             'employer.sueldo' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
-            'employer.horaingreso' => ['required', 'date_format:H:i'],
-            'employer.horasalida' => ['required', 'date_format:H:i'],
+            'employer.turno_id' => ['required', 'integer', 'min:1', 'exists:turnos,id'],
             'employer.areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
             'employer.sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'employer.user_id' => [
@@ -70,6 +70,7 @@ class ShowEmployers extends Component
     {
         $sucursals = Sucursal::orderBy('name', 'asc')->get();
         $areaworks = Areawork::orderBy('name', 'asc')->get();
+        $turnos = Turno::orderBy('horaingreso', 'asc')->get();
         $sucursalusers = Sucursal::whereHas('employers')->orderBy('name', 'asc')->get();
 
         $employers = Employer::with(['areawork', 'sucursal', 'user']);
@@ -88,7 +89,7 @@ class ShowEmployers extends Component
 
         $employers = $employers->orderBy('name', 'asc')->paginate();
 
-        return view('livewire.modules.administracion.employers.show-employers', compact('employers', 'sucursals', 'areaworks', 'sucursalusers'));
+        return view('livewire.modules.administracion.employers.show-employers', compact('employers', 'sucursals', 'turnos', 'areaworks', 'sucursalusers'));
     }
 
     public function edit(Employer $employer)

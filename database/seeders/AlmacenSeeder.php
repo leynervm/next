@@ -17,17 +17,21 @@ class AlmacenSeeder extends Seeder
      */
     public function run()
     {
-
         if (Module::isEnabled('Almacen')) {
-            DB::select("INSERT INTO almacens (id, name) 
-            VALUES
-                (1, 'ALMACÉN JAEN'),
-                (2, 'ALMACÉN TRUJILLO'),
-                (3, 'ALMACÉN BAGUA'),        
-                (4, 'ALMACÉN SAN IGNACIO')");
-        } else if (Module::isEnabled('Ventas')) {
-            DB::select("INSERT INTO almacens (id, name) 
-            VALUES (1, 'ALMACÉN PRINCIPAL')");
+            // CON DATOS, COMENTAR CUANDO SE QUIERE DESDE CERO
+            Almacen::firstOrCreate([
+                'name' => 'ALMACÉN JAEN',
+                'default' => Almacen::DEFAULT
+            ]);
+            Almacen::firstOrCreate([
+                'name' => 'ALMACÉN TRUJILLO',
+            ]);
+            Almacen::firstOrCreate([
+                'name' => 'ALMACÉN BAGUA',
+            ]);
+            Almacen::firstOrCreate([
+                'name' => 'ALMACÉN SAN IGNACIO',
+            ]);
         }
     }
 }

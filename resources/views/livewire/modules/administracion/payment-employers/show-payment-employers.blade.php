@@ -27,7 +27,7 @@
         {{-- @endif --}}
     </div>
 
-    @if (count($payments))
+    @if (count($payments) > 0)
         <div class="w-full flex flex-col gap-5 mt-5">
             @foreach ($payments as $item)
                 @php
@@ -78,10 +78,9 @@
                             </h3>
 
                             @if ($item->descuentos > 0)
-                                <h3
-                                    class="font-semibold text-xs text-end leading-3 @if ($item->descuentos > 0) text-red-500 @endif">
+                                <h3 class="font-semibold text-xs text-end leading-3 text-colorerror">
                                     <small class="font-medium">DESCUENTOS</small>
-                                    - {{ number_format($item->descuentos, 2, '.', ', ') }}
+                                    {{ number_format($item->descuentos, 2, '.', ', ') }}
                                 </h3>
                             @endif
 
@@ -112,7 +111,7 @@
         </div>
     @endif
 
-    <x-jet-dialog-modal wire:model="open" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo pago personal') }}
             <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
@@ -120,25 +119,31 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="save" class="relative w-full flex flex-col gap-2">
-                <p class="text-colorminicard text-md font-semibold">
+                @if ($monthbox)
+                    <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                        <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        @if ($openbox)
+                            <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                        @else
+                            <small class="text-colorerror w-full block font-medium text-[10px] leading-3">
+                                APERTURA DE CAJA DIARIA NO DISPONIBLE...
+                            </small>
+                        @endif
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+                @endif
+
+                <p class="text-colorlabel text-md font-semibold text-end">
                     <small class="text-[10px] font-medium w-full block leading-3">SUELDO</small>
                     {{ number_format($employer->sueldo, 2, '.', ', ') }}
                 </p>
 
-                <p class="text-colorminicard text-md font-semibold">
+                <p class="text-colorlabel text-md font-semibold text-end">
                     <small class="text-[10px] font-medium w-full block leading-3">TOTAL ADELANTOS</small>
                     {{ number_format($employerpayment->adelantos, 2, '.', ', ') }}
                 </p>
-
-                @if ($openbox)
-                    <p class="text-colorminicard text-md md:text-3xl font-semibold">
-                        <small class="text-[10px] font-medium w-full block leading-3">MES PAGO</small>
-                        {{ formatDate($employerpayment->month, 'MMMM Y') }}
-                        <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
-                    </p>
-                @else
-                    <p class="text-colorerror text-[10px]">APERTURA DE CAJA NO DISPONIBLE...</p>
-                @endif
 
                 <p class="text-colorminicard text-md md:text-3xl font-semibold">
                     <small class="text-[10px] font-medium w-full block leading-3">TOTAL PAGAR</small>
