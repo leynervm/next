@@ -349,11 +349,15 @@
                     </div>
 
                     <div x-show="step === 4">
+                        
                         SUCURSALES
+
                     </div>
 
                     <div x-show="step === 5">
+
                         FACTURACION
+
                     </div>
                 </div>
                 <!-- / Step Content -->
