@@ -18,30 +18,36 @@ class ShowResumenCompra extends Component
 {
 
     public Compra $compra;
-    public $producto, $pricetype;
-    public $producto_id, $almacen_id, $cantidad;
-    public $newprice, $priceold, $pricemanual;
-    public $serie;
-    public $pricebuy = 0;
-    public $descuento = 0;
-    public $importe = 0;
-    public $pricebuysoles = 0;
-    public $tipocambio = 0;
-    public $pricesale;
     public $open = false;
     public $openprice = false;
-    public $almacens = [];
+    public $showigv = false;
 
-    public $stock = 0;
-    public $pricetype_id;
+    public $producto, $pricetype;
+    public $producto_id, $almacen_id, $cantidad, $pricetype_id;
+    public $newprice, $priceold, $pricemanual;
+    public $stock = 0, $pricebuy = 0, $igv, $descuento = 0;
+    public $subtotal = 0, $total = 0, $pricebuysoles = 0, $tipocambio = 0, $pricesale, $percent;
+    public $almacens = [];
+    public $serie = [];
 
     protected $listeners = ['updatecompraitem'];
+
+    // protected $messages = [
+    //     'serie.*.compraitem_id.required' => 'item de la compra es obligatorio',
+    //     'serie.*.compraitem_id.integer' => 'item de la compra debe ser un número entero',
+    //     'serie.*.compraitem_id.exists' => 'item de la compra debe existir en la tabla item de compras',
+    //     'serie.*.serie.required' => 'serie del producto de compra es obligatorio',
+    //     'serie.*.serie.min' => 'serie del producto de compra debe tener al mínimo',
+    //     'serie.*.serie.unique' => 'serie del producto de compra debe ser unico en la tabla series',
+    // ];
+
 
     public function mount()
     {
         $this->producto = new Producto();
         $this->pricetype = new Pricetype();
         $this->tipocambio = $this->compra->tipocambio ?? 0;
+        $this->percent = $this->compra->sucursal->empresa->igv;
 
         if ($this->compra->sucursal->empresa->usarLista()) {
             $pricetypes = Pricetype::default()->orderBy('id', 'asc');
@@ -72,30 +78,9 @@ class ShowResumenCompra extends Component
         $this->producto_id = $this->producto->id ?? null;
     }
 
-    public function updatedProductoId($value)
-    {
-        $this->producto_id = $value == '' ? null : $value;
-        $this->producto = Producto::with('almacens')->find($this->producto_id);
-    }
-
     public function updatedAlmacens($value)
     {
         $this->stock = array_sum(array_column($this->almacens, 'cantidad')) ?? 0;
-        $this->importe = ($this->pricebuy * $this->stock) - ($this->descuento * $this->stock);
-    }
-
-    public function updatedDescuento($value)
-    {
-        $this->descuento = trim($value) == '' ? 0 : $value;
-        $this->stock = array_sum(array_column($this->almacens, 'cantidad')) ?? 0;
-        $this->importe = ($this->pricebuy * $this->stock) - ($this->descuento * $this->stock);
-    }
-
-    public function updatedPricebuy($value)
-    {
-        $this->pricebuy = trim($value) == '' ? 0 : $value;
-        $this->stock = array_sum(array_column($this->almacens, 'cantidad')) ?? 0;
-        $this->importe = ($this->pricebuy * $this->stock) - ($this->descuento * $this->stock);
     }
 
     public function verifyproducto()
@@ -103,17 +88,24 @@ class ShowResumenCompra extends Component
 
         $stock = array_sum(array_column($this->almacens, 'cantidad'));
 
-        if ($stock <= 0) {
-            $this->addError('almacens', 'La sumatoria de las cantidades debe ser mayor que cero.');
-            return false;
-        }
+        // if ($stock <= 0) {
+        //     $this->addError('almacens', 'La sumatoria de las cantidades debe ser mayor que cero.');
+        //     return false;
+        // }
 
         $validateData = $this->validate([
             'compra.id' => ['required', 'integer', 'min:1', 'exists:compras,id'],
             'producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             // 'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
-            'pricebuy' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
-            'pricesale' => ['nullable', Rule::requiredIf($this->compra->sucursal->empresa->uselistprice == 0), 'numeric', 'decimal:0,4', 'gt:0'],
+            'pricebuy' => ['required', 'numeric', 'gt:0', 'decimal:0,4'],
+            'total' => ['required', 'numeric', 'gt:0', 'decimal:0,4'],
+            'descuento' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
+            'igv' => ['nullable', 'numeric', 'min:0', 'decimal:0,4'],
+            'pricesale' => [
+                'nullable',
+                Rule::requiredIf(!$this->compra->sucursal->empresa->usarLista()),
+                'numeric', 'decimal:0,4', 'gt:0'
+            ],
             // 'cantidad' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'almacens' => [
                 'required', 'array', 'min:1',
@@ -123,10 +115,10 @@ class ShowResumenCompra extends Component
             ]
         ]);
 
-        $importeitem =  number_format(($this->pricebuy * $stock) - ($stock * $this->descuento), 3, '.', '');
+        $importeitem =  number_format((($this->pricebuy + $this->igv) * $stock) - ($this->descuento * $stock), 3, '.', '');
         $importecompra = $this->compra->compraitems()->sum('total') + $importeitem;
 
-        if ($importecompra > $this->compra->total) {
+        if (number_format($importecompra, 3, '.', '') > number_format($this->compra->total, 3, '.', '')) {
             $mensaje =  response()->json([
                 'title' => 'MONTO DE ITEMS DE COMPRA SUPERA AL MONTO TOTAL DE COMPRA !',
                 'text' => "El monto total de los items de la compra superan el monto total de la compra realizada."
@@ -154,14 +146,14 @@ class ShowResumenCompra extends Component
             }
         }
 
-        if ($importecompra >= $this->compra->total) {
+        if (number_format($importecompra, 3, '.', '') >= number_format($this->compra->total, 3, '.', '')) {
             $this->open = false;
         }
 
         $this->compra->refresh();
         $this->dispatchBrowserEvent('created');
         $this->resetValidation();
-        $this->reset(['producto_id', 'almacens', 'pricebuy', 'pricebuysoles', 'pricesale', 'descuento', 'importe', 'serie']);
+        $this->reset(['producto_id', 'almacens', 'pricebuy', 'pricebuysoles', 'pricesale', 'descuento', 'serie']);
     }
 
     public function addproducto($itemcompra)
@@ -173,28 +165,38 @@ class ShowResumenCompra extends Component
                 ->where('almacen_id', $itemcompra->almacen_id)
                 ->first();
 
+            $preciosindsct = number_format($this->pricebuy + $this->descuento, 3, '.', '');
+            $preciosindsct = number_format($this->compra->moneda->code == 'USD' ? $preciosindsct * $this->compra->tipocambio  : $preciosindsct, 3, '.', '');
+
+            $preciocompra = number_format(($this->pricebuy + $this->igv) - $this->descuento, 3, '.', '');
+            // $preciocompra =  $this->compra->moneda->code == 'USD' ? ($preciocompra * $this->compra->tipocambio) : $preciounitario;
+            // $igv = $this->compra->moneda->code == 'USD' ? $this->igv * $this->compra->tipocambio  : $this->igv;
+            // $descuento = $this->compra->moneda->code == 'USD' ? $this->descuento * $this->compra->tipocambio  : $this->descuento;
+
             $compraitem = $this->compra->compraitems()->create([
                 'oldstock' => $productoAlmacen->pivot->cantidad ?? 0,
                 'oldpricebuy' => $producto->pricebuy ?? 0,
                 'oldpricesale' => $producto->pricesale ?? 0,
                 'cantidad' => $itemcompra->cantidad,
-                'pricebuy' => $this->pricebuy,
-                'igv' => 0,
-                'descuento' => $this->descuento,
-                'subtotal' => number_format($this->pricebuy * $itemcompra->cantidad, 3, '.', ''),
-                'total' => number_format(($this->pricebuy * $itemcompra->cantidad) - ($this->descuento * $itemcompra->cantidad), 3, '.', ''),
+                'pricebuy' => number_format($preciocompra, 3, '.', ''),
+                'igv' => number_format($this->igv, 3, '.', ''),
+                'descuento' => number_format($this->descuento, 3, '.', ''),
+                'subtotal' => number_format($preciosindsct * $itemcompra->cantidad, 3, '.', ''),
+                'total' => number_format($preciocompra * $itemcompra->cantidad, 3, '.', ''),
                 'producto_id' => $this->producto_id,
                 'almacen_id' => $itemcompra->almacen_id,
                 'user_id' => auth()->user()->id,
             ]);
 
-            if ($this->compra->moneda->code == 'USD') {
-                $producto->pricebuy = $this->pricebuy * $this->compra->tipocambio;
-            } else {
-                $producto->pricebuy = $this->pricebuy;
-            }
+            // dd($compraitem);
+            $producto->pricebuy =  $this->compra->moneda->code == 'USD' ? ($preciocompra * $this->compra->tipocambio) : $preciocompra;
+            // if ($this->compra->moneda->code == 'USD') {
+            //     $producto->pricebuy = $this->pricebuy * $this->compra->tipocambio;
+            // } else {
+            //     $producto->pricebuy = $this->pricebuy;
+            // }
 
-            if ($this->compra->sucursal->empresa->uselistprice == 0) {
+            if (!$this->compra->sucursal->empresa->usarLista()) {
                 $producto->pricesale = $this->pricesale;
             }
 
@@ -317,19 +319,22 @@ class ShowResumenCompra extends Component
 
     public function saveserie(Compraitem $compraitem)
     {
-        $this->resetValidation(['serie.*']);
+        $this->resetValidation(['serie']);
         $this->serie[$compraitem->id]['serie'] = trim(mb_strtoupper($this->serie[$compraitem->id]['serie'] ?? '', 'UTF-8'));
         $this->serie[$compraitem->id]['compraitem_id'] = $compraitem->id ?? null;
 
         $this->validate([
-            "serie.$compraitem->id.compraitem_id" => ['required', 'integer', 'min:1', 'exists:compraitems,id'],
-            "serie.$compraitem->id.serie" => ['required', 'min:2', new CampoUnique('series', 'serie', null, true)],
+            "serie.*.compraitem_id" => ['required', 'integer', 'min:1', 'exists:compraitems,id'],
+            "serie.*.serie" => [
+                'required', 'min:4',
+                new CampoUnique('series', 'serie', null, true)
+            ],
         ]);
 
         $countSeries = $compraitem->series()->count();
 
         if ($countSeries >= $compraitem->cantidad) {
-            $this->addError("serie.$compraitem->id.serie", 'Serie sobrepase la cantidad ingresada en compra.');
+            $this->addError("serie.$compraitem->id.serie", 'el campo serie sobrepase la cantidad ingresada en compra.');
         } else {
             DB::beginTransaction();
             try {

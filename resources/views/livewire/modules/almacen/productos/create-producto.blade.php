@@ -1,7 +1,7 @@
-<div>
+<div x-data="createproducto">
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
-            <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid xl:grid-cols-3 gap-2" x-data="createproducto">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid xl:grid-cols-3 gap-2">
                 <div class="w-full xs:col-span-2 xl:col-span-3">
                     <x-label value="Descripcion producto :" />
                     <x-input class="block w-full disabled:bg-gray-200" wire:model.defer="name"
@@ -10,7 +10,7 @@
                 </div>
                 <div class="w-full">
                     <x-label value="Marca :" />
-                    <div class="relative" id="parentmrcpdto" x-init="selectMarca" wire:ignore>
+                    <div class="relative" id="parentmrcpdto" x-init="selectMarca">
                         <x-select class="block w-full" id="mrcpdto" x-ref="selectmarca"
                             data-minimum-results-for-search="2">
                             <x-slot name="options">
@@ -31,10 +31,15 @@
                     <x-jet-input-error for="modelo" />
                 </div>
                 <div class="w-full">
-                    <x-label value="Codigo fabricante :" />
-                    <x-input class="block w-full" wire:model.defer="codefabricante"
-                        placeholder="Cádigo del fabricante..." />
-                    <x-jet-input-error for="codefabricante" />
+                    <x-label value="SKU :" />
+                    <x-input class="block w-full" wire:model.defer="sku" placeholder="sku del producto..." />
+                    <x-jet-input-error for="sku" />
+                </div>
+                <div class="w-full">
+                    <x-label value="N° parte :" />
+                    <x-input class="block w-full" wire:model.defer="partnumber"
+                        placeholder="N° parte del producto..." />
+                    <x-jet-input-error for="partnumber" />
                 </div>
                 <div class="w-full">
                     <x-label value="Unidad medida :" />
@@ -120,7 +125,8 @@
                     <div class="w-full">
                         <x-label value="Area :" />
                         <div class="relative" id="parentarea" x-init="selectArea" wire:ignore>
-                            <x-select class="block w-full" id="area" x-ref="selectarea" data-placeholder="null">
+                            <x-select class="block w-full" id="area" x-ref="selectarea"
+                                data-placeholder="null">
                                 <x-slot name="options">
                                     @if (count($almacenareas))
                                         @foreach ($almacenareas as $item)
@@ -224,13 +230,215 @@
             </div>
         </x-form-card>
 
+        <div wire:ignore>
+            <x-ckeditor-5 id="myckeditor" wire:model.defer="descripcionproducto" />
+        </div>
+
+
+        {{-- <x-form-card titulo="DETALLE PRODUCTO">
+            <div wire:ignore>
+                <x-textarea class="w-full" id="descripcionproducto" rows="6">
+                </x-textarea>
+            </div>
+        </x-form-card> --}}
+
+        {{-- <div wire:ignore>
+            <textarea class="w-full" x-init="CKEDITOR.ClassicEditor.create($refs.ckEditor, {
+                    toolbar: {
+                        items: [
+                            'undo', 'redo', '|',
+                            'exportPDF', 'exportWord', '|',
+                            'findAndReplace', 'selectAll', '|',
+                            'heading', '|',
+                            'bold', 'italic', 'strikethrough', 'underline', 'code',
+                            'subscript',
+                            'superscript', 'removeFormat', '|',
+                            'bulletedList', 'numberedList', 'todoList', '|',
+                            'outdent', 'indent', '|',
+                            'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
+                            'highlight',
+                            '|',
+                            'alignment', '|',
+                            'link', 'insertImage', 'blockQuote', 'insertTable',
+                            'mediaEmbed',
+                            'codeBlock',
+                            'htmlEmbed', '|',
+                            'specialCharacters', 'horizontalLine', 'pageBreak', '|',
+                            'textPartLanguage', '|',
+                            'sourceEditing'
+                        ],
+                        shouldNotGroupWhenFull: true
+                    },
+                    language: 'es',
+                    list: {
+                        properties: {
+                            styles: true,
+                            startIndex: true,
+                            reversed: true
+                        }
+                    },
+                    heading: {
+                        options: [{
+                                model: 'paragraph',
+                                title: 'Paragraph',
+                                class: 'ck-heading_paragraph'
+                            },
+                            {
+                                model: 'heading1',
+                                view: 'h1',
+                                title: 'Heading 1',
+                                class: 'ck-heading_heading1'
+                            },
+                            {
+                                model: 'heading2',
+                                view: 'h2',
+                                title: 'Heading 2',
+                                class: 'ck-heading_heading2'
+                            },
+                            {
+                                model: 'heading3',
+                                view: 'h3',
+                                title: 'Heading 3',
+                                class: 'ck-heading_heading3'
+                            },
+                            {
+                                model: 'heading4',
+                                view: 'h4',
+                                title: 'Heading 4',
+                                class: 'ck-heading_heading4'
+                            },
+                            {
+                                model: 'heading5',
+                                view: 'h5',
+                                title: 'Heading 5',
+                                class: 'ck-heading_heading5'
+                            },
+                            {
+                                model: 'heading6',
+                                view: 'h6',
+                                title: 'Heading 6',
+                                class: 'ck-heading_heading6'
+                            }
+                        ]
+                    },
+                    placeholder: 'Ingresar contenido...',
+                    fontFamily: {
+                        options: [
+                            'default',
+                            'Arial, Helvetica, sans-serif',
+                            'Courier New, Courier, monospace',
+                            'Georgia, serif',
+                            'Lucida Sans Unicode, Lucida Grande, sans-serif',
+                            'Tahoma, Geneva, sans-serif',
+                            'Times New Roman, Times, serif',
+                            'Trebuchet MS, Helvetica, sans-serif',
+                            'Verdana, Geneva, sans-serif'
+                        ],
+                        supportAllValues: true
+                    },
+                    fontSize: {
+                        options: [8, 9, 10, 11, 12, 13, 14, 'default', 18, 20, 22],
+                        supportAllValues: true
+                    },
+                    htmlSupport: {
+                        allow: [{
+                            name: /.*/,
+                            attributes: true,
+                            classes: true,
+                            styles: true
+                        }]
+                    },
+                    htmlEmbed: {
+                        showPreviews: true
+                    },
+                    link: {
+                        decorators: {
+                            addTargetToExternalLinks: true,
+                            defaultProtocol: 'https://',
+                            toggleDownloadable: {
+                                mode: 'manual',
+                                label: 'Downloadable',
+                                attributes: {
+                                    download: 'file'
+                                }
+                            }
+                        }
+                    },
+                    mention: {
+                        feeds: [{
+                            marker: '@',
+                            feed: [
+                                '@apple', '@bears', '@brownie', '@cake', '@cake',
+                                '@candy',
+                                '@canes', '@chocolate', '@cookie', '@cotton',
+                                '@cream',
+                                '@cupcake', '@danish', '@donut', '@dragée',
+                                '@fruitcake',
+                                '@gingerbread', '@gummi', '@ice', '@jelly-o',
+                                '@liquorice', '@macaroon', '@marzipan', '@oat',
+                                '@pie',
+                                '@plum',
+                                '@pudding', '@sesame', '@snaps', '@soufflé',
+                                '@sugar', '@sweet', '@topping', '@wafer'
+                            ],
+                            minimumCharacters: 1
+                        }]
+                    },
+                    removePlugins: [
+                        'CKBox',
+                        'CKFinder',
+                        'EasyImage',
+                        'RealTimeCollaborativeComments',
+                        'RealTimeCollaborativeTrackChanges',
+                        'RealTimeCollaborativeRevisionHistory',
+                        'PresenceList',
+                        'Comments',
+                        'TrackChanges',
+                        'TrackChangesData',
+                        'RevisionHistory',
+                        'Pagination',
+                        'WProofreader',
+                        'MathType',
+                        'SlashCommand',
+                        'Template',
+                        'DocumentOutline',
+                        'FormatPainter',
+                        'TableOfContents'
+                    ],
+                    locale: {
+                        dateTimeFormat: date => format(date, 'dd/MM/yyyy')
+                    },
+                    table: {
+                        addClassToAllCells: true,
+                    }
+                })
+                .then(function(editor) {
+                    editor.model.document.on('change:data', () => {
+                        $dispatch('input', editor.getData())
+                    })
+                })
+                .catch(error => {
+                    console.error(error);
+                });" wire:key="ckEditor" x-ref="ckEditor"
+                wire:model.defer="descripcionproducto">
+            {!! $descripcionproducto !!}
+        </textarea>
+        </div> --}}
+
+
         <div class="w-full flex pt-4 gap-2 justify-end">
             <x-button type="submit" wire:loading.attr="disabled">{{ __('REGISTRAR') }}</x-button>
         </div>
     </form>
-    <div wire:loading.flex class="loading-overlay rounded hidden">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
         <x-loading-next />
     </div>
+
+    {{-- <script src="{{ asset('assets/vendor/ckeditor5/build/ckeditor.js') }}"></script> --}}
+
+    <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
+    {{-- <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script> --}}
+
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -241,11 +449,11 @@
                 subcategory_id: @entangle('subcategory_id').defer,
                 almacenarea_id: @entangle('almacenarea_id').defer,
                 estante_id: @entangle('estante_id').defer,
+                // descripcionproducto: @entangle('descripcionproducto').defer,
 
                 init() {
-                    // selectMarca();
-                },
 
+                },
             }));
         })
 
@@ -276,6 +484,9 @@
             });
             this.$watch("marca_id", (value) => {
                 this.selectU.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectU.select2().val(this.marca_id).trigger('change');
             });
         }
 
@@ -346,6 +557,6 @@
                 this.selectE.val(value).trigger("change");
             });
         }
-    </script>
 
+    </script>
 </div>

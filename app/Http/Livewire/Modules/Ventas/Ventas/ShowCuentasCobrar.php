@@ -27,13 +27,13 @@ class ShowCuentasCobrar extends Component
     public function render()
     {
 
-        $sumatorias = Cuota::with(['moneda', 'sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->whereHasMorph('cuotable', Venta::class)->doesntHave('cajamovimiento')
+        $sumatorias = Cuota::with(['moneda'])
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->whereHasMorph('cuotable', Venta::class)->doesntHave('cajamovimiento')
             ->selectRaw('moneda_id, SUM(amount) as total')
             ->groupBy('moneda_id')->orderBy('total', 'desc')->get();
 
-        $cuotas = Venta::withWhereHas('client', function ($query) {
+        $cuotas = Venta::with('sucursal')->withWhereHas('client', function ($query) {
             if (trim($this->search) !== '') {
                 $query->where('document', 'ILIKE', '%' . $this->search . '%')
                     ->orWhere('name', 'ILIKE', '%' . $this->search . '%');
@@ -44,7 +44,7 @@ class ShowCuentasCobrar extends Component
             if (trim($this->datepay) !== '') {
                 $query->where('expiredate', $this->datepay);
             }
-        });
+        })->where('sucursal_id', auth()->user()->sucursal_id);
 
         if (trim($this->comprobante) !== '') {
             $cuotas->where('seriecompleta', 'ILIKE', '%' . $this->comprobante . '%');

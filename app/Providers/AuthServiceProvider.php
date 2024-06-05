@@ -14,17 +14,8 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        // 'Modules\Facturacion\Entities\Comprobante' => \Modules\Facturacion\Policies\PolicyComprobante::class,
+        // 'Modules\Almacen\Entities\Compra' => \Modules\Almacen\Policies\PolicyCompra::class,
+        // 'Modules\Ventas\Entities\Venta' => \Modules\Ventas\Policies\PolicyVenta::class,
     ];
-
-    /**
-     * Register any authentication / authorization services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->registerPolicies();
-
-        //
-    }
 }

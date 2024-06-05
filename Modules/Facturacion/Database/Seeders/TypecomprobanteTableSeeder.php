@@ -23,14 +23,14 @@ class TypecomprobanteTableSeeder extends Seeder
         Typecomprobante::firstOrCreate([
             'code' => '01',
             'name' => 'FACTURA VENTA',
-            'descripcion' => 'FACTURA VENTA',
+            'descripcion' => 'FACTURA ELECTRÓNICA',
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 
         Typecomprobante::firstOrCreate([
             'code' => '03',
             'name' => 'BOLETA VENTA',
-            'descripcion' => 'BOLETA VENTA',
+            'descripcion' => 'BOLETA ELECTRÓNICA',
             'sendsunat' => Typecomprobante::SENDSUNAT,
         ]);
 

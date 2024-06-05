@@ -72,7 +72,7 @@ class CreateSucursal extends Component
         $this->authorize('admin.administracion.sucursales.create');
         if (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals()->withTrashed()->count() >= mi_empresa()->limitsucursals) {
             $mensaje = response()->json([
-                'title' => 'Has alcanzado el límite de sucursales permitido !',
+                'title' => 'Contáctese con su proveedor de servicio !',
                 'text' => "Se alcanzó el límite de sucursales permitidos por el sistema, contáctese con su proveedor del servicio."
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);

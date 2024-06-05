@@ -18,7 +18,7 @@ class Cajamovimiento extends Model
     // const EGRESO = "EGRESO";
 
     protected $fillable = [
-        'date', 'amount', 'typemovement', 'referencia', 'detalle', 'moneda_id',
+        'date', 'amount', 'totalamount', 'tipocambio', 'typemovement', 'referencia', 'detalle', 'moneda_id',
         'methodpayment_id', 'concept_id', 'monthbox_id', 'openbox_id',
         'sucursal_id', 'user_id', 'cajamovimientable_id', 'cajamovimientable_type'
     ];
@@ -39,12 +39,12 @@ class Cajamovimiento extends Model
 
     public function methodpayment(): BelongsTo
     {
-        return $this->belongsTo(methodpayment::class);
+        return $this->belongsTo(methodpayment::class)->withTrashed();
     }
 
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function moneda(): BelongsTo
@@ -54,7 +54,7 @@ class Cajamovimiento extends Model
 
     public function concept(): BelongsTo
     {
-        return $this->belongsTo(Concept::class);
+        return $this->belongsTo(Concept::class)->withTrashed();
     }
 
     public function openbox(): BelongsTo
@@ -69,7 +69,7 @@ class Cajamovimiento extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function cajamovimientable(): MorphTo
@@ -96,5 +96,4 @@ class Cajamovimiento extends Model
     {
         return $this->typemovement == MovimientosEnum::EGRESO;
     }
-    
 }

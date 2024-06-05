@@ -10,7 +10,7 @@ class CajaController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:admin.cajas')->only('index');
+        $this->middleware(['permission:admin.cajas|admin.cajas.methodpayments|admin.cajas.conceptos|admin.cajas.aperturas|admin.cajas.mensuales'])->only('index');
         $this->middleware('can:admin.cajas.methodpayments')->only('methodpayments');
         $this->middleware('can:admin.cajas.conceptos')->only('conceptos');
         $this->middleware('can:admin.cajas.aperturas')->only('aperturas');

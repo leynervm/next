@@ -16,7 +16,7 @@ class ShowProveedores extends Component
 
     public function render()
     {
-        $proveedors = Proveedor::orderBy('name', 'asc')->paginate();
+        $proveedors = Proveedor::with(['proveedortype', 'telephones', 'ubigeo'])->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.proveedores.show-proveedores', compact('proveedors'));
     }
 }

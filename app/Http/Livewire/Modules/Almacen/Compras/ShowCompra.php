@@ -7,10 +7,12 @@ use App\Models\Cajamovimiento;
 use App\Models\Concept;
 use App\Models\Kardex;
 use App\Models\Methodpayment;
+use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Almacen\Entities\Compra;
 
@@ -21,14 +23,16 @@ class ShowCompra extends Component
 
     public $compra;
     public $open = false;
+    public $showtipocambio = false;
     public $paymentactual = 0;
     public $pendiente = 0;
-    public $openbox, $monthbox, $methodpayment_id, $concept_id, $detalle;
-
+    public $openbox, $monthbox, $methodpayment_id, $concept_id, $detalle, $moneda_id;
+    public $totalamount, $tipocambio;
 
     public function mount(Compra $compra)
     {
         $this->compra = $compra;
+        $this->moneda_id = $compra->moneda_id;
         $this->openbox = Openbox::mybox(auth()->user()->sucursal_id)->first();
         $this->monthbox = Monthbox::usando($this->compra->sucursal_id)->first();
         $this->pendiente = $compra->total - $this->compra->cajamovimientos()->sum('amount');
@@ -37,7 +41,17 @@ class ShowCompra extends Component
     public function render()
     {
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        return view('livewire.modules.almacen.compras.show-compra', compact('methodpayments'));
+        if ($this->monthbox) {
+            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+        } else {
+            $diferencias = [];
+        }
+
+        return view('livewire.modules.almacen.compras.show-compra', compact('methodpayments', 'diferencias'));
     }
 
     public function delete()
@@ -110,9 +124,12 @@ class ShowCompra extends Component
     public function openmodal()
     {
         $this->authorize('admin.almacen.compras.pagos');
+        $this->reset(['tipocambio', 'totalamount', 'showtipocambio', 'moneda_id']);
+        $this->resetValidation();
         $this->pendiente = $this->compra->total - $this->compra->cajamovimientos()->sum('amount');
         $this->paymentactual = number_format($this->pendiente, 3, '.', '');
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->moneda_id = $this->compra->moneda_id;
         $this->open = true;
     }
 
@@ -138,15 +155,28 @@ class ShowCompra extends Component
             return false;
         }
 
+        $this->totalamount = number_format($this->paymentactual, 3, '.', '');
         $this->concept_id = Concept::Compra()->first()->id ?? null;
         $this->validate([
             'paymentactual' => ['required', 'numeric', 'min:1', 'decimal:0,4', 'lte:' . $this->pendiente, 'regex:/^\d{0,8}(\.\d{0,4})?$/',],
             'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
+            'totalamount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'tipocambio' => [
+                'nullable',
+                Rule::requiredIf($this->showtipocambio),
+                'numeric', 'min:0', 'gt:0', 'decimal:0,3'
+            ],
+            'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
+            'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'concept_id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
             'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
             'detalle' => ['nullable'],
         ]);
+        if ($this->showtipocambio) {
+            $monedaConvertir = $this->compra->moneda->code == 'USD' ? 'PEN' : 'USD';
+            $this->totalamount = convertMoneda($this->paymentactual, $monedaConvertir, $this->tipocambio);
+        }
 
         try {
 
@@ -156,12 +186,13 @@ class ShowCompra extends Component
                 $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->compra->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->where('moneda_id', $this->compra->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
+                ->where('moneda_id', $this->moneda_id)
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
             $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($saldocaja - $this->paymentactual) < 0) {
+
+            if (($saldocaja - $this->totalamount) < 0) {
                 $mensaje =  response()->json([
                     'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA MEDIANTE ' . $forma . ' !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
@@ -170,10 +201,12 @@ class ShowCompra extends Component
                 return false;
             }
 
-            $this->compra->savePayment(
+            $payment = $this->compra->savePayment(
                 $this->compra->sucursal_id,
                 number_format($this->paymentactual, 3, '.', ''),
-                $this->compra->moneda_id,
+                $this->totalamount,
+                $this->showtipocambio ? number_format($this->tipocambio, 3, '.', '') : null,
+                $this->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::EGRESO->value,
                 $this->concept_id,
@@ -182,9 +215,10 @@ class ShowCompra extends Component
                 $this->compra->referencia,
                 trim($this->detalle)
             );
+
             DB::commit();
             $this->resetValidation();
-            $this->reset(['open', 'methodpayment_id', 'detalle', 'paymentactual']);
+            $this->reset(['open', 'methodpayment_id', 'detalle', 'paymentactual', 'tipocambio', 'totalamount', 'showtipocambio', 'moneda_id']);
             $this->compra->refresh();
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {

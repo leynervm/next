@@ -16,14 +16,21 @@ class CreateTransaccionsTable extends Migration
         Schema::create('transaccions', function (Blueprint $table) {
             $table->id();
             $table->dateTime("date");
-            $table->decimal("amount", 10, 2);
+            $table->unsignedDecimal("amount", 18, 4);
+            $table->string("descripcion", 255);
             $table->string("idtransaccion", 255);
-            $table->integer("confirmpayment");
-            $table->bigInteger("ventaonline_id");
-            $table->bigInteger("user_id");
-            $table->foreign('ventaonline_id')->on('ventaonlines')->references('id');
+            $table->string("signature", 255);
+            $table->string("status");
+            $table->string("code");
+            $table->string("card");
+            $table->string("cardtype");
+            $table->string("currency");
+            $table->string("idunico");
+            $table->string("brand");
+            $table->unsignedBigInteger("order_id");
+            $table->unsignedBigInteger("user_id");
+            $table->foreign('order_id')->on('orders')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

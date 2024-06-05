@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\GetClient;
+use App\Models\Cajamovimiento;
 use App\Models\Employer;
 use App\Models\Empresa;
 use Exception;

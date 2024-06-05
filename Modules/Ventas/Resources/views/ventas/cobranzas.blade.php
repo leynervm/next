@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <x-slot name="breadcrumb">
 
@@ -39,4 +39,4 @@
         <livewire:modules.ventas.ventas.show-cuentas-cobrar />
     </div>
 
-</x-app-layout>
+</x-admin-layout>

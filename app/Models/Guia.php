@@ -117,7 +117,7 @@ class Guia extends Model
 
     public function tvitems(): MorphMany
     {
-        return $this->morphMany(Tvitem::class, 'tvitemable');
+        return $this->morphMany(Tvitem::class, 'tvitemable')->orderBy('id', 'asc');
     }
 
     public function transportvehiculos(): HasMany
@@ -154,12 +154,12 @@ class Guia extends Model
 
     public function seriecomprobante(): BelongsTo
     {
-        return $this->belongsTo(Seriecomprobante::class);
+        return $this->belongsTo(Seriecomprobante::class)->withTrashed();
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function ubigeoorigen(): BelongsTo
@@ -180,5 +180,10 @@ class Guia extends Model
     public function isSendSunat()
     {
         return $this->codesunat == self::ENVIADO_SUNAT;
+    }
+
+    public function isVehiculosml()
+    {
+        return $this->indicadorvehiculosml == '1';
     }
 }

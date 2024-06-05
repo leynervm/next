@@ -48,14 +48,14 @@ class CreateVenta extends Component
         'searchmarca' => ['except' => '', 'as' => 'marca'],
     ];
 
-    protected $messages = [
-        'cart.*.almacen_id.required' => 'Almacen del producto requerido',
-        'cart.*.price.required' => 'Precio del producto requerido',
-        'cart.*.price.min' => 'Precio del producto deber se mayor a 0.0001',
-        'cart.*.cantidad.required' => 'Cantidad del producto requerido',
-        'cart.*.cantidad.min' => 'Cantidad del producto debe ser mayor a 0',
-        'cart.*.serie.required' => 'Serie del producto requerido',
-    ];
+    // protected $messages = [
+    //     'cart.*.almacen_id.required' => 'Almacen del producto requerido',
+    //     'cart.*.price.required' => 'Precio del producto requerido',
+    //     'cart.*.price.min' => 'Precio del producto deber se mayor a 0.0001',
+    //     'cart.*.cantidad.required' => 'Cantidad del producto requerido',
+    //     'cart.*.cantidad.min' => 'Cantidad del producto debe ser mayor a 0',
+    //     'cart.*.serie.required' => 'Serie del producto requerido',
+    // ];
 
     public function mount($pricetype, Moneda $moneda)
     {
@@ -487,17 +487,17 @@ class CreateVenta extends Component
         $this->cart[$producto->id]["serie"] = $serie;
         $this->cart[$producto->id]["cantidad"] = $cantidad;
         $validateDate = $this->validate([
-            "cart.$producto->id.price" => [
+            "cart.*.price" => [
                 'required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0',
             ],
-            "cart.$producto->id.almacen_id" => [
+            "cart.*.almacen_id" => [
                 'required', 'integer', 'exists:almacens,id', new ValidateStock($producto->id, $this->almacen_id)
             ],
-            "cart.$producto->id.cantidad" => [
+            "cart.*.cantidad" => [
                 'required', 'numeric', 'min:1', 'integer',
                 new ValidateStock($producto->id, $this->almacen_id, $cantidad)
             ],
-            "cart.$producto->id.serie" => [
+            "cart.*.serie" => [
                 'nullable', Rule::requiredIf($producto->seriesdisponibles()->where('almacen_id', $this->almacen_id)->exists()),
                 'string', 'min:4',
                 // new ValidateSerieRequerida($producto->id, $this->almacen_id, $serie),

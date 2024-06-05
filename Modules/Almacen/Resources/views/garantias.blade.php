@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.almacen')
             <x-link-breadcrumb text="ALMACÉN" route="admin.almacen">
@@ -40,4 +40,4 @@
             <livewire:almacen::garantias.show-type-garantias />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

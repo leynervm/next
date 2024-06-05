@@ -46,6 +46,14 @@
                             <div class="flex items-center justify-start gap-1">
                                 @if ($item->default)
                                     <x-icon-default />
+                                @else
+                                    @can('admin.administracion.sucursales.edit')
+                                        @if (!$item->isDefault() && !$item->trashed())
+                                            <x-icon-default onclick="confirmSetDefault({{ $item }})"
+                                                wire:loading.attr="disabled"
+                                                class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
+                                        @endif
+                                    @endcan
                                 @endif
 
                                 @if ($item->trashed())
@@ -84,18 +92,10 @@
                         @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
                             'admin.administracion.sucursales.restore'])
                             <td class="p-2 align-middle flex justify-end items-center gap-2 gap-x-5 ">
-                                @can('admin.administracion.sucursales.edit')
-                                    @if ($item->default == 0 && $item->deleted_at == null)
-                                        <x-icon-default onclick="confirmSetDefault({{ $item }})"
-                                            wire:loading.attr="disabled"
-                                            class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
-                                    @endif
-                                @endcan
-
                                 @if ($item->trashed())
                                     @can('admin.administracion.sucursales.restore')
-                                        <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200" onclick="restoreSucursal({{ $item }})"
-                                            wire:loading.attr="disabled"
+                                        <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200"
+                                            onclick="restoreSucursal({{ $item }})" wire:loading.attr="disabled"
                                             wire:key="restoresuc_{{ $item->id }}">DESACTIVAR</x-button-toggle>
                                     @endcan
                                 @else

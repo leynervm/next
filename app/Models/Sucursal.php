@@ -36,19 +36,24 @@ class Sucursal extends Model
         $this->attributes['direccion'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function scopeDefault($query)
+    {
+        return $query->where('default', self::DEFAULT);
+    }
+
     public function scopeActives($query)
     {
-        return $query->where('status', $this::ACTIVO);
+        return $query->where('status', self::ACTIVO);
     }
 
     public function isDefault()
     {
-        return $this->default == $this::DEFAULT;
+        return $this->default == self::DEFAULT;
     }
 
     public function isActive()
     {
-        return $this->status == $this::ACTIVO;
+        return $this->status == self::ACTIVO;
     }
 
     public function ubigeo(): BelongsTo
@@ -58,7 +63,7 @@ class Sucursal extends Model
 
     public function empresa(): BelongsTo
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Empresa::class)->withTrashed();
     }
 
     public function almacens(): BelongsToMany
@@ -74,7 +79,7 @@ class Sucursal extends Model
 
     public function almacenDefault()
     {
-        return $this->almacens()->where('default', $this::DEFAULT);
+        return $this->almacens()->where('default', self::DEFAULT);
     }
 
     public function boxes(): HasMany
@@ -90,6 +95,11 @@ class Sucursal extends Model
     public function comprobantes(): HasMany
     {
         return $this->hasMany(Comprobante::class);
+    }
+
+    public function openboxes(): HasMany
+    {
+        return $this->hasMany(Openbox::class);
     }
 
     public function guias(): HasMany

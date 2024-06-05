@@ -19,30 +19,19 @@ class ShowGuias extends Component
     public $serie = '';
     public $date = '';
     public $dateto = '';
-    public $searchuser = '';
-    public $searchsucursal = '';
 
     protected $queryString = [
         'search' => ['except' => '', 'as' => 'destinatario'],
         'serie' => ['except' => '', 'as' => 'serie-guia'],
         'date' => ['except' => '', 'as' => 'fecha'],
         'dateto' => ['except' => '', 'as' => 'hasta'],
-        'searchsucursal' => ['except' => '', 'as' => 'sucursal'],
-        // 'searchuser' => ['except' => '', 'as' => 'usuario'],
     ];
 
     public function render()
     {
 
-        $sucursals = Sucursal::withTrashed()->whereHas('guias')->orderBy('name', 'asc')->get();
-        $guias = Guia::with(['guiable', 'sucursal'])->withWhereHas('sucursal', function ($query) {
-            // $query->withTrashed();
-            if ($this->searchsucursal !== '') {
-                $query->where('id', $this->searchsucursal);
-            } else {
-                $query->where('id', auth()->user()->sucursal_id);
-            }
-        });
+        $guias = Guia::with(['guiable', 'sucursal', 'tvitems', 'client'])
+            ->where('sucursal_id',  auth()->user()->sucursal_id);
 
         if ($this->serie !== '') {
             $guias->where('seriecompleta', 'ilike', '%' . $this->serie . '%');
@@ -63,7 +52,7 @@ class ShowGuias extends Component
 
         $guias = $guias->orderBy('id', 'desc')->paginate();
 
-        return view('livewire.modules.facturacion.guias.show-guias', compact('guias', 'sucursals'));
+        return view('livewire.modules.facturacion.guias.show-guias', compact('guias'));
     }
 
     public function enviarsunat($id)

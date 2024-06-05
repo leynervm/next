@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.almacen')
             <x-link-breadcrumb text="ALMACÉN" route="admin.almacen">
@@ -45,7 +45,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full flex flex-col gap-8 mx-auto xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
+    <div class="w-full flex flex-col gap-8 mx-auto xl:max-w-7xl">
         <div>
             <livewire:modules.almacen.compras.show-compra :compra="$compra" />
         </div>
@@ -60,4 +60,4 @@
             <livewire:modules.almacen.compras.show-resumen-compra :compra="$compra" />
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

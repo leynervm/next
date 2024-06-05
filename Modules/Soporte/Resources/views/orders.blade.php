@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     @if (count($areas))
         <div class="flex flex-wrap gap-3">
@@ -17,4 +17,4 @@
         </div>
     @endif
 
-</x-app-layout>
+</x-admin-layout>

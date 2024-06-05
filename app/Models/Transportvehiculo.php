@@ -49,5 +49,4 @@ class Transportvehiculo extends Model
     {
         return $this->principal == $this::SECUNDARIO;
     }
-
 }

@@ -25,6 +25,7 @@ class Empresa extends Model
         'clientid', 'clientsecret', 'limitsucursals'
     ];
 
+    const DEFAULT = '1';
     const PRODUCCION = '1';
     const OPTION_ACTIVE = '1';
 
@@ -71,6 +72,11 @@ class Empresa extends Model
     public function isProduccion()
     {
         return $this->sendmode == self::OPTION_ACTIVE;
+    }
+
+    public function isDefault()
+    {
+        return $this->default == self::DEFAULT;
     }
 
     public function usarlista()

@@ -22,6 +22,7 @@ class PermissionSeeder extends Seeder
         if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
             $desarrollador = Role::firstOrCreate(['name' => 'DESARROLLADOR']);
             $admin = Role::firstOrCreate(['name' => 'ADMINISTRADOR']);
+           
             $nameModule = Module::isEnabled('Almacen') ? 'Almacén' : 'Ventas';
 
             Permission::updateOrCreate([

@@ -3,14 +3,17 @@
 use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Laravel\Jetstream\Http\Controllers\Livewire\UserProfileController;
 use Nwidart\Modules\Facades\Module;
 
 /*
@@ -34,7 +37,7 @@ Route::get('/', [HomeController::class, 'index'])->name('admin');
 Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::get('/create', [UserController::class, 'create'])->name('.create');
-    Route::get('/edit/{user}', [UserController::class, 'edit'])->name('.edit');
+    Route::get('/{user}/edit', [UserController::class, 'edit'])->name('.edit');
     Route::get('/historial', [UserController::class, 'history'])->name('.history');
     Route::get('/historial-reset-password', [UserController::class, 'historypassword'])->name('.historypassword');
     // Route::post('/users/store', [UserController::class, 'store'])->name('admin.users.store');
@@ -84,8 +87,8 @@ Route::prefix('administracion')->name('admin.administracion')->group(function ()
     // Route::get('/personal', [HomeController::class, 'employers'])->name('.employers')->middleware(['verifycompany']);
     // Route::get('/personal/{employer:document}/historial-pagos', [HomeController::class, 'payments'])->name('.employers.payments')->middleware(['verifycompany']);
 
-    Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units');
-    Route::get('/areas', [HomeController::class, 'areas'])->name('.areas');
+    Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units')->middleware(['verifycompany']);
+    Route::get('/areas', [HomeController::class, 'areas'])->name('.areas')->middleware(['verifycompany']);
 });
 
 
@@ -103,6 +106,11 @@ if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
     Route::get('/almacen/productos/create', [ProductoController::class, 'create'])->name('admin.almacen.productos.create')->middleware(['verifysucursal', 'verifyalmacen']);
     Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.edit')->middleware(['verifysucursal']);
 }
+
+Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class, 'imprimirticket'])->name('admin.payments.print');
+
+
+// Route::get('/email/{comprobante:seriecompleta}/enviar-xml', [EmailController::class, 'enviarxml'])->name('admin.email.enviarxml');
 
 
 // });

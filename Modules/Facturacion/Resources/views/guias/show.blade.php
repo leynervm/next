@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="FACTURACIÓN" route="admin.facturacion">
@@ -53,4 +53,4 @@
         {{-- </div> --}}
     </div>
 
-</x-app-layout>
+</x-admin-layout>

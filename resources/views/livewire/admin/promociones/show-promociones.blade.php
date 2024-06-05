@@ -98,7 +98,7 @@
                                     @endphp
 
                                     @if ($precios->existsrango)
-                                        @if (count($item->producto->descuentosactivos))
+                                        @if ($item->producto->promocions()->descuentos()->disponibles()->exists())
                                             <x-label-price>
                                                 S/.
                                                 {{ number_format($precios->pricewithdescount, $precios->decimal, '.', ', ') }}
@@ -145,7 +145,7 @@
                                         S/. {{ number_format($price ?? 0, $precios->decimal, '.', ', ') }}
                                         <small>SOLES</small>
                                     </x-label-price>
-                                    @if (count($item->producto->descuentosactivos))
+                                    @if (count($item->producto->promocions()->descuentos()->disponibles()))
                                         <x-span-text :text="'ANTES : S/. ' .
                                             number_format($precios->pricesale ?? 0, $precios->decimal, '.', ', ')" class="leading-3 !tracking-normal"
                                             type="red" />
@@ -385,8 +385,8 @@
 
                         @if ($item->isFinalizado())
                             @can('admin.promociones.delete')
-                                <x-button-delete onclick="confirmDelete({{ $item->id }})"
-                                    wire:loading.attr="disabled" />
+                                {{-- <x-button-delete onclick="confirmDelete({{ $item->id }})"
+                                    wire:loading.attr="disabled" /> --}}
                             @endcan
                         @else
                             @can('admin.promociones.edit')

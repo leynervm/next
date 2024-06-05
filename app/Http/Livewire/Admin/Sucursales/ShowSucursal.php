@@ -76,9 +76,4 @@ class ShowSucursal extends Component
             throw $e;
         }
     }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-show-sucursal');
-    }
 }

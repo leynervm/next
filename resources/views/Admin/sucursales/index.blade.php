@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -32,14 +32,14 @@
     </x-slot>
 
     <div class="w-full flex flex-wrap gap-2 items-start">
-        @if (is_null(mi_empresa()->limitsucursals) ||
-                (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals()->withTrashed()->count() < mi_empresa()->limitsucursals))
+        {{-- @if (is_null(mi_empresa()->limitsucursals) ||
+                (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals()->withTrashed()->count() < mi_empresa()->limitsucursals)) --}}
             @can('admin.administracion.sucursales.create')
                 <div class="inline-block">
                     <livewire:admin.sucursales.create-sucursal :empresa="$empresa">
                 </div>
             @endcan
-        @endif
+        {{-- @endif --}}
 
         <x-minicard :title="null">
             @if (is_null(mi_empresa()->limitsucursals))
@@ -59,4 +59,4 @@
             <livewire:admin.sucursales.show-sucursales>
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

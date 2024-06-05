@@ -6,11 +6,11 @@
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
                         @if (auth()->user()->isAdmin())
-                            <x-input class="block w-full" wire:keydown.enter="searchclient" type="number"
+                            <x-input class="flex-1 block w-full" wire:keydown.enter="searchclient" type="number"
                                 wire:model.defer="empresa.document" onkeypress="return validarNumero(event, 11)"
                                 onkeydown="disabledEnter(event)" />
                         @else
-                            <x-disabled-text :text="$empresa->document" class="w-full block" />
+                            <x-disabled-text :text="$empresa->document" class="flex-1 w-full block" />
                         @endif
 
                         <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">

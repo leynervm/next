@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay rounded hidden overflow-hidden fixed">
+        <x-loading-next />
+    </div>
+
     @if ($users->hasPages())
         <div class="pb-2">
             {{ $users->onEachSide(0)->links('livewire::pagination-default') }}
@@ -22,24 +26,26 @@
             </div>
         </div>
 
-        @if (count($sucursals) > 1)
-            <div class="w-full xs:max-w-sm">
-                <x-label value="Filtrar Sucursal :" />
-                <div class="relative" id="parentsearchsucursal" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="selectSearchsucursal">
-                    <x-select class="block w-full" x-ref="searchsuc" id="searchsucursal"
-                        data-minimum-results-for-search="3" data-placeholder="null">
-                        <x-slot name="options">
-                            @foreach ($sucursals as $item)
-                                <option value="{{ $item->id }}">
-                                    {{ $item->name }}
-                                </option>
-                            @endforeach
-                        </x-slot>
-                    </x-select>
-                    <x-icon-select />
+        @if (auth()->user()->isAdmin())
+            @if (count($sucursals) > 1)
+                <div class="w-full xs:max-w-sm">
+                    <x-label value="Filtrar Sucursal :" />
+                    <div class="relative" id="parentsearchsucursal" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="selectSearchsucursal">
+                        <x-select class="block w-full" x-ref="searchsuc" id="searchsucursal"
+                            data-minimum-results-for-search="3" data-placeholder="null">
+                            <x-slot name="options">
+                                @foreach ($sucursals as $item)
+                                    <option value="{{ $item->id }}">
+                                        {{ $item->name }}
+                                    </option>
+                                @endforeach
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="searchsucursal" />
                 </div>
-                <x-jet-input-error for="searchsucursal" />
-            </div>
+            @endif
         @endif
     </div>
 
@@ -64,21 +70,17 @@
                 </th>
                 <th scope="col" class="p-2 font-medium text-left">
                     CORREO</th>
-
                 <th scope="col" class="p-2 font-medium">
                     VERIFICACIÓN</th>
-
-                <th scope="col" class="p-2 font-medium">
-                    STATUS</th>
-
                 <th scope="col" class="p-2 font-medium">
                     ACCESO</th>
                 <th scope="col" class="p-2 font-medium">ROLES</th>
                 <th scope="col" class="p-2 font-medium">
                     SUCURSAL</th>
-
                 <th scope="col" class="p-2 font-medium text-left">
                     TEMA</th>
+                <th scope="col" class="p-2 font-medium">
+                    STATUS</th>
                 @can('admin.users.delete')
                     <th scope="col" class="p-2 relative">
                         <span class="sr-only">OPCIONES</span>
@@ -100,18 +102,25 @@
                                 </div>
 
                                 @can('admin.users.edit')
-                                    <a class="w-full inline-block text-linktable hover:text-hoverlinktable"
-                                        href="{{ route('admin.users.edit', $item) }}">
-                                        {{ $item->document }}
-                                        <p>{{ $item->name }}</p>
-                                        {{-- @if (Module::isEnabled('Employer')) --}}
-                                        @if ($item->employer)
-                                            @if ($item->employer->areawork)
-                                                <p>AREA : {{ $item->employer->areawork->name }}</p>
+                                    @if ($item->trashed())
+                                        <div>
+                                            <p class="w-full block text-linktable">{{ $item->document }}</p>
+                                            <p class="w-full block text-linktable">{{ $item->name }}</p>
+                                        </div>
+                                    @else
+                                        <a class="w-full inline-block text-linktable hover:text-hoverlinktable"
+                                            href="{{ route('admin.users.edit', $item) }}">
+                                            {{ $item->document }}
+                                            <p>{{ $item->name }}</p>
+                                            @if (Module::isEnabled('Employer'))
+                                                @if ($item->employer)
+                                                    @if ($item->employer->areawork)
+                                                        <p>AREA : {{ $item->employer->areawork->name }}</p>
+                                                    @endif
+                                                @endif
                                             @endif
-                                        @endif
-                                        {{-- @endif --}}
-                                    </a>
+                                        </a>
+                                    @endif
                                 @endcan
 
                                 @cannot('admin.users.edit')
@@ -136,14 +145,6 @@
                         </td>
 
                         <td class="p-2 text-center">
-                            @if ($item->deleted_at)
-                                <x-span-text text="BAJA" type="red" class="leading-3 !tracking-normal" />
-                            @else
-                                <x-span-text text="ACTIVO" type="green" class="leading-3 !tracking-normal" />
-                            @endif
-                        </td>
-
-                        <td class="p-2 text-center">
                             @if ($item->isAdmin())
                                 <x-span-text text="SUPER ADMIN" type="blue"
                                     class="leading-3 !tracking-normal inline-block" />
@@ -162,10 +163,10 @@
                                         <div
                                             class="inline-flex items-center justify-center gap-1 bg-fondospancardproduct text-textspancardproduct p-1 rounded-md">
                                             <span class="w-3 h-3 block">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full scale-125"
-                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                    stroke-width="1.5" stroke-linecap="round"
-                                                    stroke-linejoin="round">
+                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                    class="w-full h-full scale-125" viewBox="0 0 24 24"
+                                                    fill="none" stroke="currentColor" stroke-width="1.5"
+                                                    stroke-linecap="round" stroke-linejoin="round">
                                                     <path
                                                         d="M12.5 22H6.59087C5.04549 22 3.81631 21.248 2.71266 20.1966C0.453365 18.0441 4.1628 16.324 5.57757 15.4816C7.97679 14.053 10.8425 13.6575 13.5 14.2952">
                                                     </path>
@@ -183,7 +184,6 @@
                                 </div>
                             @endif
                         </td>
-
                         <td class="p-2 text-center">
                             @if ($item->sucursal)
                                 {{ $item->sucursal->name }}
@@ -195,23 +195,37 @@
                         <td class="p-2">
                             {{ $item->theme_id }}
                         </td>
-                        @can('admin.users.delete')
+                        <td class="p-2 text-center">
+                            @if ($item->trashed())
+                                <x-span-text text="BAJA" type="red" class="leading-3 !tracking-normal" />
+                            @else
+                                <x-span-text text="ACTIVO" type="green" class="leading-3 !tracking-normal" />
+                            @endif
+                        </td>
+                        @canany(['admin.users.delete', 'admin.users.restore'])
                             <td class="p-2 text-center">
                                 @if (!$item->isAdmin())
-                                    <x-button-delete wire:loading.attr="disabled"
-                                        onclick="confirmDelete({{ $item }})" />
+                                    @if ($item->trashed())
+                                        <p class="text-center">
+                                            <x-span-text text="ELIMINADO" class="leading-3 !tracking-normal" />
+                                        </p>
+                                        @can('admin.users.restore')
+                                            <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200"
+                                                onclick="restoreUser({{ $item }})" wire:loading.attr="disabled"
+                                                wire:key="restoreuser{{ $item->id }}">DESACTIVAR</x-button-toggle>
+                                        @endcan
+                                    @else
+                                        <x-button-delete wire:loading.attr="disabled"
+                                            onclick="confirmDelete({{ $item }})"
+                                            wire:key="deleteuser_{{ $item->id }}" />
+                                    @endif
                                 @endif
                             </td>
-                        @endcan
+                        @endcanany
                     </tr>
                 @endforeach
             </x-slot>
         @endif
-        <x-slot name="loading">
-            <div wire:loading.flex class="loading-overlay rounded hidden overflow-hidden">
-                <x-loading-next />
-            </div>
-        </x-slot>
     </x-table>
 
     <script>
@@ -228,6 +242,23 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     @this.delete(user.id);
+                }
+            })
+        }
+
+        function restoreUser(user) {
+            swal.fire({
+                title: 'Habilitar usuario ' + user.name + ' ?',
+                text: "Se actualizará un registro en la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.restoreuser(user.id);
                 }
             })
         }

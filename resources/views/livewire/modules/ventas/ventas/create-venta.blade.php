@@ -5,8 +5,8 @@
 
     <x-form-card titulo="PRODUCTOS">
         <div class="w-full">
-            <div class="w-full flex flex-col gap-2 md:flex-row md:flex-shrink">
-                <div class="w-full flex-shrink-1">
+            <div class="w-full flex flex-col gap-2 md:flex-row">
+                <div class="w-full flex-1">
                     <x-label value="Descripcion producto :" />
                     <x-input class="block w-full disabled:bg-gray-200" wire:model.lazy="search"
                         placeholder="Buscar producto..." />
@@ -15,7 +15,7 @@
 
                 @if ($empresa->usarLista())
                     @if (count($pricetypes) > 1)
-                        <div class="w-full md:w-64 lg:w-80">
+                        <div class="w-full md:flex-shrink-0 md:w-64 lg:w-80 ">
                             <x-label value="Lista precios :" />
                             <div id="parentventapricetype_id" class="relative" x-data="{ pricetype_id: @entangle('pricetype_id') }"
                                 x-init="select2Pricetype">
@@ -136,30 +136,14 @@
                         <form id="cardproduct{{ $item->id }}" class="w-full xs:w-auto"
                             wire:submit.prevent="addtocar(Object.fromEntries(new FormData($event.target)), {{ $item->id }})">
                             @php
-                                $image = null;
+                                $image = $item->getImageURL();
+                                $promocion = $item->getPromocionDisponible();
                                 $almacen = null;
-                                $promocion = null;
                                 $sumatoriacombos = 0;
-
-                                if (count($item->images) > 0) {
-                                    if ($item->images()->default()->exists()) {
-                                        $image = asset('storage/productos/' . $item->images()->default()->first()->url);
-                                    } else {
-                                        $image = asset('storage/productos/' . $item->images->first()->url);
-                                    }
-                                }
 
                                 if ($almacendefault->name) {
                                     $stock = formatDecimalOrInteger($item->almacens->first()->pivot->cantidad);
                                     $almacenStock = $almacendefault->name . " [$stock " . $item->unit->name . ']';
-                                }
-
-                                $firstpromocion = count($item->promocions) > 0 ? $item->promocions->first() : null;
-                                if ($firstpromocion) {
-                                    $promocion =
-                                        $firstpromocion->isDisponible() && $firstpromocion->isAvailable()
-                                            ? $firstpromocion
-                                            : null;
                                 }
 
                                 $precios = getPrecio(
@@ -297,13 +281,13 @@
                                             <x-slot name="footer">
                                                 <div class="w-full flex items-end gap-1 justify-end mt-1">
                                                     @if (count($item->seriesdisponibles) > 0)
-                                                        <div class="w-full">
+                                                        <div class="w-full flex-1">
                                                             <x-label value="Ingresar serie :" />
                                                             <x-input class="block w-full p-2 disabled:bg-gray-200"
                                                                 name="serie" required min="3" />
                                                         </div>
                                                     @else
-                                                        <div class="w-full">
+                                                        <div class="w-full flex-1">
                                                             <x-label value="Cantidad :" />
                                                             <x-input class="block w-full p-2 disabled:bg-gray-200"
                                                                 name="cantidad" type="number" min="1"

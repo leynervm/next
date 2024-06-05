@@ -62,10 +62,10 @@
             </div>
 
 
-            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2" x-data="cajamovimiento">
                 <div class="w-full">
                     <x-label value="Monto :" />
-                    <x-input class="block w-full" wire:model.defer="amount" type="number" placeholder="0.00"
+                    <x-input class="block w-full" x-model="amount" @change="calcular" type="number" placeholder="0.00"
                         onkeypress="return validarDecimal(event, 9)" step="0.001" />
                     <x-jet-input-error for="amount" />
                 </div>
@@ -78,7 +78,9 @@
                             <x-slot name="options">
                                 @if (count($monedas) > 0)
                                     @foreach ($monedas as $item)
-                                        <option value="{{ $item->id }}">{{ $item->currency }}</option>
+                                        <option value="{{ $item->id }}" data-code="{{ $item->code }}"
+                                            data-simbolo="{{ $item->simbolo }}" data-currency="{{ $item->currency }}">
+                                            {{ $item->currency }}</option>
                                     @endforeach
                                 @endif
                             </x-slot>
@@ -87,6 +89,33 @@
                     </div>
                     <x-jet-input-error for="moneda_id" />
                 </div>
+
+                {{-- <div class="w-full">
+                    <x-label textSize="[10px]"
+                        class="inline-flex items-end tracking-normal font-semibold gap-1 cursor-pointer text-textspancardproduct">
+                        <x-input x-model="showtipocambio" name="tipocambio" type="checkbox" id="tipocambio" />
+                        USAR TIPO CAMBIO
+                    </x-label>
+
+                    <div class="w-full" x-show="showtipocambio">
+                        <x-label value="Tipo cambio :" />
+                        <x-input class="block w-full" x-model="tipocambio" @change="calcular" type="number"
+                            placeholder="0.00" onkeypress="return validarDecimal(event, 7)" step="0.001"
+                            min="0.001" />
+                        <x-jet-input-error for="tipocambio" />
+
+                        <div class="w-full text-xs text-end text-neutral-500 font-semibold" x-show="totalamount > 0">
+                            <small class="inline-block" x-text="simbolo"></small>
+                            <template x-if="totalamount > 0">
+                                <h1 x-text="totalamount" class="text-2xl inline-block"></h1>
+                            </template>
+                            <template x-if="totalamount == null">
+                                <small class="inline-block text-colorerror">SELECCIONAR TIPO DE MONEDA...</small>
+                            </template>
+                            <small class="inline-block" x-text="currency"></small>
+                        </div>
+                    </div>
+                </div> --}}
 
                 <div class="w-full">
                     <x-label value="Forma pago :" />
@@ -114,7 +143,8 @@
                             <x-slot name="options">
                                 @if (count($concepts) > 0)
                                     @foreach ($concepts as $item)
-                                        <option value="{{ $item->id }}" title="{{ $item->typemovement->value }}">
+                                        <option value="{{ $item->id }}"
+                                            title="{{ $item->typemovement->value }}">
                                             {{ $item->name }}</option>
                                     @endforeach
                                 @endif
@@ -142,11 +172,53 @@
     </x-jet-dialog-modal>
 
     <script>
-        // document.addEventListener('alpine:init', () => {
-        //     Alpine.data('datapayment', () => ({
-        //         concept_id: @entangle('concept.id').defer,
-        //     }))
-        // })
+        // function totalamount() {
+        //     return {
+        //         showtipocambio: true,
+        //         amount: @entangle('amunt').defer,
+        //         totalamount: '0.00',
+        //         calcular(value) {
+        //             this.modelOpen = true;
+        //             document.body.style.overflow = 'hidden';
+        //         },
+        //     }
+        // }
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('cajamovimiento', () => ({
+                showtipocambio: @entangle('showtipocambio').defer,
+                amount: @entangle('amount').defer,
+                tipocambio: @entangle('tipocambio').defer,
+                totalamount: @entangle('totalamount').defer,
+                simbolo: null,
+                code: null,
+                currency: null,
+
+                init() {
+                    this.$watch("showtipocambio", (value) => {
+                        this.tipocambio = null;
+                        this.totalamount = '0.000';
+                    });
+                },
+                calcular() {
+                    console.log(this.code);
+
+                    if (this.code == 'PEN') {
+                        if (toDecimal(this.amount) > 0 && toDecimal(this.tipocambio) > 0) {
+                            this.totalamount = toDecimal(this.amount / this.tipocambio, 3);
+                        }
+                    } else if (this.code == 'USD') {
+                        if (toDecimal(this.amount) > 0 && toDecimal(this.tipocambio) > 0) {
+                            this.totalamount = toDecimal(this.amount * this.tipocambio, 3);
+                        }
+                    } else {
+                        this.totalamount = null
+                    }
+                }
+            }))
+        })
+
+
 
         function FormaPagoManual() {
             this.selectFPMA = $(this.$refs.selectfpman).select2();
@@ -171,6 +243,18 @@
             this.selectMPMA.val(this.moneda_id).trigger("change");
             this.selectMPMA.on("select2:select", (event) => {
                 this.moneda_id = event.target.value;
+                const data = event.params.data.element.dataset;
+                this.code = event.params.data.element.dataset.code;
+                console.log(this.code);
+
+                if (this.code == 'PEN') {
+                    this.simbolo = '$.';
+                    this.currency = 'DÓLARES';
+                } else if (this.code == 'USD') {
+                    this.simbolo = 'S/.';
+                    this.currency = 'SOLES';
+                }
+                this.calcular();
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -208,7 +292,8 @@
 
         function formatOption(option) {
             var $option = $(
-                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title + '</p>'
+                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title +
+                '</p>'
             );
             return $option;
         };

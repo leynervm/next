@@ -1,0 +1,159 @@
+.login {
+    @apply w-full h-screen flex justify-center items-center px-3 md:px-0;
+}
+
+.container-login {
+    @apply py-10 md:py-3 bg-fondominicard rounded-3xl relative overflow-hidden w-full max-w-[420px] md:max-w-[768px] md:min-h-[540px];
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
+}
+
+.container-login h5 {
+    @apply text-sm leading-5 p-5 tracking-[0.3px];
+}
+
+.container-login .title-login {
+    @apply text-2xl font-bold tracking-widest uppercase mb-5;
+}
+
+.container-login .forget {
+    @apply text-sm my-5 text-linktable hover:text-hoverlinktable hover:underline transition ease-in-out duration-150;
+}
+
+.container-login button.hidden {
+    @apply bg-transparent border-white;
+}
+
+.container-login form {
+    @apply bg-white flex flex-col items-center justify-center h-full px-3 md:px-10 py-0;
+}
+
+.container-login input[type="text"],
+.container-login input[type="email"],
+.container-login input[type="password"],
+.container-login input[type="number"] {
+    @apply bg-transparent ring-1 ring-neutral-200 focus:ring-next-500 border-0 border-none text-sm rounded-xl w-full outline-none my-2 py-2 px-4;
+}
+
+.form-container {
+    @apply md:absolute top-0 md:h-full transition-all ease-in-out duration-700;
+}
+
+.sign-in {
+    @apply left-0 w-full md:w-[50%] z-[2];
+}
+
+.container-login.active .sign-in {
+    @apply md:translate-x-[100%];
+}
+
+.sign-up {
+    @apply left-0 w-full md:w-[50%] opacity-0 z-[1];
+}
+
+.container-login.active .sign-up {
+    @apply md:translate-x-[100%] opacity-100 z-[5];
+    animation: move 0.6s;
+}
+
+@keyframes move {
+
+    0%,
+    49.99% {
+        opacity: 0;
+        z-index: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 1;
+        z-index: 5;
+    }
+}
+
+.social-icons {
+    @apply w-full my-5 mx-auto text-center;
+}
+
+.social-icons a {
+    @apply p-1 shadow rounded-xl inline-flex justify-center items-center mx-1 w-10 h-10;
+}
+
+.toggle-container {
+    @apply hidden md:block absolute top-0 left-[50%] w-[50%] h-full overflow-hidden rounded-tl-[100px] rounded-bl-[100px] rounded-tr-[0] rounded-br-[0] z-[1000] transition-all ease-in-out duration-700;
+}
+
+.container-login.active .toggle-container {
+    @apply -translate-x-[100%] rounded-tr-[100px] rounded-br-[100px] rounded-tl-[0] rounded-bl-[0];
+}
+
+.toggle {
+    @apply bg-next-800 w-[200%] h-full text-white relative -left-[100%] translate-x-0 transition-all ease-in-out duration-700;
+    background: linear-gradient(to right, #0fb9b9, #055c5c);
+}
+
+.container-login.active .toggle {
+    @apply translate-x-[50%];
+}
+
+.toggle-panel {
+    @apply absolute top-0 w-[50%] translate-x-0 h-full px-0 py-8 flex flex-col justify-center items-center text-center transition-all ease-in-out duration-700;
+}
+
+.toggle-left {
+    @apply -translate-x-[200%];
+}
+
+.container-login.active .toggle-left {
+    @apply translate-x-0;
+}
+
+.toggle-right {
+    @apply right-0 translate-x-0;
+}
+
+.container-login.active .toggle-right {
+    @apply translate-x-[200%];
+}
+
+
+/* OTHER */
+.form-container.sign-up h3 {
+    @apply w-full max-w-full my-5 flex items-center justify-between text-sm font-medium text-colorsubtitleform;
+}
+
+.form-container.sign-up h3::after,
+.form-container.sign-up h3::before {
+    @apply content-[''] inline-block xs:w-[30%] h-[1px] bg-neutral-300;
+}
+
+.sign-up__social {
+    @apply w-full max-w-full flex flex-col gap-2 bg-white;
+}
+
+.sign-up__social-button {
+    @apply rounded-xl uppercase text-xs font-semibold tracking-widest bg-transparent px-3 py-2.5 w-full flex justify-center items-center gap-2 border transition ease-in-out duration-300;
+}
+
+.sign-up__social-button.google {
+    @apply text-red-500;
+}
+
+.sign-up__social-button.google:hover {
+    @apply border border-red-300;
+}
+
+.sign-up__social-button.facebook {
+    @apply text-blue-500;
+}
+
+.sign-up__social-button.facebook:hover {
+    @apply border border-blue-500;
+}
+
+.form-container .tittle-footer-login {
+    @apply text-colorsubtitleform text-xs text-center;
+}
+
+.form-container .tittle-footer-login .link-footer-login {
+    @apply text-linktable hover:text-hoverlinktable transition-colors ease-in-out duration-150;
+}

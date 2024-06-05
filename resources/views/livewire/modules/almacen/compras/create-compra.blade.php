@@ -83,55 +83,56 @@
 
                 <div class="w-full animate__animated animate__fadeInDown" x-show="open">
                     <x-label value="Tipo Cambio :" />
-                    <x-input class="block w-full numeric" wire:model.defer="tipocambio" placeholder="0.00"
-                        type="number" min="0" step="0.0001" onkeypress="return validarDecimal(event, 11)" />
+                    <x-input class="block w-full" wire:model.defer="tipocambio" placeholder="0.00" type="number"
+                        min="0" step="0.001" onkeypress="return validarDecimal(event, 7)" />
                     <x-jet-input-error for="tipocambio" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total exonerado :" />
-                    <x-input class="block w-full" wire:model.defer="exonerado" x-model="exonerado" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001"
-                        onkeypress="return validarDecimal(event, 11)" />
+                    <x-input class="block w-full" wire:model.defer="exonerado" x-model="exonerado" @input="sumar"
+                        @change="numeric" placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="exonerado" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total gravado :" />
-                    <x-input class="block w-full numeric" wire:model.defer="gravado" x-model="gravado" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001"
-                        onkeypress="return validarDecimal(event, 11)" />
+                    <x-input class="block w-full" wire:model.defer="gravado" x-model="gravado" @input="sumar"
+                        @change="numeric" placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="gravado" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total IGV :" />
-                    <x-input class="block w-full numeric" wire:model.defer="igv" x-model="igv" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001"
-                        onkeypress="return validarDecimal(event, 11)" />
+                    <x-input class="block w-full" wire:model.defer="igv" x-model="igv" @input="sumar"
+                        @change="numeric" placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="igv" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total descuento :" />
-                    <x-input class="block w-full numeric" wire:model.defer="descuento" x-model="descuento"
-                        @change="sumar" placeholder="0.00" type="number" min="0" step="0.0001"
-                        onkeypress="return validarDecimal(event, 11)" />
+                    <x-input class="block w-full" wire:model.defer="descuento" x-model="descuento" @input="sumar"
+                        @change="numeric" placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="descuento" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Total otros :" />
-                    <x-input class="block w-full numeric" wire:model.defer="otros" x-model="otros" @change="sumar"
-                        placeholder="0.00" type="number" min="0" step="0.0001"
-                        onkeypress="return validarDecimal(event, 11)" />
+                    <x-input class="block w-full" wire:model.defer="otros" x-model="otros" @input="sumar"
+                        @change="numeric" placeholder="0.00" type="number" min="0" step="0.0001"
+                        onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="otros" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Tipo pago :" />
-                    <div id="parenttypepaymentcompra_id" class="relative" x-init="select2Typepayment" wire:ignore>
-                        <x-select class="block w-full" x-ref="select" id="typepaymentcompra_id">
+                    <div id="parenttypepaymentcompra_id" class="relative" x-init="select2Typepayment">
+                        <x-select class="block w-full" x-ref="selecttp" id="typepaymentcompra_id"
+                            data-placeholder="null">
                             <x-slot name="options">
                                 @if (count($typepayments))
                                     @foreach ($typepayments as $item)
@@ -185,16 +186,6 @@
     </x-form-card>
 
     <script>
-        function toDecimal(valor, decimals = 3) {
-            let numero = parseFloat(valor);
-
-            if (isNaN(numero)) {
-                return 0;
-            } else {
-                return parseFloat(numero).toFixed(decimals);
-            }
-        }
-
         document.addEventListener('alpine:init', () => {
             Alpine.data('data', () => ({
                 open: false,
@@ -212,24 +203,28 @@
                 moneda_id: @entangle('moneda_id').defer,
 
                 init() {
-                    this.exonerado = toDecimal(this.exonerado);
-                    this.gravado = toDecimal(this.gravado);
-                    this.igv = toDecimal(this.igv);
-                    this.otros = toDecimal(this.otros);
-                    this.descuento = toDecimal(this.descuento);
-                    this.subtotal = toDecimal(this.subtotal);
-                    this.total = toDecimal(this.total);
+                    // this.$watch("total", (value, oldValue) => {
+                    //     console.log(oldValue, value, );
+                    // });
+                },
+                numeric() {
+                    this.exonerado = toDecimal(this.exonerado > 0 ? this.exonerado : 0);
+                    this.gravado = toDecimal(this.gravado > 0 ? this.gravado : 0);
+                    this.igv = toDecimal(this.igv > 0 ? this.igv : 0);
+                    this.otros = toDecimal(this.otros > 0 ? this.otros : 0);
+                    this.descuento = toDecimal(this.descuento > 0 ? this.descuento : 0);
                 },
                 sumar() {
-                    let total = 0;
-                    this.exonerado = toDecimal(this.exonerado);
-                    this.gravado = toDecimal(this.gravado);
-                    this.igv = toDecimal(this.igv);
-                    this.otros = toDecimal(this.otros);
-                    this.descuento = toDecimal(this.descuento);
+                    let total = '0.000';
 
-                    total = parseFloat(this.exonerado) + parseFloat(this.gravado) + parseFloat(this
-                        .igv) + parseFloat(this.otros);
+                    let exonerado = this.exonerado > 0 ? toDecimal(this.exonerado) : 0;
+                    let gravado = this.gravado > 0 ? toDecimal(this.gravado) : 0;
+                    let igv = this.igv > 0 ? toDecimal(this.igv) : 0;
+                    let otros = this.otros > 0 ? toDecimal(this.otros) : 0;
+                    let descuento = this.descuento > 0 ? toDecimal(this.descuento) : 0;
+
+                    total = parseFloat(exonerado) + parseFloat(gravado) + parseFloat(igv) + parseFloat(
+                        otros);
                     this.subtotal = toDecimal(parseFloat(total) + parseFloat(this.descuento));
                     this.total = toDecimal(total);
                 },
@@ -290,7 +285,7 @@
         }
 
         function select2Typepayment() {
-            this.selectT = $(this.$refs.select).select2();
+            this.selectT = $(this.$refs.selecttp).select2();
             this.selectT.val(this.typepayment_id).trigger("change");
             this.selectT.on("select2:select", (event) => {
                 this.typepayment_id = event.target.value;
@@ -298,6 +293,13 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
+            });
+            this.$watch("typepayment_id", (value) => {
+                this.selectT.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectT.select2().val(this.typepayment_id).trigger('change');
             });
         }
     </script>

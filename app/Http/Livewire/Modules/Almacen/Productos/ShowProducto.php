@@ -42,10 +42,14 @@ class ShowProducto extends Component
             ],
             'producto.marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'producto.modelo' => ['required', 'string'],
-            'producto.codefabricante' => ['nullable', 'string', 'min:4'],
+            'producto.partnumber' => ['nullable', 'string', 'min:4'],
+            'producto.sku' => ['nullable', 'string', 'min:4'],
             'producto.unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
-            'producto.pricebuy' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
-            'producto.pricesale' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+            'producto.pricebuy' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+            'producto.pricesale' => [
+                'required', 'numeric', 'decimal:0,4', 'min:0',
+                !mi_empresa()->usarLista() ? 'gt:0' : ''
+            ],
             'producto.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'producto.minstock' => ['required', 'integer', 'min:0'],
             'producto.category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
@@ -64,6 +68,15 @@ class ShowProducto extends Component
         //     ->orderBy('name', 'asc')->get();
         $this->subcategories = $this->producto->category->subcategories()
             ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
+
+        if ($producto->marca->trashed()) {
+            $this->producto->marca_id = null;
+        }
+
+        if ($producto->category->trashed()) {
+            $this->producto->category_id = null;
+            $this->producto->subcategory_id = null;
+        }
     }
 
     public function render()
@@ -113,6 +126,7 @@ class ShowProducto extends Component
         $this->validate();
         $this->producto->save();
         $this->dispatchBrowserEvent('updated');
+        return redirect()->route('admin.almacen.productos.edit', $this->producto);
     }
 
     public function openmodal()

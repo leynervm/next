@@ -9,19 +9,19 @@
         <div class="flex flex-wrap gap-5">
             @foreach ($caracteristicas as $item)
                 <x-form-card :titulo="$item->name" class="w-full xl:max-w-md" :alignFooter="$item->view == 1 ? 'justify-between' : 'justify-end'">
-                    <div class="w-full flex flex-col gap-2 justify-between h-full">
+                    <div class="w-full flex-1 flex flex-col items-start gap-2 justify-between">
                         @if (count($item->especificacions))
                             <div class="w-full flex gap-1 flex-wrap items-start">
                                 @foreach ($item->especificacions as $itemespecif)
                                     <div
                                         class="inline-flex gap-1 items-center text-[10px] p-1 rounded-md bg-fondospancardproduct text-textspancardproduct">
                                         <span class="mr-2">{{ $itemespecif->name }}</span>
-                                        @can('admin.almacen.especificaciones.edit')
+                                        @can('admin.almacen.especificacions.edit')
                                             <x-button-edit wire:loading.attr="disabled"
                                                 wire:click="editespecificacion({{ $itemespecif->id }})" />
                                         @endcan
 
-                                        @can('admin.almacen.especificaciones.delete')
+                                        @can('admin.almacen.especificacions.delete')
                                             <x-button-delete wire:loading.attr="disabled"
                                                 wire:key="delesp_{{ $itemespecif->id }}"
                                                 onclick="confirmDeleteEspec({{ $itemespecif }})" />
@@ -31,8 +31,8 @@
                             </div>
                         @endif
 
-                        <div class="w-full flex justify-between gap-2 mt-auto">
-                            @can('admin.almacen.especificaciones.create')
+                        <div class="w-full flex-1 flex justify-between items-end gap-2">
+                            @can('admin.almacen.especificacions.create')
                                 <x-button wire:loading.attr="disabled" wire:click="addespecificacion({{ $item->id }})">
                                     AGREGAR</x-button>
                             @endcan

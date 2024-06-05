@@ -11,17 +11,6 @@ class UserController extends Controller
 
     public function __construct()
     {
-
-        // $this->middleware(function ($request, $next) {
-        //     if (!auth()->user()->isAdmin()) {
-        //         if (!auth()->user()->hasPermissionTo('admin.users')) {
-        //             abort(403, 'THIS ACTION IS UNAUTHORIZED.');
-        //         }
-        //     }
-        //     return $next($request);
-        // });
-
-
         $this->middleware('can:admin.users')->only('index');
         $this->middleware('can:admin.users.create')->only('create');
         $this->middleware('can:admin.users.edit')->only('edit');
@@ -78,6 +67,9 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
+
+        // $this->authorize('dashboard', $user);
+        $this->authorize('desarrollador', $user);
         return view('admin.users.show', compact('user'));
     }
 

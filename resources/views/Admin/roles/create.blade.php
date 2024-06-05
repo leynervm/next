@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     @can('admin.roles.create')
         <x-slot name="breadcrumb">
             <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
@@ -48,4 +48,4 @@
             <livewire:admin.roles.create-rol />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

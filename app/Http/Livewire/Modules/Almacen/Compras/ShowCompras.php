@@ -32,15 +32,7 @@ class ShowCompras extends Component
     public function render()
     {
 
-        $compras = Compra::withWhereHas('sucursal', function ($query) {
-            $query->withTrashed();
-            if ($this->searchsucursal) {
-                $query->where('id', $this->searchsucursal);
-            } else {
-                $query->where('id', auth()->user()->sucursal_id);
-            }
-        });
-        $sucursals = Sucursal::withTrashed()->whereHas('compras')->get();
+        $compras = Compra::with('sucursal')->where('sucursal_id', auth()->user()->sucursal_id);
         $typepayments = Typepayment::whereHas('compras')->get();
 
         if (trim($this->search) !== '') {
@@ -65,7 +57,7 @@ class ShowCompras extends Component
 
         $compras = $compras->orderBy('created_at', 'desc')->paginate();
 
-        return view('livewire.modules.almacen.compras.show-compras', compact('compras', 'sucursals', 'typepayments'));
+        return view('livewire.modules.almacen.compras.show-compras', compact('compras', 'typepayments'));
     }
 
     public function updatedDate($value)

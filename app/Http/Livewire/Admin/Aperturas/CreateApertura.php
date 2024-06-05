@@ -113,6 +113,10 @@ class CreateApertura extends Component
 
                 $startdate = now('America/Lima')->format('Y-m-d ') . $this->employer->turno->horaingreso;
                 $this->expiredate = now('America/Lima')->format('Y-m-d ') . $this->employer->turno->horasalida;
+
+                if (Carbon::parse($this->expiredate)->lessThan(Carbon::parse($startdate))) {
+                    $this->expiredate = Carbon::parse($this->expiredate)->addDay();
+                }
             }
         }
 
@@ -158,6 +162,8 @@ class CreateApertura extends Component
             $openbox->savePayment(
                 auth()->user()->sucursal_id,
                 number_format($this->apertura, 3, '.', ''),
+                number_format($this->apertura, 3, '.', ''),
+                null,
                 $this->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::INGRESO->value,

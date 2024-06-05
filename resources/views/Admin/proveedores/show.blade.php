@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="PROVEEDORES" route="admin.proveedores">
             <x-slot name="icon">
@@ -29,4 +29,4 @@
     <div class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
         @livewire('admin.proveedores.show-proveedor', ['proveedor' => $proveedor])
     </div>
-</x-app-layout>
+</x-admin-layout>

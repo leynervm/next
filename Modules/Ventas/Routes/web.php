@@ -26,7 +26,7 @@ Route::middleware([
     Route::prefix('admin/ventas')->group(function () {
         Route::get('/', [VentaController::class, 'index'])->name('admin.ventas');
         Route::get('/create', [VentaController::class, 'create'])->name('admin.ventas.create')->middleware(['verifyserieventas', 'openbox', 'verifymethodpayment', 'verifyconcept', 'verifypricetype']);
-        Route::get('/{venta}/show', [VentaController::class, 'show'])->name('admin.ventas.edit')->middleware(['verifymethodpayment', 'verifyconcept']);
+        Route::get('/{venta:seriecompleta}/show', [VentaController::class, 'show'])->name('admin.ventas.edit')->middleware(['verifymethodpayment', 'verifyconcept']);
 
         if (Module::isEnabled('Facturacion')) {
             Route::get('/cobranzas', [VentaController::class, 'cobranzas'])->name('admin.ventas.cobranzas');
@@ -40,10 +40,7 @@ Route::middleware([
     Route::get('/administracion/lista-precios', [HomeController::class, 'pricetypes'])->name('admin.administracion.pricetypes');
 });
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    // 'verified'
-])->middleware(['auth'])->group(function () {
-    Route::get('admin/ventas/{venta}/imprimir-A4', [VentaController::class, 'imprimirA4'])->name('admin.ventas.print.a4');
-});
+Route::middleware(['auth:sanctum', config('jetstream.auth_session')])
+    ->middleware(['auth'])->group(function () {
+        Route::get('admin/ventas/{venta:seriecompleta}/imprimir-ticket', [VentaController::class, 'imprimirticket'])->name('admin.ventas.print.ticket');
+    });

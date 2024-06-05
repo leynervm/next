@@ -32,8 +32,10 @@ class CreateProducto extends Component
     public $igv = 0;
     public $publicado = 0;
     public $minstock = 0;
-    public $name, $marca_id, $modelo, $codefabricante, $unit_id, $category_id,
+    public $name, $marca_id, $modelo, $partnumber, $sku, $unit_id, $category_id,
         $subcategory_id, $almacenarea_id, $estante_id;
+
+    public $descripcionproducto = '';
 
     protected function rules()
     {
@@ -43,9 +45,13 @@ class CreateProducto extends Component
             ],
             'marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'modelo' => ['required', 'string'],
-            'codefabricante' => ['nullable', 'string', 'min:4'],
-            'pricebuy' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
-            'pricesale' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+            'sku' => ['nullable', 'string', 'min:4'],
+            'partnumber' => ['nullable', 'string', 'min:4'],
+            'pricebuy' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0'],
+            'pricesale' => [
+                'required', 'numeric', 'decimal:0,4', 'min:0',
+                !mi_empresa()->usarLista() ? 'gt:0' : ''
+            ],
             'igv' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
             'minstock' => ['required', 'integer', 'min:0'],
             'unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
@@ -55,13 +61,15 @@ class CreateProducto extends Component
             'almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
-            'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'dimensions:min_width=600,min_height=600'],
+            'descripcionproducto' => ['nullable', 'string']
         ];
     }
 
     public function mount()
     {
         $this->identificador = rand();
+        $this->selectedAlmacens = Almacen::orderBy('default', 'desc')->pluck('id');
     }
 
     public function render()
@@ -71,7 +79,8 @@ class CreateProducto extends Component
         $categories = Category::orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         $almacenareas = Almacenarea::orderBy('name', 'asc')->get();
         $estantes = Estante::orderBy('name', 'asc')->get();
-        $almacens = auth()->user()->sucursal->almacens;
+        // $almacens = auth()->user()->sucursal->almacens;
+        $almacens = Almacen::orderBy('default', 'desc')->get();
 
         return view('livewire.modules.almacen.productos.create-producto', compact('marcas', 'units', 'categories', 'almacenareas', 'estantes', 'almacens'));
     }
@@ -89,10 +98,13 @@ class CreateProducto extends Component
 
     public function save()
     {
+
+        // dd($this->descripcionproducto);
         $this->authorize('admin.almacen.productos.create');
         $this->name = trim($this->name);
         $this->modelo = trim($this->modelo);
-        $this->codefabricante = trim($this->codefabricante);
+        $this->partnumber = trim($this->partnumber);
+        $this->sku = trim($this->sku);
         $this->pricebuy = trim($this->pricebuy);
         $this->pricesale = trim($this->pricesale);
         $this->igv = trim($this->igv);
@@ -109,7 +121,8 @@ class CreateProducto extends Component
             $producto = Producto::create([
                 'name' => $this->name,
                 'modelo' => $this->modelo,
-                'codefabricante' => $this->codefabricante,
+                'partnumber' => $this->partnumber,
+                'sku' => $this->sku,
                 'pricebuy' => $this->pricebuy,
                 'pricesale' => $this->pricesale,
                 'igv' => $this->igv,
@@ -135,7 +148,7 @@ class CreateProducto extends Component
                 }
 
                 $compressedImage = Image::make($this->imagen->getRealPath())
-                    ->resize(300, 300, function ($constraint) {
+                    ->resize(1200, 1200, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
                     })
@@ -155,6 +168,12 @@ class CreateProducto extends Component
                 $producto->images()->create([
                     'url' => $filename,
                     'default' => 1,
+                ]);
+            }
+
+            if (!empty($this->descripcionproducto)) {
+                $producto->detalleproducto()->create([
+                    'descripcion' => $this->descripcionproducto
                 ]);
             }
 

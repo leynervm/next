@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <x-slot name="breadcrumb">
 
@@ -59,4 +59,4 @@
 
     </div>
 
-</x-app-layout>
+</x-admin-layout>

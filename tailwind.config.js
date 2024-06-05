@@ -20,6 +20,7 @@ module.exports = {
                 iconmenu: "var(--icon-menu)",
 
                 colorlabel: "var(--color-label)",
+                colorinput: "var(--color-input)",
 
                 fondolinknav: "var(--fondo-link-nav)",
                 colorlinknav: "var(--color-link-nav)",
@@ -104,6 +105,12 @@ module.exports = {
                 colortitleform: "var(--color-title-form)",
                 colorsubtitleform: "var(--color-subtitle-form)",
                 shadowform: "var(--shadow-form)",
+
+
+                fondofooter: "var(--fondo-footer)",
+                colorlinkfooter: "var(--color-link-footer)",
+                hoverlinkfooter: "var(--hover-link-footer)",
+
 
                 next: {
                     50: "#f0f9f9",

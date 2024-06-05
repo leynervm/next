@@ -82,6 +82,8 @@ class EmpresaSeeder extends Seeder
             'ubigeo_id' => 640,
         ]);
 
+        // BOXES
+
         $sucursalprincipal->boxes()->createMany([
             [
                 'name' => 'CAJA J01',
@@ -121,9 +123,5 @@ class EmpresaSeeder extends Seeder
                 'apertura' => 50,
             ]
         ]);
-
-        if (Module::isDisabled('Almacen') && Module::isEnabled('Ventas')) {
-            $sucursalprincipal->almacens()->attach(Almacen::first()->id);
-        }
     }
 }

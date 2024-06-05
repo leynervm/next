@@ -31,7 +31,7 @@ class Cuota extends Model
 
     public function userpay(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'userpayment_id');
+        return $this->belongsTo(User::class, 'userpayment_id')->withTrashed();
     }
 
     public function moneda(): BelongsTo
@@ -41,6 +41,6 @@ class Cuota extends Model
 
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 }

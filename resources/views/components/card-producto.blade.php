@@ -28,8 +28,11 @@
         </div>
 
         <div class="w-full">
-            <h1 class="text-colortitleform text-[10px] font-semibold leading-3 text-justify xs:text-center mt-1">
-                {{ $name }}</h1>
+            @if (isset($name))
+                <h1 class="text-colortitleform text-[10px] font-semibold leading-3 text-justify xs:text-center mt-1">
+                    {{ $name }}</h1>
+            @endif
+
 
             {{ $slot }}
 

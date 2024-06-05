@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -36,4 +36,4 @@
         class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
         @livewire('admin.empresas.create-empresa')
     </div>
-</x-app-layout>
+</x-admin-layout>

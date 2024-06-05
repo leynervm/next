@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -46,7 +46,7 @@
     </x-slot>
 
     <div
-        class="mx-auto lg:max-w-4xl xl:max-w-7xl flex flex-col gap-8 animate__animated animate__fadeIn animate__faster">
+        class="mx-auto lg:max-w-4xl xl:max-w-7xl flex flex-col gap-8">
         @can('admin.administracion.sucursales.edit')
             <div>
                 <livewire:admin.sucursales.show-sucursal :sucursal="$sucursal">
@@ -75,4 +75,4 @@
             </div>
         @endcan
     </div>
-</x-app-layout>
+</x-admin-layout>

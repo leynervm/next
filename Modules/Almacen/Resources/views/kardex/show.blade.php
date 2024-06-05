@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.almacen')
             <x-link-breadcrumb text="ALMACÉN" route="admin.almacen">
@@ -143,4 +143,4 @@
         @endif
     </div>
 
-</x-app-layout>
+</x-admin-layout>

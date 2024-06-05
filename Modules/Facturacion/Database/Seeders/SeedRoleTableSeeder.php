@@ -20,36 +20,32 @@ class SeedRoleTableSeeder extends Seeder
 
         $desarrollador = Role::firstOrCreate(['name' => 'DESARROLLADOR']);
         $admin = Role::firstOrCreate(['name' => 'ADMINISTRADOR']);
+        $ventas = Role::firstOrCreate(['name' => 'VENDEDOR']);
+        $support = Role::firstOrCreate(['name' => 'SOPORTE TÉCNICO']);
+        $cotizador = Role::firstOrCreate(['name' => 'COTIZADOR']);
 
         // FACTURACION
         Permission::firstOrCreate([
             'name' => 'admin.facturacion',
             'descripcion' => 'Administrar comprobantes electrónicos',
-            'table' => 'Facturación electrónica',
+            'table' => 'Combrobantes electrónicos',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
-        Permission::firstOrCreate([
-            'name' => 'admin.facturacion.edit',
-            'descripcion' => 'Editar comprobantes electrónicos',
-            'table' => 'Facturación electrónica',
-            'module' => 'Facturación',
-            'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $support, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.facturacion.delete',
             'descripcion' => 'Eliminar comprobantes electrónicos',
-            'table' => 'Facturación electrónica',
+            'table' => 'Combrobantes electrónicos',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.facturacion.sunat',
             'descripcion' => 'Enviar a SUNAT comprobantes electrónicos',
-            'table' => 'Facturación electrónica',
+            'table' => 'Combrobantes electrónicos',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
 
 
 
@@ -60,35 +56,28 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Guías remisión',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.facturacion.guias.create',
             'descripcion' => 'Registrar guías de remisión',
             'table' => 'Guías remisión',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
-        Permission::firstOrCreate([
-            'name' => 'admin.facturacion.guias.edit',
-            'descripcion' => 'Editar guías de remisión',
-            'table' => 'Guías remisión',
-            'module' => 'Facturación',
-            'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.facturacion.guias.delete',
             'descripcion' => 'Eliminar guías de remisión',
             'table' => 'Guías remisión',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.facturacion.guias.sunat',
             'descripcion' => 'Enviar a SUNAT guías de remisión',
             'table' => 'Guías remisión',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
 
 
         // MOTIVOS TRASLADO
@@ -98,7 +87,7 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Motivos traslado',
             'module' => 'Facturación',
             'orden' => '5'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.facturacion.guias.motivos.create',
             'descripcion' => 'Registrar motivos de traslado interno',

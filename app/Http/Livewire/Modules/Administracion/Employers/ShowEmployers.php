@@ -80,6 +80,8 @@ class ShowEmployers extends Component
         }
         if (trim($this->searchsucursal) != '') {
             $employers->where('sucursal_id', $this->searchsucursal);
+        } else {
+            $employers->where('sucursal_id', auth()->user()->sucursal_id);
         }
 
         if ($this->deletes) {
@@ -94,7 +96,7 @@ class ShowEmployers extends Component
 
     public function edit(Employer $employer)
     {
-        $this->reset();
+        // $this->reset();
         $this->resetValidation();
         $this->employer = $employer;
         $this->telefono = $employer->telephone->phone ?? null;
@@ -111,13 +113,27 @@ class ShowEmployers extends Component
         try {
             DB::beginTransaction();
             $this->validate();
+            if ($this->employer->isDirty('sucursal_id')) {
+                if ($this->employer->user) {
+                    $existsopenboxes = $this->employer->user->openboxes()->open()->exists();
+                    if ($existsopenboxes) {
+                        $mensaje = response()->json([
+                            'title' => 'USUARIO DEL PERSONAL TIENE CAJAS ACTIVAS EN USO !',
+                            'text' => "Existen registros de cajas diarias vinculados al usuario del personal en sucursal asignado, primero debe cerrar las cajas aperturadas.",
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+                }
+            }
+
             $this->employer->save();
             $this->employer->telephone()->updateOrCreate(
                 ['id' => $this->employer->telephone->id ?? null],
                 ['phone' => trim($this->telefono)]
             );
             DB::commit();
-            $this->resetExcept(['employer']);
+            $this->reset(['open']);
             $this->resetValidation();
             $this->dispatchBrowserEvent('updated');
         } catch (\Exception $e) {
@@ -133,11 +149,10 @@ class ShowEmployers extends Component
     {
         try {
             DB::beginTransaction();
-            if ($this->employer->user->openboxes()->mybox($this->employer->sucursal_id)->exists()) {
+            if ($this->employer->user->openboxes()->open()->exists()) {
                 $mensaje = response()->json([
-                    'title' => 'PERSONAL CUENTA CON UNA CAJA ACTIVA EN USO !',
-                    'text' => 'Usuario del personal seleccionado cuenta con caja activa en uso, primero debe cerrar la caja activa.',
-                    'type' => 'warning'
+                    'title' => 'PERSONAL TIENE CAJAS ACTIVAS EN USO !',
+                    'text' => "Existen registros de cajas diarias vinculados al personal en sucursal asignado, primero debe cerrar las cajas aperturadas.",
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
@@ -168,12 +183,10 @@ class ShowEmployers extends Component
 
     public function delete(Employer $employer)
     {
-        // dd($employer->user->openboxes()->mybox($employer->sucursal_id)->get());
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
-
             if ($employer->user) {
-                if ($employer->user->openboxes()->mybox($employer->sucursal_id)->exists()) {
+                if ($employer->user->openboxes()->open()->exists()) {
                     $mensaje = response()->json([
                         'title' => 'PERSONAL CUENTA CON UNA CAJA ACTIVA EN USO !',
                         'text' => 'Usuario del personal seleccionado cuenta con caja activa en uso, primero debe cerrar la caja activa.',

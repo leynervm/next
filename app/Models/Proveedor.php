@@ -30,7 +30,7 @@ class Proveedor extends Model
 
     public function proveedortype(): BelongsTo
     {
-        return $this->belongsTo(Proveedortype::class);
+        return $this->belongsTo(Proveedortype::class)->withTrashed();
     }
 
     public function ubigeo(): BelongsTo

@@ -1,10 +1,10 @@
 {
-    "Soporte": true,
+    "Soporte": false,
     "Internet": true,
     "Almacen": true,
     "Ventas": true,
     "Facturacion": true,
     "Marketplace": true,
     "Negocios": true,
-    "Employer": false
+    "Employer": true
 }

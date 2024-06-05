@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -52,4 +52,4 @@
     <div class="w-full mx-auto xl:max-w-7xl lg:px-3 animate__animated animate__fadeIn animate__faster">
         <livewire:admin.users.show-user :user="$user" />
     </div>
-</x-app-layout>
+</x-admin-layout>

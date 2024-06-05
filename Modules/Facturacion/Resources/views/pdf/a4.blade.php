@@ -3,15 +3,46 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         {{ $comprobante->seriecomprobante->typecomprobante->descripcion }} - {{ $comprobante->seriecompleta }}
     </title>
 </head>
 <style>
+    @font-face {
+        font-family: "Ubuntu";
+        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}') format('truetype');
+        font-weight: 100;
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}') format('truetype');
+        font-weight: 200;
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}') format('truetype');
+        font-weight: 400;
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}') format('truetype');
+        font-weight: 800;
+    }
+
+
+    * {
+        font-family: 'Ubuntu' !important;
+        font-weight: 200;
+    }
+
     @page {
-        margin: 4cm 1cm 3.5cm 1cm;
+        margin: 4cm 1cm 4.5cm 1cm;
     }
 
     #header {
@@ -23,24 +54,27 @@
         /* background: #DDD; */
     }
 
-    #header .table {
-        padding: 10px;
+    .table {
         width: 100%;
         border-collapse: collapse;
+    }
+
+    #header .table {
+        padding: 10px;
     }
 
     #header .table thead,
     #header .table thead td,
     #header .table thead th {
-        border: 0;
         vertical-align: baseline;
         width: 100%;
     }
 
-    #header .table .image {
+    .image {
+        width: auto;
         max-width: 100%;
         height: auto;
-        max-height: 1.8cm;
+        max-height: 2cm;
     }
 
     #footer {
@@ -51,71 +85,82 @@
         left: 0;
     }
 
-    #footer p {
+    p {
         margin: 0;
         padding: 0 10px;
     }
 
-
-    .serie p,
-    .title p {
-        line-height: 1rem;
-        margin: 0;
-        padding: 0;
-        text-align: center;
-        /* vertical-align: baseline; */
+    .leading-2 {
+        line-height: 0.5rem;
     }
 
-    .serie {
-        font-weight: 600;
-        vertical-align: center;
+    .leading-3 {
+        line-height: 0.6rem;
+    }
+
+    .leading-4 {
+        line-height: 0.7rem;
+    }
+
+    .leading-5 {
+        line-height: 0.8rem;
+    }
+
+    .leading-6 {
+        line-height: 1rem;
+    }
+
+    .align-middle-center {
+        vertical-align: center !important;
+    }
+
+    .align-baseline {
+        vertical-align: baseline !important;
+    }
+
+    .align-middle {
+        vertical-align: middle !important;
+    }
+
+    .text-10 {
+        font-size: 10px;
+    }
+
+    .text-11 {
+        font-size: 11px;
+    }
+
+    .text-12 {
+        font-size: 12px;
+    }
+
+    .text-13 {
+        font-size: 13px;
+    }
+
+    .text-14 {
         font-size: 14px;
-        font-weight: 600;
     }
 
     .body {
         padding: 10px;
+        font-weight: 200;
     }
 
-    .body p,
-    .body p small {
-        line-height: 1rem;
-        margin: 0;
-        padding: 0;
-        font-size: 14px;
+    .border-table {
+        border: 0.5px solid black !important;
     }
 
-    .body p small {
-        font-weight: normal !important;
+    .border-l-table {
+        border-left: 0.5px solid black;
     }
 
-    .body p {
-        font-weight: 600;
-    }
-
-    .body .table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 10px;
-    }
-
-    .body .table thead,
-    .body .table thead td,
-    .body .table thead th,
-    .body .table tbody td {
-        vertical-align: baseline;
-        width: 100%;
-    }
-
-    .body .table-border thead,
-    .body .table-border thead td,
-    .body .table-border thead th,
-    .body .table-border tbody td {
-        border: 1px solid #686262;
+    .border-r-table {
+        border-right: 0.5px solid black;
     }
 
     .border {
-        border: 1px solid black;
+        border: 1px solid black !important;
     }
 
     .border-2 {
@@ -147,31 +192,31 @@
     }
 
     .font-normal {
-        font-weight: normal !important;
+        font-weight: 100 !important;
+    }
+
+    .font-regular {
+        font-weight: 200 !important;
+    }
+
+    .font-medium {
+        font-weight: 400 !important;
     }
 
     .font-bold {
-        font-weight: 600 !important;
-    }
-
-    .font-xs {
-        font-size: 10px !important;
-    }
-
-    .font-sm {
-        font-size: 11px !important;
+        font-weight: 800 !important;
     }
 
     .text-start {
-        text-align: left;
+        text-align: left !important;
     }
 
     .text-center {
-        text-align: center;
+        text-align: center !important;
     }
 
     .text-end {
-        text-align: right;
+        text-align: right !important;
     }
 </style>
 
@@ -179,8 +224,8 @@
     <div id="header" class="border">
         <table class="table">
             <thead>
-                <tr>
-                    <th>
+                <tr class="align-baseline">
+                    <th style="text-align: left;">
                         @if ($comprobante->sucursal->empresa->image)
                             <div class="">
                                 <img src="{{ Storage::url('images/company/' . $comprobante->sucursal->empresa->image->url) }}"
@@ -188,20 +233,16 @@
                             </div>
                         @endif
                     </th>
-                    <th class="title" style="padding: 0 2px;">
-                        <p style="font-size: 14px;">
+                    <th class="align-baseline" style="padding: 0 2px;">
+                        <p class="font-bold text-14 leading-4" style="margin:0;">
                             {{ $comprobante->sucursal->empresa->name }}</p>
 
-                        <p class="font-normal" style="font-size: 10px; line-height: .7rem">
+                        <p class="font-regular text-10 leading-3">
                             {{ $comprobante->sucursal->direccion }}
                         </p>
 
                         @if ($comprobante->sucursal->ubigeo)
-                            <p class="font-normal" style="font-size: 10px; line-height: .7rem">
-                                {{ $comprobante->sucursal->ubigeo->region }}
-                                - {{ $comprobante->sucursal->ubigeo->provincia }}
-                                - {{ $comprobante->sucursal->ubigeo->distrito }}
-
+                            <p class="font-regular text-10 leading-3">
                                 {{ $comprobante->sucursal->ubigeo->region }}
                                 - {{ $comprobante->sucursal->ubigeo->provincia }}
                                 - {{ $comprobante->sucursal->ubigeo->distrito }}
@@ -209,7 +250,7 @@
                         @endif
 
                         @if (count($comprobante->sucursal->empresa->telephones) > 0)
-                            <p class="font-normal" style="font-size: 10px;">
+                            <p class="font-regular" style="font-size: 10px; line-height: .7rem;">
                                 TELÉFONO:
                                 <span>{{ formatTelefono($comprobante->sucursal->empresa->telephones->first()->phone) }}</span>
                             </p>
@@ -217,177 +258,251 @@
 
                     </th>
                     <th class="serie border-2" style="vertical-align:middle; ">
-                        <p class="" style="line-height: 1rem;">
+                        <p class="font-bold text-14 leading-7">
                             {{ $comprobante->sucursal->empresa->document }}</p>
-                        <p class="" style="line-height: 1.2rem;">
+                        <p class="font-bold text-14 leading-7">
                             {{ $comprobante->seriecomprobante->typecomprobante->descripcion }}
                         </p>
-                        <p class="" style="line-height: 1rem;">{{ $comprobante->seriecompleta }}</p>
+                        <p class="font-bold text-14 leading-7">{{ $comprobante->seriecompleta }}</p>
                     </th>
                 </tr>
             </thead>
         </table>
     </div>
     @php
-        $bottom = !empty($comprobante->sucursal->empresa->web) ? '-2.75cm' : '-2.25cm';
+        $serie_reeplace = str_replace('-', '|', $comprobante->seriecompleta);
+        $tipo_doc_cliente = strlen(trim($comprobante->client->document)) == 11 ? 6 : 1;
+        $hashcomprobante =
+            $comprobante->sucursal->empresa->document .
+            '|' .
+            $comprobante->seriecomprobante->typecomprobante->code .
+            '|' .
+            $serie_reeplace .
+            '|' .
+            number_format($comprobante->igv + $comprobante->igvgratuito, 2, '.', '') .
+            '|' .
+            number_format($comprobante->total, 2, '.', '') .
+            '|' .
+            formatDate($comprobante->date, 'DD/MM/Y') .
+            '|' .
+            $tipo_doc_cliente .
+            '|' .
+            $comprobante->client->document;
+
+        if (!empty($comprobante->hash)) {
+            $hashcomprobante .= '|' . $comprobante->hash;
+        }
+        $bottom = !empty($comprobante->sucursal->empresa->web) ? '-3.4cm' : '-3cm';
     @endphp
     <div id="footer" class="" style="bottom: {{ $bottom }};">
-        <div class="border-2" style="margin: 10px;">
-            <p class="font-normal text-left" style="line-height: 0.9rem; font-size:12px">
-                Estimado cliente, no hay devolución de dinero. Todo cambio de mercadería solo podrá realizarse dentro de
-                las
-                48 horas, previa presentacion del comprobante.
-            </p>
-            <p class="font-normal text-left" style="line-height: 0.9rem; font-size:12px">
-                Representación impresa del comprobante de venta electrónico, este puede ser consultado en
-                www.sunat.gob.pe.
-            </p>
-            <p class="font-normal text-left" style="line-height: 0.9rem; font-size:12px">
-                Autorizado mediante resolución N° 155-2017/Sunat.</p>
+        <table class="table" style="padding: 0 10px; border-collapse: separate;">
+            <thead>
+                <tr class="align-middle">
+                    <td class="border-2">
+                        <img class="" style="padding:1mm;" src="data:image/svg;base64, {!! base64_encode(QrCode::format('svg')->size(100)->generate($hashcomprobante)) !!} ">
+                    </td>
+                    <td class="title border" style="">
+                        <p class="font-regular leading-3 text-12" style="text-align: justify">
+                            Estimado cliente, no hay devolución de dinero. Todo cambio de mercadería solo podrá
+                            realizarse dentro de las 48 horas, previa presentacion del comprobante.
+                        </p>
+                        <p class="font-regular leading-3 text-12 mt-2">
+                            Representación impresa del comprobante de venta electrónico, este puede ser consultado en
+                            www.sunat.gob.pe.
+                        </p>
+                        <p class="font-regular text-12 leading-3 mt-2">
+                            Autorizado mediante resolución N° 155-2017/Sunat.</p>
 
-            <p class="text-center font-bold" style="line-height: 0.9rem; font-size: 10px;">
-                BIENES TRANSFERIDOS EN LA AMAZONIA PARA SER CONSUMIDOS EN LA MISMA Y/O SERVICIOS PRESTADOS EN LA
-                AMAZONIA.
-            </p>
-        </div>
-        @if ($comprobante->sucursal->empresa->web)
-            <p class="text-center" style="line-height: 1rem; font-size: 12px;">
-                {{ $comprobante->sucursal->empresa->web }}</p>
-        @endif
+                        <p class="text-center font-bold text-10 mt-3 leading-2">
+                            BIENES TRANSFERIDOS EN LA AMAZONIA PARA SER CONSUMIDOS EN LA MISMA Y/O SERVICIOS PRESTADOS
+                            EN LA AMAZONIA.
+                        </p>
+                    </td>
+                </tr>
+                @if (!empty($comprobante->sucursal->empresa->web))
+                    <tr>
+                        <td colspan="2" class="text-center text-12 leading-3">
+                            {{ $comprobante->sucursal->empresa->web }}</td>
+                    </tr>
+                @endif
+            </thead>
+        </table>
     </div>
+
     <div class="body">
-        {{-- <p>{{ $comprobante }}</p> --}}
-        <table class="table rounded mt-3 font-sm">
-            <tbody style="">
+        <table class="table mt-3 text-10">
+            <tbody>
                 <tr>
-                    <td class="p-2 font-bold" style="width: 100px;text-align: left; vertical-align:middle">
+                    <td class="p-1 font-medium" style="width: 100px">
                         FECHA EMISION </td>
-                    <td class="p-2" style="text-align: left; vertical-align:middle;">
+                    <td class="p-1 font-bold">
                         : {{ formatDate($comprobante->date, 'DD/MM/Y HH:mm A') }}</td>
                 </tr>
                 <tr>
-                    <td class="p-2 font-bold" style="width: 100px;text-align: left; vertical-align:middle">
+                    <td class="p-1 font-medium align-baseline" style="width:100px">
                         CLIENTE </td>
-                    <td class="p-2" style="text-align: left; vertical-align:middle;">
+                    <td class="p-1 font-bold">
                         : {{ $comprobante->client->name }}</td>
                 </tr>
                 <tr>
-                    <td class="p-2 font-bold" style="width: 100px;text-align: left; vertical-align:middle">
+                    <td class="p-1 font-medium align-baseline" style="width:100px">
                         DIRECCIÓN </td>
-                    <td class="p-2" style="text-align: left; vertical-align:middle;">
+                    <td class="p-1 font-bold">
                         : {{ $comprobante->direccion }}</td>
                 </tr>
                 <tr>
-                    <td class="p-2 font-bold" style="width: 100px;text-align: left; vertical-align:middle">
+                    <td class="p-1 font-medium" style="width: 100px">
                         TIPO PAGO </td>
-                    <td class="p-2" style="text-align: left; vertical-align:middle;">
+                    <td class="p-1 font-bold">
                         : {{ $comprobante->typepayment->name }}</td>
                 </tr>
+
+                @if ($comprobante->typepayment->isCredito())
+                    <tr>
+                        <td colspan="2" class="p-1 font-medium" style="width: 50px">
+                            MONTO PENDIENTE PAGO :
+                            <span
+                                class="font-bold">{{ number_format($comprobante->total - $comprobante->paymentactual, 2, '.', ', ') }}</span>
+                        </td>
+                    </tr>
+                @endif
+
                 <tr>
-                    <td class="p-2 font-bold" style="width: 100px;text-align: left; vertical-align:middle">
+                    <td class="p-1 font-medium" style="width: 100px;">
                         MONEDA </td>
-                    <td class="p-2" style="text-align: left; vertical-align:middle;">
+                    <td class="p-1 font-bold">
                         : {{ $comprobante->moneda->currency }}</td>
                 </tr>
             </tbody>
         </table>
 
         @if (count($comprobante->facturableitems) > 0)
-            <table class="table table-border mt-3">
+            <table class="table mt-3 text-10">
                 <thead style="background: #CCC">
-                    <tr>
-                        <th class="p-2" style="text-align: center; vertical-align:middle">ITEM</th>
-                        <th class="p-2" style="text-align: center; vertical-align:middle;">DESCRIPCIÓN</th>
-                        <th class="p-2" style="text-align: center; vertical-align:middle;">CANTIDAD</th>
-                        <th class="p-2" style="text-align: center; vertical-align:middle;">P. UNIT.</th>
-                        <th class="p-2" style="text-align: center; vertical-align:middle;">IMPORTE</th>
+                    <tr class="border-table" <th class="font-bold p-2 text-center" style="">ITEM</th>
+                        <th class="font-bold p-2 text-center" style=";">DESCRIPCIÓN</th>
+                        <th class="font-bold p-2 text-center" style=";">CANTIDAD</th>
+                        <th class="font-bold p-2 text-center" style=";">P. UNIT.</th>
+                        <th class="font-bold p-2 text-center" style=";">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($comprobante->facturableitems as $item)
-                        <tr>
-                            <td class="p-2" style="width: 30px; text-align: center; vertical-align:middle;">
+                        <tr class="border-table">
+                            <td class="p-2 font-normal text-center align-middle" style="width: 30px;">
                                 {{ $item->item }}
                             </td>
-                            <td class="p-2" style="text-align: start; vertical-align:middle;">
+                            <td class="p-2 align-middle text-start leading-3">
                                 {{ $item->descripcion }}</td>
-                            <td class="p-2" style="width: 70px; text-align: center; vertical-align:middle;">
+                            <td class="p-2 text-center" style="width: 70px;">
                                 {{ formatDecimalOrInteger($item->cantidad) }} {{ $item->unit }}</td>
-                            <td class="p-2" style="width: 70px; text-align: center; vertical-align:middle;">
-                                {{ $comprobante->moneda->simbolo }}
-                                {{ number_format($item->price, 2, '.', ', ') }}</td>
-                            <td class="p-2" style="width: 80px; text-align: center; vertical-align:middle;">
-                                {{ $comprobante->moneda->simbolo }}
+                            <td class="p-2 text-center" style="width: 70px;">
+                                {{ number_format($item->price + $item->igv, 2, '.', ', ') }}</td>
+                            <td class="p-2 text-center align-middle" style="width: 80px;">
                                 {{ number_format($item->total, 2, '.', ', ') }}</td>
                         </tr>
                     @endforeach
-                    <tr class="font-bold">
-                        <td class="p-2 text-start" colspan="2" style="vertical-align:middle; border: 0">
-                            {{ $comprobante->leyenda }}
+                    <tr>
+                        <td class="font-bold p-1 text-start" colspan="2" style="">
+                            SON : {{ $comprobante->leyenda }}
                         </td>
-                        <td class="p-2 text-end" style="vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="">
 
                         </td>
-                        <td class="p-2 text-end" style="vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end">
                             SUBTOTAL :
                         </td>
-                        <td class="p-2 text-end" style="width: 70px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 70px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->exonerado + $comprobante->gravado + $comprobante->igv + $comprobante->gratuito + $comprobante->igvgratuito + $comprobante->descuento, 2, '.', ', ') }}
                         </td>
                     </tr>
-
-
-                    <tr class="font-bold">
-                        <td class="p-2 text-end" colspan="4" style="vertical-align:middle; border: 0;">
+                    <tr>
+                        <td class="font-bold p-1 text-end" colspan="4">
                             GRAVADO : </td>
-                        <td class="p-2 text-end" style="width: 80px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 80px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->gravado, 2, '.', ', ') }}</td>
                     </tr>
-                    <tr class="font-bold">
-                        <td class="p-2 text-end" colspan="4" style="vertical-align:middle; border: 0;">
+                    <tr>
+                        <td class="font-bold p-1 text-end" colspan="4">
                             EXONERADO : </td>
-                        <td class="p-2 text-end" style="width: 80px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 80px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->exonerado, 2, '.', ', ') }}</td>
                     </tr>
-                    <tr class="font-bold">
-                        <td class="p-2 text-end" colspan="4" style="vertical-align:middle; border: 0;">
+                    <tr>
+                        <td class="font-bold p-1 text-end" colspan="4">
                             IGV : </td>
-                        <td class="p-2 text-end" style="width: 80px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 80px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->igv + $comprobante->igvgratuito, 2, '.', ', ') }}</td>
                     </tr>
-                    <tr class="font-bold">
-                        <td class="p-2 text-end" colspan="4" style="vertical-align:middle; border: 0;">
+                    <tr>
+                        <td class="font-bold p-1 text-end" colspan="4">
                             DESCUENTOS : </td>
-                        <td class="p-2 text-end" style="width: 80px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 80px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->descuento, 2, '.', ', ') }}</td>
                     </tr>
-                    <tr class="font-bold">
-                        <td class="p-2 text-end" colspan="4" style="vertical-align:middle; border: 0;">
+                    <tr>
+                        <td class="font-bold p-1 text-end" colspan="4">
                             GRATUITO : </td>
-                        <td class="p-2 text-end" style="width: 80px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 80px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->gratuito, 2, '.', ', ') }}</td>
                     </tr>
-                    <tr class="font-bold">
-                        <td class="p-2 text-end" colspan="4" style="vertical-align:middle; border: 0;">
+                    <tr>
+                        <td class="font-bold p-1 text-end" colspan="4">
                             TOTAL : </td>
-                        <td class="p-2 text-end" style="width: 80px; vertical-align:middle; border: 0;">
+                        <td class="font-bold p-1 text-end" style="width: 80px;">
                             {{ $comprobante->moneda->simbolo }}
                             {{ number_format($comprobante->total, 2, '.', ', ') }}</td>
                     </tr>
                 </tbody>
             </table>
+
+            @if ($comprobante->typepayment->isCredito())
+                @php
+                    $cuotas = [];
+                    if (count($comprobante->cuotas) > 0) {
+                        $cuotas = $comprobante->cuotas;
+                    } elseif ($comprobante->facturable) {
+                        $cuotas = $comprobante->facturable->cuotas;
+                    }
+                @endphp
+                @if (count($cuotas) > 0)
+                    <div class="" style="width: 100%; text-align: justify;">
+                        <h1 class="text-10 font-bold">INFORMACIÓN DE CUOTAS</h1>
+                        @foreach ($cuotas as $item)
+                            <div class="p-1 font-normal border mt-2" style="width:224px; display: inline-flex;">
+                                <p class="text-10 leading-4">
+                                    N° CUOTA : <span class="font-bold">{{ $item->cuota }}</span>
+                                </p>
+                                <p class="text-10 leading-4">
+                                    MONTO :
+                                    <span class="font-bold">{{ number_format($item->amount, 2, '.', ', ') }}</span>
+                                </p>
+                                <p class="text-10 leading-4">
+                                    F. VENCIMIENTO :
+                                    <span class="font-bold">{{ formatDate($item->expiredate, 'DD/MM/Y') }}</span>
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+            @endif
         @endif
+
+        {{-- <span class="font-normal">NORMAL</span>
+        <span class="font-regular">REGULAR</span>
+        <span class="font-medium">MEDIUM</span>
+        <span class="font-bold">BOLD</span> --}}
 
 
         {{-- @for ($i = 1; $i < 100; $i++)
-            <div style="background:#7e7e7e; margin:2px; font-size: 12px">
-                <p>{{ $i }}</p>
+            <div style="background:#7e7e7e; margin:2px; font-size: 11px">
+                <p class="font-normal">{{ $i }}</p>
             </div>
         @endfor --}}
     </div>

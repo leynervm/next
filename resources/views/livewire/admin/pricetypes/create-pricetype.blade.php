@@ -55,7 +55,7 @@
                 <div class="">
                     <x-label-check for="web">
                         <x-input wire:model.defer="web" name="web" value="1" type="checkbox" id="web" />
-                        PREDETERMINADO PARA VENTAS WEB
+                        PREDETERMINADO PARA TIENDA WEB SIN INICIAR SESIÓN
                     </x-label-check>
                     <x-jet-input-error for="web" />
                 </div>
@@ -64,7 +64,7 @@
                     <x-label-check for="defaultlogin">
                         <x-input wire:model.defer="defaultlogin" name="defaultlogin" value="1" type="checkbox"
                             id="defaultlogin" />
-                        PREDETERMINADO PARA VENTAS WEB DESPUES LOGIN
+                        PREDETERMINADO PARA USUARIOS LOGEADOS EN TIENDA WEB
                     </x-label-check>
                     <x-jet-input-error for="defaultlogin" />
                 </div>

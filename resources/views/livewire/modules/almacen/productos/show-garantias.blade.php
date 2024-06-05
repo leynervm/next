@@ -1,4 +1,4 @@
-<div class="w-full flex flex-col gap-8">
+<div class="w-full flex flex-col gap-8" x-data="datagarantia">
     @can('admin.almacen.productos.garantias')
         <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto." class="relative">
             <div class="w-full flex flex-wrap lg:flex-nowrap gap-3" x-data="{ loading: false }">
@@ -8,10 +8,10 @@
 
                 @can('admin.almacen.productos.garantias.edit')
                     <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
-                        <form wire:submit.prevent="save" class="w-full" x-data="datagarantia">
+                        <form wire:submit.prevent="save" class="w-full">
                             <div class="w-full">
                                 <x-label value="Garantías disponibles :" />
-                                <div class="relative" id="parenttypegarantia_id" wire:ignore>
+                                <div class="relative" id="parenttypegarantia_id" x-init="select2Garantia">
                                     <x-select class="block w-full select2" x-ref="select" id="typegarantia_id"
                                         data-placeholder="null">
                                         <x-slot name="options">
@@ -113,7 +113,7 @@
 
                             <div
                                 class="w-full xs:w-48 flex flex-col items-center justify-between bg-body rounded-lg shadow p-1">
-                                <p class="text-[10px] leading-3 text-colorlabel">{{ var_dump($precios) }}</p>
+                                {{-- <p class="text-[10px] leading-3 text-colorlabel">{{ var_dump($precios) }}</p> --}}
                                 <div class="text-center">
                                     <x-span-text :text="$lista->name" class="leading-3 !tracking-normal" />
 
@@ -179,11 +179,11 @@
     {{-- {{ $producto->detalleproducto->descripcion }} --}}
 
     <x-form-card titulo="DETALLE PRODUCTO">
-        <div class="w-full">
+        <div class="w-full overflow-hidden">
             <form wire:submit.prevent="savedetalle" class="w-full">
+
                 <div wire:ignore>
-                    <x-textarea class="w-full" id="descripcionproducto" wire:model.defer="descripcion" rows="6">
-                    </x-textarea>
+                    <x-ckeditor-5 id="myckeditor3" wire:model.defer="descripcion" />
                 </div>
 
                 <x-jet-input-error for="descripcion" />
@@ -203,7 +203,6 @@
             </form>
         </div>
     </x-form-card>
-
 
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
@@ -254,30 +253,32 @@
                 typegarantia_id: @entangle('typegarantia_id').defer,
                 time: @entangle('time').defer,
 
-                init() {
-                    this.select2GarantiaAlpine();
-                    window.addEventListener('created', () => {
-                        this.select2.val(this.typegarantia_id).trigger("change");
-                    })
-                },
-                select2GarantiaAlpine() {
-                    this.select2 = $(this.$refs.select).select2();
-                    this.select2.val(this.typegarantia_id).trigger("change");
-                    this.select2.on("select2:select", (event) => {
-                        this.typegarantia_id = event.target.value;
-                        this.getTimegarantia(event.target);
-                    }).on('select2:open', function(e) {
-                        const evt = "scroll.select2";
-                        $(e.target).parents().off(evt);
-                        $(window).off(evt);
-                    });
-                },
+                init() {},
                 getTimegarantia(target) {
                     let time = target.options[target.selectedIndex].getAttribute('data-time');
                     this.time = time;
                 },
             }));
         })
+
+        function select2Garantia() {
+            this.select2 = $(this.$refs.select).select2();
+            this.select2.val(this.typegarantia_id).trigger("change");
+            this.select2.on("select2:select", (event) => {
+                this.typegarantia_id = event.target.value;
+                this.getTimegarantia(event.target);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("typegarantia_id", (value) => {
+                this.select2.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.select2.select2().val(this.typegarantia_id).trigger('change');
+            });
+        }
 
         function confirmDeleteGarantia(garantia) {
             swal.fire({
@@ -296,209 +297,5 @@
                 }
             })
         }
-
-        document.addEventListener("livewire:load", () => {
-            CKEDITOR.ClassicEditor.create(document.getElementById("descripcionproducto"), {
-                toolbar: {
-                    items: [
-                        'undo', 'redo', '|',
-                        'exportPDF', 'exportWord', '|',
-                        'findAndReplace', 'selectAll', '|',
-                        'heading', '|',
-                        'bold', 'italic', 'strikethrough', 'underline', 'code', 'subscript',
-                        'superscript', 'removeFormat', '|',
-                        'bulletedList', 'numberedList', 'todoList', '|',
-                        'outdent', 'indent', '|',
-                        // '-',
-                        'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor', 'highlight',
-                        '|',
-                        'alignment', '|',
-                        'link', 'insertImage', 'blockQuote', 'insertTable', 'mediaEmbed',
-                        'codeBlock',
-                        'htmlEmbed', '|',
-                        'specialCharacters', 'horizontalLine', 'pageBreak', '|',
-                        'textPartLanguage', '|',
-                        'sourceEditing'
-                    ],
-                    shouldNotGroupWhenFull: true
-                },
-                language: 'es',
-                list: {
-                    properties: {
-                        styles: true,
-                        startIndex: true,
-                        reversed: true
-                    }
-                },
-                heading: {
-                    options: [{
-                            model: 'paragraph',
-                            title: 'Paragraph',
-                            class: 'ck-heading_paragraph'
-                        },
-                        {
-                            model: 'heading1',
-                            view: 'h1',
-                            title: 'Heading 1',
-                            class: 'ck-heading_heading1'
-                        },
-                        {
-                            model: 'heading2',
-                            view: 'h2',
-                            title: 'Heading 2',
-                            class: 'ck-heading_heading2'
-                        },
-                        {
-                            model: 'heading3',
-                            view: 'h3',
-                            title: 'Heading 3',
-                            class: 'ck-heading_heading3'
-                        },
-                        {
-                            model: 'heading4',
-                            view: 'h4',
-                            title: 'Heading 4',
-                            class: 'ck-heading_heading4'
-                        },
-                        {
-                            model: 'heading5',
-                            view: 'h5',
-                            title: 'Heading 5',
-                            class: 'ck-heading_heading5'
-                        },
-                        {
-                            model: 'heading6',
-                            view: 'h6',
-                            title: 'Heading 6',
-                            class: 'ck-heading_heading6'
-                        }
-                    ]
-                },
-                placeholder: 'Ingresar contenido...',
-                fontFamily: {
-                    options: [
-                        'default',
-                        'Arial, Helvetica, sans-serif',
-                        'Courier New, Courier, monospace',
-                        'Georgia, serif',
-                        'Lucida Sans Unicode, Lucida Grande, sans-serif',
-                        'Tahoma, Geneva, sans-serif',
-                        'Times New Roman, Times, serif',
-                        'Trebuchet MS, Helvetica, sans-serif',
-                        'Verdana, Geneva, sans-serif'
-                    ],
-                    supportAllValues: true
-                },
-                fontSize: {
-                    options: [8, 9, 10, 11, 12, 13, 14, 'default', 18, 20, 22],
-                    supportAllValues: true
-                },
-                htmlSupport: {
-                    allow: [{
-                        name: /.*/,
-                        attributes: true,
-                        classes: true,
-                        styles: true
-                    }]
-                },
-                htmlEmbed: {
-                    showPreviews: true
-                },
-                link: {
-                    decorators: {
-                        addTargetToExternalLinks: true,
-                        defaultProtocol: 'https://',
-                        toggleDownloadable: {
-                            mode: 'manual',
-                            label: 'Downloadable',
-                            attributes: {
-                                download: 'file'
-                            }
-                        }
-                    }
-                },
-                mention: {
-                    feeds: [{
-                        marker: '@',
-                        feed: [
-                            '@apple', '@bears', '@brownie', '@cake', '@cake', '@candy',
-                            '@canes', '@chocolate', '@cookie', '@cotton', '@cream',
-                            '@cupcake', '@danish', '@donut', '@dragée', '@fruitcake',
-                            '@gingerbread', '@gummi', '@ice', '@jelly-o',
-                            '@liquorice', '@macaroon', '@marzipan', '@oat', '@pie', '@plum',
-                            '@pudding', '@sesame', '@snaps', '@soufflé',
-                            '@sugar', '@sweet', '@topping', '@wafer'
-                        ],
-                        minimumCharacters: 1
-                    }]
-                },
-                // The "super-build" contains more premium features that require additional configuration, disable them below.
-                // Do not turn them on unless you read the documentation and know how to configure them and setup the editor.
-                removePlugins: [
-                    // These two are commercial, but you can try them out without registering to a trial.
-                    // 'ExportPdf',
-                    // 'ExportWord',
-                    'CKBox',
-                    'CKFinder',
-                    'EasyImage',
-                    // This sample uses the Base64UploadAdapter to handle image uploads as it requires no configuration.
-                    // https://ckeditor.com/docs/ckeditor5/latest/features/images/image-upload/base64-upload-adapter.html
-                    // Storing images as Base64 is usually a very bad idea.
-                    // Replace it on production website with other solutions:
-                    // https://ckeditor.com/docs/ckeditor5/latest/features/images/image-upload/image-upload.html
-                    // 'Base64UploadAdapter',
-                    'RealTimeCollaborativeComments',
-                    'RealTimeCollaborativeTrackChanges',
-                    'RealTimeCollaborativeRevisionHistory',
-                    'PresenceList',
-                    'Comments',
-                    'TrackChanges',
-                    'TrackChangesData',
-                    'RevisionHistory',
-                    'Pagination',
-                    'WProofreader',
-                    // Careful, with the Mathtype plugin CKEditor will not load when loading this sample
-                    // from a local file system (file://) - load this site via HTTP server if you enable MathType.
-                    'MathType',
-                    // The following features are part of the Productivity Pack and require additional license.
-                    'SlashCommand',
-                    'Template',
-                    'DocumentOutline',
-                    'FormatPainter',
-                    'TableOfContents'
-                ],
-
-                locale: {
-                    dateTimeFormat: date => format(date, 'dd/MM/yyyy')
-                },
-
-                table: {
-                    // Agregar el filtro
-                    addClassToAllCells: true, // Para agregar la clase a todas las celdas de la tabla
-                    class: 'w-full bg-next-500' // Nombre de la clase que se agregará a las tablas
-                }
-
-                // height: '500px',
-
-            }).then(function(editor) {
-                // editor.config.height = '500px';
-                // editor.ui.view.editable.element.style.height = '500px';
-                editor.model.document.on("change:data", () => {
-                    @this.set('descripcion', editor.getData());
-                });
-
-                editor.setData(@this.get('descripcion'));
-                //PARA ESCUCHAR EVENTOS CON EMIT
-                // Livewire.on("resetCKEditor", () => {
-                //     console.log("Reset CKEditor");
-                // });
-
-
-            }).catch(error => {
-                console.log(error);
-            });
-
-
-        })
     </script>
 </div>

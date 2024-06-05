@@ -41,7 +41,7 @@ class ShowDetalles extends Component
     public function openmodal()
     {
         $this->authorize('admin.almacen.productos.especificaciones');
-        $this->selectedEspecificacion = $this->producto->especificaciones()
+        $this->selectedEspecificacion = $this->producto->especificacions()
             ->pluck('especificacion_id', 'caracteristica_id',)->toArray();
         $this->open = true;
     }
@@ -49,7 +49,7 @@ class ShowDetalles extends Component
     public function saveespecificacion()
     {
         $this->authorize('admin.almacen.productos.especificaciones');
-        $this->producto->especificaciones()->syncWithPivotValues($this->selectedEspecificacion, [
+        $this->producto->especificacions()->syncWithPivotValues($this->selectedEspecificacion, [
             'user_id' => auth()->user()->id,
             'created_at' => now('America/Lima')
         ]);
@@ -62,7 +62,7 @@ class ShowDetalles extends Component
     public function delete(Especificacion $especificacion)
     {
         $this->authorize('admin.almacen.productos.especificaciones');
-        $this->producto->especificaciones()->detach($especificacion);
+        $this->producto->especificacions()->detach($especificacion);
         $this->producto->refresh();
         $this->dispatchBrowserEvent('deleted');
     }
@@ -90,25 +90,26 @@ class ShowDetalles extends Component
         $this->authorize('admin.almacen.productos.images');
         $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120']
+            'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png', 'dimensions:min_width=600,min_height=600']
         ]);
 
         $countImages = $this->producto->images()->count();
 
-        if ($countImages >= 5) {
-            $this->addError('imagen', 'Exediste el límite de imágenes por producto.');
-            return false;
-        }
+        // if ($countImages >= 5) {
+        //     $this->addError('imagen', 'Exediste el límite de imágenes por producto.');
+        //     return false;
+        // }
 
         if (!Storage::exists('productos')) {
             Storage::makeDirectory('productos');
         }
 
         $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
-            ->resize(300, 300, function ($constraint) {
+            ->resize(1200, 1200, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
-            })->orientate()->encode('jpg', 30);
+            })
+            ->orientate()->encode('jpg', 30);
 
         $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
         $compressedImage->save(public_path('storage/productos/' . $filename));
@@ -116,7 +117,7 @@ class ShowDetalles extends Component
         if ($compressedImage->filesize() > 1048576) { //1MB
             $compressedImage->destroy();
             $compressedImage->delete();
-            $this->addError('imagen', 'La imagen excede el tamaño máximo permitido.');
+            $this->addError('imagen', 'El campo imagen no debe ser mayor que 1 MB.');
             return false;
         }
 

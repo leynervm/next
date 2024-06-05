@@ -9,10 +9,9 @@ use App\Models\Openbox;
 use App\Models\Pricetype;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\App;
 use Modules\Ventas\Entities\Venta;
 use Nwidart\Modules\Facades\Module;
+use Nwidart\Modules\Routing\Controller;
 
 class VentaController extends Controller
 {
@@ -60,6 +59,7 @@ class VentaController extends Controller
 
     public function show(Venta $venta)
     {
+        $this->authorize('sucursal', $venta);
         $concept = Concept::paycuota()->first();
         return view('ventas::ventas.show', compact('venta', 'concept'));
     }
@@ -70,16 +70,19 @@ class VentaController extends Controller
         return view('ventas::ventas.cobranzas');
     }
 
-    public function imprimirA4(Venta $venta)
+    public function imprimirticket(Venta $venta)
     {
 
-        $pdf =  PDF::loadView('ventas::pdf.a4', compact('venta'));
         if (Module::isEnabled('Facturacion')) {
             if ($venta->comprobante) {
-                $comprobante = $venta->comprobante;
-                $pdf = PDF::loadView('facturacion::pdf.a4', compact('comprobante'));
+                return redirect()->route('admin.facturacion.print.ticket', $venta->comprobante);
             }
         }
+        $heightHeader = 250;
+        $heightBody = (count($venta->tvitems) * 3 * 12) * 2.8346;
+        $heightFooter = 400; #Incl. Totales, QR, Leyenda, Info, Web
+        $heightPage = number_format($heightHeader + $heightBody + $heightFooter, 2, '.', '');
+        $pdf =  PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('ventas::pdf.ticket', compact('venta'));
         return $pdf->stream();
     }
 }

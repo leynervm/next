@@ -6,12 +6,10 @@ use App\Models\Employer;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use Nwidart\Modules\Routing\Controller;
 
 class EmployerController extends Controller
 {
-
-    use AuthorizesRequests;
 
     public function __construct()
     {

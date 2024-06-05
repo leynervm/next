@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.facturacion')
             <x-link-breadcrumb text="FACTURACIÓN" route="admin.facturacion">
@@ -52,4 +52,4 @@
     <div class="w-full mt-3">
         @livewire('modules.facturacion.comprobantes.show-comprobantes')
     </div>
-</x-app-layout>
+</x-admin-layout>

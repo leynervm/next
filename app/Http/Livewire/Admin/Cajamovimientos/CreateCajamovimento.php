@@ -12,6 +12,7 @@ use App\Models\Monthbox;
 use App\Models\Openbox;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateCajamovimento extends Component
@@ -20,14 +21,17 @@ class CreateCajamovimento extends Component
     use AuthorizesRequests;
 
     public $open = false;
-    public $amount, $referencia, $detalle, $moneda_id,
+    public $showtipocambio = false;
+    public $amount, $totalamount, $tipocambio, $referencia, $detalle, $moneda_id,
         $methodpayment_id, $concept_id, $openbox_id,
         $monthbox_id, $sucursal_id, $openbox, $monthbox;
 
     public function rules()
     {
         return [
-            'amount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4',],
+            'amount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'totalamount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'tipocambio' => ['nullable', Rule::requiredIf($this->showtipocambio), 'numeric', 'min:0', 'gt:0', 'decimal:0,3'],
             'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
             'concept_id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
@@ -52,7 +56,7 @@ class CreateCajamovimento extends Component
         if ($this->monthbox) {
             $sumatorias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
                 $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            })->selectRaw('moneda_id, typemovement, SUM(amount) as total')->groupBy('moneda_id')
+            })->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->groupBy('typemovement')->orderBy('total', 'desc')->get();
         } else {
@@ -62,7 +66,7 @@ class CreateCajamovimento extends Component
         if ($this->monthbox) {
             $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
                 $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END) as diferencia")
+            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
         } else {
@@ -100,7 +104,7 @@ class CreateCajamovimento extends Component
         // $diferencia = CajaMovimiento::selectRaw('moneda, SUM(CASE WHEN tipomovimiento = "ingreso" THEN monto ELSE 0 END) - SUM(CASE WHEN tipomovimiento = "egreso" THEN monto ELSE 0 END) as diferencia')
         //     ->groupBy('moneda')
         //     ->get();
-
+        $this->totalamount = $this->amount;
         $this->validate();
         DB::beginTransaction();
         try {
@@ -112,7 +116,7 @@ class CreateCajamovimento extends Component
             })->where('sucursal_id', auth()->user()->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
 
             if ($typemovement->isEgreso()) {
@@ -128,9 +132,15 @@ class CreateCajamovimento extends Component
                 }
             }
 
+            // $totalamount = number_format($this->amount, 3, '.', '');
+            // if ($this->showtipocambio) {
+            // }
+
             auth()->user()->savePayment(
                 auth()->user()->sucursal_id,
                 number_format($this->amount, 3, '.', ''),
+                number_format($this->amount, 3, '.', ''),
+                null,
                 $this->moneda_id,
                 $this->methodpayment_id,
                 $typemovement->typemovement->value,

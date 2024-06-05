@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3">
         @livewire('soporte::marcas.create-marca')
@@ -10,4 +10,4 @@
         @livewire('soporte::marcas.show-marcas')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

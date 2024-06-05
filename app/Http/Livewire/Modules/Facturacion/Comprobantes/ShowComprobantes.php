@@ -4,10 +4,12 @@ namespace App\Http\Livewire\Modules\Facturacion\Comprobantes;
 
 use App\Helpers\Facturacion\createXML;
 use App\Helpers\Facturacion\SendXML;
+use App\Mail\EnviarXMLMailable;
 use App\Models\Sucursal;
 use App\Models\Typecomprobante;
 use App\Models\Typepayment;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -25,7 +27,6 @@ class ShowComprobantes extends Component
     public $searchtypepayment = '';
     public $searchtypecomprobante = '';
     public $searchuser = '';
-    public $searchsucursal = '';
 
 
     protected $queryString = [
@@ -57,10 +58,6 @@ class ShowComprobantes extends Component
             'except' => '',
             'as' => 'usuario'
         ],
-        'searchsucursal' => [
-            'except' => '',
-            'as' => 'sucursal'
-        ],
     ];
 
     public function render()
@@ -68,21 +65,16 @@ class ShowComprobantes extends Component
 
         $comprobantes = Comprobante::withTrashed()->with(['facturableitems', 'sucursal'])
             ->withWherehas('sucursal', function ($query) {
-                $query->withTrashed();
-                if ($this->searchsucursal !== '') {
-                    $query->where('id', $this->searchsucursal);
-                } else {
-                    $query->where('id', auth()->user()->sucursal_id);
-                }
+                $query->where('id', auth()->user()->sucursal_id);
             });
-
-        $sucursals = Sucursal::withTrashed()->whereHas('comprobantes')->get();
 
         $typepayments = Typepayment::whereHas('comprobantes', function ($query) {
             $query->withTrashed()->where('sucursal_id', auth()->user()->sucursal_id);
         })->orderBy('name', 'asc')->get();
 
-        $users = User::whereHas('comprobantes')->orderBy('name', 'asc')->get();
+        $users = User::whereHas('comprobantes', function ($query) {
+            $query->where('sucursal_id', auth()->user()->sucursal_id);
+        })->orderBy('name', 'asc')->get();
 
         $typecomprobantes = Typecomprobante::whereHas('seriecomprobantes', function ($query) {
             $query->whereHas('comprobantes')
@@ -126,7 +118,7 @@ class ShowComprobantes extends Component
 
         $comprobantes = $comprobantes->orderBy("id", "desc")->paginate();
 
-        return view('livewire.modules.facturacion.comprobantes.show-comprobantes', compact('comprobantes', 'typepayments', 'typecomprobantes', 'sucursals', 'users'));
+        return view('livewire.modules.facturacion.comprobantes.show-comprobantes', compact('comprobantes', 'typepayments', 'typecomprobantes', 'users'));
     }
 
     public function enviarsunat($id)
@@ -198,6 +190,10 @@ class ShowComprobantes extends Component
                     ]);
                     $this->dispatchBrowserEvent('toast', $mensaje->getData());
                 }
+
+                if ($response->hash) {
+                    $comprobante->hash = $response->hash;
+                }
             } else {
                 $mensaje = response()->json([
                     'title' => $response->descripcion,
@@ -213,6 +209,28 @@ class ShowComprobantes extends Component
             throw $e;
         } catch (\Throwable $e) {
             throw $e;
+        }
+    }
+
+    public function enviarxml($id)
+    {
+        $comprobante =  Comprobante::find($id)->with(['sucursal', 'client'])->find($id);
+        if ($comprobante->client) {
+            if ($comprobante->client->email) {
+                Mail::to($comprobante->client->email)->send(new EnviarXMLMailable($comprobante));
+                $mensaje = response()->json([
+                    'title' => 'Enviando correo a: ' . $comprobante->client->email,
+                    'icon' => 'success',
+                ])->getData();
+                $this->dispatchBrowserEvent('toast', $mensaje);
+            } else {
+                $mensaje = response()->json([
+                    'title' => 'Correo no enviado !',
+                    'text' => 'No se pudo enviar el mensaje, no se encontró el correo del cliente seleccionado.',
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
         }
     }
 }

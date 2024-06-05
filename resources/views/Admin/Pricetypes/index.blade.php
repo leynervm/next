@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -51,4 +51,4 @@
             <livewire:admin.rangos.show-rangos />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

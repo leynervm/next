@@ -24,6 +24,11 @@ class Tvitem extends Model
     const GRATUITO = '1';
     const PENDING_SERIE = '1';
 
+    protected static function newFactory()
+    {
+        return \Modules\Marketplace\Database\factories\TvitemMarketplaceFactory::new();
+    }
+
     public function getGratuitoAttribute($value)
     {
         return (int) $value;

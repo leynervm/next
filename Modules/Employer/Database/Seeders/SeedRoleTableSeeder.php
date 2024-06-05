@@ -20,6 +20,7 @@ class SeedRoleTableSeeder extends Seeder
 
         $desarrollador = Role::firstOrCreate(['name' => 'DESARROLLADOR']);
         $admin = Role::firstOrCreate(['name' => 'ADMINISTRADOR']);
+        $ventas = Role::firstOrCreate(['name' => 'VENDEDOR']);
 
         // EMPLOYERS
         Permission::firstOrCreate([
@@ -54,7 +55,7 @@ class SeedRoleTableSeeder extends Seeder
             'name' => 'admin.administracion.employers.showdeletes',
             'descripcion' => 'Administrar personal eliminados',
             'table' => 'Personal',
-            'module' => 'Principal',
+            'module' => 'Recursos humanos',
             'orden' => '6'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
@@ -105,21 +106,21 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Pagos personal',
             'module' => 'Recursos humanos',
             'orden' => '6'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.administracion.employers.payments.create',
             'descripcion' => 'Registrar pagos del personal',
             'table' => 'Pagos personal',
             'module' => 'Recursos humanos',
             'orden' => '6'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.administracion.employers.adelantos.create',
             'descripcion' => 'Registrar adelantos pagos del personal',
             'table' => 'Pagos personal',
             'module' => 'Recursos humanos',
             'orden' => '6'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.administracion.employers.payments.delete',
             'descripcion' => 'Eliminar pagos del personal',

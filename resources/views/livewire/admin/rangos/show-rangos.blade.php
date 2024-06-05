@@ -3,47 +3,49 @@
         <x-loading-next />
     </div>
 
-    <div class="w-full flex flex-col gap-2 items-start">
-        <form wire:submit.prevent="import">
-            <label>
-                <x-icon-file-upload type="excel"
-                    class="w-28 p-3 {{ $file ? 'border-fondobutton text-fondobutton shadow-fondobutton animate-pulse' : '' }}  text-colorlabel cursor-pointer hover:border-fondobutton hover:text-fondobutton hover:shadow-fondobutton transition ease-in-out duration-150">
-                    <p class="text-[9px] mt-2 text-center leading-3 font-semibold tracking-widest">
-                        IMPORTAR LISTA RANGOS</p>
-                </x-icon-file-upload>
-                <input type="file" class="hidden" wire:model="file" id="{{ $identificador }}" accept=".xlsx, .csv" />
-            </label>
+    @can('admin.administracion.rangos.import')
+        <div class="w-full flex flex-col gap-2 items-start">
+            <form wire:submit.prevent="import">
+                <label>
+                    <x-icon-file-upload type="excel"
+                        class="w-28 p-3 {{ $file ? 'border-fondobutton text-fondobutton shadow-fondobutton animate-pulse' : '' }}  text-colorlabel cursor-pointer hover:border-fondobutton hover:text-fondobutton hover:shadow-fondobutton transition ease-in-out duration-150">
+                        <p class="text-[9px] mt-2 text-center leading-3 font-semibold tracking-widest">
+                            IMPORTAR LISTA RANGOS</p>
+                    </x-icon-file-upload>
+                    <input type="file" class="hidden" wire:model="file" id="{{ $identificador }}" accept=".xlsx, .csv" />
+                </label>
 
-            @if ($file)
-                <div class="w-full flex gap-2">
-                    <x-button wire:loading.attr="disabled" type="submit">
-                        IMPORTAR
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
-                            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                            <path d="M2 15h10" />
-                            <path d="m9 18 3-3-3-3" />
-                        </svg>
-                    </x-button>
-                    <x-button type="reset" class="inline-flex" wire:loading.attr="disabled" wire:click="resetFile">
-                        LIMPIAR
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M3 6h18" />
-                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                            <line x1="10" x2="10" y1="11" y2="17" />
-                            <line x1="14" x2="14" y1="11" y2="17" />
-                        </svg>
-                    </x-button>
-                </div>
-            @endif
-        </form>
-        <x-jet-input-error for="file" />
-    </div>
+                @if ($file)
+                    <div class="w-full flex gap-2">
+                        <x-button wire:loading.attr="disabled" type="submit">
+                            IMPORTAR
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+                                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                                <path d="M2 15h10" />
+                                <path d="m9 18 3-3-3-3" />
+                            </svg>
+                        </x-button>
+                        <x-button type="reset" class="inline-flex" wire:loading.attr="disabled" wire:click="resetFile">
+                            LIMPIAR
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                        </x-button>
+                    </div>
+                @endif
+            </form>
+            <x-jet-input-error for="file" />
+        </div>
+    @endcan
 
     <div class="block w-full mt-1">
         @if (count($rangos) > 0)

@@ -50,6 +50,26 @@ class ShowTurnos extends Component
         $this->open = true;
     }
 
+    public function update()
+    {
+        $this->turno->name = trim($this->turno->name);
+        $this->validate();
+        DB::beginTransaction();
+        try {
+            $this->turno->save();
+            DB::commit();
+            $this->dispatchBrowserEvent('updated');
+            $this->resetExcept(['turno']);
+            $this->resetValidation();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
     public function delete(Turno $turno)
     {
         try {

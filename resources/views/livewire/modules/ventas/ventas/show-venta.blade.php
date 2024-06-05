@@ -86,17 +86,20 @@
                                     @if (auth()->user()->sucursal_id == $venta->sucursal_id)
                                         @if ($item->cajamovimiento)
                                             <div class="w-full flex gap-2 flex-wrap items-end justify-between">
-                                                <x-mini-button>
-                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4"
-                                                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <a href="{{ route('admin.payments.print', $item->cajamovimiento) }}"
+                                                    target="_blank"
+                                                    class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
+                                                    <svg class="w-4 h-4 block scale-110"
+                                                        xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                        viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                                         <path
-                                                            d="M17.571 18H20.4a.6.6 0 00.6-.6V11a4 4 0 00-4-4H7a4 4 0 00-4 4v6.4a.6.6 0 00.6.6h2.829M8 7V3.6a.6.6 0 01.6-.6h6.8a.6.6 0 01.6.6V7" />
+                                                            d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
                                                         <path
-                                                            d="M6.098 20.315L6.428 18l.498-3.485A.6.6 0 017.52 14h8.96a.6.6 0 01.594.515L17.57 18l.331 2.315a.6.6 0 01-.594.685H6.692a.6.6 0 01-.594-.685z" />
-                                                        <path d="M17 10.01l.01-.011" />
+                                                            d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
+                                                        <path
+                                                            d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
                                                     </svg>
-                                                </x-mini-button>
+                                                </a>
                                                 @can('admin.ventas.payments.edit')
                                                     <x-button-delete wire:key="deletecuota_{{ $item->id }}"
                                                         onclick="confirmDeletePay({{ $item }})"
@@ -385,9 +388,10 @@
                                 {{ $venta->comprobante->guia->client->name }}</span>
                         </h1>
 
-                        <div class="flex items-center justify-start gap-1">
-                            <button
-                                class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
+                        <div class="">
+                            <a href="{{ route('admin.facturacion.guias.print', $venta->comprobante->guia) }}"
+                                target="_blank"
+                                class="p-1.5 bg-red-800 text-white inline-block rounded-lg transition-colors duration-150">
                                 <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path
@@ -397,20 +401,7 @@
                                     <path
                                         d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                 </svg>
-                            </button>
-                            <button
-                                class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
-                                <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path
-                                        d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
-                                    <path
-                                        d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
-                                    <path
-                                        d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
-                                </svg>
-                            </button>
-
+                            </a>
                         </div>
                     </div>
                 </x-form-card>
@@ -438,9 +429,9 @@
                                 {{ $venta->guia->client->name }}</span>
                         </h1>
 
-                        <div class="flex items-center justify-start gap-1">
-                            <button
-                                class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
+                        <div class="">
+                            <a href="{{ route('admin.facturacion.guias.print', $venta->guia) }}" target="_blank"
+                                class="p-1.5 bg-red-800 text-white inline-block rounded-lg transition-colors duration-150">
                                 <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                     <path
@@ -450,20 +441,7 @@
                                     <path
                                         d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                 </svg>
-                            </button>
-                            <button
-                                class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
-                                <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path
-                                        d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
-                                    <path
-                                        d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
-                                    <path
-                                        d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
-                                </svg>
-                            </button>
-
+                            </a>
                         </div>
                     </div>
                 </x-form-card>
@@ -473,14 +451,26 @@
 
     <x-form-card titulo="OPCIONES">
         <div class="w-full flex gap-2 items-start justify-end">
-            <x-link-button href="{{ route('admin.ventas.print.a4', $venta) }}">IMPRIMIR A4</x-link-button>
-            <x-button>IMPRIMIR TICKET</x-button>
             @if (Module::isEnabled('Facturacion'))
+                @if ($venta->comprobante)
+                    <x-link-button href="{{ route('admin.facturacion.print.a4', $venta->comprobante) }}" target="_blank">
+                        IMPRIMIR A4</x-link-button>
+
+                    <x-link-button href="{{ route('admin.facturacion.print.ticket', $venta->comprobante) }}"
+                        target="_blank">IMPRIMIR TICKET</x-link-button>
+                @else
+                    <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
+                        IMPRIMIR TICKET</x-link-button>
+                @endif
+
                 @can('admin.facturacion.sunat')
                     @if ($venta->seriecomprobante->typecomprobante->sendsunat == 1)
-                        <x-button>ENVIAR</x-button>
+                        <x-button>ENVIAR SUNAT</x-button>
                     @endif
                 @endcan
+            @else
+                <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
+                    IMPRIMIR TICKET</x-link-button>
             @endif
         </div>
     </x-form-card>

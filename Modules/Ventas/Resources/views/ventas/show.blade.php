@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="VENTAS" route="admin.ventas">
             <x-slot name="icon">
@@ -29,4 +29,4 @@
     <div class="mx-auto animate__animated animate__fadeIn animate__faster">
         <livewire:modules.ventas.ventas.show-venta :venta="$venta" :concept="$concept" />
     </div>
-</x-app-layout>
+</x-admin-layout>

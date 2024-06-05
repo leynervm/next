@@ -30,6 +30,8 @@ use App\Models\Garantiaproducto;
 use App\Models\Oferta;
 use App\Models\Category;
 use App\Models\Subcategory;
+use App\Traits\CalcularPrecioVenta;
+use App\Traits\ObtenerImage;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Producto extends Model
@@ -39,12 +41,20 @@ class Producto extends Model
     use Sluggable;
     use KardexTrait;
 
+    use CalcularPrecioVenta;
+    use ObtenerImage;
+
+    const PUBLICADO = '1';
+
     // protected static function newFactory()
     // {
     //     return \Database\Factories\ProductoFactory::new();
     // }
 
     protected $guarded = ['created_at', 'updated_at'];
+
+    // protected $appends = ['precio_real_compra'];
+    // protected $appends = ['precio_lista'];
 
     // public function getRouteKeyName()
     // {
@@ -59,6 +69,12 @@ class Producto extends Model
             ]
         ];
     }
+
+
+    // public function precioVenta($pricetype_id, $descuento = 0)
+    // {
+    //     return $this->calcularPrecioVentaLista($pricetype_id, $descuento);
+    // }
 
     public function setCodeAttribute($value)
     {
@@ -80,12 +96,23 @@ class Producto extends Model
         $this->attributes['modelo'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    public function almacens(): BelongsToMany
+    public function setSkuAttribute($value)
     {
-        return $this->belongsToMany(Almacen::class)->withPivot('cantidad')->orderByPivot('cantidad', 'desc',);
+        $this->attributes['sku'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    // public function disponibles()
+    public function setPartnumberAttribute($value)
+    {
+        $this->attributes['partnumber'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function almacens(): BelongsToMany
+    {
+        return $this->belongsToMany(Almacen::class)
+            ->withPivot('cantidad')->orderByPivot('cantidad', 'desc');
+    }
+
+    // public function scopeDisponibles($query)
     // {
     //     return $this->almacens()->wherePivot('cantidad', '>', 0);
     // }
@@ -134,7 +161,7 @@ class Producto extends Model
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(Category::class);
+        return $this->belongsTo(Category::class)->withTrashed();
     }
 
     public function subcategory(): BelongsTo
@@ -162,7 +189,7 @@ class Producto extends Model
         return $this->belongsTo(Estante::class)->withTrashed();
     }
 
-    public function especificaciones(): BelongsToMany
+    public function especificacions(): BelongsToMany
     {
         return $this->belongsToMany(Especificacion::class)->withPivot('user_id');
     }
@@ -182,10 +209,10 @@ class Producto extends Model
         return $this->hasMany(Carshoop::class)->orderBy('id', 'asc');
     }
 
-    public function ofertas(): HasMany
-    {
-        return $this->hasMany(Oferta::class);
-    }
+    // public function ofertas(): HasMany
+    // {
+    //     return $this->hasMany(Oferta::class);
+    // }
 
     // public function ofertasdisponibles(): HasMany
     // {
@@ -198,6 +225,11 @@ class Producto extends Model
     public function promocions(): HasMany
     {
         return $this->hasMany(Promocion::class);
+    }
+
+    public function scopePublicados($query)
+    {
+        return $query->where('publicado', self::PUBLICADO);
     }
 
     // public function ofertasdisponibles(): HasMany

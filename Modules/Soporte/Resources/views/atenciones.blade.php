@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3 flex flex-wrap gap-2">
         @livewire('soporte::atenciones.create-atencion')
@@ -18,4 +18,4 @@
         @livewire('soporte::atenciones.show-atenciones')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

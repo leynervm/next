@@ -3,16 +3,18 @@
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
             @can('admin.administracion.sucursales.seriecomprobantes.edit')
                 <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 relative">
-                    <form wire:submit.prevent="saveserie" class="flex flex-col gap-2">
+                    <form wire:submit.prevent="saveserie" class="flex flex-col gap-2" x-data="seriecomprobante">
                         <div class="w-full">
                             <x-label value="Tipo comprobante :" />
-                            <div id="parenttypecomprobante_id" class="relative" x-data="{ typecomprobante_id: @entangle('typecomprobante_id').defer }"
-                                x-init="select2Comprobante">
+                            <div id="parenttypecomprobante_id" class="relative" x-init="select2Comprobante">
                                 <x-select class="block w-full" id="typecomprobante_id" x-ref="comprobantesuc">
                                     <x-slot name="options">
                                         @if (count($typecomprobantes))
                                             @foreach ($typecomprobantes as $item)
-                                                <option value="{{ $item->id }}">{{ $item->descripcion }}</option>
+                                                <option value="{{ $item->id }}" data-code="{{ $item->code }}"
+                                                    data-referencia="{{ $item->referencia }}"
+                                                    data-sendsunat="{{ $item->sendsunat }}">
+                                                    {{ $item->descripcion }}</option>
                                             @endforeach
                                         @endif
                                     </x-slot>
@@ -23,7 +25,7 @@
                         </div>
                         <div class="w-full">
                             <x-label value="Serie :" />
-                            <x-input class="block w-full" wire:model.defer="serie" maxlength="4" />
+                            <x-input class="block w-full" x-model="serie" maxlength="4" />
                             <x-jet-input-error for="serie" />
                         </div>
                         <div class="w-full mt-2">
@@ -39,13 +41,13 @@
                         </div>
                     </form>
 
-                    <div class="loading-overlay rounded hidden" wire:loading>
+                    <div class="loading-overlay rounded hidden" wire:loading.flex>
                         <x-loading-next />
                     </div>
                 </div>
             @endcan
 
-            <div class="w-full">
+            <div class="w-full flex-1">
                 @if (count($seriecomprobantes) > 0)
                     <x-table>
                         <x-slot name="header">
@@ -133,11 +135,44 @@
     </x-form-card>
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('seriecomprobante', () => ({
+                typecomprobante_id: @entangle('typecomprobante_id').defer,
+                serie: @entangle('serie').defer
+            }))
+        })
+
+
+
         function select2Comprobante() {
             this.selectTP = $(this.$refs.comprobantesuc).select2();
             this.selectTP.val(this.typecomprobante_id).trigger("change");
             this.selectTP.on("select2:select", (event) => {
                 this.typecomprobante_id = event.target.value;
+                let code = event.params.data.element.dataset.code;
+                let referencia = event.params.data.element.dataset.referencia;
+                let sendsunat = event.params.data.element.dataset.sendsunat;
+                // console.log(sendsunat);
+                switch (code) {
+                    case '01':
+                        this.serie = 'F001';
+                        break;
+                    case '03':
+                        this.serie = 'B001';
+                        break;
+                    case '07':
+                        this.serie = referencia == '01' ? 'FC01' : 'BC01';
+                        break;
+                    case '09':
+                        this.serie = sendsunat > 0 ? 'T001' : 'E001';
+                        break;
+                    case 'VT':
+                        this.serie = 'TK01';
+                        break;
+                    default:
+                        this.serie = null;
+                        break;
+                }
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);

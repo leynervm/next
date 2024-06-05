@@ -6,9 +6,9 @@ use App\Traits\CajamovimientoTrait;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -18,6 +18,8 @@ use Laravel\Sanctum\HasApiTokens;
 use Modules\Facturacion\Entities\Comprobante;
 use Modules\Ventas\Entities\Venta;
 use Spatie\Permission\Traits\HasRoles;
+
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -82,10 +84,10 @@ class User extends Authenticatable implements MustVerifyEmail
     ];
 
 
-    // public function sucursals(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Sucursal::class)->withPivot('default');
-    // }
+    public function setNameAttribute($value)
+    {
+        $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
 
     public function openboxes(): HasMany
     {
@@ -109,7 +111,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function employer(): HasOne
@@ -117,18 +119,48 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Employer::class);
     }
 
+    public function client(): HasOne
+    {
+        return $this->hasOne(Client::class);
+    }
+
     public function comprobantes(): HasMany
     {
         return $this->hasMany(Comprobante::class);
     }
 
-    public function kardexes()
+    public function kardexes(): HasMany
     {
         return $this->hasMany(Kardex::class);
+    }
+
+    public function telephones(): MorphMany
+    {
+        return $this->morphMany(Telephone::class, 'telephoneable');
+    }
+
+    public function direccions(): MorphMany
+    {
+        return $this->morphMany(Direccion::class, 'direccionable');
+    }
+
+    public function scopeWeb($query)
+    {
+        return $query->whereNull('sucursal_id');
+    }
+
+    public function scopeDashboard($query)
+    {
+        return $query->whereNotNull('sucursal_id');
     }
 
     public function isAdmin()
     {
         return $this->admin == self::SUPER_ADMIN;
+    }
+
+    public function isDashboard()
+    {
+        return $this->sucursal_id != null;
     }
 }

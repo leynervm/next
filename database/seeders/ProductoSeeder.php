@@ -8,8 +8,6 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\DB;
-use Nwidart\Modules\Facades\Module;
 
 class ProductoSeeder extends Seeder
 {
@@ -306,8 +304,8 @@ class ProductoSeeder extends Seeder
             "name" => 'MONITOR LG 27MQ400-B, 27" FULL HD',
             "slug" => "monitor-lg-27mq400-b-27-full-hd",
             "modelo" => "27MQ400-B",
-            "pricebuy" => "499",
-            "pricesale" => "0",
+            "pricebuy" => 499,
+            "pricesale" => 699,
             "igv" => "0",
             "publicado" => 0,
             "code" => "7NGY58WY0",
@@ -328,8 +326,8 @@ class ProductoSeeder extends Seeder
             "slug" => "conector-de-red-nexxt-rj45-cat-5",
             "modelo" => "RJ45 CAT5",
             "pricebuy" => "0.4",
-            "pricesale" => "0",
-            "igv" => "0",
+            "pricesale" => 2,
+            "igv" => 0,
             "publicado" => 1,
             "code" => "O1ULAW1M1",
             "codefabricante" => "",
@@ -348,9 +346,9 @@ class ProductoSeeder extends Seeder
             "name" => "AUDÍFONOS GAMER T-DAGGER SONA T-RGH304 NEGRO",
             "slug" => "audifonos-gamer-t-dagger-sona-t-rgh304-negro",
             "modelo" => "T-RGH304",
-            "pricebuy" => "59",
-            "pricesale" => "0",
-            "igv" => "0",
+            "pricebuy" => 59,
+            "pricesale" => 70,
+            "igv" => 0,
             "publicado" => 1,
             "code" => "WC0I5FAIW",
             "codefabricante" => "",
@@ -378,8 +376,8 @@ class ProductoSeeder extends Seeder
             "codefabricante" => "",
             "views" => 0,
             "minstock" => 2,
-            "almacenarea_id" => 1,
-            "estante_id" => 2,
+            "almacenarea_id" => null,
+            "estante_id" => null,
             "marca_id" => 9,
             "category_id" => 6,
             "subcategory_id" => 1,

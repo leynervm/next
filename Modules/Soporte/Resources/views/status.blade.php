@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3">
         @livewire('soporte::status.create-status')
@@ -10,4 +10,4 @@
         @livewire('soporte::status.show-status')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

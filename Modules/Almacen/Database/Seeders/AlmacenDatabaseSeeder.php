@@ -21,8 +21,14 @@ class AlmacenDatabaseSeeder extends Seeder
     public function run()
     {
         Model::unguard();
-        $this->call(AlmacenSeeder::class);
         $this->call(PermissionSeeder::class);
+
+        // CON DATOS DESDE CERO, IR A ALMACENSEEDER 
+        //  Y COMENTAR  UNA PARTE DEL CODIGO NO DIRECTAMENTE DE AQUI
+        if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
+            $this->call(AlmacenSeeder::class);
+        }
+
 
         if (Module::isEnabled('Almacen')) {
             Concept::firstOrCreate([
@@ -38,7 +44,7 @@ class AlmacenDatabaseSeeder extends Seeder
             ]);
 
             $this->call(SeedRoleTableSeeder::class);
-            $this->call(SeedEstantesTableSeeder::class);
+            // $this->call(SeedEstantesTableSeeder::class);
         }
     }
 }

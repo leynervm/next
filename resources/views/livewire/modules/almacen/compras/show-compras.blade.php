@@ -42,25 +42,6 @@
                 </div>
             </div>
         @endif
-
-        @if (count($sucursals) > 1)
-            <div class="w-full xs:w-full xs:max-w-xs">
-                <x-label value="Sucursal :" />
-                <div id="parentsearchsucursal" class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2Sucursal">
-                    <x-select id="searchsucursal" x-ref="selectsucursal" class="w-full" data-placeholder="null">
-                        <x-slot name="options">
-                            @if (count($sucursals))
-                                @foreach ($sucursals as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-icon-select />
-                </div>
-            </div>
-        @endif
-
     </div>
 
     @can('admin.almacen.compras.deletes')

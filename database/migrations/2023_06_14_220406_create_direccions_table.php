@@ -16,6 +16,7 @@ class CreateDireccionsTable extends Migration
         Schema::create('direccions', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
+            $table->string('referencia', 255)->nullable();
             $table->char('default', 1)->default(0);
             $table->bigInteger('ubigeo_id')->nullable();
             $table->integer('direccionable_id');

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\Storage;
 
 class Image extends Model
 {
@@ -28,5 +29,10 @@ class Image extends Model
     public function isDefault()
     {
         return $this->default == self::DEFAULT;
+    }
+
+    public function getImageURL()
+    {
+        return Storage::url('productos/' . $this->url);
     }
 }

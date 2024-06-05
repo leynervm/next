@@ -15,7 +15,7 @@
         <x-slot name="content">
             <form wire:submit.prevent="save">
                 <x-label value="Tipo proveedor :" />
-                <x-input class="block w-full" wire:model.defer="name" placeholder="Descripción del concepto pago..." />
+                <x-input class="block w-full" wire:model.defer="name" placeholder="Descripción del tipo de proveedor..." />
                 <x-jet-input-error for="name" />
 
                 <div class="w-full flex pt-4 gap-2 justify-end">

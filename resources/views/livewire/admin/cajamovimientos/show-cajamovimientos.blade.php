@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
         <x-loading-next />
     </div>
 
@@ -162,10 +162,27 @@
                         </td>
                         <td class="p-2">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->amount, 2, '.', ', ') }}
+                            {{ number_format($item->totalamount, 2, '.', ', ') }}
                             <small class="text-[8px]">{{ $item->moneda->currency }}</small>
                             @if ($item->openbox->isActivo() && $item->openbox->isUsing())
                                 <p class="text-next-500 text-[10px]">CAJA ACTUAL</p>
+                            @endif
+
+                            @if ($item->tipocambio > 0)
+                                <p class="text-xs text-colorsubtitleform leading-3">
+                                    {{ number_format($item->amount, 2, '.', ', ') }}
+                                    <small class="text-[8px]">
+                                        @if ($item->moneda->code == 'USD')
+                                            SOLES
+                                        @else
+                                            DÓLARES
+                                        @endif
+                                    </small>
+                                </p>
+                                <p class="text-xs text-colorsubtitleform leading-3">
+                                    <small class="text-[8px]">TIPO CAMBIO :</small>
+                                    {{ $item->tipocambio }}
+                                </p>
                             @endif
                         </td>
                         <td class="p-2 text-center">

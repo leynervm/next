@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     {{-- @extends('soporte::layouts.master') --}}
 
     <div class="flex flex-wrap gap-2 mt-3">
@@ -50,4 +50,4 @@
         This view is loaded from module: {!! config('soporte.name') !!}
     </p>
 
-</x-app-layout>
+</x-admin-layout>

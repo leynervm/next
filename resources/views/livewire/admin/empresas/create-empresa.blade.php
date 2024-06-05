@@ -5,7 +5,7 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full" wire:keydown.enter="searchclient" type="number"
+                        <x-input class="block w-full flex-1" wire:keydown.enter="searchclient" type="number"
                             wire:model.defer="document" onkeypress="return validarNumero(event, 11)"
                             onkeydown="disabledEnter(event)" />
                         <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
@@ -346,7 +346,7 @@
             </x-form-card>
         @endif
 
-        {{ print_r($errors->all()) }}
+        {{-- {{ print_r($errors->all()) }} --}}
 
         <div class="w-full flex justify-end">
             <x-button type="submit">REGISTRAR</x-button>

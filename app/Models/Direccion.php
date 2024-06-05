@@ -14,12 +14,17 @@ class Direccion extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'ubigeo_id', 'default', 'direccionable_id', 'direccionable_type'];
+    protected $fillable = ['name', 'referencia', 'ubigeo_id', 'default', 'direccionable_id', 'direccionable_type'];
     const DEFAULT = '1';
 
     public function setNameAttribute($value)
     {
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function setReferenciaAttribute($value)
+    {
+        $this->attributes['referencia'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function direccionable(): MorphTo
@@ -30,6 +35,11 @@ class Direccion extends Model
     public function ubigeo(): BelongsTo
     {
         return $this->belongsTo(Ubigeo::class);
+    }
+
+    public function scopeDefault($query)
+    {
+        return $query->where('default', self::DEFAULT);
     }
 
     public function isDefault()

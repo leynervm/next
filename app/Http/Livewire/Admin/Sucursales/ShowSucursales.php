@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Admin\Sucursales;
 
-use App\Helpers\FormatoPersonalizado;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Models\User;
@@ -49,7 +48,7 @@ class ShowSucursales extends Component
                     $query->default();
                 }
             });
-        }])->orderBy('codeanexo', 'asc')->orderBy('id', 'asc')->paginate();
+        }])->orderBy('default', 'desc')->orderBy('codeanexo', 'asc')->paginate();
 
         $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')
             ->orderBy('distrito', 'asc')->get();
@@ -58,23 +57,17 @@ class ShowSucursales extends Component
 
     public function delete(Sucursal $sucursal, $confirmation = false)
     {
-        // $users = $sucursal->users()->count();
-        // $almacens = $sucursal->almacens()->count();
-        // $ventas = $sucursal->ventas()->count();
-        // $comprobantes = $sucursal->comprobantes()->count();
-        // $compras = $sucursal->compras()->count();
 
-        // $cadena = FormatoPersonalizado::extraerMensaje([
-        //     'Usuarios' => $users,
-        //     'Almacenes' => $almacens,
-        //     'Ventas' => $ventas,
-        //     'Comprobantes' => $comprobantes,
-        //     'Usuarios' => $users,
-        //     'Compras' => $compras,
-        // ]);
-
-        // dd($sucursal->getRelations());
         try {
+            if ($sucursal->openboxes()->open()->exists()) {
+                $mensaje = response()->json([
+                    'title' => 'SUCURSAl TIENE CAJAS ACTIVAS EN USO !',
+                    'text' => "Existen registros de cajas diarias vinculados al usuario en sucursal seleccioando, primero debe cerrar las cajas aperturadas.",
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
             DB::beginTransaction();
             $this->authorize('admin.administracion.sucursales.delete');
             if ($confirmation) {

@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
-use App\Models\Sucursal;
 use App\Models\User;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
@@ -35,9 +34,7 @@ class ShowVentas extends Component
             $query->where('sucursal_id', auth()->user()->sucursal_id);
         })->orderBy('name', 'asc')->get();
         $ventas = Venta::with(['sucursal', 'user', 'client', 'typepayment', 'cajamovimiento', 'cuotas'])
-            ->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            });
+            ->where('sucursal_id', auth()->user()->sucursal_id);
 
         if (trim($this->search) !== '') {
             $ventas->whereHas('client', function ($query) {

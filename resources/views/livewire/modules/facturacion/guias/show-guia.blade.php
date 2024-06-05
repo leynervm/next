@@ -219,6 +219,17 @@
                         </span>
                     </h1>
                 </div>
+
+                <div class="w-full flex gap-2 items-start justify-end mt-2">
+                    <x-link-button href="{{ route('admin.facturacion.guias.print', $guia) }}" target="_blank">
+                        IMPRIMIR A4</x-link-button>
+
+                    @can('admin.facturacion.sunat')
+                        @if ($guia->seriecomprobante->typecomprobante->isSunat())
+                            <x-button>ENVIAR SUNAT</x-button>
+                        @endif
+                    @endcan
+                </div>
             </x-form-card>
 
             @if ($guia->guiable)
@@ -244,7 +255,7 @@
                         </h1>
 
                         <div class="flex items-center justify-start gap-1">
-                            <button
+                            <a href="{{ route('admin.facturacion.print.a4', $guia->guiable) }}" target="_blank"
                                 class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
                                 <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -255,8 +266,8 @@
                                     <path
                                         d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                 </svg>
-                            </button>
-                            <button
+                            </a>
+                            <a href="{{ route('admin.facturacion.print.ticket', $guia->guiable) }}" target="_blank"
                                 class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
                                 <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
                                     fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -267,8 +278,7 @@
                                     <path
                                         d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
                                 </svg>
-                            </button>
-
+                            </a>
                         </div>
                     </div>
                 </x-form-card>
@@ -496,10 +506,10 @@
                                     $class = 'bg-opacity-20 bg-neutral-400 !cursor-default';
                                 }
 
-                                if (count($item->producto->images)) {
-                                    if (count($item->producto->defaultImage)) {
+                                if (count($item->producto->images) > 0) {
+                                    if ($item->producto->images()->default()->exists()) {
                                         $image = asset(
-                                            'storage/productos/' . $item->producto->defaultImage->first()->url,
+                                            'storage/productos/' . $item->producto->images()->default()->first()->url,
                                         );
                                     } else {
                                         $image = asset('storage/productos/' . $item->producto->images->first()->url);

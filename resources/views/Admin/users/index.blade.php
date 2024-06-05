@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -98,4 +98,4 @@
     <div class="mt-3">
         <livewire:admin.users.show-users />
     </div>
-</x-app-layout>
+</x-admin-layout>

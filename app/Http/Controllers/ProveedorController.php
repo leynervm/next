@@ -43,13 +43,12 @@ class ProveedorController extends Controller
 
     public function history(Proveedor $proveedor)
     {
-        $compras = $proveedor->compras()->with(['moneda', 'cajamovimientos', 'cuotas', 'sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->get();
+        $compras = $proveedor->compras()->with(['moneda', 'cajamovimientos', 'cuotas', 'sucursal'])
+            ->where('sucursal_id', auth()->user()->sucursal_id)->paginate();
 
-        $sumatorias = $proveedor->compras()->with(['moneda', 'sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->selectRaw('moneda_id, SUM(total) as total')->groupBy('moneda_id')
+        $sumatorias = $proveedor->compras()->with(['moneda', 'sucursal'])
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->selectRaw('moneda_id, SUM(total) as total')->groupBy('moneda_id')
             ->orderBy('total', 'desc')->get();
 
         return view('admin.proveedores.history', compact('proveedor', 'compras', 'sumatorias'));

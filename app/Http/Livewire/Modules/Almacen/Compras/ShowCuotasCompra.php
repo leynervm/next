@@ -14,6 +14,7 @@ use App\Rules\ValidateNumericEquals;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Almacen\Entities\Compra;
@@ -26,9 +27,11 @@ class ShowCuotasCompra extends Component
     use WithPagination;
     public $opencuotas = false;
     public $openpaycuota = false;
-    public $compra, $cuota, $concept_id, $openbox, $monthbox;
+    public $showtipocambio = false;
+    public $compra, $cuota, $moneda_id, $concept_id, $openbox, $monthbox;
     public $countcuotas = 1;
     public $amountcuotas = 0;
+    public $amount, $totalamount, $tipocambio;
 
     public $methodpayment_id, $detalle;
     public $cuotas = [];
@@ -45,17 +48,17 @@ class ShowCuotasCompra extends Component
     {
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('default', 'desc')->orderBy('name', 'asc')->get();
-
-        return view('livewire.modules.almacen.compras.show-cuotas-compra', compact('typepayments', 'methodpayments'));
-    }
-
-    public function updatedOpenpaycuota()
-    {
-        if ($this->openpaycuota == false) {
-            $this->authorize('admin.almacen.compras.pagos');
-            $this->reset(['cuota']);
-            $this->cuota = new Cuota();
+        if ($this->monthbox) {
+            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
+                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+        } else {
+            $diferencias = [];
         }
+
+        return view('livewire.modules.almacen.compras.show-cuotas-compra', compact('typepayments', 'methodpayments', 'diferencias'));
     }
 
     public function calcularcuotas()
@@ -244,8 +247,11 @@ class ShowCuotasCompra extends Component
     {
         $this->authorize('admin.almacen.compras.pagos');
         $this->resetValidation();
-        $this->reset(['methodpayment_id', 'detalle']);
+        $this->reset(['methodpayment_id', 'detalle', 'tipocambio', 'totalamount', 'showtipocambio', 'amount', 'moneda_id']);
         $this->cuota = $cuota;
+        $this->amount = number_format($cuota->amount, 3, '.', '');
+        $this->moneda_id = $this->compra->moneda_id;
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->openpaycuota = true;
     }
 
@@ -272,15 +278,29 @@ class ShowCuotasCompra extends Component
             return false;
         }
 
+        $this->totalamount = number_format($this->cuota->amount, 3, '.', '');
         $this->concept_id = Concept::PaycuotaCompra()->first()->id ?? null;
         $this->validate([
             'cuota.id' => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
             'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
+            'amount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'totalamount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'tipocambio' => [
+                'nullable',
+                Rule::requiredIf($this->showtipocambio),
+                'numeric', 'min:0', 'gt:0', 'decimal:0,3'
+            ],
+            'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'concept_id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
             'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
             'detalle' => ['nullable'],
         ]);
+
+        if ($this->showtipocambio) {
+            $monedaConvertir = $this->compra->moneda->code == 'USD' ? 'PEN' : 'USD';
+            $this->totalamount = convertMoneda($this->amount, $monedaConvertir, $this->tipocambio);
+        }
 
         DB::beginTransaction();
         try {
@@ -290,12 +310,12 @@ class ShowCuotasCompra extends Component
                 $query->where('type', $methodpayment->type);
             })->where('sucursal_id', $this->compra->sucursal_id)
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->where('moneda_id', $this->compra->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
+                ->where('moneda_id', $this->moneda_id)
+                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
                 ->first()->diferencia ?? 0;
             $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($saldocaja - $this->cuota->amount) < 0) {
+            if (($saldocaja - $this->totalamount) < 0) {
                 $mensaje =  response()->json([
                     'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA MEDIANTE ' . $forma . ' !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
@@ -307,7 +327,9 @@ class ShowCuotasCompra extends Component
             $this->cuota->savePayment(
                 $this->compra->sucursal_id,
                 number_format($this->cuota->amount, 3, '.', ''),
-                $this->compra->moneda_id,
+                number_format($this->totalamount, 3, '.', ''),
+                $this->showtipocambio ? number_format($this->tipocambio, 3, '.', '') : null,
+                $this->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::EGRESO->value,
                 $this->concept_id,
@@ -318,7 +340,7 @@ class ShowCuotasCompra extends Component
             );
             DB::commit();
             $this->resetValidation();
-            $this->reset(['openpaycuota', 'methodpayment_id', 'detalle']);
+            $this->reset(['openpaycuota', 'methodpayment_id', 'detalle', 'tipocambio', 'totalamount', 'showtipocambio', 'amount', 'moneda_id']);
             $this->compra->refresh();
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {

@@ -68,7 +68,7 @@
                         <x-label value="Descripción del turno :" />
                         <x-input class="block w-full" wire:model.defer="turno.name"
                             placeholder="Nombres del personal..." />
-                        <x-jet-input-error for="name" />
+                        <x-jet-input-error for="turno.name" />
                     </div>
 
                     <div class="w-full">

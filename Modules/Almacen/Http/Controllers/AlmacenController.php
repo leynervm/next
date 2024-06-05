@@ -11,7 +11,7 @@ class AlmacenController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:admin.almacen')->only('index');
+        $this->middleware('permission:admin.almacen|admin.almacen.compras')->only('index');
         $this->middleware('can:admin.almacen.typegarantias')->only('typegarantias');
         // $this->middleware('can:admin.almacen.almacenareas')->only('almacenareas');
     }

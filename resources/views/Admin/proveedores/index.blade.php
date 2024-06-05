@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="PROVEEDORES" active>
             <x-slot name="icon">
@@ -44,4 +44,4 @@
     @can('admin.proveedores')
         <livewire:admin.proveedores.show-proveedores />
     @endcan
-</x-app-layout>
+</x-admin-layout>

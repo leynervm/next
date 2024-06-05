@@ -59,7 +59,7 @@ class CreateEmpresa extends Component
             'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'viewpricedolar' => ['integer', 'min:0', 'max:1'],
             'tipocambioauto' => ['integer', 'min:0', 'max:1'],
-            'sendmode' => ['integer', 'min:0', 'max:1'],
+            'sendmode' => ['required', 'integer', 'min:0', 'max:1'],
             'usuariosol' => ['nullable',  'required_if:sendmode,1', 'string'],
             'clavesol' => ['nullable',  'required_if:sendmode,1', 'string'],
             'passwordcert' => ['nullable',  'required_if:sendmode,1', 'string', 'min:3'],
@@ -200,16 +200,6 @@ class CreateEmpresa extends Component
                     'url' => $urlLogo,
                     'default' => 1
                 ]);
-            }
-
-
-            $almacen = Almacen::create([
-                'name' => 'ALMACÉN PRINCIPAL',
-                'default' => Almacen::DEFAULT
-            ]);
-
-            if (Module::isDisabled('Almacen') && Module::isEnabled('Ventas')) {
-                $sucursalprincipal->almacens()->attach($almacen->id);
             }
 
             DB::commit();

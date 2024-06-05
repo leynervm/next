@@ -22,26 +22,26 @@ class UserSeeder extends Seeder
     {
 
         User::updateOrCreate([
-            'document' => '74495914',
-            'name' => 'LEINER VEGA MEJIA',
+            'document' => '20538954099',
+            'name' => 'DEVELOPER ROOT',
             'email' => 'admin@gmail.com',
             'password' => bcrypt('12345678'),
             'admin' => 1,
         ]);
 
-        User::updateOrCreate([
-            'document' => '00000000',
-            'name' => 'LEINER VEGA MEJIA',
-            'email' => 'leyner@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
+        // User::updateOrCreate([
+        //     'document' => '00000000',
+        //     'name' => 'LEINER VEGA MEJIA',
+        //     'email' => 'leyner@gmail.com',
+        //     'password' => bcrypt('12345678'),
+        // ]);
 
-        User::updateOrCreate([
-            'document' => '20538954099',
-            'name' => 'NEXT TECHNOLOGIES',
-            'email' => 'next@gmail.com',
-            'password' => bcrypt('12345678'),
-        ]);
+        // User::updateOrCreate([
+        //     'document' => '20538954099',
+        //     'name' => 'NEXT TECHNOLOGIES',
+        //     'email' => 'next@gmail.com',
+        //     'password' => bcrypt('12345678'),
+        // ]);
 
         // User::factory(10)->create();
     }

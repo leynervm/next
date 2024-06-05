@@ -3,10 +3,9 @@
         <x-loading-next />
     </div>
 
-    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
-        <x-form-card titulo="REGISTRAR PROVEEDOR"
-            subtitulo="Complete todos los campos para registrar un nuevo proveedor.">
-            <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
+    <form wire:submit.prevent="save" class="w-full flex flex-col gap-8" x-data="{ addcontacto: @entangle('addcontacto').defer }">
+        <x-form-card titulo="REGISTRAR PROVEEDOR">
+            <div class="w-full sm:grid sm:grid-cols-3 gap-2 rounded">
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
@@ -92,11 +91,18 @@
                         type="email" />
                     <x-jet-input-error for="email" />
                 </div>
+
+                <div class="w-full sm:col-span-2">
+                    <x-label-check for="addcontacto">
+                        <x-input x-model="addcontacto" type="checkbox" id="addcontacto" />
+                        AGREGAR CONTACTO
+                    </x-label-check>
+                </div>
             </div>
         </x-form-card>
 
-        <x-form-card titulo="CONTACTO" subtitulo="Nos permitirá contactarse con el proveedor.">
-            <div class="w-full sm:grid sm:grid-cols-3 gap-2 bg-body p-3 rounded">
+        <x-form-card x-show="addcontacto" titulo="AGREGAR CONTACTO">
+            <div class="w-full sm:grid sm:grid-cols-3 gap-2 rounded">
                 <div class="w-full">
                     <x-label value="DNI :" />
                     <div class="w-full inline-flex gap-1">

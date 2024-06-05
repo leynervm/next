@@ -1,9 +1,8 @@
 <div>
-    <div class="flex flex-col xl:flex-row gap-8 animate__animated animate__fadeIn animate__faster">
+    <div class="w-full grid xl:grid-cols-2 gap-8">
         <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto.">
-            <div class="w-full flex flex-col gap-3 rounded h-full">
-                @if (count($producto->especificaciones))
-
+            <div class="w-full flex flex-col gap-3 rounded">
+                @if (count($producto->especificacions))
                     <x-table class="">
                         <x-slot name="header">
                             <tr>
@@ -19,14 +18,14 @@
                             </tr>
                         </x-slot>
                         <x-slot name="body">
-                            @foreach ($producto->especificaciones as $item)
+                            @foreach ($producto->especificacions as $item)
                                 <tr class="border-none {{ $loop->index % 2 != 0 ? 'bg-fondohovertable' : '' }}">
-                                    <td class="p-1 text-[10px] text-textbodytable border-r border-dividetable">
+                                    <td class="p-2 text-[10px] text-textbodytable border-r border-dividetable">
                                         {{ $item->caracteristica->name }}</td>
-                                    <td class="p-1 text-[10px] text-textbodytable">
+                                    <td class="p-2 text-[10px] text-textbodytable">
                                         {{ $item->name }}</td>
-                                    <td class="p-1 text-end">
-                                        @can('admin.almacen.productos.especificaciones')
+                                    <td class="p-2 text-end">
+                                        @can('admin.almacen.productos.especificacions')
                                             <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
                                                 wire:loading.attr="disabled" />
                                         @endcan
@@ -35,21 +34,6 @@
                             @endforeach
                         </x-slot>
                     </x-table>
-
-
-                    {{-- <div class="w-full flex flex-wrap gap-1">
-                        @foreach ($producto->especificaciones as $item)
-                            <span
-                                class="text-[10px] inline-flex gap-2 items-center justify-between p-1 font-medium rounded-md bg-fondospancardproduct text-textspancardproduct">
-                                {{ $item->caracteristica->name }} : {{ $item->name }}
-
-                                @can('admin.almacen.productos.especificaciones')
-                                    <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
-                                        wire:loading.attr="disabled" />
-                                @endcan
-                            </span>
-                        @endforeach
-                    </div> --}}
                 @endif
 
                 @if (count($caracteristicas) > 0)
@@ -75,7 +59,7 @@
                                         class="w-full h-full object-cover">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">
-                                    <x-span-text :text="$item->url" class="truncate leading-3" />
+                                    <x-span-text :text="$item->url" class="truncate leading-3 flex-1" />
                                     @can('admin.almacen.productos.images')
                                         <x-button-delete onclick="confirmDeleteImage({{ $item->id }})"
                                             wire:loading.attr="disabled" />

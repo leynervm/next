@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="CLIENTES" route="admin.clientes">
             <x-slot name="icon">
@@ -27,4 +27,4 @@
         <livewire:admin.clients.view-client :client="$client" />
     </div>
 
-</x-app-layout>
+</x-admin-layout>

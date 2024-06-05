@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @if (Module::isEnabled('Almacen'))
             @can('admin.almacen')
@@ -104,4 +104,4 @@
             <livewire:modules.almacen.productos.show-productos />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

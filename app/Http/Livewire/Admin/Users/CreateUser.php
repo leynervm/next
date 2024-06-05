@@ -20,6 +20,7 @@ use Spatie\Permission\Models\Role;
 class CreateUser extends Component
 {
 
+    public $open = false;
     public $addemployer = false;
 
     public $document, $name, $email, $password, $password_confirmation,
@@ -27,6 +28,8 @@ class CreateUser extends Component
     public $nacimiento, $sueldo, $horaingreso, $horasalida, $turno_id,
         $sexo, $areawork_id,   $telefono, $employer;
     public $selectedRoles = [];
+
+    public $userasign, $searchemail;
 
 
     protected function rules()
@@ -218,4 +221,48 @@ class CreateUser extends Component
             $this->reset(['employer']);
         }
     }
+
+    // public function buscarusuario()
+    // {
+
+    //     $this->searchemail = trim($this->searchemail);
+    //     $this->validate([
+    //         'searchemail' => ['required', 'string', 'min:6', 'email']
+    //     ]);
+
+    //     $user = User::where('email',  $this->searchemail)->first();
+
+    //     if ($user) {
+    //         if ($user->sucursal) {
+    //             $mensaje = response()->json([
+    //                 'title' => 'USUARIO DEL CORREO INGRESADO SE ENCUENTRA ASOCIADO A SUCURSAL !',
+    //                 'text' => 'Se encontraron registros de usuario asociados a una sucursal.',
+    //                 'type' => 'warning'
+    //             ])->getData();
+    //             $this->resetValidation('searchemail');
+    //             $this->dispatchBrowserEvent('validation', $mensaje);
+    //             return false;
+    //         } else {
+    //             $this->userasign = $user;
+    //         }
+    //     } else {
+    //         $mensaje = response()->json([
+    //             'title' => 'NO SE ENCONTRARON RESULTADOS DE USUARIOS !',
+    //             'text' => 'No existen registros de usuarios con el correo ingresado en la base de datos.',
+    //             'type' => 'warning'
+    //         ])->getData();
+    //         $this->resetValidation('searchemail');
+    //         $this->dispatchBrowserEvent('validation', $mensaje);
+    //         return false;
+    //     }
+    // }
+
+    // public function limpiaruserasign()
+    // {
+    //     $this->reset(['userasign', 'searchemail']);
+    // }
+
+    // public function asignarsucursal()
+    // {
+    // }
 }

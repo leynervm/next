@@ -135,12 +135,22 @@ class ShowUser extends Component
                 }
             }
 
-            if (empty($this->user->sucursal_id)) {
-                $this->user->roles()->sync([]);
-            } else {
-                $this->user->roles()->sync($this->selectedRoles);
+            if (empty($this->user->sucursal_id) || $this->user->isDirty('sucursal_id')) {
+                $existsopenboxes = $this->user->openboxes()->open()->exists();
+                if ($existsopenboxes) {
+                    $mensaje = response()->json([
+                        'title' => 'USUARIO TIENE CAJAS ACTIVAS EN USO !',
+                        'text' => "Existen registros de cajas diarias vinculados al usuario en sucursal asignado, primero debe cerrar las cajas aperturadas.",
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
             }
 
+            $roles = empty($this->user->sucursal_id) ? [] : $this->selectedRoles;
+            if (!$this->user->isAdmin()) {
+                $this->user->roles()->sync($roles);
+            }
             $this->user->save();
             DB::commit();
             $this->resetValidation();
@@ -159,6 +169,17 @@ class ShowUser extends Component
     {
 
         if (Module::isEnabled('Employer')) {
+            $existsopenboxes = $this->user->openboxes()->open()->exists();
+            if ($existsopenboxes) {
+                $mensaje = response()->json([
+                    'title' => 'USUARIO TIENE CAJAS ACTIVAS EN USO !',
+                    'text' => "Existen registros de cajas diarias vinculados al usuario en sucursal asignado, primero debe cerrar las cajas aperturadas.",
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+
+
             if ($this->user->employer) {
                 $this->user->employer->user_id = null;
                 $this->user->employer->save();

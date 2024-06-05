@@ -1,5 +1,4 @@
-<div class="relative" x-data="{ loading: false }">
-
+<div>
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
         <div class="w-full sm:max-w-sm">
             <x-label value="Cliente :" />
@@ -74,28 +73,9 @@
                 </div>
             </div>
         @endif
-
-        @if (count($sucursals) > 1)
-            <div class="w-full xs:w-full xs:max-w-xs">
-                <x-label value="Sucursal :" />
-                <div id="parentsearchsucursal" class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2Sucursal"
-                    wire:ignore>
-                    <x-select id="searchsucursal" x-ref="selectsucursal" class="w-full" data-placeholder="null">
-                        <x-slot name="options">
-                            @if (count($sucursals))
-                                @foreach ($sucursals as $item)
-                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                @endforeach
-                            @endif
-                        </x-slot>
-                    </x-select>
-                    <x-icon-select />
-                </div>
-            </div>
-        @endif
     </div>
 
-    <div x-show="loading" wire:loading wire:loading.flex class="loading-overlay rounded">
+    <div wire:loading.flex class="fixed loading-overlay rounded hidden">
         <x-loading-next />
     </div>
 
@@ -105,7 +85,7 @@
         </div>
     @endif
 
-    <x-table class="mt-1">
+    <x-table class="mt-1 overflow-hidden">
         <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium text-left">
@@ -135,9 +115,6 @@
                     IGV</th>
                 <th scope="col" class="p-2 font-medium">
                     GRATUITO</th>
-
-                {{-- <th scope="col" class="p-2 font-medium">
-                    OTROS</th> --}}
                 <th scope="col" class="p-2 font-medium">
                     TOTAL</th>
                 <th scope="col" class="p-2 font-medium">
@@ -146,10 +123,8 @@
                     REFERENCIA</th>
                 <th scope="col" class="p-2 font-medium">
                     SUCURSAL</th>
-                @can('admin.facturacion.sunat')
-                    <th scope="col" class="p-2 font-medium">
-                        SUNAT</th>
-                @endcan
+                <th scope="col" class="p-2 font-medium">
+                    SUNAT</th>
                 <th scope="col" class="p-2 font-medium">
                     DESCRIPCIÓN SUNAT</th>
                 <th scope="col" class="p-2 font-medium text-center">
@@ -188,10 +163,6 @@
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->gratuito + $item->igvgratuito, 3, '.', ', ') }}
                         </td>
-                        {{-- <td class="p-2 text-center">
-                            {{ $item->moneda->simbolo }}
-                            {{ $item->otros }}
-                        </td> --}}
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
                             {{ number_format($item->total, 3, '.', ', ') }}
@@ -199,9 +170,6 @@
                         <td class="p-2 text-center">
                             {{ $item->typepayment->name }}
                         </td>
-                        {{-- <td class="p-2 text-center">
-                            {{ $item->moneda->currency }}
-                        </td> --}}
                         <td class="p-2 text-center">
                             {{ $item->referencia }}
                         </td>
@@ -237,25 +205,20 @@
                             @endif
                         </td>
                         <td class="p-2 text-center">
-                            {{-- @if ($item->codesunat != '0')
-                                <p>{{ $item->codesunat }}</p>
-                            @endif
-                            <p class="leading-3 max-w-[150px]">{{ $item->descripcion }}</p> --}}
-
                             <div class="max-w-[120px] relative" x-data="{ showmessage: false }" @mouseover="showmessage=true"
                                 @mouseover.away = "showmessage = false">
                                 <p class="truncate">{{ $item->descripcion }}</p>
                                 @if (!$item->isSendSunat())
                                     <p>{{ $item->codesunat }}</p>
                                 @endif
-                                <small x-show="showmessage" x-transition
-                                    class="cursor-pointer absolute right-0 font-medium rounded-md p-0.5 bg-fondolinknav text-[9px] leading-3 whitespace-normal text-colorlinknav z-10 transition duration-150">
-                                    {{ $item->descripcion }}</small>
+                                <span x-show="showmessage" x-transition
+                                    class="cursor-pointer absolute right-0 top-0 font-medium rounded-md p-0.5 bg-fondolinknav text-xs leading-3 whitespace-normal text-colorlinknav z-10 transition duration-150">
+                                    {{ $item->descripcion }}</span>
                             </div>
                         </td>
                         <td class="p-2 align-middle">
                             <div class="flex items-center justify-end gap-1">
-                                <button
+                                <a href="{{ route('admin.facturacion.print.a4', $item) }}" target="_blank"
                                     class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
                                     <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
                                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -266,8 +229,8 @@
                                         <path
                                             d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                     </svg>
-                                </button>
-                                <button
+                                </a>
+                                <a href="{{ route('admin.facturacion.print.ticket', $item) }}" target="_blank"
                                     class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
                                     <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
                                         fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -278,7 +241,7 @@
                                         <path
                                             d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
                                     </svg>
-                                </button>
+                                </a>
 
                                 @if ($item->seriecomprobante->typecomprobante->sendsunat && $item->codesunat == '0')
                                     <div x-data="{ dropdownOpen: false }" class="">
@@ -293,7 +256,8 @@
                                         </button>
                                         <div x-show="dropdownOpen" @click.away="dropdownOpen = false"
                                             class="absolute right-0 mt-1 w-36 bg-fondodropdown rounded-md shadow shadow-fondominicard border border-borderminicard z-20">
-                                            <a href="#"
+                                            <a target="_blank"
+                                                href="{{ route('download.xml', ['comprobante' => $item, 'type' => 'xml']) }}"
                                                 class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
                                                 DESCARGAR XML
                                                 <svg class="w-4 h-4 block scale-110"
@@ -307,7 +271,8 @@
                                                         d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                                 </svg>
                                             </a>
-                                            <a href="#"
+                                            <a target="_blank"
+                                                href="{{ route('download.xml', ['comprobante' => $item, 'type' => 'cdr']) }}"
                                                 class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
                                                 DESCARGAR CDR
                                                 <svg class="w-4 h-4 block scale-110"
@@ -321,8 +286,9 @@
                                                         d="M4.5 7.5C4.99153 8.0057 6.29977 10 7 10M9.5 7.5C9.00847 8.0057 7.70023 10 7 10M7 10L7 2" />
                                                 </svg>
                                             </a>
-                                            <a href="#"
-                                                class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
+                                            <button wire:click="enviarxml({{ $item->id }})"
+                                                wire:loading.attr="disabled"
+                                                class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between disabled:opacity-25">
                                                 ENVIAR CORREO
                                                 <svg class="w-4 h-4 block scale-110"
                                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -334,7 +300,7 @@
                                                     <path
                                                         d="M22 17.5L14 17.5M22 17.5C22 16.7998 20.0057 15.4915 19.5 15M22 17.5C22 18.2002 20.0057 19.5085 19.5 20" />
                                                 </svg>
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 @endif

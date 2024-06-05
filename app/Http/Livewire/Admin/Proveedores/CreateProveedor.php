@@ -10,6 +10,7 @@ use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateProveedor extends Component
@@ -20,6 +21,7 @@ class CreateProveedor extends Component
     public $document, $name, $direccion, $ubigeo_id,
         $proveedortype_id, $telefono, $email, $document2, $name2, $telefono2;
 
+    public $addcontacto = false;
 
     protected function rules()
     {
@@ -29,11 +31,20 @@ class CreateProveedor extends Component
             'direccion' => ['required', 'string', 'min:3'],
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'proveedortype_id' => ['required', 'integer', 'min:1', 'exists:proveedortypes,id'],
-            'telefono' => ['required', 'numeric', 'digits_between:7,9'],
+            'telefono' => ['nullable', 'numeric', 'min:9', 'regex:/^\d{9}$/'],
             'email' => ['nullable', 'email', 'min:6'],
-            'document2' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/'],
-            'name2' => ['required', 'string', 'min:3'],
-            'telefono2' => ['required', 'numeric', 'digits_between:7,9'],
+            'document2' => [
+                'nullable', Rule::requiredIf($this->addcontacto),
+                'numeric', 'digits:8', 'regex:/^\d{8}$/'
+            ],
+            'name2' => [
+                'nullable', Rule::requiredIf($this->addcontacto),
+                'string', 'min:3'
+            ],
+            'telefono2' => [
+                'nullable', Rule::requiredIf($this->addcontacto),
+                'numeric', 'digits_between:7,9'
+            ],
         ];
     }
 
@@ -63,19 +74,22 @@ class CreateProveedor extends Component
             DB::beginTransaction();
             $proveedor = Proveedor::create($validateData);
 
-            $proveedor->telephones()->create([
-                'phone' => $this->telefono
-            ]);
+            if (trim($this->telefono) !== '') {
+                $proveedor->telephones()->create([
+                    'phone' => $this->telefono
+                ]);
+            }
+            
+            if ($this->addcontacto) {
+                $representante = $proveedor->contacts()->create([
+                    'document' => $this->document2,
+                    'name' => $this->name2
+                ]);
 
-            $representante = $proveedor->contacts()->create([
-                'document' => $this->document2,
-                'name' => $this->name2
-            ]);
-
-            $representante->telephone()->create([
-                'phone' => $this->telefono2
-            ]);
-
+                $representante->telephone()->create([
+                    'phone' => $this->telefono2
+                ]);
+            }
             DB::commit();
             $this->dispatchBrowserEvent('created');
             return redirect()->route('admin.proveedores');

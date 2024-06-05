@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3">
         @livewire('soporte::entornos.create-entorno')
@@ -10,4 +10,4 @@
         @livewire('soporte::entornos.show-entornos')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

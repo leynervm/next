@@ -16,6 +16,7 @@ class CreateCategoriesTable extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->smallIncrements('id')->unsigned();
             $table->string('name', 255);
+            $table->string('slug', 255)->unique();
             $table->unsignedSmallInteger('orden');
             $table->softDeletes();
         });

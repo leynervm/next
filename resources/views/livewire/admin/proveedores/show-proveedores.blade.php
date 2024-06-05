@@ -98,7 +98,8 @@
                         </td>
 
                         <td class="p-2 text-xs">
-                            @if (count($item->telephones))
+                            @if (count($item->telephones) > 0)
+                                {{-- {{ $item->telephones }} --}}
                                 <div class="flex flex-wrap gap-1">
                                     @foreach ($item->telephones as $telef)
                                         <div

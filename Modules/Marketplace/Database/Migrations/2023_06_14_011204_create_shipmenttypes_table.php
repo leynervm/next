@@ -14,12 +14,11 @@ class CreateShipmenttypesTable extends Migration
     public function up()
     {
         Schema::create('shipmenttypes', function (Blueprint $table) {
-            $table->id();
-            $table->string('name', 100);
+            $table->smallIncrements('id')->unsigned();
+            $table->string('name', 255);
             $table->string('descripcion', 255)->nullable();
-            $table->integer('requiresend')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
+            $table->char('isenvio', 1)->default(0);
+            $table->softDeletes();
         });
     }
 

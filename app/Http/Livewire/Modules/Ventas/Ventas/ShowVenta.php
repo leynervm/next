@@ -44,14 +44,14 @@ class ShowVenta extends Component
         ];
     }
 
-    protected $messages = [
-        'cuotas.*.id.required' => 'Id de cuota requerido',
-        'cuotas.*.date.required' => 'Fecha de pago de cuota requerido',
-        'cuotas.*.date.after_or_equal' => 'Fecha de pago debe ser mayor igual a la actual',
-        'cuotas.*.amount.required' => 'Monto de cuota requerido',
-        'tvitem.*.serie.required' => 'Serie del producto requerido',
-        'tvitem.*.tvitem_id.exists' => 'Tvitem no existe en la base de datos',
-    ];
+    // protected $messages = [
+    //     'cuotas.*.id.required' => 'Id de cuota requerido',
+    //     'cuotas.*.date.required' => 'Fecha de pago de cuota requerido',
+    //     'cuotas.*.date.after_or_equal' => 'Fecha de pago debe ser mayor igual a la actual',
+    //     'cuotas.*.amount.required' => 'Monto de cuota requerido',
+    //     'tvitem.*.serie.required' => 'Serie del producto requerido',
+    //     'tvitem.*.tvitem_id.exists' => 'Tvitem no existe en la base de datos',
+    // ];
 
     public function mount(Venta $venta, Concept $concept)
     {
@@ -97,6 +97,8 @@ class ShowVenta extends Component
             $this->cuota->savePayment(
                 $this->venta->sucursal_id,
                 $this->cuota->amount,
+                $this->cuota->amount,
+                null,
                 $this->venta->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::INGRESO->value,

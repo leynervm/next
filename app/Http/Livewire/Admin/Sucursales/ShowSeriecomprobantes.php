@@ -20,6 +20,11 @@ class ShowSeriecomprobantes extends Component
     public $typecomprobante_id, $serie;
     public $contador = 0;
 
+
+    protected $messages = [
+        'serie.regex' => 'mensaje cambiado'
+    ];
+
     public function mount(Sucursal $sucursal)
     {
         $this->sucursal = $sucursal;
@@ -59,34 +64,41 @@ class ShowSeriecomprobantes extends Component
         $this->serie = trim($this->serie);
         $regex = '';
         $code = null;
+        $mensaje = 'El campo serie es obligatorio';
 
         if ($this->typecomprobante_id) {
             $typecomprobante = Typecomprobante::find($this->typecomprobante_id);
 
             switch ($typecomprobante->code) {
                 case '01':
-                    $regex = 'regex:/^F[A-Z0-9][0-9]{2}$/';
+                    $regex = 'regex:/^F[A-Z0-9][0-9][1-9]$/';
                     $code = null;
+                    $mensaje = 'El campo serie debe tener la combinación F[A-Z0-9][0-9][1-9]';
                     break;
                 case '03':
-                    $regex = 'regex:/^B[A-Z0-9][0-9]{2}$/';
+                    $regex = 'regex:/^B[A-Z0-9][0-9][1-9]$/';
                     $code = null;
+                    $mensaje = 'El campo serie debe tener la combinación B[A-Z0-9][0-9][1-9]';
                     break;
                 case '07':
-                    $regex = $typecomprobante->referencia == '01' ? 'regex:/^[F][A-Z0-9][0-9]{2}$/' : 'regex:/^[B][A-Z0-9][0-9]{2}$/';
+                    $regex = $typecomprobante->referencia == '01' ? 'regex:/^F[A-Z0-9][0-9][1-9]$/' : 'regex:/^B[A-Z0-9][0-9][1-9]$/';
                     $code = $typecomprobante->referencia;
+                    $mensaje = $typecomprobante->referencia == '01' ? 'El campo serie debe tener la combinación F[A-Z0-9][0-9][1-9]' : 'El campo serie debe tener la combinación B[A-Z0-9][0-9][1-9]';
                     break;
                 case '09':
-                    $regex = 'regex:/^[TE][A-Z0-9][0-9]{2}$/';
+                    $regex = $typecomprobante->sendsunat ? 'regex:/^T[A-Z0-9][0-9][1-9]$/' : 'regex:/^E[A-Z0-9][0-9][1-9]$/';
+                    $mensaje = $typecomprobante->sendsunat ? 'El campo serie debe tener la combinación T[A-Z0-9][0-9][1-9]' : 'El campo serie debe tener la combinación E[A-Z0-9][0-9][1-9]';
                     $code = null;
                     break;
                 case 'VT':
-                    $regex = 'regex:/^V[A-Z0-9][0-9]{2}$/';
+                    $regex = 'regex:/^TK[0-9][1-9]$/';
+                    $mensaje = 'El campo serie debe tener la combinación TK[0-9][1-9]';
                     $code = null;
                     break;
                 default:
                     $regex = '';
                     $code = null;
+                    $mensaje = 'El campo serie es obligatorio';
                     break;
             }
         }
@@ -101,6 +113,8 @@ class ShowSeriecomprobantes extends Component
                 new CampoUnique('seriecomprobantes', 'serie', $this->seriecomprobante->id ?? null, true)
             ],
             'contador' => ['required', 'integer', 'min:0']
+        ], [
+            'serie.regex' => $mensaje
         ]);
 
         try {

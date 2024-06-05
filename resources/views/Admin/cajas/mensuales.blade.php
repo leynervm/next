@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="CAJAS" route="admin.cajas">
             <x-slot name="icon">
@@ -41,4 +41,4 @@
             @livewire('admin.mounthboxes.show-mounthboxes')
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

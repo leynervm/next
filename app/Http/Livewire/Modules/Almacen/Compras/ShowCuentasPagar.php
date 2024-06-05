@@ -27,25 +27,26 @@ class ShowCuentasPagar extends Component
     public function render()
     {
 
-        $sumatorias = Cuota::with(['moneda', 'sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->whereHasMorph('cuotable', Compra::class)
+        $sumatorias = Cuota::with(['moneda'])
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->whereHasMorph('cuotable', Compra::class)
             ->doesntHave('cajamovimiento')
             ->selectRaw('moneda_id, SUM(amount) as total')->groupBy('moneda_id')
             ->orderBy('total', 'desc')->get();
 
-        $cuotas = Compra::withWhereHas('proveedor', function ($query) {
-            if (trim($this->search) !== '') {
-                $query->where('document', 'ILIKE', '%' . $this->search . '%')
-                    ->orWhere('name', 'ILIKE', '%' . $this->search . '%');
-            }
-        })->withWhereHas('cuotas', function ($query) {
-            $query->whereDoesntHave('cajamovimiento')
-                ->orderBy('expiredate', 'asc');
-            if (trim($this->datepay) !== '') {
-                $query->where('expiredate', $this->datepay);
-            }
-        });
+        $cuotas = Compra::where('sucursal_id', auth()->user()->sucursal_id)
+            ->withWhereHas('proveedor', function ($query) {
+                if (trim($this->search) !== '') {
+                    $query->where('document', 'ILIKE', '%' . $this->search . '%')
+                        ->orWhere('name', 'ILIKE', '%' . $this->search . '%');
+                }
+            })->withWhereHas('cuotas', function ($query) {
+                $query->whereDoesntHave('cajamovimiento')
+                    ->orderBy('expiredate', 'asc');
+                if (trim($this->datepay) !== '') {
+                    $query->where('expiredate', $this->datepay);
+                }
+            });
 
         if (trim($this->comprobante) !== '') {
             $cuotas->where('referencia', 'ILIKE', '%' . $this->comprobante . '%');

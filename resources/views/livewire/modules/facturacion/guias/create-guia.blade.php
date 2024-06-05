@@ -619,17 +619,18 @@
                     @foreach ($carshoops as $item)
                         @php
                             $image = null;
-
-                            if (count($item->producto->images)) {
-                                if (count($item->producto->defaultImage)) {
-                                    $image = asset('storage/productos/' . $item->producto->defaultImage->first()->url);
+                            if (count($item->producto->images) > 0) {
+                                if ($item->producto->images()->default()->exists()) {
+                                    $image = asset(
+                                        'storage/productos/' . $item->producto->images()->default()->first()->url,
+                                    );
                                 } else {
                                     $image = asset('storage/productos/' . $item->producto->images->first()->url);
                                 }
                             }
                         @endphp
 
-                        <x-card-producto :name="$item->producto->name" :image="$image ?? null" :almacen="$item->almacen->name" :category="$item->producto->category->name">
+                        <x-card-producto :name="$item->producto->name" :image="$image" :almacen="$item->almacen->name" :category="$item->producto->category->name">
                             <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
                                 <x-span-text :text="$item->cantidad . ' ' . $item->producto->unit->name" class="leading-3 !tracking-normal" />
 

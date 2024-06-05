@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
 
         @if (Module::isEnabled('Almacen'))
@@ -64,4 +64,4 @@
             <livewire:admin.promociones.show-promociones />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

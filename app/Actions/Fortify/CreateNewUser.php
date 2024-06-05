@@ -3,6 +3,8 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Rules\CampoUnique;
+use App\Rules\ValidateDocument;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
@@ -21,6 +23,10 @@ class CreateNewUser implements CreatesNewUsers
     public function create(array $input)
     {
         Validator::make($input, [
+            'document' => [
+                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                new ValidateDocument(), new CampoUnique('users', 'document', null, true)
+            ],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
@@ -28,6 +34,7 @@ class CreateNewUser implements CreatesNewUsers
         ])->validate();
 
         return User::create([
+            'document' => trim($input['document']),
             'name' => $input['name'],
             'email' => $input['email'],
             'password' => Hash::make($input['password']),

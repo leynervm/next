@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.cajas')
             <x-link-breadcrumb text="CAJAS" route="admin.cajas">
@@ -35,14 +35,18 @@
     </x-slot>
 
     <div class="flex flex-wrap gap-2">
-        @can('admin.cajas.mensuales')
-            @if (!$monthbox)
+        @if (!$monthbox)
+            @can('admin.cajas.mensuales.create')
                 <x-link-next href="{{ route('admin.cajas.mensuales') }}" titulo="Aperturar caja mensual"
                     class="text-orange-500 bg-transparent">
                     <x-icon-config />
                 </x-link-next>
-            @endif
-        @endcan
+            @else
+                <x-link-next href="#" titulo="Aperturar caja mensual" class="text-orange-500 bg-transparent">
+                    <x-icon-config />
+                </x-link-next>
+            @endcan
+        @endif
 
         @can('admin.cajas.aperturas')
             @if ($openbox)
@@ -135,4 +139,4 @@
             <livewire:admin.cajamovimientos.show-cajamovimientos />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

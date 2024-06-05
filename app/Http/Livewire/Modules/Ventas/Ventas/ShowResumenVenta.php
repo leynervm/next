@@ -28,6 +28,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Luecano\NumeroALetras\NumeroALetras;
 use Modules\Ventas\Entities\Venta;
 use Nwidart\Modules\Facades\Module;
 
@@ -186,7 +187,7 @@ class ShowResumenVenta extends Component
             ],
             'direccionorigen' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'min:12',
+                'string', 'min:6',
             ],
             'ubigeodestino_id' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
@@ -194,7 +195,7 @@ class ShowResumenVenta extends Component
             ],
             'direcciondestino' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'min:12',
+                'string', 'min:6',
             ],
             'motivotraslado_id' => [
                 'nullable', Rule::requiredIf($this->incluyeguia),
@@ -510,16 +511,16 @@ class ShowResumenVenta extends Component
                 'date' => now('America/Lima'),
                 'seriecompleta' => $seriecomprobante->serie . '-' . $numeracion,
                 'direccion' => $this->direccion,
-                'exonerado' => number_format($this->exonerado, 4, '.', ''),
-                'gravado' => number_format($this->gravado, 4, '.', ''),
-                'gratuito' => number_format($gratuito, 4, '.', ''),
+                'exonerado' => number_format($this->exonerado, 34, '.', ''),
+                'gravado' => number_format($this->gravado, 3, '.', ''),
+                'gratuito' => number_format($gratuito, 3, '.', ''),
                 'inafecto' => number_format($this->inafecto, 3, '.', ''),
-                'descuento' => number_format($this->descuentos, 4, '.', ''),
-                'otros' => number_format($this->otros, 4, '.', ''),
-                'igv' => number_format($this->igv, 4, '.', ''),
-                'igvgratuito' => number_format($igvgratuito, 4, '.', ''),
-                'subtotal' => number_format($this->gravado + $this->exonerado + $this->inafecto, 4, '.', ''),
-                'total' => number_format($this->total, 4, '.', ''),
+                'descuento' => number_format($this->descuentos, 3, '.', ''),
+                'otros' => number_format($this->otros, 3, '.', ''),
+                'igv' => number_format($this->igv, 3, '.', ''),
+                'igvgratuito' => number_format($igvgratuito, 3, '.', ''),
+                'subtotal' => number_format($this->gravado + $this->exonerado + $this->inafecto, 3, '.', ''),
+                'total' => number_format($this->total, 3, '.', ''),
                 'tipocambio' => $this->moneda->code == 'USD' ? $this->empresa->tipocambio : null,
                 'increment' => $this->increment ?? 0,
                 'paymentactual' => number_format($this->typepayment->paycuotas ? $this->paymentactual : $this->total, 4, '.', ''),
@@ -537,6 +538,8 @@ class ShowResumenVenta extends Component
                 $venta->savePayment(
                     $this->sucursal->id,
                     $this->paymentactual > 0 ? $this->paymentactual : $this->total,
+                    $this->paymentactual > 0 ? $this->paymentactual : $this->total,
+                    null,
                     $this->moneda_id,
                     $this->methodpayment_id,
                     MovimientosEnum::INGRESO->value,
@@ -550,25 +553,26 @@ class ShowResumenVenta extends Component
 
             if (Module::isEnabled('Facturacion')) {
                 if ($seriecomprobante->typecomprobante->isSunat()) {
+                    $leyenda = new NumeroALetras();
                     $comprobante = $venta->comprobante()->create([
                         'seriecompleta' => $seriecomprobante->serie . '-' . $numeracion,
                         'date' => Carbon::now('America/Lima'),
                         'expire' => Carbon::now('America/Lima')->format('Y-m-d'),
                         'direccion' => $this->direccion,
-                        'exonerado' => number_format($this->exonerado, 4, '.', ''),
-                        'gravado' => number_format($this->gravado, 4, '.', ''),
-                        'gratuito' => number_format($gratuito, 4, '.', ''),
-                        'inafecto' => number_format($this->inafecto, 4, '.', ''),
-                        'descuento' => number_format($this->descuentos, 4, '.', ''),
-                        'otros' => number_format($this->otros, 4, '.', ''),
-                        'igv' => number_format($this->igv, 4, '.', ''),
-                        'igvgratuito' => number_format($igvgratuito, 4, '.', ''),
-                        'subtotal' => number_format($this->gravado + $this->exonerado + $this->inafecto, 4, '.', ''),
-                        'total' => number_format($this->total, 4, '.', ''),
+                        'exonerado' => number_format($this->exonerado, 3, '.', ''),
+                        'gravado' => number_format($this->gravado, 3, '.', ''),
+                        'gratuito' => number_format($gratuito, 3, '.', ''),
+                        'inafecto' => number_format($this->inafecto, 3, '.', ''),
+                        'descuento' => number_format($this->descuentos, 3, '.', ''),
+                        'otros' => number_format($this->otros, 3, '.', ''),
+                        'igv' => number_format($this->igv, 3, '.', ''),
+                        'igvgratuito' => number_format($igvgratuito, 3, '.', ''),
+                        'subtotal' => number_format($this->gravado + $this->exonerado + $this->inafecto, 3, '.', ''),
+                        'total' => number_format($this->total, 3, '.', ''),
                         'paymentactual' => number_format($this->typepayment->paycuotas ? $this->paymentactual : $this->total, 4, '.', ''),
                         'percent' => $this->empresa->igv,
                         'referencia' => $venta->seriecompleta,
-                        'leyenda' => 'SON SOLES/100',
+                        'leyenda' => $leyenda->toInvoice($this->total, 2, 'NUEVOS SOLES'),
                         'client_id' => $client->id,
                         'typepayment_id' => $this->typepayment_id,
                         'seriecomprobante_id' => $this->seriecomprobante_id,
@@ -897,14 +901,12 @@ class ShowResumenVenta extends Component
                 });
             DB::commit();
             $this->resetValidation();
-            $this->reset();
-            $this->dispatchBrowserEvent('created');
-
+            $this->dispatchBrowserEvent('toast', toastJSON('Venta registrado correctamente'));
             if (auth()->user()->hasPermissionTo('admin.ventas.edit')) {
                 return redirect()->route('admin.ventas.edit', $venta);
-            } else {
-                return redirect()->route('admin.ventas');
             }
+            return redirect()->route('admin.ventas');
+            // $this->reset();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

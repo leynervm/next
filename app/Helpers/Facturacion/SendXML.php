@@ -18,7 +18,6 @@ class SendXML
         $ruta = $ruta_archivo_xml . $nombre . '.xml';
         // $ruta_firma = $rutacertificado . 'certificado_prueba_sunat.pfx';
         $result = $objFirma->signatureXML($flg_firma, $ruta, $rutacertificado, $pass_firma);
-
         try {
             if ($result->respuesta) {
                 $zip = new ZipArchive();
@@ -93,7 +92,8 @@ class SendXML
                             'codRespuesta' => $response->status(),
                             'code' => $codeResponse,
                             'descripcion' => $descripcion,
-                            'notes' => $notes
+                            'notes' => $notes,
+                            'hash' => $result->hash_cpe,
                         ]);
                     } else {
                         // dd($codigo, $mensaje);

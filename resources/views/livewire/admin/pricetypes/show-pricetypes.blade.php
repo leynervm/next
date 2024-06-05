@@ -111,7 +111,7 @@
                     <x-label-check for="web_edit">
                         <x-input wire:model.defer="pricetype.web" name="web" value="1" type="checkbox"
                             id="web_edit" />
-                        PREDETERMINADO PARA VENTAS WEB
+                        PREDETERMINADO PARA TIENDA WEB SIN INICIAR SESIÓN
                     </x-label-check>
                     <x-jet-input-error for="pricetype.web" />
                 </div>
@@ -120,7 +120,7 @@
                     <x-label-check for="edit_defaultlogin">
                         <x-input wire:model.defer="pricetype.defaultlogin" name="defaultlogin" value="1"
                             type="checkbox" id="edit_defaultlogin" />
-                        PREDETERMINADO PARA VENTAS WEB DESPUES LOGIN
+                        PREDETERMINADO PARA USUARIOS LOGEADOS EN TIENDA WEB
                     </x-label-check>
                     <x-jet-input-error for="pricetype.defaultlogin" />
                 </div>

@@ -53,14 +53,19 @@
 
                 <div class="w-full">
                     <x-label value="Género :" />
-                    <x-select class="block w-full" wire:model.defer="client.sexo" id="edit_sexo">
-                        <x-slot name="options">
-                            <option value="E">EMPRESARIAL</option>
-                            <option value="M">MASCULINO</option>
-                            <option value="F">FEMENINO</option>
-                        </x-slot>
-                    </x-select>
-                    <x-jet-input-error for="client.sexo" />
+                    <div class="relative" id="parenteditsexo" x-data="{ sexo: @entangle('client.sexo').defer }" x-init="SexoClient"
+                        wire:ignore>
+                        <x-select class="block w-full" x-ref="selectsexo" id="editsexo">
+                            <x-slot name="options">
+                                <option value="E">EMPRESARIAL</option>
+                                <option value="M">MASCULINO</option>
+                                <option value="F">FEMENINO</option>
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                        <x-jet-input-error for="client.sexo" />
+                    </div>
+
                 </div>
 
                 <div class="w-full">
@@ -464,6 +469,21 @@
             });
             this.$watch("ubigeo_id", (value) => {
                 this.select.val(value).trigger("change");
+            });
+        }
+
+        function SexoClient() {
+            this.selectSC = $(this.$refs.selectsexo).select2();
+            this.selectSC.val(this.sexo).trigger("change");
+            this.selectSC.on("select2:select", (event) => {
+                this.sexo = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("sexo", (value) => {
+                this.selectSC.val(value).trigger("change");
             });
         }
     </script>

@@ -141,6 +141,8 @@ class CreatePaymentEmployer extends Component
             $employerpayment->savePayment(
                 $this->employer->sucursal_id,
                 $this->amount,
+                $this->amount,
+                null,
                 $this->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::EGRESO->value,

@@ -17,7 +17,7 @@ class CreateVentasTable extends Migration
             $table->id();
             $table->dateTime('date');
             $table->string('seriecompleta', 13);
-            $table->string('direccion', 255);
+            $table->string('direccion', 255)->nullable();
             $table->decimal('exonerado', 18, 4);
             $table->decimal('gravado', 18, 4);
             $table->decimal('inafecto', 18, 4)->default(0);
@@ -35,12 +35,14 @@ class CreateVentasTable extends Migration
             $table->unsignedTinyInteger('typepayment_id');
             $table->bigInteger('seriecomprobante_id');
             $table->bigInteger('client_id')->nullable();
+            // $table->unsignedSmallInteger('shipmenttype_id')->nullable();
             $table->bigInteger('user_id');
             $table->unsignedTinyInteger('sucursal_id')->nullable();
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('typepayment_id')->on('typepayments')->references('id');
             $table->foreign('seriecomprobante_id')->on('seriecomprobantes')->references('id');
             $table->foreign('client_id')->on('clients')->references('id');
+            // $table->foreign('shipmenttype_id')->on('shipmenttypes')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->timestamps();

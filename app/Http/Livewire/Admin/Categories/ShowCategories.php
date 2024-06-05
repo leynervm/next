@@ -63,31 +63,31 @@ class ShowCategories extends Component
     {
 
         $this->authorize('admin.almacen.categorias.delete');
-        $productos = $category->productos()->count();
-        $cadena = FormatoPersonalizado::extraerMensaje([
-            'Productos' => $productos
-        ]);
+        // $productos = $category->productos()->count();
+        // $cadena = FormatoPersonalizado::extraerMensaje([
+        //     'Productos' => $productos
+        // ]);
 
-        if ($productos > 0) {
-            $mensaje = response()->json([
-                'title' => 'No se puede eliminar categoría, ' . $category->name,
-                'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-        } else {
-            DB::beginTransaction();
-            try {
-                $category->subcategories()->detach();
-                $category->delete();
-                DB::commit();
-                $this->dispatchBrowserEvent('deleted');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
+        // if ($productos > 0) {
+        //     $mensaje = response()->json([
+        //         'title' => 'No se puede eliminar categoría, ' . $category->name,
+        //         'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
+        //     ])->getData();
+        //     $this->dispatchBrowserEvent('validation', $mensaje);
+        // } else {
+        DB::beginTransaction();
+        try {
+            $category->subcategories()->detach();
+            $category->delete();
+            DB::commit();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
+        // }
     }
 }

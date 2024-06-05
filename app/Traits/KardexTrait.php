@@ -23,7 +23,7 @@ trait KardexTrait
                 'reference' => $reference,
                 'producto_id' => $producto_id,
                 'almacen_id' => $almacen_id,
-                'sucursal_id' => auth()->user()->employer->sucursal_id ?? null,
+                'sucursal_id' => auth()->user()->sucursal_id ?? null,
                 'user_id' => auth()->user()->id,
                 'promocion_id' => $promocion_id,
                 'kardeable_id' => $this->id,

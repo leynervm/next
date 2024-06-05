@@ -31,8 +31,8 @@ class CreateCarshoopsTable extends Migration
             $table->char('mode', 1)->default(0);
             $table->unsignedBigInteger('promocion_id')->nullable();
             $table->unsignedBigInteger('producto_id');
-            $table->unsignedTinyInteger('almacen_id');
-            $table->unsignedTinyInteger('moneda_id');
+            $table->unsignedTinyInteger('almacen_id')->nullable();
+            $table->unsignedTinyInteger('moneda_id')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->unsignedTinyInteger('sucursal_id');
             $table->unsignedBigInteger('cartable_id')->nullable();

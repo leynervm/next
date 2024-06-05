@@ -38,18 +38,18 @@
         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300"
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" x-show="open">
-        <div class="mr-3 flex items-center justify-center rounded-full {{ $bgalert }} text-white p-1">
+        <div class="mr-3 flex-shrink-0 flex items-center justify-center rounded-full {{ $bgalert }} text-white p-1">
             @if (isset($icono))
                 {{ $icono }}
             @endif
         </div>
-        <div class="w-full relative">
+        <div class="w-full flex-1 relative">
             <h3 class="mb-1 text-xs font-semibold pr-2 {{ $colortitlealert }}">
                 {{ $titulo }}</h3>
             <p class="text-textspancardproduct text-xs leading-3 font-medium">
                 {{ $mensaje }}</p>
-            <button class="hover:text-red-500 text-gray-400 absolute top-0 right-0" @click="open = false">
-                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <button class="w-4 h-4 hover:text-red-500 text-gray-400 absolute top-0 right-0" @click="open = false">
+                <svg class="w-ful h-full" viewBox="0 0 24 24" fill="currentColor" stroke="none">
                     <path
                         d="M18.8839 5.11612C19.372 5.60427 19.372 6.39573 18.8839 6.88388L6.88388 18.8839C6.39573 19.372 5.60427 19.372 5.11612 18.8839C4.62796 18.3957 4.62796 17.6043 5.11612 17.1161L17.1161 5.11612C17.6043 4.62796 18.3957 4.62796 18.8839 5.11612Z" />
                     <path

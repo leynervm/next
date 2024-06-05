@@ -43,7 +43,7 @@ class CreateClient extends Component
                 Rule::in(['M', 'F', 'E'])
             ],
             'nacimiento' => [
-                'nullable', 'date',
+                'nullable', 'date', 'before_or_equal:today'
                 // new ValidateNacimiento(10)
             ],
             'pricetype_id' => [

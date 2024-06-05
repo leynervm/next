@@ -56,11 +56,6 @@ class Client extends Model
         return $this->belongsTo(Pricetype::class);
     }
 
-    public function channelsale(): belongsTo
-    {
-        return $this->belongsTo(Channelsale::class);
-    }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

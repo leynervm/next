@@ -62,7 +62,7 @@
             <form wire:submit.prevent="update">
                 <x-label value="Tipo proveedor :" />
                 <x-input class="block w-full" wire:model.defer="proveedortype.name"
-                    placeholder="Descripción del concepto pago..." />
+                    placeholder="Descripción del tipo de proveedor..." />
                 <x-jet-input-error for="proveedortype.name" />
 
                 <div class="w-full flex pt-4 gap-2 justify-end">

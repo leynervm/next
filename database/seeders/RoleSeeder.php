@@ -20,6 +20,9 @@ class RoleSeeder extends Seeder
         $desarrollador = Role::firstOrCreate(['name' => 'DESARROLLADOR']);
         $admin = Role::firstOrCreate(['name' => 'ADMINISTRADOR']);
         $desarrollador->users()->sync([User::first()->id]);
+        $ventas = Role::firstOrCreate(['name' => 'VENDEDOR']);
+        $support = Role::firstOrCreate(['name' => 'SOPORTE TÉCNICO']);
+        $cotizador = Role::firstOrCreate(['name' => 'COTIZADOR']);
 
         // USERS
         Permission::firstOrCreate([
@@ -46,6 +49,13 @@ class RoleSeeder extends Seeder
         Permission::firstOrCreate([
             'name' => 'admin.users.delete',
             'descripcion' => 'Eliminar usuarios',
+            'table' => 'Usuarios',
+            'module' => 'Principal',
+            'orden' => '1'
+        ])->syncRoles([$desarrollador, $admin]);
+        Permission::firstOrCreate([
+            'name' => 'admin.users.restore',
+            'descripcion' => 'Restaurar usuarios',
             'table' => 'Usuarios',
             'module' => 'Principal',
             'orden' => '1'
@@ -110,21 +120,21 @@ class RoleSeeder extends Seeder
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $support, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.create',
             'descripcion' => 'Registrar clientes',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $support, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.edit',
             'descripcion' => 'Editar clientes',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.delete',
             'descripcion' => 'Eliminar clientes',
@@ -138,46 +148,36 @@ class RoleSeeder extends Seeder
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.contacts',
             'descripcion' => 'Administrar contactos del cliente',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.contacts.edit',
             'descripcion' => 'Editar contactos del cliente',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.phones',
             'descripcion' => 'Administrar teléfonos del cliente',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.clientes.phones.edit',
             'descripcion' => 'Editar teléfonos del cliente',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
 
-
-
-        // PANEL ADMINISTRATIVO CAJA
-        Permission::firstOrCreate([
-            'name' => 'admin.cajas',
-            'descripcion' => 'Administrar confguración de cajas',
-            'table' => 'Administrar cajas',
-            'module' => 'Caja',
-            'orden' => '2'
-        ])->syncRoles([$desarrollador,  $admin]);
 
 
         // MOVIMIENTOS
@@ -187,21 +187,21 @@ class RoleSeeder extends Seeder
             'table' => 'Movimientos caja',
             'module' => 'Caja',
             'orden' => '2'
-        ])->syncRoles([$desarrollador,  $admin]);
+        ])->syncRoles([$desarrollador,  $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.movimientos.create',
             'descripcion' => 'Registrar movimientos manuales',
             'table' => 'Movimientos caja',
             'module' => 'Caja',
             'orden' => '2'
-        ])->syncRoles([$desarrollador,  $admin]);
+        ])->syncRoles([$desarrollador,  $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.movimientos.delete',
             'descripcion' => 'Eliminar movimientos manuales',
             'table' => 'Movimientos caja',
             'module' => 'Caja',
             'orden' => '2'
-        ])->syncRoles([$desarrollador,  $admin]);
+        ])->syncRoles([$desarrollador,  $admin, $ventas]);
 
 
 
@@ -251,6 +251,7 @@ class RoleSeeder extends Seeder
         ])->syncRoles([$desarrollador, $admin]);
 
 
+
         // APERTURA CAJAS
         Permission::firstOrCreate([
             'name' => 'admin.cajas.aperturas',
@@ -258,24 +259,31 @@ class RoleSeeder extends Seeder
             'table' => 'Apertura cajas',
             'module' => 'Caja',
             'orden' => '2'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.aperturas.create',
             'descripcion' => 'Registrar apertura caja',
             'table' => 'Apertura cajas',
             'module' => 'Caja',
             'orden' => '2'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.aperturas.edit',
             'descripcion' => 'Editar apertura caja',
             'table' => 'Apertura cajas',
             'module' => 'Caja',
             'orden' => '2'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.aperturas.close',
             'descripcion' => 'Cerrar apertura caja',
+            'table' => 'Apertura cajas',
+            'module' => 'Caja',
+            'orden' => '2'
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
+        Permission::firstOrCreate([
+            'name' => 'admin.cajas.aperturas.closeothers',
+            'descripcion' => 'Cerrar apertura caja de otros usuarios',
             'table' => 'Apertura cajas',
             'module' => 'Caja',
             'orden' => '2'
@@ -289,21 +297,21 @@ class RoleSeeder extends Seeder
             'table' => 'Conceptos pago',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.conceptos.create',
             'descripcion' => 'Registrar conceptos pago',
             'table' => 'Conceptos pago',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.conceptos.edit',
             'descripcion' => 'Editar conceptos pago',
             'table' => 'Conceptos pago',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.conceptos.delete',
             'descripcion' => 'Eliminar conceptos pago',
@@ -320,21 +328,21 @@ class RoleSeeder extends Seeder
             'table' => 'Formas pago',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.methodpayments.create',
             'descripcion' => 'Registrar formas de pago',
             'table' => 'Formas pago',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.methodpayments.edit',
             'descripcion' => 'Editar formas de pago',
             'table' => 'Formas pago',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.cajas.methodpayments.delete',
             'descripcion' => 'Eliminar formas de pago',
@@ -480,14 +488,14 @@ class RoleSeeder extends Seeder
             'table' => 'Marcas',
             'module' => 'Principal',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $support, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.marcas.create',
             'descripcion' => 'Registrar marcas productos',
             'table' => 'Marcas',
             'module' => 'Principal',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $support, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.marcas.edit',
             'descripcion' => 'Editar marcas productos',

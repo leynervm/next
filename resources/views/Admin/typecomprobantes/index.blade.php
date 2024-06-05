@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="ADMINISTRACIÓN" route="admin.administracion">
             <x-slot name="icon">
@@ -37,4 +37,4 @@
             <livewire:admin.typecomprobantes.show-typecomprobantes />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

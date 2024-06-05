@@ -28,9 +28,10 @@ function verificarCarpeta($path, $disk = 'public')
 }
 
 
-function formatDecimalOrInteger($numero, $decimals = 2)
+function formatDecimalOrInteger($numero, $decimals = 2, $separate = '')
 {
-    return intval($numero) == floatval($numero) ? intval($numero) : number_format($numero, $decimals, '.', '');
+    $valueInteger = empty($separate) ? intval($numero) : number_format($numero, 0, '.', $separate);
+    return intval($numero) == floatval($numero) ? $valueInteger : number_format($numero, $decimals, '.', $separate);
 }
 
 function formatDate($date, $format = "DD MMMM YYYY hh:mm A")
@@ -100,6 +101,11 @@ function toastJSON($title, $icon = 'success')
 function getTiypemovimientos()
 {
     return \App\Enums\MovimientosEnum::cases() ?? [];
+}
+
+function getStatusPayWeb()
+{
+    return \App\Enums\StatusPayWebEnum::cases() ?? [];
 }
 
 
@@ -558,6 +564,7 @@ function get_sumatoria_combos(Promocion $promocion, $pricetype_id = null, $tipoc
     ])->getData();
 }
 
+
 function round_decimal($value, $roundedTo = 1)
 {
     $result = $value - floor($value);
@@ -568,4 +575,77 @@ function round_decimal($value, $roundedTo = 1)
     } else {
         return (float) $value;
     }
+}
+
+function get_suma_combos(Promocion $promocion, $pricetype_id = null)
+{
+    $total = 0;
+    $products = [];
+    foreach ($promocion->itempromos as $itempromo) {
+        $priceItemCombo = $pricetype_id ?  $itempromo->producto->calcularPrecioVentaLista($pricetype_id) : $itempromo->producto->pricesale;
+        if ($itempromo->isDescuento()) {
+            $priceItemCombo = $itempromo->producto->calcularPrecioDescuento($priceItemCombo, $itempromo->descuento, 0, $pricetype_id);
+        }
+        if ($itempromo->isGratuito()) {
+            $priceItemCombo = $itempromo->producto->pricebuy;
+        }
+        $total = $total + $priceItemCombo;
+        $products[] = [
+            'producto_id' => $itempromo->producto_id,
+            'name' => $itempromo->producto->name,
+            'price' => $priceItemCombo,
+        ];
+    }
+    return response()->json([
+        'total' => $total,
+        'products' => $products,
+    ])->getData();
+}
+
+function convertDolar($value, $tipocambio, $decimals = 2)
+{
+    if ($value > 0 && $tipocambio > 0) {
+        return number_format($value / $tipocambio, $decimals, '.', '');
+    }
+    return null;
+}
+
+/**
+ * @convertMoneda Convertir el valor de una moneda a otra.
+ * @param float $amount El monto a convertir
+ * @param string $code_moneda El código del tipo de moneda al que desea convertir
+ * @param string $separate separador de miles
+ * @return string valor convertido a la moneda enviada
+ */
+function convertMoneda(float $amount, string $code_moneda, float $tipo_cambio, int $decimals = 3, string $separate = '')
+{
+    if ($code_moneda == 'PEN') {
+        $amount_converted = number_format($amount * $tipo_cambio, $decimals, '.', '');
+    } else {
+        $amount_converted = number_format($amount / $tipo_cambio, $decimals, '.', '');
+    }
+
+    return (string) number_format($amount_converted, $decimals, '.', $separate);
+}
+
+function getPricetypeAuth($empresa)
+{
+    $pricetype = null;
+
+    if ($empresa) {
+        if ($empresa->usarLista()) {
+            if (auth()->user()) {
+                if (auth()->user()->client) {
+                    $pricetype = auth()->user()->client->pricetype;
+                }
+                if (empty($pricetype)) {
+                    $pricetype = Pricetype::login()->first();
+                }
+            } else {
+                $pricetype = Pricetype::web()->first();
+            }
+        }
+    }
+
+    return $pricetype;
 }

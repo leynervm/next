@@ -88,6 +88,8 @@
                         SALDO PENDIENTE</th>
                     <th scope="col" class="p-2 font-medium">
                         MONTO TOTAL</th>
+                    <th scope="col" class="p-2 font-medium">
+                        SUCURSAL</th>
                 </tr>
             </x-slot>
             @if (count($cuotas))
@@ -153,11 +155,9 @@
                                 {{ number_format($item->total - $item->paymentactual, 3, '.', ', ') }}
                             </td>
 
-                            {{-- <td class="p-2 text-[10px] text-center">
-                            @if ($item->userpay)
-                                {{ $item->userpay->name }}
-                            @endif
-                        </td> --}}
+                            <td class="p-2 text-[10px] text-center">
+                               {{$item->sucursal->name}}
+                            </td>
                         </tr>
                     @endforeach
                 </x-slot>

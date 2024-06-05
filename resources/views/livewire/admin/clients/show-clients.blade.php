@@ -153,8 +153,8 @@
                             @if (Module::isEnabled('Ventas'))
                                 <td class="p-2 text-xs text-center align-middle">
                                     <x-link-button class="inline-block"
-                                        href="{{ route('admin.clientes.historial', $item) }}">HISTORIAL
-                                        VENTAS</x-link-button>
+                                        href="{{ route('admin.clientes.historial', $item) }}">
+                                        HISTORIAL VENTAS</x-link-button>
                                 </td>
                             @endif
                         @endcan

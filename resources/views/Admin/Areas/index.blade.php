@@ -1,5 +1,4 @@
-<x-app-layout>
-
+<x-admin-layout>
     <div class="mt-3">
         @livewire('admin.areas.create-area')
     </div>
@@ -9,5 +8,4 @@
     <div class="mt-3">
         @livewire('admin.areas.show-areas')
     </div>
-
-</x-app-layout>
+</x-admin-layout>

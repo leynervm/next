@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @if (Module::isEnabled('Almacen'))
             @can('admin.almacen')
@@ -50,7 +50,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
+    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl">
         <livewire:modules.almacen.productos.create-producto />
     </div>
-</x-app-layout>
+</x-admin-layout>

@@ -23,7 +23,7 @@ class CreateProductosTable extends Migration
             $table->decimal('igv', 10, 4)->default(0);
             $table->integer('publicado')->default(0);
             $table->string('code', 24)->nullable();
-            $table->string('codefabricante', 24)->nullable();
+            $table->string('partnumber', 24)->nullable();
             $table->integer('views')->default(0);
             $table->integer('minstock')->default(0);
             $table->unsignedSmallInteger('almacenarea_id')->nullable();

@@ -1,5 +1,20 @@
 <div x-data="showuser">
     <form class="w-full flex flex-col gap-8 max-w-lg mx-auto" wire:submit.prevent="update">
+        @if ($user->isAdmin())
+            <div
+                class="w-full shadow rounded text-center font-semibold text-xs tracking-widest p-3 text-next-500 border border-next-500">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" fill="none" class="w-6 h-6 inline-block">
+                    <path
+                        d="M17 8L18.8398 9.85008C19.6133 10.6279 20 11.0168 20 11.5C20 11.9832 19.6133 12.3721 18.8398 13.1499L17 15" />
+                    <path
+                        d="M7 8L5.16019 9.85008C4.38673 10.6279 4 11.0168 4 11.5C4 11.9832 4.38673 12.3721 5.16019 13.1499L7 15" />
+                    <path d="M14.5 4L9.5 20" />
+                </svg>
+                USUARIO DESARROLLADOR
+            </div>
+        @endif
+
         <x-form-card titulo="PERFIL USUARIO">
             <div class="w-full flex flex-col gap-2">
                 <div class="w-full col-span-2 md:col-span-1">
@@ -91,9 +106,9 @@
             </div>
         </x-form-card>
 
-        <x-form-card x-show="showroles" titulo="PERMISOS ADICIONALES"
+        {{-- <x-form-card x-show="showroles" titulo="PERMISOS ADICIONALES"
             class="animate__animated animate__fadeInDown animate__faster">
-        </x-form-card>
+        </x-form-card> --}}
 
 
         @if (Module::isEnabled('Employer'))

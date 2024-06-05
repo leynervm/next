@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="VENTAS" route="admin.ventas">
             <x-slot name="icon">
@@ -33,8 +33,8 @@
         <div class="w-full xl:flex-shrink-0 xl:w-96 xl:overflow-y-auto soft-scrollbar h-full">
             <livewire:modules.ventas.ventas.show-resumen-venta :seriecomprobante="$seriecomprobante" :moneda="$moneda" :concept="$concept" />
         </div>
-        <div class="w-full xl:flex-shrink-1 xl:overflow-y-auto soft-scrollbar h-full">
+        <div class="w-full xl:flex-1 xl:overflow-y-auto soft-scrollbar h-full">
             <livewire:modules.ventas.ventas.create-venta :pricetype="$pricetype" :moneda="$moneda" />
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @if (Module::isEnabled('Almacen'))
             @can('admin.almacen')
@@ -69,4 +69,4 @@
             </div>
         @endif
     </div>
-</x-app-layout>
+</x-admin-layout>

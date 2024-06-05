@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.almacen')
             @if (Module::isEnabled('Almacen'))
@@ -84,4 +84,4 @@
             <livewire:admin.subcategories.show-subcategories />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3">
         <x-link-next href="{{ route('centerservice.create') }}" titulo="Registrar">
@@ -16,4 +16,4 @@
         @livewire('soporte::centerservices.show-centerservices')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

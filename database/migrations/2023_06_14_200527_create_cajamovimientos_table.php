@@ -18,6 +18,8 @@ class CreateCajamovimientosTable extends Migration
             $table->id();
             $table->dateTime('date');
             $table->decimal('amount', 18, 4);
+            $table->decimal('tipocambio', 7, 3)->nullable();
+            $table->decimal('totalamount', 18, 4);
             $table->string('typemovement', 7);
             $table->string('referencia', 255)->nullable();
             $table->string('detalle', 255)->nullable();

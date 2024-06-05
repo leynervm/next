@@ -71,14 +71,19 @@ class Pricetype extends Model
             ->withPivot('id', 'ganancia')->orderBy('ganancia', 'desc');
     }
 
-    public function scopeDefaultPricetype($query)
+    public function scopeDefault($query)
     {
         return $query->where('default', self::DEFAULT);
     }
 
-    public function scopeDefault($query)
+    public function scopeWeb($query)
     {
-        return $query->where('default', self::DEFAULT);
+        return $query->where('web', self::DEFAULT);
+    }
+
+    public function scopeLogin($query)
+    {
+        return $query->where('defaultlogin', self::DEFAULT);
     }
 
     public function productos(): BelongsToMany

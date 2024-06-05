@@ -27,13 +27,11 @@ class ClientController extends Controller
 
     public function history(Client $client)
     {
-        $ventas = $client->ventas()->with(['moneda', 'sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->get();
+        $ventas = $client->ventas()->with(['moneda', 'sucursal'])
+            ->where('sucursal_id', auth()->user()->sucursal_id)->paginate();
 
-        $sumatorias = $client->ventas()->with(['moneda', 'sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->selectRaw('moneda_id, SUM(total) as total')->groupBy('moneda_id')
+        $sumatorias = $client->ventas()->with(['moneda', 'sucursal'])
+            ->where('sucursal_id', auth()->user()->sucursal_id)->selectRaw('moneda_id, SUM(total) as total')->groupBy('moneda_id')
             ->orderBy('total', 'desc')->get();
 
         return view('admin.clients.history', compact('client', 'ventas', 'sumatorias'));

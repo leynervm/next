@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.almacen')
             <x-link-breadcrumb text="ALMACÉN" route="admin.almacen">
@@ -51,4 +51,4 @@
             @livewire('modules.almacen.kardex.show-serieskardex')
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

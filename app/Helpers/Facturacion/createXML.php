@@ -45,7 +45,7 @@ class createXML
            <cbc:Note languageLocaleID="1000"><![CDATA[' . $comprobante->leyenda . ']]></cbc:Note>';
 
       if ($comprobante->exonerado > 0) {
-         $xml .= '<cbc:Note languageLocaleID="2001"><![CDATA[ BIENES TRANSFERIDOS EN LA AMAZONÍA REGIÓN SELVAPARA SER CONSUMIDOS EN LA MISMA ]]></cbc:Note>';
+         $xml .= '<cbc:Note languageLocaleID="2001"><![CDATA[ BIENES TRANSFERIDOS EN LA AMAZONÍA REGIÓN SELVA PARA SER CONSUMIDOS EN LA MISMA ]]></cbc:Note>';
       }
 
       $xml .= '<cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" listName="Currency" listAgencyName="United Nations Economic Commission for Europe">' . $comprobante->moneda->code . '</cbc:DocumentCurrencyCode>

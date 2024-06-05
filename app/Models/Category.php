@@ -9,14 +9,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Producto;
 use App\Models\Subcategory;
+use Cviebrock\EloquentSluggable\Sluggable;
 
 class Category extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use Sluggable;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'orden'];
+    protected $fillable = ['name', 'orden', 'slug'];
+
+    public function sluggable(): array
+    {
+        return [
+            'slug' => [
+                'source' => 'name'
+            ]
+        ];
+    }
+
 
     public function setNameAttribute($value)
     {

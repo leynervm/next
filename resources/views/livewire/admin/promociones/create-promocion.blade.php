@@ -23,19 +23,25 @@
                                     <div
                                         class="w-full max-w-xs mx-auto h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
                                         @if ($producto)
-                                            @if ($producto->images()->exists())
-                                                @if ($producto->images()->default()->exists())
-                                                    {{-- @if ($producto->defaultImage) --}}
-                                                    <img src="{{ asset('storage/productos/' . $producto->defaultImage->first()->url) }}"
-                                                        alt="" class="w-full h-full object-cover">
-                                                    {{-- @else
-                                                    <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
-                                                        alt="" class="w-full h-full object-cover">
-                                                @endif --}}
-                                                @else
-                                                    <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
-                                                        alt="" class="w-full h-full object-cover">
-                                                @endif
+                                            @php
+                                                $image = null;
+                                                if (count($producto->images) > 0) {
+                                                    if ($producto->images()->default()->exists()) {
+                                                        $image = asset(
+                                                            'storage/productos/' .
+                                                                $producto->images()->default()->first()->url,
+                                                        );
+                                                    } else {
+                                                        $image = asset(
+                                                            'storage/productos/' . $producto->images->first()->url,
+                                                        );
+                                                    }
+                                                }
+                                            @endphp
+
+                                            @if ($image)
+                                                <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
+                                                    alt="" class="w-full h-full object-cover">
                                             @endif
                                         @else
                                             <div

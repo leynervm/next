@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @if (Module::isEnabled('Almacen'))
             @can('admin.proveedores')
@@ -45,4 +45,4 @@
             <livewire:admin.proveedortypes.show-proveedortypes />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

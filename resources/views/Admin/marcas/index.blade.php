@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @if (Module::isEnabled('Almacen'))
             <x-link-breadcrumb text="ALMACEN" route="admin.almacen">
@@ -57,4 +57,4 @@
             <livewire:admin.marcas.show-marcas />
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

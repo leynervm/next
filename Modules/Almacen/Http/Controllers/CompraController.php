@@ -4,8 +4,8 @@ namespace Modules\Almacen\Http\Controllers;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
 use Modules\Almacen\Entities\Compra;
+use Nwidart\Modules\Routing\Controller;
 
 class CompraController extends Controller
 {
@@ -29,6 +29,7 @@ class CompraController extends Controller
 
     public function show(Compra $compra)
     {
+        $this->authorize('sucursal', $compra);
         return view('almacen::compras.show', compact('compra'));
     }
 

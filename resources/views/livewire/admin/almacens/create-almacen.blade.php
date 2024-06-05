@@ -16,7 +16,7 @@
             <form wire:submit.prevent="save" class="relative">
                 <div class="w-full">
                     <x-label value="Nombre :" />
-                    <x-input class="block w-full" wire:model.defer="name" placeholder="Descripcion de caja..." />
+                    <x-input class="block w-full" wire:model.defer="name" placeholder="Nombre del almacén..." />
                     <x-jet-input-error for="name" />
                 </div>
 

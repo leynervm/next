@@ -27,19 +27,19 @@ class MethodpaymentSeeder extends Seeder
             'type' => Methodpayment::TRANSFERENCIA,
         ]);
 
-        $yape = Methodpayment::create([
-            'name' => 'YAPE',
-            'type' => Methodpayment::TRANSFERENCIA,
-        ]);
+        // $yape = Methodpayment::create([
+        //     'name' => 'YAPE',
+        //     'type' => Methodpayment::TRANSFERENCIA,
+        // ]);
 
-        $plin = Methodpayment::create([
-            'name' => 'PLIN',
-            'type' => Methodpayment::TRANSFERENCIA,
-        ]);
+        // $plin = Methodpayment::create([
+        //     'name' => 'PLIN',
+        //     'type' => Methodpayment::TRANSFERENCIA,
+        // ]);
 
-        $paypal = Methodpayment::create([
-            'name' => 'PAYPAL',
-            'type' => Methodpayment::TRANSFERENCIA,
-        ]);
+        // $paypal = Methodpayment::create([
+        //     'name' => 'PAYPAL',
+        //     'type' => Methodpayment::TRANSFERENCIA,
+        // ]);
     }
 }

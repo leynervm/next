@@ -8,7 +8,10 @@ use App\Models\Cuota;
 use App\Models\Guia;
 use App\Models\Moneda;
 use App\Models\Seriecomprobante;
+use App\Models\Shipment;
+use App\Models\Shipmenttype;
 use App\Models\Sucursal;
+use App\Models\Transaccion;
 use App\Models\Tvitem;
 use App\Models\User;
 use App\Models\Typepayment;
@@ -16,11 +19,15 @@ use App\Traits\CajamovimientoTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Facturacion\Entities\Comprobante;
-
+use Modules\Marketplace\Database\factories\VentaFactory;
+use Modules\Marketplace\Entities\Tracking;
+use Modules\Marketplace\Entities\TvitemMarketplace;
 
 class Venta extends Model
 {
@@ -36,6 +43,11 @@ class Venta extends Model
         'moneda_id', 'typepayment_id', 'client_id', 'seriecomprobante_id', 'user_id', 'sucursal_id'
     ];
 
+    protected static function newFactory()
+    {
+        return VentaFactory::new();
+    }
+
     // public function nextpaymentcuotas(): MorphMany
     // {
     //     return $this->morphMany(Cuota::class, 'cuotable')
@@ -46,7 +58,6 @@ class Venta extends Model
     {
         $this->attributes['direccion'] = trim(mb_strtoupper($value, "UTF-8"));
     }
-
 
     public function cuotas(): MorphMany
     {
@@ -85,12 +96,12 @@ class Venta extends Model
 
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function comprobante(): MorphOne
@@ -107,4 +118,6 @@ class Venta extends Model
     {
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
     }
+
+
 }

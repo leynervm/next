@@ -1,40 +1,38 @@
-@props(['text', 'type' => 'bg-fondospancardproduct'])
+@props(['text', 'type' => null])
 
 @php
 
     switch ($type) {
         case 'next':
-            $fondo = 'bg-next-500';
+            $class = 'bg-next-500 text-white';
             break;
 
         case 'red':
-            $fondo = 'bg-red-500';
+            $class = 'bg-red-500 text-white';
             break;
 
         case 'green':
-            $fondo = 'bg-green-500';
+            $class = 'bg-green-500 text-white';
             break;
 
         case 'blue':
-            $fondo = 'bg-blue-500';
+            $class = 'bg-blue-500 text-white';
             break;
 
         case 'orange':
-            $fondo = 'bg-orange-500';
+            $class = 'bg-orange-500 text-white';
             break;
 
         case 'amber':
-            $fondo = 'bg-amber-500';
+            $class = 'bg-amber-500 text-white';
             break;
 
         default:
-            $fondo = 'bg-fondospancardproduct';
+            $class = 'bg-fondospancardproduct text-textspancardproduct';
             break;
     }
-
 @endphp
 
 <small
-    {{ $attributes->merge(['class' => 'text-[10px] inline-block p-1 rounded-md tracking-widest font-medium text-textspancardproduct ' . $fondo]) }}>
-    {{ $text }}
-</small>
+    {{ $attributes->merge(['class' => 'text-[10px] inline-block p-1 rounded-md tracking-normal font-medium ' . $class]) }}>
+    {{ $text }}</small>

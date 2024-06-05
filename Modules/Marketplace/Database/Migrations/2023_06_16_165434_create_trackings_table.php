@@ -16,14 +16,13 @@ class CreateTrackingsTable extends Migration
         Schema::create('trackings', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->string('descripcion', 255);
-            $table->bigInteger('estate_id')->nullable();
-            $table->bigInteger('ventaonline_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
-            $table->foreign('estate_id')->on('estates')->references('id');
-            $table->foreign('ventaonline_id')->on('ventaonlines')->references('id');
+            $table->string('descripcion', 255)->nullable();
+            $table->unsignedSmallInteger('trackingstate_id');
+            $table->unsignedBigInteger('order_id');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('trackingstate_id')->on('trackingstates')->references('id');
+            $table->foreign('order_id')->on('orders')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

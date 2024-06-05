@@ -17,21 +17,28 @@ class AlmacenSeeder extends Seeder
      */
     public function run()
     {
-        if (Module::isEnabled('Almacen')) {
-            // CON DATOS, COMENTAR CUANDO SE QUIERE DESDE CERO
+
+        if (Module::isEnabled('Ventas') && Module::isDisabled('Almacen')) {
             Almacen::firstOrCreate([
-                'name' => 'ALMACÉN JAEN',
+                'name' => 'ALMACÉN PRINCIPAL',
                 'default' => Almacen::DEFAULT
             ]);
-            Almacen::firstOrCreate([
-                'name' => 'ALMACÉN TRUJILLO',
-            ]);
-            Almacen::firstOrCreate([
-                'name' => 'ALMACÉN BAGUA',
-            ]);
-            Almacen::firstOrCreate([
-                'name' => 'ALMACÉN SAN IGNACIO',
-            ]);
+        } else {
+            // CON DATOS, SOLAMENTE COMENTAR ESTA PARTE 
+            //   CUANDO SE QUIERE DESDE CERO
+            // Almacen::firstOrCreate([
+            //     'name' => 'ALMACÉN JAEN',
+            //     'default' => Almacen::DEFAULT
+            // ]);
+            // Almacen::firstOrCreate([
+            //     'name' => 'ALMACÉN TRUJILLO',
+            // ]);
+            // Almacen::firstOrCreate([
+            //     'name' => 'ALMACÉN BAGUA',
+            // ]);
+            // Almacen::firstOrCreate([
+            //     'name' => 'ALMACÉN SAN IGNACIO',
+            // ]);
         }
     }
 }

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3">
         @livewire('soporte::priorities.create-priority')
@@ -10,4 +10,4 @@
         @livewire('soporte::priorities.show-priorities')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             {{ __('Profile') }}
@@ -8,13 +8,14 @@
     <div>
         <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
 
-            @if (auth()->user()->isAdmin())
-                <div class="mt-10 sm:mt-0">
-                    @livewire('admin.profile.show-sucursales')
-                </div>
+            @if (mi_empresa())
+                @if (auth()->user()->isAdmin())
+                    <div class="mt-10 sm:mt-0">
+                        @livewire('admin.profile.show-sucursales')
+                    </div>
+                @endif
+                <x-jet-section-border />
             @endif
-
-            <x-jet-section-border />
 
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())
                 @livewire('profile.update-profile-information-form')
@@ -51,4 +52,4 @@
             @endif
         </div>
     </div>
-</x-app-layout>
+</x-admin-layout>

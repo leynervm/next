@@ -1,5 +1,5 @@
 <div>
-    @if (count($openboxes))
+    @if ($openboxes->hasPages())
         <div class="">
             {{ $openboxes->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
@@ -30,7 +30,8 @@
                         <tr>
                             <td class="p-2">
                                 {{ $item->box->name }}
-                                <p class="text-[10px] text-colorsubtitleform">{{ formatDate($item->monthbox->month, "MMMM Y") }}</p>
+                                <p class="text-[10px] text-colorsubtitleform">
+                                    {{ formatDate($item->monthbox->month, 'MMMM Y') }}</p>
                             </td>
                             <td class="p-2 text-center uppercase">
                                 {{ formatDate($item->startdate) }}
@@ -54,16 +55,15 @@
                                 @if ($item->isClosed())
                                     {{ formatDate($item->closedate) }}
                                 @else
-                                    @if ($item->isUsing())
-                                        @if ($item->isExpired() || auth()->user()->isAdmin())
-                                            @can('admin.cajas.aperturas.close')
-                                                <x-button class="inline-block" onclick="confirmClose({{ $item }})"
-                                                    wire:loading.attr="disabled">CERRAR CAJA</x-button>
-                                            @endcan
-                                        @else
-                                            <x-span-text text="EN USO" class="leading-3 !tracking-normal"
-                                                type="green" />
-                                        @endif
+                                    @if ($item->isExpired() || auth()->user()->isAdmin())
+                                        @canany(['admin.cajas.aperturas.close', 'admin.cajas.aperturas.closeothers'])
+                                            <x-button class="inline-block" onclick="confirmClose({{ $item }})"
+                                                wire:loading.attr="disabled">
+                                                CERRAR CAJA
+                                            </x-button>
+                                        @endcanany
+                                    @else
+                                        <x-span-text text="EN USO" class="leading-3 !tracking-normal" type="green" />
                                     @endif
                                 @endif
                             </td>
@@ -81,8 +81,14 @@
                             </td>
                             <td class="p-2 text-center">
                                 {{ $item->sucursal->name }}
-                                <p class="text-[10px] leading-3 text-colorsubtitleform">
-                                    USUARIO : {{ $item->user->name }}</p>
+                                <p
+                                    class="text-[10px] leading-3 {{ $item->user_id == auth()->user()->id ? 'text-green-500' : 'text-colorsubtitleform' }}">
+                                    @if ($item->user_id == auth()->user()->id)
+                                        USUARIO ACTUAL
+                                    @else
+                                        USUARIO : {{ $item->user->name }}
+                                    @endif
+                                </p>
                             </td>
                             @can('admin.cajas.aperturas.edit')
                                 <td class="p-2 text-center">

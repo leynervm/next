@@ -9,7 +9,7 @@
     <div class="flex flex-col gap-2" id="categories">
         @if (count($categories))
             @foreach ($categories as $item)
-                <x-simple-card class="w-full flex items-start gap-2 relative p-2" data-id="{{ $item->id }}">
+                <x-simple-card class="w-full flex flex-col items-start gap-2 relative p-2" data-id="{{ $item->id }}">
                     @can('admin.almacen.categorias.edit')
                         <span
                             class="text-next-500 block cursor-grab h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
@@ -29,7 +29,7 @@
                         </span>
                     @endcan
 
-                    <div class="w-full">
+                    <div class="w-full max-w-full">
                         <h1 class="text-colortitleform text-xs font-semibold">{{ $item->name }}</h1>
                         <div class="w-full flex flex-col justify-between gap-2 h-full">
                             @if (count($item->subcategories))
@@ -58,7 +58,7 @@
         @endif
     </div>
 
-    <div wire:loading.flex class="loading-overlay rounded hidden">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
         <x-loading-next />
     </div>
 

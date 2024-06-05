@@ -21,12 +21,9 @@ class CreateClientsTable extends Migration
             $table->date('nacimiento')->nullable();
             $table->string('sexo', 1)->nullable();
             $table->bigInteger('pricetype_id')->nullable();
-            // $table->bigInteger('channelsale_id')->nullable();
             $table->bigInteger('user_id')->nullable();
-
-            $table->foreign('pricetype_id')->on('pricetypes')->references('id');
-            // $table->foreign('channelsale_id')->on('channelsales')->references('id');
-            $table->foreign('user_id')->on('users')->references('id');
+            $table->foreign('pricetype_id')->on('pricetypes')->references('id')->nullOnDelete();
+            $table->foreign('user_id')->on('users')->references('id')->nullOnDelete();
             $table->softDeletes();
         });
     }

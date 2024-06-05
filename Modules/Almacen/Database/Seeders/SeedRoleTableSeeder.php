@@ -22,6 +22,9 @@ class SeedRoleTableSeeder extends Seeder
 
         $desarrollador = Role::firstOrCreate(['name' => 'DESARROLLADOR']);
         $admin = Role::firstOrCreate(['name' => 'ADMINISTRADOR']);
+        $ventas = Role::firstOrCreate(['name' => 'VENDEDOR']);
+        $support = Role::firstOrCreate(['name' => 'SOPORTE TÉCNICO']);
+        $cotizador = Role::firstOrCreate(['name' => 'COTIZADOR']);
 
         // LISTA PRECIOS
         Permission::firstOrCreate([
@@ -30,7 +33,7 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Lista precios',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.administracion.pricetypes.create',
             'descripcion' => 'Registrar lista de precios',
@@ -74,7 +77,7 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Rango precios',
             'module' => 'Principal',
             'orden' => '1'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.administracion.rangos.create',
             'descripcion' => 'Registrar rango de precios',
@@ -190,21 +193,21 @@ class SeedRoleTableSeeder extends Seeder
             'orden' => '3'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.almacen.especificaciones.create',
+            'name' => 'admin.almacen.especificacions.create',
             'descripcion' => 'Registrar especificaciones',
             'table' => 'Características y especificaciones',
             'module' => 'Almacén',
             'orden' => '3'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.almacen.especificaciones.edit',
+            'name' => 'admin.almacen.especificacions.edit',
             'descripcion' => 'Editar especificaciones',
             'table' => 'Características y especificaciones',
             'module' => 'Almacén',
             'orden' => '3'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.almacen.especificaciones.delete',
+            'name' => 'admin.almacen.especificacions.delete',
             'descripcion' => 'Eliminar especificaciones de productos',
             'table' => 'Características y especificaciones',
             'module' => 'Almacén',
@@ -249,21 +252,21 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Tipos Proveedor',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.tipos.create',
             'descripcion' => 'Registrar tipos proveedor',
             'table' => 'Tipos Proveedor',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.tipos.edit',
             'descripcion' => 'Editar tipos proveedor',
             'table' => 'Tipos Proveedor',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.tipos.delete',
             'descripcion' => 'Eliminar tipos proveedor',
@@ -280,21 +283,21 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.create',
             'descripcion' => 'Registrar proveedores',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.edit',
             'descripcion' => 'Editar proveedores',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.delete',
             'descripcion' => 'Eliminar proveedores',
@@ -308,53 +311,42 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.pedidos',
             'descripcion' => 'Administrar historial pedidos del proveedor',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.contacts',
             'descripcion' => 'Administrar contactos del proveedor',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.contacts.edit',
             'descripcion' => 'Editar contactos del proveedor',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.phones',
             'descripcion' => 'Administrar teléfonos del proveedor',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.proveedores.phones.edit',
             'descripcion' => 'Editar teléfonos del proveedor',
             'table' => 'Proveedores',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
-
-
-
-
-
-
-
-
-
-
-
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
 
 
 
@@ -365,21 +357,21 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Compras',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.compras.create',
             'descripcion' => 'Registrar compras',
             'table' => 'Compras',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.compras.close',
             'descripcion' => 'Cerrar compras',
             'table' => 'Compras',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.compras.delete',
             'descripcion' => 'Eliminar compras',
@@ -400,14 +392,14 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Compras',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.compras.payments',
             'descripcion' => 'Administrar cuentas por pagar',
             'table' => 'Compras',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
 
 
 
@@ -479,7 +471,7 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Tipos garantía productos',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas, $support, $cotizador]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.typegarantias.create',
             'descripcion' => 'Registrar tipos de garantía de productos',
@@ -510,20 +502,20 @@ class SeedRoleTableSeeder extends Seeder
             'table' => 'Kardex',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.kardex.series',
             'descripcion' => 'Administrar kardex de series en productos',
             'table' => 'Kardex',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
             'name' => 'admin.almacen.kardex.series.show',
             'descripcion' => 'Administrar historial de series',
             'table' => 'Kardex',
             'module' => 'Almacén',
             'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin]);
+        ])->syncRoles([$desarrollador, $admin, $ventas]);
     }
 }

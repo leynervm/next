@@ -74,7 +74,7 @@ class ShowEspecificaciones extends Component
 
     public function addespecificacion(Caracteristica $caracteristica)
     {
-        $this->authorize('admin.almacen.especificaciones.create');
+        $this->authorize('admin.almacen.especificacions.create');
         $this->resetValidation();
         $this->reset(['name', 'especificacion']);
         $this->caracteristica = $caracteristica;
@@ -83,7 +83,7 @@ class ShowEspecificaciones extends Component
 
     public function saveespecificacion()
     {
-        $this->authorize('admin.almacen.especificaciones.create');
+        $this->authorize('admin.almacen.especificacions.create');
         $this->name = trim($this->name);
         $validatedata = $this->validate([
             'name' => [
@@ -102,7 +102,7 @@ class ShowEspecificaciones extends Component
 
     public function editespecificacion(Especificacion $especificacion)
     {
-        $this->authorize('admin.almacen.especificaciones.edit');
+        $this->authorize('admin.almacen.especificacions.edit');
         $this->resetValidation();
         $this->reset(['name', 'especificacion']);
         $this->especificacion = $especificacion;
@@ -113,7 +113,7 @@ class ShowEspecificaciones extends Component
     public function update_especificacion()
     {
 
-        $this->authorize('admin.almacen.especificaciones.edit');
+        $this->authorize('admin.almacen.especificacions.edit');
         $this->name = trim($this->name);
         $validatedata = $this->validate([
             'name' => [
@@ -156,7 +156,7 @@ class ShowEspecificaciones extends Component
     public function deleteEspecificacion(Especificacion $especificacion)
     {
 
-        $this->authorize('admin.almacen.especificaciones.delete');
+        $this->authorize('admin.almacen.especificacions.delete');
         DB::beginTransaction();
         try {
             $especificacion->delete();

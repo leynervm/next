@@ -60,7 +60,8 @@
                         </x-select>
                         <x-icon-select />
                     </div>
-                    <small class=" block text-colorerror text-xs text-end">Permitirá el acceso al panel administrativo</small>
+                    <small class=" block text-colorerror text-xs text-end">Permitirá el acceso al panel
+                        administrativo</small>
                     <x-jet-input-error for="sucursal_id" />
                 </div>
             </div>
@@ -94,9 +95,9 @@
             </div>
         </x-form-card>
 
-        <x-form-card titulo="PERMISOS ADICIONALES" style="display: none;"
+        {{-- <x-form-card titulo="PERMISOS ADICIONALES" style="display: none;"
             class="animate__animated animate__fadeInDown animate__faster" x-show="showroles">
-        </x-form-card>
+        </x-form-card> --}}
 
 
         @if (Module::isEnabled('Employer'))
@@ -237,12 +238,62 @@
 
         {{-- {{ print_r($errors->all()) }} --}}
 
-        <div class="w-full flex justify-end">
+        <div class="w-full flex gap-2 justify-end items-end">
+            {{-- <button class="text-next-500 hover:text-next-700 text-xs underline transition ease-in-out duration-150"
+                type="button" wire:click="$toggle('open')">YA ESTOY REGISTRADO</button> --}}
             <x-button type="submit" wire:loading.attr="disabled">
                 {{ __('REGISTRAR') }}
             </x-button>
         </div>
     </form>
+
+
+
+    {{-- <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
+        <x-slot name="title">
+            {{ __('Asignar sucursal a usuario') }}
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
+        </x-slot>
+
+        <x-slot name="content">
+            <form wire:submit.prevent="buscarusuario" class="w-full flex flex-col gap-2">
+                <div class="w-full">
+                    <x-label value="Buscar correo :" />
+
+
+                    @if ($userasign)
+                        <div class="w-full inline-flex relative">
+                            <x-disabled-text :text="$searchemail" class="w-full block" />
+                            <x-button-close-modal
+                                class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                wire:click="limpiaruserasign" wire:loading.attr="disabled" />
+                        </div>
+                    @else
+                        <div class="w-full inline-flex gap-1">
+                            <x-input class="block w-full" wire:model.defer="searchemail"
+                                wire:keydown.enter="buscarusuario" type="email" />
+                            <x-button-add class="px-2" wire:click="buscarusuario" wire:loading.attr="disabled">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.3-4.3" />
+                                </svg>
+                            </x-button-add>
+                        </div>
+                    @endif
+                    <x-jet-input-error for="searchemail" />
+                </div>
+
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('ASIGNAR') }}
+                    </x-button>
+                </div>
+            </form>
+        </x-slot>
+    </x-jet-dialog-modal> --}}
+
 
     <script>
         document.addEventListener('alpine:init', () => {

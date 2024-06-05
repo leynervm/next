@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
 
     <div class="mt-3">
         @livewire('soporte::equipos.create-equipo')
@@ -10,4 +10,4 @@
         @livewire('soporte::equipos.show-equipos')
     </div>
 
-</x-app-layout>
+</x-admin-layout>

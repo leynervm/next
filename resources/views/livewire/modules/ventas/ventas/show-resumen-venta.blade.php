@@ -47,9 +47,9 @@
                             <div class="w-full">
                                 <x-label value="Buscar GRE :" />
                                 <div class="w-full inline-flex relative">
-                                    <x-disabled-text :text="$searchgre" class="w-full block" />
+                                    <x-disabled-text :text="$searchgre" class="w-full flex-1 block" />
                                     <x-button-close-modal
-                                        class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                        class="hover:animate-none h-full !text-red-500 !bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-0 !px-2"
                                         wire:click="desvinculargre" wire:loading.attr="disabled" />
                                 </div>
                                 <x-jet-input-error for="searchgre" />
@@ -58,7 +58,7 @@
                             <div x-show="!incluyeguia" class="w-full">
                                 <x-label value="Buscar GRE :" />
                                 <div class="w-full inline-flex">
-                                    <x-input class="block w-full" wire:model.defer="searchgre" wire:keydown.enter="getGRE"
+                                    <x-input class="block w-full flex-1" wire:model.defer="searchgre" wire:keydown.enter="getGRE"
                                         minlength="0" maxlength="13" onkeydown="disabledEnter(event)" />
                                     <x-button-add class="px-2" wire:click="getGRE" wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -79,14 +79,14 @@
                             <x-label value="DNI / RUC :" />
                             @if ($client_id)
                                 <div class="w-full inline-flex relative">
-                                    <x-disabled-text :text="$document" class="w-full block" />
+                                    <x-disabled-text :text="$document" class="w-full flex-1 block" />
                                     <x-button-close-modal
-                                        class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                        class="hover:animate-none h-full !text-red-500 !bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-0 !px-2"
                                         wire:click="limpiarcliente" wire:loading.attr="disabled" />
                                 </div>
                             @else
                                 <div class="w-full inline-flex">
-                                    <x-input class="block w-full numeric prevent" wire:model.defer="document"
+                                    <x-input class="block w-full flex-1 numeric prevent" wire:model.defer="document"
                                         wire:keydown.enter="getClient" minlength="8" maxlength="11"
                                         onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
                                     <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
@@ -660,6 +660,14 @@
                             <x-simple-card
                                 class="w-full flex flex-col border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
 
+                                @if ($item->moneda_id != $moneda_id)
+                                    @if ($item->moneda->code == 'USD')
+                                        {{ number_format($item->total * mi_empresa()->tipocambio ?? 1, 2) }}
+                                    @else
+                                        {{ number_format($item->total / mi_empresa()->tipocambio ?? 1, 2) }}
+                                    @endif
+                                @endif
+
                                 <h1
                                     class="text-colorlabel whitespace-nowrap text-right text-[10px] text-sm font-semibold">
                                     <small class="text-[7px] font-medium">{{ $item->moneda->simbolo }}</small>
@@ -774,7 +782,7 @@
         @endif
     </div>
 
-    
+
 
     <script>
         function confirmDeleteSerie(itemserie) {

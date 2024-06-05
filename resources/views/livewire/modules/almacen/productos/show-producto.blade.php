@@ -1,5 +1,5 @@
 <div>
-    <div class="flex flex-col xl:flex-row gap-8 animate__animated animate__fadeIn animate__faster">
+    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del producto registrado.">
             <form class="w-full bg-body p-3 rounded relative flex flex-col gap-2" wire:submit.prevent="update"
                 x-data="showproducto">
@@ -34,10 +34,17 @@
                     </div>
 
                     <div class="w-full">
-                        <x-label value="Codigo fabricante :" />
-                        <x-input class="block w-full" wire:model.defer="producto.codefabricante"
-                            placeholder="Cádigo del fabricante..." />
-                        <x-jet-input-error for="producto.codefabricante" />
+                        <x-label value="SKU :" />
+                        <x-input class="block w-full" wire:model.defer="producto.sku"
+                            placeholder="sku del producto..." />
+                        <x-jet-input-error for="producto.sku" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label value="N° parte :" />
+                        <x-input class="block w-full" wire:model.defer="producto.partnumber"
+                            placeholder="N° parte del producto..." />
+                        <x-jet-input-error for="producto.partnumber" />
                     </div>
 
                     <div class="w-full">
@@ -117,8 +124,8 @@
 
                     <div class="w-full">
                         <x-label value="Stock Mínimo :" />
-                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number" step="1"
-                            min="0" />
+                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number"
+                            step="1" min="0" />
                         <x-jet-input-error for="producto.minstock" />
                     </div>
 
@@ -204,48 +211,39 @@
         </x-form-card>
 
         <x-form-card titulo="ALMACÉN" subtitulo="Permite tener el mismo producto en múltiples amacénes.">
-            <div class="w-full flex flex-col gap-2 h-full">
-                <div wire:loading.flex wire:target="savealmacen, deletealmacen"
-                    class="loading-overlay rounded hidden">
-                    <x-loading-next />
-                </div>
-
+            <div class="w-full flex flex-col gap-2 flex-1">
                 @if (count($producto->almacens) > 0)
                     <div class="w-full flex flex-wrap gap-2">
                         @foreach ($producto->almacens as $item)
-                            <div
-                                class="flex flex-col gap-1 bg-fondominicard text-colorminicard justify-between w-32 h-32 border border-borderminicard rounded-xl shadow shadow-shadowminicard p-1 cursor-pointer hover:shadow-md hover:shadow-shadowminicard">
-                                <div class="h-full flex flex-col gap-1 justify-center items-center">
-                                    <span class="block w-6 h-6 mx-auto">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path
-                                                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                                            <polyline points="3.29 7 12 12 20.71 7" />
-                                            <line x1="12" x2="12" y1="22" y2="12" />
-                                        </svg>
-                                    </span>
+                            <x-minicard :title="null" size="lg" alignFooter="justify-end">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 inline-block mx-auto"
+                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path
+                                        d="M13 22C12.1818 22 11.4002 21.6588 9.83691 20.9764C8.01233 20.18 6.61554 19.5703 5.64648 19H2M13 22C13.8182 22 14.5998 21.6588 16.1631 20.9764C20.0544 19.2779 22 18.4286 22 17V6.5M13 22L13 11M4 6.5L4 9.5" />
+                                    <path
+                                        d="M9.32592 9.69138L6.40472 8.27785C4.80157 7.5021 4 7.11423 4 6.5C4 5.88577 4.80157 5.4979 6.40472 4.72215L9.32592 3.30862C11.1288 2.43621 12.0303 2 13 2C13.9697 2 14.8712 2.4362 16.6741 3.30862L19.5953 4.72215C21.1984 5.4979 22 5.88577 22 6.5C22 7.11423 21.1984 7.5021 19.5953 8.27785L16.6741 9.69138C14.8712 10.5638 13.9697 11 13 11C12.0303 11 11.1288 10.5638 9.32592 9.69138Z" />
+                                    <path d="M18.1366 4.01563L7.86719 8.98485" />
+                                    <path d="M2 13H5" />
+                                    <path d="M2 16H5" />
+                                </svg>
 
-                                    <h1 class="text-[10px] text-center leading-3 font-semibold">{{ $item->name }}
-                                    </h1>
-
-                                    <h1 class="text-xl text-center leading-4 font-semibold">
-                                        {{ floatval($item->pivot->cantidad) }}
-                                        <span class="w-full text-center text-[10px] font-normal">
-                                            {{ $producto->unit->name }}</span>
-                                    </h1>
-                                </div>
+                                <span class="text-[10px] text-center font-semibold">{{ $item->name }}</span>
+                                <h1 class="text-xl text-center leading-4 font-semibold">
+                                    {{ floatval($item->pivot->cantidad) }}
+                                    <span class="w-full text-center text-[10px] font-normal">
+                                        {{ $producto->unit->name }}</span>
+                                </h1>
 
                                 @can('admin.almacen.productos.almacen')
-                                    <div class="flex justify-end items-end gap-1">
+                                    <x-slot name="buttons">
                                         <x-button-edit wire:click="editalmacen({{ $item->id }})"
                                             wire:loading.attr="disabled" />
                                         <x-button-delete onclick="confirmDeleteAlmacen({{ $item }})"
                                             wire:loading.attr="disabled" />
-                                    </div>
+                                    </x-slot>
                                 @endcan
-                            </div>
+                            </x-minicard>
                         @endforeach
                     </div>
                 @endif
@@ -260,6 +258,10 @@
                 @endif
             </div>
         </x-form-card>
+    </div>
+
+    <div wire:loading.flex wire:target="savealmacen, deletealmacen, update" class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
     </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">

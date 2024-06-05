@@ -1,7 +1,7 @@
-<x-app-layout>
+<x-admin-layout>
 
     {{-- <div class="mt-3 max"> --}}
         @livewire('soporte::centerservices.create-centerservice')
     {{-- </div> --}}
 
-</x-app-layout>
+</x-admin-layout>

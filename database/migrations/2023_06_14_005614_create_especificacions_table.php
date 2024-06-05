@@ -16,6 +16,7 @@ class CreateEspecificacionsTable extends Migration
         Schema::create('especificacions', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
+            $table->string('slug', 255);
             $table->bigInteger('caracteristica_id')->nullable();
             $table->foreign('caracteristica_id')->on('caracteristicas')->references('id');
         });

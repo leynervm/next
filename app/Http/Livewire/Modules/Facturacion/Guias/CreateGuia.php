@@ -420,7 +420,7 @@ class CreateGuia extends Component
             $this->resetExcept('modalidadtransporte', 'motivotraslado', 'sucursal', 'empresa', 'seriecomprobante');
             $this->dispatchBrowserEvent('created');
 
-            if (auth()->user()->hasPermissionTo('admin.facturacion.guias.edit')) {
+            if (auth()->user()->hasPermissionTo('admin.facturacion.guias.create')) {
                 return redirect()->route('admin.facturacion.guias.edit', $guia);
             } else {
                 return redirect()->route('admin.facturacion.guias');

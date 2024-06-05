@@ -30,6 +30,8 @@ class Comprobante extends Model
     const ENVIADO_SUNAT = '0';
 
     protected $guarded = ['created_at', 'updated_at'];
+    protected $policyNamespace = '\Modules\Facturacion\Policies\PolicyComprobante';
+
 
     public function setDireccionAttribute($value)
     {
@@ -58,12 +60,12 @@ class Comprobante extends Model
 
     public function empresa()
     {
-        return $this->belongsTo(Empresa::class);
+        return $this->belongsTo(Empresa::class)->withTrashed();
     }
 
     public function client()
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
     public function sucursal()
@@ -78,7 +80,7 @@ class Comprobante extends Model
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function typepayment()

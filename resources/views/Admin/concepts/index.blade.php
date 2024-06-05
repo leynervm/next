@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         @can('admin.cajas')
             <x-link-breadcrumb text="CAJAS" route="admin.cajas">
@@ -38,4 +38,4 @@
             @livewire('admin.concepts.show-concepts')
         </div>
     @endcan
-</x-app-layout>
+</x-admin-layout>

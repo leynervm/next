@@ -64,7 +64,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'dashboard' => \App\Http\Middleware\Dashboard::class,
-        'authsucursal' => \App\Http\Middleware\AuthenticateSucursal::class,
         'openbox' => \App\Http\Middleware\VerifyOpencaja::class,
         'box' => \App\Http\Middleware\RegisterBoxes::class,
         'registercompany' => \App\Http\Middleware\RegisterCompany::class,
@@ -76,5 +75,9 @@ class Kernel extends HttpKernel
         'verifyconcept' => \App\Http\Middleware\VerifyConcept::class,
         'verifypricetype' => \App\Http\Middleware\VerifyPricetype::class,
         'verifyalmacen' => \App\Http\Middleware\VerifyAlmacen::class,
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+        'carshoop' => \App\Http\Middleware\Carshoop::class,
     ];
 }

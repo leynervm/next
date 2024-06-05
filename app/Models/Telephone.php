@@ -12,7 +12,7 @@ class Telephone extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['phone', 'telephoneable_id', 'telephoneable_type'];
+    protected $fillable = ['phone', 'default', 'telephoneable_id', 'telephoneable_type'];
 
     public function telephoneable(): MorphTo
     {

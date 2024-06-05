@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-admin-layout>
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="PROVEEDORES" route="admin.proveedores">
             <x-slot name="icon">
@@ -40,6 +40,10 @@
             @endforeach
         </div>
     @endif
+
+    <div class="mt-2">
+        {{ $compras->onEachSide(0)->links('vendor.pagination.pagination-default') }}
+    </div>
 
     @if (count($compras) > 0)
         <div class="w-full flex flex-col gap-5 mt-5">
@@ -115,5 +119,4 @@
             @endforeach
         </div>
     @endif
-
-</x-app-layout>
+</x-admin-layout>
