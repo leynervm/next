@@ -265,12 +265,6 @@
 }
 
 
-
-
-.ck-content .table {
-    width: auto;
-}
-
 .loading-overlay {
     @apply absolute top-0 left-0 w-full h-full bg-fondoloading opacity-90 flex flex-wrap justify-center items-center z-50;
 

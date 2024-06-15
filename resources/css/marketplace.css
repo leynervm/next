@@ -104,14 +104,19 @@
 
 
 .card-not-unknown::before,
-.recents::before {
-    @apply content-[''] block absolute top-[50%] right-0 w-[0.25px] bg-neutral-200 h-[70%] z-10 -translate-y-[50%];
+.card-recents::before,
+.card-similares::before,
+.card-sugerencias::before {
+    @apply content-[''] block absolute top-[50%] left-0 w-[0.25px] bg-neutral-200 h-[70%] z-10 -translate-y-[50%];
 }
 
-.card-not-unknown::before:last-child,
-.recents::before:last-child {
+.card-not-unknown::before:first-child,
+.card-recents::before:first-child,
+.card-similares::before:first-child,
+.card-sugerencias::before:first-child {
     @apply w-0;
 }
+
 
 .icon-button-menu {
     @apply content-[''] absolute top-[50%] h-[5px] w-10 bg-white transition-transform ease-out duration-200;
@@ -129,7 +134,7 @@
     @apply flex relative justify-start gap-1 items-center w-auto xs:w-32 h-12 ml-3 xl:mx-3;
 }
 
-.menu-hover:hover{
+.menu-hover:hover {
     @apply opacity-80;
 }
 
@@ -292,7 +297,7 @@
 }
 
 .card .texto-card-back {
-    @apply block md:-skew-x-[8deg] text-[10px] lg:text-sm p-3 px-5 text-colorlabel font-semibold;
+    @apply block md:-skew-x-[8deg] text-[10px] lg:text-sm p-3 px-5 text-white font-semibold;
 }
 
 .flip3D:hover>.front {

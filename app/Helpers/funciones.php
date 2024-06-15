@@ -633,10 +633,14 @@ function getPricetypeAuth($empresa)
     $pricetype = null;
 
     if ($empresa) {
-        if ($empresa->usarLista()) {
+        if ($empresa->usarlista()) {
             if (auth()->user()) {
                 if (auth()->user()->client) {
-                    $pricetype = auth()->user()->client->pricetype;
+                    if (auth()->user()->client->pricetype) {
+                        if (auth()->user()->client->pricetype->isActivo()) {
+                            $pricetype = auth()->user()->client->pricetype;
+                        }
+                    }
                 }
                 if (empty($pricetype)) {
                     $pricetype = Pricetype::login()->first();
@@ -648,4 +652,22 @@ function getPricetypeAuth($empresa)
     }
 
     return $pricetype;
+}
+
+function getPriceAntes($precio_venta, $descuento, $pricetype = null, $separate = '')
+{
+    $precio_venta = number_format($precio_venta / ((100 - $descuento) / 100), $pricetype->decimals ?? 3, '.', '');
+    if ($pricetype) {
+        // if ($pricetype->rounded > 0) {
+        //     $precio_venta = round_decimal($precio_venta, $pricetype->rounded);
+        // }
+        return formatDecimalOrInteger($precio_venta, $pricetype->decimals, $separate);
+    } else {
+        return formatDecimalOrInteger($precio_venta, 2, $separate);
+    }
+}
+
+function lista_precios()
+{
+    return Pricetype::pluck('campo_table')->toArray();
 }

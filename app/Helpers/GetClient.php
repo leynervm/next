@@ -9,6 +9,8 @@ use App\Models\Ubigeo;
 use Carbon\Carbon;
 // use GuzzleHttp\Client as Http;
 use Illuminate\Support\Facades\Http;
+use jossmp\sunat\ruc;
+use PhpParser\ErrorHandler\Collecting;
 
 class GetClient
 {
@@ -34,14 +36,14 @@ class GetClient
         $response = array();
 
         if ($usarlistaprecios) {
-            $listaprecios = Pricetype::orderBy('id', 'asc');
+            $listaprecios = Pricetype::activos()->orderBy('id', 'asc');
             if ($listaprecios->default()->exists()) {
                 $pricetypeDefault = $listaprecios->first();
                 $pricetype_id = $pricetypeDefault->id;
                 $pricetypename = $pricetypeDefault->name;
             } else {
                 if ($listaprecios->exists()) {
-                    $pricetypeDefault = Pricetype::orderBy('id', 'asc')->first();
+                    $pricetypeDefault = Pricetype::activos()->orderBy('id', 'asc')->first();
                     $pricetype_id = $pricetypeDefault->id;
                     $pricetypename = $pricetypeDefault->name;
                 }
@@ -61,8 +63,10 @@ class GetClient
             } else {
                 if ($usarlistaprecios) {
                     if ($cliente->pricetype_id) {
-                        $pricetype_id = $cliente->pricetype_id;
-                        $pricetypename = $cliente->pricetype->name;
+                        if ($cliente->pricetype->isActivo()) {
+                            $pricetype_id = $cliente->pricetype_id;
+                            $pricetypename = $cliente->pricetype->name;
+                        }
                     }
                 }
             }
@@ -218,5 +222,59 @@ class GetClient
         ]);
 
         return json_decode($http->getBody());
+    }
+
+    public function consultaRUC($ruc)
+    {
+        $config = [
+            'representantes_legales'     => true,
+            'cantidad_trabajadores'     => true,
+            'establecimientos'             => true,
+            'deuda'                     => true,
+        ];
+
+        $sunat = new ruc($config);
+        $search = $sunat->consulta($ruc);
+
+        if ($search->success == true) {
+            $ubigeo_id = null;
+            if (!empty($search->result->distrito)) {
+                $ubigeo_id = Ubigeo::where('distrito', 'ilike', trim($search->result->distrito))
+                    ->where('provincia', 'ilike', trim($search->result->provincia))
+                    // ->where('region', 'ilike', trim($search->result->departamento))
+                    ->first()->id ?? null;
+            }
+
+            // $establecimientos = [];
+            // if (is_array($search->result->establecimientos)) {
+            //     $establecimientos = array_map(function ($object) {
+            //         return (array) $object;
+            //     }, $search->result->establecimientos);
+            // }
+
+            // dd($establecimientos);
+
+            return response()->json([
+                'success' => true,
+                'result' => [
+                    'ruc' => $search->result->ruc,
+                    'razon_social' => $search->result->razon_social,
+                    'nombre_comercial' => $search->result->nombre_comercial,
+                    'direccion' => $search->result->direccion,
+                    'departamento' => $search->result->departamento,
+                    'provincia' => $search->result->provincia,
+                    'distrito' => $search->result->distrito,
+                    'estado' => $search->result->estado,
+                    'condicion' => $search->result->condicion,
+                    'establecimientos' => $search->result->establecimientos,
+                    'ubigeo_id' => $ubigeo_id,
+                ]
+            ])->getData();
+        }
+        // else {
+        // $search->message
+        // }
+
+        return $search;
     }
 }

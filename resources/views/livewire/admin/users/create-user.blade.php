@@ -5,10 +5,10 @@
                 <div class="w-full">
                     <x-label value="Documento :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full" wire:model.defer="document" wire:keydown.enter="searchclient"
+                        <x-input class="block w-full flex-1" wire:model.defer="document" wire:keydown.enter="searchclient"
                             onkeypress="return validarNumero(event, 11)" type="number"
                             onkeydown="disabledEnter(event)" />
-                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
+                        <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">

@@ -25,7 +25,7 @@ class Promocion extends Model
     const DESACTIVADO = '1';
     const FINALIZADO = '2';
 
-    protected $fillable = ['type', 'descuento', 'limit', 'outs', 'startdate', 'expiredate', 'producto_id'];
+    protected $fillable = ['pricebuy', 'status', 'type', 'descuento', 'limit', 'outs', 'startdate', 'expiredate', 'producto_id'];
 
     public function producto(): BelongsTo
     {
@@ -92,6 +92,7 @@ class Promocion extends Model
         return $this->limit > 0 && $this->outs >= $this->limit;
     }
 
+
     public function isDescuento()
     {
         return $this->type == self::DESCUENTO;
@@ -120,5 +121,10 @@ class Promocion extends Model
     public function isExpired()
     {
         return !is_null($this->expiredate) && Carbon::now('America/Lima')->gt(Carbon::parse($this->expiredate)->format('d-m-Y'));
+    }
+
+    public function isActivo()
+    {
+        return $this->status == self::ACTIVO;
     }
 }

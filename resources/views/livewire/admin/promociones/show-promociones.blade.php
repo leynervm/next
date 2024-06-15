@@ -1,4 +1,8 @@
 <div x-data="data">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
     @if ($promociones->hasPages())
         <div class="pt-3 pb-1">
             {{ $promociones->onEachSide(0)->links('livewire::pagination-default') }}
@@ -6,7 +10,7 @@
     @endif
 
     <div class="w-full flex flex-wrap gap-2 mb-3">
-        @if (mi_empresa()->uselistprice)
+        @if (mi_empresa()->usarlista())
             @if (count($pricetypes) > 0)
                 <div class="w-full mb-3 max-w-sm">
                     <x-label value="Lista precios :" />
@@ -46,114 +50,49 @@
         <div class="w-full flex flex-wrap gap-3 relative">
             @foreach ($promociones as $item)
                 @php
-                    $colortype = $item->isRemate() ? 'text-orange-600' : 'text-red-600';
+                    $image = $item->producto->getImageURL();
                     $empresa = mi_empresa();
                     $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
+                    $descuento = $item->descuento;
+                    $combo = $item->producto->getAmountCombo($item, $pricetype ?? null);
+                    if ($item->isDisponible() && $item->isAvailable()) {
+                        $pricesale = $item->producto->obtenerPrecioVenta($pricetype ?? null);
+                    } else {
+                        $pricesale = $item->producto->obtenerPrecioByPricebuy(
+                            $item->pricebuy,
+                            $item,
+                            $pricetype ?? null,
+                        );
+                    }
                 @endphp
-                <x-simple-card class="w-72 relative flex flex-col gap-2 justify-between">
+                <x-simple-card
+                    class="w-72 relative flex flex-col gap-2 justify-between overflow-hidden {{ $item->isFinalizado() ? 'saturate-0' : '' }}">
                     <div class="w-full">
-                        @php
-                            $image = null;
-                            if (count($item->producto->images) > 0) {
-                                if ($item->producto->images()->default()->exists()) {
-                                    $image = $item->producto->images()->default()->first()->url;
-                                } else {
-                                    $image = $item->producto->images->first()->url;
-                                }
-                            }
-                        @endphp
-
-                        @if ($image)
-                            <button
-                                class="block rounded overflow-hidden w-full h-48 shadow relative hover:shadow-lg cursor-pointer">
-                                <img src="{{ asset('storage/productos/' . $image) }}" alt=""
-                                    class="w-full h-full object-cover">
-                            </button>
-                        @else
-                            <div class="block rounded overflow-hidden w-full h-48 shadow relative cursor-pointer">
+                        <div class="block rounded overflow-hidden w-full h-48 shadow relative cursor-pointer">
+                            @if ($image)
+                                <img src="{{ $image }}" alt="" class="w-full h-full object-scale-down">
+                            @else
                                 <x-icon-image-unknown class="w-full h-full" />
-                            </div>
-                        @endif
+                            @endif
+                        </div>
 
-
-                        <div class="p-1">
-                            <h1 class="text-colorlabel text-[10px] text-center leading-3 mb-2">
+                        <div class="p-1 pt-3">
+                            <h1 class="text-colorlabel font-semibold text-xs text-center leading-3 mb-2">
                                 {{ $item->producto->name }}</h1>
 
-                            @if ($empresa->usarLista())
-                                @if (!empty($pricetype_id))
-                                    @php
-                                        $precios = getPrecio($item->producto, $pricetype_id, $tipocambio)->getData();
-                                        if ($item->isDescuento()) {
-                                            // $price = $precios->pricewithdescount;
-                                            $price =
-                                                $precios->pricesale -
-                                                (($precios->pricesale - $precios->pricebuy) * $item->descuento) / 100;
-                                        } elseif ($item->isRemate()) {
-                                            $price = $precios->pricebuy;
-                                        } else {
-                                            $price = $precios->pricesale;
-                                        }
-                                        $priceDolar = $precios->pricewithdescountDolar ?? $precios->priceDolar;
-                                    @endphp
-
-                                    @if ($precios->existsrango)
-                                        @if ($item->producto->promocions()->descuentos()->disponibles()->exists())
-                                            <x-label-price>
-                                                S/.
-                                                {{ number_format($precios->pricewithdescount, $precios->decimal, '.', ', ') }}
-                                                <small>SOLES</small>
-                                            </x-label-price>
-                                        @else
-                                            <x-label-price>
-                                                S/.
-                                                {{ number_format(!is_null($precios->pricemanual) ? $precios->pricemanual : $precios->pricesale, $precios->decimal, '.', ', ') }}
-                                                <small>SOLES</small>
-                                            </x-label-price>
-                                        @endif
+                            <x-label-price>
+                                S/.
+                                @if ($combo)
+                                    @if ($item->isDisponible() && $item->isAvailable())
+                                        {{ formatDecimalOrInteger($pricesale - $combo->total, $pricetype->decimals ?? 2, ', ') }}
                                     @else
-                                        <x-prices-card-product :name="$precios->name">
-                                            <div>
-                                                <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                    class="leading-3 !tracking-normal !text-red-500 !bg-red-50 !text-[9px] font-semibold"
-                                                    type="red" />
-                                            </div>
-                                        </x-prices-card-product>
+                                        {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                     @endif
                                 @else
-                                    <x-span-text text="SELECCICONAR LISTA DE PRECIOS" class="leading-3 !tracking-normal"
-                                        type="red" />
+                                    {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                 @endif
-                            @else
-                                @php
-                                    $precios = getPrecio($item->producto, null, $tipocambio)->getData();
-                                    if ($item->isDescuento()) {
-                                        // $price = $precios->pricewithdescount;
-                                        $price =
-                                            $precios->pricesale -
-                                            (($precios->pricesale - $precios->pricebuy) * $item->descuento) / 100;
-                                    } elseif ($item->isRemate()) {
-                                        $price = $precios->pricebuy;
-                                    } else {
-                                        $price = $precios->pricesale;
-                                    }
-                                    $priceDolar = $precios->pricewithdescountDolar ?? $precios->priceDolar;
-                                @endphp
-
-                                {{-- <div class="w-full flex flex-wrap justify-between gap-2 items-center">
-                                    <x-label-price>
-                                        S/. {{ number_format($price ?? 0, $precios->decimal, '.', ', ') }}
-                                        <small>SOLES</small>
-                                    </x-label-price>
-                                    @if (count($item->producto->promocions()->descuentos()->disponibles()))
-                                        <x-span-text :text="'ANTES : S/. ' .
-                                            number_format($precios->pricesale ?? 0, $precios->decimal, '.', ', ')" class="leading-3 !tracking-normal"
-                                            type="red" />
-                                    @endif
-                                </div> --}}
-                            @endif
-
-                            {{-- <p class="text-[9px] text-colorlabel">{{ var_dump($precios) }}</p> --}}
+                                <small>SOLES</small>
+                            </x-label-price>
 
                             <div class="w-full">
                                 <x-span-text :text="formatDecimalOrInteger($item->outs) . ' SALIDAS'" class="leading-3 !tracking-normal" />
@@ -176,184 +115,55 @@
                         </div>
 
                         {{-- ITEMS SECUNDARIOS --}}
-                        <div class="w-full flex flex-col gap-1 p-1">
-                            @foreach ($item->itempromos as $itempromo)
-                                @php
-                                    if ($itempromo->isSinDescuento()) {
-                                        $typecombo = 'SIN DESCUENTO';
-                                        $color = 'orange';
-                                    } elseif ($itempromo->isDescuento()) {
-                                        $typecombo = formatDecimalOrInteger($itempromo->descuento) . '% DSCT';
-                                        $color = 'green';
-                                    } else {
-                                        $typecombo = 'GRATIS';
-                                        $color = 'green';
-                                    }
-                                @endphp
-
-                                <div class="w-full flex gap-2 bg-body rounded relative">
-                                    <div
-                                        class="block rounded overflow-hidden flex-shrink-0 w-16 h-16 shadow relative hover:shadow-lg cursor-pointer">
-                                        @php
-                                            $imageCombo = null;
-                                            if (count($itempromo->producto->images) > 0) {
-                                                if ($itempromo->producto->images()->default()->exists()) {
-                                                    $imageCombo = $itempromo->producto->images()->default()->first()
-                                                        ->url;
-                                                } else {
-                                                    $imageCombo = $itempromo->producto->images->first()->url;
-                                                }
-                                            }
-                                        @endphp
-
-                                        @if ($imageCombo)
-                                            <img src="{{ asset('storage/productos/' . $imageCombo) }}" alt=""
-                                                class="w-full h-full object-scale-down hover:scale-125 hover:object-cover transition duration-300">
-                                        @else
-                                            <x-icon-image-unknown class="w-full h-full text-neutral-500" />
-                                        @endif
-                                    </div>
-                                    <div class="p-1">
-                                        <h1 class="text-colortitleform text-[10px] leading-3">
-                                            {{ $itempromo->producto->name }}</h1>
-
-                                        @if ($empresa->usarLista())
-                                            @php
-                                                $precioscombo = getPrecio(
-                                                    $itempromo->producto,
-                                                    $pricetype_id,
-                                                    $tipocambio,
-                                                )->getData();
-                                                $priceitem = $precioscombo->pricesale;
-                                                $priceDolar = $precioscombo->priceDolar;
-
-                                                if ($itempromo->isDescuento()) {
-                                                    $descuentoitem = number_format(
-                                                        (($priceitem - $precioscombo->pricebuy) *
-                                                            $itempromo->descuento) /
-                                                            100,
-                                                        $precioscombo->decimal,
-                                                        '.',
-                                                        '',
-                                                    );
-                                                    $priceitem = number_format(
-                                                        $priceitem - $descuentoitem,
-                                                        $precioscombo->decimal,
-                                                        '.',
-                                                        '',
-                                                    );
-                                                }
-
-                                                if ($itempromo->isGratuito()) {
-                                                    $priceitem = $precioscombo->pricebuy;
-                                                }
-
-                                                $price = $price + $priceitem;
-                                            @endphp
-
-                                            @if ($precioscombo->existsrango)
-                                                @if ($itempromo->isDescuento())
-                                                    <h1
-                                                        class="text-[10px] font-medium text-red-500 mt-1 line-through leading-3">
-                                                        S/.
-                                                        {{ number_format($precioscombo->pricesale, $precios->decimal, '.', ', ') }}
-                                                        <small>SOLES</small>
-                                                    </h1>
+                        @if ($combo)
+                            @if (count($combo->products) > 0)
+                                <div class="w-full my-2 p-1">
+                                    @foreach ($combo->products as $itemcombo)
+                                        <div class="w-full flex gap-2 bg-body rounded relative">
+                                            <div
+                                                class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 shadow relative hover:shadow-lg cursor-pointer">
+                                                @if ($itemcombo->image)
+                                                    <img src="{{ $itemcombo->image }}" alt=""
+                                                        class="w-full h-full object-scale-down">
+                                                @else
+                                                    <x-icon-image-unknown class="w-full h-full text-neutral-500" />
                                                 @endif
-
-                                                <h1 class="text-xs font-semibold text-green-500 mt-1 leading-3">
+                                            </div>
+                                            <div class="p-1 w-full flex-1">
+                                                <h1 class="text-[10px] leading-3 text-left">
+                                                    {{ $itemcombo->name }}</h1>
+                                                <h1 class="text-xs font-semibold text-next-500 mt-1 leading-3">
                                                     S/.
-                                                    {{ number_format($priceitem, $precios->decimal, '.', ', ') }}
+                                                    {{ formatDecimalOrInteger($itemcombo->price, $pricetype->decimals ?? 2, ', ') }}
                                                     <small>SOLES</small>
                                                 </h1>
-                                            @else
-                                                <x-prices-card-product :name="$lista->name">
-                                                    <div>
-                                                        <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                            class="leading-3 !tracking-normal !text-red-500 !bg-red-50 !text-[9px] font-semibold"
-                                                            type="red" />
-                                                    </div>
-                                                </x-prices-card-product>
-                                            @endif
-                                        @else
-                                            @php
-                                                $precioscombo = getPrecio(
-                                                    $itempromo->producto,
-                                                    null,
-                                                    $tipocambio,
-                                                )->getData();
-                                                $priceitem = $precioscombo->pricesale;
-                                                $priceDolar =
-                                                    $precioscombo->pricewithdescountDolar ?? $precioscombo->priceDolar;
-
-                                                if ($itempromo->isDescuento()) {
-                                                    $descuentoitem = number_format(
-                                                        (($precioscombo->pricesale - $precioscombo->pricebuy) *
-                                                            $itempromo->descuento) /
-                                                            100,
-                                                        $precioscombo->decimal,
-                                                        '.',
-                                                        '',
-                                                    );
-                                                    $priceitem = number_format(
-                                                        $precioscombo->pricesale - $descuentoitem,
-                                                        $precioscombo->decimal,
-                                                        '.',
-                                                        '',
-                                                    );
-                                                }
-
-                                                if ($itempromo->isGratuito()) {
-                                                    $priceitem = $precioscombo->pricebuy;
-                                                }
-
-                                                $price = $price + $priceitem;
-                                            @endphp
-
-                                            @if ($itempromo->descuento > 0)
-                                                <div>
-                                                    <x-span-text :text="'ANTES : S/. ' .
-                                                        number_format(
-                                                            $precioscombo->pricesale ?? 0,
-                                                            $precioscombo->decimal,
-                                                            '.',
-                                                            ', ',
-                                                        )"
-                                                        class="leading-3 !tracking-normal text-[8px]" type="red" />
-                                                </div>
-                                            @endif
-
-                                            <x-label-price>
-                                                S/.
-                                                {{ number_format($priceitem ?? 0, $precioscombo->decimal, '.', ', ') }}
-                                                <small>SOLES</small>
-                                            </x-label-price>
-                                        @endif
-
-                                        {{-- <p>{{ $price = $price + $priceitem }}</p> --}}
-                                        {{-- <p class="text-[9px] text-colorlabel">{{ var_dump($precioscombo) }}</p> --}}
-
-                                        <x-span-text :text="$typecombo" :type="$color"
-                                            class="leading-3 !tracking-normal absolute right-1 bottom-1" />
-
-                                    </div>
+                                                @if ($itemcombo->type)
+                                                    <x-span-text :text="$itemcombo->type" type="green" class="leading-3" />
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
-                            @endforeach
-                        </div>
-
-                        <div class="w-full flex flex-col justify-between  items-center">
-                            @if ($item->isDescuento())
-                                <x-span-text :text="'ANTES : S/. ' .
-                                    number_format($precios->pricesale ?? 0, $precios->decimal, '.', ', ')" class="leading-3 !tracking-normal text-[8px]"
-                                    type="red" />
                             @endif
+                        @endif
 
-                            <x-label-price class="!text-2xl">
-                                <small class="text-[10px]">S/.</small>
-                                {{ number_format($price ?? 0, $precios->decimal, '.', ', ') }}
+                        @if ($pricesale > 0)
+                            <h1 class="text-neutral-700 font-semibold text-2xl text-center">
+                                <small class="text-[10px]">S/. </small>
+                                @if ($item->isDisponible() && $item->isAvailable())
+                                    {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                @else
+                                    {{ formatDecimalOrInteger($combo ? $combo->total + $pricesale : $pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                @endif
                                 <small class="text-[10px]">SOLES</small>
-                            </x-label-price>
-                        </div>
+                            </h1>
+                            @if ($descuento > 0)
+                                <small class="block text-[1rem] w-full line-through text-red-600 text-center">
+                                    S/.
+                                    {{ getPriceAntes($pricesale, $descuento, $pricetype ?? null, ', ') }}
+                                </small>
+                            @endif
+                        @endif
                     </div>
 
                     <div class="w-full p-1 flex gap-2 items-end justify-between">
@@ -396,35 +206,27 @@
                         @endif
                     </div>
 
-                    <div class="absolute -top-1 -left-1">
-                        <span class="w-14 h-14 block relative">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                class="w-full h-full {{ $colortype }}" fill="currentColor" stroke="currentColor"
-                                stroke-width="0">
-                                <path fill="currentColor"
-                                    d="M18.9905 19H19M18.9905 19C18.3678 19.6175 17.2393 19.4637 16.4479 19.4637C15.4765 19.4637 15.0087 19.6537 14.3154 20.347C13.7251 20.9374 12.9337 22 12 22C11.0663 22 10.2749 20.9374 9.68457 20.347C8.99128 19.6537 8.52349 19.4637 7.55206 19.4637C6.76068 19.4637 5.63218 19.6175 5.00949 19C4.38181 18.3776 4.53628 17.2444 4.53628 16.4479C4.53628 15.4414 4.31616 14.9786 3.59938 14.2618C2.53314 13.1956 2.00002 12.6624 2 12C2.00001 11.3375 2.53312 10.8044 3.59935 9.73817C4.2392 9.09832 4.53628 8.46428 4.53628 7.55206C4.53628 6.76065 4.38249 5.63214 5 5.00944C5.62243 4.38178 6.7556 4.53626 7.55208 4.53626C8.46427 4.53626 9.09832 4.2392 9.73815 3.59937C10.8044 2.53312 11.3375 2 12 2C12.6625 2 13.1956 2.53312 14.2618 3.59937C14.9015 4.23907 15.5355 4.53626 16.4479 4.53626C17.2393 4.53626 18.3679 4.38247 18.9906 5C19.6182 5.62243 19.4637 6.75559 19.4637 7.55206C19.4637 8.55858 19.6839 9.02137 20.4006 9.73817C21.4669 10.8044 22 11.3375 22 12C22 12.6624 21.4669 13.1956 20.4006 14.2618C19.6838 14.9786 19.4637 15.4414 19.4637 16.4479C19.4637 17.2444 19.6182 18.3776 18.9905 19Z" />
-                            </svg>
-                            <h1
-                                class="absolute text-colortitleform top-0 left-0 w-full h-full flex flex-col text-center justify-center items-center font-semibold">
-                                @if ($item->isDescuento())
-                                    <p class="text-xs leading-[0.5rem]">{{ formatDecimalOrInteger($item->descuento) }}
-                                        <small class="">%</small>
-                                    </p>
-                                    <small class="w-full text-[7px]">DSCT</small>
-                                @elseif ($item->isCombo())
-                                    <small class="w-full text-[10px] leading-[0.6rem]">COM<br />BO</small>
-                                @else
-                                    <small class="w-full text-[10px] leading-[0.5rem]">REM<br />ATE</small>
-                                @endif
-                            </h1>
-                        </span>
+                    {{-- <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
+                        <p class=" text-white text-[8px] inline-block font-semibold p-1 px-10">
+                            PROMOCIÓN</p>
+                    </div> --}}
+                    {{-- <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
+                        <p class="text-white text-[8px] block w-full leading-3 font-semibold p-1  px-10">
+                            LIQUIDACIÓN</p>
+                    </div> --}}
+                    <div class="w-auto h-auto bg-red-600 absolute -left-8 top-3 -rotate-[35deg] leading-3">
+                        <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
+                            @if ($item->isDescuento())
+                                - {{ formatDecimalOrInteger($item->descuento) }}% DSCT
+                            @elseif ($item->isCombo())
+                                COMBO
+                            @else
+                                LIQUIDACIÓN
+                            @endif
+                        </p>
                     </div>
                 </x-simple-card>
             @endforeach
-
-            <div wire:loading.flex class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </div>
     @endif
 

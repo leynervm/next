@@ -14,25 +14,25 @@ class AreaSeeder extends Seeder
      */
     public function run()
     {
-        Area::create([
+        Area::firstOrCreate([
             'name' => 'PLANTA INTERNA',
             'slug' => 'planta-interna',
             'visible' => 1,
         ]);
         
-        Area::create([
+        Area::firstOrCreate([
             'name' => 'PLANTA EXTERNA',
             'slug' => 'planta-externa',
             'visible' => 1,
         ]);
 
-        Area::create([
+        Area::firstOrCreate([
             'name' => 'DESARROLLO SOFTWARE & DISEÑO GRÁFICO',
             'slug' => 'desarrollo-software-&-diseño-grafico',
             'visible' => 1,
         ]);
 
-        Area::create([
+        Area::firstOrCreate([
             'name' => 'VENTAS',
             'slug' => 'ventas',
             'visible' => 1,

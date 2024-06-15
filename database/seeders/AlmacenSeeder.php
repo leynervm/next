@@ -19,10 +19,10 @@ class AlmacenSeeder extends Seeder
     {
 
         if (Module::isEnabled('Ventas') && Module::isDisabled('Almacen')) {
-            Almacen::firstOrCreate([
-                'name' => 'ALMACÉN PRINCIPAL',
-                'default' => Almacen::DEFAULT
-            ]);
+            // Almacen::firstOrCreate([
+            //     'name' => 'ALMACÉN PRINCIPAL',
+            //     'default' => Almacen::DEFAULT
+            // ]);
         } else {
             // CON DATOS, SOLAMENTE COMENTAR ESTA PARTE 
             //   CUANDO SE QUIERE DESDE CERO

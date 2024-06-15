@@ -232,6 +232,12 @@ class Producto extends Model
         return $query->where('publicado', self::PUBLICADO);
     }
 
+    public function scopeWhereRangoBetween($query, $desde, $hasta)
+    {
+        return $query->where('pricebuy', '<=', $hasta)
+            ->where('pricebuy', '>=', $desde);
+    }
+
     // public function ofertasdisponibles(): HasMany
     // {
     //     return $this->hasMany(Promocion::class)->disponibles();

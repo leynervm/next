@@ -19,7 +19,10 @@ class Sucursal extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'direccion', 'codeanexo', 'default', 'ubigeo_id', 'status', 'empresa_id'];
+    protected $fillable = [
+        'name', 'direccion', 'codeanexo', 'default', 'ubigeo_id',
+        'status', 'typesucursal_id', 'empresa_id'
+    ];
     const ACTIVO = "0";
     const BAJA = "1";
     const DEFAULT = "1";
@@ -59,6 +62,11 @@ class Sucursal extends Model
     public function ubigeo(): BelongsTo
     {
         return $this->belongsTo(Ubigeo::class);
+    }
+
+    public function typesucursal(): BelongsTo
+    {
+        return $this->belongsTo(Typesucursal::class);
     }
 
     public function empresa(): BelongsTo

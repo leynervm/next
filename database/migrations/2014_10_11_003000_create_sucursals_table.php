@@ -20,9 +20,10 @@ return new class extends Migration
             $table->string('codeanexo', 4);
             $table->integer('status')->default(0);
             $table->integer('default')->default(0);
-            $table->unsignedSmallInteger('ubigeo_id')->nullable();
-            $table->unsignedTinyInteger('empresa_id')->nullable();
-            
+            $table->unsignedTinyInteger('typesucursal_id');
+            $table->unsignedSmallInteger('ubigeo_id');
+            $table->unsignedTinyInteger('empresa_id');
+            $table->foreign('typesucursal_id')->on('typesucursals')->references('id');
             $table->foreign('ubigeo_id')->on('ubigeos')->references('id');
             $table->foreign('empresa_id')->on('empresas')->references('id');
             $table->softDeletes();

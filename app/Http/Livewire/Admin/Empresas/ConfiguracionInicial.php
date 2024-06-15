@@ -2,21 +2,36 @@
 
 namespace App\Http\Livewire\Admin\Empresas;
 
+use App\Helpers\FormatoPersonalizado;
 use App\Helpers\GetClient;
+use App\Models\Acceso;
+use App\Models\Almacen;
+use App\Models\Empresa;
+use App\Models\Typesucursal;
 use App\Models\Ubigeo;
+use App\Rules\CampoUnique;
+use App\Rules\DefaultValue;
+use App\Rules\ValidateFileKey;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Intervention\Image\ImageManagerStatic as Image;
 use Nwidart\Modules\Facades\Module;
 
 class ConfiguracionInicial extends Component
 {
 
+    use WithFileUploads;
+
+    public $opensucursal = false;
     public $step = 1;
 
-    public $empresa = [], $sucursals = [], $telephones = [];
-    public $icono, $logo, $cert, $idcert, $idlogo, $idicono;
+    public $empresa = [], $sucursals = [], $telephones = [], $selectedsucursals = [], $almacens = [];
+    public $icono, $extencionicono, $image, $extencionimage, $cert, $idcert;
 
-    public $document, $name, $direccion, $telefono, $ubigeo_id,
-        $estado, $condicion, $email, $web, $montoadelanto;
+    public $document, $name, $direccion, $departamento, $provincia, $distrito, $telefono, $ubigeo_id,
+        $estado, $condicion, $email, $web, $sendnode, $montoadelanto;
     public $usuariosol, $clavesol, $passwordcert, $sendmode, $clientid, $clientsecret;
 
     public $validatemail;
@@ -28,20 +43,32 @@ class ConfiguracionInicial extends Component
     public $tipocambioauto = 0;
     public $igv = '18.00';
 
+    public $namesucursal, $direccionsucursal, $ubigeosucursal_id, $typesucursal_id, $codeanexo;
+    public $defaultsucursal = false;
+    public $namealmacen;
+
+
+    public function mount()
+    {
+        if (module::isEnabled('Facturacion')) {
+            $this->sendmode = Empresa::PRUEBA;
+            $this->usuariosol = Empresa::USER_SOL_PRUEBA;
+            $this->clavesol = Empresa::PASSWORD_SOL_PRUEBA;
+            $this->clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
+            $this->clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
+        }
+    }
 
     public function render()
     {
         $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos'));
+        $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
+        return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos', 'typesucursals'));
     }
 
     public function validatestep($step)
     {
         // dd($step);
-
-        if (Module::isDisabled('Facturacion')) {
-            $this->sendmode = 0;
-        }
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
         $this->usepricedolar = $this->usepricedolar == true ?  1 : 0;
         $this->viewpricedolar = $this->viewpricedolar == true ?  1 : 0;
@@ -53,7 +80,7 @@ class ConfiguracionInicial extends Component
             $this->tipocambioauto = 0;
             $this->tipocambio = null;
         }
-
+        // 20600129997
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->direccion = trim($this->direccion);
@@ -76,8 +103,75 @@ class ConfiguracionInicial extends Component
                 'viewpricedolar' => ['integer', 'min:0', 'max:1'],
                 'tipocambioauto' => ['integer', 'min:0', 'max:1'],
             ]);
+        } elseif ($step == 3) {
+            $this->validate([
+                'almacens' => [
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Ventas') || module::isEnabled('Almacen')),
+                    'array', 'min:1'
+                ],
+                'telephones' => ['array', 'min:1'],
+                'email' => ['nullable', 'email'],
+                'web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            ]);
+
+            if (module::isEnabled('Ventas') || module::isEnabled('Almacen')) {
+                if (module::isDisabled('Almacen')) {
+                    if (count($this->almacens) > 1) {
+                        $this->addError('namealmacen', 'Solamente se permite agregar un almacén');
+                        return false;
+                    }
+                }
+            }
+        } elseif ($step == 4) {
+            $this->validate([
+                'selectedsucursals' => ['array', 'min:1'],
+            ]);
+
+            $acceso = Acceso::first();
+            if (!$acceso) {
+                $this->addError('selectedsucursals', 'No tienes acceso para configurael perfil de empresas.');
+                return false;
+            }
+
+            if (!is_null($acceso->limitsucursals)) {
+                if (count($this->selectedsucursals) > $acceso->limitsucursals) {
+                    $this->addError('selectedsucursals', 'Límite de sucursales alcanzado ' . $acceso->limitsucursals . ', seleccione sucursales correspondiente a registrar ');
+                    return false;
+                }
+            }
         } else {
-            $this->validate([]);
+            $this->validate([
+                'sendmode' => [
+                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'integer', 'min:0', 'max:1'
+                ],
+                'cert' => [
+                    'nullable', Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'file',  new ValidateFileKey("pfx")
+                ],
+                'usuariosol' => [
+                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string', 'min:4'
+                ],
+                'clavesol' => [
+                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string', 'min:4'
+                ],
+                'passwordcert' => [
+                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string', 'min:6'
+                ],
+                'clientid' => [
+                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string', 'min:6'
+                ],
+                'clientsecret' => [
+                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string', 'min:6'
+                ],
+
+            ]);
         }
 
         $this->empresa =  [
@@ -86,6 +180,9 @@ class ConfiguracionInicial extends Component
             'estado' => $this->estado,
             'condicion' => $this->condicion,
             'direccion' => $this->direccion,
+            'departamento' => $this->departamento,
+            'provincia' => $this->provincia,
+            'distrito' => $this->distrito,
             'email' => $this->email,
             'web' => $this->web,
             // 'icono' => $urlicono,
@@ -107,10 +204,137 @@ class ConfiguracionInicial extends Component
             // 'cert' => $urlcert,
         ];
 
-
         $this->step++;
     }
 
+    public function save()
+    {
+
+        $urlicono = $this->icono ?? null;
+        $urlcert = $this->cert ?? null;
+
+        if ($this->icono) {
+            $imageIcono = $this->icono;
+            $urlicono = uniqid() . '.' . $this->extencionicono;
+            $imagePath = public_path('storage/images/company/' . $urlicono);
+
+            list($type, $imageIcono) = explode(';', $imageIcono);
+            list(, $imageIcono) = explode(',', $imageIcono);
+            $imageIcono = base64_decode($imageIcono);
+            file_put_contents($imagePath, $imageIcono);
+        }
+
+        if ($this->cert) {
+            $extcert = FormatoPersonalizado::getExtencionFile($this->cert->getClientOriginalName());
+            $urlcert = 'cert_' . $this->document . '.' . $extcert;
+            $this->cert->storeAs('company/cert/', $urlcert, 'local');
+        }
+
+        try {
+            $empresa = Empresa::create([
+                'document' => $this->document,
+                'name' => $this->name,
+                'estado' => $this->estado,
+                'condicion' => $this->condicion,
+                'direccion' => $this->direccion,
+                'email' => $this->email,
+                'web' => $this->web,
+                'icono' => $urlicono,
+                'montoadelanto' => $this->montoadelanto,
+                'uselistprice' => $this->uselistprice,
+                'usepricedolar' => $this->usepricedolar,
+                'viewpricedolar' => $this->viewpricedolar,
+                'tipocambio' => $this->tipocambio,
+                'tipocambioauto' => $this->tipocambioauto,
+                'default' => 1,
+                'igv' => $this->igv,
+                'ubigeo_id' => $this->ubigeo_id,
+                'sendmode' => $this->sendmode,
+                'passwordcert' => $this->passwordcert,
+                'usuariosol' => $this->usuariosol,
+                'clavesol' => $this->clavesol,
+                'clientid' => $this->clientid,
+                'clientsecret' => $this->clientsecret,
+                'cert' => $urlcert,
+            ]);
+
+            if (count($this->almacens) > 0) {
+                foreach ($this->almacens as $item) {
+                    Almacen::create([
+                        'name' => $item
+                    ]);
+                }
+            }
+
+            if ($this->image) {
+                $imageLogo = $this->image;
+                list($type, $imageLogo) = explode(';', $imageLogo);
+                list(, $imageLogo) = explode(',', $imageLogo);
+                $imageLogo = base64_decode($imageLogo);
+
+                $compressedImage = Image::make($imageLogo)
+                    ->orientate()->encode('jpg', 30);
+
+                $urlLogo = uniqid() . '.' . $this->extencionimage;
+                $compressedImage->save(public_path('storage/images/company/' . $urlLogo));
+
+                if ($compressedImage->filesize() > 1048576) { //1MB
+                    $compressedImage->destroy();
+                    $compressedImage->delete();
+                    $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
+                }
+
+                $empresa->image()->create([
+                    'url' => $urlLogo,
+                    'default' => 1
+                ]);
+            }
+
+            if (count($this->selectedsucursals) > 0) {
+                $filteredSucursals = array_filter($this->sucursals, function ($item) {
+                    return in_array($item['codigo'], $this->selectedsucursals);
+                });
+
+                foreach ($filteredSucursals as $item) {
+                    $sucursal = $empresa->sucursals()->create([
+                        'name' => $item['descripcion'],
+                        'direccion' => $item['direccion'],
+                        'default' => $item['default'],
+                        'codeanexo' => $item['codigo'],
+                        'typesucursal_id' => $item['typesucursal_id'],
+                        'ubigeo_id' => $item['ubigeo_id'],
+                    ]);
+
+                    if (module::isEnabled('Almacen') || module::isEnabled('Ventas')) {
+                        if (module::isDisabled('Almacen')) {
+                            $almacens = Almacen::pluck('id');
+                            $sucursal->almacens()->sync($almacens);
+                        }
+                    }
+                }
+            }
+
+            if (count($this->telephones) > 0) {
+                foreach ($this->telephones as $item) {
+                    $empresa->telephones()->create([
+                        'phone' => $item
+                    ]);
+                }
+            }
+
+            DB::commit();
+            $this->resetValidation();
+            $this->reset();
+            $this->dispatchBrowserEvent('created');
+            return redirect()->route('admin');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 
     public function searchclient()
     {
@@ -119,30 +343,86 @@ class ConfiguracionInicial extends Component
             'document' => 'required|numeric|digits:11|regex:/^\d{11}$/'
         ]);
 
-        $this->name = null;
-        $this->direccion = null;
-        $this->telefono = null;
-        $this->ubigeo_id = null;
-        $this->estado = null;
-        $this->condicion = null;
-        $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'ubigeo_id', 'estado', 'condicion']);
+        $this->reset([
+            'name', 'direccion', 'telefono', 'ubigeo_id',
+            'departamento', 'provincia', 'distrito',
+            'estado', 'condicion', 'selectedsucursals'
+        ]);
+        $this->resetValidation([
+            'document', 'name', 'direccion',
+            'telefono', 'ubigeo_id', 'estado', 'condicion'
+        ]);
 
         $http = new GetClient();
-        $response = $http->getSunat($this->document);
+        $response = $http->consultaRUC($this->document);
+        // dd(is_array($response->result->establecimientos));
+        if ($response->success) {
+            $this->name = $response->result->razon_social;
+            $this->direccion = $response->result->direccion;
+            $this->estado = $response->result->estado;
+            $this->condicion = $response->result->condicion;
+            $this->ubigeo_id = $response->result->ubigeo_id;
+            $this->departamento = $response->result->departamento;
+            $this->provincia = $response->result->provincia;
+            $this->distrito = $response->result->distrito;
 
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name = $response->getData()->name;
-                $this->direccion = $response->getData()->direccion;
-                $this->estado = $response->getData()->estado;
-                $this->condicion = $response->getData()->condicion;
-                $this->ubigeo_id = $response->getData()->ubigeo_id;
-            } else {
-                $this->addError('document', $response->getData()->message);
+            $establecimientos = [];
+            if (is_array($response->result->establecimientos)) {
+                $establecimientos = array_map(function ($object) {
+                    $array = (array) $object;
+                    $array['default'] = false;
+                    $array['descripcion'] = $array['tipo'] . ' ' . $array['codigo'];
+
+                    $ubigeo_id = null;
+                    if (!empty($array['distrito'])) {
+                        $ubigeo_id = Ubigeo::where('distrito', 'ilike', trim($array['distrito']))
+                            ->where('provincia', 'ilike', trim($array['provincia']))
+                            ->first()->id ?? null;
+                    }
+                    $array['ubigeo_id'] = $ubigeo_id;
+
+                    $typesucursal_id = null;
+                    if ($array['cod_tipo']) {
+                        $typesucursal_id = Typesucursal::where('code', $array['cod_tipo'])->first()->id ?? null;
+                    }
+
+                    $array['typesucursal_id'] = $typesucursal_id;
+                    return $array;
+                    // return (array) $object;
+                }, $response->result->establecimientos);
             }
+
+            $this->sucursals =  $establecimientos;
+            // dd(($this->sucursals));
         } else {
-            $this->addError('document', 'Error al buscar cliente.');
+            $this->addError('document', $response->message);
         }
+    }
+
+    public function addalmacen()
+    {
+        if (module::isEnabled('Ventas') || module::isEnabled('Almacen')) {
+            $this->namealmacen = trim($this->namealmacen);
+            $this->validate([
+                'namealmacen' => ['required', 'string', 'min:3']
+            ]);
+
+            if (module::isDisabled('Almacen')) {
+                if (count($this->almacens) >= 1) {
+                    $this->addError('namealmacen', 'Ya se agregaron datos de almacén');
+                    return false;
+                }
+            }
+
+            $this->almacens[] = $this->namealmacen;
+            $this->reset(['namealmacen']);
+        }
+    }
+
+    public function removealmacen($index)
+    {
+        unset($this->almacens[$index]);
+        $this->almacens = array_values($this->almacens);
     }
 
     public function addphone()
@@ -151,7 +431,148 @@ class ConfiguracionInicial extends Component
         $this->validate([
             'telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
         ]);
+
+        if (in_array($this->telefono, $this->telephones)) {
+            $this->addError('telefono', 'Teléfono ya se encuentra agregado');
+            return false;
+        }
         $this->telephones[] = $this->telefono;
         $this->reset(['telefono']);
     }
+
+    public function removephone($index)
+    {
+        unset($this->telephones[$index]);
+        $this->telephones = array_values($this->telephones);
+    }
+
+    public function updatingOpensucursal()
+    {
+        if (!$this->opensucursal) {
+            $this->resetValidation();
+            $this->reset([
+                'defaultsucursal', 'typesucursal_id', 'namesucursal',
+                'direccionsucursal', 'codeanexo', 'ubigeosucursal_id'
+            ]);
+        }
+    }
+
+    public function addsucursal()
+    {
+
+        $this->name = trim($this->name);
+        $this->direccion = trim($this->direccion);
+        $this->codeanexo = trim($this->codeanexo);
+
+        $this->validate([
+            'namesucursal' => [
+                'required', 'min:3', 'max:255',
+                new CampoUnique('sucursals', 'name', null, true),
+            ],
+            'direccionsucursal' => [
+                'required', 'string', 'min:3', 'max:255'
+            ],
+            'typesucursal_id' => [
+                'required', 'integer', 'min:1', 'exists:typesucursals,id',
+            ],
+            'ubigeosucursal_id' => [
+                'required', 'integer', 'min:1', 'exists:ubigeos,id',
+            ],
+            'codeanexo' => [
+                'required', 'string', 'min:4', 'max:4',
+                new CampoUnique('sucursals', 'codeanexo', null, true),
+            ],
+            'defaultsucursal' => [
+                'required', 'boolean', 'min:0', 'max:1',
+                new DefaultValue('sucursals', 'default', null, true)
+            ]
+        ]);
+
+        if (count($this->sucursals) > 0) {
+            $sucursals = collect($this->sucursals);
+
+            $existscode = $sucursals->pluck('codigo')->contains($this->codeanexo);
+            if ($existscode) {
+                $this->addError('codeanexo', 'El valor de código de anexo ya está agregado.');
+            }
+
+            // Convertimos todos los nombres del array a minúsculas para hacer la comparación
+            $nombres = array_map('strtolower', array_column($this->sucursals, 'descripcion'));
+            $existsname = in_array(strtolower($this->namesucursal), $nombres);
+
+            if ($existsname) {
+                $this->addError('namesucursal', 'El nombre de sucursal ya está agregado.');
+            }
+
+            if ($existscode || $existsname) {
+                return false;
+            }
+
+            if ($this->defaultsucursal) {
+                $existsdefault = $sucursals->contains('default', true);
+                if ($existsdefault) {
+                    $sucursals->transform(function ($sucursal, $key) {
+                        if ($sucursal['default']) {
+                            $sucursal['default'] = false;
+                        }
+                        return $sucursal;
+                    });
+                    $this->sucursals = $sucursals->toArray();
+                }
+            }
+        }
+
+        $departamento = '';
+        $provincia = '';
+        $distrito = '';
+        if ($this->ubigeosucursal_id) {
+            $ubigeo = Ubigeo::find($this->ubigeosucursal_id);
+            $departamento = $ubigeo->departamento;
+            $provincia = $ubigeo->provincia;
+            $distrito = $ubigeo->distrito;
+        }
+
+        $codesucursal = '';
+        $typesucursal = '';
+        if ($this->typesucursal_id) {
+            $typesucursal = Typesucursal::find($this->typesucursal_id);
+            $codesucursal = $typesucursal->code;
+            $typesucursal = $typesucursal->name;
+        }
+        $this->sucursals[] = [
+            'descripcion' => $this->namesucursal,
+            'direccion' => $this->direccionsucursal,
+            'ubigeo_id' => $this->ubigeosucursal_id,
+            'typesucursal_id' => $this->typesucursal_id,
+            'departamento' => $departamento,
+            'provincia' => $provincia,
+            'distrito' => $distrito,
+            'cod_tipo' => $codesucursal,
+            'tipo' => $typesucursal,
+            'codigo' => $this->codeanexo,
+            'default' => $this->defaultsucursal,
+        ];
+        $this->reset(['opensucursal', 'defaultsucursal', 'typesucursal_id', 'namesucursal', 'direccionsucursal', 'codeanexo', 'ubigeosucursal_id']);
+    }
+
+    public function removesucursal($index)
+    {
+        if (count($this->selectedsucursals) > 0) {
+            if (in_array($this->sucursals[$index]['codigo'], $this->selectedsucursals)) {
+                unset($this->selectedsucursals[array_search($this->sucursals[$index]['codigo'], $this->selectedsucursals)]);
+                $this->selectedsucursals = array_values($this->selectedsucursals);
+            }
+        }
+        unset($this->sucursals[$index]);
+        $this->sucursals = array_values($this->sucursals);
+        $this->resetValidation();
+    }
+
+    public function clearCert()
+    {
+        $this->reset(['cert']);
+        $this->resetValidation();
+    }
+
+    // 20600129997
 }

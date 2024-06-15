@@ -143,10 +143,8 @@
             <form wire:submit.prevent="saveimage">
                 <div class="w-full relative">
                     @if (isset($imagen))
-                        <x-simple-card
-                            class="w-full h-60 md:max-w-md mx-auto mb-1 border border-borderminicard animate__animated animate__fadeIn animate__faster">
-                            <img src="{{ $imagen->temporaryUrl() }}"
-                                class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
+                        <x-simple-card class="w-full h-60 md:max-w-md mx-auto mb-1 border border-borderminicard">
+                            <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down">
                         </x-simple-card>
                     @else
                         <x-icon-file-upload class="w-full h-60 text-gray-300" />

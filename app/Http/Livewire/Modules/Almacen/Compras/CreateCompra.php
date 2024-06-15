@@ -40,10 +40,10 @@ class CreateCompra extends Component
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'tipocambio' => ['nullable', Rule::requiredIf($this->moneda->code == 'USD'), 'regex:/^\d{0,3}(\.\d{0,3})?$/'],
             'referencia' => [
-                'required', 'string', 'min:3',
+                'required', 'string', 'min:6', 'regex:/^[a-zA-Z][a-zA-Z0-9][0-9]{2}-(?!0+$)\d{1,8}$/',
                 new ValidateReferenciaCompra($this->proveedor_id, $this->sucursal_id)
             ],
-            'guia' => ['nullable', 'string', 'min:3'],
+            'guia' => ['nullable', 'string', 'min:6', 'regex:/^[a-zA-Z][a-zA-Z0-9][0-9]{2}-(?!0+$)\d{1,8}$/'],
             'gravado' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'exonerado' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'igv' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],

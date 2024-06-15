@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Pricetype;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -24,7 +25,8 @@ class CreatePricetypesTable extends Migration
             $table->char('temporal', 1)->default(0);
             $table->dateTime('startdate')->nullable();
             $table->dateTime('expiredate')->nullable();
-            $table->softDeletes();
+            $table->string('campo_table');
+            $table->char('status', 1)->default(Pricetype::ACTIVO);
         });
     }
 

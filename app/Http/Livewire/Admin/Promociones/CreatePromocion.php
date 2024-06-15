@@ -25,6 +25,7 @@ class CreatePromocion extends Component
     public $producto_id, $almacen_id, $type, $typecombo, $startdate, $expiredate;
     public $limit;
 
+    public $pricebuy;
     public $limitstock = 0;
     public $limitstocksec = 0;
     public $descuento;
@@ -38,6 +39,9 @@ class CreatePromocion extends Component
             'producto_id' => [
                 'required', 'integer', 'min:1', 'exists:productos,id',
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
+            ],
+            'pricebuy' => [
+                'required', 'numeric', 'decimal:0,4',
             ],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1',  'max:' . $this->limitstock, 'decimal:0,2',],
             'startdate' => [
@@ -101,12 +105,13 @@ class CreatePromocion extends Component
 
     public function updatedProductoId($value)
     {
-        $this->reset(['producto']);
+        $this->reset(['producto', 'pricebuy']);
         if (trim($value) !== '') {
             $this->producto = Producto::with(['almacens', 'images', 'unit'])->find($value);
             $this->limitstock = formatDecimalOrInteger($this->producto->almacens()->sum('cantidad'));
+            $this->pricebuy = number_format($this->producto->pricebuy, 3, '.', '');
         } else {
-            $this->reset(['limit', 'limitstock']);
+            $this->reset(['limit', 'limitstock', 'pricebuy']);
         }
     }
 
@@ -133,6 +138,7 @@ class CreatePromocion extends Component
                 'required', 'integer', 'min:1', 'exists:productos,id',
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
             ],
+            'pricebuy' => ['required', 'numeric', 'decimal:0,4'],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'],
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],
             'startdate' => [
@@ -149,6 +155,7 @@ class CreatePromocion extends Component
         // $comboCollect = getCombo();
         $promocion = [
             'producto_id' => $this->producto_id,
+            'pricebuy' => $this->producto->pricebuy,
             'limit' => $this->limit,
             'descuento' => $this->descuento,
             'unit' => $this->producto->unit->name,
@@ -163,7 +170,8 @@ class CreatePromocion extends Component
             $comboJSON = response()->json($comboCollect)->getData();
             Session::put('combo', $comboJSON);
         } else {
-            Promocion::create($promocion);
+            $promocion = Promocion::create($promocion);
+            $promocion->producto->assignPriceProduct();
             $this->reset();
             $this->dispatchBrowserEvent('created');
             $this->emitTo('admin.promociones.show-promociones', 'render');
@@ -187,7 +195,7 @@ class CreatePromocion extends Component
                     'typecombo' => $item->typecombo,
                 ]);
             }
-
+            $promocion->producto->assignPriceProduct();
             DB::commit();
             $this->emitTo('admin.promociones.show-promociones', 'render');
             $this->resetValidation();

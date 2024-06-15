@@ -426,7 +426,7 @@
                 async getTipocambio() {
                     try {
                         this.loadingdolar = true;
-                        const response = await fetch('/admin/tipocambio');
+                        const response = await fetch("{{ route('api.tipocambio') }}");
                         const data = await response.json();
                         this.tipocambio = data.precioVenta;
                         this.loadingdolar = false;

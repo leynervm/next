@@ -54,12 +54,12 @@
                     </div>
 
                     @if (isset($cert))
-                        <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()" class="w-36 h-36 text-gray-300" />
+                        <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()" class="w-36 h-auto text-gray-300" />
                     @else
                         @if ($empresa->cert)
-                            <x-icon-file-upload type="filesuccess" :uploadname="$empresa->cert" class="w-36 h-36 text-gray-300" />
+                            <x-icon-file-upload type="filesuccess" :uploadname="$empresa->cert" class="w-36 h-auto text-gray-300" />
                         @else
-                            <x-icon-file-upload type="code" text="PFX" class="w-36 h-36 text-gray-300" />
+                            <x-icon-file-upload type="code" text="PFX" class="w-36 h-auto text-gray-300" />
                         @endif
                     @endif
 

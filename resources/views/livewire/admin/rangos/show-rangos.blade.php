@@ -1,22 +1,28 @@
 <div x-data="rangos">
-    <div wire:loading.flex class="fixed loading-overlay rounded hidden h-screen">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
         <x-loading-next />
     </div>
 
     @can('admin.administracion.rangos.import')
         <div class="w-full flex flex-col gap-2 items-start">
             <form wire:submit.prevent="import">
-                <label>
+                <label class="">
                     <x-icon-file-upload type="excel"
-                        class="w-28 p-3 {{ $file ? 'border-fondobutton text-fondobutton shadow-fondobutton animate-pulse' : '' }}  text-colorlabel cursor-pointer hover:border-fondobutton hover:text-fondobutton hover:shadow-fondobutton transition ease-in-out duration-150">
-                        <p class="text-[9px] mt-2 text-center leading-3 font-semibold tracking-widest">
-                            IMPORTAR LISTA RANGOS</p>
+                        class="w-24 h-24 p-3 {{ $file ? 'border-fondobutton text-colorsubtitleform shadow-fondobutton animate-pulse' : '' }}  text-colorlabel cursor-pointer hover:border-fondobutton hover:text-fondobutton hover:shadow-fondobutton transition ease-in-out duration-150">
                     </x-icon-file-upload>
                     <input type="file" class="hidden" wire:model="file" id="{{ $identificador }}" accept=".xlsx, .csv" />
+
+                    <p class="text-[9px] mt-2 text-center leading-3 font-semibold tracking-widest">
+                        @if ($file)
+                            ARCHIVO LISTO
+                        @else
+                            IMPORTAR LISTA RANGOS
+                        @endif
+                    </p>
                 </label>
 
                 @if ($file)
-                    <div class="w-full flex gap-2">
+                    <div class="w-full flex gap-2 mt-1">
                         <x-button wire:loading.attr="disabled" type="submit">
                             IMPORTAR
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
@@ -48,6 +54,12 @@
     @endcan
 
     <div class="block w-full mt-1">
+        @if ($rangos->hasPages())
+            <div class="w-full py-2">
+                {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
+            </div>
+        @endif
+
         @if (count($rangos) > 0)
             <div class="w-full mb-1" style="display: none;" x-show="selectedrangos.length > 0">
                 <x-button-secondary onclick="confirmDeleteAll()" wire:loading.attr="disabled">
@@ -60,44 +72,21 @@
                 <x-slot name="header">
                     <tr>
                         <th scope="col" class="p-2 font-medium text-center">
-                            <x-label-check for="checkall" class="flex flex-col leading-3 !font-medium !tracking-normal">
+                            <label for="checkall"
+                                class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
                                 <x-input wire:model.lazy="checkall" class="cursor-pointer p-2" name="checkall"
                                     type="checkbox" id="checkall" wire:loading.attr="disabled" />
                                 TODO
-                            </x-label-check>
+                            </label>
                         </th>
                         <th scope="col" class="p-2 font-medium">
                             <button class="flex items-center gap-x-3 focus:outline-none">
-                                <span>PRECIO MÍNIMO</span>
-                                <svg class="h-3" viewBox="0 0 10 11" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M2.13347 0.0999756H2.98516L5.01902 4.79058H3.86226L3.45549 3.79907H1.63772L1.24366 4.79058H0.0996094L2.13347 0.0999756ZM2.54025 1.46012L1.96822 2.92196H3.11227L2.54025 1.46012Z"
-                                        fill="currentColor" stroke="currentColor" stroke-width="0.1" />
-                                    <path
-                                        d="M0.722656 9.60832L3.09974 6.78633H0.811638V5.87109H4.35819V6.78633L2.01925 9.60832H4.43446V10.5617H0.722656V9.60832Z"
-                                        fill="currentColor" stroke="currentColor" stroke-width="0.1" />
-                                    <path
-                                        d="M8.45558 7.25664V7.40664H8.60558H9.66065C9.72481 7.40664 9.74667 7.42274 9.75141 7.42691C9.75148 7.42808 9.75146 7.42993 9.75116 7.43262C9.75001 7.44265 9.74458 7.46304 9.72525 7.49314C9.72522 7.4932 9.72518 7.49326 9.72514 7.49332L7.86959 10.3529L7.86924 10.3534C7.83227 10.4109 7.79863 10.418 7.78568 10.418C7.77272 10.418 7.73908 10.4109 7.70211 10.3534L7.70177 10.3529L5.84621 7.49332C5.84617 7.49325 5.84612 7.49318 5.84608 7.49311C5.82677 7.46302 5.82135 7.44264 5.8202 7.43262C5.81989 7.42993 5.81987 7.42808 5.81994 7.42691C5.82469 7.42274 5.84655 7.40664 5.91071 7.40664H6.96578H7.11578V7.25664V0.633865C7.11578 0.42434 7.29014 0.249976 7.49967 0.249976H8.07169C8.28121 0.249976 8.45558 0.42434 8.45558 0.633865V7.25664Z"
-                                        fill="currentColor" stroke="currentColor" stroke-width="0.3" />
-                                </svg>
+                                <span class="leading-3">PRECIO <br> MÍNIMO</span>
                             </button>
                         </th>
                         <th scope="col" class="p-2 font-medium">
                             <button class="flex items-center gap-x-3 focus:outline-none">
-                                <span>PRECIO MÁXIMO</span>
-                                <svg class="h-3" viewBox="0 0 10 11" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M2.13347 0.0999756H2.98516L5.01902 4.79058H3.86226L3.45549 3.79907H1.63772L1.24366 4.79058H0.0996094L2.13347 0.0999756ZM2.54025 1.46012L1.96822 2.92196H3.11227L2.54025 1.46012Z"
-                                        fill="currentColor" stroke="currentColor" stroke-width="0.1" />
-                                    <path
-                                        d="M0.722656 9.60832L3.09974 6.78633H0.811638V5.87109H4.35819V6.78633L2.01925 9.60832H4.43446V10.5617H0.722656V9.60832Z"
-                                        fill="currentColor" stroke="currentColor" stroke-width="0.1" />
-                                    <path
-                                        d="M8.45558 7.25664V7.40664H8.60558H9.66065C9.72481 7.40664 9.74667 7.42274 9.75141 7.42691C9.75148 7.42808 9.75146 7.42993 9.75116 7.43262C9.75001 7.44265 9.74458 7.46304 9.72525 7.49314C9.72522 7.4932 9.72518 7.49326 9.72514 7.49332L7.86959 10.3529L7.86924 10.3534C7.83227 10.4109 7.79863 10.418 7.78568 10.418C7.77272 10.418 7.73908 10.4109 7.70211 10.3534L7.70177 10.3529L5.84621 7.49332C5.84617 7.49325 5.84612 7.49318 5.84608 7.49311C5.82677 7.46302 5.82135 7.44264 5.8202 7.43262C5.81989 7.42993 5.81987 7.42808 5.81994 7.42691C5.82469 7.42274 5.84655 7.40664 5.91071 7.40664H6.96578H7.11578V7.25664V0.633865C7.11578 0.42434 7.29014 0.249976 7.49967 0.249976H8.07169C8.28121 0.249976 8.45558 0.42434 8.45558 0.633865V7.25664Z"
-                                        fill="currentColor" stroke="currentColor" stroke-width="0.3" />
-                                </svg>
+                                <span class="leading-3">PRECIO <br> MÁXIMO</span>
                             </button>
                         </th>
                         <th scope="col" class="p-2 font-medium text-center">
@@ -111,9 +100,9 @@
                                 <th scope="col" class="p-2 font-medium text-center">
                                     <div class="flex justify-center items-center gap-1">
                                         <span>{{ $item->name }}</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            fill="currentColor" class="w-4 h-4 block" stroke-width="0.5"
-                                            stroke="currentColor" fill-rule="evenodd" clip-rule="evenodd">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                            class="w-4 h-4 block" stroke-width="0.5" stroke="currentColor"
+                                            fill-rule="evenodd" clip-rule="evenodd">
                                             <path
                                                 d="M19 11.1554L17.5858 12.5L12 7.1892L6.4142 12.5L5 11.1554L12.0001 4.5L19 11.1554Z" />
                                             <path
@@ -134,8 +123,7 @@
                         <tr>
                             <td class="p-1 text-xs text-center">
                                 <x-input type="checkbox" name="selectedrangos" class="p-2 cursor-pointer"
-                                    x-model="selectedrangos" value="{{ $item->id }}"
-                                    wire:loading.attr="disabled" />
+                                    x-model="selectedrangos" value="{{ $item->id }}" wire:loading.attr="disabled" />
                             </td>
                             <td class="p-1 text-xs">
                                 {{ $item->desde }}
@@ -159,12 +147,16 @@
 
 
                             @foreach ($item->pricetypes as $lista)
-                                <td class="p-1 text-center">
+                                <td class="p-1 text-center" x-data="{ percent: '{{ $lista->pivot->ganancia }}' }">
                                     <p class="font-semibold text-[10px] text-center">{{ $lista->name }}</p>
                                     @can('admin.administracion.rangos.edit')
                                         <x-input class="inline-block text-center" :value="$lista->pivot->ganancia" type="number"
-                                            step="0.01" min="0" onkeypress="return validarDecimal(event, 9)"
-                                            wire:keydown.enter="updatepricerango({{ $item->id }},{{ $lista->id }}, $event.target.value)" />
+                                            step="0.01" min="0" x-model.number="percent"
+                                            x-mask:dynamic="$money($input, '.', ' ')"
+                                            onkeypress="return validarDecimal(event, 9)" :key="$item->id . $lista->id"
+                                            id="{{ $item->id . $lista->id }}" wire:loading.attr="disabled"
+                                            @keydown.enter="$wire.updatepricerango('{{ $item->id }}', '{{ $lista->id }}', percent)"
+                                            x-bind:class="{ 'border-red-500': percent == '' }" />
                                     @endcan
 
                                     @cannot('admin.administracion.rangos.edit')
@@ -183,7 +175,7 @@
 
                                         @can('admin.administracion.rangos.delete')
                                             <x-button-delete wire:loading.attr="disabled"
-                                                onclick="confirmDelete({{ $item }})"
+                                                onclick="confirmDeleteRango({{ $item }})"
                                                 wire:key="deleterango_{{ $item->id }}" />
                                         @endcan
                                     </div>
@@ -259,7 +251,7 @@
             })
         }
 
-        function confirmDelete(rango) {
+        function confirmDeleteRango(rango) {
             swal.fire({
                 title: 'Eliminar rango de precio seleccionado, desde: ' + rango.desde + ' hasta: ' + rango.hasta,
                 text: "Se eliminará un registro de la base de datos",

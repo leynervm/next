@@ -14,12 +14,13 @@ class CreateAccesosTable extends Migration
     public function up()
     {
         Schema::create('accesos', function (Blueprint $table) {
-            $table->id();
+            $table->tinyIncrements('id')->unsigned();
             $table->integer('access')->default(0);
-            $table->integer('adminbusiness')->default(0);
+            $table->unsignedTinyInteger('limitsucursals')->default(2)->nullable();
+            // $table->integer('adminbusiness')->default(0);
             $table->integer('validatemail')->default(0);
-            $table->string('dominio', 255)->nullable(0);
-            $table->timestamps();
+            $table->string('dominio', 255)->nullable();
+            $table->integer('descripcion')->nullable();
         });
     }
 

@@ -147,11 +147,14 @@ class MarketplaceController extends Controller
         $producto->views = $producto->views + 1;
         $producto->save();
 
-        $recents = Producto::orderBy('views', 'desc')->orderBy('name', 'asc')->take(18)->get();
+        $recents = Producto::whereNot('id', $producto->id)->orderBy('views', 'desc')
+            ->orderBy('name', 'asc')->take(18)->get();
         $sugerencias = Producto::where('marca_id', $producto->marca_id)
-            ->orderBy('views', 'desc')->orderBy('name', 'asc')->take(18)->get();
+            ->whereNot('id', $producto->id)->orderBy('views', 'desc')
+            ->orderBy('name', 'asc')->take(18)->get();
         $similares = Producto::where('subcategory_id', $producto->subcategory_id)
-            ->orderBy('views', 'desc')->orderBy('name', 'asc')->take(18)->get();
+            ->whereNot('id', $producto->id)->orderBy('views', 'desc')
+            ->orderBy('name', 'asc')->take(18)->get();
 
         return view('marketplace::productos.show', compact('producto', 'stocksucursals', 'empresa', 'moneda', 'shipmenttypes', 'pricetype', 'recents', 'sugerencias', 'similares'));
     }

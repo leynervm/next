@@ -2,44 +2,26 @@
 
 @php
     $image = $producto->getImageURL();
+    $mensajeprecios = null;
+    $empresa = mi_empresa();
+    $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
     $promocion = $producto->getPromocionDisponible();
     $descuento = $producto->getPorcentajeDescuento($promocion);
-    $combo = $producto->getAmountCombo($promocion, $pricetype);
-    $priceCombo = $combo ? $combo->total : 0;
-    $mensajeprecios = null;
-
-    if ($empresa->usarLista()) {
-        if ($pricetype) {
-            $price = $producto->calcularPrecioVentaLista($pricetype);
-            $price = !is_null($promocion) && $promocion->isRemate() ? $producto->precio_real_compra : $price;
-
-            $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0, $pricetype) : $price;
-        } else {
-            $mensajeprecios = '<p class="text-[10px] text-colorerror leading-3 py-2">
-                    CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>';
-        }
-    } else {
-        $price = $producto->pricesale;
-        $price = !is_null($promocion) && $promocion->isRemate() ? $producto->pricebuy : $price;
-        $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0) : $price;
-    }
+    $combo = $producto->getAmountCombo($promocion, $pricetype ?? null);
+    $pricesale = $producto->obtenerPrecioVenta($pricetype ?? null);
 @endphp
 
 <div class="w-52 card-not-unknown relative bg-fondominicard flex flex-col justify-center px-6 pt-3 pb-6 min-h-[24rem]">
     <div class="w-full relative">
-        @if (isset($promocion))
-            @php
-                $fondopromocion = $promocion->isRemate() ? 'bg-amber-400' : 'bg-red-600';
-                $colorpromocion = $promocion->isRemate() ? 'text-red-600' : 'text-white';
-            @endphp
+        @if ($promocion)
             <div
-                class="absolute top-3 right-1 rounded-sm inline-flex items-center justify-center p-1 text-center h-6 w-14 whitespace-nowrap {{ $fondopromocion }} {{ $colorpromocion }}">
+                class="absolute top-3 right-1 bg-red-600 text-white rounded-sm inline-flex items-center justify-center p-1 text-center h-6 w-auto whitespace-nowrap">
                 @if ($promocion->isDescuento())
                     <span class="text-sm">-{{ formatDecimalOrInteger($promocion->descuento) }}%</span>
                 @elseif ($promocion->isCombo())
                     <span class="text-sm">COMBO</span>
                 @else
-                    <span class="text-sm">REMATE</span>
+                    <span class="text-sm">LIQUIDACIÓN</span>
                 @endif
             </div>
         @endif
@@ -64,29 +46,28 @@
                     </div>
                 </div>
                 <div class="mt-1">
-                    @isset($price)
+                    @if ($pricesale > 0)
                         <div class="w-full text-colorsubtitleform whitespace-nowrap flex flex-col">
-                            <div class="text-xl">
-                                {{ $moneda->simbolo }}
-                                {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
+                            @if ($empresa->verDolar())
+                                <h1 class="text-blue-700 font-medium text-xs">
+                                    $.
+                                    {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                    <small class="text-[10px]">USD</small>
+                                </h1>
+                            @endif
+                            <div class="text-xl font-semibold text-colorlabel">
+                                <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                             </div>
                         </div>
-
-                        @if ($empresa->verDolar())
-                            <h1 class="text-blue-700 font-medium text-xs">
-                                $.
-                                {{ convertMoneda($pricesale + $priceCombo, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                <small class="text-[10px]">USD</small>
-                            </h1>
-                        @endif
 
                         @if ($descuento > 0)
                             <div class="text-sm line-through text-red-600">
                                 {{ $moneda->simbolo }}
-                                {{ formatDecimalOrInteger($price + $priceCombo, 2, ', ') }}
+                                {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                             </div>
                         @endif
-                    @endisset
+                    @endif
                 </div>
             </div>
         </div>
@@ -174,6 +155,7 @@
             </div>
         </div> --}}
     </div>
-    <x-link-button href="{{ route('productos.show', $producto) }}" class="rounded-xl mt-auto text-center hover:scale-110">
+    <x-link-button href="{{ route('productos.show', $producto) }}"
+        class="rounded-xl mt-auto text-center hover:scale-110">
         VER PRODUCTO</x-link-button>
 </div>

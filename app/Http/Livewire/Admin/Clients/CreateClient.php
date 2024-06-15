@@ -6,6 +6,7 @@ use App\Helpers\GetClient;
 use App\Models\Client;
 use App\Models\Pricetype;
 use App\Models\Ubigeo;
+use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateContacto;
 use App\Rules\ValidateDocument;
@@ -14,6 +15,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Nwidart\Modules\Facades\Module;
 
 class CreateClient extends Component
 {
@@ -25,6 +27,7 @@ class CreateClient extends Component
     public $document, $name, $ubigeo_id, $direccion, $email,
         $sexo, $nacimiento, $pricetype_id, $telefono;
     public $documentContact, $nameContact, $telefonoContact;
+    public $user;
     public $exists = false;
 
     protected function rules()
@@ -82,7 +85,7 @@ class CreateClient extends Component
 
     public function limpiarcliente()
     {
-        $this->reset(['document', 'name', 'direccion', 'ubigeo_id', 'exists']);
+        $this->reset(['document', 'name', 'direccion', 'ubigeo_id', 'user', 'exists']);
     }
 
     public function save()
@@ -102,8 +105,7 @@ class CreateClient extends Component
         DB::beginTransaction();
         try {
 
-            $client = Client::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
+            $client = Client::onlyTrashed()->where('document', $this->document)->first();
 
             if ($client) {
                 $client->document = $this->document;
@@ -122,6 +124,7 @@ class CreateClient extends Component
                     'nacimiento' => $this->nacimiento,
                     'sexo' => $this->sexo,
                     'pricetype_id' => $this->pricetype_id,
+                    'user_id' =>  Module::isEnabled('Marketplace') ? $this->user->id ?? null : null,
                 ]);
             }
 
@@ -173,7 +176,7 @@ class CreateClient extends Component
         ]);
 
         $this->resetValidation();
-        $this->reset(['name', 'direccion', 'ubigeo_id']);
+        $this->reset(['name', 'direccion', 'ubigeo_id', 'user']);
         $http = new GetClient();
         $response = $http->getSunat($this->document);
 
@@ -188,6 +191,13 @@ class CreateClient extends Component
             }
         } else {
             $this->addError('document', 'Error al buscar cliente.');
+        }
+
+        if (Module::isEnabled('Marketplace')) {
+            $user = User::where('document', $this->document)->first();
+            if ($user) {
+                $this->user = $user;
+            }
         }
     }
 
@@ -217,10 +227,5 @@ class CreateClient extends Component
         } else {
             $this->addError('nameContact', 'Error al buscar datos del contacto.');
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('render-client-select2');
     }
 }

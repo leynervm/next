@@ -30,29 +30,23 @@ class AddCarrito extends Component
     {
 
         $promocion = $producto->getPromocionDisponible();
-        $descuento = $producto->getPorcentajeDescuento($promocion);
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);
-        $priceCombo = $combo ? $combo->total : 0;
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
+        $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
 
-        if ($this->empresa->usarLista()) {
-            if ($this->pricetype) {
-                $price = $producto->calcularPrecioVentaLista($this->pricetype);
-                $price = !is_null($promocion) && $promocion->isRemate()
-                    ? $producto->precio_real_compra
-                    : $price;
-                $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0, $this->pricetype) : $price;
+        if ($promocion) {
+            if ($promocion->limit > 0 && ($promocion->outs + $cantidad > $promocion->limit)) {
+                $mensaje = response()->json([
+                    'title' => 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN',
+                    'text' => 'Ingrese un monto menor o igual al stock de unidades disponibles.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
             }
-        } else {
-            $price = $producto->pricesale;
-            $price = !is_null($promocion) && $promocion->isRemate() ? $producto->pricebuy : $price;
-            $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0) : $price;
         }
 
-        if (isset($price)) {
-            $price = $price + $priceCombo;
-            $pricesale = $pricesale + $priceCombo;
-            // dd($price, $pricesale);
+        if ($pricesale > 0) {
             Cart::instance('shopping')->add([
                 'id' => $producto->id,
                 'name' => $producto->name,
@@ -79,7 +73,7 @@ class AddCarrito extends Component
             $this->dispatchBrowserEvent('toast', toastJSON('Agregado al carrito'));
         } else {
             $mensaje = response()->json([
-                'title' => 'CONFIGURAR LISTA DE PRECIOS PARA TIENDA VIRTUAL !',
+                'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
                 'text' => 'No se pudo obtener el precio de venta, configurar correctamente el modo de precios de los productos.',
                 'type' => 'warning'
             ])->getData();

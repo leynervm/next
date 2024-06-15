@@ -26,6 +26,11 @@ class CreateProductosTable extends Migration
             $table->string('partnumber', 24)->nullable();
             $table->integer('views')->default(0);
             $table->integer('minstock')->default(0);
+            $table->decimal('precio_1', 12, 4)->nullable();
+            $table->decimal('precio_2', 12, 4)->nullable();
+            $table->decimal('precio_3', 12, 4)->nullable();
+            $table->decimal('precio_4', 12, 4)->nullable();
+            $table->decimal('precio_5', 12, 4)->nullable();
             $table->unsignedSmallInteger('almacenarea_id')->nullable();
             $table->unsignedSmallInteger('estante_id')->nullable();
             $table->bigInteger('marca_id')->nullable();

@@ -13,15 +13,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Pricetype extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
     public $timestamps = false;
 
     const DEFAULT = '1';
+    const ACTIVO = '0';
+    const DISABLED = '1';
+    const IS_TEMPORAL = '1';
 
     protected $fillable = [
-        'name', 'rounded', 'decimals', 'default',
-        'web', 'defaultlogin', 'temporal', 'startdate', 'expiredate'
+        'name', 'rounded', 'decimals', 'default', 'web', 'status',
+        'defaultlogin', 'temporal', 'startdate', 'expiredate', 'campo_table'
     ];
 
     public function getRoundedAttribute($value)
@@ -71,6 +73,11 @@ class Pricetype extends Model
             ->withPivot('id', 'ganancia')->orderBy('ganancia', 'desc');
     }
 
+    public function scopeActivos($query)
+    {
+        return $query->where('status', self::ACTIVO);
+    }
+
     public function scopeDefault($query)
     {
         return $query->where('default', self::DEFAULT);
@@ -89,6 +96,21 @@ class Pricetype extends Model
     public function productos(): BelongsToMany
     {
         return $this->belongsToMany(Producto::class)->withPivot('price');
+    }
+
+    public function isActivo()
+    {
+        return $this->status == self::ACTIVO;
+    }
+
+    public function isInactivo()
+    {
+        return $this->status == self::DISABLED;
+    }
+
+    public function isTemporal()
+    {
+        return $this->temporal == self::IS_TEMPORAL;
     }
 
     public function clients(): HasMany

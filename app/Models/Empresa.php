@@ -26,8 +26,14 @@ class Empresa extends Model
     ];
 
     const DEFAULT = '1';
+    const PRUEBA = '0';
     const PRODUCCION = '1';
     const OPTION_ACTIVE = '1';
+
+    const USER_SOL_PRUEBA = 'MODDATOS';
+    const PASSWORD_SOL_PRUEBA = 'MODDATOS';
+    const CLIENT_ID_GRE_PRUEBA = 'test-85e5b0ae-255c-4891-a595-0b98c65c9854';
+    const CLIENT_SECRET_GRE_PRUEBA = 'test-Hty/M6QshYvPgItX2P0+Kw==';
 
     // public function getUsepricedolarAttribute($value)
     // {

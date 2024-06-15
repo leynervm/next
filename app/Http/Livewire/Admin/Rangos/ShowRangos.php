@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Admin\Rangos;
 
 use App\Imports\RangoImport;
 use App\Models\Pricetype;
+use App\Models\Producto;
 use App\Models\Rango;
 use App\Rules\ValidateRango;
 use Exception;
@@ -59,9 +60,9 @@ class ShowRangos extends Component
     public function render()
     {
         $rangos = Rango::with(['pricetypes' => function ($query) {
-            $query->orderBy('pricetypes.id', 'asc');
-        }])->orderBy('desde', 'asc')->get();
-        $pricetypes = Pricetype::orderBy('id', 'asc')->paginate();
+            $query->activos()->orderBy('pricetypes.id', 'asc');
+        }])->orderBy('desde', 'asc')->paginate();
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
         return view('livewire.admin.rangos.show-rangos', compact('rangos', 'pricetypes'));
     }
 
@@ -92,6 +93,14 @@ class ShowRangos extends Component
             //         'updated_at' => now('America/Lima')
             //     ]
             // );
+            $productos = Producto::whereRangoBetween($this->rango->desde, $this->rango->hasta)->get();
+            if (count($productos) > 0) {
+                foreach ($productos as $item) {
+                    // if (mi_empresa()->usarlista()) {
+                    $item->assignPriceProduct();
+                    // }
+                }
+            }
             DB::commit();
             $this->resetExcept(['rango']);
             $this->dispatchBrowserEvent('updated');
@@ -104,17 +113,35 @@ class ShowRangos extends Component
         }
     }
 
-    public function updatepricerango(Rango $rango, Pricetype $pricetype, $cantidad)
+    public function updatepricerango(Rango $rango, Pricetype $pricetype, $ganancia)
     {
-        // $listaRango = $rango->pricetypes()->where('pricetype_id', $pricetype->id)->firstOrFail();
+        // dd($rango, $pricetype, $ganancia);
         $this->authorize('admin.administracion.rangos.edit');
+
+        if (empty($ganancia)) {
+            $json = response()->json([
+                'title' => 'INGRESE UN NÚMERO VÁLIDO !',
+                'text' => 'el campo requiere un valor de tipo numérico'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $json);
+            return false;
+        }
+
         DB::beginTransaction();
         try {
             $rango->pricetypes()->updateExistingPivot(
                 $pricetype,
-                ['ganancia' => $cantidad]
+                ['ganancia' => $ganancia]
             );
 
+            $productos = Producto::whereRangoBetween($rango->desde, $rango->hasta)->get();
+            if (count($productos) > 0) {
+                foreach ($productos as $item) {
+                    // if (mi_empresa()->usarlista()) {
+                    $item->assignPriceProduct();
+                    // }
+                }
+            }
             $this->dispatchBrowserEvent('updated');
             DB::commit();
         } catch (\Exception $e) {

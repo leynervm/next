@@ -1,6 +1,6 @@
 @props(['id'])
 
-<textarea {{ $attributes->merge(['class' => 'w-full']) }} id="{{ $id }}" x-init="CKEDITOR.ClassicEditor.create(document.getElementById('{{ $id }}'), {
+<textarea {{ $attributes->merge(['class' => 'w-full block']) }} id="{{ $id }}" x-init="CKEDITOR.ClassicEditor.create(document.getElementById('{{ $id }}'), {
         toolbar: {
             items: [
                 'undo', 'redo', '|',

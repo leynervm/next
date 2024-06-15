@@ -50,7 +50,7 @@
     </x-slot>
 
     <div class="flex flex-col gap-8">
-        <div style="z-index: 1">
+        <div>
             <livewire:modules.almacen.productos.show-producto :producto="$producto" />
         </div>
         <div>

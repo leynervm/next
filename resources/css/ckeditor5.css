@@ -3,3 +3,15 @@
     height: 600px;
     /* overflow-y: auto; */
 }
+
+.ck-content .table {
+    width: auto;
+}
+
+.ck.ck-toolbar {
+    @apply w-full flex-wrap;
+}
+
+.ck.ck-toolbar>.ck-toolbar__items {
+    @apply w-full flex-wrap;
+}

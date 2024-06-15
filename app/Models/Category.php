@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Producto;
 use App\Models\Subcategory;
 use Cviebrock\EloquentSluggable\Sluggable;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Category extends Model
 {
@@ -38,6 +39,11 @@ class Category extends Model
     public function subcategories(): BelongsToMany
     {
         return $this->BelongsToMany(Subcategory::class);
+    }
+
+    public function image(): MorphOne
+    {
+        return $this->morphOne(Image::class, "imageable");
     }
 
     public function productos(): HasMany

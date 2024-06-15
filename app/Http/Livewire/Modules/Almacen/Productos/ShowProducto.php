@@ -43,7 +43,6 @@ class ShowProducto extends Component
             'producto.marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'producto.modelo' => ['required', 'string'],
             'producto.partnumber' => ['nullable', 'string', 'min:4'],
-            'producto.sku' => ['nullable', 'string', 'min:4'],
             'producto.unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'producto.pricebuy' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'producto.pricesale' => [

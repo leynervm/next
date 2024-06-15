@@ -24,27 +24,36 @@ class ShowPricetypes extends Component
     protected function rules()
     {
         return [
-            'pricetype.name' => ['required', 'string', 'min:3', 'max:100', new CampoUnique('pricetypes', 'name', $this->pricetype->id, true)],
+            'pricetype.name' => [
+                'required', 'string', 'min:3', 'max:100',
+                new CampoUnique('pricetypes', 'name', $this->pricetype->id)
+            ],
             'pricetype.rounded' => ['required', 'integer', 'min:0', 'max:2'],
             'pricetype.decimals' => [
                 'required', 'integer', 'min:0', 'max:4',
             ],
             'pricetype.web' => [
                 'required', 'integer', 'min:0', 'max:1',
-                new DefaultValue('pricetypes', 'web',  $this->pricetype->id, true)
+                new DefaultValue('pricetypes', 'web',  $this->pricetype->id)
             ],
             'pricetype.default' => [
                 'required', 'integer', 'min:0', 'max:1',
-                new DefaultValue('pricetypes', 'default', $this->pricetype->id, true)
+                new DefaultValue('pricetypes', 'default', $this->pricetype->id)
             ],
-            'pricetype.defaultlogin' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('pricetypes', 'defaultlogin', $this->pricetype->id, true)],
-            'pricetype.temporal' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('pricetypes', 'temporal', $this->pricetype->id, true)],
+            'pricetype.defaultlogin' => [
+                'required', 'integer', 'min:0', 'max:1',
+                new DefaultValue('pricetypes', 'defaultlogin', $this->pricetype->id)
+            ],
+            'pricetype.temporal' => [
+                'required', 'integer', 'min:0', 'max:1',
+                new DefaultValue('pricetypes', 'temporal', $this->pricetype->id)
+            ],
             'pricetype.startdate' => [
-                'nullable', Rule::requiredIf($this->pricetype->temporal == 1),
+                'nullable', Rule::requiredIf($this->pricetype->isTemporal()),
                 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')
             ],
             'pricetype.expiredate' => [
-                'nullable', Rule::requiredIf($this->pricetype->temporal == 1),
+                'nullable', Rule::requiredIf($this->pricetype->isTemporal()),
                 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
                 'after_or_equal:pricetype.startdate'
             ]
@@ -99,39 +108,23 @@ class ShowPricetypes extends Component
         }
     }
 
-    public function delete(Pricetype $pricetype)
+    public function togglestatus(Pricetype $pricetype)
     {
 
         $this->authorize('admin.administracion.pricetypes.delete');
-        $clients = $pricetype->clients()->exists();
-        $productos = $pricetype->productos()->exists();
-        // dd($clients, $productos);
-
-        $cadena = extraerMensaje([
-            'Clientes' => $clients,
-            'Productos_Precio_Manual' => $productos,
-        ]);
-
-        if ($clients == true  || $productos == true) {
-            $mensaje = response()->json([
-                'title' => 'No se puede eliminar lista de precio, ' . $pricetype->name,
-                'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-        } else {
-            try {
-                DB::beginTransaction();
-                $pricetype->rangos()->detach();
-                $pricetype->forceDelete();
-                DB::commit();
-                $this->dispatchBrowserEvent('deleted');
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                throw $e;
-            }
+        try {
+            DB::beginTransaction();
+            $pricetype->status = $pricetype->isActivo() ? Pricetype::DISABLED : Pricetype::ACTIVO;
+            $pricetype->save();
+            DB::commit();
+            $this->dispatchBrowserEvent('updated');
+            $this->emitTo('admin.rangos.show-rangos', 'render');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 }

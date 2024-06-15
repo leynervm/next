@@ -5,8 +5,8 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-disabled-text :text="$client->document" class="w-full block" />
-                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
+                        <x-disabled-text :text="$client->document" class="w-full block flex-1" />
+                        <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient" wire:loading.attr="disabled"
                             wire:target="searchclient">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -30,16 +30,19 @@
                     @if (mi_empresa()->usarLista())
                         <div class="w-full">
                             <x-label value="Lista precio :" />
-                            <x-select class="block w-full" wire:model.defer="client.pricetype_id"
-                                id="editpricetypeclient_id">
-                                <x-slot name="options">
-                                    @if (count($pricetypes))
-                                        @foreach ($pricetypes as $item)
-                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
+                            <div class="w-full relative" id="parentpricetype_id" x-data="{ pricetype_id: @entangle('client.pricetype_id') }"
+                                x-init="pricetype">
+                                <x-select class="block w-full" x-ref="selectpricetype" id="pricetype_id">
+                                    <x-slot name="options">
+                                        @if (count($pricetypes) > 0)
+                                            @foreach ($pricetypes as $item)
+                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
                             <x-jet-input-error for="client.pricetype_id" />
                         </div>
                     @endif
@@ -220,23 +223,48 @@
         @endif
     @endcan
 
-    @if ($client->user)
-        <x-card-next titulo="USUARIO WEB" class="w-96 mt-3">
-            <x-minicard title="" size="lg">
-                <span class="w-10 h-10 mx-auto bg-neutral-600 text-white rounded-full p-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z" />
-                        <path d="M4.271 18.346S6.5 15.5 12 15.5s7.73 2.846 7.73 2.846M12 12a3 3 0 100-6 3 3 0 000 6z" />
-                    </svg>
-                </span>
-                <p class="text-xs truncate overflow-hidden text-center">{{ $client->user->email }}</p>
-                <x-slot name="buttons">
-                    <x-button-edit />
-                    <x-button-delete />
-                </x-slot>
-            </x-minicard>
-        </x-card-next>
+    @if (module::isEnabled('Marketplace'))
+        @if ($client->user)
+            <x-form-card titulo="USUARIO WEB VINCULADO"
+                subtitulo="Puede realizar compras por internet mediante nuestra tienda web.">
+                <div class="w-full">
+                    <x-simple-card class="w-48 mt-3 flex flex-col gap-1 rounded-xl cursor-default p-3 py-5">
+                        <h1 class="font-semibold text-sm leading-4 text-primary text-center">
+                            {{ $client->user->name }}</h1>
+
+                        <x-label :value="$client->user->document" class="font-semibold text-center" />
+
+                        <p class="text-xs text-center">{{ $client->user->email }}</p>
+                    </x-simple-card>
+                </div>
+            </x-form-card>
+        @else
+            @if ($user)
+                <div class="w-full">
+                    <p class="text-xs text-colorsubtitleform my-2">
+                        Actualmente el cliente está registrado en nuestra tienda web...</p>
+                    <x-simple-card class="w-48 mt-3 flex flex-col gap-1 rounded-xl cursor-default p-3 py-5">
+
+                        <x-button-next class="mx-auto" titulo="SINCRONIZAR USUARIO WEB" wire:click="sincronizeuser"
+                            classTitulo="text-[10px] font-semibold" wire:loading.attr="disabled">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" wire:loading.class="animate-spin">
+                                <path
+                                    d="M15.1667 0.999756L15.7646 2.11753C16.1689 2.87322 16.371 3.25107 16.2374 3.41289C16.1037 3.57471 15.6635 3.44402 14.7831 3.18264C13.9029 2.92131 12.9684 2.78071 12 2.78071C6.75329 2.78071 2.5 6.90822 2.5 11.9998C2.5 13.6789 2.96262 15.2533 3.77093 16.6093M8.83333 22.9998L8.23536 21.882C7.83108 21.1263 7.62894 20.7484 7.7626 20.5866C7.89627 20.4248 8.33649 20.5555 9.21689 20.8169C10.0971 21.0782 11.0316 21.2188 12 21.2188C17.2467 21.2188 21.5 17.0913 21.5 11.9998C21.5 10.3206 21.0374 8.74623 20.2291 7.39023" />
+                            </svg>
+                        </x-button-next>
+
+                        <h1 class="font-semibold text-sm leading-4 text-primary text-center">
+                            {{ $user->name }}</h1>
+
+                        <x-label :value="$user->document" class="font-semibold text-center" />
+
+                        <p class="text-xs text-center">{{ $user->email }}</p>
+                    </x-simple-card>
+                </div>
+            @endif
+        @endif
     @endif
 
     <x-jet-dialog-modal wire:model="opencontacto" maxWidth="3xl" footerAlign="justify-end">
@@ -484,6 +512,21 @@
             });
             this.$watch("sexo", (value) => {
                 this.selectSC.val(value).trigger("change");
+            });
+        }
+
+        function pricetype() {
+            this.selectP = $(this.$refs.selectpricetype).select2();
+            this.selectP.val(this.pricetype_id).trigger("change");
+            this.selectP.on("select2:select", (event) => {
+                this.pricetype_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("pricetype_id", (value) => {
+                this.selectP.val(value).trigger("change");
             });
         }
     </script>

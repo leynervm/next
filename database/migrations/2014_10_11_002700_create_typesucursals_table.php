@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateWebplataformsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,11 @@ class CreateWebplataformsTable extends Migration
      */
     public function up()
     {
-        Schema::create('webplataforms', function (Blueprint $table) {
-            $table->id();
+        Schema::create('typesucursals', function (Blueprint $table) {
+            $table->tinyIncrements('id')->unsigned();
             $table->string('name', 255);
-            $table->integer('dashboard')->default(0);
-            $table->integer('default')->default(0);
-            $table->timestamps();
+            $table->char('code', 2);
+            $table->text('descripcion');
         });
     }
 
@@ -29,6 +28,6 @@ class CreateWebplataformsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('webplataforms');
+        Schema::dropIfExists('typesucursals');
     }
-}
+};

@@ -1,6 +1,6 @@
 <div class="flex flex-col gap-8">
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
-        <div class="w-full sm:flex sm:gap-3">
+        <div class="w-full grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div class="w-full text-colortitleform">
                 <h1 class="font-semibold text-sm leading-4">
                     <span class="text-3xl">{{ $compra->referencia }}</span>

@@ -15,7 +15,6 @@
 
             <x-slot name="content">
                 <div class="w-full" x-data="loader">
-
                     @if (getCombo()->count() > 0)
                         <div class="w-full flex flex-col gap-2">
                             <div class="w-full grid grid-cols-1 gap-2">
@@ -279,7 +278,7 @@
                                     <x-label value="Tipo promoción :" />
                                     <div class="w-full flex flex-wrap gap-2">
                                         <x-input-radio class="py-2" for="promodescuento"
-                                            text="DESCUENTO EN PRODUCTO">
+                                            text="DESCUENTO">
                                             <input wire:model.defer="type"
                                                 class="sr-only peer peer-disabled:opacity-25" type="radio"
                                                 id="promodescuento" name="type" value="0" x-model="type"
@@ -291,7 +290,7 @@
                                                 id="promocombo" name="type" value="1" x-model="type"
                                                 @change="changeType($event.target.value)" />
                                         </x-input-radio>
-                                        <x-input-radio class="py-2" for="promoremate" text="REMATE DE PRODUCTO">
+                                        <x-input-radio class="py-2" for="promoremate" text="LIQUIDACIÓN">
                                             <input wire:model.defer="type"
                                                 class="sr-only peer peer-disabled:opacity-25" type="radio"
                                                 id="promoremate" name="type" value="2" x-model="type"
@@ -299,7 +298,6 @@
                                         </x-input-radio>
                                     </div>
                                     <x-jet-input-error for="type" />
-                                    <span x-text="type"></span>
 
                                     <div class="w-full" x-show="typecombo == '1'">
                                         <x-label value="Descuento (%) :" />

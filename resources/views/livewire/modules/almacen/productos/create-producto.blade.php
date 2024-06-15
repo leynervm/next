@@ -190,10 +190,8 @@
             <div class="w-full xs:max-w-xs">
                 <div class="relative" class="w-full relative">
                     @if (isset($imagen))
-                        <x-simple-card
-                            class="w-full h-60 md:max-w-md mx-auto mb-1 border border-borderminicard animate__animated animate__fadeIn animate__faster">
-                            <img src="{{ $imagen->temporaryUrl() }}"
-                                class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
+                        <x-simple-card class="w-full h-60 md:max-w-md mx-auto mb-1 border border-borderminicard">
+                            <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down ">
                         </x-simple-card>
                     @else
                         <x-icon-file-upload class="w-full h-60 text-gray-300" />
@@ -230,7 +228,7 @@
             </div>
         </x-form-card>
 
-        <div wire:ignore>
+        <div class="w-full block" wire:ignore>
             <x-ckeditor-5 id="myckeditor" wire:model.defer="descripcionproducto" />
         </div>
 
@@ -557,6 +555,5 @@
                 this.selectE.val(value).trigger("change");
             });
         }
-
     </script>
 </div>

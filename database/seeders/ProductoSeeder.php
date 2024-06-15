@@ -391,9 +391,11 @@ class ProductoSeeder extends Seeder
         $almacens = Almacen::all();
         $productos->each(function ($producto) use ($almacens) {
             $stock = rand(1, 20);
-            $producto->almacens()->syncWithPivotValues($almacens, [
-                'cantidad' => $stock
-            ]);
+            if (count($almacens) > 0) {
+                $producto->almacens()->syncWithPivotValues($almacens, [
+                    'cantidad' => $stock
+                ]);
+            }
         });
 
 

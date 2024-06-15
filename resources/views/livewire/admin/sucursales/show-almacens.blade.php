@@ -40,7 +40,7 @@
                 @endif
             @endcan
 
-            <div class="w-full">
+            <div class="w-full flex-1">
                 @if (count($sucursal->almacens) > 0)
                     <div class="w-full flex flex-wrap gap-2">
                         @foreach ($sucursal->almacens as $item)

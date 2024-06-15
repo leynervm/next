@@ -84,8 +84,8 @@
                 </div>
             @endif
 
-            <div class="flex-1 p-1 lg:px-3 overflow-y-auto bg-body h-screen">
-                <main class="shadow relative">
+            <div class="flex-1 w-full p-1 lg:px-3 overflow-y-auto bg-body h-screen">
+                <main class="w-full shadow relative ">
                     @if (session('message'))
                         <x-alert :titulo="session('message')->getData()->title" :mensaje="session('message')->getData()->text" :type="session('message')->getData()->type">
                             <x-slot name="icono">
@@ -292,81 +292,21 @@
         })
     })
 
-
-    const sidebar = document.getElementById('menu');
-    const header_sidebar = document.getElementById('sidebar-header');
-    const logo_sidebar = document.getElementById('logo-sidebar');
-    const sidebarToggle = document.getElementById('sidebar-toggle');
-    const buttonMobileToggle = document.getElementById('sidebar-close-toggle');
-    // const navigation = document.getElementById('navigation');
-    // const menu_nav = document.getElementById('menu_navigation');
-    const isSidebarOpen = localStorage.getItem('isSidebarOpen') === 'true';
-    const itemLinks = sidebar.querySelectorAll('li a');
-    const spanLinks = sidebar.querySelectorAll('li a span');
-    const iconLinks = sidebar.querySelectorAll('li a svg');
-
-    const isSidebarMobileOpen = localStorage.getItem('isSidebarMobileOpen') === 'true';
-    console.log(isSidebarOpen);
-
-    if (isSidebarOpen) {
-        sidebar.classList.toggle('md:w-16');
-        sidebar.classList.toggle('md:w-48');
-        header_sidebar.classList.toggle('justify-between');
-        header_sidebar.classList.toggle('justify-center');
-        logo_sidebar.classList.toggle('md:block');
-        itemLinks.forEach(element => {
-            element.classList.toggle('md:flex');
-            element.classList.toggle('group');
-        });
-        spanLinks.forEach(element => {
-            element.classList.toggle('md:block');
-        });
-        iconLinks.forEach(element => {
-            // element.classList.toggle('mx-auto');
-        });
-    }
-
-
-    // if (isSidebarMobileOpen) {
-    //     sidebar.classList.toggle('-translate-x-full');
-    //     sidebar.classList.toggle('md:flex');
-    //     sidebar.classList.toggle('transition-all');
-    // }
-
-    // console.log("Contiene clase w-16 : " + sidebar.classList.contains('w-16'));
-    // console.log("Contiene clase w-64 : " + sidebar.classList.contains('w-64'));
-
-    sidebarToggle.addEventListener('click', () => {
-
-        // console.log("Contiene clase w-16 Negacion: " + !sidebar.classList.contains('w-16'))
-        sidebar.classList.toggle('md:w-16');
-        sidebar.classList.toggle('md:w-48');
-        header_sidebar.classList.toggle('justify-between');
-        header_sidebar.classList.toggle('justify-center');
-        logo_sidebar.classList.toggle('md:block');
-        logo_sidebar.classList.toggle('transition-all');
-        itemLinks.forEach(element => {
-            element.classList.toggle('md:flex');
-            element.classList.toggle('group');
-        });
-        spanLinks.forEach(element => {
-            element.classList.toggle('md:block');
-        });
-        iconLinks.forEach(element => {
-            // element.classList.toggle('mx-auto');
+    window.addEventListener('show-resumen-venta', (event) => {
+        toastMixin.fire({
+            title: event.detail.mensaje,
+            icon: "success",
+            timer: 2000,
         });
 
-        localStorage.setItem('isSidebarOpen', !sidebar.classList.contains('md:w-16'));
+        if (event.detail.form_id) {
+            let form = document.getElementById("cardproduct" + event.detail.form_id);
+            if (form) {
+                form.reset();
+            }
+        }
     });
 
-    buttonMobileToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('-translate-x-full');
-        sidebar.classList.toggle('md:flex');
-        sidebar.classList.toggle('transition-all');
-
-        localStorage.setItem('isSidebarMobileOpen', !sidebar.classList.contains(
-            '-translate-x-full'));
-    })
 
     function toDecimal(valor, decimals = 3) {
         let numero = parseFloat(valor);

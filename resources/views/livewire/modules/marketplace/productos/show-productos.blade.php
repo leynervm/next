@@ -48,8 +48,79 @@
                 {{-- <span x-text="sidebar"></span> --}}
 
                 <h1 class="text-colorsubtitleform text-[10px] py-2">FILTRAR</h1>
-                @if (count($marcas) > 0)
+
+                @if (count($productos) > 0)
                     <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" class="w-full lg:shadow lg:rounded-md text-colorsubtitleform">
+                        <button type="button"
+                            class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
+                            @click="openfilter = !openfilter">
+                            <h1 class="pl-2 pt-2 font-semibold text-[11px]">ORDENAR</h1>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                class="block w-6 h-6">
+                                <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
+                            </svg>
+                        </button>
+                        <div class="w-full flex flex-col text-xs" x-show="openfilter" x-transition>
+                            <button wire:click="order('precio', 'asc')" wire:loading.attr="disabled"
+                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
+                                    <path d="m3 8 4-4 4 4" />
+                                    <path d="M7 4v16" />
+                                    <path d="M11 12h4" />
+                                    <path d="M11 16h7" />
+                                    <path d="M11 20h10" />
+                                </svg>
+                                DE MENOR A MAYOR PRECIO
+                            </button>
+                            <button wire:click="order('precio', 'desc')" wire:loading.attr="disabled"
+                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
+                                    <path d="m3 16 4 4 4-4" />
+                                    <path d="M7 20V4" />
+                                    <path d="M11 4h4" />
+                                    <path d="M11 8h7" />
+                                    <path d="M11 12h10" />
+                                </svg>
+                                DE MAYOR A MENOR PRECIO
+                            </button>
+                            <button wire:click="order('name', 'asc')" wire:loading.attr="disabled"
+                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
+                                    <path d="m3 8 4-4 4 4" />
+                                    <path d="M7 4v16" />
+                                    <path d="M20 8h-5" />
+                                    <path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10" />
+                                    <path d="M15 14h5l-5 6h5" />
+                                </svg>
+                                NOMBRE ASCENDENTE
+                            </button>
+                            <button wire:click="order('name', 'desc')" wire:loading.attr="disabled"
+                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
+                                    <path d="m3 16 4 4 4-4" />
+                                    <path d="M7 4v16" />
+                                    <path d="M15 4h5l-5 6h5" />
+                                    <path d="M15 20v-3.5a2.5 2.5 0 0 1 5 0V20" />
+                                    <path d="M20 18h-5" />
+                                </svg>
+                                NOMBRE DESCENDENTE
+                            </button>
+                        </div>
+                    </x-simple-card>
+                @endif
+
+                @if (count($marcas) > 0)
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }"
+                        class="w-full mt-3 lg:shadow lg:rounded-md text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
@@ -82,8 +153,8 @@
                             @click="openfilter = !openfilter">
                             <h1 class="pl-2 pt-2 font-semibold text-[11px]">CATEGORÍAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                class="block w-6 h-6">
+                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
+                                stroke-linejoin="round" class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
@@ -109,8 +180,8 @@
                             @click="openfilter = !openfilter">
                             <h1 class="pl-2 pt-2 font-semibold text-[11px]">SUBCATEGORÍAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                class="block w-6 h-6">
+                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
+                                stroke-linejoin="round" class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
@@ -182,11 +253,8 @@
                         $promocion = $item->getPromocionDisponible();
                         $descuento = $item->getPorcentajeDescuento($promocion);
                         $combo = $item->getAmountCombo($promocion, $pricetype);
-                        $priceCombo = $combo ? $combo->total : 0;
-                        // if ($almacendefault->name) {
-                        //     $stock = formatDecimalOrInteger($item->almacens->first()->pivot->cantidad);
-                        //     $almacenStock = $almacendefault->name . " [$stock " . $item->unit->name . ']';
-                        // }
+                        $pricesale = $item->obtenerPrecioVenta($pricetype);
+                        // $priceCombo = $combo ? $combo->total : 0;
                     @endphp
 
                     <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name" :partnumber="$item->partnumber"
@@ -219,69 +287,24 @@
                             @endif
                         @endif
 
-                        {{-- <p class="text-[10px]">
-                            {{ $item->precio_real_compra }}
-                        </p> --}}
-
-                        @if ($empresa->usarLista())
-                            @if ($pricetype)
-                                @php
-                                    $price = $item->calcularPrecioVentaLista($pricetype);
-                                    $price =
-                                        !is_null($promocion) && $promocion->isRemate()
-                                            ? $item->precio_real_compra
-                                            : $price;
-
-                                    $pricesale =
-                                        $descuento > 0
-                                            ? $item->getPrecioDescuento($price, $descuento, 0, $pricetype)
-                                            : $price;
-                                @endphp
-
-                                {{-- PRECIO COMPRA SIN LISTA {{ $item->pricebuy }}
-                                PRECIO REAL COMPRA {{ $item->precio_real_compra }}
-                                <br>
-                                {{ $pricetype->name }}
-                                {{ $item->calcularPrecioVentaLista($pricetype) }}
-                                <br>
-                                PV SIN LISTA {{ $item->pricesale }}
-                                <br>
-                                PV CON DSCT LISTA
-                                {{ $item->getPrecioDescuento($item->calcularPrecioVentaLista($pricetype), 20, 0, $pricetype) }}
-                                <br>
-                                DESCUENTO {{ $item->getPorcentajeDescuento($promocion) }}
-                                <br>
-                                <br> --}}
-                            @else
-                                <p class="text-[10px] text-colorerror leading-3 py-2">
-                                    CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
-                            @endif
-                        @else
-                            @php
-                                $price = $item->pricesale;
-                                $price = !is_null($promocion) && $promocion->isRemate() ? $item->pricebuy : $price;
-                                $pricesale = $descuento > 0 ? $item->getPrecioDescuento($price, $descuento, 0) : $price;
-                            @endphp
-                        @endif
-
-                        @isset($price)
-                            @if ($descuento > 0)
-                                <small class="block w-full line-through text-red-600 text-center">
-                                    {{ $moneda->simbolo }}
-                                    {{ formatDecimalOrInteger($price + $priceCombo, 2, ', ') }}
-                                </small>
+                        @if ($pricesale > 0)
+                            @if ($empresa->verDolar())
+                                <h1 class="text-blue-700 font-medium text-[1rem] text-center">
+                                    <small class="text-[10px]">$. </small>
+                                    {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                    <small class="text-[10px]">USD</small>
+                                </h1>
                             @endif
                             <h1 class="text-neutral-700 font-semibold text-2xl text-center">
                                 <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
+                                {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                 <small class="text-[10px]">{{ $moneda->currency }}</small>
                             </h1>
-                            @if ($empresa->verDolar())
-                                <h1 class="text-blue-700 font-medium text-xs text-center">
-                                    <small class="text-[10px]">$. </small>
-                                    {{ convertMoneda($pricesale + $priceCombo, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                    <small class="text-[10px]">USD</small>
-                                </h1>
+                            @if ($descuento > 0)
+                                <small class="block text-[1rem] w-full line-through text-red-600 text-center">
+                                    {{ $moneda->simbolo }}
+                                    {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                </small>
                             @endif
 
                             <x-slot name="footer">
@@ -289,7 +312,7 @@
                                     wire:click="add_to_wishlist({{ $item->id }}, 1)" />
 
                                 <div x-cloak x-show="addcart"
-                                    class="w-full bg-fondominicard p-1 flex items-end gap-1 justify-end mt-1 absolute bottom-0"
+                                    class="w-full bg-fondominicard z-[2] p-1 flex items-end gap-1 justify-end mt-1 absolute bottom-0"
                                     x-data="carshoop"
                                     x-transition:enter="opacity-0 transition ease-in-out duration-300"
                                     x-transition:enter-start="opacity-0 translate-y-full"
@@ -311,7 +334,7 @@
                                         @click="add_to_cart({{ $item->id }})" />
                                 </div>
                             </x-slot>
-                        @endisset
+                        @endif
                     </x-card-producto-virtual>
                 @endforeach
             </div>

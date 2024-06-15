@@ -43,9 +43,13 @@ class DatabaseSeeder extends Seeder
         $this->call(EmployerDatabaseSeeder::class); //Requerido
         $this->call(MarketplaceDatabaseSeeder::class);
 
-        // USUARIO Y ROLES 100% OBLIGATORIO
+        // USUARIO, ROLES, TYPESUCURSAL 100% OBLIGATORIO
+        $this->call(AccesoSeeder::class);
+        $this->call(TypesucursalSeeder::class);
         $this->call(UserSeeder::class);
         $this->call(RoleSeeder::class);
+        $this->call(PricetypeSeeder::class);
+
 
 
 
@@ -60,7 +64,6 @@ class DatabaseSeeder extends Seeder
         // $this->call(EquipoSeeder::class);
         // $this->call(MarcaSeeder::class);
         // $this->call(UnitSeeder::class);
-        // $this->call(PricetypeSeeder::class);
         // $this->call(TypepaymentSeeder::class);
         // $this->call(ProveedortypeSeeder::class);
         // $this->call(ClientSeedeer::class);

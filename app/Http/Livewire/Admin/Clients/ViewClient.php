@@ -9,6 +9,7 @@ use App\Models\Direccion;
 use App\Models\Pricetype;
 use App\Models\Telephone;
 use App\Models\Ubigeo;
+use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDireccion;
 use App\Rules\ValidateDocument;
@@ -18,6 +19,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Nwidart\Modules\Facades\Module;
 
 class ViewClient extends Component
 {
@@ -31,6 +33,7 @@ class ViewClient extends Component
 
     public $document2, $name2, $telefono2, $newtelefono;
     public $direccion, $namedireccion, $ubigeo_id;
+    public $user;
 
     protected function rules()
     {
@@ -62,11 +65,20 @@ class ViewClient extends Component
         $this->client = $client;
         $this->contact = new Contact();
         $this->direccion = new Direccion();
+
+        if (!$client->user) {
+            if (Module::isEnabled('Marketplace')) {
+                $user = User::where('document', $client->document)->first();
+                if ($user) {
+                    $this->user = $user;
+                }
+            }
+        }
     }
 
     public function render()
     {
-        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
         $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         return view('livewire.admin.clients.view-client', compact('pricetypes', 'ubigeos'));
     }
@@ -379,6 +391,23 @@ class ViewClient extends Component
             }
         } else {
             $this->addError('document2', 'Error al buscar datos del contacto.');
+        }
+    }
+
+    public function sincronizeuser()
+    {
+        if (!$this->client->user) {
+            if (Module::isEnabled('Marketplace')) {
+                $user = User::where('document', $this->client->document)->first();
+                if ($user) {
+                    $this->client->user_id = $user->id;
+                    $this->client->save();
+                    $this->client->refresh();
+                    $this->resetValidation();
+                    $this->reset(['user']);
+                    $this->dispatchBrowserEvent('updated');
+                }
+            }
         }
     }
 }

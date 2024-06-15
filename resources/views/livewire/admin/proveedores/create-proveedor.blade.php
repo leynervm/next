@@ -9,10 +9,10 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full" type="number" wire:model.defer="document"
+                        <x-input class="block w-full flex-1" type="number" wire:model.defer="document"
                             wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
                             onkeydown="disabledEnter(event)" />
-                        <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
+                        <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient" wire:loading.attr="disabled"
                             wire:target="searchclient">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -106,10 +106,10 @@
                 <div class="w-full">
                     <x-label value="DNI :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full prevent" wire:model.defer="document2" type="number"
+                        <x-input class="block w-full flex-1 prevent" wire:model.defer="document2" type="number"
                             wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
                             onkeydown="disabledEnter(event)" />
-                        <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled"
+                        <x-button-add class="px-2 flex-shrink-0" wire:click="searchcontacto" wire:loading.attr="disabled"
                             wire:target="searchcontacto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"

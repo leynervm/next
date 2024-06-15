@@ -98,8 +98,6 @@ Route::get('/categorias', [AlmacenController::class, 'categorias'])->name('admin
 Route::get('/subcategorias', [AlmacenController::class, 'subcategorias'])->name('admin.almacen.subcategorias');
 Route::get('/caracteristicas-&-especificaciones', [AlmacenController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
 
-Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('tipocambio');
-Route::get('consulta-sunat/{document?}', [HomeController::class, 'consultasunat'])->name('consultasunat');
 
 if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
     Route::get('/almacen/productos', [ProductoController::class, 'index'])->name('admin.almacen.productos');

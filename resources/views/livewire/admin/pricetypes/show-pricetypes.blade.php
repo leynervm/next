@@ -39,14 +39,18 @@
                             @endif
                         </div>
 
-                        <div class="">
+                        <div class="inline-flex gap-1 items-end">
                             @can('admin.administracion.pricetypes.edit')
-                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                @if ($item->isActivo())
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                @endif
                             @endcan
 
                             @can('admin.administracion.pricetypes.delete')
-                                <x-button-delete wire:loading.attr="disabled"
-                                    onclick="confirmDelete({{ $item }})" />
+                                <x-button-toggle
+                                    class="{{ $item->isActivo() ? 'text-green-500 hover:text-green-600 focus:text-green-600' : 'text-gray-300 hover:text-gray-400 focus:text-gray-400' }}"
+                                    onclick="confirmDisablePricetype({{ $item }})" wire:loading.attr="disabled"
+                                    wire:key="restorepricetype_{{ $item->id }}">DESACTIVAR</x-button-toggle>
                             @endcan
                         </div>
                     </x-slot>
@@ -160,9 +164,10 @@
 
 
     <script>
-        function confirmDelete(pricetype) {
+        function confirmDisablePricetype(pricetype) {
+            let mensaje = pricetype.status ? 'Desactivar' : 'Activar';
             swal.fire({
-                title: 'Eliminar lista de precio, ' + pricetype.name,
+                title: mensaje + ' lista de precio, ' + pricetype.name,
                 text: "Se eliminará un registro de la base de datos.",
                 icon: 'question',
                 showCancelButton: true,
@@ -172,7 +177,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.delete(pricetype.id);
+                    @this.togglestatus(pricetype.id);
                 }
             })
         }

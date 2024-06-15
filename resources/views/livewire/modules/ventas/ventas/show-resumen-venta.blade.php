@@ -58,8 +58,9 @@
                             <div x-show="!incluyeguia" class="w-full">
                                 <x-label value="Buscar GRE :" />
                                 <div class="w-full inline-flex">
-                                    <x-input class="block w-full flex-1" wire:model.defer="searchgre" wire:keydown.enter="getGRE"
-                                        minlength="0" maxlength="13" onkeydown="disabledEnter(event)" />
+                                    <x-input class="block w-full flex-1" wire:model.defer="searchgre"
+                                        wire:keydown.enter="getGRE" minlength="0" maxlength="13"
+                                        onkeydown="disabledEnter(event)" />
                                     <x-button-add class="px-2" wire:click="getGRE" wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -677,13 +678,14 @@
                                 <h1 class="text-colorlabel w-full text-[10px] leading-3 text-left z-[1]">
                                     {{ $item->producto->name }}</h1>
 
-                                @if (count($item->carshoopitems) > 0)
-                                    <div
-                                        class="w-auto h-auto bg-red-600 px-7 absolute -left-7 top-1 -rotate-[35deg] leading-3">
-                                        <p class=" text-white text-[8px] inline-block font-semibold pb-0.5">
-                                            COMBO</p>
+                                @if ($item->promocion)
+                                    <div class="w-auto h-auto bg-red-600 absolute left-1 top-1  rounded-sm">
+                                        <p class=" text-white text-[9px] inline-block font-medium p-1 leading-3">
+                                            PROMOCIÓN</p>
                                     </div>
+                                @endif
 
+                                @if (count($item->carshoopitems) > 0)
                                     @if (count($item->carshoopitems) > 0)
                                         <div class="w-full mb-2 mt-1">
                                             @foreach ($item->carshoopitems as $itemcarshop)
@@ -1006,8 +1008,7 @@
             }));
         })
 
-        window.addEventListener('show-resumen-venta', () => {
-            @this.render();
+        window.addEventListener('show-resumen-venta', (event) => {
             @this.setTotal();
         });
 

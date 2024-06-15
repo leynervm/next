@@ -101,78 +101,47 @@
     @endcan
 
     @can('admin.administracion.pricetypes.productos')
-        @if (mi_empresa()->usarLista())
+        @if (mi_empresa()->usarlista())
             <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
-                <div class="w-full flex flex-wrap gap-2">
-                    @if (count($pricetypes))
-                        @foreach ($pricetypes as $lista)
-                            @php
-                                $precios = getPrecio($producto, $lista->id, mi_empresa()->tipocambio)->getData();
-                                // var_dump($precios);
-                            @endphp
+                <form wire:submit.prevent="updatelistaprecios" class="w-full flex flex-col gap-2">
+                    @if (count($pricetypes) > 0)
+                        <div class="w-full flex flex-wrap gap-2">
+                            @foreach ($pricetypes as $item)
+                                @if (in_array($item->campo_table, lista_precios()))
+                                    <x-simple-card
+                                        class="w-full xs:w-48 flex flex-col items-center justify-between rounded-xl p-2">
+                                        <x-span-text :text="$item->name" class="leading-3 !tracking-normal" />
 
-                            <div
-                                class="w-full xs:w-48 flex flex-col items-center justify-between bg-body rounded-lg shadow p-1">
-                                {{-- <p class="text-[10px] leading-3 text-colorlabel">{{ var_dump($precios) }}</p> --}}
-                                <div class="text-center">
-                                    <x-span-text :text="$lista->name" class="leading-3 !tracking-normal" />
+                                        <div>
+                                            <x-label value="S/." class="w-full text-left" />
+                                            <x-input class="block w-full" wire:model.defer="{{ $item->campo_table }}"
+                                                type="number" step="0.001" />
+                                            <x-jet-input-error for="{{ $item->campo_table }}" />
+                                        </div>
 
-                                    <div class="text-center relative pt-1">
-                                        @if ($precios->pricemanual)
-                                            <x-span-text :text="'SUGERIDO : S/.' .
-                                                number_format($precios->oldPrice, $lista->decimals, '.', ', ')"
-                                                class="bg-red-100 !text-red-500 font-semibold leading-3" />
-                                        @endif
-
-                                        @if ($precios->pricemanual)
-                                            <p class="text-green-500 text-sm">
-                                                S/. {{ number_format($precios->pricemanual, 2, '.', ', ') }}</p>
-                                        @else
-                                            @if ($precios->existsrango)
-                                                <p class="text-green-500 text-sm">
-                                                    S/. {{ number_format($precios->pricesale, 2, '.', ', ') }}</p>
-                                            @else
-                                                <p class="mx-auto">
-                                                    <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                        class="!tracking-normal leading-3" type="red" />
-                                                </p>
-                                            @endif
-                                        @endif
-                                    </div>
-
-                                    @if ($precios->existsrango)
                                         @if (mi_empresa()->verDolar())
                                             @if (mi_empresa()->tipocambio > 0)
-                                                <div class="text-center">
-                                                    <x-span-text :text="'$. ' .
-                                                        number_format(
-                                                            $precios->pricewithdescountDolar ?? $precios->priceDolar,
-                                                            $lista->decimals,
-                                                            '.',
-                                                            ', ',
-                                                        )"
-                                                        class="font-semibold leading-3 !tracking-normal" type="blue" />
-                                                </div>
+                                                {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
+                                        S/. {{ formatDecimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
                                             @else
-                                                <div class="text-center">
-                                                    <x-span-text text="TIPO CAMBIO NO CONFIGURADO"
-                                                        class="leading-3 !tracking-normal" type="red" />
-                                                </div>
+                                                <p class="text-center tracking-widest text-colorerror">
+                                                    TIPO CAMBIO NO CONFIGURADO</p>
                                             @endif
                                         @endif
-                                    @endif
-                                </div>
 
-                                <div class="w-full flex justify-end">
-                                    <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
-                                        wire:loading.attr="disabled" />
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        <x-span-text text="NO EXISTEN LISTAS DE PRECIOS REGISTRADOS..." />
+                                        {{-- <div class="w-full flex justify-end">
+                                        <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
+                                            wire:loading.attr="disabled" />
+                                    </div> --}}
+                                    </x-simple-card>
+                                @endif
+                            @endforeach
+                        </div>
                     @endif
-                </div>
+                    <div class="w-full">
+                        <x-button type="submit" wire:loading.attr="disabled">ACTUALIZAR</x-button>
+                    </div>
+                </form>
             </x-form-card>
         @endif
     @endcan

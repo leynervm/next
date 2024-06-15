@@ -6,7 +6,7 @@
     <x-form-card titulo="PRODUCTOS">
         <div class="w-full">
             <div class="w-full flex flex-col gap-2 md:flex-row">
-                <div class="w-full flex-1">
+                <div class="w-full md:flex-1">
                     <x-label value="Descripcion producto :" />
                     <x-input class="block w-full disabled:bg-gray-200" wire:model.lazy="search"
                         placeholder="Buscar producto..." />
@@ -15,7 +15,7 @@
 
                 @if ($empresa->usarLista())
                     @if (count($pricetypes) > 1)
-                        <div class="w-full md:flex-shrink-0 md:w-64 lg:w-80 ">
+                        <div class="w-full md:w-64 lg:w-80 md:flex-shrink-0">
                             <x-label value="Lista precios :" />
                             <div id="parentventapricetype_id" class="relative" x-data="{ pricetype_id: @entangle('pricetype_id') }"
                                 x-init="select2Pricetype">
@@ -137,115 +137,127 @@
                             wire:submit.prevent="addtocar(Object.fromEntries(new FormData($event.target)), {{ $item->id }})">
                             @php
                                 $image = $item->getImageURL();
+                                $pricesale = $item->obtenerPrecioVenta($pricetype);
                                 $promocion = $item->getPromocionDisponible();
+                                $descuento = $item->getPorcentajeDescuento($promocion);
+                                $combo = $item->getAmountCombo($promocion, $pricetype, $almacen_id);
+                                // $priceCombo = $combo ? $combo->total : 0;
                                 $almacen = null;
-                                $sumatoriacombos = 0;
 
                                 if ($almacendefault->name) {
                                     $stock = formatDecimalOrInteger($item->almacens->first()->pivot->cantidad);
                                     $almacenStock = $almacendefault->name . " [$stock " . $item->unit->name . ']';
                                 }
-
-                                $precios = getPrecio(
-                                    $item,
-                                    $empresa->usarLista() ? $pricetype_id : null,
-                                    $empresa->tipocambio,
-                                )->getData();
-                                $precioProducto = precio_producto($item, $precios, $empresa->tipocambio);
                             @endphp
 
-                            <x-card-producto :name="$item->name" :image="$image ?? null" :category="$item->category->name ?? null" :almacen="$moneda->currency ?? null"
+                            <x-card-producto :name="$item->name" :image="$image ?? null" :category="$item->category->name ?? null" :almacen="$item->marca->name ?? null"
                                 :promocion="$promocion" class="h-full overflow-hidden">
 
                                 <p class="text-colorlabel text-[9px]">
                                     {{-- {{ var_dump($precioProducto) }}</p> --}}
                                     {{-- <p class="text-colorlabel text-[9px]">{{ var_dump($precios) }}</p> --}}
-                                    @if ($promocion)
-                                        @if ($promocion->isCombo())
+                                    @if ($combo)
+                                        @if (count($combo->products) > 0)
                                             <div class="w-full my-2">
-                                                @foreach ($promocion->itempromos as $itempromo)
-                                                    @php
-                                                        $stockCombo = formatDecimalOrInteger(
-                                                            $itempromo->producto->almacens->find($almacen_id)->pivot
-                                                                ->cantidad ?? 0,
-                                                        );
-                                                        $colorstock =
-                                                            $stockCombo > 0 ? 'text-next-500' : 'text-colorerror';
-                                                        $fondostock = $stockCombo > 0 ? 'bg-green-500' : 'bg-red-500';
-
-                                                        $preciosCI = getPrecio(
-                                                            $itempromo->producto,
-                                                            $empresa->usarLista() ? $pricetype_id : null,
-                                                            $empresa->tipocambio,
-                                                        )->getData();
-
-                                                    @endphp
-                                                    <h1 class="{{ $colorstock }} text-[10px] leading-3 text-left">
-                                                        <span
-                                                            class="w-1.5 h-1.5 inline-block rounded-full {{ $fondostock }}"></span>
-                                                        {{ $itempromo->producto->name }}
-                                                        <span class="font-semibold">[{{ $stockCombo }}
-                                                            {{ $itempromo->producto->unit->name }}]</span>
-                                                    </h1>
+                                                @foreach ($combo->products as $itemcombo)
+                                                    <div class="w-full flex gap-2 bg-body rounded relative">
+                                                        <div
+                                                            class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 shadow relative hover:shadow-lg cursor-pointer">
+                                                            @if ($itemcombo->image)
+                                                                <img src="{{ $itemcombo->image }}" alt=""
+                                                                    class="w-full h-full object-scale-down">
+                                                            @else
+                                                                <x-icon-image-unknown
+                                                                    class="w-full h-full text-neutral-500" />
+                                                            @endif
+                                                        </div>
+                                                        <div class="p-1 w-full flex-1">
+                                                            <h1 class="text-[10px] leading-3 text-left">
+                                                                {{ $itemcombo->name }}
+                                                                <b>[{{ $itemcombo->stock }}
+                                                                    {{ $itemcombo->unit }}]</b>
+                                                            </h1>
+                                                        </div>
+                                                    </div>
                                                 @endforeach
-
-                                                @php
-                                                    $sumatoriaComboProducto = get_sumatoria_combos(
-                                                        $promocion,
-                                                        $empresa->usarLista() ? $pricetype_id : null,
-                                                        $empresa->tipocambio,
-                                                    );
-                                                    $sumatoriacombos = number_format(
-                                                        $moneda->code == 'USD'
-                                                            ? $sumatoriaComboProducto->sumatoriaUSD
-                                                            : $sumatoriaComboProducto->sumatoriaPEN,
-                                                        $precios->decimal,
-                                                        '.',
-                                                        '',
-                                                    );
-                                                @endphp
                                             </div>
                                         @endif
                                     @endif
 
-                                    <x-prices-card-product :name="$empresa->usarLista() ? $pricetype->name : null">
-                                        <x-slot name="buttonpricemanual">
-                                            <x-span-text :text="$almacenStock ?? '***'" class="leading-3 !tracking-normal"
-                                                :type="$stock <= $item->minstock ? 'orange' : ''" />
+                                    <x-prices-card-product :name="$almacenStock ?? '***'">
+                                        {{-- @if ($empresa->usarlista())
+                                            @if ($pricetype)
+                                                @php
+                                                    $price = $item->obtenerPrecioVenta($pricetype);
+                                                    $price =
+                                                        !is_null($promocion) && $promocion->isRemate()
+                                                            ? $item->precio_real_compra
+                                                            : $price;
 
-                                            @if ($promocion)
-                                                @if ($promocion->isDescuento() || $promocion->isRemate())
-                                                    <p
-                                                        class="inline-block font-semibold text-[9px] leading-3 bg-red-100 p-1 rounded text-red-500">
-                                                        ANTES : {{ $moneda->simbolo }}
-                                                        {{ number_format($moneda->code == 'USD' ? $precioProducto->priceAntesUSD : $precioProducto->priceAntesPEN, $precios->decimal, '.', ', ') }}
-                                                    </p>
-                                                @endif
+                                                    $pricesale =
+                                                        $descuento > 0
+                                                            ? $item->getPrecioDescuento(
+                                                                $price,
+                                                                $descuento,
+                                                                0,
+                                                                $pricetype,
+                                                            )
+                                                            : $price;
+                                                @endphp
+                                            @else
+                                                <p class="text-[10px] text-colorerror leading-3 py-2">
+                                                    CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
                                             @endif
-                                        </x-slot>
-
-                                        {{-- <p class="text-colorlabel text-[10px]">{{ $sumatoriacombos }}</p>
-                                        <p>{{ $precioProducto->pricePEN }}</p>
-                                        <p>{{ $precioProducto->priceUSD }}</p>
-                                        <hr> --}}
-
-                                        @if ($precioProducto->pricePEN > 0)
-                                            <x-input class="block w-full p-2 disabled:bg-gray-200" name="price"
-                                                type="number" min="0" step="0.0001"
-                                                value="{{ number_format($moneda->code == 'USD' ? $precioProducto->priceUSD + $sumatoriacombos : $precioProducto->pricePEN + $sumatoriacombos, $precios->decimal, '.', '') }}"
-                                                onkeypress="return validarDecimal(event, 12)" />
                                         @else
+                                            @php
+                                                $price = $item->pricesale;
+                                                $price =
+                                                    !is_null($promocion) && $promocion->isRemate()
+                                                        ? $item->pricebuy
+                                                        : $price;
+                                                $pricesale =
+                                                    $descuento > 0
+                                                        ? $item->getPrecioDescuento($price, $descuento, 0)
+                                                        : $price;
+                                            @endphp
+                                        @endif --}}
+
+                                        @if ($pricesale > 0)
+                                            @if ($descuento > 0)
+                                                <span class="block w-full line-through text-red-600 text-right">
+                                                    {{ $moneda->simbolo }}
+                                                    {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                                                </span>
+                                            @endif
+                                            {{-- <h1 class="text-neutral-700 font-semibold text-2xl text-center">
+                                                <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                                {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
+                                                <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                            </h1> --}}
+
+                                            <small
+                                                class="text-[10px] font-semibold text-right">{{ $moneda->currency }}</small>
+                                            @if ($moneda->code == 'USD')
+                                                <x-input class="block w-full text-right p-2 disabled:bg-gray-200"
+                                                    name="price" type="number" min="0" step="0.0001"
+                                                    value="{{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) }}"
+                                                    onkeypress="return validarDecimal(event, 12)" />
+                                            @else
+                                                <x-input class="block w-full text-right p-2 disabled:bg-gray-200"
+                                                    name="price" type="number" min="0" step="0.0001"
+                                                    value="{{ formatDecimalOrInteger($pricesale, 3) }}"
+                                                    onkeypress="return validarDecimal(event, 12)" />
+                                            @endif
+                                            {{-- @else
                                             <p>
                                                 @if ($empresa->usarLista())
                                                     <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                        class="!tracking-normal inline-block leading-3"
-                                                        type="red" />
+                                                        class="!tracking-normal inline-block leading-3" type="red" />
                                                 @else
                                                     <x-span-text text="NO SE PUDO OBTENER PRECIO DE VENTA DEL PRODUCTO"
-                                                        class="!tracking-normal inline-block leading-3"
-                                                        type="red" />
+                                                        class="!tracking-normal inline-block leading-3" type="red" />
                                                 @endif
-                                            </p>
+                                            </p> --}}
                                         @endif
                                     </x-prices-card-product>
 
@@ -276,29 +288,27 @@
                                         @endif
                                     @endif
 
-                                    @if (isset($precios))
-                                        @if ($precioProducto->pricePEN > 0)
-                                            <x-slot name="footer">
-                                                <div class="w-full flex items-end gap-1 justify-end mt-1">
-                                                    @if (count($item->seriesdisponibles) > 0)
-                                                        <div class="w-full flex-1">
-                                                            <x-label value="Ingresar serie :" />
-                                                            <x-input class="block w-full p-2 disabled:bg-gray-200"
-                                                                name="serie" required min="3" />
-                                                        </div>
-                                                    @else
-                                                        <div class="w-full flex-1">
-                                                            <x-label value="Cantidad :" />
-                                                            <x-input class="block w-full p-2 disabled:bg-gray-200"
-                                                                name="cantidad" type="number" min="1"
-                                                                required max="{{ $stock }}" value="1"
-                                                                onkeypress="return validarDecimal(event, 12)" />
-                                                        </div>
-                                                    @endif
-                                                    <x-button-add-car type="submit" wire:loading.attr="disabled" />
-                                                </div>
-                                            </x-slot>
-                                        @endif
+                                    @if ($pricesale > 0)
+                                        <x-slot name="footer">
+                                            <div class="w-full flex items-end gap-1 justify-end mt-1">
+                                                @if (count($item->seriesdisponibles) > 0)
+                                                    <div class="w-full flex-1">
+                                                        <x-label value="Ingresar serie :" />
+                                                        <x-input class="block w-full p-2 disabled:bg-gray-200"
+                                                            name="serie" required min="3" />
+                                                    </div>
+                                                @else
+                                                    <div class="w-full flex-1">
+                                                        <x-label value="Cantidad :" />
+                                                        <x-input class="block w-full p-2 disabled:bg-gray-200"
+                                                            name="cantidad" type="number" min="1" required
+                                                            max="{{ $stock }}" value="1"
+                                                            onkeypress="return validarDecimal(event, 12)" />
+                                                    </div>
+                                                @endif
+                                                <x-button-add-car type="submit" wire:loading.attr="disabled" />
+                                            </div>
+                                        </x-slot>
                                     @endif
 
                                     <x-slot name="messages">
@@ -427,15 +437,10 @@
             });
         }
 
-        window.addEventListener('reset-form', data => {
-            let form = document.getElementById("cardproduct" + data.detail);
-            if (form) {
-                form.reset();
+        window.addEventListener('show-resumen-venta', (event) => {
+            if (event.detail.form_id == null) {
+                @this.render();
             }
-        });
-
-        window.addEventListener('deleted', () => {
-            @this.render();
         });
 
         window.addEventListener('setMoneda', data => {
@@ -445,7 +450,6 @@
         window.addEventListener('setPricetypeId', data => {
             if (data.detail) {
                 if (@this.pricetype_id !== data.detail) {
-                    // console.log(@this.pricetype_id, data.detail);
                     @this.setPricetypeId(data.detail);
                 }
             }

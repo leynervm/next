@@ -35,4 +35,9 @@ class Image extends Model
     {
         return Storage::url('productos/' . $this->url);
     }
+
+    public function getLogoURL()
+    {
+        return Storage::url('productos/' . $this->url);
+    }
 }

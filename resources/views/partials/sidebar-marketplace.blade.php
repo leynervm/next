@@ -144,15 +144,19 @@
                 @endif
             </div>
 
-            <a href="/" class="flex py-4 px-8">
-                <x-isotipo-next class="max-w-[130px] h-full text-neutral-700" />
-            </a>
+            @if ($empresa->image)
+                <a href="/" class="flex py-4 px-8">
+                    <img class="mx-auto max-w-[130px] h-full object-scale-down"
+                        src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+                    {{-- <x-isotipo-next class="max-w-[130px] h-full text-neutral-700" /> --}}
+                </a>
+            @endif
         </div>
     </div>
 </div>
 
 <script>
-     function getSubcategories() {
+    function getSubcategories() {
         // return {
         //     subcategories: [],
         //     error: '',

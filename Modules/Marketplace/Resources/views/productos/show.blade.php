@@ -16,6 +16,10 @@
 
     @php
         $image = $producto->getImageURL();
+        $promocion = $producto->getPromocionDisponible();
+        $descuento = $producto->getPorcentajeDescuento($promocion);
+        $combo = $producto->getAmountCombo($promocion, $pricetype ?? null);
+        $pricesale = $producto->obtenerPrecioVenta($pricetype ?? null);
     @endphp
 
     <div x-data="showproducto">
@@ -97,8 +101,11 @@
                                     {{ $producto->marca->name }}</p>
                             </div>
                             <div class="text-[10px] text-colorsubtitleform flex gap-3">
-                                <span>N° Parte: {{ $producto->partnumber }}</span>
-                                @if ($producto->sku)
+                                @if (!empty($producto->partnumber))
+                                    <span>N° Parte: {{ $producto->partnumber }}</span>
+                                @endif
+
+                                @if (!empty($producto->sku))
                                     <span>SKU: {{ $producto->sku }}</span>
                                 @endif
                             </div>
@@ -212,78 +219,33 @@
                         <div class="text-neutral-700">
                             <div class="w-full flex items-center justify-between gap-2">
                                 <div class="w-full flex-1">
-
-                                    @php
-                                        $image = $producto->getImageURL();
-                                        $promocion = $producto->getPromocionDisponible();
-                                        $descuento = $producto->getPorcentajeDescuento($promocion);
-                                        $combo = $producto->getAmountCombo($promocion, $pricetype);
-                                        $priceCombo = $combo ? $combo->total : 0;
-                                    @endphp
-
-                                    @if ($empresa->usarLista())
-                                        @if ($pricetype)
-                                            @php
-                                                $price = $producto->calcularPrecioVentaLista($pricetype);
-                                                $price =
-                                                    !is_null($promocion) && $promocion->isRemate()
-                                                        ? $producto->precio_real_compra
-                                                        : $price;
-                                                $pricesale =
-                                                    $descuento > 0
-                                                        ? $producto->getPrecioDescuento(
-                                                            $price,
-                                                            $descuento,
-                                                            0,
-                                                            $pricetype,
-                                                        )
-                                                        : $price;
-                                            @endphp
-                                        @else
-                                            <p class="text-[10px] text-colorerror leading-3 py-2">
-                                                CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
-                                        @endif
-                                    @else
-                                        @php
-                                            $price = $producto->pricesale;
-                                            $price =
-                                                !is_null($promocion) && $promocion->isRemate()
-                                                    ? $producto->pricebuy
-                                                    : $price;
-
-                                            $pricesale =
-                                                $descuento > 0
-                                                    ? $producto->getPrecioDescuento($price, $descuento, 0)
-                                                    : $price;
-                                        @endphp
-                                    @endif
-
-                                    @isset($price)
+                                    @if ($pricesale > 0)
                                         <h1 class="font-semibold text-3xl">
                                             {{ $moneda->simbolo }}
-                                            {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
-                                            {{-- <small class="text-[10px]">{{ $moneda->currency }}</small> --}}
+                                            {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                         </h1>
 
                                         @if ($descuento > 0)
                                             <span class="text-colorsubtitleform text-xs line-through text-red-600">
                                                 {{ $moneda->simbolo }}
-                                                {{ formatDecimalOrInteger($price + $priceCombo, 2, ', ') }}
+                                                {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                             </span>
                                         @endif
                                         @if ($empresa->verDolar())
                                             <h1 class="text-blue-700 font-medium text-xs">
                                                 <small class="text-[10px]">$. </small>
-                                                {{ convertMoneda($pricesale + $priceCombo, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                                {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                                 <small class="text-[10px]">USD</small>
                                             </h1>
                                         @endif
-                                    @endisset
+
+                                        <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto"
+                                            :empresa="$empresa" :moneda="$moneda" :pricetype="$pricetype">
+                                        @else
+                                            <p class="text-colorerror leading-3 text-xs">CONFIGURAR PRECIOS DE VENTA
+                                                PARA TIENDA VIRTUAL</p>
+                                    @endif
                                 </div>
-
-                                <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto" :empresa="$empresa"
-                                    :moneda="$moneda" :pricetype="$pricetype">
-
                             </div>
 
                             @if ($combo)
@@ -312,10 +274,38 @@
                             @endif
 
 
-                            @isset($price)
+                            @if ($pricesale > 0)
                                 <livewire:modules.marketplace.carrito.add-carrito :producto="$producto" :empresa="$empresa"
                                     :moneda="$moneda" :pricetype="$pricetype" />
-                            @endisset
+                            @endif
+
+                            @if ($promocion)
+                                <p class="w-full p-1 mt-5 text-center text-xs leading-3 text-colorsubtitleform">
+                                    @if ($promocion->limit > 0)
+                                        @if ($promocion->expiredate)
+                                            Promoción válida hasta el
+                                            {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
+                                            y/o agotar stock
+                                        @else
+                                            Promoción válida hasta agotar unidades disponibles.
+                                        @endif
+
+                                        @if ($promocion->limit > 0)
+                                            <br>
+                                            [{{ formatDecimalOrInteger($promocion->limit) }}
+                                            {{ $promocion->producto->unit->name }}]
+                                        @endif
+                                    @else
+                                        @if ($promocion->expiredate)
+                                            Promoción válida hasta el
+                                            {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
+                                            y/o agotar stock
+                                        @else
+                                            Promoción válida hasta agotar stock.
+                                        @endif
+                                    @endif
+                                </p>
+                            @endif
 
                             {{-- <div class="w-full mt-5">
                             <x-button class="w-full block rounded-xl text-sm">AGREGAR AL CARRITO</x-button>
@@ -477,13 +467,6 @@
                 Clientes que vieron este producto también vieron</h1>
 
             <div class="w-full relative xl:p-10">
-                <button id="leftrecents"
-                    class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M15 7L10 12L15 17" />
-                    </svg>
-                </button>
                 <div class="w-full flex overflow-x-hidden transition-transform ease-in-out duration-700"
                     id="recents">
                     @foreach ($recents as $item)
@@ -492,66 +475,47 @@
                             $promocion = $item->getPromocionDisponible();
                             $descuento = $item->getPorcentajeDescuento($promocion);
                             $combo = $item->getAmountCombo($promocion, $pricetype);
-                            $priceCombo = $combo ? $combo->total : 0;
+                            $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
                         @endphp
 
                         <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                             :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
                             wire:key="cardproduct{{ $item->id }}"
-                            class="recents flex-shrink-0 xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 px-3 transition ease-in-out duration-150">
+                            class="card-recents flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 
-                            @if ($empresa->usarLista())
-                                @if ($pricetype)
-                                    @php
-                                        $price = $item->calcularPrecioVentaLista($pricetype);
-                                        $price =
-                                            !is_null($promocion) && $promocion->isRemate()
-                                                ? $item->precio_real_compra
-                                                : $price;
-
-                                        $pricesale =
-                                            $descuento > 0
-                                                ? $item->getPrecioDescuento($price, $descuento, 0, $pricetype)
-                                                : $price;
-                                    @endphp
-                                @else
-                                    <p class="text-[10px] text-colorerror leading-3 py-2">
-                                        CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
-                                @endif
-                            @else
-                                @php
-                                    $price = $item->pricesale;
-                                    $price = !is_null($promocion) && $promocion->isRemate() ? $item->pricebuy : $price;
-                                    $pricesale =
-                                        $descuento > 0 ? $item->getPrecioDescuento($price, $descuento, 0) : $price;
-                                @endphp
-                            @endif
-
-                            @isset($price)
-                                @if ($descuento > 0)
-                                    <small class="block w-full line-through text-red-600 text-center">
-                                        {{ $moneda->simbolo }}
-                                        {{ formatDecimalOrInteger($price + $priceCombo, 2, ', ') }}
-                                    </small>
-                                @endif
-                                <h1 class="text-neutral-700 font-semibold text-2xl text-center">
-                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                    {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
-                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                </h1>
+                            @if ($pricesale > 0)
                                 @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center">
+                                    <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
                                         <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale + $priceCombo, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                         <small class="text-[10px]">USD</small>
                                     </h1>
                                 @endif
-                            @endisset
+                                <h1 class="text-neutral-700 text-center">
+                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                    <span
+                                        class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                </h1>
+                                @if ($descuento > 0)
+                                    <small class="block w-full line-through text-red-600 text-center text-xs">
+                                        {{ $moneda->simbolo }}
+                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                    </small>
+                                @endif
+                            @endif
                         </x-card-producto-virtual>
                     @endforeach
                 </div>
+                <button id="leftrecents"
+                    class="absolute bg-fondominicard text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
+                        <path d="M15 7L10 12L15 17" />
+                    </svg>
+                </button>
                 <button id="rightrecents"
-                    class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                    class="absolute bg-fondominicard text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
                         <path d="M10 7L15 12L10 17" />
@@ -561,19 +525,13 @@
         </div>
     @endif
 
+
     @if (count($sugerencias) > 0)
         <div class="w-full bg-fondominicard mt-10">
             <h1 class="font-medium text-colorsubtitleform p-3 border-b border-b-borderminicard">
                 Tenemos más productos similares para ti</h1>
 
             <div class="w-full relative xl:p-10">
-                <button id="leftsugerencias"
-                    class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M15 7L10 12L15 17" />
-                    </svg>
-                </button>
                 <div class="w-full flex overflow-x-hidden" id="sugerencias">
                     @foreach ($sugerencias as $item)
                         @php
@@ -581,64 +539,45 @@
                             $promocion = $item->getPromocionDisponible();
                             $descuento = $item->getPorcentajeDescuento($promocion);
                             $combo = $item->getAmountCombo($promocion, $pricetype);
-                            $priceCombo = $combo ? $combo->total : 0;
+                            $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
                         @endphp
 
                         <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                             :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
                             wire:key="cardproduct{{ $item->id }}"
-                            class="recents flex-shrink-0 xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 px-3 transition ease-in-out duration-150">
+                            class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 
-                            @if ($empresa->usarLista())
-                                @if ($pricetype)
-                                    @php
-                                        $price = $item->calcularPrecioVentaLista($pricetype);
-                                        $price =
-                                            !is_null($promocion) && $promocion->isRemate()
-                                                ? $item->precio_real_compra
-                                                : $price;
-
-                                        $pricesale =
-                                            $descuento > 0
-                                                ? $item->getPrecioDescuento($price, $descuento, 0, $pricetype)
-                                                : $price;
-                                    @endphp
-                                @else
-                                    <p class="text-[10px] text-colorerror leading-3 py-2">
-                                        CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
-                                @endif
-                            @else
-                                @php
-                                    $price = $item->pricesale;
-                                    $price = !is_null($promocion) && $promocion->isRemate() ? $item->pricebuy : $price;
-                                    $pricesale =
-                                        $descuento > 0 ? $item->getPrecioDescuento($price, $descuento, 0) : $price;
-                                @endphp
-                            @endif
-
-                            @isset($price)
-                                @if ($descuento > 0)
-                                    <small class="block w-full line-through text-red-600 text-center">
-                                        {{ $moneda->simbolo }}
-                                        {{ formatDecimalOrInteger($price + $priceCombo, 2, ', ') }}
-                                    </small>
-                                @endif
-                                <h1 class="text-neutral-700 font-semibold text-2xl text-center">
-                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                    {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
-                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                </h1>
+                            @if ($pricesale > 0)
                                 @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center">
+                                    <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
                                         <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale + $priceCombo, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                         <small class="text-[10px]">USD</small>
                                     </h1>
                                 @endif
-                            @endisset
+                                <h1 class="text-neutral-700 text-center">
+                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                    <span
+                                        class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                </h1>
+                                @if ($descuento > 0)
+                                    <small class="block w-full line-through text-red-600 text-center text-xs">
+                                        {{ $moneda->simbolo }}
+                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                    </small>
+                                @endif
+                            @endif
                         </x-card-producto-virtual>
                     @endforeach
                 </div>
+                <button id="leftsugerencias"
+                    class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
+                        <path d="M15 7L10 12L15 17" />
+                    </svg>
+                </button>
                 <button id="rightrecents"
                     class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -671,61 +610,35 @@
                             $promocion = $item->getPromocionDisponible();
                             $descuento = $item->getPorcentajeDescuento($promocion);
                             $combo = $item->getAmountCombo($promocion, $pricetype);
-                            $priceCombo = $combo ? $combo->total : 0;
+                            $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
                         @endphp
 
                         <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                             :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
                             wire:key="cardproduct{{ $item->id }}"
-                            class="recents flex-shrink-0 xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 px-3 transition ease-in-out duration-150">
+                            class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 
-                            @if ($empresa->usarLista())
-                                @if ($pricetype)
-                                    @php
-                                        $price = $item->calcularPrecioVentaLista($pricetype);
-                                        $price =
-                                            !is_null($promocion) && $promocion->isRemate()
-                                                ? $item->precio_real_compra
-                                                : $price;
-
-                                        $pricesale =
-                                            $descuento > 0
-                                                ? $item->getPrecioDescuento($price, $descuento, 0, $pricetype)
-                                                : $price;
-                                    @endphp
-                                @else
-                                    <p class="text-[10px] text-colorerror leading-3 py-2">
-                                        CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
-                                @endif
-                            @else
-                                @php
-                                    $price = $item->pricesale;
-                                    $price = !is_null($promocion) && $promocion->isRemate() ? $item->pricebuy : $price;
-                                    $pricesale =
-                                        $descuento > 0 ? $item->getPrecioDescuento($price, $descuento, 0) : $price;
-                                @endphp
-                            @endif
-
-                            @isset($price)
-                                @if ($descuento > 0)
-                                    <small class="block w-full line-through text-red-600 text-center">
-                                        {{ $moneda->simbolo }}
-                                        {{ formatDecimalOrInteger($price + $priceCombo, 2, ', ') }}
-                                    </small>
-                                @endif
-                                <h1 class="text-neutral-700 font-semibold text-2xl text-center">
-                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                    {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
-                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                </h1>
+                            @if ($pricesale > 0)
                                 @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center">
+                                    <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
                                         <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale + $priceCombo, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                         <small class="text-[10px]">USD</small>
                                     </h1>
                                 @endif
-                            @endisset
+                                <h1 class="text-neutral-700 text-center">
+                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                    <span
+                                        class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                </h1>
+                                @if ($descuento > 0)
+                                    <small class="block w-full line-through text-red-600 text-center text-xs">
+                                        {{ $moneda->simbolo }}
+                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                    </small>
+                                @endif
+                            @endif
                         </x-card-producto-virtual>
                     @endforeach
                 </div>
@@ -745,8 +658,7 @@
             Alpine.data('showproducto', () => ({
                 open: false,
 
-                init() {
-                },
+                init() {},
                 openModal() {
                     this.open = true;
                     document.body.style.overflow = 'hidden';
@@ -803,12 +715,12 @@
         })
 
         document.addEventListener('DOMContentLoaded', function() {
-            $("#leftrecents, #leftsugerencias, #leftsimilares").prop('disabled', true);
+            // $("#leftrecents, #leftsugerencias, #leftsimilares").prop('disabled', true);
 
             let recents = $("#recents");
             $("#rightrecents").click(() => hacerScroll(recents));
             $("#leftrecents").click(() => hacerScroll(recents, '-'));
-            disabledButtons(recents, '#leftrecents', '#rightrecents');
+            // disabledButtons(recents, '#leftrecents', '#rightrecents');
 
             let sugerencias = $("#sugerencias");
             $("#rightsugerencias").click(() => hacerScroll(sugerencias));

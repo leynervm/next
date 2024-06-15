@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="RESUMEN COMPRA" subtitulo="Resumen de productos adquiridos en la compra.">
         <div class="w-full relative flex flex-col gap-2">
             <div class="w-full">
@@ -6,7 +10,7 @@
                     @if (count($pricetypes) > 1)
                         <div class="w-full md:w-64 lg:w-80">
                             <x-label value="Lista precios :" />
-                            <div id="parentpricetype_id" class="relative" x-init="Pricetype">
+                            <div id="parentpricetype_id" class="relative" x-data="{ pricetype_id: @entangle('pricetype_id') }" x-init="Pricetype">
                                 <x-select class="block w-full" id="pricetype_id" x-ref="selectprice">
                                     <x-slot name="options">
                                         @foreach ($pricetypes as $item)
@@ -26,37 +30,10 @@
                 <div class="w-full flex gap-2 flex-wrap justify-around xl:justify-start">
                     @foreach ($compra->compraitems as $item)
                         @php
-                            $image = null;
-                            $promocion = null;
-                            if (count($item->producto->images) > 0) {
-                                if ($item->producto->images()->default()->exists()) {
-                                    $image = asset(
-                                        'storage/productos/' . $item->producto->images()->default()->first()->url,
-                                    );
-                                } else {
-                                    $image = asset('storage/productos/' . $item->producto->images->first()->url);
-                                }
-                            }
-
-                            $firstpromocion =
-                                count($item->producto->promocions) > 0 ? $item->producto->promocions->first() : null;
-                            if ($firstpromocion) {
-                                $promocion =
-                                    $firstpromocion->isDisponible() && $firstpromocion->isAvailable()
-                                        ? $firstpromocion
-                                        : null;
-                            }
-
-                            $precios = getPrecio(
-                                $item->producto,
-                                $compra->sucursal->empresa->usarLista() ? $pricetype_id : null,
-                                $compra->sucursal->empresa->tipocambio,
-                            )->getData();
-                            $precioProducto = precio_producto(
-                                $item->producto,
-                                $precios,
-                                $compra->sucursal->empresa->tipocambio,
-                            );
+                            $image = $item->producto->getImageURL();
+                            $promocion = $item->producto->getPromocionDisponible();
+                            $descuento = $item->producto->getPorcentajeDescuento($promocion);
+                            $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
                         @endphp
 
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" x-data="{ showForm: false }">
@@ -102,48 +79,32 @@
                                 @endif
                             </div>
 
-                            <x-prices-card-product :name="$compra->sucursal->empresa->usarLista() ? $pricetype->name : null">
-                                <x-slot name="buttonpricemanual">
-                                    @if ($promocion)
-                                        @if ($promocion->isDescuento() || $promocion->isRemate())
-                                            <p
-                                                class="inline-block font-semibold text-[9px] leading-3 bg-red-100 p-1 rounded text-red-500">
-                                                ANTES : S/.
-                                                {{ number_format($precioProducto->priceAntesPEN, $precios->decimal, '.', ', ') }}
-                                                {{-- {{ number_format($moneda->code == 'USD' ? $precioProducto->priceAntesUSD : $precioProducto->priceAntesPEN, $precios->decimal, '.', ', ') }} --}}
-                                            </p>
-                                        @endif
+                            @if ($promocion)
+                                @if ($promocion->isDescuento() || $promocion->isRemate())
+                                    @if ($descuento > 0)
+                                        <span class="block w-full line-through text-red-600 text-center">
+                                            S/.
+                                            {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                                        </span>
                                     @endif
-                                </x-slot>
-
-                                @if ($precioProducto->pricePEN > 0)
-                                    <x-label-price>
-                                        S/.
-                                        {{ number_format($precioProducto->pricePEN, $precios->decimal, '.', '') }}
-                                        <small> SOLES</small>
-                                    </x-label-price>
-                                @else
-                                    <p>
-                                        @if ($compra->sucursal->empresa->usarLista())
-                                            <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                class="!tracking-normal inline-block leading-3" type="red" />
-                                        @else
-                                            <x-span-text text="NO SE PUDO OBTENER PRECIO DE VENTA DEL PRODUCTO"
-                                                class="!tracking-normal inline-block leading-3" type="red" />
-                                        @endif
-                                    </p>
                                 @endif
-                            </x-prices-card-product>
+                            @endif
+
+                            <x-label-price class="!text-xl text-center">
+                                S/.
+                                {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                <small> SOLES</small>
+                            </x-label-price>
 
                             @can('admin.almacen.compras.create')
                                 <div class="w-full">
                                     <x-label value="Series entrantes :" class="mt-3" />
                                     <div class="w-full inline-flex gap-1">
-                                        <x-input class="block w-full prevent"
+                                        <x-input class="block w-full flex-1 prevent"
                                             wire:model.defer="serie.{{ $item->id }}.serie"
                                             wire:keydown.enter="saveserie({{ $item }})" />
-                                        <x-button-add class="px-2" wire:click="saveserie({{ $item }})"
-                                            wire:loading.attr="disabled">
+                                        <x-button-add class="px-2 flex-shrink-0"
+                                            wire:click="saveserie({{ $item }})" wire:loading.attr="disabled">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                                                 stroke-linecap="round" stroke-linejoin="round">
@@ -282,9 +243,6 @@
                                     SELECCIONAR PRODUCTO PARA MOSTRAR ALMACENES</h1>
                             </x-simple-card>
                         @endif
-                        <div wire:loading.flex wire:target="loadproducto" class="loading-overlay rounded hidden">
-                            <x-loading-next />
-                        </div>
                         <x-jet-input-error for="almacens" />
                     </div>
 
@@ -419,7 +377,7 @@
     </x-jet-dialog-modal>
 
 
-    <x-jet-dialog-modal wire:model="openprice" maxWidth="lg" footerAlign="justify-end">
+    {{-- <x-jet-dialog-modal wire:model="openprice" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Cambiar precio venta') }}
             <x-button-close-modal wire:click="$toggle('openprice')" wire:loading.attr="disabled" />
@@ -452,7 +410,7 @@
                 </div>
             </div>
         </x-slot>
-    </x-jet-dialog-modal>
+    </x-jet-dialog-modal> --}}
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -463,7 +421,6 @@
                 tipocambio: @this.get('tipocambio'),
                 pricebuy: @entangle('pricebuy').defer,
                 descuento: @entangle('descuento').defer,
-                pricetype_id: @entangle('pricetype_id'),
                 igv: @entangle('igv').defer,
                 pricebuyigv: null,
                 percent: @entangle('percent').defer,
@@ -566,7 +523,6 @@
             this.selectP = $(this.$refs.selectprice).select2();
             this.selectP.val(this.pricetype_id).trigger("change");
             this.selectP.on("select2:select", (event) => {
-                // @this.setPricetypeId(event.target.value);
                 this.pricetype_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";

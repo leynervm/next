@@ -35,7 +35,10 @@ class CreateUser extends Component
     protected function rules()
     {
         return [
-            'document' => ['required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/', new CampoUnique('users', 'document', null, true)],
+            'document' => [
+                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                new CampoUnique('users', 'document', null, true)
+            ],
             'name' => ['required', 'string', 'min:3', 'string'],
             'email' => ['required', 'email', new CampoUnique('users', 'email', null, true)],
             'password' => ['required', 'min:8', 'confirmed'],
@@ -103,13 +106,24 @@ class CreateUser extends Component
         DB::beginTransaction();
 
         try {
-            $user = User::create([
-                'document' => $this->document,
-                'name' => $this->name,
-                'email' => $this->email,
-                'password' => bcrypt($this->password),
-                'sucursal_id' => !empty($this->sucursal_id) ? $this->sucursal_id : null,
-            ]);
+
+            $user = User::onlyTrashed()->where('document', $this->document)->first();
+
+            if ($user) {
+                $user->name = $this->name;
+                $user->email = $this->email;
+                $user->password = bcrypt($this->password);
+                $user->sucursal_id = !empty($this->sucursal_id) ? $this->sucursal_id : null;
+                $user->restore();
+            } else {
+                $user = User::create([
+                    'document' => $this->document,
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'password' => bcrypt($this->password),
+                    'sucursal_id' => !empty($this->sucursal_id) ? $this->sucursal_id : null,
+                ]);
+            }
 
             if (!empty($this->sucursal_id)) {
                 $user->roles()->sync($this->selectedRoles);

@@ -22,6 +22,8 @@ class ShowGarantias extends Component
     public $newprice, $priceold, $pricemanual;
     public $descripcion = '';
 
+    public $precio_1, $precio_2, $precio_3, $precio_4, $precio_5;
+
     protected $listeners = ['delete'];
 
     public function mount(Producto $producto)
@@ -32,13 +34,19 @@ class ShowGarantias extends Component
         if ($producto->detalleproducto) {
             $this->descripcion =  $producto->detalleproducto->descripcion;
         }
+
+        $this->precio_1 = formatDecimalOrInteger($producto->precio_1, 2,);
+        $this->precio_2 = formatDecimalOrInteger($producto->precio_2, 2);
+        $this->precio_3 = formatDecimalOrInteger($producto->precio_3, 2);
+        $this->precio_4 = formatDecimalOrInteger($producto->precio_4, 2);
+        $this->precio_5 = formatDecimalOrInteger($producto->precio_5, 2);
     }
 
     public function render()
     {
 
         $typegarantias = Typegarantia::orderBy('name', 'asc')->get();
-        $pricetypes = Pricetype::orderBy('id', 'asc')->orderBy('name', 'asc')->get();
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->orderBy('name', 'asc')->get();
 
         return view('livewire.modules.almacen.productos.show-garantias', compact('typegarantias', 'pricetypes'));
     }
@@ -145,4 +153,47 @@ class ShowGarantias extends Component
     //     $this->producto->refresh();
     //     $this->dispatchBrowserEvent('deleted');
     // }
+
+    public function updatelistaprecios()
+    {
+
+        $pricetypes = lista_precios();
+
+        $this->validate([
+            'precio_1' => [
+                'nullable',
+                Rule::requiredIf(in_array('precio_1', $pricetypes)),
+                'numeric', 'min:0', 'decimal:0,3'
+            ],
+            'precio_2' => [
+                'nullable',
+                Rule::requiredIf(in_array('precio_2', $pricetypes)),
+                'numeric', 'min:0', 'decimal:0,3'
+            ],
+            'precio_3' => [
+                'nullable',
+                Rule::requiredIf(in_array('precio_3', $pricetypes)),
+                'numeric', 'min:0', 'decimal:0,3'
+            ],
+            'precio_4' => [
+                'nullable',
+                Rule::requiredIf(in_array('precio_4', $pricetypes)),
+                'numeric', 'min:0', 'decimal:0,3'
+            ],
+            'precio_5' => [
+                'nullable',
+                Rule::requiredIf(in_array('precio_5', $pricetypes)),
+                'numeric', 'min:0', 'decimal:0,3'
+            ],
+        ]);
+
+        $this->producto->precio_1 = $this->precio_1;
+        $this->producto->precio_2 = $this->precio_2;
+        $this->producto->precio_3 = $this->precio_3;
+        $this->producto->precio_4 = $this->precio_4;
+        $this->producto->precio_5 = $this->precio_5;
+        $this->producto->save();
+        $this->producto->refresh();
+        $this->dispatchBrowserEvent('updated');
+    }
 }

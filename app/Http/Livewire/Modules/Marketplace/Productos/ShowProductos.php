@@ -45,7 +45,15 @@ class ShowProductos extends Component
         'searchespecificaciones' => [
             'except' => '',
             'as' => 'especificaciones'
-        ]
+        ],
+        // 'sort' => [
+        //     'except' => 'name',
+        //     'as' => 'orderBy'
+        // ],
+        // 'direction' => [
+        //     'except' => 'asc',
+        //     'as' => 'direccion'
+        // ]
     ];
 
     public Empresa $empresa;
@@ -55,7 +63,9 @@ class ShowProductos extends Component
     public $view = '';
     public $qty = 1;
 
-    public $searchcategorias = '', $searchsubcategorias = '', $searchmarcas = '', $searchespecificaciones = '';
+    public $searchcategorias = '', $searchsubcategorias = '',
+        $searchmarcas = '', $searchespecificaciones = '', $orderBy = '',
+        $sort = 'name', $direction = 'asc';
     public $selectedcategorias = [];
     public $selectedsubcategorias = [];
     public $selectedmarcas = [];
@@ -118,9 +128,24 @@ class ShowProductos extends Component
             });
         }
 
-        $productos = $productos->publicados()->orderBy('name', 'asc')->paginate();
+        $productos = $productos->publicados()
+            ->orderBy($this->sort, $this->direction)->paginate();
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'subcategories', 'marcas', 'caracteristicas'));
+    }
+
+    public function order($sort, $direction)
+    {
+        if ($sort == 'precio') {
+            if ($this->pricetype) {
+                $this->sort = $this->pricetype->campo_table;
+            } else {
+                $this->sort = 'pricesale';
+            }
+        } else {
+            $this->sort = $sort;
+        }
+        $this->direction = $direction;
     }
 
     public function updatedSelectedcategorias()
@@ -147,29 +172,23 @@ class ShowProductos extends Component
     {
 
         $promocion = $producto->getPromocionDisponible();
-        $descuento = $producto->getPorcentajeDescuento($promocion);
-        $combo = $producto->getAmountCombo($promocion, $this->pricetype);
-        $priceCombo = $combo ? $combo->total : 0;
-        $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
+        $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null);
+        $carshoopitems = !is_null($combo) ? $combo->products : [];
+        $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
 
-        if ($this->empresa->usarLista()) {
-            if ($this->pricetype) {
-                $price = $producto->calcularPrecioVentaLista($this->pricetype);
-                $price = !is_null($promocion) && $promocion->isRemate()
-                    ? $producto->precio_real_compra
-                    : $price;
-                $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0, $this->pricetype) : $price;
+        if ($promocion) {
+            if ($promocion->limit > 0 && ($promocion->outs + $cantidad > $promocion->limit)) {
+                $mensaje = response()->json([
+                    'title' => 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN',
+                    'text' => 'Ingrese un monto menor o igual al stock de unidades disponibles.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
             }
-        } else {
-            $price = $producto->pricesale;
-            $price = !is_null($promocion) && $promocion->isRemate() ? $producto->pricebuy : $price;
-            $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0) : $price;
         }
 
-        if (isset($price)) {
-            $price = $price + $priceCombo;
-            $pricesale = $pricesale + $priceCombo;
-            // dd($price, $pricesale);
+        if ($pricesale > 0) {
             Cart::instance('shopping')->add([
                 'id' => $producto->id,
                 'name' => $producto->name,
@@ -180,7 +199,7 @@ class ShowProductos extends Component
                     'moneda_id' => $this->moneda->id,
                     'currency' => $this->moneda->currency,
                     'simbolo' => $this->moneda->simbolo,
-                    'modo_precios' => $this->empresa->usarLista() ? $this->pricetype->name : 'DEFAUL PRICESALE',
+                    'modo_precios' => $this->empresa->usarlista() ? $this->pricetype->name : 'PRECIO MANUAL',
                     'carshoopitems' => $carshoopitems,
                     'promocion_id' => $promocion ?  $promocion->id : null,
                     'igv' => 0,
@@ -195,7 +214,7 @@ class ShowProductos extends Component
             $this->dispatchBrowserEvent('toast', toastJSON('Agregado al carrito'));
         } else {
             $mensaje = response()->json([
-                'title' => 'CONFIGURAR LISTA DE PRECIOS PARA TIENDA VIRTUAL !',
+                'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
                 'text' => 'No se pudo obtener el precio de venta, configurar correctamente el modo de precios de los productos.',
                 'type' => 'warning'
             ])->getData();
@@ -208,28 +227,11 @@ class ShowProductos extends Component
     {
 
         $promocion = $producto->getPromocionDisponible();
-        $descuento = $producto->getPorcentajeDescuento($promocion);
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);
-        $priceCombo = $combo ? $combo->total : 0;
-        $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
+        $carshoopitems = !is_null($combo) ? $combo->products : [];
+        $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
 
-        if ($this->empresa->usarLista()) {
-            if ($this->pricetype) {
-                $price = $producto->calcularPrecioVentaLista($this->pricetype);
-                $price = !is_null($promocion) && $promocion->isRemate()
-                    ? $producto->precio_real_compra
-                    : $price;
-                $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0, $this->pricetype) : $price;
-            }
-        } else {
-            $price = $producto->pricesale;
-            $price = !is_null($promocion) && $promocion->isRemate() ? $producto->pricebuy : $price;
-            $pricesale = $descuento > 0 ? $producto->getPrecioDescuento($price, $descuento, 0) : $price;
-        }
-
-        if (isset($price)) {
-            $price = $price + $priceCombo;
-            $pricesale = $pricesale + $priceCombo;
+        if ($pricesale > 0) {
             Cart::instance('wishlist')->add([
                 'id' => $producto->id,
                 'name' => $producto->name,
@@ -255,7 +257,7 @@ class ShowProductos extends Component
             $this->dispatchBrowserEvent('toast', toastJSON('Agregado a lista de deseos'));
         } else {
             $mensaje = response()->json([
-                'title' => 'CONFIGURAR LISTA DE PRECIOS PARA TIENDA VIRTUAL !',
+                'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
                 'text' => 'No se pudo obtener el precio de venta, configurar correctamente el modo de precios de los productos.',
                 'type' => 'warning'
             ])->getData();

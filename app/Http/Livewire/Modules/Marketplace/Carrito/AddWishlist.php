@@ -30,28 +30,11 @@ class AddWishlist extends Component
     {
 
         $promocion = $this->producto->getPromocionDisponible();
-        $descuento = $this->producto->getPorcentajeDescuento($promocion);
         $combo = $this->producto->getAmountCombo($promocion, $this->pricetype);
-        $priceCombo = $combo ? $combo->total : 0;
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
+        $pricesale = $this->producto->obtenerPrecioVenta($this->pricetype ?? null);
 
-        if ($this->empresa->usarLista()) {
-            if ($this->pricetype) {
-                $price = $this->producto->calcularPrecioVentaLista($this->pricetype);
-                $price = !is_null($promocion) && $promocion->isRemate()
-                    ? $this->producto->precio_real_compra
-                    : $price;
-                $pricesale = $descuento > 0 ? $this->producto->getPrecioDescuento($price, $descuento, 0, $this->pricetype) : $price;
-            }
-        } else {
-            $price = $this->producto->pricesale;
-            $price = !is_null($promocion) && $promocion->isRemate() ? $this->producto->pricebuy : $price;
-            $pricesale = $descuento > 0 ? $this->producto->getPrecioDescuento($price, $descuento, 0) : $price;
-        }
-
-        if (isset($price)) {
-            $price = $price + $priceCombo;
-            $pricesale = $pricesale + $priceCombo;
+        if ($pricesale > 0) {
             Cart::instance('wishlist')->add([
                 'id' => $this->producto->id,
                 'name' => $this->producto->name,
@@ -77,7 +60,7 @@ class AddWishlist extends Component
             $this->dispatchBrowserEvent('toast', toastJSON('Agregado a lista de deseos'));
         } else {
             $mensaje = response()->json([
-                'title' => 'CONFIGURAR LISTA DE PRECIOS PARA TIENDA VIRTUAL !',
+                'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
                 'text' => 'No se pudo obtener el precio de venta, configurar correctamente el modo de precios de los productos.',
                 'type' => 'warning'
             ])->getData();

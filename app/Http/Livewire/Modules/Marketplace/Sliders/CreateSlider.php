@@ -19,7 +19,7 @@ class CreateSlider extends Component
     use AuthorizesRequests;
     use WithFileUploads;
 
-    public $image;
+    public $image, $extencionimage;
     public $identificador;
     public $orden, $link, $start, $end;
 
@@ -64,14 +64,15 @@ class CreateSlider extends Component
         if (!Storage::directoryExists('images/slider/')) {
             Storage::makeDirectory('images/slider/');
         }
+
         $compressedImage = ImageIntervention::make($this->image->getRealPath())
             ->resize(1920, 560, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             })->orientate()->encode('jpg', 30);
 
-        $url = uniqid('slider_') . '.' . $this->image->getClientOriginalExtension();
-        $compressedImage->save(public_path('storage/images/slider/' . $url));
+        $urlImage = uniqid('slider_') . '.' . $this->image->getClientOriginalExtension();
+        $compressedImage->save(public_path('storage/images/slider/' . $urlImage));
 
         if ($compressedImage->filesize() > 2097152) { //2MB
             $compressedImage->destroy();
@@ -81,12 +82,13 @@ class CreateSlider extends Component
         }
 
         Slider::create([
-            'url' => $url,
+            'url' => $urlImage,
             'link' => $this->link,
             'orden' => $this->orden,
             'start' => $this->start,
             'end' => empty($this->end) ? null : $this->end,
         ]);
+
         $this->dispatchBrowserEvent('created');
         $this->emit('render');
         $this->reset();

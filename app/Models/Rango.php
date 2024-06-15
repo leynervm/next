@@ -28,6 +28,12 @@ class Rango extends Model
         return number_format($value, 2, '.', '');
     }
 
+    public function scopeWhereRangoBetween($query, $pricebuy)
+    {
+        return $query->where('desde', '<=', $pricebuy)
+            ->where('hasta', '>=', $pricebuy);
+    }
+
 
     // public function getIncremento($value)
     // {

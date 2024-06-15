@@ -16,73 +16,91 @@ class PricetypeSeeder extends Seeder
      */
     public function run()
     {
-        $listafinal = Pricetype::create([
-            'name' => 'LISTA FINAL',
+        $lista1 = Pricetype::create([
+            'name' => 'LISTA 1',
             'rounded' => 1,
             'decimals' => 2,
             'default' => 1,
             'web' => 0,
             'defaultlogin' => 1,
+            'campo_table' => 'precio_1'
         ]);
 
-        $listaweb = Pricetype::create([
-            'name' => 'LISTA WEB',
+        $lista2 = Pricetype::create([
+            'name' => 'LISTA 2',
             'rounded' => 1,
             'decimals' => 2,
             'web' => 1,
+            'campo_table' => 'precio_2'
         ]);
 
-        $listatecnico = Pricetype::create([
-            'name' => 'LISTA TECNICO',
+        $lista3 = Pricetype::create([
+            'name' => 'LISTA 3',
             'rounded' => 0,
             'decimals' => 2,
             'web' => 0,
+            'campo_table' => 'precio_3'
         ]);
 
-        $listadistribucion = Pricetype::create([
-            'name' => 'LISTA DISTRIBUCION',
+        $lista4 = Pricetype::create([
+            'name' => 'LISTA 4',
+            'rounded' => 0,
+            'decimals' => 3,
+            'web' => 0,
+            'campo_table' => 'precio_4'
+        ]);
+
+        $lista5 = Pricetype::create([
+            'name' => 'LISTA 5',
             'rounded' => 0,
             'decimals' => 4,
             'web' => 0,
+            'campo_table' => 'precio_5'
         ]);
 
         $rangos = Rango::all();
-        $gananciafinal = 60;
-        $gananciaweb = 50;
-        $gananciatecnico = 30;
-        $gananciadistribucion = 15;
+        // $incremento2 = 60;
+        // $incrementoweb = 50;
+        // $incrementotecnico = 30;
+        // $incrementodistribucion = 15;
 
         if (count($rangos) > 0) {
             foreach ($rangos as $rango) {
 
-                $rango->pricetypes()->attach([
-                    $listafinal->id => [
-                        'ganancia' => $gananciafinal
+                $rango->pricetypes()->sync([
+                    $lista1->id => [
+                        'ganancia' => 0
                     ]
                 ]);
 
-                $rango->pricetypes()->attach([
-                    $listaweb->id => [
-                        'ganancia' => $gananciaweb
+                $rango->pricetypes()->sync([
+                    $lista2->id => [
+                        'ganancia' => 0
                     ]
                 ]);
 
-                $rango->pricetypes()->attach([
-                    $listatecnico->id => [
-                        'ganancia' => $gananciatecnico
+                $rango->pricetypes()->sync([
+                    $lista3->id => [
+                        'ganancia' => 0
                     ]
                 ]);
 
-                $rango->pricetypes()->attach([
-                    $listadistribucion->id => [
-                        'ganancia' => $gananciadistribucion
+                $rango->pricetypes()->sync([
+                    $lista4->id => [
+                        'ganancia' => 0
                     ]
                 ]);
 
-                $gananciafinal--;
-                $gananciaweb--;
-                $gananciatecnico--;
-                $gananciadistribucion = number_format($gananciadistribucion - 0.5, 2, '.', '');
+                $rango->pricetypes()->sync([
+                    $lista5->id => [
+                        'ganancia' => 0
+                    ]
+                ]);
+
+                // $gananciafinal--;
+                // $gananciaweb--;
+                // $gananciatecnico--;
+                // $gananciadistribucion = number_format($gananciadistribucion - 0.5, 2, '.', '');
             }
         }
     }

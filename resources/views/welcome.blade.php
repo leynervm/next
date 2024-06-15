@@ -74,6 +74,85 @@
                 </div>
             </div>
         </x-slot>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const slider = document.getElementById('slider');
+                const indice_slider = document.getElementById('indice-slider');
+                const idicador_items = indice_slider.querySelectorAll('.indicador-slider');
+                const items = slider.querySelectorAll('.carousel-item');
+                const nextButton = document.getElementById('nextslider');
+                const prevButton = document.getElementById('previusslider');
+                let currentIndex = 0;
+                let autoSlideInterval;
+    
+                const showSlide = (index, direction) => {
+                    if (direction === 'next') {
+                        // items[index].classList.add('entrante');
+                        // items[currentIndex].classList.remove('saliente');
+                    } else if (direction === 'prev') {
+                        // items[currentIndex].classList.add('entrante');
+                        // items[index].classList.add('saliente');
+                    }
+    
+                    changeImageSlider(index);
+                };
+    
+                const nextSlide = () => {
+                    currentIndex = (currentIndex + 1) % items.length;
+                    showSlide(currentIndex, 'next');
+                };
+    
+                const prevSlide = () => {
+                    currentIndex = (currentIndex - 1 + items.length) % items.length;
+                    showSlide(currentIndex, 'prev');
+                };
+    
+                const changeImageSlider = (index) => {
+                    items.forEach((item, i) => {
+                        if (i === index) {
+                            item.classList.add('activo');
+                        } else {
+                            item.classList.remove('activo');
+                        }
+                    });
+    
+                    idicador_items.forEach((item, i) => {
+                        if (i === index) {
+                            item.classList.add('activo');
+                        } else {
+                            item.classList.remove('activo');
+                        }
+                    });
+    
+                    currentIndex = index;
+                }
+    
+                const startAutoSlide = () => {
+                    autoSlideInterval = setInterval(nextSlide, 5000);
+                };
+    
+                const stopAutoSlide = () => {
+                    clearInterval(autoSlideInterval);
+                };
+    
+                idicador_items.forEach((button, e) => {
+                    button.addEventListener('click', function(e) {
+                        changeImageSlider($(this).index());
+                    })
+                })
+    
+                nextButton.addEventListener('click', nextSlide);
+                prevButton.addEventListener('click', prevSlide);
+    
+                slider.addEventListener('mouseover', stopAutoSlide);
+                slider.addEventListener('mouseout', startAutoSlide);
+    
+                showSlide(currentIndex);
+                startAutoSlide();
+    
+            });
+        </script>
     @endif
 
     <div class="w-full py-5">
@@ -806,84 +885,4 @@
             <span class="sr-only">Next</span>
         </a>
     </div>
-
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const slider = document.getElementById('slider');
-            const indice_slider = document.getElementById('indice-slider');
-            const idicador_items = indice_slider.querySelectorAll('.indicador-slider');
-            const items = slider.querySelectorAll('.carousel-item');
-            const nextButton = document.getElementById('nextslider');
-            const prevButton = document.getElementById('previusslider');
-            let currentIndex = 0;
-            let autoSlideInterval;
-
-            const showSlide = (index, direction) => {
-                if (direction === 'next') {
-                    // items[index].classList.add('entrante');
-                    // items[currentIndex].classList.remove('saliente');
-                } else if (direction === 'prev') {
-                    // items[currentIndex].classList.add('entrante');
-                    // items[index].classList.add('saliente');
-                }
-
-                changeImageSlider(index);
-            };
-
-            const nextSlide = () => {
-                currentIndex = (currentIndex + 1) % items.length;
-                showSlide(currentIndex, 'next');
-            };
-
-            const prevSlide = () => {
-                currentIndex = (currentIndex - 1 + items.length) % items.length;
-                showSlide(currentIndex, 'prev');
-            };
-
-            const changeImageSlider = (index) => {
-                items.forEach((item, i) => {
-                    if (i === index) {
-                        item.classList.add('activo');
-                    } else {
-                        item.classList.remove('activo');
-                    }
-                });
-
-                idicador_items.forEach((item, i) => {
-                    if (i === index) {
-                        item.classList.add('activo');
-                    } else {
-                        item.classList.remove('activo');
-                    }
-                });
-
-                currentIndex = index;
-            }
-
-            const startAutoSlide = () => {
-                autoSlideInterval = setInterval(nextSlide, 5000);
-            };
-
-            const stopAutoSlide = () => {
-                clearInterval(autoSlideInterval);
-            };
-
-            idicador_items.forEach((button, e) => {
-                button.addEventListener('click', function(e) {
-                    changeImageSlider($(this).index());
-                })
-            })
-
-            nextButton.addEventListener('click', nextSlide);
-            prevButton.addEventListener('click', prevSlide);
-
-            slider.addEventListener('mouseover', stopAutoSlide);
-            slider.addEventListener('mouseout', startAutoSlide);
-
-            showSlide(currentIndex);
-            startAutoSlide();
-
-        });
-    </script>
 </x-app-layout>

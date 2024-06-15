@@ -51,9 +51,10 @@ class DefaultValue implements Rule
 
             if ($this->softDeleted) {
                 $query->whereNull('deleted_at');
-            } else {
-                $query->where('delete', 0);
             }
+            //  else {
+            //     $query->where('delete', 0);
+            // }
 
             if (!is_null($this->ignoreId)) {
                 $query->where('id', '<>', $this->ignoreId);

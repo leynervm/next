@@ -34,7 +34,7 @@
                 </div>
             @endcan
             @if (count($producto->series))
-                <div class="w-full relative bg-body p-3 rounded">
+                <div class="w-full flex-1 relative bg-body p-3 rounded">
                     <div class="w-full flex items-end gap-1 mb-2">
                         @if (count($producto->almacens) > 1)
                             <div class="relative" x-data="{ open: false }">

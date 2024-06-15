@@ -19,19 +19,19 @@ class ShowPromociones extends Component
         'estado' => ['except' => '',],
     ];
     protected $listeners = ['render'];
-    public $pricetype_id;
+    public $pricetype_id, $pricetype;
     public $estado = Promocion::ACTIVO;
 
     public function mount()
     {
         if (mi_empresa()->usarLista()) {
-            $pricetypes = Pricetype::orderBy('id', 'asc');
-            if ($pricetypes->exists()) {
-                if ($pricetypes->default()->exists()) {
-                    $this->pricetype_id = $pricetypes->default()->first()->id;
-                } else {
-                    $this->pricetype_id = Pricetype::orderBy('id', 'asc')->first()->id;
-                }
+            $pricetypes = Pricetype::default();
+            if (count($pricetypes->get()) > 0) {
+                $this->pricetype = $pricetypes->first();
+                $this->pricetype_id = $this->pricetype->id ?? null;
+            } else {
+                $this->pricetype = Pricetype::orderBy('id', 'asc')->first();
+                $this->pricetype_id = $this->pricetype->id ?? null;
             }
         }
     }
@@ -73,14 +73,15 @@ class ShowPromociones extends Component
         $this->authorize('admin.promociones.edit');
         $promocion->status = Promocion::FINALIZADO;
         $promocion->save();
+        $promocion->producto->assignPriceProduct();
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción finalizado correctamente'));
     }
 
     public function disablepromocion(Promocion $promocion)
     {
         $this->authorize('admin.promociones.edit');
-        $promocion->status = $promocion->status == '1' ? 0 : 1;
-        if ($promocion->status == Promocion::ACTIVO) {
+        $promocion->status = $promocion->isActivo() ? Promocion::DESACTIVADO : Promocion::ACTIVO;
+        if ($promocion->isActivo()) {
 
             if (!is_null($promocion->expiredate)) {
                 if (Carbon::now('America/Lima')->gt(Carbon::parse($promocion->expiredate)->format('d-m-Y'))) {
@@ -96,7 +97,7 @@ class ShowPromociones extends Component
             $existotherpromociones = Promocion::disponibles()->where('producto_id', $promocion->producto_id)->exists();
             if ($existotherpromociones) {
                 $mensaje = response()->json([
-                    'title' => 'Promocion contiene productos que ya se encuentran en promociones activas !',
+                    'title' => 'Producto ya cuenta con promociones activas !',
                     'text' => "No puede tener distintas promociones activas de un solo producto."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
@@ -118,6 +119,15 @@ class ShowPromociones extends Component
             }
         }
         $promocion->save();
+        $promocion->producto->assignPriceProduct();
         $this->dispatchBrowserEvent('updated');
+    }
+
+    public function updatedPricetypeId($value)
+    {
+        if ($value) {
+            $this->pricetype = Pricetype::find($value);
+            $this->pricetype_id = $this->pricetype->id;
+        }
     }
 }

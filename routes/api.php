@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SortController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -29,3 +30,8 @@ Route::post('sort/sliders', [SortController::class, 'sliders'])->name('api.sort.
 
 Route::post('search', [MarketplaceController::class, 'search'])->name('api.producto.search');
 Route::post('searchsubcategories', [MarketplaceController::class, 'searchsubcategories'])->name('api.producto.subcategories');
+
+
+Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('api.tipocambio');
+Route::get('consulta-ruc/{ruc}', [HomeController::class, 'consultaruc'])->name('api.ruc');
+Route::get('consulta-sunat/{document?}', [HomeController::class, 'consultasunat'])->name('consultasunat');

@@ -1,10 +1,14 @@
 <div class="fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto h-[70px] bg-next-900">
     <div class="w-full mx-auto flex relative">
-        <div class="flex bg-fondominicard">
-            <a href="/" class="hidden xl:block w-60 px-5">
-                <x-isotipo-next class="text-black h-full mx-auto" />
-            </a>
-        </div>
+        @if ($empresa->image)
+            <div class="flex bg-fondominicard">
+                <a href="/" class="hidden xl:block w-60 px-5">
+                    <img class="mx-auto h-full object-scale-down"
+                        src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+                    {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
+                </a>
+            </div>
+        @endif
 
         <div class="flex justify-center items-center">
             <button class="hidden xl:flex button-sidebar" type="button">
@@ -26,9 +30,13 @@
                         <span class="icon-button-menu"></span>
                     </div>
                 </div>
-                <a href="/" class="hidden xs:block xl:hidden w-20 flex-shrink-0">
-                    <x-isotipo-next class="text-white h-full mx-auto" />
-                </a>
+                @if ($empresa->image)
+                    <a href="/" class="hidden xs:block xl:hidden w-20 flex-shrink-0">
+                        <img class="mx-auto h-full object-scale-down"
+                            src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+                        {{-- <x-isotipo-next class="text-white h-full mx-auto" /> --}}
+                    </a>
+                @endif
             </button>
         </div>
 
@@ -199,7 +207,8 @@
                                                     </p>
                                                 @endif
 
-                                                <p class="w-full text-xs text-center text-colorlabel">
+                                                <p class="w-full text-xs text-center text-colorlabel"
+                                                    style="text-wrap:wrap;">
                                                     {{ Auth::user()->name }}</p>
 
                                                 @if (auth()->user()->sucursal)

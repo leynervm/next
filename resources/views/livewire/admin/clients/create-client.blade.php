@@ -21,16 +21,17 @@
                             <div class="w-full inline-flex relative">
                                 <x-disabled-text :text="$document" class="w-full block" />
                                 <x-button-close-modal
-                                    class="hover:animate-none !text-red-500 hover:!bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
+                                    class="hover:animate-none h-full !text-red-500 !bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-0 !px-2"
                                     wire:click="limpiarcliente" wire:loading.attr="disabled" />
                             </div>
                         @else
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full prevent" x-model="document"
+                                <x-input class="block w-full prevent flex-1" x-model="document"
                                     @keyup="togglecontact($event.target.value)" wire:model.defer="document"
                                     wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
                                     onkeydown="disabledEnter(event)" />
-                                <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
+                                <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient"
+                                    wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                         stroke-linejoin="round">
@@ -107,16 +108,20 @@
                         @if (mi_empresa()->usarlista())
                             <div class="w-full mt-2 sm:mt-0">
                                 <x-label value="Lista precio :" />
-                                <x-select class="block w-full iconselect" wire:model.defer="pricetype_id"
-                                    id="pricetype_id" data-dropdown-parent="null">
-                                    <x-slot name="options">
-                                        @if (count($pricetypes))
-                                            @foreach ($pricetypes as $item)
-                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                            @endforeach
-                                        @endif
-                                    </x-slot>
-                                </x-select>
+                                <div class="w-full relative" x-data="{ pricetype_id: @entangle('pricetype_id').defer }" x-init="pricetype"
+                                    wire:ignore>
+                                    <x-select class="block w-full iconselect" x-ref="selectpricetype"
+                                        id="pricetype_id" data-dropdown-parent="null">
+                                        <x-slot name="options">
+                                            @if (count($pricetypes) > 0)
+                                                @foreach ($pricetypes as $item)
+                                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                                @endforeach
+                                            @endif
+                                        </x-slot>
+                                    </x-select>
+                                    <x-icon-select />
+                                </div>
                                 <x-jet-input-error for="pricetype_id" />
                             </div>
                         @endif
@@ -167,6 +172,23 @@
                     </div>
                 </div>
 
+                @if (module::isEnabled('Marketplace'))
+                    @if ($user)
+                        <p class="text-xs text-colorsubtitleform my-2 mt-8">
+                            Actualmente el cliente está registrado en nuestra tienda web...</p>
+                        <x-simple-card class="w-48 mt-3 flex flex-col gap-1 rounded-xl cursor-default p-3 py-5">
+                            <h1 class="font-semibold text-sm leading-4 text-primary text-center">
+                                {{ $user->name }}</h1>
+
+                            <x-label class="font-semibold text-center" textSize="[10px]">
+                                EMAIL
+                            </x-label>
+                            <p class="text-xs text-center">{{ $user->email }}</p>
+                        </x-simple-card>
+                    @endif
+                @endif
+
+
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('REGISTRAR') }}
@@ -211,6 +233,21 @@
             });
             this.$watch("sexo", (value) => {
                 this.selectS.val(value).trigger("change");
+            });
+        }
+
+        function pricetype() {
+            this.selectP = $(this.$refs.selectpricetype).select2();
+            this.selectP.val(this.pricetype_id).trigger("change");
+            this.selectP.on("select2:select", (event) => {
+                this.pricetype_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("pricetype_id", (value) => {
+                this.selectP.val(value).trigger("change");
             });
         }
 

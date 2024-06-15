@@ -15,6 +15,7 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Almacenarea;
 use App\Models\Estante;
+use App\Models\Pricetype;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Intervention\Image\ImageManagerStatic as Image;
 
@@ -45,7 +46,7 @@ class CreateProducto extends Component
             ],
             'marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'modelo' => ['required', 'string'],
-            'sku' => ['nullable', 'string', 'min:4'],
+            // 'sku' => ['nullable', 'string', 'min:4'],
             'partnumber' => ['nullable', 'string', 'min:4'],
             'pricebuy' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0'],
             'pricesale' => [
@@ -177,6 +178,10 @@ class CreateProducto extends Component
                 ]);
             }
 
+            if (mi_empresa()->usarlista()) {
+                $producto->assignPriceProduct();
+            }
+            // dd('FIN DEL PROCESO');
             DB::commit();
             $this->resetValidation();
             $this->reset();

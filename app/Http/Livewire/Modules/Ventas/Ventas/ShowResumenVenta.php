@@ -916,7 +916,7 @@ class ShowResumenVenta extends Component
         }
     }
 
-    public function delete(Carshoop $carshoop)
+    public function delete(Carshoop $carshoop, $isDeleteAll = false)
     {
         DB::beginTransaction();
         try {
@@ -933,6 +933,9 @@ class ShowResumenVenta extends Component
             if ($carshoop->promocion) {
                 $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
                 $carshoop->promocion->save();
+                if ($carshoop->promocion->limit ==  $carshoop->cantidad + $carshoop->promocion->outs) {
+                    $carshoop->producto->assignPriceProduct();
+                }
             }
 
             if (count($carshoop->carshoopseries) > 0) {
@@ -959,8 +962,11 @@ class ShowResumenVenta extends Component
 
             $carshoop->delete();
             DB::commit();
-            $this->setTotal();
-            $this->dispatchBrowserEvent('deleted');
+            if (!$isDeleteAll) {
+                $this->setTotal();
+                $datos =  response()->json(['mensaje' => 'ELIMINADO CORRECTAMENTE', 'form_id' => NULL])->getData();
+                $this->dispatchBrowserEvent('show-resumen-venta', $datos);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -1172,14 +1178,12 @@ class ShowResumenVenta extends Component
             DB::beginTransaction();
             Carshoop::with(['carshoopseries'])->ventas()->where('user_id', auth()->user()->id)
                 ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
-                    $this->delete($carshoop);
-                    // $carshoop->carshoopseries()->delete();
-                    // $carshoop->delete();
+                    $this->delete($carshoop, true);
                 });
             DB::commit();
-            $this->setTotal();
             $this->resetValidation();
-            $this->dispatchBrowserEvent('toast', toastJSON('Carrito de ventas eliminado correctamente'));
+            $datos =  response()->json(['mensaje' => 'CARRITO ELIMINADO CORRECTAMENTE', 'form_id' => NULL])->getData();
+            $this->dispatchBrowserEvent('show-resumen-venta', $datos);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
