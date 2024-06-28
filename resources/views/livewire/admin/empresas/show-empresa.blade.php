@@ -1,7 +1,11 @@
 <div class="w-full flex flex-col gap-8" x-data="showempresa">
-    <form wire:submit.prevent="update" class="w-full flex flex-col gap-8">
-        <x-form-card titulo="DATOS EMPRESA">
-            <div class="bg-body p-3 w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
+    <x-form-card titulo="DATOS EMPRESA">
+        <form wire:submit.prevent="update" class="w-full flex flex-col gap-8">
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
@@ -45,7 +49,8 @@
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @foreach ($ubigeos as $item)
-                                    <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }} /
+                                    <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }}
+                                        /
                                         {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                 @endforeach
                             </x-slot>
@@ -85,135 +90,46 @@
                     <x-jet-input-error for="empresa.igv" />
                 </div>
             </div>
-        </x-form-card>
-
-        <div class="grid gap-8 {{ Module::isEnabled('Employer') ? 'lg:grid-cols-2' : '' }}">
-            <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
-                <div class="w-full items-start flex flex-col gap-1">
-                    @if (Module::isEnabled('Ventas'))
-                        <div class="block">
-                            <x-label-check for="uselistprice">
-                                <x-input wire:model.defer="empresa.uselistprice" name="uselistprice" value="1"
-                                    type="checkbox" id="uselistprice" />
-                                USAR LISTA DE PRECIOS
-                            </x-label-check>
-                            <x-jet-input-error for="empresa.uselistprice" />
-                        </div>
-
-                        <div class="block">
-                            <x-label-check for="usepricedolar">
-                                <x-input x-model="usepricedolar" id="usepricedolar" type="checkbox"
-                                    @change="changePricedolar" />USAR PRECIO EN DÓLARES</x-label-check>
-                            <x-jet-input-error for="empresa.usepricedolar" />
-
-                            <div x-show="!cambioauto">
-                                <div x-show="openpricedolar" style="display: none;">
-                                    <x-input class="w-full" type="number" x-model="tipocambio" placeholder="0.00"
-                                        min="0" step="0.0001" />
-                                </div>
-                            </div>
-
-                            <div x-show="cambioauto">
-                                <x-disabled-text text="" x-text="tipocambio" />
-                            </div>
-
-                            <x-jet-input-error for="empresa.tipocambio" />
-
-                            <div x-show="loadingdolar" style="display: none;">
-                                <x-loading-next />
-                            </div>
-                        </div>
-
-                        <div class="w-full animate__animated animate__fadeInDown" x-show="openpricedolar">
-                            <x-label-check for="viewpricedolar">
-                                <x-input x-model="viewpricedolar" name="viewpricedolar" type="checkbox"
-                                    id="viewpricedolar" />VER PRECIO EN DÓLARES</x-label-check>
-                            <x-jet-input-error for="empresa.viewpricedolar" />
-                        </div>
-
-                        <div class="w-full animate__animated animate__fadeInDown" x-show="openpricedolar">
-                            <x-label-check for="tipocambioauto">
-                                <x-input name="tipocambioauto" x-model="cambioauto" type="checkbox"
-                                    id="tipocambioauto" @change="changeAutomatico" />
-                                ACTUALIZAR TIPO CAMBIO AUTOMÁTICO
-                            </x-label-check>
-                            <x-jet-input-error for="empresa.tipocambioauto" />
-                        </div>
-                    @endif
-
-                    <div class="w-full" x-data="{ openvalidatemail: {{ $empresa->validatemail ? 'true' : 'false' }} }">
-                        <x-label-check for="validatemail">
-                            <x-input wire:model.defer="validatemail" value="1" type="checkbox"
-                                x-on:change="openvalidatemail = !openvalidatemail" id="validatemail" />
-                            VERIFICAR CORREO CORPORATIVO PARA DASHBOARD
-                        </x-label-check>
-                        <x-jet-input-error for="validatemail" />
-
-                        <div x-show="openvalidatemail">
-                            <x-input class="block w-full" wire:model.defer="dominiocorreo"
-                                placeholder="Ingrese dominio web del correo a validar..." />
-                            <x-jet-input-error for="dominiocorreo" />
-                        </div>
-                    </div>
-                </div>
-            </x-form-card>
-
-            @if (Module::isEnabled('Employer'))
-                <x-form-card titulo="CONFIGURAR ADELANTO PERSONAL">
-                    <div class="w-full">
-                        <x-label value="Monto máximo adelanto :" />
-                        <x-input class="block w-full" wire:model.defer="empresa.montoadelanto" placeholder="0.00"
-                            type="number" onkeypress="return validarDecimal(event, 11)" />
-                        <x-jet-input-error for="empresa.montoadelanto" />
-                    </div>
-                </x-form-card>
-            @endif
-        </div>
-
-        <div class="w-full flex justify-end">
-            <x-button type="submit">{{ __('ACTUALIZAR') }}</x-button>
-        </div>
-    </form>
+            <div class="w-full flex justify-end">
+                <x-button type="submit">{{ __('ACTUALIZAR') }}</x-button>
+            </div>
+        </form>
+    </x-form-card>
 
     <div class="grid gap-8 lg:grid-cols-2">
         <x-form-card titulo="LOGOTIPO & ICONO">
             <div class="w-full grid gap-3 xs:grid-cols-2">
                 <div class="relative w-full text-center">
-                    <div wire:loading.flex wire:target="logo,savelogo,clearLogo"
-                        class="loading-overlay rounded hidden">
-                        <x-loading-next />
-                    </div>
-
-                    @if (isset($logo))
-                        <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 border border-borderminicard">
+                    <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
+                        @if (isset($logo))
                             <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
                                 src="{{ $logo->temporaryUrl() }}" />
-                        </x-simple-card>
-                    @else
-                        @if ($empresa->image)
-                            <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 border border-borderminicard">
-                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                    src="{{ Storage::url('images/company/' . $empresa->image->url) }}" />
-                            </x-simple-card>
                         @else
-                            <x-icon-file-upload class="w-36 h-36 text-gray-300" />
+                            @if ($empresa->image)
+                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                    src="{{ $empresa->image->getLogoEmpresa() }}" />
+                            @else
+                                <x-icon-file-upload class="w-full h-full text-gray-300" />
+                            @endif
                         @endif
-                    @endif
+                    </x-simple-card>
 
                     <div class="w-full flex gap-2 flex-wrap justify-center">
                         @if (isset($logo))
-                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:click="savelogo">
-                                GUARDAR LOGO
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
+                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
+                                wire:click="savelogo">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
                                     <path
                                         d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
                                     <path
                                         d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
                                 </svg>
+                                GUARDAR LOGO
                             </x-button>
-                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:click="clearLogo">LIMPIAR
+                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
+                                wire:click="clearLogo">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -223,17 +139,17 @@
                                     <line x1="10" x2="10" y1="11" y2="17" />
                                     <line x1="14" x2="14" y1="11" y2="17" />
                                 </svg>
+                                LIMPIAR
                             </x-button>
                         @else
-                            <x-input-file :for="$idlogo" :titulo="$empresa->image ? 'CAMBIAR LOGO' : 'SELECCIONAR LOGO'" wire:loading.remove wire:target="logo">
+                            <x-input-file class="!rounded-lg" :for="$idlogo" :titulo="$empresa->image ? 'CAMBIAR LOGO' : 'SELECCIONAR LOGO'" wire:loading.remove>
                                 <input type="file" class="hidden" wire:model.defer="logo"
                                     id="{{ $idlogo }}" accept="image/jpg, image/jpeg, image/png" />
                             </x-input-file>
                         @endif
 
                         @if (!isset($logo) && $empresa->image)
-                            <x-button wire:click="deletelogo({{ $empresa->image->id }})"
-                                wire:loading.attr="disabled">ELIMINAR LOGO
+                            <x-button wire:click="deletelogo" wire:loading.attr="disabled" class="!rounded-lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -243,40 +159,32 @@
                                     <line x1="10" x2="10" y1="11" y2="17" />
                                     <line x1="14" x2="14" y1="11" y2="17" />
                                 </svg>
+                                ELIMINAR LOGO
                             </x-button>
                         @endif
                     </div>
-                    <x-jet-input-error wire:loading.remove wire:target="logo" for="logo" class="text-center" />
+                    <x-jet-input-error for="logo" class="text-center" />
                 </div>
 
                 <div class="relative w-full text-center">
-                    <div wire:loading.flex wire:target="icono,clearIcono,saveicono"
-                        class="loading-overlay rounded hidden">
-                        <x-loading-next />
-                    </div>
-
-                    @if (isset($icono))
-                        <div>
-                            <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 border border-borderminicard">
-                                <img x-bind:src="URL.createObjectURL(icono)"
-                                    class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
-                            </x-simple-card>
-                        </div>
-                    @else
-                        @if ($empresa->icono)
-                            <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 border border-borderminicard">
-                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                    src="{{ Storage::url('images/company/' . $empresa->icono) }}" />
-                            </x-simple-card>
+                    <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
+                        @if (isset($icono))
+                            <img x-bind:src="URL.createObjectURL(icono)"
+                                class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
                         @else
-                            <x-icon-file-upload class="w-36 h-36 text-gray-300" />
+                            @if ($empresa->icono)
+                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                    src="{{ $empresa->getIconoURL() }}" />
+                            @else
+                                <x-icon-file-upload class="w-full h-full text-gray-300" />
+                            @endif
                         @endif
-                    @endif
+                    </x-simple-card>
 
                     <div class="w-full flex gap-1 flex-wrap justify-center">
                         @if (isset($icono))
-                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:click="saveicono">
-                                GUARDAR ICONO
+                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
+                                wire:click="saveicono">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -285,9 +193,10 @@
                                     <path
                                         d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
                                 </svg>
+                                GUARDAR ICONO
                             </x-button>
-                            <x-button class="inline-flex px-6" wire:loading.attr="disabled"
-                                wire:click="clearIcono">LIMPIAR
+                            <x-button class="inline-flex px-6 !rounded-lg" wire:loading.attr="disabled"
+                                wire:click="clearIcono">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -297,10 +206,11 @@
                                     <line x1="10" x2="10" y1="11" y2="17" />
                                     <line x1="14" x2="14" y1="11" y2="17" />
                                 </svg>
+                                LIMPIAR
                             </x-button>
                         @else
-                            <x-input-file for="{{ $idicono }}" :titulo="$empresa->icono ? 'CAMBIAR ÍCONO' : 'SELECCIONAR ÍCONO'" wire:loading.remove
-                                wire:target="icono">
+                            <x-input-file for="{{ $idicono }}" :titulo="$empresa->icono ? 'CAMBIAR ÍCONO' : 'SELECCIONAR ÍCONO'" class="!rounded-lg"
+                                wire:loading.remove>
                                 <input type="file" class="hidden" wire:model.defer="icono"
                                     id="{{ $idicono }}" accept=".ico"
                                     @change="icono = $event.target.files[0]" />
@@ -308,8 +218,8 @@
                         @endif
 
                         @if (!isset($icono) && $empresa->icono)
-                            <x-button wire:click="deleteicono({{ $empresa->id }})"
-                                wire:loading.attr="disabled">ELIMINAR ICONO
+                            <x-button wire:click="deleteicono({{ $empresa->id }})" wire:loading.attr="disabled"
+                                class="!rounded-lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -319,6 +229,7 @@
                                     <line x1="10" x2="10" y1="11" y2="17" />
                                     <line x1="14" x2="14" y1="11" y2="17" />
                                 </svg>
+                                ELIMINAR ICONO
                             </x-button>
                         @endif
                     </div>
@@ -345,9 +256,9 @@
                                 </x-slot>
                                 <x-slot name="buttons">
                                     <x-button-edit wire:click="editphone({{ $item->id }})"
-                                        wire:loading.attr="disabled" wire:target="editphone"></x-button-edit>
+                                        wire:loading.attr="disabled" />
                                     <x-button-delete wire:click="deletephone({{ $item->id }})"
-                                        wire:loading.attr="disabled" wire:target="deletephone"></x-button-delete>
+                                        wire:loading.attr="disabled" />
                                 </x-slot>
                             </x-minicard>
                         @endforeach
@@ -366,6 +277,254 @@
             </div>
         </x-form-card>
     </div>
+
+    <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
+        <form wire:submit.prevent="updateopciones" class="w-full flex flex-col gap-8">
+            @if (Module::isEnabled('Ventas'))
+                <div class="w-full grid grid-cols-1 md:grid-cols-2 items-start gap-2 lg:gap-8">
+                    <div class="w-full flex flex-col gap-1">
+                        <div class="w-full">
+                            <x-label value="Tipos precio venta (Productos):" />
+                            <div class="w-full relative" id="parentuselistprice" x-init="SelectPrecios">
+                                <x-select class="block w-full" x-ref="selectprice" id="uselistprice"
+                                    data-parent="parentuselistprice">
+                                    <x-slot name="options">
+                                        <option value="0" title="Ingresar precio de venta manualmente">
+                                            PRECIO MANUAL</option>
+                                        <option value="1"
+                                            title="Precio automático en base al % ganacia del rango de precio compra">
+                                            LISTA DE PRECIOS (05 LISTAS DISPONIBLES)
+                                        </option>
+                                        {{-- <option value="2"
+                                            title="Precio automático de acuerdo al % ganancia del producto">
+                                            PRECIO AUTOMÁTICO
+                                        </option> --}}
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="empresa.uselistprice" />
+                        </div>
+
+                        <div class="block">
+                            <x-label-check for="usepricedolar">
+                                <x-input x-model="usepricedolar" type="checkbox" id="usepricedolar"
+                                    @change="changePricedolar" />USAR PRECIO EN DÓLARES</x-label-check>
+                            <x-jet-input-error for="empresa.usepricedolar" />
+
+                            <div x-show="!cambioauto">
+                                <div x-show="openpricedolar" style="display: none;">
+                                    <x-input class="w-full" type="number" x-model="tipocambio" placeholder="0.00"
+                                        min="0" step="0.0001" />
+                                </div>
+                            </div>
+
+                            <div x-show="cambioauto">
+                                <x-disabled-text text="" x-text="tipocambio" />
+                            </div>
+                            <x-jet-input-error for="empresa.tipocambio" />
+                        </div>
+
+                        <div class="w-full" x-show="openpricedolar">
+                            <x-label-check for="viewpricedolar">
+                                <x-input x-model="viewpricedolar" name="viewpricedolar" type="checkbox"
+                                    id="viewpricedolar" />VER PRECIO EN DÓLARES</x-label-check>
+                            <x-jet-input-error for="empresa.viewpricedolar" />
+                        </div>
+
+                        <div class="w-full" x-show="openpricedolar">
+                            <x-label-check for="tipocambioauto">
+                                <x-input name="tipocambioauto" x-model="cambioauto" type="checkbox"
+                                    id="tipocambioauto" @change="changeAutomatico" />
+                                <div class="flex flex-col flex-1">
+                                    ACTUALIZAR TIPO CAMBIO AUTOMÁTICO
+                                    <small class="font-medium text-xs tracking-normal">
+                                        El tipo de cambio se actualizará todos los dias a las 12:00 am
+                                        hrs</small>
+                                </div>
+                            </x-label-check>
+                            <x-jet-input-error for="empresa.tipocambioauto" />
+                        </div>
+                    </div>
+
+                    <div class="w-full flex flex-col gap-1">
+                        <div class="w-full">
+                            <x-label value="Etiqueta de producto promocionado :" />
+                            <div class="w-full relative" id="parentviewtextopromocion" x-init="SelectTextoPromocion">
+                                <x-select class="block w-full" x-ref="selecttextopromo" id="viewtextopromocion"
+                                    data-parent="parentviewtextopromocion">
+                                    <x-slot name="options">
+                                        <option value="0">
+                                            TEXTO POR DEFECTO</option>
+                                        <option value="1">
+                                            MOSTRAR TEXTO DE "PROMOCIÓN"
+                                        </option>
+                                        <option value="2">
+                                            MOSTRAR TEXTO DE "LIQUIDACIÓN"
+                                        </option>
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="empresa.viewtextopromocion" />
+                        </div>
+
+                        <div class="block">
+                            <x-label-check for="viewpriceantes">
+                                <x-input wire:model.defer="empresa.viewpriceantes" value="1"
+                                    name="viewpriceantes" type="checkbox" id="viewpriceantes" />
+                                MOSTRAR PRECIO ANTERIOR EN PRODUCTOS OFERTADOS
+                            </x-label-check>
+                            <x-jet-input-error for="empresa.viewpriceantes" />
+                        </div>
+
+                        <div class="block">
+                            <x-label-check for="viewlogomarca">
+                                <x-input wire:model.defer="empresa.viewlogomarca" value="1" name="viewlogomarca"
+                                    type="checkbox" id="viewlogomarca" />
+                                MOSTRAR LOGO MARCA EN PRODUCTOS
+                            </x-label-check>
+                            <x-jet-input-error for="empresa.viewlogomarca" />
+                        </div>
+
+                        <div class="w-full" x-data="loadimage()">
+                            <x-label-check for="usemarca_agua">
+                                <x-input wire:model.defer="empresa.usemarkagua" value="1" type="checkbox"
+                                    x-on:change="openmark = !openmark" id="usemarca_agua" />
+                                <div class="flex flex-col flex-1">
+                                    AGREGAR MARCA DE AGUA EN IMAGENES DE PRODUCTOS
+                                    <small class="font-medium text-xs tracking-normal">
+                                        Se recomienda usar imagen transparente PNG</small>
+                                </div>
+                            </x-label-check>
+                            <x-jet-input-error for="usemarkagua" />
+
+                            <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2 items-start mt-2"
+                                style="display: none;" x-show="openmark" x-cloak>
+                                <div class="w-full grid grid-cols-1 gap-2 items-start">
+                                    <div class="w-full">
+                                        <x-label value="Posición:" />
+                                        <div class="w-full relative" id="parentposicion" x-init="SelectPosicion">
+                                            <x-select class="block w-full" x-ref="selectposicion" id="posicion"
+                                                data-parent="parentposicion">
+                                                <x-slot name="options">
+                                                    <option value="top">SUPERIOR</option>
+                                                    <option value="top-left">SUPERIOR IZQUIERDA</option>
+                                                    <option value="top-right">SUPERIOR DERECHA</option>
+                                                    <option value="left">IZQUIERDA</option>
+                                                    <option value="center">CENTRADO</option>
+                                                    <option value="right">DERECHA</option>
+                                                    <option value="bottom">POSTERIOR</option>
+                                                    <option value="bottom-left">POSTERIOR IZQUIERDA</option>
+                                                    <option value="bottom-right">POSTERIOR DERECHA</option>
+                                                </x-slot>
+                                            </x-select>
+                                            <x-icon-select />
+                                        </div>
+                                        <x-jet-input-error for="empresa.alignmark" />
+                                    </div>
+                                    <div class="w-full">
+                                        <x-label value="Ancho :" />
+                                        <x-input class="block w-full" wire:model.defer="empresa.widthmark"
+                                            type="number" step="1"
+                                            onkeypress="return validarNumero(event, 3)" />
+                                        <x-jet-input-error for="empresa.widthmark" />
+                                    </div>
+                                    <div class="w-full">
+                                        <x-label value="Alto :" />
+                                        <x-input class="block w-full" wire:model.defer="empresa.heightmark"
+                                            type="number" step="1"
+                                            onkeypress="return validarNumero(event, 3)" />
+                                        <x-jet-input-error for="empresa.heightmark" />
+                                    </div>
+                                </div>
+
+                                <div class="w-full">
+                                    <x-simple-card class="w-full h-28 md:max-w-xs mb-1 mx-auto !shadow-none">
+                                        <template x-if="markagua">
+                                            <img id="markagua" class="object-scale-down block w-full max-w-full h-full"
+                                                :src="markagua" />
+                                        </template>
+                                        <template x-if="!markagua">
+                                            @if ($empresa->markagua)
+                                                <img id="markagua"
+                                                    class="object-scale-down block w-full max-w-full h-full"
+                                                    src="{{ $empresa->getMarkAguaURL() }}" />
+                                            @else
+                                                <x-icon-fileupload class="w-full h-full !my-0" />
+                                            @endif
+                                        </template>
+                                    </x-simple-card>
+                                    <x-jet-input-error for="mark" />
+
+                                    <div class="w-full flex gap-2 flex-wrap justify-center">
+                                        <template x-if="markagua">
+                                            <x-button class="inline-flex !rounded-lg" @click="reset"
+                                                wire:loading.attr="disabled">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 6h18" />
+                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                    <line x1="10" x2="10" y1="11"
+                                                        y2="17" />
+                                                    <line x1="14" x2="14" y1="11"
+                                                        y2="17" />
+                                                </svg>
+                                                LIMPIAR
+                                            </x-button>
+                                        </template>
+
+                                        <x-input-file for="fileMark" titulo="SELECCIONAR MARCA AGUA"
+                                            wire:loading.class="disabled:opacity-25" class="!rounded-lg">
+                                            <input type="file" class="hidden" wire:model="mark" id="fileMark"
+                                                accept="image/png" @change="loadlogo" />
+                                        </x-input-file>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{-- <div class="w-full" x-data="{ openvalidatemail: {{ $empresa->validatemail ? 'true' : 'false' }} }">
+                        <x-label-check for="validatemail">
+                            <x-input wire:model.defer="validatemail" value="1" type="checkbox"
+                                x-on:change="openvalidatemail = !openvalidatemail" id="validatemail" />
+                            VERIFICAR CORREO CORPORATIVO PARA DASHBOARD
+                        </x-label-check>
+                        <x-jet-input-error for="validatemail" />
+
+                        <div x-show="openvalidatemail">
+                            <x-input class="block w-full" wire:model.defer="dominiocorreo"
+                                placeholder="Ingrese dominio web del correo a validar..." />
+                            <x-jet-input-error for="dominiocorreo" />
+                        </div>
+                    </div> --}}
+                </div>
+            @endif
+
+            @if (Module::isEnabled('Employer'))
+                <div class="w-full md:w-1/2">
+                    <h1 class="text-xs font-semibold text-colortitleform">
+                        CONFIGURAR ADELANTO PERSONAL</h1>
+
+                    <div class="w-full mt-3">
+                        <x-label value="Monto máximo adelanto :" />
+                        <x-input class="block w-full" wire:model.defer="empresa.montoadelanto" placeholder="0.00"
+                            type="number" onkeypress="return validarDecimal(event, 11)" />
+                        <x-jet-input-error for="empresa.montoadelanto" />
+                    </div>
+                </div>
+            @endif
+
+            <div class="w-full flex justify-end">
+                <x-button type="submit">{{ __('ACTUALIZAR') }}</x-button>
+            </div>
+        </form>
+    </x-form-card>
+
+
+
 
     <x-jet-dialog-modal wire:model="openphone" footerAlign="justify-end">
         <x-slot name="title">
@@ -395,14 +554,17 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('showempresa', () => ({
+                uselistprice: @entangle('empresa.uselistprice').defer,
+                viewtextopromocion: @entangle('empresa.viewtextopromocion').defer,
                 ubigeo_id: @entangle('empresa.ubigeo_id').defer,
                 usepricedolar: @entangle('empresa.usepricedolar').defer,
                 viewpricedolar: @entangle('empresa.viewpricedolar').defer,
                 tipocambio: @entangle('empresa.tipocambio').defer,
                 cambioauto: @entangle('empresa.tipocambioauto').defer,
-
                 openpricedolar: @entangle('empresa.usepricedolar').defer,
                 loadingdolar: false,
+                alignmark: @entangle('empresa.alignmark').defer,
+                usemarkagua: @entangle('empresa.usemarkagua').defer,
 
                 init() {
                     this.usepricedolar = !!this.usepricedolar;
@@ -428,7 +590,7 @@
                         this.loadingdolar = true;
                         const response = await fetch("{{ route('api.tipocambio') }}");
                         const data = await response.json();
-                        this.tipocambio = data.precioVenta;
+                        this.tipocambio = data.venta;
                         this.loadingdolar = false;
                         this.openpricedolar = true;
 
@@ -438,9 +600,31 @@
                         this.loadingdolar = false;
                         this.openpricedolar = true;
                     }
-                },
+                }
             }))
         });
+
+        function loadimage() {
+            return {
+                openmark: false,
+                markagua: null,
+                loadlogo() {
+                    let file = document.getElementById('fileMark').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.markagua = e.target.result;
+                    reader.readAsDataURL(file);
+                },
+                reset() {
+                    this.markagua = null;
+                    @this.clearMark();
+                },
+                init() {
+                    if (this.usemarkagua) {
+                        this.openmark = true;
+                    }
+                }
+            }
+        }
 
         function SelectUbigeoEmp() {
             this.selectU = $(this.$refs.selectubigeo).select2();
@@ -460,47 +644,69 @@
             });
         }
 
-        document.addEventListener('livewire:load', function() {
-            // Livewire.on('iconload', (inputId) => {
-            //     var input = $('#' + inputId);
-            //     var file = input[0].files[0];
+        function SelectPosicion() {
+            this.selectPO = $(this.$refs.selectposicion).select2();
+            this.selectPO.val(this.alignmark).trigger("change");
+            this.selectPO.on("select2:select", (event) => {
+                this.alignmark = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("alignmark", (value) => {
+                this.selectPO.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectPO.select2().val(this.alignmark).trigger('change');
+            });
+        }
 
-            //     if (file) {
-            //         @this.icono = file;
-            //         var reader = new FileReader();
-            //         reader.onload = function(e) {
-            //             $('#uploadForm + img').remove();
-            //             $('#uploadForm').html('<img src="' + e.target.result +
-            //                 '" class="w-full h-full object-scale-down"/>');
-            //             console.log($('#uploadForm + img'));
-            //             // document.getElementById('iconopreview').src = e.target.result;
-            //         };
-            //         reader.readAsDataURL(file);
-            //     }
-            // });
+        function SelectPrecios() {
+            this.selectMP = $(this.$refs.selectprice).select2({
+                templateResult: formatOption
+            });
+            this.selectMP.val(this.uselistprice).trigger("change");
+            this.selectMP.on("select2:select", (event) => {
+                this.uselistprice = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("uselistprice", (value) => {
+                this.selectMP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectMP.select2({
+                    templateResult: formatOption
+                }).val(this.uselistprice).trigger('change');
+            });
+        }
 
-            // Livewire.on('searchpricedolar', event => {
-            //     let checked = $(event).is(':checked');
-            //     if (checked) {
-            //         @this.searchpricedolar();
-            //     }
-            // });
+        function SelectTextoPromocion() {
+            this.selectTP = $(this.$refs.selecttextopromo).select2();
+            this.selectTP.val(this.viewtextopromocion).trigger("change");
+            this.selectTP.on("select2:select", (event) => {
+                this.viewtextopromocion = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("viewtextopromocion", (value) => {
+                this.selectTP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectTP.select2().val(this.viewtextopromocion).trigger('change');
+            });
+        }
 
-            // function getTipoCambio(inputId) {
-            //     axios.get('/admin/tipocambio', {
-            //             responseType: 'json'
-            //         })
-            //         .then(function(response) {
-            //             // console.log(response);
-            //             if (response.status == 200) {
-            //                 @this.empresa.tipocambio = response.data.precioVenta;
-            //             }
-            //         })
-            //         .catch(function(error) {
-            //             // handle error
-            //             console.log(error);
-            //         });
-            // }
-        })
+        function formatOption(option) {
+            var $option = $(
+                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title + '</p>'
+            );
+            return $option;
+        };
     </script>
 </div>

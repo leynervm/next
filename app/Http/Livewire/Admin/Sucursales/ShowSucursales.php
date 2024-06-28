@@ -39,7 +39,7 @@ class ShowSucursales extends Component
 
     public function render()
     {
-        $sucursales = Sucursal::withTrashed()->with(['boxes' => function ($query) {
+        $sucursales = mi_empresa()->sucursals()->withTrashed()->with(['boxes' => function ($query) {
             $query->withTrashed();
         }])->with(['seriecomprobantes' => function ($query) {
             $query->whereHas('typecomprobante', function ($query) {

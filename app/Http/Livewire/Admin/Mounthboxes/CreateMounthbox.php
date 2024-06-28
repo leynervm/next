@@ -45,10 +45,12 @@ class CreateMounthbox extends Component
 
     public function render()
     {
+        $empresa = mi_empresa();
         if (auth()->user()->isAdmin()) {
-            $sucursals = Sucursal::orderBy('name', 'asc')->get();
+            $sucursals = $empresa->sucursals()->orderBy('name', 'asc')->get();
         } else {
-            $sucursals = Sucursal::where('id', auth()->user()->sucursal_id)->orderBy('name', 'asc')->get();
+            $sucursals = $empresa->sucursals()->where('id', auth()->user()->sucursal_id)
+                ->orderBy('name', 'asc')->get();
         }
         return view('livewire.admin.mounthboxes.create-mounthbox', compact('sucursals'));
     }
@@ -68,6 +70,7 @@ class CreateMounthbox extends Component
             $this->expiredate = $ultimoDia;
             $this->month = now()->format('Y-m');
             $this->name = formatDate(now()->format('Y-m'), 'MMMM Y');
+            $this->sucursalselected = mi_empresa()->sucursals()->pluck('id')->toArray();
         }
     }
 
@@ -143,7 +146,7 @@ class CreateMounthbox extends Component
     public function allsucursals($value)
     {
         if ($value) {
-            $this->sucursalselected = Sucursal::all()->pluck('id')->toArray();
+            $this->sucursalselected = mi_empresa()->sucursals()->pluck('id')->toArray();
         } else {
             $this->reset(['sucursalselected']);
         }

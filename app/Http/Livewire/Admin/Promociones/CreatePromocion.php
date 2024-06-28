@@ -109,7 +109,7 @@ class CreatePromocion extends Component
         if (trim($value) !== '') {
             $this->producto = Producto::with(['almacens', 'images', 'unit'])->find($value);
             $this->limitstock = formatDecimalOrInteger($this->producto->almacens()->sum('cantidad'));
-            $this->pricebuy = number_format($this->producto->pricebuy, 3, '.', '');
+            $this->pricebuy = number_format(mi_empresa()->usarlista() ? $this->producto->pricebuy : $this->producto->pricesale, 3, '.', '');
         } else {
             $this->reset(['limit', 'limitstock', 'pricebuy']);
         }
@@ -139,13 +139,17 @@ class CreatePromocion extends Component
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
             ],
             'pricebuy' => ['required', 'numeric', 'decimal:0,4'],
-            'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'],
+            'limit' => [
+                'nullable',
+                Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'
+            ],
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],
             'startdate' => [
                 'nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')
             ],
             'expiredate' => [
-                'nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
+                'nullable',
+                Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
                 'after_or_equal:startdate'
             ],
             'type' => ['required', 'integer', 'min:0', 'max:2'],
@@ -155,7 +159,7 @@ class CreatePromocion extends Component
         // $comboCollect = getCombo();
         $promocion = [
             'producto_id' => $this->producto_id,
-            'pricebuy' => $this->producto->pricebuy,
+            'pricebuy' => $this->pricebuy,
             'limit' => $this->limit,
             'descuento' => $this->descuento,
             'unit' => $this->producto->unit->name,

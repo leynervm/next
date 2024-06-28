@@ -20,11 +20,13 @@ class MethodpaymentSeeder extends Seeder
             'name' => 'EFECTIVO',
             'type' => Methodpayment::EFECTIVO,
             'default' => Methodpayment::DEFAULT,
+            'definido' => Methodpayment::DEFAULT,
         ]);
 
         $transferencia = Methodpayment::create([
             'name' => 'TRANSFERENCIA',
             'type' => Methodpayment::TRANSFERENCIA,
+            'definido' => Methodpayment::DEFAULT,
         ]);
 
         // $yape = Methodpayment::create([

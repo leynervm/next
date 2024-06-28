@@ -23,19 +23,7 @@
                                         class="w-full max-w-xs mx-auto h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
                                         @if ($producto)
                                             @php
-                                                $image = null;
-                                                if (count($producto->images) > 0) {
-                                                    if ($producto->images()->default()->exists()) {
-                                                        $image = asset(
-                                                            'storage/productos/' .
-                                                                $producto->images()->default()->first()->url,
-                                                        );
-                                                    } else {
-                                                        $image = asset(
-                                                            'storage/productos/' . $producto->images->first()->url,
-                                                        );
-                                                    }
-                                                }
+                                                $image = $producto->getImageURL();
                                             @endphp
 
                                             @if ($image)
@@ -140,6 +128,7 @@
                                     </div>
                                 @endif
                                 <x-jet-input-error for="comboitems" />
+                                <x-jet-input-error for="pricebuy" />
                             </div>
                         </div>
 
@@ -277,8 +266,7 @@
                                 <div class="xs:col-span-2 xl:col-span-3">
                                     <x-label value="Tipo promoción :" />
                                     <div class="w-full flex flex-wrap gap-2">
-                                        <x-input-radio class="py-2" for="promodescuento"
-                                            text="DESCUENTO">
+                                        <x-input-radio class="py-2" for="promodescuento" text="DESCUENTO">
                                             <input wire:model.defer="type"
                                                 class="sr-only peer peer-disabled:opacity-25" type="radio"
                                                 id="promodescuento" name="type" value="0" x-model="type"
@@ -362,6 +350,7 @@
                                         </x-label-check>
                                         <x-jet-input-error for="agotarstock" />
                                         <x-jet-input-error for="limitstock" />
+                                        <x-jet-input-error for="pricebuy" />
                                     </div>
                                 </div>
 

@@ -46,6 +46,10 @@ class ShowProductos extends Component
             'except' => '',
             'as' => 'especificaciones'
         ],
+        'search' => [
+            'except' => '',
+            'as' => 'coincidencias'
+        ],
         // 'sort' => [
         //     'except' => 'name',
         //     'as' => 'orderBy'
@@ -63,7 +67,7 @@ class ShowProductos extends Component
     public $view = '';
     public $qty = 1;
 
-    public $searchcategorias = '', $searchsubcategorias = '',
+    public $search = '', $searchcategorias = '', $searchsubcategorias = '',
         $searchmarcas = '', $searchespecificaciones = '', $orderBy = '',
         $sort = 'name', $direction = 'asc';
     public $selectedcategorias = [];
@@ -71,6 +75,7 @@ class ShowProductos extends Component
     public $selectedmarcas = [];
     public $especificacions = [];
     public $stock_locals = [];
+    public $matches = [];
     public $producto;
 
     public function mount($pricetype = null)
@@ -89,6 +94,9 @@ class ShowProductos extends Component
         if (!empty(request('especificaciones'))) {
             $this->especificacions = explode(',', request('especificaciones'));
         }
+        if (!empty(request('coincidencias'))) {
+            $this->search = request('coincidencias');
+        }
     }
 
     public function render()
@@ -100,11 +108,30 @@ class ShowProductos extends Component
             $query->whereHas('productos');
         })->get();
 
-
-        $productos = Producto::with(['subcategory'])->with(['almacens' => function ($query) {
+        $productos = Producto::with(['almacens' => function ($query) {
             // $query->select('id, almacens.sucursal_id')->groupBy('id');
             // $query->wherePivot('cantidad', '>', 0);
-        }])->withWherehas('category', function ($query) {
+        }]);
+
+        if (trim($this->search) !== '') {
+            $searchTerms = explode(' ', $this->search);
+            $productos->where(function ($query) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $query->orWhere('name', 'ilike', '%' . $term . '%')
+                        ->orWhereHas('marca', function ($q) use ($term) {
+                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
+                        })
+                        ->orWhereHas('category', function ($q) use ($term) {
+                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
+                        })
+                        ->orWhereHas('especificacions', function ($q) use ($term) {
+                            $q->where('especificacions.name', 'ilike', '%' . $term . '%');
+                        });
+                }
+            });
+        }
+
+        $productos->withWherehas('category', function ($query) {
             $query->whereNull('deleted_at');
             if (count($this->selectedcategorias) > 0) {
                 $query->whereIn('slug', $this->selectedcategorias);
@@ -113,23 +140,22 @@ class ShowProductos extends Component
             if (count($this->selectedsubcategorias) > 0) {
                 $query->whereIn('slug', $this->selectedsubcategorias);
             }
-        })->withWherehas('marca', function ($query) {
+        })->withWhereHas('marca', function ($query) {
             $query->whereNull('deleted_at');
             if (count($this->selectedmarcas) > 0) {
                 $query->whereIn('slug', $this->selectedmarcas);
+            }
+        })->with('especificacions', function ($query) {
+            if (count($this->especificacions) > 0) {
+                $query->whereIn('especificacions.slug', $this->especificacions);
             }
         })->with('promocions', function ($query) {
             $query->disponibles();
         });
 
-        if (count($this->especificacions) > 0) {
-            $productos->wherehas('especificacions', function ($query) {
-                $query->whereIn('especificacions.slug', $this->especificacions);
-            });
-        }
-
         $productos = $productos->publicados()
             ->orderBy($this->sort, $this->direction)->paginate();
+
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'subcategories', 'marcas', 'caracteristicas'));
     }
@@ -226,6 +252,9 @@ class ShowProductos extends Component
     public function add_to_wishlist(Producto $producto, $cantidad)
     {
 
+        if (!auth()->user()) {
+            return redirect()->route('login')->with('activeForm', 'login');
+        }
         $promocion = $producto->getPromocionDisponible();
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = !is_null($combo) ? $combo->products : [];

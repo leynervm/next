@@ -39,7 +39,7 @@ Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile'
 Route::middleware([
     'auth:sanctum', config('jetstream.auth_session'),
 ])->group(function () {
-    Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.register')->middleware(['carshoop']);
+    Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.register')->middleware(['carshoop', 'verified']);
     Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
     Route::get('/orders/{order}/payment', [MarketplaceController::class, 'payment'])->name('orders.payment');
     Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');

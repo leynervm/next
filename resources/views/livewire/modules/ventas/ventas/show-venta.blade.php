@@ -2,8 +2,8 @@
 
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
         <div class="w-full sm:flex sm:gap-3">
-            <div class="w-full text-colortitleform">
-                <h1 class="font-semibold text-sm leading-4">
+            <div class="w-full text-colorlabel">
+                <h1 class="font-semibold text-sm leading-4 text-colortitleform">
                     <span class="text-3xl">{{ $venta->seriecompleta }}</span>
                     {{ $venta->seriecomprobante->typecomprobante->name }}
                 </h1>
@@ -45,23 +45,62 @@
         @endcan
     </x-simple-card>
 
-    @if ($venta->typepayment->isContado())
-        <x-form-card titulo="RESUMEN PAGO" class="flex flex-col gap-1 rounded-md cursor-default p-3">
-            <div class="w-full text-colortitleform">
-                <h1 class="font-semibold text-sm leading-4">
-                    <span class="text-3xl">{{ $venta->cajamovimiento->monthbox->name }}</span>
-                    <span class="font-medium"> {{ $venta->cajamovimiento->openbox->box->name }}</span>
-                </h1>
+    <x-form-card titulo="RESUMEN PAGO" class="flex flex-col gap-1 rounded-md cursor-default p-3">
+        <div class="w-full text-colortitleform">
+            @if (count($venta->cajamovimientos) > 0)
+                <div class="w-full flex flex-wrap gap-2">
+                    @foreach ($venta->cajamovimientos as $item)
+                        <x-card-cuota class="w-full xs:w-48" :titulo="null" :detallepago="$item">
+                            <p class="text-colorminicard text-xl font-semibold text-center">
+                                <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
+                                {{ number_format($item->amount, 2, '.', ', ') }}
+                                <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
+                            </p>
 
-                <h1 class="font-medium text-xs leading-4">
-                    FORMA PAGO : {{ $venta->cajamovimiento->methodpayment->name }}
-                </h1>
-                <h1 class="font-medium text-xs leading-4">
-                    {{ $venta->cajamovimiento->detalle }}
-                </h1>
-            </div>
-        </x-form-card>
-    @endif
+                            <x-slot name="footer">
+                                <div class="w-full flex gap-2 items-end justify-between">
+                                    <a href="{{ route('admin.payments.print', $item) }}" target="_blank"
+                                        class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
+                                        <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
+                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path
+                                                d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
+                                            <path
+                                                d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
+                                            <path
+                                                d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
+                                        </svg>
+                                    </a>
+
+                                    {{-- @can('admin.almacen.compras.pagos') --}}
+                                    @if ($venta->typepayment->isContado())
+                                        <x-button-delete onclick="confirmDeletepay({{ $item }})"
+                                            wire:loading.attr="disabled" />
+                                    @endif
+
+                                    {{-- @endcan --}}
+                                </div>
+                            </x-slot>
+                        </x-card-cuota>
+                    @endforeach
+                </div>
+            @else
+                <x-span-text text="NO EXISTEN REGISTROS DE PAGOS..." class="mt-3 bg-transparent" />
+            @endif
+        </div>
+        {{-- @can('admin.almacen.compras.pagos') --}}
+        @if ($venta->typepayment->isContado() && $venta->sucursal_id == auth()->user()->sucursal_id)
+            @if ($venta->cajamovimientos()->sum('amount') < $venta->total)
+                <div class="w-full flex gap-2 pt-4 justify-end">
+                    <x-button type="button" wire:loading.attr="disabled" wire:click="openmodal">
+                        {{ __('REALIZAR PAGO') }}
+                    </x-button>
+                </div>
+            @endif
+        @endif
+        {{-- @endcan --}}
+    </x-form-card>
+
 
     @if ($venta->typepayment->isCredito())
         <x-form-card titulo="CUOTAS PAGO">
@@ -204,37 +243,37 @@
     @endif
 
     <x-form-card titulo="RESUMEN DE VENTA">
-        <div class="w-full text-colortitleform">
+        <div class="w-full text-colorlabel">
             <p class="text-[10px]">
                 TOTAL EXONERADO : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xs">{{ number_format($venta->exonerado, 3, '.', ', ') }}</span>
+                <span class="font-bold text-xs">{{ number_format($venta->exonerado, 2, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">TOTAL GRAVADO : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xs">{{ number_format($venta->gravado, 3, '.', ', ') }}</span>
+                <span class="font-bold text-xs">{{ number_format($venta->gravado, 2, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">
                 TOTAL INAFECTO : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xs">{{ number_format($venta->inafecto, 3, '.', ', ') }}</span>
+                <span class="font-bold text-xs">{{ number_format($venta->inafecto, 2, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">
                 TOTAL IGV : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xs">{{ number_format($venta->igv, 3, '.', ', ') }}</span>
+                <span class="font-bold text-xs">{{ number_format($venta->igv, 2, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">TOTAL GRATUITOS : {{ $venta->moneda->simbolo }}
                 <span
-                    class="font-bold text-xs">{{ number_format($venta->gratuito + $venta->igvgratuito, 3, '.', ', ') }}</span>
+                    class="font-bold text-xs">{{ number_format($venta->gratuito + $venta->igvgratuito, 2, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">TOTAL DESCUENTOS : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xs">{{ number_format($venta->descuentos, 3, '.', ', ') }}</span>
+                <span class="font-bold text-xs">{{ number_format($venta->descuentos, 2, '.', ', ') }}</span>
             </p>
 
             <p class="text-[10px]">TOTAL VENTA : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xl">{{ number_format($venta->total, 3, '.', ', ') }}</span>
+                <span class="font-bold text-xl">{{ number_format($venta->total, 2, '.', ', ') }}</span>
             </p>
 
             @if ($venta->typepayment->paycuotas)
@@ -242,20 +281,20 @@
                     @php
                         $amountIncr = number_format(
                             (($venta->total - $venta->paymentactual) * $venta->increment) / (100 + $venta->increment),
-                            3,
+                            2,
                             '.',
                             '',
                         );
                     @endphp
 
                     @if ($venta->increment > 0)
-                        {{ number_format($venta->total - $venta->paymentactual - $amountIncr, 3, '.', ', ') }}
+                        {{ number_format($venta->total - $venta->paymentactual - $amountIncr, 2, '.', ', ') }}
                         + {{ formatDecimalOrInteger($venta->increment) }}%
-                        ({{ number_format($amountIncr, 3, '.', ', ') }})
+                        ({{ number_format($amountIncr, 2, '.', ', ') }})
                     @endif
                     : {{ $venta->moneda->simbolo }}
                     <span
-                        class="font-bold text-xl">{{ number_format($venta->total - $venta->paymentactual, 3, '.', ', ') }}</span>
+                        class="font-bold text-xl">{{ number_format($venta->total - $venta->paymentactual, 2, '.', ', ') }}</span>
                 </p>
             @endif
         </div>
@@ -267,23 +306,14 @@
                 <div class="flex gap-2 flex-wrap justify-start mt-1">
                     @foreach ($venta->tvitems as $item)
                         @php
-                            $image = null;
-                            if (count($item->producto->images) > 0) {
-                                if ($item->producto->images()->default()->exists()) {
-                                    $image = asset(
-                                        'storage/productos/' . $item->producto->images()->default()->first()->url,
-                                    );
-                                } else {
-                                    $image = asset('storage/productos/' . $item->producto->images->first()->url);
-                                }
-                            }
+                            $image = $item->producto->getImageURL();
                         @endphp
                         <x-card-producto :image="$image" :name="$item->producto->name" :category="$item->gratuito == 1 ? 'GRATUITO' : null" :increment="$item->increment ?? null">
                             <div class="w-full flex flex-wrap gap-1 justify-center mt-1">
                                 <x-label-price>
                                     <span>
                                         {{ $venta->moneda->simbolo }}
-                                        {{ number_format($item->subtotal + $item->subtotaligv, 3, '.', ', ') }}
+                                        {{ number_format($item->subtotal + $item->subtotaligv, 2, '.', ', ') }}
                                         {{ $venta->moneda->currency }}
                                     </span>
                                 </x-label-price>
@@ -293,13 +323,13 @@
                                 <x-span-text :text="'P.V UNIT : ' .
                                     $venta->moneda->simbolo .
                                     ' ' .
-                                    number_format($item->price, 3, '.', ', ')" class="leading-3 !tracking-normal" />
+                                    number_format($item->price, 2, '.', ', ')" class="leading-3 !tracking-normal" />
 
                                 @if ($item->igv > 0)
                                     <x-span-text :text="'IGV UNIT : ' .
                                         $venta->moneda->simbolo .
                                         ' ' .
-                                        number_format($item->igv, 3, '.', ', ')" class="leading-3 !tracking-normal" />
+                                        number_format($item->igv, 2, '.', ', ')" class="leading-3 !tracking-normal" />
                                 @endif
 
                                 <x-span-text :text="formatDecimalOrInteger($item->cantidad) . ' ' . $item->producto->unit->name" class="leading-3 !tracking-normal" />
@@ -453,7 +483,8 @@
         <div class="w-full flex gap-2 items-start justify-end">
             @if (Module::isEnabled('Facturacion'))
                 @if ($venta->comprobante)
-                    <x-link-button href="{{ route('admin.facturacion.print.a4', $venta->comprobante) }}" target="_blank">
+                    <x-link-button href="{{ route('admin.facturacion.print.a4', $venta->comprobante) }}"
+                        target="_blank">
                         IMPRIMIR A4</x-link-button>
 
                     <x-link-button href="{{ route('admin.facturacion.print.ticket', $venta->comprobante) }}"
@@ -482,7 +513,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="savepayment" class="flex flex-col gap-2">
+            <form wire:submit.prevent="savepayment" class="flex flex-col gap-2" x-data="payventa">
                 @if ($monthbox)
                     <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
                         <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
@@ -506,12 +537,51 @@
                         {{ number_format($cuota->amount, 3, '.', ', ') }}
                         <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                     </p>
+                </div>
 
+                @if (count($monedas) > 1)
+                    <div>
+                        <x-label value="Moneda pago :" />
+                        <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
+                            @foreach ($monedas as $item)
+                                <x-input-radio class="py-2" for="moneda_{{ $item->id }}" :text="$item->currency">
+                                    <input data-code="{{ $item->code }}" data-currency="{{ $item->currency }}"
+                                        data-simbolo="{{ $item->simbolo }}" x-model="moneda_id"
+                                        class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                        id="moneda_{{ $item->id }}" name="moneda" value="{{ $item->id }}"
+                                        @change="changeMoneda" />
+                                </x-input-radio>
+                            @endforeach
+                        </div>
+                        <x-jet-input-error for="moneda_id" />
+                    </div>
+                @endif
+
+                <div class="w-full" x-show="showtipocambio">
+                    <div class="w-full">
+                        <x-label value="Tipo cambio :" />
+                        <x-input class="block w-full" x-model="tipocambio" type="number" placeholder="0.00"
+                            onkeypress="return validarDecimal(event, 7)" step="0.001" min="0.001" />
+                        <x-jet-input-error for="tipocambio" />
+                    </div>
+
+                    {{-- <span x-text="tipocambio"></span> --}}
+                    <div class="w-full text-xs text-end text-colorsubtitleform font-semibold"
+                        x-show="totalamount > 0">
+                        <small class="inline-block" x-text="simbolo"></small>
+                        <template x-if="totalamount > 0">
+                            <h1 x-text="totalamount" class="text-2xl inline-block"></h1>
+                        </template>
+                        <template x-if="totalamount == null">
+                            <small class="inline-block text-colorerror">SELECCIONAR TIPO DE MONEDA...</small>
+                        </template>
+                        <small class="inline-block" x-text="currency"></small>
+                    </div>
                 </div>
 
                 <div class="w-full">
                     <x-label value="Método pago :" />
-                    <div class="relative" x-data="{ methodpayment_id: @entangle('methodpayment_id').defer }" x-init="selectCuotaMethodpayment" wire:ignore>
+                    <div class="relative" x-init="CuotaMethodpayment">
                         <x-select class="block w-full" data-dropdown-parent="null" x-ref="selectcmp"
                             id="parentmpid">
                             <x-slot name="options">
@@ -529,15 +599,8 @@
                 <div class="w-full">
                     <x-label value="Otros (N° operación , descripción, etc) :" />
                     <x-input class="block w-full" wire:model.defer="detalle" />
+                    <x-jet-input-error for="detalle" />
                 </div>
-
-                @if ($errors->any())
-                    <div class="">
-                        @foreach ($errors->keys() as $key)
-                            <x-jet-input-error :for="$key" />
-                        @endforeach
-                    </div>
-                @endif
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
@@ -623,8 +686,207 @@
         </x-slot>
     </x-jet-dialog-modal>
 
+    <x-jet-dialog-modal wire:model="openpay" maxWidth="xl" footerAlign="justify-end">
+        <x-slot name="title">
+            {{ __('Realizar pago venta') }}
+            <x-button-close-modal wire:click="$toggle('openpay')" wire:loading.attr="disabled" />
+        </x-slot>
+
+        <x-slot name="content">
+            <form wire:submit.prevent="savepay" class="w-full flex flex-col gap-1" x-data="payventa">
+                @if ($monthbox)
+                    <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
+                        <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
+                        {{ formatDate($monthbox->month, 'MMMM Y') }}
+                        @if ($openbox)
+                            <small class="w-full block font-medium text-xs">{{ $openbox->box->name }}</small>
+                        @else
+                            <small class="text-colorerror w-full block font-medium text-[10px] leading-3">
+                                APERTURA DE CAJA DIARIA NO DISPONIBLE...
+                            </small>
+                        @endif
+                    </p>
+                @else
+                    <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
+                @endif
+
+                <div class="w-full">
+                    <p class="text-colorlabel text-3xl font-semibold">
+                        <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
+                        {{ number_format($venta->total, 3, '.', ', ') }}
+                        <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
+                    </p>
+
+                    @if ($pendiente < $venta->total)
+                        <p class="text-colorerror text-2xl font-semibold">
+                            <small class="text-[10px] font-medium">PENDIENTE </small>
+                            {{ number_format($pendiente, 3, '.', ', ') }}
+                            <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
+                        </p>
+                    @endif
+                </div>
+
+                @if (count($monedas) > 1)
+                    <div>
+                        <x-label value="Moneda pago :" />
+                        <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
+                            @foreach ($monedas as $item)
+                                <x-input-radio class="py-2" for="moneda_{{ $item->id }}" :text="$item->currency">
+                                    <input data-code="{{ $item->code }}" data-currency="{{ $item->currency }}"
+                                        data-simbolo="{{ $item->simbolo }}" x-model="moneda_id"
+                                        class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                        id="moneda_{{ $item->id }}" name="moneda"
+                                        value="{{ $item->id }}" @change="changeMoneda" />
+                                </x-input-radio>
+                            @endforeach
+                        </div>
+                        <x-jet-input-error for="moneda_id" />
+                    </div>
+                @endif
+
+                <div class="w-full">
+                    <x-label value="Monto pagar :" />
+                    <x-input class="block w-full numeric" x-model="paymentactual" placeholder="0.00" type="number"
+                        min="0" step="0.001" onkeypress="return validarDecimal(event, 12)" />
+                    <x-jet-input-error for="paymentactual" />
+                </div>
+
+                <div class="w-full" x-show="showtipocambio">
+                    <div class="w-full">
+                        <x-label value="Tipo cambio :" />
+                        <x-input class="block w-full" x-model="tipocambio" type="number" placeholder="0.00"
+                            onkeypress="return validarDecimal(event, 7)" step="0.001" min="0.001" />
+                        <x-jet-input-error for="tipocambio" />
+                    </div>
+
+                    {{-- <span x-text="tipocambio"></span> --}}
+                    <div class="w-full text-xs text-end text-neutral-500 font-semibold" x-show="totalamount > 0">
+                        <small class="inline-block" x-text="simbolo"></small>
+                        <template x-if="totalamount > 0">
+                            <h1 x-text="totalamount" class="text-2xl inline-block"></h1>
+                        </template>
+                        <template x-if="totalamount == null">
+                            <small class="inline-block text-colorerror">SELECCIONAR TIPO DE MONEDA...</small>
+                        </template>
+                        <small class="inline-block" x-text="currency"></small>
+                    </div>
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Método pago :" />
+                    <div class="relative" x-init="MethodpaymentVenta" id="parentmethodpayv">
+                        <x-select class="block w-full" x-ref="selectmpv" id="methodpayv"
+                            data-dropdown-parent="null">
+                            <x-slot name="options">
+                                @if (count($methodpayments))
+                                    @foreach ($methodpayments as $item)
+                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="methodpayment_id" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Otros (N° operación , Banco, etc) :" />
+                    <x-input class="block w-full" wire:model.defer="detalle" />
+                    <x-jet-input-error for="detalle" />
+                    <x-jet-input-error for="totalamount" />
+                    <x-jet-input-error for="tipocambio" />
+                    <x-jet-input-error for="concept.id" />
+                    <x-jet-input-error for="openbox.id" />
+                    <x-jet-input-error for="monthbox.id" />
+                </div>
+
+                <div class="w-full flex pt-4 justify-end">
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('REGISTRAR') }}
+                    </x-button>
+                </div>
+            </form>
+        </x-slot>
+    </x-jet-dialog-modal>
+
     <script>
-        function selectCuotaMethodpayment() {
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('payventa', () => ({
+                paymentactual: @entangle('paymentactual').defer,
+                methodpayment_id: @entangle('methodpayment_id').defer,
+                moneda_id: @entangle('moneda_id').defer,
+                codemonedaventa: '{{ $venta->moneda->code }}',
+                currency: '{{ $venta->moneda->currency }}',
+                code: '{{ $venta->moneda->code }}',
+                simbolo: '{{ $venta->moneda->simbolo }}',
+                totalamount: @entangle('totalamount').defer,
+                tipocambio: @entangle('tipocambio').defer,
+                showtipocambio: false,
+
+                init() {
+                    this.$watch("tipocambio", (value) => {
+                        this.tipocambio = value > 0 ? value : 1;
+
+                        if (this.codemonedaventa != this.code) {
+                            this.convertToMoneda();
+                        }
+                    });
+
+                    this.$watch("paymentactual", (value) => {
+                        this.paymentactual = value > 0 ? value : 0;
+
+                        if (this.codemonedaventa != this.code) {
+                            this.convertToMoneda();
+                        }
+                    });
+                },
+                changeMoneda(event) {
+                    const rdomoneda = event.target;
+                    this.code = rdomoneda.getAttribute('data-code');
+                    this.currency = rdomoneda.getAttribute('data-currency');
+                    this.simbolo = rdomoneda.getAttribute('data-simbolo');
+                    if (this.code != this.codemonedaventa) {
+                        this.convertToMoneda();
+                        this.showtipocambio = true;
+
+                    } else {
+                        this.totalamount = 0;
+                        this.showtipocambio = false;
+                    }
+                },
+                convertToMoneda() {
+                    // this.tipocambio > 0 ? this.tipocambio : 1;
+                    // this.paymentactual > 0 ? this.paymentactual : 0;
+                    if (this.code == 'PEN') {
+                        this.totalamount = toDecimal(this.tipocambio * this.paymentactual);
+                    } else {
+                        this.totalamount = toDecimal(this.paymentactual / this.tipocambio);
+                    }
+                }
+            }))
+        })
+
+
+        function MethodpaymentVenta() {
+            this.selectMPV = $(this.$refs.selectmpv).select2();
+            this.selectMPV.val(this.methodpayment_id).trigger("change");
+            this.selectMPV.on("select2:select", (event) => {
+                this.methodpayment_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("methodpayment_id", (value) => {
+                this.selectMPV.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectMPV.select2().val(this.methodpayment_id).trigger('change');
+            });
+        }
+
+        function CuotaMethodpayment() {
             this.selectCM = $(this.$refs.selectcmp).select2();
             this.selectCM.val(this.methodpayment_id).trigger("change");
             this.selectCM.on("select2:select", (event) => {
@@ -636,6 +898,9 @@
             });
             this.$watch("methodpayment_id", (value) => {
                 this.selectCM.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectCM.select2().val(this.methodpayment_id).trigger('change');
             });
         }
 
@@ -705,6 +970,23 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     @this.deleteserie(serie.id);
+                }
+            })
+        }
+
+        function confirmDeletepay(payment) {
+            swal.fire({
+                title: 'ELIMINAR PAGO DE VENTA ?',
+                text: "Se eliminará un registro de pago de la base de datos.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deletepay(payment.id);
                 }
             })
         }

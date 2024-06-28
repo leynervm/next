@@ -145,18 +145,15 @@
                                 </div>
                             </td>
 
-
                             @foreach ($item->pricetypes as $lista)
-                                <td class="p-1 text-center" x-data="{ percent: '{{ $lista->pivot->ganancia }}' }">
+                                <td class="p-1 text-center">
                                     <p class="font-semibold text-[10px] text-center">{{ $lista->name }}</p>
                                     @can('admin.administracion.rangos.edit')
-                                        <x-input class="inline-block text-center" :value="$lista->pivot->ganancia" type="number"
-                                            step="0.01" min="0" x-model.number="percent"
-                                            x-mask:dynamic="$money($input, '.', ' ')"
-                                            onkeypress="return validarDecimal(event, 9)" :key="$item->id . $lista->id"
-                                            id="{{ $item->id . $lista->id }}" wire:loading.attr="disabled"
-                                            @keydown.enter="$wire.updatepricerango('{{ $item->id }}', '{{ $lista->id }}', percent)"
-                                            x-bind:class="{ 'border-red-500': percent == '' }" />
+                                        <x-input class="inline-block text-center" :value="$lista->pivot->ganancia" type="text"
+                                            step="0.01" min="0" id="ganancia_{{ $item->id . $lista->id }}"
+                                            x-mask:dynamic="$money($input, '.', '', 2)"
+                                            onkeypress="return validarDecimal(event, 5)" wire:loading.attr="disabled"
+                                            onblur="actualizar(this, {{ $item->id }}, {{ $lista->id }}, {{ $lista->pivot->ganancia }})" />
                                     @endcan
 
                                     @cannot('admin.administracion.rangos.edit')
@@ -233,6 +230,14 @@
                 selectedrangos: @entangle('selectedrangos').defer,
             }))
         })
+
+        function actualizar(event, rango_id, lista_id, oldpercent) {
+            var ganancia = event.value;
+            ganancia = ganancia !== '' ? toDecimal(ganancia, 2) : '0.00';
+            if (ganancia !== toDecimal(oldpercent, 2)) {
+                @this.updatepricerango(rango_id, lista_id, ganancia);
+            }
+        }
 
         function confirmDeleteAll() {
             swal.fire({

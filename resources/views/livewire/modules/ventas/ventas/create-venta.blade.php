@@ -185,42 +185,6 @@
                                     @endif
 
                                     <x-prices-card-product :name="$almacenStock ?? '***'">
-                                        {{-- @if ($empresa->usarlista())
-                                            @if ($pricetype)
-                                                @php
-                                                    $price = $item->obtenerPrecioVenta($pricetype);
-                                                    $price =
-                                                        !is_null($promocion) && $promocion->isRemate()
-                                                            ? $item->precio_real_compra
-                                                            : $price;
-
-                                                    $pricesale =
-                                                        $descuento > 0
-                                                            ? $item->getPrecioDescuento(
-                                                                $price,
-                                                                $descuento,
-                                                                0,
-                                                                $pricetype,
-                                                            )
-                                                            : $price;
-                                                @endphp
-                                            @else
-                                                <p class="text-[10px] text-colorerror leading-3 py-2">
-                                                    CONFIGURAR LISTA DE PRECIOS PARA TIENDA WEB...</p>
-                                            @endif
-                                        @else
-                                            @php
-                                                $price = $item->pricesale;
-                                                $price =
-                                                    !is_null($promocion) && $promocion->isRemate()
-                                                        ? $item->pricebuy
-                                                        : $price;
-                                                $pricesale =
-                                                    $descuento > 0
-                                                        ? $item->getPrecioDescuento($price, $descuento, 0)
-                                                        : $price;
-                                            @endphp
-                                        @endif --}}
 
                                         @if ($pricesale > 0)
                                             @if ($descuento > 0)
@@ -229,11 +193,6 @@
                                                     {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
                                                 </span>
                                             @endif
-                                            {{-- <h1 class="text-neutral-700 font-semibold text-2xl text-center">
-                                                <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                                {{ formatDecimalOrInteger($pricesale + $priceCombo, 2, ', ') }}
-                                                <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                            </h1> --}}
 
                                             <small
                                                 class="text-[10px] font-semibold text-right">{{ $moneda->currency }}</small>
@@ -248,16 +207,9 @@
                                                     value="{{ formatDecimalOrInteger($pricesale, 3) }}"
                                                     onkeypress="return validarDecimal(event, 12)" />
                                             @endif
-                                            {{-- @else
-                                            <p>
-                                                @if ($empresa->usarLista())
-                                                    <x-span-text text="RANGO DE PRECIO NO DISPONIBLE"
-                                                        class="!tracking-normal inline-block leading-3" type="red" />
-                                                @else
-                                                    <x-span-text text="NO SE PUDO OBTENER PRECIO DE VENTA DEL PRODUCTO"
-                                                        class="!tracking-normal inline-block leading-3" type="red" />
-                                                @endif
-                                            </p> --}}
+                                        @else
+                                            <p class="text-colorerror text-[10px] font-semibold text-center">
+                                               PRECIO DE VENTA NO ENCONTRADO</p>
                                         @endif
                                     </x-prices-card-product>
 

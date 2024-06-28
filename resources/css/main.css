@@ -182,8 +182,9 @@
 
     --fondo-select2: theme("colors.neutral.700");
     --color-select2: theme("colors.white");
-    --fondo-hover-select2: theme("colors.neutral.600");
-    --color-hover-select2: theme("colors.next.500") --color-active-select2: theme("colors.white");
+    --fondo-hover-select2: theme("colors.neutral.500");
+    --color-hover-select2: theme("colors.white") 
+    --color-active-select2: theme("colors.white");
     --fondo-active-select2: theme("colors.next.500");
     --shadow-select2: theme("colors.neutral.950");
     --color-subtitle-select2: theme("colors.neutral.400");
@@ -276,6 +277,35 @@ input[type="checkbox"]:checked,
 input[type="radio"]:checked {
     @apply text-fondobutton;
 }
+
+#form-configuracion input {
+    @apply rounded-lg p-2 text-colorsubtitleform tracking-[0.0625em];
+}
+
+#form-configuracion .input-text {
+    @apply rounded-lg p-2 text-colorsubtitleform tracking-[0.0625em];
+}
+
+#form-configuracion .select2.select2-container .select2-selection {
+    @apply rounded-lg p-2;
+}
+
+#form-configuracion .select2.select2-container .select2-selection .select2-selection__rendered {
+    @apply !leading-normal;
+}
+
+#form-configuracion .select2-container .select2-dropdown .select2-results ul,
+#form-configuracion .select2.select2-container .select2-selection .select2-selection__rendered,
+#form-configuracion .select2-container .select2-container .select2-dropdown .select2-search input {
+    @apply text-colorsubtitleform;
+}
+
+#form-configuracion input[type="checkbox"]:checked,
+#form-configuracion input[type="radio"]:checked {
+    @apply text-fondobutton;
+}
+
+/* 20600129997 */
 
 /* .label-checkbox input[type="checkbox"]{
     @apply hidden;

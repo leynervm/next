@@ -16,11 +16,9 @@
     {{-- <div class="flex flex-wrap gap-2">
     </div> --}}
     @if ($empresa->isDefault())
-        {{-- @can('admin.ventas') --}}
         <div class="w-full py-3">
             <livewire:modules.marketplace.productos.show-productos :empresa="$empresa" :moneda="$moneda"
                 :pricetype="$pricetype" />
         </div>
-        {{-- @endcan --}}
     @endif
 </x-app-layout>

@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
         <x-loading-next />
     </div>
 

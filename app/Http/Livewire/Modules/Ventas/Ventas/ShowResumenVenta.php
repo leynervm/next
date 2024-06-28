@@ -31,6 +31,7 @@ use Livewire\Component;
 use Luecano\NumeroALetras\NumeroALetras;
 use Modules\Ventas\Entities\Venta;
 use Nwidart\Modules\Facades\Module;
+use Illuminate\Support\Str;
 
 class ShowResumenVenta extends Component
 {
@@ -67,6 +68,9 @@ class ShowResumenVenta extends Component
 
     public $cuotas = [];
     public $items = [];
+    public $parcialpayments = [];
+    public $typepay = '0';
+    public $amountparcial;
 
     public $arrayequalremite = ['02', '04', '07'];
     public $arraydistintremite = ['01', '03', '05', '06', '09', '14', '17'];
@@ -117,8 +121,14 @@ class ShowResumenVenta extends Component
                 'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
                 'integer', 'min:1', 'exists:monthboxes,id',
             ],
+            'typepay' => [
+                'required', 'integer', 'min:0', 'max:1',
+            ],
+            'parcialpayments' => [
+                'nullable', 'required_if:typepay,1', 'array'
+            ],
             'methodpayment_id' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0 && $this->typepay == '0'),
                 'integer', 'min:1', 'exists:methodpayments,id',
             ],
             'detallepago' => ['nullable'],
@@ -212,6 +222,18 @@ class ShowResumenVenta extends Component
         ];
     }
 
+    protected function messages()
+    {
+        return [
+            'parcialpayments.required_if' => 'No se encontraron registros de pagos.'
+        ];
+    }
+
+    protected $validationAttributes = [
+        'items' => 'carrito de ventas'
+    ];
+
+
     public function mount(Seriecomprobante $seriecomprobante, Moneda $moneda, Concept $concept)
     {
         $this->motivotraslado = new Motivotraslado();
@@ -219,7 +241,7 @@ class ShowResumenVenta extends Component
         $this->typepayment = new Typepayment();
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->sucursal = auth()->user()->sucursal;
-        $this->empresa = auth()->user()->sucursal->empresa;
+        $this->empresa = mi_empresa();
         $this->monthbox = Monthbox::usando($this->sucursal->id)->first();
         $this->openbox = Openbox::mybox($this->sucursal->id)->first();
         $this->typepayment_id = Typepayment::default()->first()->id ?? null;
@@ -284,10 +306,10 @@ class ShowResumenVenta extends Component
         $this->reset(['client_id', 'document', 'name', 'direccion']);
     }
 
-    public function setTypepayment($value)
-    {
-        $this->typepayment_id = $value;
-    }
+    // public function setTypepayment($value)
+    // {
+    //     $this->typepayment_id = $value;
+    // }
 
     public function updatedIncluyeigv($value)
     {
@@ -296,17 +318,65 @@ class ShowResumenVenta extends Component
         $this->setTotal();
     }
 
+    public function savepay()
+    {
+        $this->validate([
+            'amountparcial' => [
+                'required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'
+            ],
+            'methodpayment_id' => [
+                'required', 'integer', 'min:1', 'exists:methodpayments,id',
+            ],
+        ]);
+
+        $parcialamount = 0;
+        if (count($this->parcialpayments)) {
+            $collect = collect($this->parcialpayments);
+            $parcialamount = $collect->sum('amount');
+        }
+
+        if (($parcialamount + $this->amountparcial) > number_format($this->total, 2, '.', '')) {
+            $mensaje =  response()->json([
+                'title' => 'MONTO PARCIAL SUPERA AL TOTAL DE LA VENTA !',
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        $methodpayments = array_column($this->parcialpayments, 'methodpayment_id');
+
+        if (in_array($this->methodpayment_id, $methodpayments)) {
+            $index = array_search($this->methodpayment_id, $methodpayments);
+            $this->parcialpayments[$index]['amount'] += $this->amountparcial;
+        } else {
+            $this->parcialpayments[] = [
+                'id' => Str::uuid()->toString(),
+                'amount' => number_format($this->amountparcial, 3, '.', ''),
+                'methodpayment_id' => $this->methodpayment_id,
+                'method' => Methodpayment::find($this->methodpayment_id)->name,
+            ];
+        }
+
+        $this->resetValidation();
+        $this->reset(['amountparcial', 'methodpayment_id']);
+    }
+
+    public function removepay($index)
+    {
+        unset($this->parcialpayments[$index]);
+        $this->parcialpayments = array_values($this->parcialpayments);
+    }
+
     public function setTotal()
     {
-
-        // $resumen = json_decode(getTotalCarrito('carrito'));
-        // $total = $resumen->total;
-        // $this->gratuito = $resumen->gratuito;
 
         $sumatorias = Carshoop::ventas()->where('user_id', auth()->user()->id)
             ->where('sucursal_id', auth()->user()->sucursal_id)
             ->selectRaw('gratuito, COALESCE(SUM(total), 0) as total')->groupBy('gratuito')
             ->orderBy('total', 'desc')->get();
+
+        // dd($sumatorias);
 
         $gratuito = 0;
         $total = 0;
@@ -338,15 +408,45 @@ class ShowResumenVenta extends Component
     {
         if ($value) {
             $this->moneda = Moneda::find($value);
-            // $this->dispatchBrowserEvent('setMoneda', $value);
+            $this->actualizarMonedaVenta($value);
+        }
+    }
+
+    public function actualizarMonedaVenta($moneda_id)
+    {
+
+        $carshoops = Carshoop::with(['producto', 'moneda'])
+            ->ventas()->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->where('moneda_id', '<>', $moneda_id)
+            ->orderBy('id', 'asc')->get();
+
+        if (count($carshoops) > 0) {
+            foreach ($carshoops as $item) {
+                if ($item->moneda->code == 'USD') {
+                    $price = convertMoneda($item->price, 'PEN', mi_empresa()->tipocambio ?? 1, 3);
+                    // $total = convertMoneda($item->total, 'PEN', mi_empresa()->tipocambio ?? 1, 3);
+                } else {
+                    $price = convertMoneda($item->price, 'USD', mi_empresa()->tipocambio ?? 1, 3);
+                    // $total = convertMoneda($item->total, 'USD', mi_empresa()->tipocambio ?? 1, 3);
+                }
+                $item->update([
+                    'price' => $price,
+                    'igv' => 0,
+                    'subtotal' => number_format($price * $item->cantidad, 3, '.', ''),
+                    'total' => number_format($price * $item->cantidad, 3, '.', ''),
+                    'moneda_id' => $moneda_id,
+                ]);
+            }
+            $this->setTotal();
         }
     }
 
     public function updatedTypepaymentId($value)
     {
         $this->reset([
-            'increment', 'paymentactual', 'amountincrement',
-            'gravado', 'exonerado', 'igv', 'countcuotas', 'cuotas'
+            'increment', 'paymentactual', 'amountincrement', 'gravado',
+            'exonerado', 'igv', 'countcuotas', 'cuotas', 'typepay', 'parcialpayments', 'amountparcial'
         ]);
         if ($value) {
             $this->setTotal();
@@ -459,15 +559,31 @@ class ShowResumenVenta extends Component
             $numeracion = $seriecomprobante->contador + 1;
         }
 
+        // if ($this->typepay == '0') {
+        //     $this->reset(['amountparcial']);
+        // }
         $validatedData = $this->validate();
+
+        if ($this->typepay == '1') {
+            $collect = collect($this->parcialpayments);
+            $parcialamount = $collect->sum('amount') ?? 0;
+
+            if (number_format($parcialamount, 2, '.', '') <> number_format($this->total, 2, '.', '')) {
+                $mensaje =  response()->json([
+                    'title' => "MONTO PARCIAL (" . number_format($parcialamount, 2, '.', ', ') . ") DIFERENTE AL TOTAL DE LA VENTA [" . number_format($this->total, 2, '.', ', ') . "] !",
+                    'text' => null
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+        }
+
         DB::beginTransaction();
 
         try {
 
             $client = Client::find($this->client_id);
-            $client->direccions()->updateOrCreate([
-                'name' => $this->direccion,
-            ]);
+            $client->direccions()->updateOrCreate(['name' => $this->direccion]);
 
             $sumatorias = Carshoop::ventas()->where('user_id', auth()->user()->id)
                 ->where('sucursal_id', auth()->user()->sucursal_id)
@@ -532,23 +648,42 @@ class ShowResumenVenta extends Component
                 'user_id' => auth()->user()->id,
             ]);
 
-            // REVISAR CODIGO PARA VINCULAR UNA GRE CON VENTA U CPE
+            // REVISAR CODIGO PARA VINCULAR UNA GRE CON VENTA UN CPE
 
-            if (!$this->typepayment->paycuotas || $this->paymentactual > 0) {
-                $venta->savePayment(
-                    $this->sucursal->id,
-                    $this->paymentactual > 0 ? $this->paymentactual : $this->total,
-                    $this->paymentactual > 0 ? $this->paymentactual : $this->total,
-                    null,
-                    $this->moneda_id,
-                    $this->methodpayment_id,
-                    MovimientosEnum::INGRESO->value,
-                    $this->concept->id,
-                    $this->openbox->id,
-                    $this->monthbox->id,
-                    $seriecomprobante->serie . '-' . $numeracion,
-                    trim($this->detallepago),
-                );
+            if ($this->typepayment->isContado() || $this->paymentactual > 0) {
+                if ($this->typepay == '1') {
+                    foreach ($this->parcialpayments as $item) {
+                        $venta->savePayment(
+                            $this->sucursal->id,
+                            $item["amount"],
+                            $item["amount"],
+                            null,
+                            $this->moneda_id,
+                            $item["methodpayment_id"],
+                            MovimientosEnum::INGRESO->value,
+                            $this->concept->id,
+                            $this->openbox->id,
+                            $this->monthbox->id,
+                            $seriecomprobante->serie . '-' . $numeracion,
+                            'PAGO PARCIAL VENTA'
+                        );
+                    }
+                } else {
+                    $venta->savePayment(
+                        $this->sucursal->id,
+                        $this->paymentactual > 0 ? $this->paymentactual : $this->total,
+                        $this->paymentactual > 0 ? $this->paymentactual : $this->total,
+                        null,
+                        $this->moneda_id,
+                        $this->methodpayment_id,
+                        MovimientosEnum::INGRESO->value,
+                        $this->concept->id,
+                        $this->openbox->id,
+                        $this->monthbox->id,
+                        $seriecomprobante->serie . '-' . $numeracion,
+                        null
+                    );
+                }
             }
 
             if (Module::isEnabled('Facturacion')) {
@@ -863,7 +998,7 @@ class ShowResumenVenta extends Component
                 }
             }
 
-            if ($this->typepayment->paycuotas) {
+            if ($this->typepayment->isCredito()) {
                 if ((!empty(trim($this->countcuotas))) || $this->countcuotas > 0) {
 
                     $date = Carbon::now('America/Lima')->addMonth()->format('Y-m-d');
@@ -888,6 +1023,7 @@ class ShowResumenVenta extends Component
                     }
                 } else {
                     $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
+                    return false;
                 }
             }
 
@@ -901,6 +1037,10 @@ class ShowResumenVenta extends Component
                 });
             DB::commit();
             $this->resetValidation();
+            $this->resetExcept([
+                'concept', 'openbox', 'monthbox', 'empresa', 'typecomprobante', 'typepayment', 'moneda',
+                'sucursal', 'ubigeoorigen_id', 'direccionorigen', 'motivotraslado', 'modalidadtransporte'
+            ]);
             $this->dispatchBrowserEvent('toast', toastJSON('Venta registrado correctamente'));
             if (auth()->user()->hasPermissionTo('admin.ventas.edit')) {
                 return redirect()->route('admin.ventas.edit', $venta);

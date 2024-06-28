@@ -38,7 +38,6 @@
                             </svg>
                             SELECCIONAR IMÁGEN
                         </label>
-
                         <input name="photo" id="fileInput" accept="image/*" class="hidden disabled:opacity-25"
                             type="file" @change="loadlogo" wire:loading.attr="disabled" wire:model="image">
 

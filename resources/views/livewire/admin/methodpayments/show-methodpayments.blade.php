@@ -10,8 +10,12 @@
         <div class="flex gap-3 flex-wrap justify-start mt-3">
             @foreach ($methodpayments as $item)
                 @php
-                    $tipo = $item->type == '1' ? 'TRANSFERENCIA' : 'EFECTIVO';
+                    $tipo = null;
+                    if (!$item->isDefinido()) {
+                        $tipo = $item->isTransferencia() ? 'TRANSFERENCIA' : 'EFECTIVO';
+                    }
                 @endphp
+
                 <x-minicard :title="$item->name" :content="$tipo" size="md"
                     alignFooter="{{ $item->default == '1' ? 'justify-between' : 'justify-end' }}">
                     <x-slot name="buttons">
@@ -25,10 +29,13 @@
                                     wire:key="editmethod_{{ $item->id }}" />
                             @endcan
 
-                            @can('admin.cajas.methodpayments.delete')
-                                <x-button-delete wire:loading.attr="disabled" onclick="confirmDelete({{ $item }})"
-                                    wire:key="deletemethod_{{ $item->id }}" />
-                            @endcan
+                            @if (!$item->isDefinido())
+                                @can('admin.cajas.methodpayments.delete')
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        onclick="confirmDelete({{ $item }})"
+                                        wire:key="deletemethod_{{ $item->id }}" />
+                                @endcan
+                            @endif
                         </div>
                     </x-slot>
                 </x-minicard>

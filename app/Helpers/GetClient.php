@@ -215,14 +215,14 @@ class GetClient
     }
 
 
-    public function getTipoCambio()
-    {
-        $http = Http::withToken($this->token)->get('https://api.apis.net.pe/v2/sunat/tipo-cambio', [
-            'date' => now('America/Lima')->format('Y-m-d'),
-        ]);
+    // public function getTipoCambio()
+    // {
+    //     $http = Http::withToken($this->token)->get('https://api.apis.net.pe/v2/sunat/tipo-cambio', [
+    //         'date' => now('America/Lima')->format('Y-m-d'),
+    //     ]);
 
-        return json_decode($http->getBody());
-    }
+    //     return json_decode($http->getBody());
+    // }
 
     public function consultaRUC($ruc)
     {

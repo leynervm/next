@@ -13,6 +13,7 @@ use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
 use App\Rules\ValidateFileKey;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -24,7 +25,7 @@ class ConfiguracionInicial extends Component
 
     use WithFileUploads;
 
-    public $opensucursal = false;
+    public $open = false;
     public $step = 1;
 
     public $empresa = [], $sucursals = [], $telephones = [], $selectedsucursals = [], $almacens = [];
@@ -37,11 +38,16 @@ class ConfiguracionInicial extends Component
     public $validatemail;
     public $dominiocorreo;
     public $uselistprice = 0;
+    public $viewpriceantes = 0;
+    public $viewlogomarca = 0;
+    public $viewtextopromocion = 0;
     public $usepricedolar = 0;
     public $tipocambio;
     public $viewpricedolar = 0;
     public $tipocambioauto = 0;
     public $igv = '18.00';
+    public  $usemarkagua = 0, $markagua, $alignmark = 'center', $widthmark = '100', $heightmark = '100';
+
 
     public $namesucursal, $direccionsucursal, $ubigeosucursal_id, $typesucursal_id, $codeanexo;
     public $defaultsucursal = false;
@@ -72,7 +78,10 @@ class ConfiguracionInicial extends Component
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
         $this->usepricedolar = $this->usepricedolar == true ?  1 : 0;
         $this->viewpricedolar = $this->viewpricedolar == true ?  1 : 0;
+        $this->viewpriceantes = $this->viewpriceantes == true ?  1 : 0;
+        $this->viewlogomarca = $this->viewlogomarca == true ?  1 : 0;
         $this->tipocambioauto = $this->tipocambioauto == true ?  1 : 0;
+        $this->usemarkagua = $this->usemarkagua == true ?  1 : 0;
 
         if ($this->usepricedolar == 0) {
             $this->usepricedolar = 0;
@@ -91,18 +100,47 @@ class ConfiguracionInicial extends Component
                 'name' => ['required', 'string', 'min:3'],
                 'direccion' => ['required', 'string', 'min:3'],
                 'ubigeo_id' => ['required', 'integer', 'min:0', 'exists:ubigeos,id'],
-                'estado' => ['required', 'string'],
-                'condicion' => ['required', 'string'],
+                'estado' => ['nullable', 'string'],
+                'condicion' => ['nullable', 'string'],
                 'igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             ]);
         } elseif ($step == 2) {
-            $this->validate([
-                'uselistprice' => ['integer', 'min:0', 'max:1'],
-                'usepricedolar' => ['integer', 'min:0', 'max:1'],
-                'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
-                'viewpricedolar' => ['integer', 'min:0', 'max:1'],
-                'tipocambioauto' => ['integer', 'min:0', 'max:1'],
-            ]);
+
+            $this->validate(
+                [
+                    'uselistprice' => ['integer', 'min:0', 'max:1'],
+                    'usepricedolar' => ['integer', 'min:0', 'max:1'],
+                    'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+                    'viewpricedolar' => ['integer', 'min:0', 'max:1'],
+                    'tipocambioauto' => ['integer', 'min:0', 'max:1'],
+                    'viewpriceantes' => ['integer', 'min:0', 'max:1'],
+                    'viewlogomarca' => ['integer', 'min:0', 'max:1'],
+                    'viewtextopromocion' => ['integer', 'min:0', 'max:2'],
+                    'usemarkagua' => ['integer', 'min:0', 'max:1'],
+                    'markagua' => [
+                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'file', 'mimes:png'
+                    ],
+                    'alignmark' => [
+                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'string', 'max:25'
+                    ],
+                    'widthmark' => [
+                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'integer', 'min:50', 'max:300'
+                    ],
+                    'heightmark' => [
+                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'integer', 'min:50', 'max:300'
+                    ],
+                ],
+                [
+                    'markagua.required_if'      => 'El campo :attribute es obligatorio.',
+                    'widthmark.required_if'     => 'El campo :attribute es obligatorio.',
+                    'heightmark.required_if'    => 'El campo :attribute es obligatorio.',
+                    'alignmark.required_if'     => 'El campo :attribute es obligatorio.',
+                ]
+            );
         } elseif ($step == 3) {
             $this->validate([
                 'almacens' => [
@@ -188,6 +226,14 @@ class ConfiguracionInicial extends Component
             // 'icono' => $urlicono,
             'montoadelanto' => $this->montoadelanto,
             'uselistprice' => $this->uselistprice,
+            'viewpriceantes' => $this->viewpriceantes,
+            'viewlogomarca' => $this->viewlogomarca,
+            'viewtextopromocion' => $this->viewtextopromocion,
+            'usemarkagua' => $this->usemarkagua,
+            'markagua' => $this->markagua,
+            'alignmark' => $this->alignmark,
+            'widthmark' => $this->widthmark,
+            'heightmark' => $this->heightmark,
             'usepricedolar' => $this->usepricedolar,
             'viewpricedolar' => $this->viewpricedolar,
             'tipocambio' => $this->tipocambio,
@@ -230,6 +276,27 @@ class ConfiguracionInicial extends Component
             $this->cert->storeAs('company/cert/', $urlcert, 'local');
         }
 
+        $markURL = null;
+        if ($this->markagua) {
+            if (!Storage::directoryExists('images/company/')) {
+                Storage::makeDirectory('images/company/');
+            }
+
+            $compressedImage = Image::make($this->markagua->getRealPath())
+                ->orientate()->encode('jpg', 70);
+
+            $markURL = uniqid('markagua_') . '.' . $this->markagua->getClientOriginalExtension();
+            $compressedImage->save(public_path('storage/images/company/' . $markURL));
+
+            if ($compressedImage->filesize() > 1048576) { //1MB
+                $compressedImage->destroy();
+                $compressedImage->delete();
+                $this->addError('markagua', 'La imagen excede el tamaño máximo permitido.');
+                return false;
+            }
+        }
+
+
         try {
             $empresa = Empresa::create([
                 'document' => $this->document,
@@ -242,6 +309,14 @@ class ConfiguracionInicial extends Component
                 'icono' => $urlicono,
                 'montoadelanto' => $this->montoadelanto,
                 'uselistprice' => $this->uselistprice,
+                'viewpriceantes' => $this->viewpriceantes,
+                'viewlogomarca' => $this->viewlogomarca,
+                'viewtextopromocion' => $this->viewtextopromocion,
+                'usemarkagua' => $this->usemarkagua,
+                'markagua' => $markURL,
+                'alignmark' => $this->alignmark,
+                'widthmark' => $this->widthmark,
+                'heightmark' => $this->heightmark,
                 'usepricedolar' => $this->usepricedolar,
                 'viewpricedolar' => $this->viewpricedolar,
                 'tipocambio' => $this->tipocambio,
@@ -324,7 +399,7 @@ class ConfiguracionInicial extends Component
 
             DB::commit();
             $this->resetValidation();
-            $this->reset();
+            $this->resetExcept(['step']);
             $this->dispatchBrowserEvent('created');
             return redirect()->route('admin');
         } catch (\Exception $e) {
@@ -446,9 +521,9 @@ class ConfiguracionInicial extends Component
         $this->telephones = array_values($this->telephones);
     }
 
-    public function updatingOpensucursal()
+    public function updatingOpen()
     {
-        if (!$this->opensucursal) {
+        if (!$this->open) {
             $this->resetValidation();
             $this->reset([
                 'defaultsucursal', 'typesucursal_id', 'namesucursal',
@@ -552,7 +627,7 @@ class ConfiguracionInicial extends Component
             'codigo' => $this->codeanexo,
             'default' => $this->defaultsucursal,
         ];
-        $this->reset(['opensucursal', 'defaultsucursal', 'typesucursal_id', 'namesucursal', 'direccionsucursal', 'codeanexo', 'ubigeosucursal_id']);
+        $this->reset(['open', 'defaultsucursal', 'typesucursal_id', 'namesucursal', 'direccionsucursal', 'codeanexo', 'ubigeosucursal_id']);
     }
 
     public function removesucursal($index)
@@ -571,6 +646,12 @@ class ConfiguracionInicial extends Component
     public function clearCert()
     {
         $this->reset(['cert']);
+        $this->resetValidation();
+    }
+
+    public function clearMark()
+    {
+        $this->reset(['markagua']);
         $this->resetValidation();
     }
 

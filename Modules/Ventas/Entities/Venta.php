@@ -8,10 +8,7 @@ use App\Models\Cuota;
 use App\Models\Guia;
 use App\Models\Moneda;
 use App\Models\Seriecomprobante;
-use App\Models\Shipment;
-use App\Models\Shipmenttype;
 use App\Models\Sucursal;
-use App\Models\Transaccion;
 use App\Models\Tvitem;
 use App\Models\User;
 use App\Models\Typepayment;
@@ -69,9 +66,9 @@ class Venta extends Model
         return $this->morphMany(Tvitem::class, 'tvitemable')->orderBy('id', 'asc');
     }
 
-    public function cajamovimiento(): MorphOne
+    public function cajamovimientos(): MorphMany
     {
-        return $this->morphOne(Cajamovimiento::class, 'cajamovimientable');
+        return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
     }
 
     public function client(): BelongsTo
@@ -118,6 +115,4 @@ class Venta extends Model
     {
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
     }
-
-
 }

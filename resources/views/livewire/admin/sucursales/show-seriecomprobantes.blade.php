@@ -1,4 +1,8 @@
 <div>
+    <div class="loading-overlay fixed hidden" wire:loading.flex>
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="SERIES DE COMPROBANTES">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
             @can('admin.administracion.sucursales.seriecomprobantes.edit')
@@ -40,10 +44,6 @@
                             </x-button>
                         </div>
                     </form>
-
-                    <div class="loading-overlay rounded hidden" wire:loading.flex>
-                        <x-loading-next />
-                    </div>
                 </div>
             @endcan
 
@@ -141,8 +141,6 @@
                 serie: @entangle('serie').defer
             }))
         })
-
-
 
         function select2Comprobante() {
             this.selectTP = $(this.$refs.comprobantesuc).select2();

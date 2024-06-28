@@ -1,5 +1,5 @@
 .highlight {
-    @apply text-colorlabel font-semibold;
+    @apply text-textselect2 font-semibold hover:text-texthoverselect2;
 }
 
 .contenedor {
@@ -134,21 +134,24 @@
     @apply flex relative justify-start gap-1 items-center w-auto xs:w-32 h-12 ml-3 xl:mx-3;
 }
 
-.menu-hover:hover {
-    @apply opacity-80;
-}
 
-.menu-hover:hover .icon-button-menu {
-    @apply rotate-45;
-}
+@media screen and (min-width: 1280px) {
+    .menu-hover:hover {
+        @apply opacity-80;
+    }
 
-.menu-hover:hover .icon-button-menu::before {
-    transform: translate3d(0, 10px, 0) rotate(-45deg);
-    @apply opacity-0;
-}
+    .menu-hover:hover .icon-button-menu {
+        @apply rotate-45;
+    }
 
-.menu-hover:hover .icon-button-menu::after {
-    transform: translate3d(0, -16px, 0) rotate(90deg);
+    .menu-hover:hover .icon-button-menu::before {
+        transform: translate3d(0, 10px, 0) rotate(-45deg);
+        @apply opacity-0;
+    }
+
+    .menu-hover:hover .icon-button-menu::after {
+        transform: translate3d(0, -16px, 0) rotate(90deg);
+    }
 }
 
 /* #slider {
@@ -174,6 +177,11 @@
 
 .footer-marketplace {
     @apply bg-fondofooter text-[10px] lg:text-xs text-colorlinkfooter;
+}
+
+
+.footer-marketplace ul {
+    @apply w-full block p-3;
 }
 
 .footer-marketplace ul li {
@@ -479,7 +487,7 @@
 }
 
 .boxes-sidebar::before {
-    @apply content-[''] absolute bottom-0 w-[268px] left-[50%] -translate-x-[50%] h-0.5 bg-neutral-200;
+    @apply content-[''] absolute bottom-0 w-full left-[50%] -translate-x-[50%] h-0.5 bg-neutral-200;
 }
 
 .itembox-sidebar {
@@ -490,18 +498,28 @@
     @apply relative py-0 px-2;
 }
 
+.item-sidebar .submenu-categories {
+    @apply hidden sm:hidden;
+}
+
+.item-sidebar:hover .submenu-categories {
+    display: flex;
+}
+
 .itemlink-sidebar-principal {
-    @apply flex justify-between items-center p-3 text-colorlinknav box-border h-14 cursor-pointer overflow-hidden transition-colors ease-in-out duration-150;
+    @apply flex justify-between items-center p-3 text-colorlinknav box-border h-14 cursor-pointer transition-colors ease-in-out duration-150;
 }
 
 .title-category-sidebar {
-    @apply text-xs leading-4 text-inherit flex items-center;
+    @apply flex-1 w-full text-xs leading-4 text-inherit flex items-center gap-2;
 }
 
+.item-sidebar:hover .itemlink-sidebar-principal,
 .itemlink-sidebar-principal:hover {
     @apply bg-hoverlinknav rounded-md text-hovercolorlinknav relative font-semibold;
 }
 
+.item-sidebar:hover .itemlink-sidebar-principal::before,
 .itemlink-sidebar-principal:hover.itemlink-sidebar-principal::before {
     @apply content-[''] absolute left-0 h-[102%] w-1 bg-next-700;
 }
@@ -511,7 +529,7 @@
 }
 
 .itemlink-sidebar-principal .link-icon-down svg {
-    @apply w-4 h-4 block text-colorlinknav overflow-hidden align-middle;
+    @apply w-4 h-4 flex-shrink-0 block text-colorlinknav overflow-hidden align-middle;
 }
 
 .itemlink-sidebar-principal:hover.itemlink-sidebar-principal .link-icon-down svg {

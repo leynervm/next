@@ -3,16 +3,15 @@
 
 <head>
     <meta charset="utf-8">
-    @php
-        $empresa = mi_empresa();
-    @endphp
-    @if ($empresa->icono ?? null)
-        <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
+    @if ($empresa)
+        @if ($empresa->icono)
+            <link rel="icon" type="image/x-icon" href="{{ $empresa->getIconoURL() }}">
+        @endif
     @endif
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', '@NEXT TECHNOLOGIES') }}</title>
+    <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
     <!-- Styles -->
     @livewireStyles
@@ -29,14 +28,9 @@
 
 <body
     class="{{ config('app.theme') }} bg-body mt-[108px] xl:mt-[70px] animate__animated animate__fadeIn animate__faster"
-    :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, subMenu: false, isXL: window.innerWidth >= 1280, subcategories: [], category: '' }"
-    @resize.window="isXL = window.innerWidth >= 1280">
+    :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, isXL: window.innerWidth >= 1280, isSM: window.innerWidth >= 640, subcategories: [], category: '' }"
+    @resize.window="isXL = window.innerWidth >= 1280, isSM = window.innerWidth >= 640">
     <x-jet-banner />
-
-    @php
-        $empresa = mi_empresa();
-        $pricetype = $empresa ? getPricetypeAuth($empresa) : null;
-    @endphp
 
     @if ($empresa)
         @if (Module::isEnabled('Marketplace'))
@@ -77,7 +71,8 @@
                         class="btn-next" />
                 </form>
             @else
-                <x-link-web @click="localStorage.setItem('activeForm', 'login')" :text="__('Log in')" href="{{ route('login') }}" class="btn-next" />
+                <x-link-web @click="localStorage.setItem('activeForm', 'login')" :text="__('Log in')"
+                    href="{{ route('login') }}" class="btn-next" />
             @endauth
 
         </div>

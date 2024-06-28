@@ -97,27 +97,10 @@
                     @foreach ($compra->cajamovimientos as $item)
                         <x-card-cuota class="w-full xs:w-48" :titulo="null" :detallepago="$item">
                             <p class="text-colorminicard text-xl font-semibold text-center">
-                                <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
-                                {{ number_format($item->totalamount, 2, '.', ', ') }}
-                                <small class="text-[10px] font-medium">{{ $item->moneda->currency }}</small>
+                                <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
+                                {{ number_format($item->amount, 2, '.', ', ') }}
+                                <small class="text-[10px] font-medium">{{ $compra->moneda->currency }}</small>
                             </p>
-
-                            @if ($item->tipocambio > 0)
-                                <p class="text-xs text-colorsubtitleform text-center leading-3">
-                                    {{ number_format($item->amount, 2, '.', ', ') }}
-                                    <small class="text-[8px]">
-                                        @if ($item->moneda->code == 'USD')
-                                            SOLES
-                                        @else
-                                            DÓLARES
-                                        @endif
-                                    </small>
-                                </p>
-                                <p class="text-xs text-colorsubtitleform text-center leading-3">
-                                    <small class="text-[8px]">TIPO CAMBIO :</small>
-                                    {{ $item->tipocambio }}
-                                </p>
-                            @endif
 
                             <x-slot name="footer">
                                 <div class="w-full flex gap-2 items-end justify-between">

@@ -11,7 +11,7 @@
         @if (isset($detallepago))
 
             <h1 class="text-colortitleform mt-2 mb-1 underline text-center text-[10px]">
-                DETALLES DEL PAGO</h1>
+                RESUMEN PAGO CAJA</h1>
 
             @if ($detallepago->tipocambio > 0)
                 <p class="text-colorminicard text-xl font-semibold text-center">

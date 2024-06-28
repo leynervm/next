@@ -26,7 +26,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto animate__animated animate__fadeIn animate__faster">
-        <livewire:modules.ventas.ventas.show-venta :venta="$venta" :concept="$concept" />
+    <div class="mx-auto">
+        <livewire:modules.ventas.ventas.show-venta :venta="$venta" />
     </div>
 </x-admin-layout>

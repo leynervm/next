@@ -32,8 +32,6 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div
-        class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
-        @livewire('admin.empresas.create-empresa')
-    </div>
+    <livewire:admin.empresas.configuracion-inicial />
+
 </x-admin-layout>

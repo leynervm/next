@@ -159,6 +159,7 @@
                 </div>
             @endif
             <div class="form-container sign-in" style="display: none" x-show="activeForm === 'login'" x-cloak>
+
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
 
@@ -231,6 +232,10 @@
                                     Iniciar sesión con Google
                                 </span>
                             </a>
+
+                            <a href="{{ url()->previous() }}"
+                                class="text-xs mx-auto inline-block text-center p-2.5 hover:text-texthovertable text-colorsubtitleform transition ease-in-out duration-150">
+                                VOLVER</a>
                         </div>
                     @endif
                 </form>

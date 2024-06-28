@@ -73,7 +73,7 @@ class ShowPromociones extends Component
         $this->authorize('admin.promociones.edit');
         $promocion->status = Promocion::FINALIZADO;
         $promocion->save();
-        $promocion->producto->assignPriceProduct();
+        $promocion->producto->assignPriceProduct($promocion);
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción finalizado correctamente'));
     }
 
@@ -119,7 +119,7 @@ class ShowPromociones extends Component
             }
         }
         $promocion->save();
-        $promocion->producto->assignPriceProduct();
+        $promocion->producto->assignPriceProduct($promocion);
         $this->dispatchBrowserEvent('updated');
     }
 

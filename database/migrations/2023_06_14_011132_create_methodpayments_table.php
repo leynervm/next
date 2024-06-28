@@ -16,8 +16,9 @@ class CreateMethodpaymentsTable extends Migration
         Schema::create('methodpayments', function (Blueprint $table) {
             $table->tinyIncrements('id')->unsigned();
             $table->string('name', 100);
-            $table->integer('type')->default(0);
-            $table->integer('default')->default(0);
+            $table->unsignedTinyInteger('type')->default(0);
+            $table->unsignedTinyInteger('default')->default(0);
+            $table->unsignedTinyInteger('definido')->default(0);
             $table->softDeletes();
         });
     }

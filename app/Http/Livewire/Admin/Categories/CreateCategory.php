@@ -6,15 +6,18 @@ use App\Models\Category;
 use App\Rules\CampoUnique;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManagerStatic as Image;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class CreateCategory extends Component
 {
 
-    use AuthorizesRequests;
+    use AuthorizesRequests, WithFileUploads;
+
     public $open = false;
-    public $name;
+    public $name, $logo;
 
     protected function rules()
     {
@@ -22,6 +25,9 @@ class CreateCategory extends Component
             'name' => [
                 'required', 'string', 'min:3', 'max:100',
                 new CampoUnique('categories', 'name', null, true),
+            ],
+            'logo' => [
+                'nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120'
             ]
         ];
     }
@@ -36,7 +42,7 @@ class CreateCategory extends Component
         if ($this->open == false) {
             $this->authorize('admin.almacen.categorias.create');
             $this->resetValidation();
-            $this->reset('name', 'open');
+            $this->reset('name', 'open', 'logo');
         }
     }
 
@@ -55,9 +61,33 @@ class CreateCategory extends Component
                 $category->orden = $orden + 1;
                 $category->restore();
             } else {
-                Category::create([
+                $category = Category::create([
                     'name' => $this->name,
                     'orden' => $orden + 1
+                ]);
+            }
+
+            if ($this->logo) {
+                if (!Storage::directoryExists('images/categories/')) {
+                    Storage::makeDirectory('images/categories/');
+                }
+
+                $compressedImage = Image::make($this->logo->getRealPath())
+                    ->orientate()->encode('jpg', 30);
+
+                $logoURL = uniqid('category_') . '.' . $this->logo->getClientOriginalExtension();
+                $compressedImage->save(public_path('storage/images/categories/' . $logoURL));
+
+                if ($compressedImage->filesize() > 1048576) { //1MB
+                    $compressedImage->destroy();
+                    $compressedImage->delete();
+                    $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
+                    return false;
+                }
+
+                $category->image()->create([
+                    'url' => $logoURL,
+                    'default' => 1
                 ]);
             }
 

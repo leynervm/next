@@ -1,4 +1,4 @@
-@props(['title', 'content' => null, 'size' => 'sm', 'alignFooter' => 'justify-end'])
+@props(['title', 'content' => null, 'size' => 'sm', 'imagen' => null, 'alignFooter' => 'justify-end'])
 
 @php
     switch ($size) {
@@ -20,9 +20,9 @@
     {{ $attributes->merge(['class' => $dimensions . ' inline-block relative bg-fondominicard text-colorlinknav shadow shadow-shadowminicard p-1 rounded-xl hover:shadow-md hover:shadow-shadowminicard transition-shadow ease-out duration-150']) }}>
     <div class="w-full h-full flex flex-col gap-1 justify-between items-center">
         <div class="flex-1 flex flex-col justify-center items-center">
-            @if (isset($imagen))
-                <div class="w-full h-12 rounded overflow-hidden">
-                    {{ $imagen }}
+            @if (!is_null($imagen))
+                <div class="w-full h-16 rounded overflow-hidden">
+                    <img class="w-full h-full object-scale-down" src="{{ $imagen }}" alt="">
                 </div>
             @endif
 

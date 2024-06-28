@@ -15,7 +15,6 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use App\Models\Almacenarea;
 use App\Models\Estante;
-use App\Models\Pricetype;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Intervention\Image\ImageManagerStatic as Image;
 
@@ -57,7 +56,7 @@ class CreateProducto extends Component
             'minstock' => ['required', 'integer', 'min:0'],
             'unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
-            'subcategory_id' => ['nullable', 'integer', 'min:1', 'exists:subcategories,id'],
+            'subcategory_id' => ['required', 'integer', 'min:1', 'exists:subcategories,id'],
             'selectedAlmacens' => ['nullable', 'array', 'exists:almacens,id'],
             'almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
@@ -152,18 +151,30 @@ class CreateProducto extends Component
                     ->resize(1200, 1200, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
-                    })
-                    ->orientate()
-                    ->encode('jpg', 30);
+                    })->orientate()->encode('jpg', 30);
+
+                $empresa = mi_empresa();
+                if ($empresa->usarMarkagua()) {
+                    $w = $empresa->widthmark  ?? 100;
+                    $h = $empresa->heightmark  ?? 100;
+                    $urlMark = public_path('storage/images/company/' . $empresa->markagua);
+                    $margin = $empresa->alignmark !== 'center' ? 20 : 0;
+                    // create a new Image instance for inserting
+                    $mark = Image::make($urlMark)->resize($w, $h, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate();
+                    $compressedImage->insert($mark, $empresa->alignmark, $margin, $margin);
+                }
 
                 $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
                 $compressedImage->save(public_path('storage/productos/' . $filename));
 
-                if ($compressedImage->filesize() > 1048576) {
-                    //1MB
+                if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
                     $compressedImage->delete();
                     $this->addError('imagen', 'La imagen excede el tamaño máximo permitido.');
+                    return false;
                 }
 
                 $producto->images()->create([

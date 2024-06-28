@@ -31,7 +31,7 @@ class ShowSucursales extends Component
 
     public function render()
     {
-        $sucursals = Sucursal::orderBy('id', 'asc')->get();
+        $sucursals = mi_empresa()->sucursals()->orderBy('id', 'asc')->get();
         return view('livewire.admin.profile.show-sucursales', compact('sucursals'));
     }
 

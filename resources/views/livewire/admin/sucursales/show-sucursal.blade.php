@@ -1,4 +1,8 @@
 <div class="">
+    <div class="loading-overlay fixed hidden" wire:loading.flex>
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="DATOS SUCURSAL">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
             <div class="w-full grid grid-cols-1 xl:grid-cols-2 gap-2">

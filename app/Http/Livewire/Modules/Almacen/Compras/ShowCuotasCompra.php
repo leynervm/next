@@ -48,7 +48,7 @@ class ShowCuotasCompra extends Component
     {
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('default', 'desc')->orderBy('name', 'asc')->get();
-        if ($this->monthbox) {
+        if ($this->monthbox && $this->openbox) {
             $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
                 $query->withTrashed()->where('id', auth()->user()->sucursal_id);
             })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")

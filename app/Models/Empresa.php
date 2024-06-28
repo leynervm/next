@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Empresa extends Model
 {
@@ -20,6 +21,8 @@ class Empresa extends Model
         'document', 'name', 'estado', 'condicion', 'direccion',
         'urbanizacion', 'email', 'web', 'icono',
         'usuariosol', 'clavesol', 'montoadelanto', 'uselistprice',
+        'viewpriceantes', 'viewlogomarca', 'viewtextopromocion',
+        'usemarkagua', 'markagua', 'alignmark', 'widthmark', 'heightmark',
         'usepricedolar', 'viewpricedolar', 'tipocambio', 'tipocambioauto',
         'status', 'igv', 'default', 'ubigeo_id', 'cert', 'sendmode', 'passwordcert',
         'clientid', 'clientsecret', 'limitsucursals'
@@ -30,17 +33,21 @@ class Empresa extends Model
     const PRODUCCION = '1';
     const OPTION_ACTIVE = '1';
 
+    const TITLE_PROMO_DEFAULT = '0';
+    const TITLE_PROMOCION = '1';
+    const TITLE_PROMO_LIQUIDACION = '2';
+
     const USER_SOL_PRUEBA = 'MODDATOS';
     const PASSWORD_SOL_PRUEBA = 'MODDATOS';
     const CLIENT_ID_GRE_PRUEBA = 'test-85e5b0ae-255c-4891-a595-0b98c65c9854';
     const CLIENT_SECRET_GRE_PRUEBA = 'test-Hty/M6QshYvPgItX2P0+Kw==';
 
-    // public function getUsepricedolarAttribute($value)
+    // public function getViewpriceantesAttribute($value)
     // {
     //     return (bool) $value; 
     // }
 
-    // public function getViewpricedolarAttribute($value)
+    // public function getViewlogomarcaAttribute($value)
     // {
     //     return (bool) $value; 
     // }
@@ -95,8 +102,48 @@ class Empresa extends Model
         return $this->usepricedolar == self::OPTION_ACTIVE;
     }
 
+    public function usarMarkagua()
+    {
+        return $this->usemarkagua == self::OPTION_ACTIVE;
+    }
+
     public function verDolar()
     {
         return $this->viewpricedolar == self::OPTION_ACTIVE;
+    }
+
+    public function verOldprice()
+    {
+        return $this->viewpriceantes == self::OPTION_ACTIVE;
+    }
+
+    public function verLogomarca()
+    {
+        return $this->viewlogomarca == self::OPTION_ACTIVE;
+    }
+
+    public function isTitleDefault()
+    {
+        return $this->viewtextopromocion == self::TITLE_PROMO_DEFAULT;
+    }
+
+    public function isTitlePromocion()
+    {
+        return $this->viewtextopromocion == self::TITLE_PROMOCION;
+    }
+
+    public function isTitleLiquidacion()
+    {
+        return $this->viewtextopromocion == self::TITLE_PROMO_LIQUIDACION;
+    }
+
+    public function getMarkAguaURL()
+    {
+        return Storage::url('images/company/' . $this->markagua);
+    }
+
+    public function getIconoURL()
+    {
+        return Storage::url('images/company/' . $this->icono);
     }
 }

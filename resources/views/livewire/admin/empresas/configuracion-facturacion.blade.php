@@ -1,4 +1,8 @@
 <div x-data="configuracion">
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="DATOS FACTURACIÓN">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
             <div class="w-full grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -48,29 +52,26 @@
             </div>
             <div class="w-full">
                 <div class="relative w-full xs:max-w-xs text-center">
-                    <div wire:loading.flex wire:target="cert,deletecert"
-                        class="loading-overlay rounded shadow border border-borderminicard hidden">
-                        <x-loading-next />
-                    </div>
-
                     @if (isset($cert))
                         <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()" class="w-36 h-auto text-gray-300" />
                     @else
                         @if ($empresa->cert)
-                            <x-icon-file-upload type="filesuccess" :uploadname="$empresa->cert" class="w-36 h-auto text-gray-300" />
+                            <x-icon-file-upload type="filesuccess" :uploadname="$empresa->cert"
+                                class="w-36 h-auto text-gray-300" />
                         @else
                             <x-icon-file-upload type="code" text="PFX" class="w-36 h-auto text-gray-300" />
                         @endif
                     @endif
 
                     <div class="w-full flex gap-1 flex-wrap justify-center">
-                        <x-input-file :for="$idcert" :titulo="$empresa->cert ? 'CAMBIAR CERTIFICADO DIGITAL' : 'CARGAR CERTIFICADO DIGITAL'" wire:loading.remove wire:target="cert">
+                        <x-input-file :for="$idcert" :titulo="$empresa->cert ? 'CAMBIAR CERTIFICADO DIGITAL' : 'CARGAR CERTIFICADO DIGITAL'" wire:loading.remove class="!rounded-lg">
                             <input type="file" class="hidden" wire:model="cert" id="{{ $idcert }}"
                                 accept=".pfx" />
                         </x-input-file>
 
                         @if (isset($cert))
-                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:click="clearCert">LIMPIAR
+                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
+                                wire:click="clearCert">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -80,12 +81,13 @@
                                     <line x1="10" x2="10" y1="11" y2="17" />
                                     <line x1="14" x2="14" y1="11" y2="17" />
                                 </svg>
+                                LIMPIAR
                             </x-button>
                         @endif
 
                         @if (!isset($cert) && $empresa->cert)
-                            <x-button wire:click="deletecert({{ $empresa->id }})" wire:loading.attr="disabled">
-                                ELIMINAR CERTIFICADO DIGITAL
+                            <x-button wire:click="deletecert({{ $empresa->id }})" wire:loading.attr="disabled"
+                                class="!rounded-lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -95,6 +97,7 @@
                                     <line x1="10" x2="10" y1="11" y2="17" />
                                     <line x1="14" x2="14" y1="11" y2="17" />
                                 </svg>
+                                ELIMINAR CERTIFICADO DIGITAL
                             </x-button>
                         @endif
                     </div>

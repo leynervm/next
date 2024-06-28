@@ -67,10 +67,6 @@
                                         </button>
                                     </div>
                                 </div>
-
-                                {{-- <x-button-delete @click="dropdownOpen = false"
-                                    wire:click="deleteitem('{{ $item->rowId }}')" type="button"
-                                    wire:loading.attr="disabled" class="w-8 h-8" /> --}}
                             </div>
                         </div>
                     </x-simple-card>
@@ -78,7 +74,7 @@
 
                 <div class="w-full flex justify-end">
                     <x-button-secondary wire:click="delete" wire:loading.attr="disabled"
-                        class="items-center gap-1 !rounded-md !p-2">
+                        class="items-center gap-1 !rounded-md">
                         LIMPIAR CARRITO
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -94,19 +90,20 @@
             </div>
 
             <x-simple-card class="w-full shadow-md rounded xs:rounded-xl p-3">
-                <h1 class="text-xs font-semibold text-colorlabel">RESUMEN DEL CARRITO</h1>
+                <h1 class="text-xs font-semibold text-colorlabel text-end">RESUMEN DEL CARRITO</h1>
 
-                <div class="w-full flex justify-between gap-2 mt-2">
-                    <p class="text-xs font-semibold text-colorlabel">TOTAL : </p>
-                    <p class="text-xl font-semibold text-colorlabel">
-                        <small>{{ $moneda->simbolo }}</small>
-                        {{ Cart::instance('shopping')->subtotal() }}
-                        <small class="text-[10px]">{{ $moneda->currency }}</small>
+                <div class=" mt-2">
+                    <p class="text-xs text-colorlabel text-end">
+                        TOTAL : </p>
+                    <p class="text-xl font-semibold text-colorlabel text-end">
+                        <small class="text-[10px] font-medium">{{ $moneda->simbolo }}</small>
+                        {{ number_format(Cart::instance('shopping')->subtotal(), 2, '.', ', ') }}
                     </p>
                 </div>
                 <div class="w-full pt-3 flex items-center justify-center">
-                    <x-link-button href="{{ route('carshoop.register') }}" class="!rounded-lg">
-                        CONTINUAR COMPRA</x-link-button>
+                    <a href="{{ route('carshoop.register') }}" class="btn-next">
+                        <span class="btn-effect"><span>CONTINUAR COMPRA</span></span>
+                    </a>
                 </div>
             </x-simple-card>
         </div>

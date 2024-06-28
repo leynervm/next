@@ -38,8 +38,8 @@
     <div class="w-full" x-data="modal()">
         <div class="w-full flex flex-col xl:flex-row gap-8 py-10 xl:items-start">
             <div class="w-full flex-1 flex flex-col gap-8">
-                <div class="w-full bg-fondominicard shadow-xl rounded-xl border border-borderminicard p-2 sm:p-5">
-                    <h1 class="text-xl font-semibold text-colorsubtitleform ">
+                <div class="w-full bg-fondominicard shadow-md shadow-shadowminicard rounded-xl border border-borderminicard p-2 sm:p-5">
+                    <h1 class="text-xl font-semibold text-colorlabel ">
                         SEGUIMIENTO DEL PEDIDO</h1>
                     @if (count($order->trackings) > 0)
                         <div
@@ -56,10 +56,10 @@
                                         <div class="flex-shrink rounded-full h-3 w-3 bg-next-500"></div>
                                         <div
                                             class="flex-1 sm:absolute w-full flex flex-col justify-center sm:items-center text-[10px] sm:top-[90%] sm:left-1/2 sm:-translate-x-1/2">
-                                            <p class="leading-3 sm:text-center">{{ $item->trackingstate->name }}</p>
+                                            <p class="leading-3 sm:text-center text-colorlabel">{{ $item->trackingstate->name }}</p>
 
                                             <small
-                                                class="text-neutral-500 sm:text-center sm:text-[10px]">{{ formatDate($item->date, 'DD MMM Y') }}</small>
+                                                class="text-colorsubtitleform sm:text-center sm:text-[10px]">{{ formatDate($item->date, 'DD MMM Y') }}</small>
                                         </div>
                                     </div>
                                 </div>
@@ -68,72 +68,75 @@
                     @endif
                 </div>
 
-                <div class="w-full bg-fondominicard shadow-xl rounded-xl border border-borderminicard flex-1">
-                    <h1 class="text-xl font-semibold text-colorsubtitleform p-5 uppercase">
+                <div class="w-full bg-fondominicard shadow-md shadow-shadowminicard rounded-xl border border-borderminicard flex-1">
+                    <h1 class="text-xl font-semibold text-colorlabel p-5 uppercase">
                         N° ORDEN : {{ $order->seriecompleta }}</h1>
                 </div>
 
                 {{-- TIPO ENVIO --}}
                 <div class="w-full grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    <div class="w-full bg-fondominicard shadow-xl rounded-xl border border-borderminicard flex-1 p-2 sm:p-5">
-                        <h1 class="text-lg font-semibold text-colorsubtitleform">
+                    <div
+                        class="w-full bg-fondominicard shadow-md shadow-shadowminicard rounded-xl border border-borderminicard flex-1 p-2 sm:p-5">
+                        <h1 class="text-lg font-semibold text-colorlabel">
                             {{ $order->shipmenttype->name }}</h1>
 
                         @if ($order->shipmenttype->isEnviodomicilio())
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 LUGAR : {{ $order->direccion->ubigeo->distrito }},
                                 {{ $order->direccion->ubigeo->provincia }},
                                 {{ $order->direccion->ubigeo->region }}</p>
 
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 DIRECCIÓN: {{ $order->direccion->name }}</p>
 
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 REFERENCIA: {{ $order->direccion->referencia }}</p>
                         @else
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 TIENDA : {{ $order->entrega->sucursal->name }}</p>
-                            <p class="text-neutral-500 text-[10px] leading-3">
+                            <p class="text-colorsubtitleform text-[10px] leading-3">
                                 DIRECCIÓN :
                                 {{ $order->entrega->sucursal->direccion }} <br>
                                 {{ $order->entrega->sucursal->ubigeo->distrito }},
                                 {{ $order->entrega->sucursal->ubigeo->provincia }},
                                 {{ $order->entrega->sucursal->ubigeo->region }}</p>
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 FECHA RECOJO : {{ formatDate($order->entrega->date, 'DD MMMM Y') }}</p>
                         @endif
                     </div>
 
                     {{-- CONTACTO RECEIVER --}}
-                    <div class="w-full bg-fondominicard shadow-xl rounded-xl border border-borderminicard flex-1 p-2 sm:p-5">
-                        <h1 class="text-lg font-semibold text-colorsubtitleform">
+                    <div
+                        class="w-full bg-fondominicard shadow-md shadow-shadowminicard rounded-xl border border-borderminicard flex-1 p-2 sm:p-5">
+                        <h1 class="text-lg font-semibold text-colorlabel">
                             DATOS DEL CONTACTO</h1>
 
-                        <p class="text-neutral-500 text-[10px] uppercase">
+                        <p class="text-colorsubtitleform text-[10px] uppercase">
                             {{ $order->receiverinfo['document'] }} -
                             {{ $order->receiverinfo['name'] }}
                         </p>
-                        <p class="text-neutral-500 text-[10px]">
+                        <p class="text-colorsubtitleform text-[10px]">
                             TELÉFONO: {{ $order->receiverinfo['telefono'] }}</p>
                     </div>
                 </div>
 
                 {{-- PAYMENT --}}
                 @if (!is_null($order->methodpay))
-                    <div class="w-full bg-fondominicard shadow-xl rounded-xl border border-borderminicard flex-1 p-2 sm:p-5">
-                        <h1 class="text-xl font-semibold text-colorsubtitleform">
+                    <div
+                        class="w-full bg-fondominicard shadow-md rounded-xl shadow-shadowminicard border border-borderminicard flex-1 p-2 sm:p-5">
+                        <h1 class="text-xl font-semibold text-colorlabel">
                             RESUMEN PAGO</h1>
 
                         @if ($order->isDeposito())
                             @if ($order->image)
                                 <button
                                     @click="openModal(); src = '{{ Storage::url('payments/depositos/' . $order->image->url) }}'"
-                                    class="w-full h-[150px] md:max-w-[100px] border border-borderminicard rounded-md overflow-hidden">
+                                    class="w-full h-[150px] md:max-w-[100px] rounded-md overflow-hidden">
                                     <img src="{{ Storage::url('payments/depositos/' . $order->image->url) }}"
                                         class="w-full h-full object-cover">
                                 </button>
 
-                                <p class="text-xs text-neutral-500">
+                                <p class="text-xs text-colorsubtitleform">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"
                                         class="w-4 h-4 inline-block">
@@ -161,15 +164,15 @@
                                 </p>
                             @endif
                         @else
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 APROBADO Y COMPLETADO CON EXITO </p>
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 ID TRANSACCIÓN </p>
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 FECHA Y HORA PAGO: </p>
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 TARJETA: </p>
-                            <p class="text-neutral-500 text-[10px]">
+                            <p class="text-colorsubtitleform text-[10px]">
                                 IMPORTE: </p>
 
                         @endif
@@ -177,8 +180,8 @@
                 @endif
 
 
-                <div class="w-full bg-fondominicard shadow-xl rounded-xl border border-borderminicard flex-1">
-                    <h1 class="text-md font-semibold text-colorsubtitleform p-2 sm:p-5">
+                <div class="w-full bg-fondominicard shadow-md rounded-xl shadow-shadowminicard border border-borderminicard flex-1">
+                    <h1 class="text-md font-semibold text-colorlabel p-2 sm:p-5">
                         RESUMEN</h1>
 
                     <div class="w-full overflow-x-auto md:rounded-lg">
@@ -198,9 +201,9 @@
                                             $image = $item->producto->getImageURL();
                                         @endphp
 
-                                        <tr class="text-colorsubtitleform">
+                                        <tr class="text-colorlabel">
                                             <td class="flex gap-2 text-left p-2">
-                                                <div class="flex-shrink w-14 h-14 rounded overflow-hidden">
+                                                <div class="flex-shrink-0 w-16 h-16 rounded overflow-hidden">
                                                     @if ($image)
                                                         <img src="{{ $image }}" alt=""
                                                             class="w-full h-full object-scale-down rounded aspect-square overflow-hidden">
@@ -243,23 +246,28 @@
 
 
             @if (is_null($order->methodpay))
-                <div class="w-full flex flex-col gap-8 xl:max-w-md flex-shrink-0 shadow-xl rounded-xl border border-borderminicard p-2 sm:p-5">
-                    <div class="w-full flex flex-wrap xs:flex-nowrap gap-2 justify-between bg-white">
+                <div
+                    class="w-full flex flex-col gap-8 xl:max-w-md flex-shrink-0 shadow-md rounded-xl border border-borderminicard p-2 sm:p-5">
+                    <div class="w-full flex flex-wrap xs:flex-nowrap gap-2 justify-between">
                         <img class="h-8" src="https://codersfree.com/img/payments/credit-cards.png"
                             alt="">
 
-                        <p class="text-xl text-right font-semibold text-neutral-500">
-                            <small class="text-[10px]">TOTAL {{ $order->moneda->simbolo }}</small>
-                            {{ number_format($order->total, 2, '.', ', ') }}
-                            <small class="text-[10px]">{{ $order->moneda->code }}</small>
-                        </p>
+                        <div>
+                            <p class="text-[10px] font-semibold text-right text-colorsubtitleform">TOTAL</p>
+                            <p class="text-2xl text-right font-semibold text-colorlabel">
+                                <small class="text-[10px] font-medium">{{ $order->moneda->simbolo }}</small>
+                                {{ number_format($order->total, 2, '.', ', ') }}
+                                {{-- <small class="text-[10px]">{{ $order->moneda->code }}</small> --}}
+                            </p>
+                        </div>
                     </div>
 
                     <div class="w-full" x-data="{ pago: {{ old('pago') ?? 1 }} }">
                         <ul class="text-xs flex flex-col gap-5">
-                            <li class="rounded-xl border" :class="pago == 1 ? 'shadow-xl border-green-500' : ''">
+                            <li class="block w-full rounded-xl border"
+                                :class="pago == 1 ? 'shadow-md border-green-500' : ''">
                                 <label for="pago1"
-                                    class="p-3 font-semibold text-gray-500 flex flex-wrap xs:flex-nowrap cursor-pointer items-center ">
+                                    class="p-3 font-semibold text-colorsubtitleform flex flex-wrap xs:flex-nowrap cursor-pointer items-center ">
                                     <input class="sr-only" type="radio" x-model="pago" name="pago"
                                         id="pago1" value="1">
                                     <span class="">TARJETA DE DEBITO / CRÉDITO</span>
@@ -267,7 +275,8 @@
                                         src="https://codersfree.com/img/payments/credit-cards.png" alt="">
                                 </label>
 
-                                <div class="p-3 bg-fondominicard rounded-b-xl flex flex-col sm:flex-row xl:flex-col gap-2" x-show="pago ==1">
+                                <div class="p-3 bg-fondominicard rounded-b-xl flex flex-col sm:flex-row xl:flex-col gap-2"
+                                    x-show="pago ==1">
                                     <button
                                         class="w-full sm:max-w-[200px] xl:max-w-full block p-3 rounded-md text-xs bg-blue-500 text-white">PAYPAL</button>
                                     <button
@@ -275,14 +284,15 @@
                                         TARJETA DE CREDITO</button>
                                 </div>
                             </li>
-                            <li class="rounded-xl border" :class="pago == 2 ? 'shadow-xl  border-green-500' : ''">
+                            <li class="block w-full rounded-xl border"
+                                :class="pago == 2 ? 'shadow-md  border-green-500' : ''">
                                 <label for="pago2"
-                                    class="p-3 font-semibold text-gray-500 cursor-pointer block w-full">
+                                    class="p-3 font-semibold text-colorsubtitleform cursor-pointer block w-full">
                                     <input class="sr-only" type="radio" x-model="pago" name="pago"
                                         id="pago2" value="2">
                                     <span class="">DEPÓSITO BANCARIO O YAPE</span>
                                 </label>
-                                <div class="p-3 text-xs bg-fondominicard rounded-b-xl text-neutral-500"
+                                <div class="p-3 text-xs bg-fondominicard rounded-b-xl text-colorlabel"
                                     x-show="pago ==2" x-cloak>
 
                                     <p>1. PAGO POR DEPÓSITO O TRANSFERENCIA BANCARIA</p>
@@ -311,7 +321,7 @@
                                         {{-- <span x-text="boucher"></span> --}}
 
                                         <label for="boucher"
-                                            class="w-full block p-3 mt-3 rounded-md text-xs bg-next-500 focus:ring-2 focus:ring-next-300 text-white cursor-pointer hover:bg-next-700 focus:bg-next-700 transition ease-in-out duration-150">
+                                            class="w-full block p-3 mt-3 rounded-lg text-xs bg-next-500 focus:ring-2 focus:ring-next-300 text-white cursor-pointer hover:bg-next-700 focus:bg-next-700 transition ease-in-out duration-150">
                                             ADJUNTAR COMPROBANTE PAGO
                                             <input type="file" class="hidden" id="boucher" accept="image/*"
                                                 @change="boucher = $event.target.files[0]" name="file" />
@@ -319,9 +329,8 @@
                                         <x-jet-input-error for="file" class="text-center" />
 
                                         <template x-if="boucher !=null">
-                                            <button type="submit"
-                                                class="w-full block p-3 mt-3 rounded-md text-xs bg-blue-500 text-white focus:ring-2 focus:ring-blue-300 hover:bg-blue-700 focus:bg-blue-700 transition ease-in-out duration-150">
-                                                ENVIAR</button>
+                                            <x-button type="submit" class="w-full mt-2 !rounded-lg">
+                                                GUARDAR</x-button>
                                         </template>
                                     </form>
                                 </div>

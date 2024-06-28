@@ -52,7 +52,7 @@ class ShowProducto extends Component
             'producto.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'producto.minstock' => ['required', 'integer', 'min:0'],
             'producto.category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
-            'producto.subcategory_id' => ['nullable', 'integer', 'min:1', 'exists:subcategories,id'],
+            'producto.subcategory_id' => ['required', 'integer', 'min:1', 'exists:subcategories,id'],
             'producto.almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'producto.estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
@@ -124,6 +124,10 @@ class ShowProducto extends Component
         $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
         $this->validate();
         $this->producto->save();
+
+        if ($this->producto->isDirty('pricebuy')) {
+            $this->producto->assignPriceProduct();
+        }
         $this->dispatchBrowserEvent('updated');
         return redirect()->route('admin.almacen.productos.edit', $this->producto);
     }

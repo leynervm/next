@@ -31,7 +31,7 @@
     <!-- Scripts -->
 </head>
 
-<body class="{{ config('app.theme') }}  animate__animated animate__fadeIn animate__faster">
+<body class="{{ config('app.theme') }} animate__animated animate__fadeIn animate__faster">
     <div class="relative flex h-screen min-h-screen overflow-hidden">
         @auth
             @if ($empresa)

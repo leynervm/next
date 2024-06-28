@@ -3,7 +3,6 @@
 namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Models\Caracteristica;
-use App\Models\Detalleproducto;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Producto;
@@ -108,8 +107,22 @@ class ShowDetalles extends Component
             ->resize(1200, 1200, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
-            })
-            ->orientate()->encode('jpg', 30);
+            })->orientate()->encode('jpg', 30);
+
+
+        $empresa = mi_empresa();
+        if ($empresa->usarMarkagua()) {
+            $w = $empresa->widthmark  ?? 100;
+            $h = $empresa->heightmark  ?? 100;
+            $urlMark = public_path('storage/images/company/' . $empresa->markagua);
+            $margin = $empresa->alignmark !== 'center' ? 20 : 0;
+            // create a new Image instance for inserting
+            $mark = ImageIntervention::make($urlMark)->resize($w, $h, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->orientate();
+            $compressedImage->insert($mark, $empresa->alignmark, $margin, $margin);
+        }
 
         $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
         $compressedImage->save(public_path('storage/productos/' . $filename));

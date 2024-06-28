@@ -5,7 +5,7 @@
 
     <div class="w-full flex items-start gap-3 bg-body">
         <aside
-            class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-52 flex-shrink-0 absolute h-screen max-h-[calc(100vh-120px)] z-[199] lg:z-[100] top-0 mt-28 lg:mt-0 left-0 lg:top-0 overflow-hidden lg:relative lg:block rounded-r-xl transition-all duration-300"
+            class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-52 flex-shrink-0 absolute h-screen max-h-[calc(100vh-108px)] z-[199] lg:z-[100] top-0 mt-[108px] lg:mt-0 left-0 lg:top-0 overflow-hidden lg:relative lg:block rounded-r-xl transition-all duration-300"
             :class="sidebar ? 'translate-x-0 bg-inherit lg:bg-inherit' : '-translate-x-full bg-inherit lg:translate-x-0',
                 openSidebar ? '' : 'z-[199]'">
             <div class="w-full p-2 lg:p-0 relative overflow-y-auto overflow-x-hidden h-full">
@@ -62,7 +62,8 @@
                             </svg>
                         </button>
                         <div class="w-full flex flex-col text-xs" x-show="openfilter" x-transition>
-                            <button wire:click="order('precio', 'asc')" wire:loading.attr="disabled"
+                            <button @click="sidebar=false,backdrop = false" wire:click="order('precio', 'asc')"
+                                wire:loading.attr="disabled"
                                 class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -75,7 +76,8 @@
                                 </svg>
                                 DE MENOR A MAYOR PRECIO
                             </button>
-                            <button wire:click="order('precio', 'desc')" wire:loading.attr="disabled"
+                            <button @click="sidebar=false,backdrop = false" wire:click="order('precio', 'desc')"
+                                wire:loading.attr="disabled"
                                 class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -88,7 +90,8 @@
                                 </svg>
                                 DE MAYOR A MENOR PRECIO
                             </button>
-                            <button wire:click="order('name', 'asc')" wire:loading.attr="disabled"
+                            <button @click="sidebar=false,backdrop = false" wire:click="order('name', 'asc')"
+                                wire:loading.attr="disabled"
                                 class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -101,7 +104,8 @@
                                 </svg>
                                 NOMBRE ASCENDENTE
                             </button>
-                            <button wire:click="order('name', 'desc')" wire:loading.attr="disabled"
+                            <button @click="sidebar=false,backdrop = false" wire:click="order('name', 'desc')"
+                                wire:loading.attr="disabled"
                                 class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -261,7 +265,7 @@
                         :image="$image" :secondimage="$secondimage" :promocion="$promocion"
                         wire:key="cardproduct{{ $item->id }}" x-data="{ addcart: isXL ? false : true }"
                         @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
-                        class="w-full py-3 pb-5 rounded-xl shadow shadow-shadowminicard hover:shadow-xl hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
+                        class="w-full py-3 pb-5 rounded-xl shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
                         @if ($combo)
                             @if (count($combo->products) > 0)
@@ -274,11 +278,11 @@
                                                     <img src="{{ $itemcombo->image }}" alt=""
                                                         class="w-full h-full object-scale-down">
                                                 @else
-                                                    <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+                                                    <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
                                                 @endif
                                             </div>
                                             <div class="p-1">
-                                                <h1 class="text-[10px] leading-3 text-left">
+                                                <h1 class="text-[10px] leading-3 text-left text-colorlabel">
                                                     {{ $itemcombo->name }}</h1>
                                             </div>
                                         </div>
@@ -295,12 +299,12 @@
                                     <small class="text-[10px]">USD</small>
                                 </h1>
                             @endif
-                            <h1 class="text-neutral-700 font-semibold text-2xl text-center">
+                            <h1 class="text-colorlabel font-semibold text-2xl text-center">
                                 <small class="text-[10px]">{{ $moneda->simbolo }}</small>
                                 {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                 <small class="text-[10px]">{{ $moneda->currency }}</small>
                             </h1>
-                            @if ($descuento > 0)
+                            @if ($descuento > 0 && $empresa->verOldprice())
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">
                                     {{ $moneda->simbolo }}
                                     {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
@@ -334,6 +338,9 @@
                                         @click="add_to_cart({{ $item->id }})" />
                                 </div>
                             </x-slot>
+                        @else
+                            <p class="text-colorerror text-[10px] font-semibold text-center">
+                                PRECIO DE VENTA NO ENCONTRADO</p>
                         @endif
                     </x-card-producto-virtual>
                 @endforeach

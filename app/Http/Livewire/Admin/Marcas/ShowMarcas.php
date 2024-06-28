@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Marcas;
 
 use App\Models\Marca;
+use App\Rules\CampoUnique;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -29,10 +30,11 @@ class ShowMarcas extends Component
     {
         return [
             'marca.name' => [
-                'required', 'min:2', 'max:100', 'unique:marcas,name,' . $this->marca->id,
+                'required', 'min:2', 'max:100',
+                new CampoUnique('marcas', 'name', $this->marca->id, true),
             ],
             'logo' => [
-                'nullable', 'file', 'mimes:jpeg,png,gif',  'max:5120'
+                'nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120'
             ]
         ];
     }
@@ -56,29 +58,25 @@ class ShowMarcas extends Component
         $this->authorize('admin.almacen.marcas.edit');
         $this->marca->name = trim($this->marca->name);
         $this->validate();
-        $logoURL = null;
 
         DB::beginTransaction();
         try {
             if ($this->logo) {
                 $compressedImage = Image::make($this->logo->getRealPath())
-                    ->resize(300, 300, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->orientate()->encode('jpg', 30);
+                    ->orientate()->encode('jpg', 30);
 
-                $filename = uniqid('marca_') . '.' . $this->logo->getClientOriginalExtension();
-                $compressedImage->save(public_path('storage/marcas/' . $filename));
+                $logoURL = uniqid('marca_') . '.' . $this->logo->getClientOriginalExtension();
+                $compressedImage->save(public_path('storage/images/marcas/' . $logoURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
                     $compressedImage->delete();
                     $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
+                    return false;
                 }
-                $logoURL = $filename;
 
                 if ($this->marca->image) {
-                    Storage::delete('marcas/' . $this->marca->image->url);
+                    Storage::delete($this->marca->image->getMarcaURL());
                     $this->marca->image()->delete();
                 }
 
@@ -102,19 +100,12 @@ class ShowMarcas extends Component
         }
     }
 
-
-    public function updatedOpen()
-    {
-        if ($this->open == false) {
-            $this->identificador = rand();
-            $this->reset(['logo']);
-            $this->resetValidation();
-        }
-    }
-
     public function edit(Marca $marca)
     {
         $this->authorize('admin.almacen.marcas.edit');
+        $this->identificador = rand();
+        $this->reset(['logo']);
+        $this->resetValidation();
         $this->marca = $marca;
         $this->open = true;
     }
@@ -124,24 +115,27 @@ class ShowMarcas extends Component
     {
         $this->authorize('admin.almacen.marcas.delete');
         if ($marca->image) {
-            Storage::delete('marcas/' . $marca->image->url);
+            Storage::delete($marca->image->getMarcaURL());
             $marca->image()->delete();
         }
         $marca->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 
-    public function clearImage()
+    public function deletelogo()
     {
-        $this->authorize('admin.almacen.marcas.edit');
-        $this->reset(['logo']);
-        $this->resetValidation();
-        $this->identificador = rand();
+        $this->authorize('admin.almacen.marcas.delete');
+        if ($this->marca->image) {
+            Storage::delete($this->marca->image->getMarcaURL());
+            $this->marca->image()->delete();
+            $this->marca->refresh();
+        }
     }
 
-    public function errorImage()
+    public function clearImage()
     {
         $this->reset(['logo']);
+        $this->resetValidation();
         $this->identificador = rand();
     }
 

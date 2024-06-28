@@ -8,7 +8,7 @@
     'image' => null,
     'secondimage' => null,
     'promocion' => null,
-    'classFooter' => 'absolute'
+    'classFooter' => 'absolute',
 ])
 <div
     {{ $attributes->merge(['class' => 'w-full group bg-fondominicard flex flex-col justify-between text-xs relative group cursor-pointer']) }}>
@@ -86,12 +86,21 @@
     </p>
     <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
         <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
-            @if ($promocion->isDescuento())
-                - {{ formatDecimalOrInteger($promocion->descuento) }}% DSCT
-            @elseif ($promocion->isCombo())
+           @php
+               $empresa = mi_empresa()
+           @endphp
+            @if ($empresa->isTitlePromocion())
                 PROMOCIÓN
-            @else
+            @elseif($empresa->isTitleLiquidacion())
                 LIQUIDACIÓN
+            @else
+                @if ($promocion->isDescuento())
+                    - {{ formatDecimalOrInteger($promocion->descuento) }}% DSCT
+                @elseif ($promocion->isCombo())
+                    OFERTA
+                @else
+                    LIQUIDACIÓN
+                @endif
             @endif
         </p>
     </div>

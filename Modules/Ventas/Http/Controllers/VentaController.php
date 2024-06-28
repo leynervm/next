@@ -36,6 +36,7 @@ class VentaController extends Controller
     public function create()
     {
 
+        $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $concept = Concept::ventas()->first();
 
@@ -47,21 +48,24 @@ class VentaController extends Controller
                 $query->whereNotIn('code', ['07', '09', '13'])->orderBy('code', 'asc');
             })->orderBy('default', 'desc')->first();
 
-        $pricetypes = Pricetype::default();
-        if (count($pricetypes->get()) > 0) {
-            $pricetype = $pricetypes->first();
-        } else {
-            $pricetype = Pricetype::orderBy('id', 'asc')->first();
+
+        $pricetype = null;
+        if ($empresa->usarlista()) {
+            $pricetypes = Pricetype::default();
+            if (count($pricetypes->get()) > 0) {
+                $pricetype = $pricetypes->first();
+            } else {
+                $pricetype = Pricetype::orderBy('id', 'asc')->first();
+            }
         }
 
-        return view('ventas::ventas.create', compact('seriecomprobante', 'moneda', 'concept', 'pricetype'));
+        return view('ventas::ventas.create', compact('seriecomprobante', 'empresa', 'moneda', 'concept', 'pricetype'));
     }
 
     public function show(Venta $venta)
     {
         $this->authorize('sucursal', $venta);
-        $concept = Concept::paycuota()->first();
-        return view('ventas::ventas.show', compact('venta', 'concept'));
+        return view('ventas::ventas.show', compact('venta'));
     }
 
 

@@ -91,7 +91,7 @@ class ShowShippments extends Component
         $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $direccions = auth()->user()->direccions()->with('ubigeo')->orderBy('default', 'desc')->orderBy('name', 'asc')->get();
         $shipmenttypes = Shipmenttype::orderBy('name', 'asc')->get();
-        $locals = Sucursal::with('ubigeo')->orderBy('default', 'desc')->orderBy('codeanexo', 'asc')->get();
+        $locals = mi_empresa()->sucursals()->with('ubigeo')->orderBy('default', 'desc')->orderBy('codeanexo', 'asc')->get();
         return view('livewire.modules.marketplace.carrito.show-shippments', compact('shipmenttypes', 'direccions', 'ubigeos', 'locals'));
     }
 

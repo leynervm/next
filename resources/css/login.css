@@ -1,5 +1,5 @@
 .login {
-    @apply w-full h-screen flex justify-center items-center px-3 md:px-0;
+    @apply w-full bg-body h-screen flex justify-center items-center px-3 md:px-0;
 }
 
 .container-login {
@@ -24,14 +24,14 @@
 }
 
 .container-login form {
-    @apply bg-white flex flex-col items-center justify-center h-full px-3 md:px-10 py-0;
+    @apply bg-fondominicard flex flex-col items-center justify-center h-full px-3 md:px-10 py-0;
 }
 
 .container-login input[type="text"],
 .container-login input[type="email"],
 .container-login input[type="password"],
 .container-login input[type="number"] {
-    @apply bg-transparent ring-1 ring-neutral-200 focus:ring-next-500 border-0 border-none text-sm rounded-xl w-full outline-none my-2 py-2 px-4;
+    @apply bg-transparent ring-1 ring-neutral-200 focus:ring-next-500 border-0 border-none text-sm rounded-xl w-full outline-none my-2 py-2 px-4 focus:text-colorlabel;
 }
 
 .form-container {
@@ -127,7 +127,7 @@
 }
 
 .sign-up__social {
-    @apply w-full max-w-full flex flex-col gap-2 bg-white;
+    @apply w-full max-w-full flex flex-col gap-2;
 }
 
 .sign-up__social-button {

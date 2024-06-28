@@ -1,4 +1,7 @@
 <x-app-layout>
+
+    @section('moneda', $moneda)
+
     {{-- <div class="relative flex items-top justify-center py-4 sm:pt-0">
             @if (Route::has('login'))
                 <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
@@ -53,21 +56,23 @@
                         @endforeach
                     </div>
 
-                    <button type="button"
-                        class="absolute w-6 h-12 rounded-r m-auto top-0 left-0 bottom-0 z-[5] p-1 shadow bg-white text-neutral-500 text-center opacity-40 flex justify-center items-center transition-opacity ease-in-out duration-150"
-                        id="previusslider">
-                        <svg viewBox="0 0 21 37" xmlns="http://www.w3.org/2000/svg" class="block w-full h-full p-0.5">
-                            <path d="M20.33 1.776L18.517-.04.54 18.397l17.977 18.434 1.815-1.815L4.45 18.67v-.552z"
-                                fill="currentColor" fill-rule="evenodd" />
+                    <button type="button" id="previusslider"
+                        class="absolute w-auto h-12 rounded-r m-auto top-0 left-0 bottom-0 z-[5] text-next-700 text-center opacity-40 flex justify-center items-center hover:opacity-60 transition-opacity ease-in-out duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 349 512" xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-full h-full block p-1">
+                            <path
+                                d="M1.843 262.032 170.39 509.5c1.088 1.605 2.564 2.5 4.11 2.5h168.548c2.348 0 4.476-2.081 5.37-5.264.902-3.191.402-6.861-1.26-9.301L182.718 256l164.44-241.434c1.661-2.44 2.161-6.11 1.26-9.3-.894-3.183-3.021-5.265-5.37-5.265H174.5c-1.546 0-3.022.896-4.11 2.5L1.842 249.968c-2.272 3.336-2.272 8.729 0 12.065z" />
                         </svg>
                         <span class="sr-only">Previous</span>
                     </button>
-                    <button type="button"
-                        class="absolute w-6 h-12 rounded-l m-auto top-0 right-0 bottom-0 z-[5] p-1 shadow bg-white text-neutral-500 text-center opacity-40 flex justify-center items-center transition-opacity ease-in-out duration-150"
-                        id="nextslider">
-                        <svg viewBox="0 0 21 37" xmlns="http://www.w3.org/2000/svg" class="block w-full h-full p-0.5">
-                            <path d="M.539 1.776L2.353-.04l17.978 18.436L2.353 36.831.54 35.016l15.88-16.346v-.552z"
-                                fill="currentColor" fill-rule="evenodd" />
+                    <button type="button" id="nextslider"
+                        class="absolute w-auto h-12 rounded-l m-auto top-0 right-0 bottom-0 z-[5] text-next-700 text-center opacity-40 flex justify-center items-center hover:opacity-60 transition-opacity ease-in-out duration-150">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 349 512" xmlns="http://www.w3.org/2000/svg"
+                            fill="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-full h-full block p-1">
+                            <path
+                                d="m347.01895,249.967l-168.54792,-247.467c-1.08703,-1.604 -2.56296,-2.5 -4.10905,-2.5l-168.5486,0c-2.34774,0 -4.47548,2.082 -5.37044,5.265c-0.90109,3.191 -0.40117,6.861 1.26139,9.301l164.43955,241.434l-164.43955,241.433c-1.66187,2.441 -2.1618,6.11 -1.26139,9.301c0.89496,3.183 3.02202,5.265 5.37044,5.265l168.5486,0c1.54609,0 3.02202,-0.896 4.10905,-2.5l168.5486,-247.467c2.27213,-3.336 2.27213,-8.729 -0.00068,-12.065z" />
                         </svg>
                         <span class="sr-only">Next</span>
                     </button>
@@ -85,7 +90,7 @@
                 const prevButton = document.getElementById('previusslider');
                 let currentIndex = 0;
                 let autoSlideInterval;
-    
+
                 const showSlide = (index, direction) => {
                     if (direction === 'next') {
                         // items[index].classList.add('entrante');
@@ -94,20 +99,22 @@
                         // items[currentIndex].classList.add('entrante');
                         // items[index].classList.add('saliente');
                     }
-    
+
                     changeImageSlider(index);
                 };
-    
+
                 const nextSlide = () => {
                     currentIndex = (currentIndex + 1) % items.length;
                     showSlide(currentIndex, 'next');
+                    resetAutoSlide();
                 };
-    
+
                 const prevSlide = () => {
                     currentIndex = (currentIndex - 1 + items.length) % items.length;
                     showSlide(currentIndex, 'prev');
+                    resetAutoSlide();
                 };
-    
+
                 const changeImageSlider = (index) => {
                     items.forEach((item, i) => {
                         if (i === index) {
@@ -116,7 +123,7 @@
                             item.classList.remove('activo');
                         }
                     });
-    
+
                     idicador_items.forEach((item, i) => {
                         if (i === index) {
                             item.classList.add('activo');
@@ -124,33 +131,39 @@
                             item.classList.remove('activo');
                         }
                     });
-    
+
                     currentIndex = index;
                 }
-    
+
                 const startAutoSlide = () => {
                     autoSlideInterval = setInterval(nextSlide, 5000);
                 };
-    
+
                 const stopAutoSlide = () => {
                     clearInterval(autoSlideInterval);
                 };
-    
+
+                const resetAutoSlide = () => {
+                    stopAutoSlide();
+                    startAutoSlide();
+                };
+
                 idicador_items.forEach((button, e) => {
                     button.addEventListener('click', function(e) {
                         changeImageSlider($(this).index());
+                        resetAutoSlide();
                     })
                 })
-    
+
                 nextButton.addEventListener('click', nextSlide);
                 prevButton.addEventListener('click', prevSlide);
-    
+
                 slider.addEventListener('mouseover', stopAutoSlide);
                 slider.addEventListener('mouseout', startAutoSlide);
-    
+
                 showSlide(currentIndex);
                 startAutoSlide();
-    
+
             });
         </script>
     @endif
@@ -159,13 +172,12 @@
         {{-- <h3 class="tracking-wide font-bold text-next-500 text-xs mb-3">NOSOTROS</h3> --}}
 
         <section class="w-full flex flex-col justify-center items-center mx-auto py-12">
-            <h2 class="tracking-wide mr-auto text-2xl xl:text-5xl mb-3 font-semibold text-next-500">
+            <h2 class="tracking-wide text-center text-2xl xl:text-5xl mb-3 font-semibold text-next-500">
                 NEXT TECHNOLOGIES<br> TU ALIADO TECNOLÓGICO</h2>
 
             <p
-                class="mt-3 ml-auto tracking-wide mb-3 text-justify p-5 max-w-xl shadow-md shadow-shadowminicard text-colorsubtitleform rounded-xl">
-                Somos una empresa creada en 2012, dedicada a
-                la
+                class="mt-3 mx-auto tracking-wide mb-3 text-justify [text-align-last:center] text-las p-5 max-w-xl text-colorsubtitleform ">
+                Somos una empresa creada en 2012, dedicada a la
                 venta de productos y servicios. Distribuimos accesorios,
                 suministros, piezas, partes y equipos de la industria
                 tecnológica, ubicada en la zona nororiente del país.
@@ -373,7 +385,7 @@
         </section>
 
 
-        <section class="w-full py-12">
+        {{-- <section class="w-full py-12">
             <div class="w-full grid grid-cols-1 xl:grid-cols-4">
                 <section class="pt-24 px-4 pb-4">
                     <div class="max-w-[350px]">
@@ -442,22 +454,22 @@
                     </div>
                 </section>
             </div>
-        </section>
+        </section> --}}
     </div>
 
 
 
 
 
-    <div class="w-full flex flex-wrap gap-3 xl:space-x-8 p-8">
+    {{-- <div class="w-full flex flex-wrap gap-3 xl:space-x-8 p-8">
         <x-button-web text="BUTTON PRUEBA" />
         <x-link-web href="#" text="ENLACE PRUEBA" />
-    </div>
+    </div> --}}
 
 
 
 
-    <div class="w-full flex flex-col md:flex-row">
+    {{-- <div class="w-full flex flex-col md:flex-row">
         <div class="w-[42%] flex-shrink-0">
             <div class="w-full rounded-3xl overflow-hidden">
                 <img src="https://practipago.pe/wp-content/uploads/2020/11/Imagenes-aplicaciones-Practipago-WEB_2.jpg"
@@ -602,9 +614,9 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
-    <div class="w-full relative">
+    {{-- <div class="w-full relative">
         <div class="bg-white w-full max-w-full lg:px-4 px-0">
             <div class="relative">
                 <div class="w-full m-0 mb-10">
@@ -884,5 +896,5 @@
             </span>
             <span class="sr-only">Next</span>
         </a>
-    </div>
+    </div> --}}
 </x-app-layout>

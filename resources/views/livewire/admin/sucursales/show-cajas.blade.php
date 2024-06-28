@@ -1,4 +1,8 @@
 <div>
+    <div class="loading-overlay fixed hidden" wire:loading.flex>
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="CAJAS DE PAGO">
         <div class="w-full flex flex-wrap lg:flex-nowrap gap-3">
             @can('admin.administracion.sucursales.boxes.edit')
@@ -22,10 +26,6 @@
                             </x-button>
                         </div>
                     </form>
-
-                    <div x-show="savingserie" class="loading-overlay rounded" wire:loading wire:loading.flex>
-                        <x-loading-next />
-                    </div>
                 </div>
             @endcan
 

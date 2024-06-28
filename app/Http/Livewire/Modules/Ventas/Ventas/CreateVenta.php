@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
-use App\Helpers\GetPrice;
 use App\Models\Category;
 use App\Models\Moneda;
 use App\Models\Pricetype;
@@ -17,7 +16,6 @@ use App\Models\Carshoopserie;
 use App\Models\Kardex;
 use App\Models\Marca;
 use App\Models\Producto;
-use App\Models\Promocion;
 use Illuminate\Support\Facades\DB;
 use Modules\Ventas\Entities\Venta;
 
@@ -58,11 +56,11 @@ class CreateVenta extends Component
     //     'cart.*.serie.required' => 'Serie del producto requerido',
     // ];
 
-    public function mount($pricetype, Moneda $moneda)
+    public function mount($pricetype, $empresa, Moneda $moneda)
     {
         $this->producto = new Producto();
         $this->sucursal = auth()->user()->sucursal;
-        $this->empresa = auth()->user()->sucursal->empresa;
+        $this->empresa = $empresa;
         $this->pricetype = $pricetype;
         $this->moneda = $moneda;
         $this->pricetype_id = $pricetype->id ?? null;
@@ -308,7 +306,7 @@ class CreateVenta extends Component
                 $promocion->outs = $promocion->outs + $cantidad;
                 $promocion->save();
                 if ($promocion->limit ==  $promocion->outs) {
-                    $serieProducto->producto->assignPriceProduct();
+                    $serieProducto->producto->assignPriceProduct($promocion);
                 }
             }
 
@@ -526,7 +524,7 @@ class CreateVenta extends Component
                     $promocion->outs = $promocion->outs + $cantidad;
                     $promocion->save();
                     if ($promocion->limit ==  $promocion->outs) {
-                        $producto->assignPriceProduct();
+                        $producto->assignPriceProduct($promocion);
                     }
                 }
             }
@@ -662,15 +660,6 @@ class CreateVenta extends Component
             $producto->almacens()->updateExistingPivot($this->almacen_id, [
                 'cantidad' => $stock - $cantidad,
             ]);
-            // if ($promocion) {
-            //     if ($promocion->limit ==  $promocion->outs) {
-            //         $producto->assignPriceProduct();
-            //     }
-            //     if ($carshoop->promocion->limit ==  $carshoop->promocion->outs) {
-            //         $carshoop->promocion->producto->assignPriceProduct();
-            //     }
-            // }
-            // dd($producto->getPromocionDisponible());
             DB::commit();
             $this->reset(['searchserie']);
             $this->resetValidation();

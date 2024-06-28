@@ -1,14 +1,12 @@
 <x-app-layout>
     <x-slot name="breadcrumb">
-        <x-link-breadcrumb text="VENTAS EN LÍNEA" active>
+        <x-link-breadcrumb text="TIENDA WEB" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                    <path
-                        d="M3.06164 15.1933L3.42688 13.1219C3.85856 10.6736 4.0744 9.44952 4.92914 8.72476C5.78389 8 7.01171 8 9.46734 8H14.5327C16.9883 8 18.2161 8 19.0709 8.72476C19.9256 9.44952 20.1414 10.6736 20.5731 13.1219L20.9384 15.1933C21.5357 18.5811 21.8344 20.275 20.9147 21.3875C19.995 22.5 18.2959 22.5 14.8979 22.5H9.1021C5.70406 22.5 4.00504 22.5 3.08533 21.3875C2.16562 20.275 2.4643 18.5811 3.06164 15.1933Z" />
-                    <path
-                        d="M7.5 8L7.66782 5.98618C7.85558 3.73306 9.73907 2 12 2C14.2609 2 16.1444 3.73306 16.3322 5.98618L16.5 8" />
-                    <path d="M15 11C14.87 12.4131 13.5657 13.5 12 13.5C10.4343 13.5 9.13002 12.4131 9 11" />
+                    <circle cx="8" cy="21" r="1" />
+                    <circle cx="19" cy="21" r="1" />
+                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
@@ -36,7 +34,7 @@
                         }
                     </style>
 
-                    <div class="w-full max-w-full h-96 rounded overflow-hidden">
+                    <div class="w-full max-w-full h-96 rounded overflow-hidden relative">
                         @if ($image)
                             <template x-if="currentImage">
                                 <figure id="imageproducto" x-ref="figure"
@@ -53,6 +51,27 @@
                             </template>
                         @else
                             <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+                        @endif
+
+                        @if ($producto->marca)
+                            @if ($producto->marca->image && $empresa->verLogomarca())
+                                <div class="absolute top-1 right-0 w-24 h-12">
+                                    <img src="{{ $producto->marca->image->getMarcaURL() }}"
+                                        class="block w-full h-full object-scale-down">
+                                </div>
+                            @endif
+                        @endif
+                        @if (count($producto->especificacions) > 0)
+                            <ul
+                                class="text-white py-3 text-[10px] absolute left-0 top-20 flex flex-col gap-1 justify-start items-start">
+                                @foreach ($producto->especificacions()->take(5)->get() as $item)
+                                    <li class="p-1 px-1.5 bg-next-500 rounded-xl tracking-[0.0625em] text-[10px]">
+                                        <span class="font-medium">
+                                            {{ $item->caracteristica->name }} : </span>
+                                        {{ $item->name }}
+                                    </li>
+                                @endforeach
+                            </ul>
                         @endif
                     </div>
 
@@ -164,9 +183,9 @@
                                                         class="inline-flex gap-2 items-center p-1  underline">
                                                         Ver descripción
                                                         <span class="w-4 h-4 inline-block">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                                color="currentColor" fill="none"
-                                                                class="w-full h-full">
+                                                            <svg xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 24 24" color="currentColor"
+                                                                fill="none" class="w-full h-full">
                                                                 <path
                                                                     d="M9.00005 6C9.00005 6 15 10.4189 15 12C15 13.5812 9 18 9 18"
                                                                     stroke="currentColor" stroke-width="1.5"
@@ -225,7 +244,7 @@
                                             {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                         </h1>
 
-                                        @if ($descuento > 0)
+                                        @if ($descuento > 0 && $empresa->verOldprice())
                                             <span class="text-colorsubtitleform text-xs line-through text-red-600">
                                                 {{ $moneda->simbolo }}
                                                 {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
@@ -240,10 +259,10 @@
                                         @endif
 
                                         <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto"
-                                            :empresa="$empresa" :moneda="$moneda" :pricetype="$pricetype">
-                                        @else
-                                            <p class="text-colorerror leading-3 text-xs">CONFIGURAR PRECIOS DE VENTA
-                                                PARA TIENDA VIRTUAL</p>
+                                            :empresa="$empresa" :moneda="$moneda" :pricetype="$pricetype" />
+                                    @else
+                                        <p class="text-colorerror text-[10px] font-semibold text-center">
+                                            PRECIO DE VENTA NO ENCONTRADO</p>
                                     @endif
                                 </div>
                             </div>
@@ -404,10 +423,10 @@
                 <div class="bg-fondobodymodal p-3 rounded-lg overflow-hidden shadow-xl w-full max-w-2xl transform transition-all"
                     @click.away="closeModal()">
                     <!-- Modal header -->
-                    <div class="flex items-start justify-between">
-                        <h3 class="text-lg leading-6 font-medium text-colorlabel">
+                    <div class="w-full flex items-start justify-between">
+                        <h3 class="flex-1 w-full text-sm leading-4 font-medium text-colorsubtitleform">
                             {{ $producto->name }}</h3>
-                        <span class="cursor-pointer text-colorsubtitleform" @click="closeModal()">✕</span>
+                        <span class="flex-shrink-0 cursor-pointer text-colorsubtitleform ml-2" @click="closeModal()">✕</span>
                     </div>
 
                     <div class="w-full flex flex-col gap-2 text-left mt-5 p-5">
@@ -443,8 +462,8 @@
                                 </x-simple-card>
                             @endforeach
 
-                            <div class="w-full rounded-xl bg-amber-50 p-2 border border-orange-300">
-                                <p class="text-amber-500 text-sm">
+                            <div class="w-full rounded-xl bg-next-50 p-2 border border-next-300">
+                                <p class="text-next-500 text-sm">
                                     <span class="font-semibold">Importante:</span> Los puntos de recojo disponibles
                                     podrían variar en función
                                     del número de unidades adquiridas.
@@ -497,12 +516,15 @@
                                         class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
                                     <small class="text-[10px]">{{ $moneda->currency }}</small>
                                 </h1>
-                                @if ($descuento > 0)
+                                @if ($descuento > 0 && $empresa->verOldprice())
                                     <small class="block w-full line-through text-red-600 text-center text-xs">
                                         {{ $moneda->simbolo }}
                                         {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                     </small>
                                 @endif
+                            @else
+                                <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                                    PRECIO DE VENTA NO ENCONTRADO</p>
                             @endif
                         </x-card-producto-virtual>
                     @endforeach
@@ -561,12 +583,15 @@
                                         class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
                                     <small class="text-[10px]">{{ $moneda->currency }}</small>
                                 </h1>
-                                @if ($descuento > 0)
+                                @if ($descuento > 0 && $empresa->verOldprice())
                                     <small class="block w-full line-through text-red-600 text-center text-xs">
                                         {{ $moneda->simbolo }}
                                         {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                     </small>
                                 @endif
+                            @else
+                                <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                                    PRECIO DE VENTA NO ENCONTRADO</p>
                             @endif
                         </x-card-producto-virtual>
                     @endforeach
@@ -632,12 +657,15 @@
                                         class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
                                     <small class="text-[10px]">{{ $moneda->currency }}</small>
                                 </h1>
-                                @if ($descuento > 0)
+                                @if ($descuento > 0 && $empresa->verOldprice())
                                     <small class="block w-full line-through text-red-600 text-center text-xs">
                                         {{ $moneda->simbolo }}
                                         {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                     </small>
                                 @endif
+                            @else
+                                <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                                    PRECIO DE VENTA NO ENCONTRADO</p>
                             @endif
                         </x-card-producto-virtual>
                     @endforeach

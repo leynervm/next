@@ -16,13 +16,21 @@
         @if ($promocion)
             <div
                 class="absolute top-3 right-1 bg-red-600 text-white rounded-sm inline-flex items-center justify-center p-1 text-center h-6 w-auto whitespace-nowrap">
-                @if ($promocion->isDescuento())
-                    <span class="text-sm">-{{ formatDecimalOrInteger($promocion->descuento) }}%</span>
-                @elseif ($promocion->isCombo())
-                    <span class="text-sm">COMBO</span>
-                @else
-                    <span class="text-sm">LIQUIDACIÓN</span>
-                @endif
+                <span class="text-sm">
+                    @if ($empresa->isTitlePromocion())
+                        PROMOCIÓN
+                    @elseif($empresa->isTitleLiquidacion())
+                        LIQUIDACIÓN
+                    @else
+                        @if ($promocion->isDescuento())
+                            -{{ formatDecimalOrInteger($promocion->descuento) }}%
+                        @elseif ($promocion->isCombo())
+                            OFERTA
+                        @else
+                            LIQUIDACIÓN
+                        @endif
+                    @endif
+                </span>
             </div>
         @endif
 
@@ -61,12 +69,15 @@
                             </div>
                         </div>
 
-                        @if ($descuento > 0)
+                        @if ($descuento > 0 && $empresa->verOldprice())
                             <div class="text-sm line-through text-red-600">
                                 {{ $moneda->simbolo }}
                                 {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                             </div>
                         @endif
+                    @else
+                        <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                            PRECIO DE VENTA NO ENCONTRADO</p>
                     @endif
                 </div>
             </div>

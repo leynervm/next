@@ -34,6 +34,14 @@ class CreateEmpresasTable extends Migration
             $table->string('clientsecret', 100)->nullable();
             $table->decimal('montoadelanto', 10, 2)->nullable();
             $table->integer('uselistprice')->default(0);
+            $table->integer('viewpriceantes')->default(0);
+            $table->integer('viewlogomarca')->default(0);
+            $table->integer('viewtextopromocion')->default(0);
+            $table->integer('usemarkagua')->default(0);
+            $table->string('markagua', 100)->nullable();
+            $table->string('alignmark', 25)->nullable()->default('center');
+            $table->integer('widthmark')->nullable()->default(100);
+            $table->integer('heightmark')->nullable()->default(100);
             $table->integer('usepricedolar')->default(0);
             $table->integer('viewpricedolar')->default(0);
             $table->decimal('tipocambio', 10, 4)->nullable();

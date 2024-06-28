@@ -71,9 +71,13 @@ class ConfiguracionFacturacion extends Component
 
             $urlcert = $this->empresa->cert ?? null;
             if ($this->cert) {
+                $urlOld = 'company/cert/' . $this->empresa->cert;
                 $extcert = FormatoPersonalizado::getExtencionFile($this->cert->getClientOriginalName());
                 $urlcert = 'cert_' . $this->empresa->document . '.' . $extcert;
                 $this->cert->storeAs('company/cert/', $urlcert, 'local');
+                if (Storage::disk('local')->exists($urlOld)) {
+                    Storage::disk('local')->delete($urlOld);
+                }
             }
 
             $this->empresa->cert = $urlcert;
@@ -95,19 +99,17 @@ class ConfiguracionFacturacion extends Component
         }
     }
 
-    public function deletecert(Empresa $empresa)
+    public function deletecert()
     {
-        if ($empresa) {
-            // dd(Storage::disk('local')->exists('company/pem/' . $this->empresa->publickey));
+        if ($this->empresa->cert) {
             if (Storage::disk('local')->exists('company/cert/' . $this->empresa->cert)) {
                 Storage::disk('local')->delete('company/cert/' . $this->empresa->cert);
+                $this->empresa->cert = null;
+                $this->empresa->save();
+                $this->idcert = rand();
+                $this->empresa->refresh();
+                $this->dispatchBrowserEvent('deleted');
             }
-
-            $empresa->cert = null;
-            $empresa->save();
-            $this->idcert = rand();
-            $this->empresa->refresh();
-            $this->dispatchBrowserEvent('deleted');
         }
     }
 

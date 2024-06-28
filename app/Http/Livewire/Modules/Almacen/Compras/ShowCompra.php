@@ -41,9 +41,9 @@ class ShowCompra extends Component
     public function render()
     {
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        if ($this->monthbox) {
+        if ($this->monthbox && $this->openbox) {
             $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
+                $query->where('id', auth()->user()->sucursal_id);
             })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
                 ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
                 ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();

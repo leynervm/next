@@ -3,6 +3,7 @@
 use App\Enums\StatusPayWebEnum;
 use App\Http\Controllers\AuthController;
 use App\Models\Category;
+use App\Models\Moneda;
 use App\Models\Slider;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
@@ -38,9 +39,9 @@ Route::get('/login/auth/{driver}/callback', [AuthController::class, 'callback'])
 
 
 Route::get('/', function () {
-    // $empresa = mi_empresa();
-    // $pricetype = $empresa ? getPricetypeAuth($empresa) : null;
-    // $categories = Category::orderBy('orden', 'asc')->get();
+    $empresa = mi_empresa();
+    $moneda = Moneda::default()->first();
+    $pricetype = getPricetypeAuth($empresa);
     $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
 
     if (auth()->user()) {
@@ -52,5 +53,5 @@ Route::get('/', function () {
         }
     }
 
-    return view('welcome', compact('sliders'));
+    return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
 });

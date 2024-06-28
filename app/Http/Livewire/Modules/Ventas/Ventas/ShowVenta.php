@@ -3,10 +3,12 @@
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
 use App\Enums\MovimientosEnum;
+use App\Models\Cajamovimiento;
 use App\Models\Concept;
 use App\Models\Cuota;
 use App\Models\Itemserie;
 use App\Models\Methodpayment;
+use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Models\Tvitem;
@@ -14,6 +16,7 @@ use App\Rules\ValidateNumericEquals;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Facturacion\Entities\Comprobante;
 use Modules\Ventas\Entities\Venta;
@@ -25,16 +28,27 @@ class ShowVenta extends Component
     use AuthorizesRequests;
 
     public $open = false;
+    public $openpay = false;
     public $opencuotas = false;
-    public $venta, $cuota, $monthbox, $openbox, $concept, $methodpayment_id, $detalle;
+    public $venta, $cuota, $monthbox, $openbox, $moneda_id, $concept,
+        $methodpayment_id, $detalle, $tipocambio;
     public $cuotas = [];
     public $amountcuotas = 0;
     public $countcuotas = 0;
     public $tvitem = [];
+    public $pendiente =  0;
+    public $paymentactual = 0;
+    public $totalamount = 0;
 
     protected function rules()
     {
         return [
+            'totalamount' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+            'tipocambio' => [
+                'nullable', Rule::requiredIf($this->venta->moneda_id != $this->moneda_id),
+                'numeric', 'decimal:0,4', 'min:0', 'gt:0'
+            ],
+            'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'cuota.id' => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
             'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
@@ -44,28 +58,28 @@ class ShowVenta extends Component
         ];
     }
 
-    // protected $messages = [
-    //     'cuotas.*.id.required' => 'Id de cuota requerido',
-    //     'cuotas.*.date.required' => 'Fecha de pago de cuota requerido',
-    //     'cuotas.*.date.after_or_equal' => 'Fecha de pago debe ser mayor igual a la actual',
-    //     'cuotas.*.amount.required' => 'Monto de cuota requerido',
-    //     'tvitem.*.serie.required' => 'Serie del producto requerido',
-    //     'tvitem.*.tvitem_id.exists' => 'Tvitem no existe en la base de datos',
-    // ];
-
-    public function mount(Venta $venta, Concept $concept)
+    public function mount(Venta $venta)
     {
         $this->cuota = new Cuota();
         $this->openbox = Openbox::mybox($venta->sucursal_id)->first();
         $this->monthbox = Monthbox::usando($venta->sucursal_id)->first();
         $this->venta = $venta;
-        $this->concept = $concept;
     }
 
     public function render()
     {
+        $monedas = mi_empresa()->usarDolar() ? Moneda::orderBy('id', 'asc')->get() : Moneda::default()->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        return view('livewire.modules.ventas.ventas.show-venta', compact('methodpayments'));
+        if ($this->monthbox && $this->openbox) {
+            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
+                $query->where('id', auth()->user()->sucursal_id);
+            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
+                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+        } else {
+            $diferencias = [];
+        }
+        return view('livewire.modules.ventas.ventas.show-venta', compact('methodpayments', 'diferencias', 'monedas'));
     }
 
     public function pay(Cuota $cuota)
@@ -73,7 +87,11 @@ class ShowVenta extends Component
         $this->authorize('admin.ventas.payments.edit');
         $this->resetValidation();
         $this->cuota = $cuota;
+        $this->paymentactual = $cuota->amount;
+        $this->tipocambio = mi_empresa()->tipocambio ?? 0;
+        $this->moneda_id = $cuota->moneda_id;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->concept = Concept::paycuota()->first();
         $this->open = true;
     }
 
@@ -90,6 +108,10 @@ class ShowVenta extends Component
             return false;
         }
 
+        if ($this->cuota->moneda_id == $this->moneda_id) {
+            $this->totalamount = $this->paymentactual;
+        }
+
         $this->validate();
         DB::beginTransaction();
 
@@ -97,23 +119,23 @@ class ShowVenta extends Component
             $this->cuota->savePayment(
                 $this->venta->sucursal_id,
                 $this->cuota->amount,
-                $this->cuota->amount,
-                null,
-                $this->venta->moneda_id,
+                $this->totalamount,
+                $this->cuota->moneda_id != $this->moneda_id ? $this->tipocambio : null,
+                $this->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::INGRESO->value,
                 $this->concept->id,
                 $this->openbox->id,
                 $this->monthbox->id,
-                $this->venta->code,
-                trim($this->detalle),
+                $this->venta->seriecompleta,
+                !empty($this->detalle) ? trim($this->detalle) : null,
             );
 
             $this->cuota->cuotable->paymentactual += $this->cuota->amount;
             $this->cuota->cuotable->save();
             DB::commit();
             $this->resetValidation();
-            $this->reset(['open', 'methodpayment_id']);
+            $this->resetExcept(['cuota', 'openbox', 'monthbox', 'venta']);
             $this->venta->refresh();
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
@@ -557,6 +579,109 @@ class ShowVenta extends Component
             DB::commit();
             $this->venta->refresh();
             $this->reset(['tvitem']);
+            $this->dispatchBrowserEvent('created');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function deletepay(Cajamovimiento $cajamovimiento)
+    {
+        // $this->authorize('admin.ventas.deletepayment');
+        DB::beginTransaction();
+        try {
+            $cajamovimiento->delete();
+            DB::commit();
+            $this->venta->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function openmodal()
+    {
+        // $this->authorize('admin.almacen.compras.pagos');
+        $this->resetValidation();
+        $this->tipocambio = mi_empresa()->tipocambio ?? 0;
+        $this->pendiente = $this->venta->total - $this->venta->cajamovimientos()->sum('amount');
+        $this->paymentactual = number_format($this->pendiente, 3, '.', '');
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->concept = Concept::ventas()->first();
+        $this->moneda_id = $this->venta->moneda_id;
+        $this->openpay = true;
+    }
+
+    public function savepay()
+    {
+        // $this->authorize('admin.ventas.payments.edit');
+        if (!$this->monthbox || !$this->monthbox->isUsing()) {
+            $this->dispatchBrowserEvent('validation', getMessageMonthbox());
+            return false;
+        }
+
+        if (!$this->openbox || !$this->openbox->isActivo()) {
+            $this->dispatchBrowserEvent('validation', getMessageOpencaja());
+            return false;
+        }
+
+        $parcialamount = $this->venta->cajamovimientos()->sum('amount') ?? 0;
+        if (($parcialamount + $this->paymentactual) > $this->venta->total) {
+            $mensaje =  response()->json([
+                'title' => 'MONTO PARCIAL SUPERA AL TOTAL DE LA VENTA !',
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if ($this->venta->moneda_id == $this->moneda_id) {
+            $this->totalamount = $this->paymentactual;
+        }
+
+        $this->validate([
+            'paymentactual' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+            'totalamount' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+            'tipocambio' => [
+                'nullable', Rule::requiredIf($this->venta->moneda_id != $this->moneda_id),
+                'numeric', 'decimal:0,4', 'min:0', 'gt:0'
+            ],
+            'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
+            'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
+            'concept.id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
+            'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
+            'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
+            'detalle' => ['nullable', 'string'],
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $this->venta->savePayment(
+                $this->venta->sucursal_id,
+                $this->paymentactual,
+                $this->totalamount,
+                $this->venta->moneda_id != $this->moneda_id ? $this->tipocambio : null,
+                $this->moneda_id,
+                $this->methodpayment_id,
+                MovimientosEnum::INGRESO->value,
+                $this->concept->id,
+                $this->openbox->id,
+                $this->monthbox->id,
+                $this->venta->seriecompleta,
+                !empty($this->detalle) ? trim($this->detalle) : 'PAGO PARCIAL VENTA',
+            );
+            DB::commit();
+            $this->resetValidation();
+            $this->resetExcept(['cuota', 'openbox', 'monthbox', 'venta']);
+            $this->venta->refresh();
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
             DB::rollBack();

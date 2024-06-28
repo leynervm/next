@@ -1,10 +1,10 @@
 <div class="fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto h-[70px] bg-next-900">
     <div class="w-full mx-auto flex relative">
         @if ($empresa->image)
-            <div class="flex bg-fondominicard">
-                <a href="/" class="hidden xl:block w-60 px-5">
-                    <img class="mx-auto h-full object-scale-down"
-                        src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+            <div class="flex items-center bg-next-800">
+                <a href="/" class="hidden xl:block xl:flex-1 w-40 px-5 h-[68%]">
+                    <img class="mx-auto h-full w-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
+                        alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
                 </a>
             </div>
@@ -31,9 +31,9 @@
                     </div>
                 </div>
                 @if ($empresa->image)
-                    <a href="/" class="hidden xs:block xl:hidden w-20 flex-shrink-0">
-                        <img class="mx-auto h-full object-scale-down"
-                            src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
+                    <a href="/" class="hidden xs:block xl:hidden w-20 h-[68%] flex-shrink-0">
+                        <img class="h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
+                            alt="">
                         {{-- <x-isotipo-next class="text-white h-full mx-auto" /> --}}
                     </a>
                 @endif
@@ -64,10 +64,10 @@
             <div class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[999]'">
                 <div class="w-full flex h-[46px] m-0 bg-white justify-center items-center pl-6 rounded-3xl border-0.5 border-white"
                     :class="products.length ? 'rounded-b-none' : ''">
-                    <label for="testId-SearchBar-Input" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
+                    <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                         Barra de búsqueda</label>
-                    <input type="text" autocomplete="off" x-model="search" @focus="backdrop=true"
-                        @input.debounce.300ms="fetchProducts"
+                    <input type="text" autocomplete="off" x-model="search" @focus="backdrop=true,openSidebar=false"
+                        @input.debounce.300ms="fetchProducts" @keydown.enter="redirectEnter"
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                         value="" placeholder="Buscar en NEXT">
                 </div>
@@ -87,7 +87,7 @@
                 <template x-for="product in products" :key="product.id">
                     <li>
                         <a x-html="highlight(product.name, search)"
-                            class="block w-full text-colorsubtitleform p-2 text-xs leading-3 hover:bg-neutral-100"
+                            class="block w-full text-colorsubtitleform p-2 text-xs leading-3 hover:bg-fondohoverselect2"
                             :href="route('productos.show', product.slug)"></a>
                     </li>
                 </template>
@@ -101,6 +101,7 @@
                     products: [],
                     error: '',
                     fetchProducts() {
+                        this.openSidebar = false;
                         this.error = '',
                             fetch(`{{ route('api.producto.search') }}`, {
                                 method: 'POST',
@@ -114,7 +115,7 @@
                             })
                             .then(response => response.json())
                             .then(data => {
-                                console.log(data);
+                                // console.log(data);
                                 if (data.error) {
                                     this.error = data.error;
                                 } else {
@@ -123,7 +124,7 @@
                             })
                             .catch(() => {
                                 this.error = 'There was an error processing your request.';
-                                console.log(this.error);
+                                // console.log(this.error);
                             });
                     },
                     highlight(text, search) {
@@ -137,6 +138,19 @@
                         };
 
                         return routes[name].replace(':id', id);
+                    },
+                    redirectEnter() {
+                        if (this.search.trim().length > 0) {
+                            if (this.products.length > 1) {
+                                window.location.href =
+                                    `{{ route('productos') }}?coincidencias=${encodeURIComponent(this.search)}`;
+                            } else {
+                                if (this.products.length == 1) {
+                                    window.location.href = this.route('productos.show', this.products[0].slug);
+                                }
+                            }
+                            // window.location.href = `{{ route('productos') }}?coincidencias=${encodeURIComponent(this.search)}`;
+                        }
                     }
                 }
             }
@@ -177,7 +191,7 @@
                                 @auth
                                     <div class="absolute w-full h-full top-0 right-0 xl:left-0"
                                         :class="backdrop ? 'z-[1]' : 'z-[1000]'">
-                                        <div x-show="login" x-cloak x-transition
+                                        <div x-show="login" x-cloak x-transition style="display: none"
                                             class="absolute right-0 xl:-right-[56px] top-[35px] xl:top-[52px] shadow-md p-2 bg-fondominicard rounded-xl w-full min-w-[200px] xs:min-w-[226px] outline-none z-20">
                                             {{-- <div class="block text-xs text-colorsubtitleform border-b border-neutral-200">
                                             {{ __('Manage Account') }}
@@ -281,7 +295,8 @@
                 <li
                     class="group relative h-[68%] flex flex-col justify-center items-center cursor-pointer px-0 xl:min-w-[83px] w-auto flex-shrink-0 p-0 self-center transition ease-out duration-150">
                     <div class="relative flex flex-col justify-center items-start w-full h-full pr-3 xl:pr-0 xl:pl-4">
-                        <livewire:modules.marketplace.carrito.counter-carrito />
+                        <livewire:modules.marketplace.carrito.counter-carrito :empresa="$empresa" :moneda="$moneda"
+                            :pricetype="$pricetype" />
                     </div>
                 </li>
             </ul>
@@ -292,7 +307,7 @@
         <div class="w-full self-center flex cursor-pointer relative" :class="openSidebar ? '' : 'z-[999]'">
             <div class="w-full flex h-10 m-0 bg-white justify-center items-center pl-6 rounded-3xl border-0.5 border-white"
                 :class="products.length ? 'rounded-b-none' : ''">
-                <label for="testId-SearchBar-Input" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
+                <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                     Barra de búsqueda</label>
                 <input type="text" autocomplete="off" x-model="search" @focus="backdrop=true"
                     @input.debounce.300ms="fetchProducts"

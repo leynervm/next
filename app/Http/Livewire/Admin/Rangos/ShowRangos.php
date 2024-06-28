@@ -81,7 +81,6 @@ class ShowRangos extends Component
         $this->validate();
         DB::beginTransaction();
         try {
-
             $this->rango->save();
             // $pricetypes = Pricetype::pluck('id')->toArray();
             // $this->rango->pricetypes()->syncWithPivotValues(
@@ -93,12 +92,12 @@ class ShowRangos extends Component
             //         'updated_at' => now('America/Lima')
             //     ]
             // );
-            $productos = Producto::whereRangoBetween($this->rango->desde, $this->rango->hasta)->get();
-            if (count($productos) > 0) {
-                foreach ($productos as $item) {
-                    // if (mi_empresa()->usarlista()) {
-                    $item->assignPriceProduct();
-                    // }
+            if ($this->rango->isDirty('incremento')) {
+                $productos = Producto::whereRangoBetween($this->rango->desde, $this->rango->hasta)->get();
+                if (count($productos) > 0) {
+                    foreach ($productos as $item) {
+                        $item->assignPriceProduct();
+                    }
                 }
             }
             DB::commit();
@@ -129,20 +128,21 @@ class ShowRangos extends Component
 
         DB::beginTransaction();
         try {
-            $rango->pricetypes()->updateExistingPivot(
-                $pricetype,
-                ['ganancia' => $ganancia]
-            );
+            $gananciaOld = $rango->pricetypes()->find($pricetype)->pivot->ganancia;
+            if ($gananciaOld <> $ganancia) {
+                $rango->pricetypes()->updateExistingPivot(
+                    $pricetype,
+                    ['ganancia' => $ganancia]
+                );
 
-            $productos = Producto::whereRangoBetween($rango->desde, $rango->hasta)->get();
-            if (count($productos) > 0) {
-                foreach ($productos as $item) {
-                    // if (mi_empresa()->usarlista()) {
-                    $item->assignPriceProduct();
-                    // }
+                $productos = Producto::whereRangoBetween($rango->desde, $rango->hasta)->get();
+                if (count($productos) > 0) {
+                    foreach ($productos as $item) {
+                        $item->assignPriceProduct();
+                    }
                 }
+                $this->dispatchBrowserEvent('updated');
             }
-            $this->dispatchBrowserEvent('updated');
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();

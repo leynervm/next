@@ -13,7 +13,7 @@ class Methodpayment extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'type', 'default'];
+    protected $fillable = ['name', 'type', 'default', 'definido'];
 
     const DEFAULT = '1';
 
@@ -54,5 +54,10 @@ class Methodpayment extends Model
     public function isTransferencia()
     {
         return $this->type == self::TRANSFERENCIA;
+    }
+
+    public function isDefinido()
+    {
+        return $this->definido == self::DEFAULT;
     }
 }

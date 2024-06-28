@@ -1,4 +1,4 @@
-<div class="relative">
+<div class="relative" x-data="loadeditimage()">
 
     @if ($categories->hasPages())
         <div class="w-full pb-2">
@@ -10,48 +10,58 @@
         @if (count($categories))
             @foreach ($categories as $item)
                 <x-simple-card class="w-full flex flex-col items-start gap-2 relative p-2" data-id="{{ $item->id }}">
-                    @can('admin.almacen.categorias.edit')
-                        <span
-                            class="text-next-500 block cursor-grab h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"
-                                stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
-                                class="w-6 h-6 xs:w-8 xs:h-8">
-                                <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
-                                <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
-                                <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
-                                <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
-                                <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
-                                <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
-                                <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
-                                <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
-                                <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
-                            </svg>
-                        </span>
-                    @endcan
+                    <div class="w-full flex gap-3 items-start">
+                        <div class="w-full flex-1">
+                            @can('admin.almacen.categorias.edit')
+                                <span
+                                    class="text-next-500 block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                        stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                                        class="w-6 h-6 xs:w-8 xs:h-8 block">
+                                        <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
+                                        <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
+                                        <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
+                                        <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
+                                        <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
+                                        <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
+                                        <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
+                                        <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
+                                        <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
+                                    </svg>
+                                </span>
+                            @endcan
 
-                    <div class="w-full max-w-full">
-                        <h1 class="text-colortitleform text-xs font-semibold">{{ $item->name }}</h1>
-                        <div class="w-full flex flex-col justify-between gap-2 h-full">
-                            @if (count($item->subcategories))
-                                <div class="w-full flex flex-wrap gap-1">
-                                    @foreach ($item->subcategories as $subcategory)
-                                        <x-span-text :text="$subcategory->name" class="leading-3" />
-                                    @endforeach
+                            <div class="w-full">
+                                <h1 class="text-colortitleform text-xs font-semibold">{{ $item->name }}</h1>
+                                <div class="w-full flex flex-col justify-between gap-2 h-full">
+                                    @if (count($item->subcategories))
+                                        <div class="w-full flex flex-wrap gap-1">
+                                            @foreach ($item->subcategories as $subcategory)
+                                                <x-span-text :text="$subcategory->name" class="leading-3" />
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
-                            @endif
-
-                            <div class="w-full flex gap-1 pt-2 justify-end">
-                                @can('admin.almacen.categorias.edit')
-                                    <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled"
-                                        wire:key="editcat_{{ $item->id }}" />
-                                @endcan
-
-                                @can('admin.almacen.categorias.delete')
-                                    <x-button-delete onclick="confirmDelete({{ $item }})"
-                                        wire:loading.attr="disabled" wire:key="deletecat_{{ $item->id }}" />
-                                @endcan
                             </div>
                         </div>
+                        @if ($item->image)
+                            <div class="w-24 h-24 rounded overflow-hidden">
+                                <img src="{{ $item->image->getCategoryURL() }}"
+                                    class="w-full h-full object-scale-down block" alt="">
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="w-full flex gap-1 pt-2 justify-end">
+                        @can('admin.almacen.categorias.edit')
+                            <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled"
+                                wire:key="editcat_{{ $item->id }}" @click="editimage=null" />
+                        @endcan
+
+                        @can('admin.almacen.categorias.delete')
+                            <x-button-delete onclick="confirmDelete({{ $item }})" wire:loading.attr="disabled"
+                                wire:key="deletecat_{{ $item->id }}" />
+                        @endcan
                     </div>
                 </x-simple-card>
             @endforeach
@@ -76,6 +86,61 @@
                         placeholder="Ingrese nombre categoría..." />
                     <x-jet-input-error for="category.name" />
                 </div>
+
+                <div class="w-full h-60 relative mb-2 shadow-md shadow-shadowminicard rounded-xl overflow-hidden">
+                    <template x-if="editimage">
+                        <img id="editimage" class="object-scale-down block w-full h-full" :src="editimage" />
+                    </template>
+                    <template x-if="!editimage">
+                        @if ($category->image)
+                            <img id="editimage" class="object-scale-down block w-full h-full"
+                                src="{{ $category->image->getCategoryURL() }}" />
+                        @else
+                            <x-icon-fileupload class="w-full h-full !my-0" />
+                        @endif
+                    </template>
+                </div>
+
+                <div class="w-full flex flex-wrap gap-2 justify-center">
+                    <template x-if="editimage">
+                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" @click="reset">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    </template>
+
+                    @if ($category->image)
+                        <x-button x-cloak x-show="editimage == null" class="inline-flex !rounded-lg"
+                            wire:loading.attr="disabled" wire:click="deletelogo" wire:key="buttondeletelogo">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            ELIMINAR LOGO
+                        </x-button>
+                    @endif
+
+                    <x-input-file for="editFileInput" titulo="SELECCIONAR LOGO"
+                        wire:loading.class="disabled:opacity-25" class="!rounded-lg">
+                        <input type="file" class="hidden" wire:model="logo" id="editFileInput"
+                            accept="image/jpg,image/jpeg,image/png" @change="loadlogo" />
+                    </x-input-file>
+                </div>
+                <x-jet-input-error for="logo" class="text-center" />
+
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
@@ -104,6 +169,22 @@
                 },
             })
         })
+
+        function loadeditimage() {
+            return {
+                editimage: null,
+                loadlogo() {
+                    let file = document.getElementById('editFileInput').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.editimage = e.target.result;
+                    reader.readAsDataURL(file);
+                },
+                reset() {
+                    this.editimage = null;
+                    @this.clearImage();
+                },
+            }
+        }
 
         function confirmDelete(category) {
             swal.fire({

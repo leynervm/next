@@ -68,7 +68,7 @@
                 <x-simple-card
                     class="w-72 relative flex flex-col gap-2 justify-between overflow-hidden {{ $item->isFinalizado() ? 'saturate-0' : '' }}">
                     <div class="w-full">
-                        <div class="block rounded overflow-hidden w-full h-48 shadow relative cursor-pointer">
+                        <div class="block rounded overflow-hidden w-full h-48 relative cursor-pointer">
                             @if ($image)
                                 <img src="{{ $image }}" alt="" class="w-full h-full object-scale-down">
                             @else

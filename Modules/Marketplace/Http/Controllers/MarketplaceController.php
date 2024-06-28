@@ -106,11 +106,14 @@ class MarketplaceController extends Controller
         }
     }
 
-    public function productos()
+    public function productos(Request $request)
     {
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
+        // $searchTerms = $request['coincidencias'] ?? null;
+        // if ($searchTerms) {
+        // }
 
         return view('marketplace::productos.index', compact('empresa', 'moneda', 'pricetype'));
     }
@@ -208,16 +211,25 @@ class MarketplaceController extends Controller
         $search = $request->input('search');
         $products = Producto::query()->select('id', 'name', 'slug');
 
-        if (strlen(trim($search)) < 3) {
+        if (strlen(trim($search)) < 2) {
             return response()->json([]);
         }
 
         $searchTerms = explode(' ', $search);
         $products->where(function ($query) use ($searchTerms) {
             foreach ($searchTerms as $term) {
-                $query->orWhere('name', 'ilike', '%' . $term . '%');
+                $query->orWhere('name', 'ilike', '%' . $term . '%')
+                    ->orWhereHas('marca', function ($q) use ($term) {
+                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
+                    })
+                    ->orWhereHas('category', function ($q) use ($term) {
+                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
+                    })
+                    ->orWhereHas('especificacions', function ($q) use ($term) {
+                        $q->where('especificacions.name', 'ilike', '%' . $term . '%');
+                    });
             }
-        })->orderBy('name', 'asc')->limit(10);
+        })->publicados()->orderBy('name', 'asc')->limit(10);
 
         return response()->json($products->get());
     }

@@ -1,8 +1,13 @@
 <footer class="w-full footer-marketplace">
     <div
         class="contenedor md:divide-x-[0.5px] divide-neutral-200 grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-3 mx-auto py-3 md:py-10">
-        <div class="w-full max-w-xs h-16 xs:mx-auto xs:col-span-3 sm:col-span-3 md:col-span-1">
-            <x-isotipo-next class="text-neutral-800" />
+        <div class="w-full max-w-sm h-16 xs:mx-auto xs:col-span-3 sm:col-span-3 md:col-span-1">
+            @if ($empresa->image)
+                <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
+            @else
+                <h1 class="text-center p-3 font-bold tracking-widest text-xl leading-5 truncate max-w-xs">
+                    {{ $empresa->name }}</h1>
+            @endif
         </div>
         <div>
             <ul class="">
@@ -35,15 +40,25 @@
         </div>
         <div class="">
             <ul>
-                <li>
-                    <a href="">ventas@next.net.pe</a>
-                </li>
-                <li>
-                    <a href="">Calle Zarumilla 1375</a>
-                </li>
-                <li>
-                    <a href=""> 945 481 724</a>
-                </li>
+                @if ($empresa->email)
+                    <li>
+                        <a href="">{{ $empresa->email }}</a>
+                    </li>
+                @endif
+                @if ($empresa->email)
+                    <li>
+                        <p href="" class="leading-3 text-xs text-center">{{ $empresa->direccion }}</p>
+                    </li>
+                @endif
+                @if (count($empresa->telephones) > 0)
+                    <li>
+                        <div class="w-full mt-2 flex flex-wrap gap-2 justify-around">
+                            @foreach ($empresa->telephones as $item)
+                                <x-span-text class="tracking-wide leading-3" :text="formatTelefono($item->phone)" />
+                            @endforeach
+                        </div>
+                    </li>
+                @endif
             </ul>
             <div class="footer-social w-full flex flex-wrap justify-center items-center gap-3">
                 <a class="social-footer whatsapp" href="whatsapp://send?phone=+51928393901">

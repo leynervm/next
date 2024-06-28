@@ -40,4 +40,19 @@ class Image extends Model
     {
         return Storage::url('productos/' . $this->url);
     }
+
+    public function getMarcaURL()
+    {
+        return Storage::url('images/marcas/' . $this->url);
+    }
+
+    public function getCategoryURL()
+    {
+        return Storage::url('images/categories/' . $this->url);
+    }
+
+    public function getLogoEmpresa()
+    {
+        return Storage::url('images/company/' . $this->url);
+    }
 }

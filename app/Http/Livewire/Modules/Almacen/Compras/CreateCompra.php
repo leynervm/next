@@ -69,7 +69,7 @@ class CreateCompra extends Component
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
 
         if (auth()->user()->isAdmin()) {
-            $sucursals = Sucursal::orderBy('codeanexo', 'asc')->get();
+            $sucursals = mi_empresa()->sucursals()->orderBy('codeanexo', 'asc')->get();
         } else {
             $sucursals = auth()->user()->sucursal()->get();
         }

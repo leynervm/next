@@ -3,7 +3,7 @@
         <x-loading-next />
     </div>
 
-    <div class="w-full flex flex-col gap-8" x-data="loader">
+    <div class="w-full flex flex-col gap-5" x-data="loader">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
                 <div class="w-full flex flex-col gap-1">
@@ -131,7 +131,7 @@
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
                         <div class="w-full">
                             <x-label value="Tipo comprobante :" />
-                            <div id="parenttpcmpbt" class="relative" x-init="selectComprobante" wire:ignore>
+                            <div id="parenttpcmpbt" class="relative" x-init="selectComprobante">
                                 <x-select class="block w-full" x-ref="selectcomprobante" id="tpcmpbt"
                                     @change="getCodeSend($event.target)" data-placeholder="null">
                                     <x-slot name="options">
@@ -154,14 +154,14 @@
                         @if (Module::isEnabled('Facturacion'))
                             <div class="w-full">
                                 <x-label value="Tipo pago :" />
-                                <div id="parenttpymt" class="relative" x-init="selectPayment" wire:ignore>
+                                <div id="parenttpymt" class="relative" x-init="selectPayment">
                                     <x-select class="block w-full" id="tpymt" x-ref="selectpayment"
-                                        @change="getTipopago($event.target)" data-placeholder="null">
+                                        data-placeholder="null">
                                         <x-slot name="options">
                                             @if (count($typepayments))
                                                 @foreach ($typepayments as $item)
                                                     <option value="{{ $item->id }}"
-                                                        data-payment="{{ $item->paycuotas }}">
+                                                        data-paycredito="{{ $item->isCredito() }}">
                                                         {{ $item->name }} </option>
                                                 @endforeach
                                             @endif
@@ -175,7 +175,6 @@
                     </div>
 
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-
                         <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
                             <x-label value="Pago actual:" />
                             <x-input class="block w-full prevent" type="number" min="0" step="0.100"
@@ -185,7 +184,8 @@
                             <x-jet-input-error for="paymentactual" />
                         </div>
 
-                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
+                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas"
+                            style="display: none;">
                             <x-label value="Incrementar venta (%):" />
                             <x-input class="block w-full prevent" type="number" min="0" step="0.10"
                                 wire:model.lazy="increment" wire:key="increment"
@@ -194,7 +194,8 @@
                             <x-jet-input-error for="increment" />
                         </div>
 
-                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
+                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas"
+                            style="display: none;">
                             <x-label value="Cuotas :" />
                             <div class="w-full inline-flex">
                                 <x-input class="block w-full" type="number" min="1" step="1"
@@ -204,13 +205,37 @@
                             <x-jet-input-error for="countcuotas" />
                         </div>
 
+                        <div style="display: none;" x-show="!paymentcuotas">
+                            <x-label value="Seleccionar pago :" />
+                            <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
+                                <x-input-radio class="py-2" for="paytotal" text="PAGO TOTAL">
+                                    <input x-model="typepay" class="sr-only peer peer-disabled:opacity-25"
+                                        type="radio" id="paytotal" name="payment" value="0" />
+                                </x-input-radio>
+                                <x-input-radio class="py-2" for="payparcial" text="PAGO PARCIAL">
+                                    <input x-model="typepay" class="sr-only peer peer-disabled:opacity-25"
+                                        type="radio" id="payparcial" name="payment" value="1" />
+                                </x-input-radio>
+                            </div>
+                            <x-jet-input-error for="typepay" />
+                        </div>
+
+                        <div class="w-full" style="display: none;" x-show="ispayparcial" x-transition>
+                            <x-label value="Monto parcial pago :" />
+                            <x-input class="block w-full" type="number" min="1" step="0.01"
+                                min="0.01" wire:model.defer="amountparcial" wire:key="amountparcial"
+                                onkeypress="return validarDecimal(event, 12)" @keydown.enter.prevent="savepay"
+                                placeholder="0.00" />
+                            <x-jet-input-error for="amountparcial" />
+                        </div>
+
                         <div class="w-full" x-show="!paymentcuotas">
                             <x-label value="Método pago :" />
-                            <div id="parenttmpym" class="relative" x-init="selectMethodpayment" wire:ignore>
+                            <div id="parenttmpym" class="relative" x-init="selectMethodpayment">
                                 <x-select class="block w-full" id="tmpym" x-ref="selectmethodpayment"
                                     data-placeholder="null">
                                     <x-slot name="options">
-                                        @if (count($methodpayments))
+                                        @if (count($methodpayments) > 0)
                                             @foreach ($methodpayments as $item)
                                                 <option value="{{ $item->id }}">
                                                     {{ $item->name }}
@@ -224,31 +249,37 @@
                             <x-jet-input-error for="methodpayment_id" />
                         </div>
 
-                        <div class="w-full" x-show="!paymentcuotas">
+                        <div class="w-full flex mt-2 justify-end items-end" style="display: none;"
+                            x-show="ispayparcial" x-transition>
+                            <x-button @click.prevent="savepay" type="button" wire:loading.attr="disabled">
+                                {{ __('AGREGAR PAGO') }}</x-button>
+                        </div>
+
+                        {{-- <div class="w-full" x-show="!paymentcuotas">
                             <x-label value="Detalle pago :" />
                             <x-input class="block w-full" wire:model.defer="detallepago" />
                             <x-jet-input-error for="detallepago" />
-                        </div>
+                        </div> --}}
                     </div>
 
                     @if (Module::isEnabled('Facturacion'))
                         <div class="block relative">
-                            @can('admin.ventas.create.igv')
+                            {{-- @can('admin.ventas.create.igv')
                                 <x-label-check for="incluyeigv">
                                     <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1"
                                         type="checkbox" id="incluyeigv" />INCLUIR IGV</x-label-check>
                                 <x-jet-input-error for="incluyeigv" />
-                            @endcan
+                            @endcan --}}
 
                             @can('admin.ventas.create.guias')
-                                @if (count($comprobantesguia) > 0)
+                                {{-- @if (count($comprobantesguia) > 0)
                                     <div class="inline-block" x-show="!sincronizegre">
                                         <x-label-check for="incluyeguia" x-show="openguia">
                                             <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
                                                 id="incluyeguia" />GENERAR GUÍA REMISIÓN
                                         </x-label-check>
                                     </div>
-                                @endif
+                                @endif --}}
 
                                 <div x-show="incluyeguia" x-transition>
 
@@ -257,7 +288,7 @@
                                     <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-1 gap-1">
                                         <div class="w-full xs:col-span-2 lg:col-span-1">
                                             <x-label value="Guía remisión :" />
-                                            <div class="relative" id="parentsrgr" x-init="selectSerieguia" wire:ignore>
+                                            <div class="relative" id="parentsrgr" x-init="selectSerieguia">
                                                 <x-select class="block w-full uppercase" x-ref="selectguia"
                                                     id="srgr" data-placeholder="null">
                                                     <x-slot name="options">
@@ -279,7 +310,7 @@
 
                                         <div class="w-full xs:col-span-2 lg:col-span-1">
                                             <x-label value="Motivo traslado :" />
-                                            <div class="relative" id="parentmtvtr" x-init="selectMotivo" wire:ignore>
+                                            <div class="relative" id="parentmtvtr" x-init="selectMotivo">
                                                 <x-select class="block w-full uppercase" x-ref="selectmotivo"
                                                     id="mtvtr" data-placeholder="null"
                                                     @change="getCodeMotivo($event.target)">
@@ -301,7 +332,7 @@
 
                                         <div class="w-full">
                                             <x-label value="Modalidad transporte :" />
-                                            <div class="relative" id="parentmdtr" x-init="selectModalidad" wire:ignore>
+                                            <div class="relative" id="parentmdtr" x-init="selectModalidad">
                                                 <x-select class="block w-full uppercase" x-ref="selectmodalidad"
                                                     id="mdtr" data-placeholder="null"
                                                     @change="getCodeModalidad($event.target)">
@@ -571,7 +602,28 @@
                     <div class="w-full flex flex-col gap-1">
                         <x-jet-input-error for="typepayment.id" />
                         <x-jet-input-error for="items" />
-                        <x-jet-input-error for="client_id" />
+                        <x-jet-input-error for="typepay" />
+                        <x-jet-input-error for="concept.id" />
+                        <x-jet-input-error for="parcialpayments" />
+                        {{-- <x-jet-input-error for="client_id" /> --}}
+                    </div>
+
+                    <div
+                        class="w-full flex flex-col sm:flex-row xl:flex-col gap-1 pt-4 justify-between items-start sm:items-end xl:items-start">
+                        @can('admin.ventas.create.guias')
+                            @if (count($comprobantesguia) > 0)
+                                <div class="inline-block" x-show="!sincronizegre">
+                                    <x-label-check for="incluyeguia" x-show="openguia">
+                                        <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
+                                            id="incluyeguia" />GENERAR GUÍA REMISIÓN
+                                    </x-label-check>
+                                </div>
+                            @endif
+                        @endcan
+
+                        <x-button class="block w-full sm:inline-block sm:w-auto xl:w-full" type="submit"
+                            wire:loading.attr="disabled">
+                            {{ __('REGISTRAR VENTA') }}</x-button>
                     </div>
 
                     @if ($errors->any())
@@ -581,11 +633,6 @@
                             @endforeach
                         </div>
                     @endif
-
-                    <div class="w-full flex mt-2 justify-end">
-                        <x-button type="submit" wire:loading.attr="disabled">
-                            {{ __('REGISTRAR') }}</x-button>
-                    </div>
                 </div>
             </form>
         </x-form-card>
@@ -594,81 +641,87 @@
             <div class="w-full">
                 <p class="text-[10px]">
                     TOTAL EXONERADO : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($exonerado, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($exonerado, 2, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">TOTAL GRAVADO : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($gravado, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($gravado, 2, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">
                     TOTAL IGV : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($igv, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($igv, 2, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">TOTAL GRATUITOS : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($gratuito, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($gratuito, 2, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">TOTAL DESCUENTOS : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($descuentos, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($descuentos, 2, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">
                     TOTAL VENTA :
                     {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($total, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($total, 2, '.', ', ') }}</span>
                 </p>
 
                 <p class="text-[10px]">SALDO PENDIENTE
                     @if ($increment)
-                        {{ number_format($total - $paymentactual - $amountincrement, 3, '.', ', ') }}
+                        {{ number_format($total - $paymentactual - $amountincrement, 2, '.', ', ') }}
                         + {{ formatDecimalOrInteger($increment) }}%
                         ({{ number_format($amountincrement, 2, '.', ', ') }})
                     @endif
                     : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($total - $paymentactual, 3, '.', ', ') }}</span>
+                    <span class="font-bold text-xs">{{ number_format($total - $paymentactual, 2, '.', ', ') }}</span>
                 </p>
                 {{-- <p>AI--{{ $amountincrement }}</p>
                 <p>IINC--{{ $increment }}</p> --}}
             </div>
         </x-form-card>
 
-        @if (count($carshoops) > 0)
-            <div class="w-full" x-data="{ showcart: true }">
-                <div class="text-end px-3">
-                    <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer"
-                        @click="showcart=!showcart">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            class="w-full h-full block">
-                            <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" />
-                            <path d="M6 6H22" />
-                            <circle cx="6" cy="20" r="2" />
-                            <circle cx="17" cy="20" r="2" />
-                            <path d="M8 20L15 20" />
-                            <path
-                                d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" />
-                        </svg>
-                        <small
-                            class="bg-amber-500 text-white animate-bounce font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
-                            {{ count($carshoops) }}</small>
-                    </button>
-                </div>
+        <x-form-card titulo="RESUMEN DEL PAGO" class="text-colorlabel" style="display: none" x-show="typepay > 0">
+            <div class="w-full flex flex-wrap gap-2">
+                @foreach ($parcialpayments as $index => $item)
+                    <x-minicard size="md" alignFooter="justify-end">
+                        <h1 class="text-lg text-center leading-5 font-semibold text-colorlabel">
+                            {{ number_format($item['amount'], 2, '.', ', ') }}</h1>
+                        <span class="text-[10px] text-center text-colorsubtitleform mt-2">{{ $item['method'] }}</span>
+                        <slot name="buttons">
+                            <x-button-delete wire:click="removepay({{ $index }})" />
+                        </slot>
+                    </x-minicard>
+                @endforeach
+            </div>
+        </x-form-card>
+
+        {{-- @if (count($carshoops) > 0) --}}
+        <div class="w-full" x-data="{ showcart: true }">
+            <div class="text-end px-3">
+                <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer"
+                    @click="showcart=!showcart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" class="w-full h-full block">
+                        <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" />
+                        <path d="M6 6H22" />
+                        <circle cx="6" cy="20" r="2" />
+                        <circle cx="17" cy="20" r="2" />
+                        <path d="M8 20L15 20" />
+                        <path
+                            d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" />
+                    </svg>
+                    <small
+                        class="bg-amber-500 text-white animate-bounce font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
+                        {{ count($carshoops) }}</small>
+                </button>
+            </div>
+            @if (count($carshoops) > 0)
                 <div class="w-full" x-show="showcart" x-transition>
                     <div class="flex gap-2 flex-wrap justify-start">
                         @foreach ($carshoops as $item)
                             <x-simple-card
                                 class="w-full flex flex-col border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
-
-                                @if ($item->moneda_id != $moneda_id)
-                                    @if ($item->moneda->code == 'USD')
-                                        {{ number_format($item->total * mi_empresa()->tipocambio ?? 1, 2) }}
-                                    @else
-                                        {{ number_format($item->total / mi_empresa()->tipocambio ?? 1, 2) }}
-                                    @endif
-                                @endif
-
                                 <h1
                                     class="text-colorlabel whitespace-nowrap text-right text-[10px] text-sm font-semibold">
                                     <small class="text-[7px] font-medium">{{ $item->moneda->simbolo }}</small>
@@ -780,8 +833,9 @@
                             class="inline-block">ELIMINAR TODO</x-button-secondary>
                     </div>
                 </div>
-            </div>
-        @endif
+            @endif
+        </div>
+        {{-- @endif --}}
     </div>
 
 
@@ -886,18 +940,20 @@
                 code: '',
                 sendsunat: '',
                 openguia: true,
+                ispayparcial: false,
                 sincronizegre: @entangle('sincronizegre').defer,
 
                 cotizacion_id: @entangle('cotizacion_id').defer,
                 moneda_id: @entangle('moneda_id'),
                 seriecomprobante_id: @entangle('seriecomprobante_id').defer,
-                typepayment_id: @entangle('typepayment_id').defer,
+                typepayment_id: @entangle('typepayment_id'),
                 methodpayment_id: @entangle('methodpayment_id').defer,
                 serieguia_id: @entangle('serieguia_id').defer,
                 motivotraslado_id: @entangle('motivotraslado_id').defer,
                 modalidadtransporte_id: @entangle('modalidadtransporte_id').defer,
                 ubigeoorigen_id: @entangle('ubigeoorigen_id').defer,
                 ubigeodestino_id: @entangle('ubigeodestino_id').defer,
+                typepay: @entangle('typepay').defer,
 
                 init() {
                     // const selectpayment = this.$refs.selectpayment;
@@ -908,6 +964,11 @@
                     // if (selectcomprobante) {
                     //     this.getCodeSend(selectcomprobante);
                     // }
+
+                    this.$watch("typepay", (value) => {
+                        this.ispayparcial = value > 0 ? true : false;
+                        console.log('Is parcial : ' + this.ispayparcial);
+                    });
                 },
                 toggle() {
                     this.vehiculosml = !this.vehiculosml;
@@ -934,7 +995,7 @@
                     }
                 },
                 selectedModalidadtransporte(value) {
-                    console.log(value);
+                    // console.log(value);
                     switch (value) {
                         case '01':
                             this.loadingpublic = true;
@@ -963,12 +1024,6 @@
                             this.loadingpublic = false;
                     }
                 },
-                getTipopago(target) {
-                    let datapayment = target.options[target.selectedIndex].getAttribute(
-                        'data-payment');
-                    this.formapago = target.options[target.selectedIndex].text;
-                    this.selectedFormaPago(datapayment);
-                },
                 selectedFormaPago(value) {
                     switch (value) {
                         case '0':
@@ -985,7 +1040,7 @@
                 getCodeSend(target) {
                     this.sendsunat = target.options[target.selectedIndex].getAttribute(
                         'data-sunat');
-                    console.log(this.sendsunat);
+                    // console.log(this.sendsunat);
 
                     switch (this.sendsunat) {
                         case '0':
@@ -1005,6 +1060,13 @@
                     // console.log('incluyeguia ' + this.incluyeguia);
                     // console.log('openguia ' + this.openguia);
                 },
+                savepay(event) {
+                    this.$wire.call('savepay')
+                        .then(() => {
+                            console.log('function ejecutado correctamente');
+                        });
+                    event.preventDefault();
+                }
             }));
         })
 
@@ -1066,15 +1128,16 @@
             this.$watch("seriecomprobante_id", (value) => {
                 this.selectTC.val(value).trigger("change");
             });
+            Livewire.hook('message.processed', () => {
+                this.selectTC.select2().val(this.seriecomprobante_id).trigger('change');
+            });
         }
 
         function selectPayment() {
             this.selectTP = $(this.$refs.selectpayment).select2();
             this.selectTP.val(this.typepayment_id).trigger("change");
             this.selectTP.on("select2:select", (event) => {
-                // this.typepayment_id = event.target.value;
-                this.getTipopago(event.target);
-                @this.setTypepayment(event.target.value);
+                this.typepayment_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -1082,6 +1145,26 @@
             });
             this.$watch("typepayment_id", (value) => {
                 this.selectTP.val(value).trigger("change");
+
+                let target = this.$refs.selectpayment;
+                let selectedOption = target.options[target.selectedIndex];
+                let paycredito = Boolean(selectedOption.getAttribute('data-paycredito'));
+
+                switch (paycredito) {
+                    case true:
+                        this.paymentcuotas = true;
+                        break;
+                    case false:
+                        this.paymentcuotas = false;
+                        break;
+                    default:
+                        this.paymentcuotas = false;
+                        this.formapago = '';
+                }
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectTP.select2().val(this.typepayment_id).trigger('change');
             });
         }
 
@@ -1097,6 +1180,10 @@
             });
             this.$watch("serieguia_id", (value) => {
                 this.selectGR.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectGR.select2().val(this.serieguia_id).trigger('change');
             });
         }
 
@@ -1116,6 +1203,10 @@
             this.$watch("motivotraslado_id", (value) => {
                 this.selectM.val(value).trigger("change");
             });
+
+            Livewire.hook('message.processed', () => {
+                this.selectM.select2().val(this.motivotraslado_id).trigger('change');
+            });
         }
 
         function selectModalidad() {
@@ -1134,6 +1225,10 @@
             this.$watch("modalidadtransporte_id", (value) => {
                 this.selectMT.val(value).trigger("change");
             });
+
+            Livewire.hook('message.processed', () => {
+                this.selectMT.select2().val(this.modalidadtransporte_id).trigger('change');
+            });
         }
 
         function selectMethodpayment() {
@@ -1148,6 +1243,10 @@
             });
             this.$watch("methodpayment_id", (value) => {
                 this.selectMP.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectMP.select2().val(this.methodpayment_id).trigger('change');
             });
         }
     </script>

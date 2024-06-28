@@ -89,7 +89,7 @@
             </div>
         </x-form-card>
 
-        <div class="w-full flex flex-col xl:flex-row gap-8">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-8">
             <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
                 <div class="w-full items-start flex flex-col gap-1">
 
@@ -392,9 +392,9 @@
                 async getTipocambio() {
                     try {
                         this.loadingdolar = true;
-                        const response = await fetch("{{ route('tipocambio') }}");
+                        const response = await fetch("{{ route('api.tipocambio') }}");
                         const data = await response.json();
-                        this.tipocambio = data.precioVenta;
+                        this.tipocambio = data.venta;
                         this.loadingdolar = false;
                         this.openpricedolar = true;
 
@@ -404,7 +404,7 @@
                         this.loadingdolar = false;
                         this.openpricedolar = true;
                     }
-                },
+                }
             }))
         });
 

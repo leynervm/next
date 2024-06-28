@@ -1,4 +1,4 @@
-<div class="w-full h-[calc(100vh-145px)] overflow-hidden m-auto" x-data="app()">
+<div class="w-full h-[calc(100vh-145px)] overflow-hidden m-auto" x-data="app()" id="form-configuracion">
 
     <style>
         [x-cloak] {
@@ -107,7 +107,7 @@
 
                 <!-- Step Content -->
                 <div class="py-10 w-full">
-                    <div x-show="step === 1">
+                    <div x-show="step === 1" x-transition>
                         <div class="bg-body grid grid-cols-1 gap-2">
                             <div class="w-full">
                                 <x-label value="RUC :" />
@@ -115,7 +115,8 @@
                                     <x-input class="block w-full flex-1" wire:keydown.enter="searchclient"
                                         type="number" x-model="document" wire:model.defer="document"
                                         onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
-                                    <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
+                                    <x-button-add class="px-2.5 !rounded-lg" wire:click="searchclient"
+                                        wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
                                             stroke-linecap="round" stroke-linejoin="round">
@@ -160,13 +161,13 @@
 
                             <div class="w-full">
                                 <x-label value="Estado :" />
-                                <x-disabled-text :text="$estado ?? '-'" />
+                                <x-disabled-text class="input-text" :text="$estado ?? '-'" />
                                 <x-jet-input-error for="estado" />
                             </div>
 
                             <div class="w-full">
                                 <x-label value="Condición :" />
-                                <x-disabled-text :text="$condicion ?? '-'" />
+                                <x-disabled-text class="input-text" :text="$condicion ?? '-'" />
                                 <x-jet-input-error for="condicion" />
                             </div>
 
@@ -179,16 +180,69 @@
                         </div>
                     </div>
 
-                    <div x-show="step === 2">
+                    <div x-show="step === 2" x-transition>
                         @if (Module::isEnabled('Ventas'))
                             <div class="w-full items-start flex flex-col gap-2">
-                                <div class="block">
-                                    <x-label-check for="uselistprice">
-                                        <x-input wire:model.defer="uselistprice" name="uselistprice" value="1"
-                                            type="checkbox" id="uselistprice" />
-                                        USAR LISTA DE PRECIOS
-                                    </x-label-check>
+                                <div class="w-full">
+                                    <x-label value="Tipos precio venta (Productos):" />
+                                    <div class="w-full relative" id="parentuselistprice" x-init="SelectPrecios">
+                                        <x-select class="block w-full" x-ref="selectprice" id="uselistprice"
+                                            data-parent="parentuselistprice">
+                                            <x-slot name="options">
+                                                <option value="0" title="Ingresar precio de venta manualmente">
+                                                    PRECIO MANUAL</option>
+                                                <option value="1"
+                                                    title="Precio automático en base al % ganacia del rango de precio compra">
+                                                    LISTA DE PRECIOS (05 LISTAS DISPONIBLES)
+                                                </option>
+                                                {{-- <option value="2"
+                                                    title="Precio automático de acuerdo al % ganancia del producto">
+                                                    PRECIO AUTOMÁTICO
+                                                </option> --}}
+                                            </x-slot>
+                                        </x-select>
+                                        <x-icon-select />
+                                    </div>
                                     <x-jet-input-error for="uselistprice" />
+                                </div>
+                                <div class="w-full">
+                                    <x-label value="Etiqueta de producto promocionado :" />
+                                    <div class="w-full relative" id="parentviewtextopromocion"
+                                        x-init="SelectTextoPromocion">
+                                        <x-select class="block w-full" x-ref="selecttextopromo"
+                                            id="viewtextopromocion" data-parent="parentviewtextopromocion">
+                                            <x-slot name="options">
+                                                <option value="0">
+                                                    TEXTO POR DEFECTO</option>
+                                                <option value="1">
+                                                    MOSTRAR TEXTO DE "PROMOCIÓN"
+                                                </option>
+                                                <option value="2">
+                                                    MOSTRAR TEXTO DE "LIQUIDACIÓN"
+                                                </option>
+                                            </x-slot>
+                                        </x-select>
+                                        <x-icon-select />
+                                    </div>
+                                    <x-jet-input-error for="viewtextopromocion" />
+                                </div>
+
+                                <div class="block">
+                                    <x-label-check for="viewpriceantes">
+                                        <x-input x-model="viewpriceantes" name="viewpriceantes" type="checkbox"
+                                            id="viewpriceantes" />
+                                        MOSTRAR PRECIO ANTERIOR EN PRODUCTOS OFERTADOS
+                                    </x-label-check>
+                                    <x-jet-input-error for="viewpriceantes" />
+                                </div>
+
+                                <div class="block">
+                                    <x-label-check for="viewlogomarca">
+                                        <x-input x-model="viewlogomarca" name="viewlogomarca" type="checkbox"
+                                            id="viewlogomarca" />
+                                        MOSTRAR LOGO MARCA EN PRODUCTOS
+                                    </x-label-check>
+                                    <x-jet-input-error for="viewlogomarca" />
                                 </div>
 
                                 <div class="block">
@@ -237,6 +291,97 @@
                                 </div>
                             </div>
                         @endif
+
+                        <div class="w-full mt-2" x-data="loadimage()">
+                            <x-label-check for="usemarca_agua">
+                                <x-input x-model="usemarkagua" type="checkbox" x-on:change="openmark = !openmark"
+                                    id="usemarca_agua" />
+                                <div class="flex flex-col flex-1">
+                                    AGREGAR MARCA DE AGUA EN IMAGENES DE PRODUCTOS
+                                    <small class="font-medium text-xs tracking-normal">
+                                        Se recomienda usar imagen transparente PNG</small>
+                                </div>
+                            </x-label-check>
+                            <x-jet-input-error for="usemarkagua" />
+
+                            <div class="grid grid-cols-1 xs:grid-cols-2 gap-2 items-start mt-2" style="display: none;"
+                                x-show="openmark" x-cloak>
+                                <div class="w-full">
+                                    <x-simple-card class="w-full h-40 md:max-w-xs mb-1 !shadow-none">
+                                        <template x-if="markagua">
+                                            <img id="markagua" class="object-scale-down block w-full h-full"
+                                                :src="markagua" />
+                                        </template>
+                                        <template x-if="!markagua">
+                                            <x-icon-fileupload class="w-full h-full !my-0" />
+                                        </template>
+                                    </x-simple-card>
+                                    <x-jet-input-error for="markagua" />
+
+                                    <div class="w-full flex gap-2 flex-wrap justify-center">
+                                        <template x-if="markagua">
+                                            <x-button class="inline-flex !rounded-lg" @click="reset"
+                                                wire:loading.attr="disabled">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M3 6h18" />
+                                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                    <line x1="10" x2="10" y1="11"
+                                                        y2="17" />
+                                                    <line x1="14" x2="14" y1="11"
+                                                        y2="17" />
+                                                </svg>
+                                                LIMPIAR
+                                            </x-button>
+                                        </template>
+
+                                        <x-input-file for="fileMark" titulo="SELECCIONAR MARCA AGUA"
+                                            wire:loading.class="disabled:opacity-25" class="!rounded-lg">
+                                            <input type="file" class="hidden" wire:model="markagua"
+                                                id="fileMark" accept="image/png" @change="loadlogo" />
+                                        </x-input-file>
+                                    </div>
+                                </div>
+
+                                <div class="w-full grid grid-cols-1 gap-2 items-start">
+                                    <div class="w-full">
+                                        <x-label value="Posición:" />
+                                        <div class="w-full relative" id="parentposicion" x-init="SelectPosicion">
+                                            <x-select class="block w-full" x-ref="selectposicion" id="posicion"
+                                                data-parent="parentposicion">
+                                                <x-slot name="options">
+                                                    <option value="top">SUPERIOR</option>
+                                                    <option value="top-left">SUPERIOR IZQUIERDA</option>
+                                                    <option value="top-right">SUPERIOR DERECHA</option>
+                                                    <option value="left">IZQUIERDA</option>
+                                                    <option value="center">CENTRADO</option>
+                                                    <option value="right">DERECHA</option>
+                                                    <option value="bottom">POSTERIOR</option>
+                                                    <option value="bottom-left">POSTERIOR IZQUIERDA</option>
+                                                    <option value="bottom-right">POSTERIOR DERECHA</option>
+                                                </x-slot>
+                                            </x-select>
+                                            <x-icon-select />
+                                        </div>
+                                        <x-jet-input-error for="alignmark" />
+                                    </div>
+                                    <div class="w-full">
+                                        <x-label value="Ancho :" />
+                                        <x-input class="block w-full" wire:model.defer="widthmark" type="number"
+                                            step="1" onkeypress="return validarNumero(event, 3)" />
+                                        <x-jet-input-error for="widthmark" />
+                                    </div>
+                                    <div class="w-full">
+                                        <x-label value="Alto :" />
+                                        <x-input class="block w-full" wire:model.defer="heightmark" type="number"
+                                            step="1" onkeypress="return validarNumero(event, 3)" />
+                                        <x-jet-input-error for="heightmark" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="w-full grid sm:grid-cols-2 gap-3 my-5">
                             <div class="w-full text-center">
@@ -299,7 +444,7 @@
                         </div>
                     </div>
 
-                    <div x-show="step === 3">
+                    <div x-show="step === 3" x-transition>
                         <div class="w-full bg-body flex flex-col gap-10">
                             @if (module::isEnabled('Ventas') || module::isEnabled('Almacen'))
                                 <form wire:submit.prevent="addalmacen" class="w-full grid gap-2">
@@ -309,7 +454,8 @@
                                         <x-jet-input-error for="namealmacen" />
                                     </div>
                                     <div class="flex justify-end">
-                                        <x-button type="submit" wire:loading.attr="disabled">
+                                        <x-button class="!rounded-lg p-3" type="submit"
+                                            wire:loading.attr="disabled">
                                             AGREGAR ALMACÉN</x-button>
                                     </div>
                                     <div>
@@ -319,7 +465,8 @@
                                                 @foreach ($almacens as $index => $item)
                                                     <x-simple-card
                                                         class="w-28 h-28 cursor-pointer flex flex-col justify-center items-center gap-1 p-1 rounded-xl">
-                                                        <h1 class="text-xs text-colorlabel text-center leading-3 uppercase">
+                                                        <h1
+                                                            class="text-xs text-colorlabel text-center leading-3 uppercase">
                                                             {{ $item }}</h1>
                                                         <x-button-delete
                                                             wire:click="removealmacen({{ $index }})"
@@ -360,7 +507,7 @@
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <x-button type="submit" wire:loading.attr="disabled">
+                                    <x-button class="!rounded-lg p-3" type="submit" wire:loading.attr="disabled">
                                         AGREGAR TELÉFONO</x-button>
                                 </div>
                                 <x-jet-input-error for="telephones" />
@@ -383,9 +530,9 @@
                         </div>
                     </div>
 
-                    <div x-show="step === 4">
+                    <div x-show="step === 4" x-transition>
                         <div class="w-full flex justify-end">
-                            <x-button wire:click="$set('opensucursal', true)" wire:loading.attr="disabled">
+                            <x-button class="!rounded-lg p-3" wire:click="$toggle('open')">
                                 {{ __('AGREGAR NUEVA SUCURSAL') }}
                             </x-button>
                         </div>
@@ -429,7 +576,7 @@
                                                 [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
                                         </div>
 
-                                        <div class="w-full flex items-end gap-2 justify-between">
+                                        {{-- <div class="w-full flex items-end gap-2 justify-between">
                                             @if ($item['default'])
                                                 <x-icon-default wire:loading.attr="disabled"
                                                     class="cursor-pointer hover:!text-next-500" />
@@ -439,7 +586,7 @@
                                             @endif
                                             <x-button-delete wire:click="removesucursal({{ $index }})"
                                                 wire:loading.attr="disabled" />
-                                        </div>
+                                        </div> --}}
                                     </x-simple-card>
                                 @endforeach
                             </div>
@@ -448,8 +595,8 @@
                         @endif
                     </div>
 
-                    <div x-show="step === 5">
-                        <form wire:submit.prevent="validatestep(step)" class="w-full flex flex-col gap-2">
+                    <div x-show="step === 5" x-transition>
+                        <form wire:submit.prevent="validatestep('5')" class="w-full flex flex-col gap-2">
                             @if (module::isEnabled('Facturacion'))
                                 <div class="w-full grid gap-2 grid-cols-1">
                                     <div class="w-full">
@@ -508,14 +655,14 @@
 
                                     <div class="w-full flex gap-1 flex-wrap justify-center">
                                         <x-input-file :for="$idcert" titulo="CARGAR CERTIFICADO DIGITAL"
-                                            wire:loading.remove>
+                                            wire:loading.remove class="!rounded-lg p-3">
                                             <input type="file" class="hidden" wire:model="cert"
                                                 id="{{ $idcert }}" accept=".pfx" />
                                         </x-input-file>
 
                                         @if (isset($cert))
-                                            <x-button class="inline-flex" wire:loading.attr="disabled"
-                                                wire:click="clearCert">LIMPIAR
+                                            <x-button class="inline-flex !rounded-lg p-3" wire:loading.attr="disabled"
+                                                wire:click="clearCert">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -527,6 +674,7 @@
                                                     <line x1="14" x2="14" y1="11"
                                                         y2="17" />
                                                 </svg>
+                                                LIMPIAR
                                             </x-button>
                                         @endif
                                     </div>
@@ -535,10 +683,11 @@
                             @else
                                 <p class="text-colorsubtitleform text-xs">No se encontraron existen opciones</p>
                             @endif
+                            <input class="hidden" style="display: none" type="submit">
                         </form>
                     </div>
 
-                    <div x-show="step === 6">
+                    <div x-show="step === 6" x-transition>
                         @if (count($empresa))
                             <x-simple-card class="p-3 rounded-xl">
                                 <template x-if="image">
@@ -613,6 +762,64 @@
                                         </svg>
                                     @endif
                                     USAR LISTA DE PRECIOS
+                                </p>
+                                <p class="text-xs w-full text-green-600">
+                                    @if ($empresa['viewtextopromocion'] >= 0)
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            color="currentColor" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                            class="w-4 h-4 inline-block text-green-600">
+                                            <path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" />
+                                        </svg>
+                                    @endif
+                                    ETIQUETA DE PRODUCTO PROMOCIONADO
+                                    @if ($empresa['viewtextopromocion'] == \App\Models\Empresa::TITLE_PROMOCION)
+                                        ("PROMOCIÓN")
+                                    @elseif($empresa['viewtextopromocion'] == \App\Models\Empresa::TITLE_PROMO_LIQUIDACION)
+                                        ( "LIQUIDACIÓN")
+                                    @else
+                                        ("PREDETERMINADO")
+                                    @endif
+                                </p>
+                                <p
+                                    class="text-xs w-full {{ $empresa['viewpriceantes'] == '1' ? 'text-green-600' : 'text-colorerror' }}">
+                                    @if ($empresa['viewpriceantes'])
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            color="currentColor" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                            class="w-4 h-4 inline-block text-green-600">
+                                            <path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" />
+                                        </svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            color="currentColor" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                            class="w-4 h-4 inline-block text-colorerror">
+                                            <path
+                                                d="M19.0005 4.99988L5.00045 18.9999M5.00045 4.99988L19.0005 18.9999" />
+                                        </svg>
+                                    @endif
+                                    MOSTRAR PRECIO ANTERIOR EN PRODUCTOS OFERTADOS
+                                </p>
+                                <p
+                                    class="text-xs w-full {{ $empresa['viewlogomarca'] == '1' ? 'text-green-600' : 'text-colorerror' }}">
+                                    @if ($empresa['viewlogomarca'])
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            color="currentColor" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                            class="w-4 h-4 inline-block text-green-600">
+                                            <path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" />
+                                        </svg>
+                                    @else
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            color="currentColor" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                            class="w-4 h-4 inline-block text-colorerror">
+                                            <path
+                                                d="M19.0005 4.99988L5.00045 18.9999M5.00045 4.99988L19.0005 18.9999" />
+                                        </svg>
+                                    @endif
+                                    MOSTRAR LOGO MARCA EN PRODUCTOS
                                 </p>
                                 <p
                                     class="text-xs w-full {{ $empresa['usepricedolar'] == '1' ? 'text-green-600' : 'text-colorerror' }}">
@@ -697,7 +904,8 @@
                                                     <path d="M2 16H5" />
                                                 </svg>
                                             </span>
-                                            <h1 class="text-xs uppercase text-center leading-3">{{ $item }}</h1>
+                                            <h1 class="text-xs uppercase text-center leading-3">{{ $item }}
+                                            </h1>
                                         </x-simple-card>
                                     @endforeach
                                 </div>
@@ -784,10 +992,36 @@
                                     @endif
                                 </x-simple-card>
                             @endif
+
+                            @if ($empresa['usemarkagua'])
+                                <x-simple-card class="p-3 rounded-xl mt-3">
+                                    <p class="text-xs w-full text-green-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            color="currentColor" fill="none" stroke="currentColor"
+                                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                            class="w-4 h-4 inline-block text-green-600">
+                                            <path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" />
+                                        </svg>
+                                        USAR MARCA DE AGUA EN PRODUCTOS
+                                    </p>
+
+                                    <img id="markagua"
+                                        class="object-scale-down block w-28 h-28 shadow-md p-2 rounded-xl my-2"
+                                        :src="markagua" />
+
+                                    <x-label>
+                                        <b>DIMENSIONES: </b>{{ $empresa['widthmark'] }} x {{ $empresa['heightmark'] }}
+                                    </x-label>
+                                    <x-label class="uppercase">
+                                        <b>ALINEACION: </b>{{ $empresa['alignmark'] }}
+                                    </x-label>
+                                </x-simple-card>
+                            @endif
+
+                            <x-jet-input-error for="markagua" />
                         @endif
                     </div>
                 </div>
-                <!-- / Step Content -->
             </div>
 
             <div class="fixed bottom-0 left-0 right-0 py-2 md:py-3 px-5 md:px-0 bg-fondominicard border-t border-borderminicard"
@@ -795,8 +1029,8 @@
                 <div class="max-w-3xl mx-auto">
                     <div class="flex gap-2 justify-end lg:justify-between">
                         <div class="lg:w-1/2">
-                            <x-button wire:loading.attr="disabled" class="inline-flex" x-show="step > 1" x-cloak
-                                @click="step--">
+                            <x-button wire:loading.attr="disabled" class="inline-flex !rounded-lg" x-show="step > 1"
+                                x-cloak @click="step--">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                     color="currentColor" fill="none" class="w-6 h-6 inline-block">
@@ -808,7 +1042,7 @@
                         </div>
 
                         <div class="lg:w-1/2 text-right">
-                            <x-button class="inline-flex" wire:loading.attr="disabled" x-show="step < 6"
+                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" x-show="step < 6"
                                 @click="$wire.validatestep(step)">
                                 SIGUIENTE
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
@@ -819,7 +1053,7 @@
                                 </svg>
                             </x-button>
                             <x-button type="submit" wire:click="save" wire:loading.attr="disabled"
-                                class="inline-block" {{--  @click="step = 'complete'" --}} x-cloak x-show="step === 6">
+                                class="inline-block !rounded-lg" {{--  @click="step = 'complete'" --}} x-cloak x-show="step === 6">
                                 REGISTRAR
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
@@ -838,10 +1072,10 @@
     </div>
 
 
-    <x-jet-dialog-modal wire:model="opensucursal" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open">
         <x-slot name="title">
             {{ __('Nueva sucursal') }}
-            <x-button-close-modal wire:click="$toggle('opensucursal')" wire:loading.attr="disabled" />
+            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -904,17 +1138,17 @@
                     <x-jet-input-error for="codeanexo" />
                 </div>
 
-                <div class="block">
+                {{-- <div class="block">
                     <x-label-check for="defaultsucursal">
                         <x-input wire:model.defer="defaultsucursal" value="1" type="checkbox"
                             id="defaultsucursal" />
                         DEFINIR COMO ESTABLECIMIENTO PRINCIPAL
                     </x-label-check>
                     <x-jet-input-error for="defaultsucursal" />
-                </div>
+                </div> --}}
 
                 <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
+                    <x-button class="!rounded-lg p-3" type="submit" wire:loading.attr="disabled">
                         {{ __('REGISTRAR') }}
                     </x-button>
                 </div>
@@ -925,8 +1159,12 @@
     <script>
         function app() {
             return {
+                viewpriceantes: @entangle('viewpriceantes').defer,
+                viewlogomarca: @entangle('viewlogomarca').defer,
                 ubigeo_id: @entangle('ubigeo_id').defer,
                 ubigeosucursal_id: @entangle('ubigeosucursal_id').defer,
+                uselistprice: @entangle('uselistprice').defer,
+                viewtextopromocion: @entangle('viewtextopromocion').defer,
                 usepricedolar: @entangle('usepricedolar').defer,
                 viewpricedolar: @entangle('viewpricedolar').defer,
                 tipocambio: @entangle('tipocambio').defer,
@@ -939,8 +1177,11 @@
                 document: '',
                 typesucursal_id: @entangle('typesucursal_id').defer,
                 sendmode: @entangle('sendmode').defer,
+                alignmark: @entangle('alignmark').defer,
                 image: null,
                 icono: @entangle('icono').defer,
+                openmark: false,
+                markagua: null,
 
                 changePricedolar() {
                     if (this.usepricedolar) {
@@ -1025,8 +1266,41 @@
                 // validatestep() {
                 //     @this.validatestep(this.step);
                 // }
-
             }
+        }
+
+        function loadimage() {
+            return {
+                usemarkagua: @entangle('usemarkagua').defer,
+                loadlogo() {
+                    let file = document.getElementById('fileMark').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.markagua = e.target.result;
+                    reader.readAsDataURL(file);
+                },
+                reset() {
+                    this.markagua = null;
+                    @this.clearMark();
+                }
+            }
+        }
+
+        function SelectPosicion() {
+            this.selectPO = $(this.$refs.selectposicion).select2();
+            this.selectPO.val(this.alignmark).trigger("change");
+            this.selectPO.on("select2:select", (event) => {
+                this.alignmark = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("alignmark", (value) => {
+                this.selectPO.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectPO.select2().val(this.alignmark).trigger('change');
+            });
         }
 
         function selectUbigeo() {
@@ -1091,5 +1365,52 @@
                 this.selectTS.val(value).trigger("change");
             });
         }
+
+        function SelectPrecios() {
+            this.selectMP = $(this.$refs.selectprice).select2({
+                templateResult: formatOption
+            });
+            this.selectMP.val(this.uselistprice).trigger("change");
+            this.selectMP.on("select2:select", (event) => {
+                this.uselistprice = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("uselistprice", (value) => {
+                this.selectMP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectMP.select2({
+                    templateResult: formatOption
+                }).val(this.uselistprice).trigger('change');
+            });
+        }
+
+        function SelectTextoPromocion() {
+            this.selectTP = $(this.$refs.selecttextopromo).select2();
+            this.selectTP.val(this.viewtextopromocion).trigger("change");
+            this.selectTP.on("select2:select", (event) => {
+                this.viewtextopromocion = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("viewtextopromocion", (value) => {
+                this.selectTP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectTP.select2().val(this.viewtextopromocion).trigger('change');
+            });
+        }
+
+        function formatOption(option) {
+            var $option = $(
+                '<strong>' + option.text + '</strong><p class="select2-subtitle-option">' + option.title + '</p>'
+            );
+            return $option;
+        };
     </script>
 </div>

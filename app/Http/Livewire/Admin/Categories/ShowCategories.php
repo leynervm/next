@@ -7,17 +7,19 @@ use App\Models\Category;
 use App\Rules\CampoUnique;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Intervention\Image\ImageManagerStatic as Image;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class ShowCategories extends Component
 {
 
-    use AuthorizesRequests;
-    use WithPagination;
+    use AuthorizesRequests, WithPagination, WithFileUploads;
 
     public $open = false;
-    public $category;
+    public $category, $logo;
 
     protected $listeners = ['render'];
 
@@ -27,6 +29,9 @@ class ShowCategories extends Component
             'category.name' => [
                 'required', 'string', 'min:3', 'max:100', new CampoUnique('categories', 'name', $this->category->id, true),
             ],
+            'logo' => [
+                'nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120'
+            ]
         ];
     }
 
@@ -45,6 +50,7 @@ class ShowCategories extends Component
     public function edit(Category $category)
     {
         $this->authorize('admin.almacen.categorias.edit');
+        $this->reset(['logo']);
         $this->category = $category;
         $this->open = true;
     }
@@ -55,7 +61,31 @@ class ShowCategories extends Component
         $this->category->name = trim($this->category->name);
         $this->validate();
         $this->category->save();
-        $this->reset(['open']);
+        if ($this->logo) {
+            $compressedImage = Image::make($this->logo->getRealPath())
+                ->orientate()->encode('jpg', 30);
+
+            $logoURL = uniqid('category_') . '.' . $this->logo->getClientOriginalExtension();
+            $compressedImage->save(public_path('storage/images/categories/' . $logoURL));
+
+            if ($compressedImage->filesize() > 1048576) { //1MB
+                $compressedImage->destroy();
+                $compressedImage->delete();
+                $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
+                return false;
+            }
+
+            if ($this->category->image) {
+                Storage::delete('images/categories/' . $this->category->image->url);
+                $this->category->image()->delete();
+            }
+
+            $this->category->image()->create([
+                'url' => $logoURL,
+                'default' => 1
+            ]);
+        }
+        $this->reset(['open', 'logo']);
     }
 
 
@@ -63,21 +93,14 @@ class ShowCategories extends Component
     {
 
         $this->authorize('admin.almacen.categorias.delete');
-        // $productos = $category->productos()->count();
-        // $cadena = FormatoPersonalizado::extraerMensaje([
-        //     'Productos' => $productos
-        // ]);
-
-        // if ($productos > 0) {
-        //     $mensaje = response()->json([
-        //         'title' => 'No se puede eliminar categoría, ' . $category->name,
-        //         'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
-        //     ])->getData();
-        //     $this->dispatchBrowserEvent('validation', $mensaje);
-        // } else {
         DB::beginTransaction();
         try {
             $category->subcategories()->detach();
+            if ($category->image) {
+                Storage::delete($category->image->getCategoryURL());
+                $category->image()->delete();
+            }
+
             $category->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');
@@ -89,5 +112,32 @@ class ShowCategories extends Component
             throw $e;
         }
         // }
+    }
+
+    public function clearImage()
+    {
+        $this->reset(['logo']);
+        $this->resetValidation();
+    }
+
+    public function updatedLogo($file)
+    {
+        try {
+            $url = $file->temporaryUrl();
+        } catch (\Exception $e) {
+            $this->reset(['logo']);
+            $this->addError('logo', $e->getMessage());
+            return;
+        }
+    }
+
+    public function deletelogo()
+    {
+        $this->authorize('admin.almacen.categorias.delete');
+        if ($this->category->image) {
+            Storage::delete($this->category->image->getCategoryURL());
+            $this->category->image()->delete();
+            $this->category->refresh();
+        }
     }
 }
