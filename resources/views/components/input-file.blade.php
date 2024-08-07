@@ -1,7 +1,7 @@
 @props(['titulo' => null, 'align' => null, 'icon' => null])
 
 <label
-    {{ $attributes->merge(['class' => 'text-[10px] bg-fondobutton rounded-sm text-colorbutton inline-flex gap-2 group relative font-semibold tracking-widest p-2.5 rounded-xs disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton cursor-pointer transition ease-in duration-150']) }}>
+    {{ $attributes->merge(['class' => 'text-[10px] bg-fondobutton rounded-lg text-colorbutton inline-flex gap-2 group relative font-semibold tracking-widest p-2.5 rounded-xs disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton cursor-pointer transition ease-in duration-150']) }}>
     @if (isset($icon))
         {{ $icon }}
     @else

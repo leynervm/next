@@ -1,5 +1,8 @@
 <div class="w-full flex flex-col gap-8" x-data="{ loadingventa: false }">
-
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+    
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
         <div class="w-full sm:flex sm:gap-3">
             <div class="w-full text-colorlabel">
@@ -59,22 +62,12 @@
 
                             <x-slot name="footer">
                                 <div class="w-full flex gap-2 items-end justify-between">
-                                    <a href="{{ route('admin.payments.print', $item) }}" target="_blank"
-                                        class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
-                                        <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
-                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path
-                                                d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
-                                            <path
-                                                d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
-                                            <path
-                                                d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
-                                        </svg>
-                                    </a>
+                                    <x-button-print href="{{ route('admin.payments.print', $item) }}"
+                                        target="_blank" />
 
                                     {{-- @can('admin.almacen.compras.pagos') --}}
                                     @if ($venta->typepayment->isContado())
-                                        <x-button-delete onclick="confirmDeletepay({{ $item }})"
+                                        <x-button-delete onclick="confirmDeletePayment({{ $item->id }})"
                                             wire:loading.attr="disabled" />
                                     @endif
 
@@ -233,70 +226,49 @@
                     </p>
                 @endcannot
             @endif
-
-            <div wire:loading wire:loading.flex
-                wire:target="calcularcuotas, deletecuota, deletepaycuota, savepayment, updatecuotas, delete"
-                class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </x-form-card>
     @endif
 
     <x-form-card titulo="RESUMEN DE VENTA">
         <div class="w-full text-colorlabel">
-            <p class="text-[10px]">
-                TOTAL EXONERADO : {{ $venta->moneda->simbolo }}
+            <p class="text-[10px]">EXONERADO : {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xs">{{ number_format($venta->exonerado, 2, '.', ', ') }}</span>
             </p>
 
-            <p class="text-[10px]">TOTAL GRAVADO : {{ $venta->moneda->simbolo }}
+            <p class="text-[10px]">GRAVADO : {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xs">{{ number_format($venta->gravado, 2, '.', ', ') }}</span>
             </p>
 
-            <p class="text-[10px]">
-                TOTAL INAFECTO : {{ $venta->moneda->simbolo }}
-                <span class="font-bold text-xs">{{ number_format($venta->inafecto, 2, '.', ', ') }}</span>
-            </p>
-
-            <p class="text-[10px]">
-                TOTAL IGV : {{ $venta->moneda->simbolo }}
+            <p class="text-[10px]">IGV : {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xs">{{ number_format($venta->igv, 2, '.', ', ') }}</span>
             </p>
 
-            <p class="text-[10px]">TOTAL GRATUITOS : {{ $venta->moneda->simbolo }}
+            <p class="text-[10px]">GRATUITO : {{ $venta->moneda->simbolo }}
                 <span
                     class="font-bold text-xs">{{ number_format($venta->gratuito + $venta->igvgratuito, 2, '.', ', ') }}</span>
             </p>
 
-            <p class="text-[10px]">TOTAL DESCUENTOS : {{ $venta->moneda->simbolo }}
+            <p class="text-[10px]">DESCUENTOS : {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xs">{{ number_format($venta->descuentos, 2, '.', ', ') }}</span>
             </p>
 
-            <p class="text-[10px]">TOTAL VENTA : {{ $venta->moneda->simbolo }}
+            <p class="text-[10px]">SUBTOTAL : {{ $venta->moneda->simbolo }}
                 <span class="font-bold text-xl">{{ number_format($venta->total, 2, '.', ', ') }}</span>
             </p>
 
-            @if ($venta->typepayment->paycuotas)
-                <p class="text-[10px]">SALDO PENDIENTE
-                    @php
-                        $amountIncr = number_format(
-                            (($venta->total - $venta->paymentactual) * $venta->increment) / (100 + $venta->increment),
-                            2,
-                            '.',
-                            '',
-                        );
-                    @endphp
+            <p class="text-[10px]">TOTAL PAGAR : {{ $venta->moneda->simbolo }}
+                <span
+                    class="font-bold text-xl">{{ number_format($venta->total - ($venta->gratuito + $venta->igvgratuito), 2, '.', ', ') }}</span>
+                @if ($venta->increment > 0)
+                    INC. + {{ formatDecimalOrInteger($venta->increment) }}%
+                    ({{ number_format($amountincrement, 2, '.', ', ') }})
+                @endif
+            </p>
 
-                    @if ($venta->increment > 0)
-                        {{ number_format($venta->total - $venta->paymentactual - $amountIncr, 2, '.', ', ') }}
-                        + {{ formatDecimalOrInteger($venta->increment) }}%
-                        ({{ number_format($amountIncr, 2, '.', ', ') }})
-                    @endif
-                    : {{ $venta->moneda->simbolo }}
-                    <span
-                        class="font-bold text-xl">{{ number_format($venta->total - $venta->paymentactual, 2, '.', ', ') }}</span>
-                </p>
-            @endif
+            <p class="text-[10px]">PENDIENTE : {{ $venta->moneda->simbolo }}
+                <span
+                    class="font-bold text-xl text-red-600">{{ number_format($venta->total - ($venta->gratuito + $venta->igvgratuito + $venta->cajamovimientos()->sum('amount')), 2, '.', ', ') }}</span>
+            </p>
         </div>
     </x-form-card>
 
@@ -309,28 +281,19 @@
                             $image = $item->producto->getImageURL();
                         @endphp
                         <x-card-producto :image="$image" :name="$item->producto->name" :category="$item->gratuito == 1 ? 'GRATUITO' : null" :increment="$item->increment ?? null">
-                            <div class="w-full flex flex-wrap gap-1 justify-center mt-1">
-                                <x-label-price>
-                                    <span>
-                                        {{ $venta->moneda->simbolo }}
-                                        {{ number_format($item->subtotal + $item->subtotaligv, 2, '.', ', ') }}
-                                        {{ $venta->moneda->currency }}
-                                    </span>
-                                </x-label-price>
+                            <h1 class="text-xl text-center font-semibold text-colortitleform">
+                                <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
+                                {{ formatDecimalOrInteger($item->subtotal + $item->subtotaligv, 2, ', ') }}
+                                <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
+                            </h1>
+
+                            <div class="text-sm font-semibold mt-1">
+                                <small class="text-[10px] font-medium">P. UNIT : </small>
+                                {{ formatDecimalOrInteger($item->price + $item->igv, 2, ', ') }}
+                                <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                             </div>
 
                             <div class="w-full flex flex-wrap gap-1 items-start mt-2 text-[10px]">
-                                <x-span-text :text="'P.V UNIT : ' .
-                                    $venta->moneda->simbolo .
-                                    ' ' .
-                                    number_format($item->price, 2, '.', ', ')" class="leading-3 !tracking-normal" />
-
-                                @if ($item->igv > 0)
-                                    <x-span-text :text="'IGV UNIT : ' .
-                                        $venta->moneda->simbolo .
-                                        ' ' .
-                                        number_format($item->igv, 2, '.', ', ')" class="leading-3 !tracking-normal" />
-                                @endif
 
                                 <x-span-text :text="formatDecimalOrInteger($item->cantidad) . ' ' . $item->producto->unit->name" class="leading-3 !tracking-normal" />
 
@@ -386,11 +349,6 @@
                 </div>
             @endif
         </div>
-
-        <div x-show="loadingventa" wire:loading.flex wire:target="loadProductos, delete"
-            class="loading-overlay rounded">
-            <x-loading-next />
-        </div>
     </x-form-card>
 
 
@@ -399,13 +357,13 @@
             @if ($venta->comprobante->guia)
                 <x-form-card titulo="GUÍA DE REMISIÓN">
                     <div class="w-full flex flex-col gap-2">
-                        <p class="text-colorminicard text-2xl font-semibold">
+                        <p class="text-colorlabel text-2xl font-semibold">
                             {{ $venta->comprobante->guia->seriecompleta }}
                             <small
                                 class="text-sm">{{ $venta->comprobante->guia->seriecomprobante->typecomprobante->descripcion }}</small>
                         </p>
 
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -413,7 +371,7 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             CLIENTE :
-                            <span class="font-medium inline-block">
+                            <span class="font-medium inline-block text-colorsubtitleform">
                                 {{ $venta->comprobante->guia->client->document }},
                                 {{ $venta->comprobante->guia->client->name }}</span>
                         </h1>
@@ -440,13 +398,13 @@
             @if ($venta->guia)
                 <x-form-card titulo="GUÍA DE REMISIÓN">
                     <div class="w-full flex flex-col gap-2">
-                        <p class="text-colorminicard text-2xl font-semibold">
+                        <p class="text-colorlabel text-2xl font-semibold">
                             {{ $venta->guia->seriecompleta }}
                             <small
                                 class="text-sm">{{ $venta->guia->seriecomprobante->typecomprobante->descripcion }}</small>
                         </p>
 
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -454,7 +412,7 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             CLIENTE :
-                            <span class="font-medium inline-block">
+                            <span class="font-medium inline-block text-colorsubtitleform">
                                 {{ $venta->guia->client->document }},
                                 {{ $venta->guia->client->name }}</span>
                         </h1>
@@ -484,21 +442,26 @@
             @if (Module::isEnabled('Facturacion'))
                 @if ($venta->comprobante)
                     <x-link-button href="{{ route('admin.facturacion.print.a4', $venta->comprobante) }}"
-                        target="_blank">
-                        IMPRIMIR A4</x-link-button>
+                        target="_blank">IMPRIMIR A4</x-link-button>
 
                     <x-link-button href="{{ route('admin.facturacion.print.ticket', $venta->comprobante) }}"
                         target="_blank">IMPRIMIR TICKET</x-link-button>
+
+                    @can('admin.facturacion.sunat')
+                        @if ($venta->seriecomprobante->typecomprobante->isSunat())
+                            @if (!$venta->comprobante->isSendSunat())
+                                <x-button wire:click="enviarsunat" wire:loading.attr="disabled" class="inline-block">
+                                    ENVIAR SUNAT</x-button>
+                            @endif
+                        @endif
+                    @endcan
                 @else
+                    {{-- <x-button wire:click="generarcomprobante" wire:loading.attr="disabled"
+                        class="inline-block">GENERAR COMPROBANTE</x-button> --}}
+
                     <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
                         IMPRIMIR TICKET</x-link-button>
                 @endif
-
-                @can('admin.facturacion.sunat')
-                    @if ($venta->seriecomprobante->typecomprobante->sendsunat == 1)
-                        <x-button>ENVIAR SUNAT</x-button>
-                    @endif
-                @endcan
             @else
                 <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
                     IMPRIMIR TICKET</x-link-button>
@@ -509,7 +472,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Realizar pago cuota') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -604,8 +566,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -614,7 +575,6 @@
     <x-jet-dialog-modal wire:model="opencuotas" maxWidth="2xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Editar cuotas pago') }}
-            <x-button-close-modal wire:click="$toggle('opencuotas')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -677,11 +637,6 @@
 
                     @endif
                 </form>
-
-                <div wire:loading wire:loading.flex wire:target="editcuotas, updatecuotas, addnewcuota"
-                    class="loading-overlay rounded hidden">
-                    <x-loading-next />
-                </div>
             </div>
         </x-slot>
     </x-jet-dialog-modal>
@@ -689,7 +644,6 @@
     <x-jet-dialog-modal wire:model="openpay" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Realizar pago venta') }}
-            <x-button-close-modal wire:click="$toggle('openpay')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -731,11 +685,12 @@
                         <x-label value="Moneda pago :" />
                         <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
                             @foreach ($monedas as $item)
-                                <x-input-radio class="py-2" for="moneda_{{ $item->id }}" :text="$item->currency">
+                                <x-input-radio class="py-2" for="paymoneda_{{ $item->id }}"
+                                    :text="$item->currency">
                                     <input data-code="{{ $item->code }}" data-currency="{{ $item->currency }}"
                                         data-simbolo="{{ $item->simbolo }}" x-model="moneda_id"
                                         class="sr-only peer peer-disabled:opacity-25" type="radio"
-                                        id="moneda_{{ $item->id }}" name="moneda"
+                                        id="paymoneda_{{ $item->id }}" name="moneda"
                                         value="{{ $item->id }}" @change="changeMoneda" />
                                 </x-input-radio>
                             @endforeach
@@ -803,8 +758,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -974,7 +928,7 @@
             })
         }
 
-        function confirmDeletepay(payment) {
+        function confirmDeletePayment(payment_id) {
             swal.fire({
                 title: 'ELIMINAR PAGO DE VENTA ?',
                 text: "Se eliminará un registro de pago de la base de datos.",
@@ -986,7 +940,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.deletepay(payment.id);
+                    @this.deletepay(payment_id);
                 }
             })
         }

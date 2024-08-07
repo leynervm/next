@@ -1,5 +1,5 @@
 <div
-    {{ $attributes->merge(['class' => 'w-10 h-10 relative p-1 mx-auto flex gap-1 flex-col justify-center items-center border border-borderminicard shadow-md shadow-shadowminicard rounded-xl my-2']) }}>
+    {{ $attributes->merge(['class' => 'w-10 h-10 relative p-1 mx-auto flex gap-1 flex-col justify-center items-center border border-borderminicard rounded-xl my-2']) }}>
     @if ($type == 'upload')
         <svg class="w-full h-full block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">

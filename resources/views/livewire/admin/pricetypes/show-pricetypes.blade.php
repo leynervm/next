@@ -1,5 +1,4 @@
-<div class="">
-
+<div x-data="loaderpricetypes">
     @if ($pricetypes->hasPages())
         <div class="w-full py-2">
             {{ $pricetypes->onEachSide(0)->links('livewire::pagination-default') }}
@@ -9,16 +8,19 @@
     <div class="flex gap-2 flex-wrap justify-start">
         @if (count($pricetypes) > 0)
             @foreach ($pricetypes as $item)
-                <x-minicard :title="$item->name" :content="$item->decimals . ' decimales'" :alignFooter="$item->default == 1 || $item->web == 1 ? 'justify-between' : 'justify-end'" size="lg">
+                <x-minicard :title="$item->name" :alignFooter="$item->default == 1 || $item->web == 1 ? 'justify-between' : 'justify-end'" size="lg">
                     @if ($item->rounded > 0)
                         @php
                             $stringrounded = $item->rounded == 1 ? '(+0.5)' : '(+1)';
                         @endphp
                         <p class="text-center">
-                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green"
-                                class="leading-3 !tracking-normal inline-block" />
+                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green" class="leading-3 inline-block" />
                         </p>
                     @endif
+
+                    <div>
+                        <x-span-text :text="$item->decimals . ' DECIMALES'" class="leading-3 inline-block" />
+                    </div>
 
                     <x-slot name="buttons">
                         <div class="inline-flex">
@@ -47,10 +49,9 @@
                             @endcan
 
                             @can('admin.administracion.pricetypes.delete')
-                                <x-button-toggle
-                                    class="{{ $item->isActivo() ? 'text-green-500 hover:text-green-600 focus:text-green-600' : 'text-gray-300 hover:text-gray-400 focus:text-gray-400' }}"
-                                    onclick="confirmDisablePricetype({{ $item }})" wire:loading.attr="disabled"
-                                    wire:key="restorepricetype_{{ $item->id }}">DESACTIVAR</x-button-toggle>
+                                <x-button-toggle :checked="$item->isActivo()" wire:loading.attr="disabled"
+                                    wire:key="restorepricetype_{{ $item->id }}"
+                                    @click="confirmDisable({{ $item }})" />
                             @endcan
                         </div>
                     </x-slot>
@@ -62,11 +63,10 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="2xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar lista precio') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2" x-data="loaderpricetypes">
+            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
                 <div>
                     <x-label value="Lista precio :" />
                     <x-input class="block w-full" wire:model.defer="pricetype.name"
@@ -155,8 +155,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -164,25 +163,6 @@
 
 
     <script>
-        function confirmDisablePricetype(pricetype) {
-            let mensaje = pricetype.status ? 'Desactivar' : 'Activar';
-            swal.fire({
-                title: mensaje + ' lista de precio, ' + pricetype.name,
-                text: "Se eliminará un registro de la base de datos.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.togglestatus(pricetype.id);
-                }
-            })
-        }
-
-
         document.addEventListener('alpine:init', () => {
             Alpine.data('loaderpricetypes', () => ({
                 rounded: @entangle('pricetype.rounded').defer,
@@ -209,6 +189,24 @@
                         this.selectR.val(value).trigger("change");
                     });
                 },
+                confirmDisable(pricetype) {
+                    let estado_activo = "{{ \App\Models\Pricetype::ACTIVO }}";
+                    let mensaje = pricetype.status == estado_activo ? 'DESACTIVAR' : 'ACTIVAR';
+                    swal.fire({
+                        title: mensaje + " LISTA DE PRECIO SELECCIONADO \n" + pricetype.name,
+                        text: null,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            @this.togglestatus(pricetype.id);
+                        }
+                    })
+                }
             }));
         })
     </script>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\EnviarGuiaRemisionSunat;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,6 +18,7 @@ class Guia extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use EnviarGuiaRemisionSunat;
 
     protected $guarded = ['created_at', 'updated_at'];
 
@@ -179,7 +181,7 @@ class Guia extends Model
 
     public function isSendSunat()
     {
-        return $this->codesunat == self::ENVIADO_SUNAT;
+        return trim($this->codesunat) == self::ENVIADO_SUNAT;
     }
 
     public function isVehiculosml()

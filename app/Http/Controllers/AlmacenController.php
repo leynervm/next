@@ -12,7 +12,6 @@ class AlmacenController extends Controller
         $this->middleware('can:admin.administracion.units')->only('units');
         $this->middleware('can:admin.almacen.categorias')->only('categorias');
         $this->middleware('can:admin.almacen.subcategorias')->only('subcategorias');
-        $this->middleware('can:admin.almacen.caracteristicas')->only('caracteristicas');
     }
 
 
@@ -29,10 +28,5 @@ class AlmacenController extends Controller
     public function units()
     {
         return view('admin.units.index');
-    }
-
-    public function caracteristicas()
-    {
-        return view('admin.especificaciones.index');
     }
 }

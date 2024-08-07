@@ -46,7 +46,7 @@ class CreateCategory extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.almacen.categorias.create');
         $this->name = trim($this->name);
@@ -90,15 +90,15 @@ class CreateCategory extends Component
                     'default' => 1
                 ]);
             }
-
-            // $category->subcategories()->syncWithPivotValues($this->selectedSubcategories, [
-            //     'created_at' => now('America/Lima')
-            // ]);
-
             DB::commit();
-            $this->resetValidation();
-            $this->reset();
             $this->emitTo('admin.categories.show-categories', 'render');
+            $this->resetValidation();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
+            $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -106,5 +106,11 @@ class CreateCategory extends Component
             DB::rollBack();
             throw $e;
         }
+    }
+
+    public function clearImage()
+    {
+        $this->reset(['logo']);
+        $this->resetValidation();
     }
 }

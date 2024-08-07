@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva característica') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -21,17 +20,21 @@
                     <x-jet-input-error for="name" />
                 </div>
 
-                <div class="w-full">
-                    <x-label-check for="view">
-                        <x-input wire:model.defer="view" name="view" value="1" type="checkbox" id="view" />
-                        MOSTRAR EN AUTOCOMPLETADO EQUIPOS
-                    </x-label-check>
-                </div>
+                @if (Module::isEnabled('Marketplace'))
+                    <div class="w-full">
+                        <x-label-check for="filterweb">
+                            <x-input wire:model.defer="filterweb" name="filterweb" value="1" type="checkbox"
+                                id="filterweb" />MOSTRAR EN FILTROS DE PRODUCTOS WEB
+                        </x-label-check>
+                        <x-jet-input-error for="filterweb" />
+                    </div>
+                @endif
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex gap-1 items-end pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button type="submit" wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

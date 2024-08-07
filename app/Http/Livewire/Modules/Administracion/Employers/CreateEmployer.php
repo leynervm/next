@@ -10,6 +10,7 @@ use App\Models\Turno;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateNacimiento;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -17,6 +18,8 @@ use Spatie\Permission\Models\Role;
 
 class CreateEmployer extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $exists = false;
@@ -72,15 +75,17 @@ class CreateEmployer extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.employers.create');
         if ($this->open == true) {
             $this->resetExcept(['open']);
             $this->resetValidation();
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
 
+        $this->authorize('admin.administracion.employers.create');
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->telefono = trim($this->telefono);
@@ -90,7 +95,6 @@ class CreateEmployer extends Component
                 $mensaje = response()->json([
                     'title' => 'EL USUARIO ENCONTRADO YA SE ENCUENTRA VINCULADO !',
                     'text' => 'Usuario del personal encontrado ya se encuentra vinculado a un personal.',
-                    'type' => 'warning'
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
@@ -163,7 +167,11 @@ class CreateEmployer extends Component
                 ]);
             }
             DB::commit();
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
             $this->resetValidation();
             $this->emitTo('modules.administracion.employers.show-employers', 'render');
             $this->dispatchBrowserEvent('created');
@@ -188,7 +196,7 @@ class CreateEmployer extends Component
 
     public function getClient()
     {
-
+        $this->authorize('admin.administracion.employers.create');
         $this->reset(['user', 'name']);
         $this->document = trim($this->document);
         $this->validate([

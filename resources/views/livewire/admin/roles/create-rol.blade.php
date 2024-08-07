@@ -3,21 +3,28 @@
         <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
             <div class="w-full">
                 <x-label value="Nombre del rol :" />
-                <x-input class="block w-full" wire:model.defer="name" placeholder="Nombre de rol..." />
+                <x-input class="block w-full" wire:keydown.enter="save" wire:model.defer="name"
+                    placeholder="Nombre de rol..." />
                 <x-jet-input-error for="name" />
                 <x-jet-input-error for="selectedPermisos" />
             </div>
-            <div class="w-full flex pt-4 justify-end">
+            {{-- <div class="w-full flex pt-4 justify-end">
                 <x-button type="submit" wire:loading.attr="disabled">
-                    {{ __('REGISTRAR') }}
-                </x-button>
-            </div>
+                    {{ __('Save') }}</x-button>
+            </div> --}}
         </form>
     </x-form-card>
 
+    <div class="w-full left-0 fixed z-10 bottom-0 p-3 px-8 bg-body">
+        <div class="max-w-full mx-auto flex justify-end">
+            <x-button wire:click="save" wire:loading.attr="disabled">
+                {{ __('Save') }}</x-button>
+        </div>
+    </div>
+
     @if (count($permisos) > 0)
         @foreach ($permisos as $module => $modulePermission)
-            <div class="w-full" wire:ignore>
+            <div class="w-full pb-16" wire:ignore>
                 <h1
                     class="text-colortitleform uppercase text-xs font-semibold relative before:absolute before:w-10 before:h-1 before:bg-colortitleform before:-bottom-1">
                     MÓDULO : {{ $module }}</h1>

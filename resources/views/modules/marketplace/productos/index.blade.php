@@ -15,10 +15,12 @@
 
     {{-- <div class="flex flex-wrap gap-2">
     </div> --}}
-    @if ($empresa->isDefault())
+    @if ($empresa && $empresa->isDefault())
         <div class="w-full py-3">
             <livewire:modules.marketplace.productos.show-productos :empresa="$empresa" :moneda="$moneda"
                 :pricetype="$pricetype" />
         </div>
     @endif
+
+    
 </x-app-layout>

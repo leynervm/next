@@ -363,7 +363,44 @@ function getPriceAntes($precio_venta, $descuento, $pricetype = null, $separate =
     }
 }
 
+function getPriceIGV(float $amount, float $igv = 18)
+{
+    $price = number_format($amount * 100 / (100 + $igv), 3, '.', '');
+    $json = response()->json([
+        'price' => number_format($price, 3, '.', ''),
+        'igv' => number_format($amount - $price, 3, '.', '')
+    ]);
+
+    return $json->getData();
+}
+
+function getPriceIncrement(float $amount, float $percent = 0)
+{
+    if ($percent > 0) {
+        $amount = number_format($amount + (($amount * $percent) / 100), 3, '.', '');
+    }
+
+    return  number_format($amount, 3, '.', '');
+}
+
 function lista_precios()
 {
     return Pricetype::pluck('campo_table')->toArray();
+}
+
+function toUTF8Import(string $value = null, $toUppercase = true, $especialcharacters = true)
+{
+    if (!is_null($value)) {
+        if ($especialcharacters) {
+            $value = str_replace("\u{A0}", '', $value);
+        }
+
+        if ($toUppercase) {
+            return trim(mb_strtoupper($value, "UTF-8"));
+        } else {
+            return trim($value, "UTF-8");
+        }
+    } else {
+        return null;
+    }
 }

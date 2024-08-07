@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva categoría') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -48,10 +47,10 @@
                                     LIMPIAR</x-button>
                             </template>
 
-                            <x-input-file for="fileInput" titulo="SELECCIONAR MARCA AGUA"
+                            <x-input-file for="fileInput" titulo="SELECCIONAR IMÁGEN"
                                 wire:loading.class="disabled:opacity-25" class="!rounded-lg">
-                                <input type="file" class="hidden" wire:model="logo" id="fileInput" accept="image/jpg,image/jpeg,image/png"
-                                    @change="loadlogo" />
+                                <input type="file" class="hidden" wire:model="logo" id="fileInput"
+                                    accept="image/jpg,image/jpeg,image/png" @change="loadlogo" />
                             </x-input-file>
                         </div>
                     </div>
@@ -59,10 +58,11 @@
                 <x-jet-input-error for="logo" class="text-center" />
 
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex items-end gap-1 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -72,11 +72,19 @@
         function loadimage() {
             return {
                 image: null,
+                logo: @entangle('logo').defer,
                 loadlogo() {
                     let file = document.getElementById('fileInput').files[0];
                     var reader = new FileReader();
                     reader.onload = (e) => this.image = e.target.result;
                     reader.readAsDataURL(file);
+                },
+                init() {
+                    this.$watch('logo', (value) => {
+                        if (value == undefined || value == null) {
+                            this.image = null;
+                        }
+                    });
                 },
                 reset() {
                     this.image = null;

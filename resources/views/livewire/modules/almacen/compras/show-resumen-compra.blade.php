@@ -1,5 +1,5 @@
-<div>
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+<div x-data="addproductocompra">
+    <div wire:loading.flex class="loading-overlay hidden fixed">
         <x-loading-next />
     </div>
 
@@ -37,35 +37,36 @@
                         @endphp
 
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" x-data="{ showForm: false }">
-                            <div class="w-full flex flex-wrap gap-1 justify-center mt-1">
-                                <x-label-price>
-                                    <span>
-                                        {{ $item->compra->moneda->simbolo }}
-                                        {{ number_format($item->total + $item->igv, 3, '.', ', ') }}
-                                        {{ $item->compra->moneda->currency }}
-                                    </span>
-                                </x-label-price>
+
+                            <div class="text-sm font-semibold mt-1 text-colorlabel">
+                                {{ formatDecimalOrInteger($item->cantidad) }}
+                                <small class="text-[10px] font-medium">{{ $item->producto->unit->name }} \
+                                    {{ $item->almacen->name }}</small>
                             </div>
 
-                            <div class="w-full flex flex-wrap gap-1 items-start mt-2 text-[10px]">
+
+                            <div class="text-sm font-semibold mt-1 text-colorlabel leading-3">
+                                <small class="text-[10px] font-medium">SUBTOTAL : </small>
+                                {{ number_format($item->total + $item->igv, 2, '.', ', ') }}
+                                <small class="text-[10px] font-medium">{{ $item->compra->moneda->currency }}</small>
+                            </div>
+
+                            <div class="w-full flex flex-wrap gap-1 items-start text-[10px]">
                                 <x-span-text :text="'P.C UNIT: ' .
                                     $item->compra->moneda->simbolo .
-                                    number_format($item->pricebuy, 3, '.', ', ')" class="leading-3 !tracking-normal" />
+                                    number_format($item->pricebuy, 2, '.', ', ')" class="leading-3" />
 
                                 @if ($item->compra->moneda->code == 'USD')
                                     <x-span-text :text="'P.C UNIT: S/. ' .
-                                        number_format($item->pricebuy * $item->compra->tipocambio, 3, '.', ', ') .
-                                        ' SOLES'" class="leading-3 !tracking-normal" />
+                                        number_format($item->pricebuy * $item->compra->tipocambio, 2, '.', ', ') .
+                                        ' SOLES'" class="leading-3" />
                                 @endif
 
                                 @if ($item->descuento > 0)
                                     <x-span-text :text="'DSCT ' .
                                         $item->compra->moneda->simbolo .
-                                        number_format($item->descuento * $item->cantidad, 2, '.', ', ')" class="leading-3 !tracking-normal" type="green" />
+                                        number_format($item->descuento * $item->cantidad, 2, '.', ', ')" class="leading-3" type="green" />
                                 @endif
-
-                                <x-span-text :text="formatDecimalOrInteger($item->cantidad) . ' ' . $item->producto->unit->name" class="leading-3 !tracking-normal" />
-                                <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
 
                                 @if (count($item->series) == 1)
                                     <span
@@ -90,11 +91,12 @@
                                 @endif
                             @endif
 
-                            <x-label-price class="!text-xl text-center">
-                                S/.
+                            <h1 class="text-xl text-center font-semibold text-colortitleform">
+                                <small class="text-[10px] font-medium">VENTA S/.</small>
                                 {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
-                                <small> SOLES</small>
-                            </x-label-price>
+                                <small class="text-[10px] font-medium">SOLES</small>
+                            </h1>
+
 
                             @can('admin.almacen.compras.create')
                                 <div class="w-full">
@@ -102,7 +104,8 @@
                                     <div class="w-full inline-flex gap-1">
                                         <x-input class="block w-full flex-1 prevent"
                                             wire:model.defer="serie.{{ $item->id }}.serie"
-                                            wire:keydown.enter="saveserie({{ $item }})" />
+                                            wire:keydown.enter="saveserie({{ $item }})"
+                                            placeholder="Ingresar serie..." />
                                         <x-button-add class="px-2 flex-shrink-0"
                                             wire:click="saveserie({{ $item }})" wire:loading.attr="disabled">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
@@ -161,17 +164,17 @@
             <h3 class="font-semibold text-colortitleform text-3xl leading-normal text-end">
                 <small class="font-medium text-[10px] w-full block">TOTAL ITEMS</small>
                 <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
-                {{ number_format($compra->compraitems()->sum('total'), 3, '.', ', ') }}
+                {{ number_format($compra->compraitems()->sum('total'), 2, '.', ', ') }}
             </h3>
 
             @can('admin.almacen.compras.create')
-                @if ($compra->isOpen())
-                    @if ($compra->compraitems()->sum('total') < $compra->total)
-                        <div class="w-full flex pt-4 justify-end">
-                            <x-button wire:click="$toggle('open')">AGREGAR PRODUCTO</x-button>
-                        </div>
-                    @endif
+                {{-- @if ($compra->isOpen()) --}}
+                @if ($compra->compraitems()->sum('total') < $compra->total)
+                    <div class="w-full flex pt-4 justify-end">
+                        <x-button wire:click="$toggle('open')">AGREGAR PRODUCTO</x-button>
+                    </div>
                 @endif
+                {{-- @endif --}}
             @endcan
         </div>
     </x-form-card>
@@ -180,25 +183,10 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Agregar producto compra') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="verifyproducto" class="w-full relative flex flex-col gap-2"
-                x-data="addproductocompra">
-                @if ($compra->moneda->code == 'USD')
-                    <h1 class="text-[10px] text-colortitleform text-end ">
-                        TIPO CAMBIO COMPRA
-                        <p class="font-semibold text-lg !leading-3">
-                            {{ number_format($compra->tipocambio, 3) }}</p>
-                    </h1>
-
-                    <h1 class="text-[10px] text-colortitleform text-end ">
-                        PRECIO COMPRA UNITARIO SOLES
-                        <p class="font-semibold text-lg !leading-3" x-text="pricebuysoles"></p>
-                    </h1>
-                @endif
-
+            <form @submit.prevent="verifyproducto" class="w-full relative flex flex-col gap-2">
                 <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div class="w-full sm:col-span-2">
                         <x-label value="Producto :" />
@@ -220,36 +208,55 @@
                         <x-jet-input-error for="producto_id" />
                     </div>
 
+
                     <div class="w-full sm:col-span-2 relative">
-                        @if ($producto_id && count($producto->almacens))
-                            <div class="w-full flex flex-wrap gap-2">
-                                @foreach ($producto->almacens as $item)
+                        <div class="w-full flex flex-wrap gap-2">
+                            <template x-for="(item, index) in almacens" :key="index">
+                                <x-simple-card class="w-36 rounded-lg p-2 flex flex-col gap-3 justify-between">
+                                    <h1 class="text-colortitleform text-[10px] text-center font-semibold"
+                                        x-text="item.name"></h1>
+                                    <div class="w-full">
+                                        <x-label value="Cantidad :" />
+                                        <x-input type="number" class="block w-full" min="0"
+                                            x-model="item.cantidad" onkeypress="return validarDecimal(event, 9)" />
+                                        {{-- <x-jet-input-error :for="'almacens.' + indice + '.cantidad'" /> --}}
+                                    </div>
+                                    {{-- <span x-text="item.index"></span> --}}
+                                </x-simple-card>
+                            </template>
+                        </div>
+
+                        @if ($producto_id && count($almacens) > 0)
+                            {{-- <div class="w-full flex flex-wrap gap-2">
+                                @foreach ($producto->almacens as $key => $item)
                                     <x-simple-card class="w-36 rounded-lg p-2 flex flex-col gap-3 justify-between">
                                         <h1 class="text-colortitleform text-[10px] text-center font-semibold">
-                                            {{ $item->name }}</h1>
+                                            {{ $item['name'] }}</h1>
+
                                         <div class="w-full">
                                             <x-label value="Cantidad :" />
                                             <x-input type="number" class="block w-full" min="0"
-                                                wire:model.lazy="almacens.{{ $item->id }}.cantidad"
+                                                x-model.throttle.500ms="almacens[{{ $key }}].cantidad"
                                                 onkeypress="return validarDecimal(event, 9)" />
-                                            <x-jet-input-error for="almacens.{{ $item->id }}.cantidad" />
+                                            <x-jet-input-error for="almacens.{{ $key }}.cantidad" />
                                         </div>
                                     </x-simple-card>
                                 @endforeach
-                            </div>
+                            </div> --}}
                         @else
                             <x-simple-card class="w-36 rounded-lg p-2 flex flex-col gap-3 justify-between">
                                 <h1 class="text-colorerror text-[10px] py-5 text-center font-semibold">
                                     SELECCIONAR PRODUCTO PARA MOSTRAR ALMACENES</h1>
                             </x-simple-card>
                         @endif
+                        <x-jet-input-error for="sumatoria_stock" />
                         <x-jet-input-error for="almacens" />
                     </div>
 
                     <div class="w-full">
-                        <x-label value="Precio compra unitario ({{ $compra->moneda->currency }}) :" />
-                        <x-input class="block w-full" x-model="pricebuy" @input="calcular" @change="numeric"
-                            placeholder="0.00" type="number" min="0" step="0.001"
+                        <x-label value="Precio unitario ({{ $compra->moneda->currency }}) sin IGV :" />
+                        <x-input class="block w-full" x-mask:dynamic="$money($input, '.', '', 2)"
+                            x-model.number="pricebuy" @input="calcular" @change="numeric" placeholder="0.00"
                             onkeypress="return validarDecimal(event, 12)" />
                         <x-jet-input-error for="pricebuy" />
                         <x-label textSize="[10px]"
@@ -261,11 +268,68 @@
 
                     <div class="w-full">
                         <x-label value="Descuento x unidad ({{ $compra->moneda->currency }}):" />
-                        <x-input class="block w-full" x-model="descuento" @input="calcular" @change="numeric"
-                            placeholder="0.00" type="number" min="0" step="0.001"
+                        <x-input class="block w-full" x-model="descuento" x-mask:dynamic="$money($input, '.', '', 2)"
+                            @input="calcular" @change="numeric" placeholder="0.00"
                             onkeypress="return validarDecimal(event, 12)" />
                         <x-jet-input-error for="descuento" />
                     </div>
+
+
+                    <div class="w-full text-xs text-colorsubtitleform">
+                        {{-- x-show="igv>0" --}}
+                        <template x-if="igv > 0">
+                            <div class="w-full">
+                                <small class="w-full font-normal leading-3">IGV UNIT.</small>
+                                <span class="text-xl inline-block font-semibold"
+                                    x-text="moneda_compra.simbolo + ' '+ toDecimal(igv,2)"></span>
+                            </div>
+                        </template>
+
+                        <template x-if="descuento > 0">
+                            <div>
+                                <div class="w-full">
+                                    <small class="w-full font-normal leading-3">P. UNIT.</small>
+                                    <span class="text-xl inline-block font-semibold"
+                                        x-text="moneda_compra.simbolo + ' '+ toDecimal(parseFloat(pricebuy) + parseFloat(igv) + parseFloat(descuento),2)"></span>
+                                </div>
+                                <div class="w-full">
+                                    <small class="w-full font-normal leading-3">DESC. UNIT.</small>
+                                    <span class="text-xl inline-block font-semibold"
+                                        x-text="moneda_compra.simbolo + ' '+ toDecimal(descuento,2)"></span>
+                                </div>
+                            </div>
+                        </template>
+
+                        <template x-if="pricebuy > 0">
+                            <div class="w-full">
+                                <small class="w-full font-normal leading-3">PRECIO UNIT.</small>
+                                <p class="text-xl inline-block font-semibold"
+                                    x-text="moneda_compra.simbolo + ' '+ toDecimal(parseFloat(pricebuyigv) - parseFloat(descuento),2)">
+                                </p>
+                            </div>
+                        </template>
+
+                        @if ($compra->moneda->code == 'USD')
+                            <div class="w-full">
+                                <small class="w-full font-normal leading-3">TIPO CAMBIO</small>
+                                <span class="text-xl inline-block font-semibold">S/.
+                                    {{ number_format($compra->tipocambio, 2) }}</span>
+                            </div>
+
+                            <template x-if="pricebuysoles>0">
+                                <div class="w-full text-colorlabel" style="display: none;" x-clock
+                                    x-show="pricebuysoles>0">
+                                    <small class="w-full font-normal leading-3">PRECIO UNIT. </small>
+                                    <p class="text-xl inline-block font-semibold"
+                                        x-text="'S/. ' + toDecimal(pricebuysoles,2)">
+                                    </p>
+                                    <small class="w-full font-normal leading-3">SOLES INC. IGV</small>
+                                </div>
+                            </template>
+                        @endif
+                        <x-jet-input-error for="importe" />
+                    </div>
+
 
                     @if (!$compra->sucursal->empresa->usarLista())
                         <div class="w-full">
@@ -278,75 +342,36 @@
                     @endif
                 </div>
 
-                <div class="w-full text-xs text-colorsubtitleform font-semibold">
-                    <x-jet-input-error for="importe" />
-
-                    {{-- x-show="igv>0" --}}
-                    <template x-if="igv > 0">
-                        <div class="w-full">
-                            <small class="w-full font-normal leading-3">IGV UNIT.</small>
-                            <span class="text-sm inline-block" x-text="igv"></span>
-                        </div>
-                    </template>
-                    <template x-if="descuento > 0">
-                        <div>
-                            <div class="w-full">
-                                <small class="w-full font-normal leading-3">P. UNIT.</small>
-                                <span class="text-sm inline-block"
-                                    x-text="toDecimal(parseFloat(pricebuy) + parseFloat(igv) + parseFloat(descuento))"></span>
-                            </div>
-                            <div class="w-full text-colorlabel">
-                                <small class="w-full font-normal leading-3">DESC. UNIT.</small>
-                                <span class="text-sm inline-block" x-text="descuento"></span>
-                            </div>
-                        </div>
-                    </template>
-                    <template x-if="pricebuy > 0">
-                        <div class="w-full">
-                            <small class="w-full font-normal leading-3">P. COMPRA UNIT.</small>
-                            <p class="text-xl inline-block"
-                                x-text="toDecimal(parseFloat(pricebuyigv) - parseFloat(descuento))"></p>
-                        </div>
-                    </template>
-                </div>
-
                 <div class="w-full text-colorsubtitleform text-xs font-semibold">
                     <template x-if="pricebuyigv > 0">
                         <div class="w-full text-end">
-                            <small class="w-full font-normal leading-3">IGV
-                                {{ $compra->moneda->simbolo }}</small>
+                            <small class="w-full font-normal leading-3">IGV</small>
                             <span class="text-lg inline-block"
-                                x-text="toDecimal(parseFloat(igv) * parseFloat(cantidad))"></span>
-                            {{-- <small class="w-full font-normal leading-3">{{ $compra->moneda->currency }}</small> --}}
+                                x-text="moneda_compra.simbolo + ' '+ toDecimal(parseFloat(igv) * parseFloat(cantidad),2)"></span>
                         </div>
                     </template>
 
                     <template x-if="pricebuyigv > 0">
                         <div class="w-full text-end">
-                            <small class="w-full font-normal leading-3">SUBTOTAL
-                                {{ $compra->moneda->simbolo }}</small>
+                            <small class="w-full font-normal leading-3">SUBTOTAL</small>
                             <span class="text-lg inline-block"
-                                x-text="toDecimal((parseFloat(descuento) * parseFloat(cantidad)) + (parseFloat(pricebuy) * parseFloat(cantidad)))"></span>
-                            {{-- <small class="w-full font-normal leading-3">{{ $compra->moneda->currency }}</small> --}}
+                                x-text="moneda_compra.simbolo + ' '+ toDecimal((parseFloat(descuento) * parseFloat(cantidad)) + (parseFloat(pricebuy) * parseFloat(cantidad)),2)"></span>
                         </div>
                     </template>
 
                     <template x-if="descuento > 0">
                         <div class="w-full text-end text-colorlabel">
-                            <small class="w-full font-normal leading-3">DESCUENTOS
-                                {{ $compra->moneda->simbolo }}</small>
+                            <small class="w-full font-normal leading-3">DESCUENTOS</small>
                             <span class="text-lg inline-block"
-                                x-text="toDecimal(parseFloat(descuento) * parseFloat(cantidad))"></span>
-                            {{-- <small class="w-full font-normal leading-3">{{ $compra->moneda->currency }}</small> --}}
+                                x-text="moneda_compra.simbolo + ' '+ toDecimal(parseFloat(descuento) * parseFloat(cantidad),2)"></span>
                         </div>
                     </template>
 
                     <template x-if="pricebuyigv > 0">
                         <div class="w-full text-end text-colorlabel">
-                            <small class="w-full font-normal leading-3">TOTAL {{ $compra->moneda->simbolo }}</small>
+                            <small class="w-full font-normal leading-3">TOTAL</small>
                             <span class="text-3xl inline-block"
-                                x-text="toDecimal((parseFloat(pricebuyigv) - parseFloat(descuento)) * parseFloat(cantidad))"></span>
-                            {{-- <small class="w-full font-normal leading-3">{{ $compra->moneda->currency }}</small> --}}
+                                x-text="moneda_compra.simbolo + ' '+ toDecimal((parseFloat(pricebuyigv) - parseFloat(descuento)) * parseFloat(cantidad),2)"></span>
                         </div>
                     </template>
 
@@ -361,56 +386,13 @@
                     </h3> --}}
                 </div>
 
-                {{-- <div>
-                    {{ var_dump($almacens) }}
-                </div> --}}
-
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
-
-                {{-- {{ print_r($errors->all()) }} --}}
             </form>
         </x-slot>
     </x-jet-dialog-modal>
-
-
-    {{-- <x-jet-dialog-modal wire:model="openprice" maxWidth="lg" footerAlign="justify-end">
-        <x-slot name="title">
-            {{ __('Cambiar precio venta') }}
-            <x-button-close-modal wire:click="$toggle('openprice')" wire:loading.attr="disabled" />
-        </x-slot>
-
-        <x-slot name="content">
-            <div>
-                <x-label value="Lista precio :" />
-                <x-disabled-text :text="$pricetype->name" />
-                <x-jet-input-error for="pricetype_id" />
-
-                <x-label value="Precio venta sugerido :" class="mt-2" />
-                <x-disabled-text :text="$priceold" />
-
-                <x-label value="Precio venta manual :" class="mt-2" />
-                <x-input class="block w-full" wire:model.defer="newprice" type="number" min="0"
-                    step="0.01" wire:keydown.enter="saveprecioventa" />
-                <x-jet-input-error for="newprice" />
-                <x-jet-input-error for="producto.id" />
-
-                <div class="mt-3 flex flex-wrap gap-1 justify-end">
-                    @if ($pricemanual)
-                        <x-button wire:click="deletepricemanual" wire:key="deletepricemanual{{ $producto->id }}"
-                            wire:loading.attr="disabled">
-                            ELIMINAR PRECIO MANUAL</x-button>
-                    @endif
-                    <x-button wire:click="saveprecioventa" wire:key="saveprecioventa{{ $producto->id }}"
-                        wire:loading.attr="disabled">
-                        REGISTRAR</x-button>
-                </div>
-            </div>
-        </x-slot>
-    </x-jet-dialog-modal> --}}
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -425,9 +407,10 @@
                 pricebuyigv: null,
                 percent: @entangle('percent').defer,
                 showigv: @entangle('showigv').defer,
-                codemoneda_compra: @json($compra->moneda->code),
-                cantidad: @entangle('stock'),
+                moneda_compra: @json($compra->moneda),
+                cantidad: @entangle('sumatoria_stock').defer,
                 total: @entangle('total').defer,
+                almacens: @entangle('almacens').defer,
                 // totaldescuentos : @entangle('importe').defer,
 
                 init() {
@@ -442,18 +425,29 @@
                     this.$watch("showigv", (value) => {
                         this.calcular()
                     });
+
+
+                    this.$watch("almacens", (value) => {
+                        // this.almacens = value;
+                        const almacens = Object.values(value);
+                        if (almacens.length > 0) {
+                            const cantidad = almacens.reduce((sum, item) =>
+                                parseFloat(sum) + Number(item.cantidad), 0);
+                            this.cantidad = cantidad;
+                        }
+                    });
                 },
                 calcular() {
                     let descuento = this.descuento > 0 ? this.descuento : 0;
                     if (this.showigv) {
                         this.igv = toDecimal((parseFloat(this.pricebuy) + parseFloat(descuento)) * (
-                            parseFloat(this.percent) /
-                            100));
+                            parseFloat(this.percent) / 100), 2);
                     } else {
-                        this.igv = toDecimal(0);
+                        this.igv = toDecimal(0, 2);
                     }
                     this.pricebuyigv = toDecimal(parseFloat(this.pricebuy) + parseFloat(descuento) +
                         parseFloat(this.igv))
+                   
                     this.pricebuysoles = toDecimal(parseFloat(this.pricebuyigv) * parseFloat(this
                         .tipocambio));
                     this.total = toDecimal(parseFloat(this.pricebuyigv) * parseFloat(this.cantidad));
@@ -463,6 +457,9 @@
                     this.tipocambio = toDecimal(this.tipocambio > 0 ? this.tipocambio : 0);
                     this.descuento = toDecimal(this.descuento > 0 ? this.descuento : 0);
                 },
+                verifyproducto() {
+                    this.$wire.call('verifyproducto').then((result) => {});
+                }
             }))
         })
 
@@ -505,7 +502,7 @@
             this.selectPCI.val(this.producto_id).trigger("change");
             this.selectPCI.on("select2:select", (event) => {
                 this.producto_id = event.target.value;
-                @this.loadproducto(this.producto_id);
+                this.$wire.call('loadproducto', this.producto_id).then(() => {});
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);

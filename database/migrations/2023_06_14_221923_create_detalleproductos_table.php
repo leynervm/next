@@ -17,7 +17,7 @@ class CreateDetalleproductosTable extends Migration
             $table->id();
             $table->text('descripcion');
             $table->bigInteger('producto_id')->nullable();
-            $table->foreign('producto_id')->on('productos')->references('id');
+            $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 

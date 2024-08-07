@@ -1,4 +1,8 @@
 <div x-data="loader">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="RESUMEN GUÍA REMISIÓN"
             subtitulo="Complete todos los campos para registrar una nueva guía de remisión.">
@@ -37,7 +41,7 @@
                                 @endif
                             </x-slot>
                         </x-select>
-                        <span x-text="codemotivotraslado"></span>
+                        {{-- <span x-text="codemotivotraslado"></span> --}}
                         <x-jet-input-error for="motivotraslado_id" />
                     </div>
 
@@ -55,7 +59,7 @@
                                 @endif
                             </x-slot>
                         </x-select>
-                        <span x-text="codemodalidad"></span>
+                        {{-- <span x-text="codemodalidad"></span> --}}
                         <x-jet-input-error for="modalidadtransporte_id" />
                     </div>
 
@@ -91,17 +95,16 @@
                             <x-label value="Comprobante referencia emitido :" />
                             <div class="w-full inline-flex relative">
                                 <x-disabled-text :text="$referencia" class="w-full block" />
-                                <x-button-close-modal
-                                    class="hover:animate-none !text-red-500 hover:bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-1"
-                                    wire:click="desvincularcpe" wire:loading.attr="disabled" />
+                                <x-button-close-modal class="btn-desvincular" wire:click="desvincularcpe"
+                                    wire:loading.attr="disabled" />
                             </div>
                             <x-jet-input-error for="referencia" />
                         </div>
                     @else
                         <div class="w-full" x-show="codemotivotraslado == '01' || codemotivotraslado == '03'">
                             <x-label value="Comprobante referencia emitido :" />
-                            <div class="w-full inline-flex">
-                                <x-input class="block w-full prevent" wire:model.defer="referencia"
+                            <div class="w-full inline-flex gap-1">
+                                <x-input class="block w-full flex-1 prevent" wire:model.defer="referencia"
                                     wire:keydown.enter="searchreferencia" minlength="6" maxlength="13" />
                                 <x-button-add class="px-2" wire:click="searchreferencia" wire:loading.attr="disable">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -141,11 +144,6 @@
                         </x-label-check>
                     </div>
                 </div>
-
-                <div wire:loading.flex wire:target="save, searchreferencia, seriecomprobante_id"
-                    class="loading-overlay rounded hidden">
-                    <x-loading-next />
-                </div>
             </div>
         </x-form-card>
 
@@ -154,8 +152,8 @@
             <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
-                    <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" x-model="documentdestinatario"
+                    <div class="w-full inline-flex gap-1">
+                        <x-input class="block w-full flex-1 prevent numeric" x-model="documentdestinatario"
                             wire:model.defer="documentdestinatario" wire:keydown.enter="getDestinatario"
                             minlength="0" maxlength="11" />
                         <x-button-add class="px-2" wire:click="getDestinatario" wire:target="getDestinatario"
@@ -178,17 +176,14 @@
                     <x-jet-input-error for="namedestinatario" />
                 </div>
             </div>
-            <div wire:loading.flex wire:target="getDestinatario, save" class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </x-form-card>
 
         <x-form-card titulo="COMPRADOR" x-show="loadingcomprador" class="animate__animated animate__fadeInDown">
             <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
-                    <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" x-model="documentcomprador"
+                    <div class="w-full inline-flex gap-1">
+                        <x-input class="block w-full flex-1 prevent numeric" x-model="documentcomprador"
                             wire:model.defer="documentcomprador" wire:keydown.enter="getComprador" minlength="0"
                             maxlength="11" />
                         <x-button-add class="px-2" wire:click="getComprador" wire:loading.attr="disable">
@@ -210,17 +205,14 @@
                     <x-jet-input-error for="namecomprador" />
                 </div>
             </div>
-            <div wire:loading.flex wire:target="getComprador,save" class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </x-form-card>
 
         <x-form-card titulo="PROVEEDOR" x-show="loadingproveedor" class="animate__animated animate__fadeInDown">
             <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <div class="w-full">
                     <x-label value="RUC :" />
-                    <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" x-model="rucproveedor"
+                    <div class="w-full inline-flex gap-1">
+                        <x-input class="block w-full flex-1 prevent numeric" x-model="rucproveedor"
                             wire:model.defer="rucproveedor" wire:keydown.enter="getProveedor" minlength="0"
                             maxlength="11" />
                         <x-button-add class="px-2" wire:click="getProveedor" wire:target="getDestinatario"
@@ -243,17 +235,14 @@
                     <x-jet-input-error for="nameproveedor" />
                 </div>
             </div>
-            <div wire:loading.flex wire:target="getProveedor, save" class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </x-form-card>
 
         <x-form-card titulo="TRANSPORTISTA" x-show="loadingpublic" class="animate__animated animate__fadeInDown">
             <div class="w-full bg-body p-3 grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-3 gap-1">
                 <div class="w-full xs:col-span-2 lg:col-span-1">
                     <x-label value="RUC :" />
-                    <div class="w-full inline-flex">
-                        <x-input class="block w-full prevent numeric" wire:model.defer="ructransport"
+                    <div class="w-full inline-flex gap-1">
+                        <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="ructransport"
                             wire:keydown.enter="getTransport" minlength="0" maxlength="11" />
                         <x-button-add class="px-2" wire:click="getTransport" wire:loading.attr="disable">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -315,11 +304,6 @@
                         <x-jet-input-error for="anexoorigen" />
                     </div>
                 </div>
-
-                <div wire:loading.flex wire:target="regionorigen_id, provinciaorigen_id, save"
-                    class="loading-overlay rounded hidden">
-                    <x-loading-next />
-                </div>
             </div>
         </x-form-card>
 
@@ -362,10 +346,6 @@
                         <x-jet-input-error for="anexodestino" />
                     </div>
                 </div>
-                <div wire:loading.flex wire:target="regiondestino_id,provinciadestino_id, save"
-                    class="loading-overlay rounded hidden">
-                    <x-loading-next />
-                </div>
             </div>
         </x-form-card>
 
@@ -375,8 +355,8 @@
                 <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                     <div class="w-full">
                         <x-label value="Documento :" />
-                        <div class="w-full inline-flex">
-                            <x-input class="block w-full prevent numeric" wire:model.defer="documentdriver"
+                        <div class="w-full inline-flex gap-1">
+                            <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="documentdriver"
                                 wire:keydown.enter="getDriver" minlength="0" maxlength="11" />
                             <x-button-add class="px-2" wire:click="getDriver" wire:loading.attr="disable">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -459,7 +439,6 @@
         <x-form-card titulo="VEHÍCULOS TRANSPORTE" x-show="loadingprivate"
             class="animate__animated animate__fadeInDown">
             <div class="w-full relative rounded flex flex-wrap md:flex-nowrap gap-3">
-
                 <div class="w-full md:w-96 md:flex-shrink-0 bg-body p-3 rounded relative" x-data="{ loading: false }">
                     <div class="w-full flex flex-col gap-2">
                         <div class="w-full">
@@ -475,13 +454,9 @@
                             <x-button type="button" wire:click="addplacavehiculo">{{ __('AGREGAR') }}</x-button>
                         </div>
                     </div>
-
-                    <div wire:loading.flex wire:target="addplacavehiculo" class="loading-overlay rounded hidden">
-                        <x-loading-next />
-                    </div>
                 </div>
 
-                <div class="w-full relative rounded">
+                <div class="w-full flex-1 relative rounded">
                     @if (count($placavehiculos))
                         <div class="w-full flex flex-wrap items-start gap-2">
                             @foreach ($placavehiculos as $item)
@@ -499,14 +474,15 @@
         </x-form-card>
 
         <div class="w-full flex justify-end">
-            <x-button type="submit" wire:loading.attr="disabled">{{ __('REGISTRAR') }}</x-button>
+            <x-button type="submit" wire:loading.attr="disabled">{{ __('Save') }}</x-button>
         </div>
     </form>
 
     <div class="w-full flex flex-col">
-        @foreach ($errors->all() as $key)
+        <x-jet-input-error for="items" />
+        {{-- @foreach ($errors->all() as $key)
             <small class="text-red-500">{{ $key }}</small>
-        @endforeach
+        @endforeach --}}
     </div>
 
     <x-form-card titulo="PRODUCTOS VINCULADOS" class="mt-3">
@@ -599,7 +575,7 @@
                 </div>
 
                 <div class="w-full flex justify-between items-start">
-                    <div class="w-full">
+                    <div class="w-full flex-1">
                         <x-label-check for="disponibles">
                             <x-input wire:model.lazy="disponibles" @change="toggledisponibles" name="disponibles"
                                 type="checkbox" id="disponibles" />
@@ -618,16 +594,7 @@
                 <div class="w-full flex flex-wrap gap-2 relative rounded">
                     @foreach ($carshoops as $item)
                         @php
-                            $image = null;
-                            if (count($item->producto->images) > 0) {
-                                if ($item->producto->images()->default()->exists()) {
-                                    $image = asset(
-                                        'storage/productos/' . $item->producto->images()->default()->first()->url,
-                                    );
-                                } else {
-                                    $image = asset('storage/productos/' . $item->producto->images->first()->url);
-                                }
-                            }
+                            $image = $item->producto->getImageURL();
                         @endphp
 
                         <x-card-producto :name="$item->producto->name" :image="$image" :almacen="$item->almacen->name" :category="$item->producto->category->name">
@@ -655,8 +622,7 @@
                             @if (count($item->carshoopseries) > 1)
                                 <div x-data="{ showForm: false }" class="mt-1">
                                     <x-button @click="showForm = !showForm" class="whitespace-nowrap">
-                                        {{ __('VER SERIES') }}
-                                    </x-button>
+                                        {{ __('VER SERIES') }}</x-button>
                                     <div x-show="showForm" x-transition class="block w-full rounded mt-1">
                                         <div class="w-full flex flex-wrap gap-1">
                                             @foreach ($item->carshoopseries as $itemserie)
@@ -685,10 +651,6 @@
                         class="inline-block">ELIMINAR TODO</x-button-secondary>
                 </div>
             @endif
-
-            <div wire:loading.flex class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </div>
     </x-form-card>
 

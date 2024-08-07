@@ -51,12 +51,8 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
-
-        <x-title-next titulo="REGISTRAR GUÍA REMISIÓN" class="mb-3" />
-
+    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl">
         <livewire:modules.facturacion.guias.create-guia :sucursal="$sucursal" />
-
     </div>
 
 </x-admin-layout>

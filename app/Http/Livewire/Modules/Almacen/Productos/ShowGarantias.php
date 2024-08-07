@@ -23,6 +23,7 @@ class ShowGarantias extends Component
     public $descripcion = '';
 
     public $precio_1, $precio_2, $precio_3, $precio_4, $precio_5;
+    public $showespecificaciones = 0;
 
     protected $listeners = ['delete'];
 
@@ -35,6 +36,7 @@ class ShowGarantias extends Component
             $this->descripcion =  $producto->detalleproducto->descripcion;
         }
 
+        $this->showespecificaciones = $producto->verEspecificaciones();
         $this->precio_1 = formatDecimalOrInteger($producto->precio_1, 2,);
         $this->precio_2 = formatDecimalOrInteger($producto->precio_2, 2);
         $this->precio_3 = formatDecimalOrInteger($producto->precio_3, 2);
@@ -140,6 +142,7 @@ class ShowGarantias extends Component
             ['id' => $this->producto->detalleproducto->id ?? null],
             ['descripcion' => $this->descripcion]
         );
+        // $this->producto->viewespecificaciones = $this->showespecificaciones ? 1 : 0;
         // $this->reset(['descripcion']);
         $this->resetValidation();
         // $this->emit("resetCKEditor");

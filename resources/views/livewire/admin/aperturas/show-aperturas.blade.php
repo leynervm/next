@@ -13,12 +13,10 @@
                     <th scope="col" class="p-2 font-medium text-center">FECHA APERTURA</th>
                     <th scope="col" class="p-2 font-medium text-center">FECHA CIERRE</th>
                     <th scope="col" class="p-2 font-medium">APERTURA</th>
-                    {{-- <th scope="col" class="p-2 font-medium">EFECTIVO</th>
-                    <th scope="col" class="p-2 font-medium">TRANSFERENCIAS</th> --}}
-                    {{-- <th scope="col" class="p-2 font-medium">USUARIO</th> --}}
+                    <th scope="col" class="p-2 font-medium">SALDO</th>
                     <th scope="col" class="p-2 font-medium">CERRAR CAJA</th>
                     <th scope="col" class="p-2 font-medium">ESTADO</th>
-                    <th scope="col" class="p-2 font-medium">SUCURSAL</th>
+                    <th scope="col" class="p-2 font-medium">SUCURSAL / USUARIO</th>
                     @can('admin.cajas.aperturas.edit')
                         <th scope="col" class="p-2 font-medium">OPCIONES</th>
                     @endcan
@@ -42,15 +40,9 @@
                             <td class="p-2 text-center">
                                 {{ $item->apertura }}
                             </td>
-                            {{-- <td class="p-2 text-center">
-                                {{ $item->totalcash }}
-                            </td>
                             <td class="p-2 text-center">
-                                {{ $item->totalcash }}
-                            </td> --}}
-                            {{-- <td class="p-2 text-center">
-                                {{ $item->user->name }}
-                            </td> --}}
+                                SIN SALDO
+                            </td>
                             <td class="p-2 text-center uppercase">
                                 @if ($item->isClosed())
                                     {{ formatDate($item->closedate) }}
@@ -81,13 +73,8 @@
                             </td>
                             <td class="p-2 text-center">
                                 {{ $item->sucursal->name }}
-                                <p
-                                    class="text-[10px] leading-3 {{ $item->user_id == auth()->user()->id ? 'text-green-500' : 'text-colorsubtitleform' }}">
-                                    @if ($item->user_id == auth()->user()->id)
-                                        USUARIO ACTUAL
-                                    @else
-                                        USUARIO : {{ $item->user->name }}
-                                    @endif
+                                <p class="text-[10px] leading-3 text-colorsubtitleform">
+                                    {{ $item->user->name }}
                                 </p>
                             </td>
                             @can('admin.cajas.aperturas.edit')
@@ -110,7 +97,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar apertura caja') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -149,9 +135,8 @@
                 </div>
 
                 <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled" wire:target="update">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

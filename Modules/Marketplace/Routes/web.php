@@ -13,7 +13,10 @@
 
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\Route;
+use Modules\Marketplace\Http\Controllers\ClaimbookController;
+use Modules\Marketplace\Http\Controllers\ContactController;
 use Modules\Marketplace\Http\Controllers\MarketplaceController;
+use Modules\Marketplace\Http\Controllers\NiubizController;
 use Modules\Marketplace\Http\Controllers\OrderController;
 
 // Route::middleware([
@@ -26,34 +29,44 @@ use Modules\Marketplace\Http\Controllers\OrderController;
 //     });
 
 
+Route::middleware('verifyproductocarshoop')->group(function () {
+    Route::get('/productos', [MarketplaceController::class, 'productos'])->name('productos');
+    Route::get('/productos/{producto:slug}', [MarketplaceController::class, 'showproducto'])->name('productos.show');
+    Route::get('/ofertas', [MarketplaceController::class, 'ofertas'])->name('ofertas');
+    Route::get('/carshoop', [MarketplaceController::class, 'carshoop'])->name('carshoop');
+    Route::get('/mis-deseos', [MarketplaceController::class, 'wishlist'])->name('wishlist');
+    Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile');
 
-Route::get('/productos', [MarketplaceController::class, 'productos'])->name('productos');
-Route::get('/productos/{producto:slug}', [MarketplaceController::class, 'showproducto'])->name('productos.show');
-Route::get('/ofertas', [MarketplaceController::class, 'ofertas'])->name('ofertas');
-Route::get('/carshoop', [MarketplaceController::class, 'carshoop'])->name('carshoop');
-Route::get('/mis-deseos', [MarketplaceController::class, 'wishlist'])->name('wishlist');
-Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile');
+    Route::get('/libro-reclamaciones/create', [ClaimbookController::class, 'create'])->name('claimbook.create');
+    Route::post('/libro-reclamaciones/store', [ClaimbookController::class, 'store'])->name('claimbook.store');
+    Route::get('/libro-reclamaciones/{claimbook}/resumen', [ClaimbookController::class, 'resumen'])->name('claimbook.resumen');
+    Route::get('/libro-reclamaciones/{claimbook}/print', [ClaimbookController::class, 'print'])->name('claimbook.print.pdf');
 
+    Route::get('/nosotros', [MarketplaceController::class, 'nosotros'])->name('nosotros');
+    Route::get('/contactanos', [MarketplaceController::class, 'contactanos'])->name('contactanos');
+    Route::post('/contactanos/store', [ContactController::class, 'store'])->name('contactanos.store');
+    Route::get('/centro-autorizado', [MarketplaceController::class, 'centroautorizado'])->name('centroautorizado');
+    Route::get('/ubicanos', [MarketplaceController::class, 'ubicanos'])->name('ubicanos');
+    Route::get('/trabaja-con-nosotros', [MarketplaceController::class, 'trabaja'])->name('trabaja');
+});
 
 
 Route::middleware([
     'auth:sanctum', config('jetstream.auth_session'),
 ])->group(function () {
-    Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.register')->middleware(['carshoop', 'verified']);
+
+    Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.create')->middleware(['verifyproductocarshoop', 'carshoop', 'verified']);
+    
     Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
     Route::get('/orders/{order}/payment', [MarketplaceController::class, 'payment'])->name('orders.payment');
-    Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');
+    // Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');
+    Route::post('/orders/niubiz/checkout', [NiubizController::class, 'checkout'])->name('orders.niubiz.checkout')->middleware(['verified']);
+    
 
 
 
 
-
-
-
-
-
-
-
+    Route::get('/admin/productos/caracteristicas-especificaciones', [MarketplaceController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
 
     Route::middleware(['verifysucursal'])->name('admin.marketplace')->prefix('admin/marketplace')->group(function () {
         Route::get('/', [MarketplaceController::class, 'index']);
@@ -66,12 +79,16 @@ Route::middleware([
         Route::get('/orders', [OrderController::class, 'index'])->name('.orders');
         Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('.orders.show');
     });
+
+    Route::middleware(['verifysucursal'])->name('admin.administracion')->prefix('admin/administracion')->group(function () {
+        Route::get('/libro-reclamaciones', [ClaimbookController::class, 'claimbooks'])->name('.claimbooks');
+    });
 });
 
 // Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('order.show');
 
-Route::get('/prueba', function () {
-    return Cart::instance('shopping')->content();
+// Route::get('/prueba', function () {
+//     return Cart::instance('shopping')->content();
 
     // $producto = Producto::with(['promocions' => function ($query) {
     //     $query->with(['itempromos'])->disponibles();
@@ -87,4 +104,4 @@ Route::get('/prueba', function () {
     //     'ganancia_lista' => $producto->obtenerPorcentajeGananciaLista($pricetype->id),
     //     'precio_con_descuento' => $producto->calcularPrecioDescuento($precioVenta, 30, 0, null)
     // ];
-});
+// });

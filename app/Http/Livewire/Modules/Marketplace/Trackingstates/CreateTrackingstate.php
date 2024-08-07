@@ -4,12 +4,14 @@ namespace App\Http\Livewire\Modules\Marketplace\Trackingstates;
 
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Trackingstate;
 
 class CreateTrackingstate extends Component
 {
 
+    use AuthorizesRequests;
 
     public $open = false;
     public $name, $background, $finish = 0;
@@ -27,7 +29,7 @@ class CreateTrackingstate extends Component
             ],
             'finish' => [
                 'required',  'integer', 'min:0',
-                new DefaultValue('trackingstates', 'default', null, true)
+                new DefaultValue('trackingstates', 'finish', null, true)
             ]
         ];
     }
@@ -45,14 +47,20 @@ class CreateTrackingstate extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
+        $this->authorize('admin.marketplace.trackingstates.create');
         $this->name = trim($this->name);
         $this->finish = $this->finish ? 1 : 0;
         $validateData = $this->validate();
         Trackingstate::create($validateData);
         $this->resetValidation();
-        $this->reset();
+        if ($closemodal) {
+            $this->reset();
+        } else {
+
+            $this->resetExcept(['open']);
+        }
         $this->emitTo('modules.marketplace.trackingstates.show-trackingstates', 'render');
         $this->dispatchBrowserEvent('toast', toastJSON('Estado registrado correctamente'));
     }

@@ -19,10 +19,9 @@ class MarketplaceDatabaseSeeder extends Seeder
 
         // $this->call("OthersTableSeeder");
         if (Module::isEnabled('Marketplace')) {
-            
             $this->call(SeedTrackingstatesTableSeeder::class); //Requerido
             $this->call(SeedShipmenttypessTableSeeder::class); //Requerido
-
+            $this->call(SeedRoleTableSeeder::class); //Requerido
             // $this->call(SeedOrderTableSeeder::class);
         }
     }

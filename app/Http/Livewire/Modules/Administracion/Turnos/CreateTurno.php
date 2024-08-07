@@ -5,11 +5,14 @@ namespace App\Http\Livewire\Modules\Administracion\Turnos;
 use App\Models\Sucursal;
 use App\Models\Turno;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreateTurno extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name, $horaingreso, $horasalida;
@@ -29,21 +32,22 @@ class CreateTurno extends Component
 
     public function render()
     {
-        // $sucursals = Sucursal::orderBy('name', 'asc')->get();
         return view('livewire.modules.administracion.turnos.create-turno');
     }
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.turnos.create');
         if ($this->open == true) {
             $this->resetExcept(['open']);
             $this->resetValidation();
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
 
+        $this->authorize('admin.administracion.turnos.create');
         $validateData = $this->validate();
         try {
             DB::beginTransaction();
@@ -60,7 +64,11 @@ class CreateTurno extends Component
                 $turno = Turno::create($validateData);
             }
             DB::commit();
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
             $this->resetValidation();
             $this->emitTo('modules.administracion.turnos.show-turnos', 'render');
             $this->dispatchBrowserEvent('created');

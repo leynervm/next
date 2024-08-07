@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo slider') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -21,7 +20,7 @@
                                 class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
                         </template>
                         <template x-if="!image">
-                            <x-icon-file-upload type="file" class="w-full h-full text-gray-300" />
+                            <x-icon-file-upload type="file" class="w-full h-full text-gray-300 !border-0" />
                         </template>
                     </x-simple-card>
 
@@ -104,7 +103,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
+                        {{ __('Save') }}
                     </x-button>
                 </div>
             </form>

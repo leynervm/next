@@ -7,6 +7,7 @@ use App\Helpers\GetClient;
 use App\Models\Acceso;
 use App\Models\Almacen;
 use App\Models\Empresa;
+use App\Models\Sucursal;
 use App\Models\Typesucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
@@ -33,13 +34,14 @@ class ConfiguracionInicial extends Component
 
     public $document, $name, $direccion, $departamento, $provincia, $distrito, $telefono, $ubigeo_id,
         $estado, $condicion, $email, $web, $sendnode, $montoadelanto;
-    public $usuariosol, $clavesol, $passwordcert, $sendmode, $clientid, $clientsecret;
+    public $usuariosol, $clavesol, $passwordcert, $sendmode, $afectacionigv, $clientid, $clientsecret;
 
     public $validatemail;
     public $dominiocorreo;
     public $uselistprice = 0;
     public $viewpriceantes = 0;
     public $viewlogomarca = 0;
+    public $viewespecificaciones = 0;
     public $viewtextopromocion = 0;
     public $usepricedolar = 0;
     public $tipocambio;
@@ -62,6 +64,7 @@ class ConfiguracionInicial extends Component
             $this->clavesol = Empresa::PASSWORD_SOL_PRUEBA;
             $this->clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
             $this->clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
+            $this->passwordcert = Empresa::PASSWORD_CERT_PRUEBA;
         }
     }
 
@@ -71,10 +74,14 @@ class ConfiguracionInicial extends Component
         $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
         return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos', 'typesucursals'));
     }
+    public function openModal()
+    {
+        $this->open = true;
+    }
 
     public function validatestep($step)
     {
-        // dd($step);
+
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
         $this->usepricedolar = $this->usepricedolar == true ?  1 : 0;
         $this->viewpricedolar = $this->viewpricedolar == true ?  1 : 0;
@@ -82,6 +89,7 @@ class ConfiguracionInicial extends Component
         $this->viewlogomarca = $this->viewlogomarca == true ?  1 : 0;
         $this->tipocambioauto = $this->tipocambioauto == true ?  1 : 0;
         $this->usemarkagua = $this->usemarkagua == true ?  1 : 0;
+        $this->viewespecificaciones = $this->viewespecificaciones == true ?  1 : 0;
 
         if ($this->usepricedolar == 0) {
             $this->usepricedolar = 0;
@@ -115,6 +123,7 @@ class ConfiguracionInicial extends Component
                     'tipocambioauto' => ['integer', 'min:0', 'max:1'],
                     'viewpriceantes' => ['integer', 'min:0', 'max:1'],
                     'viewlogomarca' => ['integer', 'min:0', 'max:1'],
+                    'viewespecificaciones' => ['integer', 'min:0', 'max:1'],
                     'viewtextopromocion' => ['integer', 'min:0', 'max:2'],
                     'usemarkagua' => ['integer', 'min:0', 'max:1'],
                     'markagua' => [
@@ -180,12 +189,15 @@ class ConfiguracionInicial extends Component
             }
         } else {
             $this->validate([
+                'afectacionigv' => [
+                    'required', 'integer', 'min:0', 'max:1'
+                ],
                 'sendmode' => [
                     'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
                     'integer', 'min:0', 'max:1'
                 ],
                 'cert' => [
-                    'nullable', Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'nullable', Rule::requiredIf(module::isEnabled('Facturacion') && $this->sendmode == Empresa::PRODUCCION),
                     'file',  new ValidateFileKey("pfx")
                 ],
                 'usuariosol' => [
@@ -228,6 +240,7 @@ class ConfiguracionInicial extends Component
             'uselistprice' => $this->uselistprice,
             'viewpriceantes' => $this->viewpriceantes,
             'viewlogomarca' => $this->viewlogomarca,
+            'viewespecificaciones'  => $this->viewespecificaciones,
             'viewtextopromocion' => $this->viewtextopromocion,
             'usemarkagua' => $this->usemarkagua,
             'markagua' => $this->markagua,
@@ -400,7 +413,7 @@ class ConfiguracionInicial extends Component
             DB::commit();
             $this->resetValidation();
             $this->resetExcept(['step']);
-            $this->dispatchBrowserEvent('created');
+            $this->dispatchBrowserEvent('toast', toastJSON('INICIAR'));
             return redirect()->route('admin');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -442,6 +455,20 @@ class ConfiguracionInicial extends Component
             $this->distrito = $response->result->distrito;
 
             $establecimientos = [];
+            $principal = [
+                'descripcion' => 'TIENDA PRINCIPAL',
+                'direccion' => $response->result->direccion,
+                'ubigeo_id' => $response->result->ubigeo_id,
+                'typesucursal_id' => 1,
+                'departamento' => $response->result->departamento,
+                'provincia' => $response->result->provincia,
+                'distrito' => $response->result->distrito,
+                'cod_tipo' => 'MA',
+                'tipo' => 'CASA MATRIZ',
+                'codigo' => '0000',
+                'default' => Sucursal::DEFAULT,
+            ];
+
             if (is_array($response->result->establecimientos)) {
                 $establecimientos = array_map(function ($object) {
                     $array = (array) $object;
@@ -466,9 +493,10 @@ class ConfiguracionInicial extends Component
                     // return (array) $object;
                 }, $response->result->establecimientos);
             }
-
-            $this->sucursals =  $establecimientos;
-            // dd(($this->sucursals));
+            $establecimientos[] = $principal;
+            $collect = collect($establecimientos);
+            $this->selectedsucursals[] = '0000';
+            $this->sucursals = $collect->sortBy('codigo')->values()->toArray();
         } else {
             $this->addError('document', $response->message);
         }
@@ -532,7 +560,7 @@ class ConfiguracionInicial extends Component
         }
     }
 
-    public function addsucursal()
+    public function addsucursal($closemodal = false)
     {
 
         $this->name = trim($this->name);

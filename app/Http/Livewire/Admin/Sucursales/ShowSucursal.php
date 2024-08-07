@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Sucursales;
 
 use App\Models\Sucursal;
+use App\Models\Typesucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
@@ -30,6 +31,9 @@ class ShowSucursal extends Component
             'sucursal.ubigeo_id' => [
                 'required', 'integer', 'min:1', 'exists:ubigeos,id',
             ],
+            'sucursal.typesucursal_id' => [
+                'required', 'integer', 'min:1', 'exists:typesucursals,id',
+            ],
             'sucursal.codeanexo' => [
                 'required', 'string', 'min:4', 'max:4',
                 new CampoUnique('sucursals', 'codeanexo', $this->sucursal->id, true),
@@ -49,7 +53,8 @@ class ShowSucursal extends Component
     public function render()
     {
         $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        return view('livewire.admin.sucursales.show-sucursal', compact('ubigeos'));
+        $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
+        return view('livewire.admin.sucursales.show-sucursal', compact('ubigeos', 'typesucursals'));
     }
 
     public function update()

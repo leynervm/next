@@ -3,8 +3,8 @@
 }
 
 .contenedor {
-    box-shadow: 0 0 0 1px #202020;
-    @apply w-full px-3 xl:px-0 max-w-[1280px] mx-auto;
+    /* box-shadow: 0 0 0 1px #202020; */
+    @apply w-full px-1 xl:px-0 max-w-[1280px] mx-auto;
 }
 
 .header-marketplace {
@@ -68,15 +68,13 @@
     @apply -skew-x-[15deg] px-3 sm:px-4;
 }
 
-.btn-next:hover .btn-effect {
+.btn-next:not(:disabled):hover .btn-effect {
     @apply bg-white text-next-500 border border-next-500 skew-x-[15deg] sm:-translate-x-[3px] sm:translate-y-[3px];
 }
 
-.btn-next:hover.btn-next:before {
+.btn-next:not(:disabled):hover.btn-next:before {
     @apply bg-next-500;
 }
-
-
 
 .btn-next.btn-white {
     @apply text-next-500;
@@ -95,7 +93,15 @@
     box-shadow: 0px 0px 0px 2px theme("colors.white") inset;
 }
 
+/* HOVER TRANSPARENT BUTTON */
+.btn-hover-transparent:hover .btn-effect {
+    @apply !bg-white !text-next-800;
+}
 
+.btn-hover-transparent .btn-effect,
+.btn-next.btn-hover-transparent:hover.btn-hover-transparent:before {
+    @apply bg-next-800;
+}
 
 
 

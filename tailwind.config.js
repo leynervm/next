@@ -48,6 +48,9 @@ module.exports = {
                 fondohoverbutton: "var(--fondo-hover-button)",
                 ringbutton: "var(--ring-button)",
 
+                colorbuttontheme: "var(--color-button-theme)",
+                fondobuttontheme: "var(--fondo-button-theme)",
+
                 fondominicard: "var(--fondo-minicard)",
                 colorminicard: "var(--color-minicard)",
                 shadowminicard: "var(--shadow-minicard)",

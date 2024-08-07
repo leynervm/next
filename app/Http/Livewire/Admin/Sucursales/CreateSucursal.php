@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Admin\Sucursales;
 
 use App\Models\Empresa;
 use App\Models\Sucursal;
+use App\Models\Typesucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
@@ -17,7 +18,8 @@ class CreateSucursal extends Component
     use AuthorizesRequests;
 
     public $open = false;
-    public $name, $direccion, $codeanexo, $default, $ubigeo_id, $empresa;
+    public $name, $direccion, $codeanexo, $typesucursal_id, $default,
+        $ubigeo_id, $empresa;
 
     protected function rules()
     {
@@ -35,6 +37,9 @@ class CreateSucursal extends Component
             'codeanexo' => [
                 'required', 'string', 'min:4', 'max:4',
                 new CampoUnique('sucursals', 'codeanexo', null, true),
+            ],
+            'typesucursal_id' => [
+                'required', 'integer', 'min:1', 'exists:typesucursals,id',
             ],
             'default' => [
                 'required', 'integer', 'min:0', 'max:1',
@@ -54,7 +59,8 @@ class CreateSucursal extends Component
     public function render()
     {
         $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        return view('livewire.admin.sucursales.create-sucursal', compact('ubigeos'));
+        $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
+        return view('livewire.admin.sucursales.create-sucursal', compact('ubigeos', 'typesucursals'));
     }
 
 
@@ -63,11 +69,11 @@ class CreateSucursal extends Component
         if ($this->open == false) {
             $this->authorize('admin.administracion.sucursales.create');
             $this->resetValidation();
-            $this->reset(['name', 'direccion', 'ubigeo_id', 'default', 'codeanexo']);
+            $this->resetExcept(['empresa']);
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.administracion.sucursales.create');
         if (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals()->withTrashed()->count() >= mi_empresa()->limitsucursals) {
@@ -94,6 +100,7 @@ class CreateSucursal extends Component
                 $sucursal->direccion = $this->direccion;
                 $sucursal->ubigeo_id = $this->ubigeo_id;
                 $sucursal->codeanexo = $this->codeanexo;
+                $sucursal->typesucursal_id = $this->typesucursal_id;
                 $sucursal->default = $this->default;
                 $sucursal->empresa_id = $this->empresa->id;
                 if ($sucursal->trashed()) {
@@ -105,7 +112,11 @@ class CreateSucursal extends Component
 
             DB::commit();
             $this->resetValidation();
-            $this->reset(['open', 'name', 'direccion', 'ubigeo_id', 'default', 'codeanexo']);
+            if ($closemodal) {
+                $this->resetExcept(['empresa']);
+            } else {
+                $this->resetExcept(['open', 'empresa']);
+            }
             $this->emitTo('admin.sucursales.show-sucursales', 'render');
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Orders;
 
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
@@ -10,6 +11,9 @@ use Modules\Marketplace\Entities\Trackingstate;
 
 class ShowTrackings extends Component
 {
+
+    use AuthorizesRequests;
+
 
     public Order $order;
 
@@ -25,6 +29,8 @@ class ShowTrackings extends Component
 
     public function save()
     {
+        $this->authorize('admin.marketplace.trackings.create');
+
         if (!$this->order->isPagoconfirmado()) {
             $mensaje = response()->json([
                 'title' => 'PAGO DEL PEDIDO PENDIENTE POR CONFIRMAR !',
@@ -54,6 +60,7 @@ class ShowTrackings extends Component
 
     public function delete(Tracking $tracking)
     {
+        $this->authorize('admin.marketplace.trackings.delete');
         $tracking->delete();
         $this->dispatchBrowserEvent('toast', toastJSON('Tracking actualizado correctamente'));
         $this->order->refresh();

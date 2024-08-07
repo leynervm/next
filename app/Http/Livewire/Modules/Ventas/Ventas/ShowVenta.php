@@ -3,6 +3,8 @@
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
 use App\Enums\MovimientosEnum;
+use App\Helpers\Facturacion\createXML;
+use App\Helpers\Facturacion\SendXML;
 use App\Models\Cajamovimiento;
 use App\Models\Concept;
 use App\Models\Cuota;
@@ -16,6 +18,7 @@ use App\Rules\ValidateNumericEquals;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Facturacion\Entities\Comprobante;
@@ -39,6 +42,7 @@ class ShowVenta extends Component
     public $pendiente =  0;
     public $paymentactual = 0;
     public $totalamount = 0;
+    public $amountincrement = 0;
 
     protected function rules()
     {
@@ -64,6 +68,12 @@ class ShowVenta extends Component
         $this->openbox = Openbox::mybox($venta->sucursal_id)->first();
         $this->monthbox = Monthbox::usando($venta->sucursal_id)->first();
         $this->venta = $venta;
+
+        if ($venta->increment > 0) {
+            $saldopagar = number_format($venta->total - ($venta->gratuito + $venta->igvgratuito + $venta->cajamovimientos()->sum('amount') ?? 0), 3, '.', '');
+            $total = number_format($saldopagar / (1 + ($venta->increment / 100)), 3, '.', '');
+            $this->amountincrement = number_format($total * $venta->increment / 100, 2, '.', '');
+        }
     }
 
     public function render()
@@ -131,8 +141,8 @@ class ShowVenta extends Component
                 !empty($this->detalle) ? trim($this->detalle) : null,
             );
 
-            $this->cuota->cuotable->paymentactual += $this->cuota->amount;
-            $this->cuota->cuotable->save();
+            $this->venta->paymentactual += $this->cuota->amount;
+            $this->venta->save();
             DB::commit();
             $this->resetValidation();
             $this->resetExcept(['cuota', 'openbox', 'monthbox', 'venta']);
@@ -152,8 +162,8 @@ class ShowVenta extends Component
         $this->authorize('admin.ventas.payments.edit');
         DB::beginTransaction();
         try {
-            $cuota->cuotable->paymentactual -= $cuota->amount;
-            $cuota->cuotable->save();
+            $this->venta->paymentactual -= $cuota->amount;
+            $this->venta->save();
             $cuota->cajamovimiento->delete();
             DB::commit();
             $this->venta->refresh();
@@ -208,7 +218,7 @@ class ShowVenta extends Component
 
                         if ($serienotacredito) {
                             // dd($serienotacredito);
-                            $numeracion = $serienotacredito->contador + 1;
+                            $numeracion = $venta->sucursal->empresa->isProduccion() ? $serienotacredito->contador + 1 : $serienotacredito->contadorprueba + 1;
                             $comprobante = Comprobante::create([
                                 'seriecompleta' => $serienotacredito->serie . '-' . $numeracion,
                                 'date' => now('America/Lima'),
@@ -228,6 +238,7 @@ class ShowVenta extends Component
                                 'percent' => $venta->comprobante->percent,
                                 'referencia' => $venta->seriecompleta,
                                 'leyenda' => $venta->comprobante->leyenda,
+                                'sendmode' => $venta->comprobante->sendmode,
                                 'client_id' => $venta->comprobante->client_id,
                                 'typepayment_id' => $venta->comprobante->typepayment_id,
                                 'seriecomprobante_id' => $serienotacredito->id,
@@ -275,7 +286,11 @@ class ShowVenta extends Component
                                 }
                             }
 
-                            $serienotacredito->contador = $numeracion;
+                            if ($this->venta->sucursal->empresa->isProduccion()) {
+                                $serienotacredito->contador = $numeracion;
+                            } else {
+                                $serienotacredito->contadorprueba = $numeracion;
+                            }
                             $serienotacredito->save();
                             $venta->comprobante->delete();
                         } else {
@@ -594,6 +609,8 @@ class ShowVenta extends Component
         // $this->authorize('admin.ventas.deletepayment');
         DB::beginTransaction();
         try {
+            $this->venta->paymentactual = $this->venta->paymentactual - $cajamovimiento->amount;
+            $this->venta->save();
             $cajamovimiento->delete();
             DB::commit();
             $this->venta->refresh();
@@ -678,6 +695,8 @@ class ShowVenta extends Component
                 $this->venta->seriecompleta,
                 !empty($this->detalle) ? trim($this->detalle) : 'PAGO PARCIAL VENTA',
             );
+            $this->venta->paymentactual = $this->venta->paymentactual + $this->paymentactual;
+            $this->venta->save();
             DB::commit();
             $this->resetValidation();
             $this->resetExcept(['cuota', 'openbox', 'monthbox', 'venta']);
@@ -689,6 +708,43 @@ class ShowVenta extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+    }
+
+
+    function enviarsunat()
+    {
+
+        if ($this->venta->comprobante && !$this->venta->comprobante->isSendSunat()) {
+            $response = $this->venta->comprobante->enviarComprobante();
+
+            if ($response->success) {
+                if (empty($response->mensaje)) {
+                    $mensaje = response()->json([
+                        'title' => $response->title,
+                        'icon' => 'success'
+                    ]);
+                    $this->dispatchBrowserEvent('toast', $mensaje->getData());
+                } else {
+                    $mensaje = response()->json([
+                        'title' => $response->title,
+                        'text' => $response->mensaje,
+                    ]);
+                    $this->dispatchBrowserEvent('validation', $mensaje->getData());
+                }
+            } else {
+                $mensaje = response()->json([
+                    'title' => $response->title,
+                    'text' => $response->mensaje,
+                ]);
+                $this->dispatchBrowserEvent('validation', $mensaje->getData());
+            }
+        } else {
+            $mensaje = response()->json([
+                'title' => 'COMPROBANTE ELECTRÓNICO ' . $this->venta->comprobante->seriecompleta . ' YA FUÉ EMITIDO A SUNAT.',
+                'text' => null,
+            ]);
+            $this->dispatchBrowserEvent('validation', $mensaje->getData());
         }
     }
 }

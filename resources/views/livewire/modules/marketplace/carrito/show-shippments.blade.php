@@ -1,5 +1,5 @@
 <div x-data="shipment">
-    <form wire:submit.prevent="save" class="w-full">
+    <form @submit.prevent="save" class="w-full" id="register_order">
         <x-simple-card class="w-full flex flex-col rounded-xl shadow">
             <h1 class="text-[10px] font-semibold rounded-t-xl p-2 bg-fondospancardproduct text-colorlabel">
                 TIPO DE ENTREGA</h1>
@@ -11,7 +11,7 @@
                                 id="shipmenttpe_{{ $item->id }}" name="shipmenttypes" value="{{ $item->id }}"
                                 @change="seleccionarenvio({{ $item }})" />
                             <label for="shipmenttpe_{{ $item->id }}"
-                                class ="text-xs relative flex flex-col justify-center items-center border border-ringbutton gap-1 text-center font-medium ring-ringbutton text-colorlabel p-2.5 px-3 bg-fondominicard rounded-lg cursor-pointer hover:bg-fondohoverbutton hover:ring-fondohoverbutton hover:border-fondobutton hover:text-colorhoverbutton peer-checked:bg-fondohoverbutton peer-checked:ring-2 peer-checked:ring-ringbutton peer-checked:text-colorhoverbutton peer-focus:text-colorhoverbutton checked:bg-fondohoverbutton peer-disabled:opacity-25 transition ease-in-out duration-150">
+                                class ="text-xs relative flex flex-col justify-center items-center border border-ringbutton gap-1 text-center font-medium ring-ringbutton text-colorlabel p-2.5 px-3 rounded-lg cursor-pointer hover:bg-fondohoverbutton hover:ring-fondohoverbutton hover:border-fondobutton hover:text-colorhoverbutton peer-checked:bg-fondohoverbutton peer-checked:ring-2 peer-checked:ring-ringbutton peer-checked:text-colorhoverbutton peer-focus:text-colorhoverbutton checked:bg-fondohoverbutton peer-disabled:opacity-25 transition ease-in-out duration-150">
                                 {{ $item->name }}
                             </label>
                             @if ($item->descripcion)
@@ -207,14 +207,41 @@
         </x-simple-card>
 
         @if (Cart::instance('shopping')->count() > 0)
-            <div class="w-full flex flex-col gap-2 mt-4">
-                <p class="text-xs leading-3 text-colorsubtitleform text-justify">Lorem ipsum dolor sit amet consectetur
-                    adipisicing elit. Praesentium officia
-                    <a href="" class="text-orange-600">Terminos y condiciones</a>
-                    suscipit iusto doloremque id perspiciatis ipsam
-                </p>
-                <div class="w-full flex justify-end ">
-                    <button type="submit" wire:loading.attr="disabled" class="btn-next disabled:opacity-25">
+            <div class="w-full flex flex-col gap-2 mt-2">
+                @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
+                    <div class="w-full mt-2">
+                        <x-jet-label for="terms">
+                            <div class="flex justify-start items-center">
+                                <x-input x-model="terms" type="checkbox" name="terms" id="terms"
+                                    class="!rounded-none" wire:model.defer="terms" />
+
+                                <div class="flex-1 w-full ml-2 text-colorsubtitleform leading-3">
+                                    {!! __('I agree to the :terms_of_service and :privacy_policy', [
+                                        'terms_of_service' =>
+                                            '<a target="_blank" href="' .
+                                            route('terms.show') .
+                                            '" class="underline text-sm text-orange-600 hover:text-orange-900">' .
+                                            __('Terms of Service') .
+                                            '</a>',
+                                        'privacy_policy' =>
+                                            '<a target="_blank" href="' .
+                                            route('policy.show') .
+                                            '" class="underline text-sm text-orange-600 hover:text-orange-900">' .
+                                            __('Privacy Policy') .
+                                            '</a>',
+                                    ]) !!}
+                                </div>
+                            </div>
+                        </x-jet-label>
+                        <x-jet-input-error for="terms" />
+                    </div>
+                @endif
+                <x-jet-input-error for="g_recaptcha_response" />
+
+
+                <div class="w-full flex justify-center items-center px-3 text-center">
+                    <button type="submit" :disabled="!terms" wire:loading.attr="disabled"
+                        class="btn-next disabled:opacity-50">
                         <span class="btn-effect"><span>REGISTRAR PEDIDO</span></span>
                     </button>
                 </div>
@@ -227,12 +254,14 @@
             Alpine.data('shipment', () => ({
                 showadress: false,
                 showlocales: false,
+                terms: false,
                 showaddadress: @entangle('showaddadress').defer,
                 receiver: @entangle('receiver').defer,
                 receiver_info: @entangle('receiver_info').defer,
                 shipmenttype_id: @entangle('shipmenttype_id').defer,
                 local_id: @entangle('local_id').defer,
                 daterecojo: @entangle('daterecojo').defer,
+                recaptcha: null,
 
                 seleccionarenvio(shipmenttype) {
                     if (shipmenttype.isenvio == '1') {
@@ -244,6 +273,7 @@
                     }
                 },
                 init() {
+
                     this.$watch("receiver", (value) => {
                         if (value == '0') {
                             this.receiver_info.document = '{{ auth()->user()->document }}';
@@ -262,6 +292,16 @@
                         this.daterecojo = null;
                         // }
                     });
+                },
+                save() {
+                    grecaptcha.ready(() => {
+                        grecaptcha.execute(
+                            '{{ config('services.recaptcha_v3.key_web') }}', {
+                                action: 'submit'
+                            }).then(function(token) {
+                            @this.save(token);
+                        })
+                    })
                 }
             }))
         })

@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     <x-form-card titulo="CUOTAS PAGO" subtitulo="Información de cuotas de pago de la compra.">
         @if (count($compra->cuotas) > 0)
             <div class="w-full flex flex-col gap-2">
@@ -123,16 +127,11 @@
                 </div>
             </div>
         @endif
-
-        <div wire:loading.flex class="loading-overlay rounded hidden">
-            <x-loading-next />
-        </div>
     </x-form-card>
 
     <x-jet-dialog-modal wire:model="openpaycuota" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Realizar pago cuota compra') }}
-            <x-button-close-modal wire:click="$toggle('openpaycuota')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -199,7 +198,7 @@
                     </div>
 
                     {{-- x-show="totalamount > 0" --}}
-                    <div class="w-full text-xs text-end text-neutral-500 font-semibold" x-show="totalamount > 0">
+                    <div class="w-full text-xs text-end text-colorsubtitleform font-semibold" x-show="totalamount > 0">
                         <small class="inline-block" x-text="simbolo"></small>
                         <template x-if="totalamount > 0">
                             <h1 x-text="totalamount" class="text-2xl inline-block"></h1>
@@ -240,9 +239,8 @@
 
                 @can('admin.almacen.compras.create')
                     <div class="w-full flex pt-4 justify-end">
-                        <x-button type="submit" wire:loading.attr="disabled" wire:target="savepayment">
-                            {{ __('REGISTRAR') }}
-                        </x-button>
+                        <x-button type="submit" wire:loading.attr="disabled">
+                            {{ __('Save') }}</x-button>
                     </div>
                 @endcan
             </form>
@@ -252,7 +250,6 @@
     <x-jet-dialog-modal wire:model="opencuotas" maxWidth="2xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Editar cuotas compra') }}
-            <x-button-close-modal wire:click="$toggle('opencuotas')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -300,17 +297,15 @@
                         <x-jet-input-error for="amountcuotas" />
 
                         <div class="w-full mt-3 gap-2 flex items-center justify-center">
-                            <x-button wire:click="addnewcuota" wire:loading.attr="disabled"
-                                wire:target="addnewcuota">
-                                AGREGAR NUEVA CUOTA
-                            </x-button>
-                            <x-button type="submit" wire:loading.attr="disable" wire:target="updatecuotas">
+                            <x-button wire:click="addnewcuota" wire:loading.attr="disabled">
+                                AGREGAR NUEVA CUOTA</x-button>
+                            <x-button type="submit" wire:loading.attr="disable">
                                 CONFIRMAR CUOTAS</x-button>
                         </div>
                     @endif
                 </form>
 
-                <div wire:loading.flex class="loading-overlay rounded hidden">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
             </div>

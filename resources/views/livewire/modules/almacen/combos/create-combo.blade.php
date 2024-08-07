@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="4xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Crear promoción') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -19,20 +18,12 @@
                         <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
                             <div class="w-full xs:col-span-2">
                                 @if ($producto)
-                                    @if (count($producto->images))
-                                        @if ($producto->defaultImage)
-                                            <div
-                                                class="w-full max-w-xs mx-auto h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
-                                                @if ($producto->defaultImage)
-                                                    <img src="{{ asset('storage/productos/' . $producto->defaultImage->first()->url) }}"
-                                                        alt="" class="w-full h-full object-cover">
-                                                @else
-                                                    <img src="{{ asset('storage/productos/' . $producto->images->first()->url) }}"
-                                                        alt="" class="w-full h-full object-cover">
-                                                @endif
-
-                                            </div>
-                                        @endif
+                                    @if ($producto->getImageURL())
+                                        <div
+                                            class="w-full max-w-xs mx-auto h-60 shadow-md shadow-shadowminicard border rounded-lg border-borderminicard overflow-hidden mb-1 duration-300 relative">
+                                            <img src="{{ $producto->getImageURL() }}" alt=""
+                                                class="w-full h-full object-cover">
+                                        </div>
                                     @endif
 
                                     <h1 class="text-xs leading-3 text-center text-colortitleform mt-3">
@@ -159,8 +150,7 @@
 
                         <div class="w-full flex justify-between gap-2">
                             <x-button type="submit" wire:loading.attr="disabled">
-                                {{ __('AGREGAR') }}
-                            </x-button>
+                                {{ __('AGREGAR') }}</x-button>
                         </div>
 
                         @if ($productosec)
@@ -186,14 +176,14 @@
                                                 </svg>
                                             </span>
 
-                                            <h1 class="text-[10px] text-center leading-3 font-semibold">STOCK TOTAL
-                                            </h1>
+                                            <h1 class="text-[10px] text-center leading-3 font-semibold">
+                                                STOCK TOTAL</h1>
 
-                                            <h1 class="text-xl text-center leading-4 font-semibold">
+                                            <p class="text-xl text-center leading-4 font-semibold">
                                                 {{ floatval($sumstock) }}
-                                                <span class="w-full text-center text-[10px] font-normal">
-                                                    {{ $productosec->unit->name }}</span>
-                                            </h1>
+                                                <small class="w-full text-center text-[10px] font-normal">
+                                                    {{ $productosec->unit->name }}</small>
+                                            </p>
                                         </div>
 
                                         @foreach ($productosec->almacens as $item)
@@ -235,7 +225,7 @@
                             </x-button-secondary>
                             <x-button type="button" wire:loading.attr="disabled" class="inline-block"
                                 wire:click="save">
-                                {{ __('REGISTRAR') }}
+                                {{ __('Save') }}
                             </x-button>
                         </div>
                     </form>
@@ -303,7 +293,7 @@
                                 <x-jet-input-error for="expiredate" />
                             </div>
 
-                             <div class="w-full" x-show="type == '0'">
+                            <div class="w-full" x-show="type == '0'">
                                 <x-label value="Descuento (%) :" />
                                 <x-input class="block w-full" wire:model.defer="descuento" type="number"
                                     min="0" step="0.01" />
@@ -396,8 +386,7 @@
 
                         <div class="w-full flex justify-end pt-4">
                             <x-button type="submit" wire:click="confirmar" wire:loading.attr="disabled">
-                                {{ __('CONFIRMAR') }}
-                            </x-button>
+                                {{ __('CONFIRMAR') }}</x-button>
                         </div>
                     </form>
                 @endif

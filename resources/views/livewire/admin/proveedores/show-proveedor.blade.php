@@ -167,7 +167,7 @@
             </x-form-card>
         @endcan
 
-        <div wire:loading.flex class="loading-overlay rounded hidden">
+        <div wire:loading.flex class="loading-overlay fixed hidden">
             <x-loading-next />
         </div>
     </div>
@@ -176,7 +176,6 @@
     <x-jet-dialog-modal wire:model="openrepresentante" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Representante proveedor') }}
-            <x-button-close-modal wire:click="$toggle('openrepresentante')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -219,15 +218,10 @@
 
                 <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
                     <x-button type="submit" wire:loading.attr="disabled" wire:target="saverepresentante">
-                        @if ($contact)
-                            {{ __('ACTUALIZAR') }}
-                        @else
-                            {{ __('REGISTRAR') }}
-                        @endif
-                    </x-button>
+                        {{ __('save') }}</x-button>
                 </div>
 
-                <div wire:loading.flex class="loading-overlay rounded hidden">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
             </form>
@@ -237,7 +231,6 @@
     <x-jet-dialog-modal wire:model="openphone" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Teléfono') }}
-            <x-button-close-modal wire:click="$toggle('openphone')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -251,12 +244,7 @@
 
                 <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
                     <x-button type="submit" wire:loading.attr="disabled" wire:target="savephone">
-                        @if ($telephone)
-                            {{ __('ACTUALIZAR') }}
-                        @else
-                            {{ __('REGISTRAR') }}
-                        @endif
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

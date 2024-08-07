@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Caracteristica;
 use App\Models\Category;
+use App\Models\Producto;
 use App\Models\Slider;
 use App\Models\Subcategory;
 use Illuminate\Http\Request;
@@ -30,6 +32,31 @@ class SortController extends Controller
             $category = Subcategory::find($sort);
             $category->orden = $position;
             $category->save();
+            $position++;
+        }
+    }
+
+    public function caracteristicas(Request $request)
+    {
+        $position = 1;
+        $sorts = $request->get('sorts');
+        foreach ($sorts as $sort) {
+            $caracteristica = Caracteristica::find($sort);
+            $caracteristica->orden = $position;
+            $caracteristica->save();
+            $position++;
+        }
+    }
+
+    public function especificacions(Request $request)
+    {
+        $position = 1;
+        $sorts = $request->get('sorts');
+        $producto_id = $request->get('producto_id');
+        foreach ($sorts as $sort) {
+            Producto::find($producto_id)->especificacions()->updateExistingPivot($sort, [
+                'orden' => $position,
+            ]);
             $position++;
         }
     }

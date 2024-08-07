@@ -6,7 +6,7 @@
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
-        @if (count($trackingstates))
+        @if (count($trackingstates) > 0)
             @foreach ($trackingstates as $item)
                 <x-minicard :title="$item->name" :content="$item->isFinalizado() ? null : null" alignFooter="justify-between" size="lg">
 
@@ -21,15 +21,16 @@
                         @endif
 
                         <div class="ml-auto">
-                            {{-- @can('admin.cajas.conceptos.edit') --}}
-                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            {{-- @endcan --}}
+                            @can('admin.marketplace.trackingstates.edit')
+                                <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                            @endcan
 
-                            {{-- @can('admin.cajas.conceptos.delete') --}}
-                            @if (!$item->isDefault())
-                                <x-button-delete wire:loading.attr="disabled"
-                                    onclick="confirmDeleteTrackingstate({{ $item }})" />
-                            @endif
+                            @can('admin.marketplace.trackingstates.delete')
+                                @if (!$item->isDefault())
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        onclick="confirmDeleteTrackingstate({{ $item }})" />
+                                @endif
+                            @endcan
                         </div>
                     </x-slot>
                 </x-minicard>
@@ -40,7 +41,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar estado de pedido') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -73,8 +73,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

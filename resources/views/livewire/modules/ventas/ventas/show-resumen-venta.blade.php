@@ -5,598 +5,15 @@
 
     <div class="w-full flex flex-col gap-5" x-data="loader">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
-            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
                 <div class="w-full flex flex-col gap-1">
 
-                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-                        {{-- <div class="w-full">
-                            <x-label value="Vincular cotización :" />
-                            <div id="parentctzc" class="relative" x-init="selectCotizacion" wire:ignore>
-                                <x-select class="block w-full" id="ctzc" x-ref="selectcot"
-                                    data-minimum-results-for-search="3">
-                                    <x-slot name="options">
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="cotizacion_id" />
-                        </div> --}}
-                        @if (count($monedas) > 1)
-                            <div class="w-full">
-                                <x-label value="Moneda :" />
-                                <div id="parentmnd" class="relative" x-init="selectMoneda">
-                                    <x-select class="block w-full" x-ref="selectmoneda" id="mnd">
-                                        <x-slot name="options">
-                                            @if (count($monedas))
-                                                @foreach ($monedas as $item)
-                                                    <option value="{{ $item->id }}">{{ $item->currency }}</option>
-                                                @endforeach
-                                            @endif
-                                        </x-slot>
-                                    </x-select>
-                                    <x-icon-select />
-                                </div>
-                                <x-jet-input-error for="moneda_id" />
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- BUSCAR GRE Y OBTENER SUS ITEMS --}}
-                    @can('admin.ventas.create.guias')
-                        @if ($sincronizegre)
-                            <div class="w-full">
-                                <x-label value="Buscar GRE :" />
-                                <div class="w-full inline-flex relative">
-                                    <x-disabled-text :text="$searchgre" class="w-full flex-1 block" />
-                                    <x-button-close-modal
-                                        class="hover:animate-none h-full !text-red-500 !bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-0 !px-2"
-                                        wire:click="desvinculargre" wire:loading.attr="disabled" />
-                                </div>
-                                <x-jet-input-error for="searchgre" />
-                            </div>
-                        @else
-                            <div x-show="!incluyeguia" class="w-full">
-                                <x-label value="Buscar GRE :" />
-                                <div class="w-full inline-flex">
-                                    <x-input class="block w-full flex-1" wire:model.defer="searchgre"
-                                        wire:keydown.enter="getGRE" minlength="0" maxlength="13"
-                                        onkeydown="disabledEnter(event)" />
-                                    <x-button-add class="px-2" wire:click="getGRE" wire:loading.attr="disabled">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <circle cx="11" cy="11" r="8" />
-                                            <path d="m21 21-4.3-4.3" />
-                                        </svg>
-                                    </x-button-add>
-                                </div>
-                                <x-jet-input-error for="searchgre" />
-                            </div>
-                        @endif
-                    @endcan
-
-                    <div class="w-full flex flex-wrap lg:flex-nowrap xl:flex-wrap gap-1">
-                        <div class="w-full lg:w-1/3 xl:w-full">
-                            <x-label value="DNI / RUC :" />
-                            @if ($client_id)
-                                <div class="w-full inline-flex relative">
-                                    <x-disabled-text :text="$document" class="w-full flex-1 block" />
-                                    <x-button-close-modal
-                                        class="hover:animate-none h-full !text-red-500 !bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-0 !px-2"
-                                        wire:click="limpiarcliente" wire:loading.attr="disabled" />
-                                </div>
-                            @else
-                                <div class="w-full inline-flex">
-                                    <x-input class="block w-full flex-1 numeric prevent" wire:model.defer="document"
-                                        wire:keydown.enter="getClient" minlength="8" maxlength="11"
-                                        onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
-                                    <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="11" cy="11" r="8" />
-                                            <path d="m21 21-4.3-4.3" />
-                                        </svg>
-                                    </x-button-add>
-                                </div>
-                            @endif
-                            <x-jet-input-error for="document" />
-                        </div>
-                        <div class="w-full lg:w-2/3 xl:w-full">
-                            <x-label value="Cliente / Razón Social :" />
-                            <x-input class="block w-full" wire:model.defer="name"
-                                placeholder="Nombres / razón social del cliente" />
-                            <x-jet-input-error for="name" />
-                        </div>
-                    </div>
-
-                    <div class="w-full flex flex-wrap lg:flex-nowrap xl:flex-wrap gap-1">
-                        <div class="w-full lg:w-full xl:w-full">
-                            <x-label value="Dirección :" />
-                            <x-input class="block w-full" wire:model.defer="direccion"
-                                placeholder="Dirección del cliente" />
-                            <x-jet-input-error for="direccion" />
-                        </div>
-
-                        @if (mi_empresa()->uselistprice)
-                            @if ($pricetypeasigned)
-                                <div class="w-full lg:w-1/3 xl:w-full">
-                                    <x-label value="Lista precio asignado :" />
-                                    <x-disabled-text :text="$pricetypeasigned ?? ' - '" />
-                                </div>
-                            @endif
-                        @endif
-                    </div>
-
-                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-                        <div class="w-full">
-                            <x-label value="Tipo comprobante :" />
-                            <div id="parenttpcmpbt" class="relative" x-init="selectComprobante">
-                                <x-select class="block w-full" x-ref="selectcomprobante" id="tpcmpbt"
-                                    @change="getCodeSend($event.target)" data-placeholder="null">
-                                    <x-slot name="options">
-                                        @if (count($typecomprobantes))
-                                            @foreach ($typecomprobantes as $item)
-                                                <option value="{{ $item->id }}"
-                                                    data-code="{{ $item->typecomprobante->code }}"
-                                                    data-sunat="{{ $item->typecomprobante->sendsunat }}">
-                                                    [{{ $item->serie }}] - {{ $item->typecomprobante->descripcion }}
-                                                </option>
-                                            @endforeach
-                                        @endif
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="seriecomprobante_id" />
-                        </div>
-
-                        @if (Module::isEnabled('Facturacion'))
-                            <div class="w-full">
-                                <x-label value="Tipo pago :" />
-                                <div id="parenttpymt" class="relative" x-init="selectPayment">
-                                    <x-select class="block w-full" id="tpymt" x-ref="selectpayment"
-                                        data-placeholder="null">
-                                        <x-slot name="options">
-                                            @if (count($typepayments))
-                                                @foreach ($typepayments as $item)
-                                                    <option value="{{ $item->id }}"
-                                                        data-paycredito="{{ $item->isCredito() }}">
-                                                        {{ $item->name }} </option>
-                                                @endforeach
-                                            @endif
-                                        </x-slot>
-                                    </x-select>
-                                    <x-icon-select />
-                                </div>
-                                <x-jet-input-error for="typepayment_id" />
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
-                            <x-label value="Pago actual:" />
-                            <x-input class="block w-full prevent" type="number" min="0" step="0.100"
-                                wire:model.lazy="paymentactual" wire:key="paymentactual"
-                                wire:keydown.enter="setpaymentactual($event.target.value)"
-                                onkeypress="return validarDecimal(event, 12)" />
-                            <x-jet-input-error for="paymentactual" />
-                        </div>
-
-                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas"
-                            style="display: none;">
-                            <x-label value="Incrementar venta (%):" />
-                            <x-input class="block w-full prevent" type="number" min="0" step="0.10"
-                                wire:model.lazy="increment" wire:key="increment"
-                                wire:keydown.enter="setincrement($event.target.value)"
-                                onkeypress="return validarDecimal(event, 5)" />
-                            <x-jet-input-error for="increment" />
-                        </div>
-
-                        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas"
-                            style="display: none;">
-                            <x-label value="Cuotas :" />
-                            <div class="w-full inline-flex">
-                                <x-input class="block w-full" type="number" min="1" step="1"
-                                    max="100" wire:model.defer="countcuotas" wire:key="countcuotas"
-                                    onkeypress="return validarNumero(event, 3)" />
-                            </div>
-                            <x-jet-input-error for="countcuotas" />
-                        </div>
-
-                        <div style="display: none;" x-show="!paymentcuotas">
-                            <x-label value="Seleccionar pago :" />
-                            <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
-                                <x-input-radio class="py-2" for="paytotal" text="PAGO TOTAL">
-                                    <input x-model="typepay" class="sr-only peer peer-disabled:opacity-25"
-                                        type="radio" id="paytotal" name="payment" value="0" />
-                                </x-input-radio>
-                                <x-input-radio class="py-2" for="payparcial" text="PAGO PARCIAL">
-                                    <input x-model="typepay" class="sr-only peer peer-disabled:opacity-25"
-                                        type="radio" id="payparcial" name="payment" value="1" />
-                                </x-input-radio>
-                            </div>
-                            <x-jet-input-error for="typepay" />
-                        </div>
-
-                        <div class="w-full" style="display: none;" x-show="ispayparcial" x-transition>
-                            <x-label value="Monto parcial pago :" />
-                            <x-input class="block w-full" type="number" min="1" step="0.01"
-                                min="0.01" wire:model.defer="amountparcial" wire:key="amountparcial"
-                                onkeypress="return validarDecimal(event, 12)" @keydown.enter.prevent="savepay"
-                                placeholder="0.00" />
-                            <x-jet-input-error for="amountparcial" />
-                        </div>
-
-                        <div class="w-full" x-show="!paymentcuotas">
-                            <x-label value="Método pago :" />
-                            <div id="parenttmpym" class="relative" x-init="selectMethodpayment">
-                                <x-select class="block w-full" id="tmpym" x-ref="selectmethodpayment"
-                                    data-placeholder="null">
-                                    <x-slot name="options">
-                                        @if (count($methodpayments) > 0)
-                                            @foreach ($methodpayments as $item)
-                                                <option value="{{ $item->id }}">
-                                                    {{ $item->name }}
-                                                </option>
-                                            @endforeach
-                                        @endif
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="methodpayment_id" />
-                        </div>
-
-                        <div class="w-full flex mt-2 justify-end items-end" style="display: none;"
-                            x-show="ispayparcial" x-transition>
-                            <x-button @click.prevent="savepay" type="button" wire:loading.attr="disabled">
-                                {{ __('AGREGAR PAGO') }}</x-button>
-                        </div>
-
-                        {{-- <div class="w-full" x-show="!paymentcuotas">
-                            <x-label value="Detalle pago :" />
-                            <x-input class="block w-full" wire:model.defer="detallepago" />
-                            <x-jet-input-error for="detallepago" />
-                        </div> --}}
-                    </div>
+                    @include('ventas::ventas.forms.comprobante')
 
                     @if (Module::isEnabled('Facturacion'))
-                        <div class="block relative">
-                            {{-- @can('admin.ventas.create.igv')
-                                <x-label-check for="incluyeigv">
-                                    <x-input wire:model.lazy="incluyeigv" name="incluyeigv" value="1"
-                                        type="checkbox" id="incluyeigv" />INCLUIR IGV</x-label-check>
-                                <x-jet-input-error for="incluyeigv" />
-                            @endcan --}}
-
-                            @can('admin.ventas.create.guias')
-                                {{-- @if (count($comprobantesguia) > 0)
-                                    <div class="inline-block" x-show="!sincronizegre">
-                                        <x-label-check for="incluyeguia" x-show="openguia">
-                                            <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
-                                                id="incluyeguia" />GENERAR GUÍA REMISIÓN
-                                        </x-label-check>
-                                    </div>
-                                @endif --}}
-
-                                <div x-show="incluyeguia" x-transition>
-
-                                    <x-title-next titulo="MENÚ GUIA REMISION" class="my-3" />
-
-                                    <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-1 gap-1">
-                                        <div class="w-full xs:col-span-2 lg:col-span-1">
-                                            <x-label value="Guía remisión :" />
-                                            <div class="relative" id="parentsrgr" x-init="selectSerieguia">
-                                                <x-select class="block w-full uppercase" x-ref="selectguia"
-                                                    id="srgr" data-placeholder="null">
-                                                    <x-slot name="options">
-                                                        @if (count($comprobantesguia))
-                                                            @foreach ($comprobantesguia as $item)
-                                                                <option value="{{ $item->id }}"
-                                                                    data-code="{{ $item->typecomprobante->code }}">
-                                                                    [{{ $item->serie }}] -
-                                                                    {{ $item->typecomprobante->descripcion }}
-                                                                </option>
-                                                            @endforeach
-                                                        @endif
-                                                    </x-slot>
-                                                </x-select>
-                                                <x-icon-select />
-                                            </div>
-                                            <x-jet-input-error for="serieguia_id" />
-                                        </div>
-
-                                        <div class="w-full xs:col-span-2 lg:col-span-1">
-                                            <x-label value="Motivo traslado :" />
-                                            <div class="relative" id="parentmtvtr" x-init="selectMotivo">
-                                                <x-select class="block w-full uppercase" x-ref="selectmotivo"
-                                                    id="mtvtr" data-placeholder="null"
-                                                    @change="getCodeMotivo($event.target)">
-                                                    <x-slot name="options">
-                                                        @if (count($motivotraslados))
-                                                            @foreach ($motivotraslados as $item)
-                                                                <option value="{{ $item->id }}"
-                                                                    data-code="{{ $item->code }}">
-                                                                    {{ $item->name }} </option>
-                                                            @endforeach
-                                                        @endif
-                                                    </x-slot>
-                                                </x-select>
-                                                <x-icon-select />
-                                            </div>
-                                            <span x-text="codemotivotraslado"></span>
-                                            <x-jet-input-error for="motivotraslado_id" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Modalidad transporte :" />
-                                            <div class="relative" id="parentmdtr" x-init="selectModalidad">
-                                                <x-select class="block w-full uppercase" x-ref="selectmodalidad"
-                                                    id="mdtr" data-placeholder="null"
-                                                    @change="getCodeModalidad($event.target)">
-                                                    <x-slot name="options">
-                                                        @if (count($modalidadtransportes))
-                                                            @foreach ($modalidadtransportes as $item)
-                                                                <option value="{{ $item->id }}"
-                                                                    data-code="{{ $item->code }}">{{ $item->name }}
-                                                                </option>
-                                                            @endforeach
-                                                        @endif
-                                                    </x-slot>
-                                                </x-select>
-                                                <x-icon-select />
-                                            </div>
-                                            <span x-text="codemodalidad"></span>
-                                            <x-jet-input-error for="modalidadtransporte_id" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Fecha traslado :" />
-                                            <x-input class="block w-full" wire:model.defer="datetraslado"
-                                                type="date" />
-                                            <x-jet-input-error for="datetraslado" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Bultos / Paquetes :" />
-                                            <x-input class="block w-full" wire:model.defer="packages" min="0"
-                                                step="1" type="number"
-                                                onkeypress="return validarDecimal(event, 12)" />
-                                            <x-jet-input-error for="packages" />
-                                        </div>
-
-                                        <div class="w-full">
-                                            <x-label value="Peso bruto total (KILOGRAMO) :" />
-                                            <x-input class="block w-full" wire:model.defer="peso" min="0"
-                                                step="0.01" type="number"
-                                                onkeypress="return validarDecimal(event, 12)" />
-                                            <x-jet-input-error for="peso" />
-                                        </div>
-
-                                        <div class="w-full xs:col-span-2 lg:col-span-1">
-                                            <x-label value="Descripción :" />
-                                            <x-input class="block w-full" wire:model.defer="note"
-                                                placeholder="Descripcion, detalle de la guía (Opcional)..." />
-                                            <x-jet-input-error for="note" />
-                                        </div>
-
-                                        <div class="w-full animate__animated animate__fadeInDown" x-show="vehiculosml">
-                                            <x-label value="Placa vehículo (Opcional) :" />
-                                            <x-input class="block w-full" wire:model.defer="placavehiculo"
-                                                placeholder="Placa del vehículo de transporte..." />
-                                            <x-jet-input-error for="placavehiculo" />
-                                        </div>
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-label-check for="vehiculosml" class="mt-2">
-                                            <x-input wire:model.defer="vehiculosml" name="vehiculosml" type="checkbox"
-                                                id="vehiculosml" @change="toggle" />
-                                            TRASLADO EN VEHÍCULOS DE CATEGORÍA M1 O L
-                                        </x-label-check>
-                                    </div>
-
-                                    <div class="w-full animate__animated animate__fadeInDown"
-                                        x-show="loadingdestinatario">
-                                        <x-title-next titulo="DATOS DEL DESTINATARIO" class="my-3" />
-
-                                        <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                            <div class="w-full">
-                                                <x-label value="DNI / RUC :" />
-                                                <div class="w-full inline-flex">
-                                                    <x-input class="block w-full prevent numeric"
-                                                        wire:model.defer="documentdestinatario"
-                                                        wire:keydown.enter="getDestinatario" minlength="0"
-                                                        maxlength="11" onkeypress="return validarNumero(event, 11)" />
-                                                    <x-button-add class="px-2" wire:click="getDestinatario"
-                                                        wire:target="getDestinatario" wire:loading.attr="disabled">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="3" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <circle cx="11" cy="11" r="8" />
-                                                            <path d="m21 21-4.3-4.3" />
-                                                        </svg>
-                                                    </x-button-add>
-                                                </div>
-                                                <x-jet-input-error for="documentdestinatario" />
-                                            </div>
-
-                                            <div class="w-full lg:col-span-2 xl:col-span-1">
-                                                <x-label value="Nombres :" />
-                                                <x-input class="block w-full" wire:model.defer="namedestinatario"
-                                                    placeholder="Nombres / razón social del destinatario" />
-                                                <x-jet-input-error for="namedestinatario" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="w-full animate__animated animate__slideInDown" x-show="loadingpublic">
-                                        <x-title-next titulo="DATOS DEL TRANSPORTISTA" class="my-3 " />
-
-                                        <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                            <div class="w-full">
-                                                <x-label value="RUC transportista :" />
-                                                <div class="w-full inline-flex">
-                                                    <x-input class="block w-full prevent numeric"
-                                                        wire:model.defer="ructransport" wire:keydown.enter="getTransport"
-                                                        minlength="0" maxlength="11"
-                                                        onkeypress="return validarNumero(event, 11)" />
-                                                    <x-button-add class="px-2" wire:click="getTransport"
-                                                        wire:loading.attr="disabled">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="3" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <circle cx="11" cy="11" r="8" />
-                                                            <path d="m21 21-4.3-4.3" />
-                                                        </svg>
-                                                    </x-button-add>
-                                                </div>
-                                                <x-jet-input-error for="ructransport" />
-                                            </div>
-
-                                            <div class="w-full lg:col-span-2 xl:col-span-1">
-                                                <x-label value="Razón social transportista :" />
-                                                <x-input class="block w-full" wire:model.defer="nametransport"
-                                                    placeholder="Razón social del transportista" />
-                                                <x-jet-input-error for="nametransport" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="w-full animate__animated animate__fadeInDown" x-show="loadingprivate">
-                                        <x-title-next titulo="DATOS DEL CONDUCTOR / VEHÍCULO" class="my-3" />
-
-                                        <div
-                                            class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                            <div class="w-full">
-                                                <x-label value="Documento conductor :" />
-                                                <div class="w-full inline-flex">
-                                                    <x-input class="block w-full prevent numeric"
-                                                        wire:model.defer="documentdriver" wire:keydown.enter="getDriver"
-                                                        minlength="0" maxlength="11"
-                                                        onkeypress="return validarNumero(event, 8)" />
-                                                    <x-button-add class="px-2" wire:click="getDriver"
-                                                        wire:loading.attr="disabled">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                            stroke-width="3" stroke-linecap="round"
-                                                            stroke-linejoin="round">
-                                                            <circle cx="11" cy="11" r="8" />
-                                                            <path d="m21 21-4.3-4.3" />
-                                                        </svg>
-                                                    </x-button-add>
-                                                </div>
-                                                <x-jet-input-error for="documentdriver" />
-                                            </div>
-
-                                            <div class="w-full">
-                                                <x-label value="Nombres conductor :" />
-                                                <x-input class="block w-full" wire:model.defer="namedriver"
-                                                    placeholder="Nombres del conductor" />
-                                                <x-jet-input-error for="namedriver" />
-                                            </div>
-
-                                            <div class="w-full">
-                                                <x-label value="Apellidos :" />
-                                                <x-input class="block w-full" wire:model.defer="lastname"
-                                                    placeholder="Apellidos del conductor..." />
-                                                <x-jet-input-error for="lastname" />
-                                            </div>
-
-                                            <div class="w-full">
-                                                <x-label value="Licencia conducir:" />
-                                                <x-input class="block w-full" wire:model.defer="licencia"
-                                                    placeholder="Licencia del conductor del vehículo..." />
-                                                <x-jet-input-error for="licencia" />
-                                            </div>
-
-                                            <div class="w-full">
-                                                <x-label value="Placa vehículo :" />
-                                                <x-input class="block w-full" wire:model.defer="placa"
-                                                    placeholder="placa del vehículo..." />
-                                                <x-jet-input-error for="placa" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-title-next titulo="LUGAR DE EMISIÓN" class="my-3" />
-
-                                        <div
-                                            class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-
-                                            <div class="w-full">
-                                                <x-label value="Lugar emisión :" />
-                                                <div class="relative" x-init="selectUbigeoEmision" id="parentemision_id">
-                                                    <x-select class="block w-full" id="emision_id" x-ref="ubigeoemision"
-                                                        data-minimum-results-for-search="3">
-                                                        <x-slot name="options">
-                                                            @if (count($ubigeos))
-                                                                @foreach ($ubigeos as $item)
-                                                                    <option value="{{ $item->id }}">
-                                                                        {{ $item->region }} / {{ $item->provincia }} /
-                                                                        {{ $item->distrito }} / {{ $item->ubigeo_reniec }}
-                                                                    </option>
-                                                                @endforeach
-                                                            @endif
-                                                        </x-slot>
-                                                    </x-select>
-                                                    <x-icon-select />
-                                                </div>
-                                                <x-jet-input-error for="ubigeoorigen_id" />
-                                            </div>
-
-                                            <div class="w-full lg:col-span-3 xl:col-span-1">
-                                                <x-label value="Direccion origen :" />
-                                                <x-input class="block w-full" wire:model.defer="direccionorigen"
-                                                    placeholder="Dirección del punto de partida..." />
-                                                <x-jet-input-error for="direccionorigen" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="w-full">
-                                        <x-title-next titulo="LUGAR DE DESTINO" class="my-3" />
-
-                                        <div
-                                            class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
-                                            <div class="w-full">
-                                                <x-label value="Lugar destino :" />
-                                                <div class="relative" x-init="selectUbigeoDestino" id="parentdestino_id"
-                                                    wire:ignore>
-                                                    <x-select class="block w-full" id="destino_id" x-ref="ubigeodestino"
-                                                        data-minimum-results-for-search="3">
-                                                        <x-slot name="options">
-                                                            @if (count($ubigeos))
-                                                                @foreach ($ubigeos as $item)
-                                                                    <option value="{{ $item->id }}">
-                                                                        {{ $item->region }} / {{ $item->provincia }} /
-                                                                        {{ $item->distrito }} / {{ $item->ubigeo_reniec }}
-                                                                    </option>
-                                                                @endforeach
-                                                            @endif
-                                                        </x-slot>
-                                                    </x-select>
-                                                    <x-icon-select />
-                                                </div>
-                                                <x-jet-input-error for="ubigeodestino_id" />
-                                            </div>
-
-                                            <div class="w-full lg:col-span-3 xl:col-span-1">
-                                                <x-label value="Direccion destino :" />
-                                                <x-input class="block w-full" wire:model.defer="direcciondestino"
-                                                    placeholder="Direccion del punto de llegada.." />
-                                                <x-jet-input-error for="direcciondestino" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endcan
-                        </div>
+                        @can('admin.ventas.create.guias')
+                            @include('ventas::ventas.forms.guia-remision')
+                        @endcan
                     @endif
 
                     <div class="w-full flex flex-col gap-1">
@@ -639,49 +56,47 @@
 
         <x-form-card titulo="RESUMEN DE VENTA" class="text-colorlabel">
             <div class="w-full">
-                <p class="text-[10px]">
-                    TOTAL EXONERADO : {{ $moneda->simbolo }}
+                <p class="text-[10px]">EXONERADO : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($exonerado, 2, '.', ', ') }}</span>
                 </p>
 
-                <p class="text-[10px]">TOTAL GRAVADO : {{ $moneda->simbolo }}
+                <p class="text-[10px]">GRAVADO : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($gravado, 2, '.', ', ') }}</span>
                 </p>
 
-                <p class="text-[10px]">
-                    TOTAL IGV : {{ $moneda->simbolo }}
+                <p class="text-[10px]">IGV : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($igv, 2, '.', ', ') }}</span>
                 </p>
 
-                <p class="text-[10px]">TOTAL GRATUITOS : {{ $moneda->simbolo }}
+                <p class="text-[10px]">GRATUITO : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($gratuito, 2, '.', ', ') }}</span>
                 </p>
 
-                <p class="text-[10px]">TOTAL DESCUENTOS : {{ $moneda->simbolo }}
+                <p class="text-[10px]">DESCUENTOS : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($descuentos, 2, '.', ', ') }}</span>
                 </p>
 
-                <p class="text-[10px]">
-                    TOTAL VENTA :
-                    {{ $moneda->simbolo }}
+                <p class="text-[10px]">SUBTOTAL : {{ $moneda->simbolo }}
                     <span class="font-bold text-xs">{{ number_format($total, 2, '.', ', ') }}</span>
                 </p>
 
-                <p class="text-[10px]">SALDO PENDIENTE
-                    @if ($increment)
-                        {{ number_format($total - $paymentactual - $amountincrement, 2, '.', ', ') }}
-                        + {{ formatDecimalOrInteger($increment) }}%
-                        ({{ number_format($amountincrement, 2, '.', ', ') }})
+                <p class="text-[10px]">TOTAL PAGAR : {{ $moneda->simbolo }}
+                    <span
+                        class="font-bold text-xl">{{ number_format($total - ($gratuito + $igvgratuito), 2, '.', ', ') }}</span>
+                    @if ($increment > 0)
+                        INC. + {{ formatDecimalOrInteger($increment) }}%
+                        ({{ number_format($total - ($gratuito + $paymentactual) - $amountincrement, 2, '.', ', ') }})
                     @endif
-                    : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($total - $paymentactual, 2, '.', ', ') }}</span>
                 </p>
-                {{-- <p>AI--{{ $amountincrement }}</p>
-                <p>IINC--{{ $increment }}</p> --}}
+
+                <p class="text-[10px]">PENDIENTE : {{ $moneda->simbolo }}
+                    <span
+                        class="font-bold text-xl text-red-600">{{ number_format($total - ($gratuito + $igvgratuito + $paymentactual), 2, '.', ', ') }}</span>
+                </p>
             </div>
         </x-form-card>
 
-        <x-form-card titulo="RESUMEN DEL PAGO" class="text-colorlabel" style="display: none" x-show="typepay > 0">
+        <x-form-card titulo="PAGO PARCIAL" class="text-colorlabel" style="display: none" x-show="typepay > 0">
             <div class="w-full flex flex-wrap gap-2">
                 @foreach ($parcialpayments as $index => $item)
                     <x-minicard size="md" alignFooter="justify-end">
@@ -696,11 +111,9 @@
             </div>
         </x-form-card>
 
-        {{-- @if (count($carshoops) > 0) --}}
         <div class="w-full" x-data="{ showcart: true }">
             <div class="text-end px-3">
-                <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer"
-                    @click="showcart=!showcart">
+                <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer" @click="showcart=!showcart">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" class="w-full h-full block">
                         <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" />
@@ -722,14 +135,17 @@
                         @foreach ($carshoops as $item)
                             <x-simple-card
                                 class="w-full flex flex-col border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
-                                <h1
-                                    class="text-colorlabel whitespace-nowrap text-right text-[10px] text-sm font-semibold">
-                                    <small class="text-[7px] font-medium">{{ $item->moneda->simbolo }}</small>
-                                    {{ number_format($item->total, 2) }}
-                                    <small class="text-[7px] font-medium">{{ $item->moneda->currency }}</small>
-                                </h1>
+
                                 <h1 class="text-colorlabel w-full text-[10px] leading-3 text-left z-[1]">
-                                    {{ $item->producto->name }}</h1>
+                                    <span class="font-semibold text-sm">
+                                        {{ formatDecimalOrInteger($item->cantidad) }}
+                                        {{ $item->producto->unit->name }}</span>
+                                    {{ $item->producto->name }}
+
+                                    @if (count($item->carshoopseries) == 1)
+                                        - SN: {{ $item->carshoopseries()->first()->serie->serie }}
+                                    @endif
+                                </h1>
 
                                 @if ($item->promocion)
                                     <div class="w-auto h-auto bg-red-600 absolute left-1 top-1  rounded-sm">
@@ -752,27 +168,23 @@
                                     @endif
                                 @endif
 
+
+                                <div class="w-full flex gap-1 items-end">
+                                    <h1 class="text-colorlabel whitespace-nowrap text-xs text-right">
+                                        <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
+                                        {{ number_format($item->price + $item->igv, 2) }}
+                                    </h1>
+
+                                    <h1
+                                        class="flex-1 w-full text-colorlabel whitespace-nowrap leading-3 text-lg font-semibold text-right">
+                                        <small class="text-[9px] font-medium">IMPORTE <br>
+                                            {{ $item->moneda->simbolo }}</small>
+                                        {{ number_format($item->total, 2) }}
+                                    </h1>
+                                </div>
+
                                 <div class="w-full flex flex-wrap gap-1 mt-2">
-
-                                    <x-span-text :text="'P.UNIT : ' . number_format($item->price, 2, '.', ', ')" class="leading-3 !tracking-normal" />
-                                    @if ($incluyeigv)
-                                        <x-span-text :text="'IGV UNIT : ' .
-                                            number_format(
-                                                $item->price - ($item->price * 100) / (100 + $empresa->igv),
-                                                2,
-                                                '.',
-                                                ', ',
-                                            )" class="leading-3 !tracking-normal" />
-                                    @endif
-
-                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) .
-                                        ' ' .
-                                        $item->producto->unit->name" class="leading-3 !tracking-normal" />
                                     <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
-
-                                    @if (count($item->carshoopseries) == 1)
-                                        <x-span-text :text="'SERIE : ' . $item->carshoopseries()->first()->serie->serie" class="leading-3 !tracking-normal" />
-                                    @endif
 
                                     @if ($item->isNoAlterStock())
                                         <x-span-text text="NO ALTERA STOCK" class="leading-3 !tracking-normal" />
@@ -786,8 +198,14 @@
                                         <x-span-text text="DISMINUYE STOCK" class="leading-3 !tracking-normal"
                                             type="red" />
                                     @endif
-
                                 </div>
+
+                                {{-- <h1 class="text-colorlabel whitespace-nowrap text-xs font-semibold">
+                                    <small class="text-[10px] font-medium">P.U : </small>
+                                    {{ number_format($item->price, 2) }}</h1>
+                                <h1 class="text-colorlabel whitespace-nowrap text-xs font-semibold">
+                                    <small class="text-[10px] font-medium">IGV : </small>
+                                    {{ number_format($item->igv, 2) }}</h1> --}}
 
                                 @if (count($item->carshoopseries) > 1)
                                     <div x-data="{ showForm: false }" class="mt-1">
@@ -817,11 +235,11 @@
                                             <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
                                                 <x-input wire:change="updategratis({{ $item->id }})" value="1"
                                                     type="checkbox" id="gratuito_{{ $item->id }}"
-                                                    :checked="$item->gratuito == '1'" />
+                                                    :checked="$item->isGratuito()" />
                                                 GRATUITO</x-label-check>
                                         </div>
                                     @endcan
-                                    <x-button-delete onclick="confirmDeleteCarshoop({{ $item }})"
+                                    <x-button-delete onclick="confirmDeleteCarshoop({{ $item->id }})"
                                         wire:loading.attr="disabled" />
                                 </div>
                             </x-simple-card>
@@ -835,10 +253,7 @@
                 </div>
             @endif
         </div>
-        {{-- @endif --}}
     </div>
-
-
 
     <script>
         function confirmDeleteSerie(itemserie) {
@@ -858,9 +273,9 @@
             })
         }
 
-        function confirmDeleteCarshoop(Carshoop) {
+        function confirmDeleteCarshoop(carshoop_id) {
             swal.fire({
-                title: 'ANULAR ITEM DEL CARRITO DE VENTAS ?',
+                title: 'ELIMINAR ITEM DEL CARRITO ?',
                 text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
                 icon: 'question',
                 showCancelButton: true,
@@ -870,9 +285,33 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.delete(Carshoop.id);
+                    // @this.delete(carshoop_id);
+                    const message = deleteitem(carshoop_id);
                 }
             })
+        }
+
+        async function deleteitem(carshoop_id) {
+            try {
+                const route = "{{ route('admin.carshoop.delete', ['carshoop' => ':carshoop_id']) }}"
+                    .replace(':carshoop_id', carshoop_id);
+                const response = await axios.post(route, {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    }
+                })
+
+                if (response.status === 200) {
+                    console.log(response.data);
+                    @this.setTotal();
+                } else {
+                    throw new Error('Error al vaciar el carrito');
+                }
+            } catch (error) {
+                console.error('Error al vaciar el carrito:', error);
+                throw error;
+            }
         }
 
         function confirmDeleteAllCarshoop() {
@@ -887,43 +326,31 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.deleteallcarshoop();
+                    const message = deleteAll();
+                    // @this.deleteallcarshoop();
                 }
             })
         }
 
-        function selectUbigeoEmision() {
-            this.selectUE = $(this.$refs.ubigeoemision).select2();
-            this.selectUE.val(this.ubigeoorigen_id).trigger("change");
-            this.selectUE.on("select2:select", (event) => {
-                this.ubigeoorigen_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("ubigeoorigen_id", (value) => {
-                this.selectUE.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectUE.select2('destroy');
-                this.selectUE.select2().val(this.ubigeoorigen_id).trigger('change');
-            });
-        }
+        async function deleteAll() {
+            try {
+                const response = await axios.post("{{ route('admin.carshoop.delete.all') }}", {
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                            .getAttribute('content')
+                    }
+                })
 
-        function selectUbigeoDestino() {
-            this.selectUD = $(this.$refs.ubigeodestino).select2();
-            this.selectUD.val(this.ubigeodestino_id).trigger("change");
-            this.selectUD.on("select2:select", (event) => {
-                this.ubigeodestino_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("ubigeodestino_id", (value) => {
-                this.selectUD.val(value).trigger("change");
-            });
+                if (response.status === 200) {
+                    console.log(response.data);
+                    @this.setTotal();
+                } else {
+                    throw new Error('Error al vaciar el carrito');
+                }
+            } catch (error) {
+                console.error('Error al vaciar el carrito:', error);
+                throw error;
+            }
         }
 
         document.addEventListener('alpine:init', () => {
@@ -940,7 +367,6 @@
                 code: '',
                 sendsunat: '',
                 openguia: true,
-                ispayparcial: false,
                 sincronizegre: @entangle('sincronizegre').defer,
 
                 cotizacion_id: @entangle('cotizacion_id').defer,
@@ -966,8 +392,7 @@
                     // }
 
                     this.$watch("typepay", (value) => {
-                        this.ispayparcial = value > 0 ? true : false;
-                        console.log('Is parcial : ' + this.ispayparcial);
+                        console.log('Typepay : ' + value);
                     });
                 },
                 toggle() {
@@ -1024,19 +449,6 @@
                             this.loadingpublic = false;
                     }
                 },
-                selectedFormaPago(value) {
-                    switch (value) {
-                        case '0':
-                            this.paymentcuotas = false;
-                            break;
-                        case '1':
-                            this.paymentcuotas = true;
-                            break;
-                        default:
-                            this.paymentcuotas = false;
-                            this.formapago = '';
-                    }
-                },
                 getCodeSend(target) {
                     this.sendsunat = target.options[target.selectedIndex].getAttribute(
                         'data-sunat');
@@ -1063,7 +475,7 @@
                 savepay(event) {
                     this.$wire.call('savepay')
                         .then(() => {
-                            console.log('function ejecutado correctamente');
+                            // console.log('function ejecutado correctamente');
                         });
                     event.preventDefault();
                 }
@@ -1073,181 +485,5 @@
         window.addEventListener('show-resumen-venta', (event) => {
             @this.setTotal();
         });
-
-        function selectCotizacion() {
-            this.selectCO = $(this.$refs.selectcot).select2();
-            this.selectCO.val(this.cotizacion_id).trigger("change");
-            this.selectCO.on("select2:select", (event) => {
-                this.cotizacion_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("cotizacion_id", (value) => {
-                this.selectCO.val(value).trigger("change");
-            });
-        }
-
-        function selectMoneda() {
-            this.selectMD = $(this.$refs.selectmoneda).select2();
-            this.selectMD.val(this.moneda_id).trigger("change");
-            this.selectMD.on("select2:select", (event) => {
-                this.moneda_id = event.target.value;
-                // @this.setMoneda(event.target.value);
-                window.dispatchEvent(new CustomEvent('setMoneda', {
-                    detail: {
-                        message: event.target.value
-                    }
-                }));
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("moneda_id", (value) => {
-                this.selectMD.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectMD.select2().val(this.moneda_id).trigger('change');
-            });
-        }
-
-        function selectComprobante() {
-            this.selectTC = $(this.$refs.selectcomprobante).select2();
-            this.selectTC.val(this.seriecomprobante_id).trigger("change");
-            this.selectTC.on("select2:select", (event) => {
-                this.seriecomprobante_id = event.target.value;
-                this.getCodeSend(event.target);
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("seriecomprobante_id", (value) => {
-                this.selectTC.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectTC.select2().val(this.seriecomprobante_id).trigger('change');
-            });
-        }
-
-        function selectPayment() {
-            this.selectTP = $(this.$refs.selectpayment).select2();
-            this.selectTP.val(this.typepayment_id).trigger("change");
-            this.selectTP.on("select2:select", (event) => {
-                this.typepayment_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("typepayment_id", (value) => {
-                this.selectTP.val(value).trigger("change");
-
-                let target = this.$refs.selectpayment;
-                let selectedOption = target.options[target.selectedIndex];
-                let paycredito = Boolean(selectedOption.getAttribute('data-paycredito'));
-
-                switch (paycredito) {
-                    case true:
-                        this.paymentcuotas = true;
-                        break;
-                    case false:
-                        this.paymentcuotas = false;
-                        break;
-                    default:
-                        this.paymentcuotas = false;
-                        this.formapago = '';
-                }
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectTP.select2().val(this.typepayment_id).trigger('change');
-            });
-        }
-
-        function selectSerieguia() {
-            this.selectGR = $(this.$refs.selectguia).select2();
-            this.selectGR.val(this.serieguia_id).trigger("change");
-            this.selectGR.on("select2:select", (event) => {
-                this.serieguia_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("serieguia_id", (value) => {
-                this.selectGR.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectGR.select2().val(this.serieguia_id).trigger('change');
-            });
-        }
-
-        function selectMotivo() {
-            this.selectM = $(this.$refs.selectmotivo).select2();
-            this.selectM.val(this.motivotraslado_id).trigger("change");
-            this.selectM.on("select2:select", (event) => {
-                this.motivotraslado_id = event.target.value;
-                const selectedOption = event.target.selectedOptions[0];
-                this.codemotivotraslado = selectedOption.getAttribute('data-code');
-                this.selectedMotivotraslado(this.codemotivotraslado);
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("motivotraslado_id", (value) => {
-                this.selectM.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectM.select2().val(this.motivotraslado_id).trigger('change');
-            });
-        }
-
-        function selectModalidad() {
-            this.selectMT = $(this.$refs.selectmodalidad).select2();
-            this.selectMT.val(this.modalidadtransporte_id).trigger("change");
-            this.selectMT.on("select2:select", (event) => {
-                this.modalidadtransporte_id = event.target.value;
-                const selectedOption = event.target.selectedOptions[0];
-                this.codemodalidad = selectedOption.getAttribute('data-code');
-                this.selectedModalidadtransporte(this.codemodalidad)
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("modalidadtransporte_id", (value) => {
-                this.selectMT.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectMT.select2().val(this.modalidadtransporte_id).trigger('change');
-            });
-        }
-
-        function selectMethodpayment() {
-            this.selectMP = $(this.$refs.selectmethodpayment).select2();
-            this.selectMP.val(this.methodpayment_id).trigger("change");
-            this.selectMP.on("select2:select", (event) => {
-                this.methodpayment_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("methodpayment_id", (value) => {
-                this.selectMP.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectMP.select2().val(this.methodpayment_id).trigger('change');
-            });
-        }
     </script>
 </div>

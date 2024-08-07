@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded hidden overflow-hidden fixed">
+    <div wire:loading.flex class="loading-overlay hidden overflow-hidden fixed">
         <x-loading-next />
     </div>
 
@@ -54,11 +54,11 @@
                     ACCESO</th>
                 <th scope="col" class="p-2 font-medium">
                     STATUS</th>
-                @can('admin.users.delete')
+                @canany(['admin.marketplace.userweb.edit', 'admin.marketplace.userweb.delete'])
                     <th scope="col" class="p-2 relative">
                         <span class="sr-only">OPCIONES</span>
                     </th>
-                @endcan
+                @endcanany
             </tr>
         </x-slot>
         @if (count($users) > 0)
@@ -102,28 +102,27 @@
                                 <x-span-text text="ACTIVO" type="green" class="leading-3 !tracking-normal" />
                             @endif
                         </td>
-                        @canany(['admin.users.delete', 'admin.users.restore'])
+                        @canany(['admin.marketplace.userweb.edit', 'admin.marketplace.userweb.delete'])
                             <td class="p-2 text-center">
-                                @if (!$item->isAdmin())
-                                    @if ($item->trashed())
-                                        <p class="text-center">
-                                            <x-span-text text="ELIMINADO" class="leading-3 !tracking-normal"
-                                                type="red" />
-                                        </p>
-                                        @can('admin.users.restore')
-                                            <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200"
-                                                onclick="restoreUser({{ $item }})" wire:loading.attr="disabled"
-                                                wire:key="restoreuser{{ $item->id }}">DESACTIVAR</x-button-toggle>
-                                        @endcan
-                                    @else
-                                        <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
-                                            wire:key="editeuser_{{ $item->id }}" />
+                                @can('admin.marketplace.userweb.delete')
+                                    @if (!$item->isAdmin())
+                                        @if ($item->trashed())
+                                            <x-button-toggle onclick="restoreUser({{ $item }})"
+                                                wire:loading.attr="disabled" wire:key="restoreuser{{ $item->id }}"
+                                                :checked="false" />
+                                        @else
+                                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
+                                                wire:key="editeuser_{{ $item->id }}" />
 
-                                        <x-button-delete wire:loading.attr="disabled"
-                                            onclick="confirmDelete({{ $item }})"
-                                            wire:key="deleteuser_{{ $item->id }}" />
+                                            <x-button-toggle onclick="confirmDelete({{ $item }})"
+                                                wire:loading.attr="disabled" wire:key="deleteuser_{{ $item->id }}" />
+
+                                            {{-- <x-button-delete wire:loading.attr="disabled"
+                                                onclick="confirmDelete({{ $item }})"
+                                                wire:key="deleteuser_{{ $item->id }}" /> --}}
+                                        @endif
                                     @endif
-                                @endif
+                                @endcan
                             </td>
                         @endcanany
                     </tr>
@@ -135,7 +134,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar usuario web') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -162,7 +160,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
+                        {{ __('Save') }}
                     </x-button>
                 </div>
             </form>

@@ -282,7 +282,7 @@
 
         <div class="w-full flex pt-4 justify-end">
             <x-button type="submit" wire:loading.attr="disabled">
-                {{ __('ACTUALIZAR') }}</x-button>
+                {{ __('Save') }}</x-button>
         </div>
     </form>
 

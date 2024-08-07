@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+
     @if ($compras->hasPages())
         <div class="pb-2">
             {{ $compras->links() }}
@@ -175,15 +179,10 @@
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
-                            <p class="text-[10px] text-colorsubtitleform">USUARIO:  {{ $item->user->name }}</p>
+                            <p class="text-[10px] text-colorsubtitleform">USUARIO: {{ $item->user->name }}</p>
                         </td>
                     </tr>
                 @endforeach
-            </x-slot>
-            <x-slot name="loading">
-                <div wire:loading wire:loading.flex class="loading-overlay rounded overflow-hidden hidden">
-                    <x-loading-next />
-                </div>
             </x-slot>
         @endif
     </x-table>

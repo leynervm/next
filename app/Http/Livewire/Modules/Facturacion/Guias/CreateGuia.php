@@ -191,6 +191,11 @@ class CreateGuia extends Component
         ];
     }
 
+    protected $validationAttributes = [
+        'seriecomprobante_id'   => 'tipo guía',
+        'items'                 =>   'items de guia'
+    ];
+
     public function mount(Sucursal $sucursal)
     {
         $this->sucursal = $sucursal;
@@ -240,7 +245,8 @@ class CreateGuia extends Component
         $this->rucproveedor = trim($this->rucproveedor);
         $this->nameproveedor = trim($this->nameproveedor);
         $this->seriecomprobante_id = empty($this->seriecomprobante_id) ? null : $this->seriecomprobante_id;
-        $this->items = Carshoop::with(['carshoopseries', 'producto', 'almacen'])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
+        $this->items = Carshoop::with(['carshoopseries', 'producto', 'almacen'])->guias()
+            ->whereNull('moneda_id')->where('user_id', auth()->user()->id)
             ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('date', 'asc')->get();
 
         if ($this->modalidadtransporte_id) {
@@ -285,7 +291,7 @@ class CreateGuia extends Component
                     'document' => $documentclient,
                     'name' => $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? $this->namecomprador : $this->namedestinatario,
                     'sexo' => strlen(trim($documentclient)) == 11 ? 'E' : null,
-                    'pricetype_id' => Pricetype::DefaultPricetype()->first()->id ?? null,
+                    'pricetype_id' => $this->empresa->usarLista() ? Pricetype::default()->first()->id ?? null : null,
                 ]);
             }
 
@@ -361,7 +367,7 @@ class CreateGuia extends Component
                     'total' => 0,
                     'status' => 0,
                     'increment' => 0,
-                    'alterstock' => $item->mode,
+                    'alterstock' => $item->alterstock,
                     'almacen_id' => $item->almacen_id,
                     'producto_id' => $item->producto_id,
                     'user_id' => auth()->user()->id
@@ -514,7 +520,7 @@ class CreateGuia extends Component
                 'moneda_id' => null,
                 'user_id' => auth()->user()->id,
                 'sucursal_id' => $this->sucursal->id,
-                'mode' => Almacen::NO_ALTERAR_STOCK,
+                'alterstock' => Almacen::NO_ALTERAR_STOCK,
                 'cartable_type' => Guia::class,
             ]);
 
@@ -588,7 +594,7 @@ class CreateGuia extends Component
                 ->whereNull('moneda_id')->where('gratuito', 0)
                 ->where('user_id', auth()->user()->id)
                 ->where('sucursal_id', auth()->user()->sucursal_id)
-                ->where('mode', $this->mode)
+                ->where('alterstock', $this->mode)
                 ->where('cartable_type', Guia::class);
 
 
@@ -621,7 +627,7 @@ class CreateGuia extends Component
                     'moneda_id' => null,
                     'user_id' => auth()->user()->id,
                     'sucursal_id' => $this->sucursal->id,
-                    'mode' => $this->mode,
+                    'alterstock' => $this->mode,
                     'cartable_type' => Guia::class,
                 ]);
             }

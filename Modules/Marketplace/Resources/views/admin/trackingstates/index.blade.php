@@ -27,11 +27,15 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full">
-        <livewire:modules.marketplace.trackingstates.create-trackingstate />
-    </div>
+    @can('admin.marketplace.trackingstates.create')
+        <div class="w-full">
+            <livewire:modules.marketplace.trackingstates.create-trackingstate />
+        </div>
+    @endcan
 
-    <div class="w-full mt-3">
-        <livewire:modules.marketplace.trackingstates.show-trackingstates />
-    </div>
+    @can('admin.marketplace.trackingstates')
+        <div class="w-full mt-3">
+            <livewire:modules.marketplace.trackingstates.show-trackingstates />
+        </div>
+    @endcan
 </x-admin-layout>

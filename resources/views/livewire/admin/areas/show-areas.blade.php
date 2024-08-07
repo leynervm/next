@@ -2,15 +2,14 @@
 
     @if (count($areas))
         <div class="pb-2">
-            {{ $areas->links() }}
+            {{ $areas->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
-        @if (count($areas))
+        @if (count($areas) > 0)
             @foreach ($areas as $item)
                 <x-minicard :title="$item->name" :content="$item->visible == 1 ? 'Add. ordenes' : null" :alignFooter="$item->default == 1 ? 'justify-between' : 'justify-end'" size="md">
-
                     <div class="w-full text-center">
                         @if (count($item->entornos))
                             @foreach ($item->entornos as $entorno)
@@ -36,13 +35,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar área') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
         </x-slot>
 
         <x-slot name="content">
@@ -77,10 +69,8 @@
                 <x-jet-input-error for="selectedEntornos" />
 
                 <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="update">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

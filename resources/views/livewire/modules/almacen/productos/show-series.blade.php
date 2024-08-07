@@ -1,8 +1,8 @@
 <div>
-    <x-form-card titulo="SERIES" subtitulo="Administrar series del producto." class="relative">
+    <x-form-card titulo="SERIES" class="relative">
         <div class="w-full h-full rounded flex flex-wrap lg:flex-nowrap gap-3">
             @can('admin.almacen.productos.series.edit')
-                <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
+                <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
                     <form wire:submit.prevent="save" class="flex flex-col gap-2">
                         <div class="w-full">
                             <x-label value="Almacén :" />
@@ -28,7 +28,7 @@
                         </div>
                         <div class="w-full mt-3 flex justify-end">
                             <x-button type="submit" wire:loading.atrr="disabled">
-                                REGISTRAR</x-button>
+                                {{ __('Save') }}</x-button>
                         </div>
                     </form>
                 </div>
@@ -119,7 +119,7 @@
 
         <div wire:loading.flex
             wire:target="save, disponibles, searchseriealmacen, gotoPage, nextPage, previousPage, delete"
-            class="loading-overlay rounded hidden">
+            class="loading-overlay rounded fixed hidden">
             <x-loading-next />
         </div>
     </x-form-card>

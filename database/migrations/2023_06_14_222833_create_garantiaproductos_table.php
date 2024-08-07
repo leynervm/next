@@ -18,8 +18,8 @@ class CreateGarantiaproductosTable extends Migration
             $table->integer('time');
             $table->unsignedBigInteger('producto_id');
             $table->unsignedTinyInteger('typegarantia_id');
-            $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('typegarantia_id')->on('typegarantias')->references('id')->cascadeOnDelete();
+            $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('typegarantia_id')->on('typegarantias')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
             $table->softDeletes();
         });

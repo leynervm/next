@@ -24,11 +24,15 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full">
-        <livewire:modules.marketplace.sliders.create-slider />
-    </div>
+    @can('admin.marketplace.sliders.create')
+        <div class="w-full">
+            <livewire:modules.marketplace.sliders.create-slider />
+        </div>
+    @endcan
 
-    <div class="w-full mt-3">
-        <livewire:modules.marketplace.sliders.show-sliders />
-    </div>
+    @can('admin.marketplace.sliders')
+        <div class="w-full mt-3">
+            <livewire:modules.marketplace.sliders.show-sliders />
+        </div>
+    @endcan
 </x-admin-layout>

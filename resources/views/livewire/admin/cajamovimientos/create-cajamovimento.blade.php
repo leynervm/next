@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo movimiento caja') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -143,8 +142,7 @@
                             <x-slot name="options">
                                 @if (count($concepts) > 0)
                                     @foreach ($concepts as $item)
-                                        <option value="{{ $item->id }}"
-                                            title="{{ $item->typemovement->value }}">
+                                        <option value="{{ $item->id }}" title="{{ $item->typemovement->value }}">
                                             {{ $item->name }}</option>
                                     @endforeach
                                 @endif
@@ -164,8 +162,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -201,8 +198,6 @@
                     });
                 },
                 calcular() {
-                    console.log(this.code);
-
                     if (this.code == 'PEN') {
                         if (toDecimal(this.amount) > 0 && toDecimal(this.tipocambio) > 0) {
                             this.totalamount = toDecimal(this.amount / this.tipocambio, 3);

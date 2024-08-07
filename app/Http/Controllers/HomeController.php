@@ -3,14 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\GetClient;
-use App\Models\Cajamovimiento;
-use App\Models\Employer;
 use App\Models\Empresa;
 use App\Models\Ubigeo;
 use Exception;
 use Illuminate\Http\Request;
 use jossmp\sunat\ruc;
 use jossmp\sunat\tipo_cambio;
+use LaravelDaily\LaravelCharts\Classes\LaravelChart;
 
 class HomeController extends Controller
 {
@@ -27,7 +26,19 @@ class HomeController extends Controller
     public function index()
     {
         $empresa = Empresa::first();
-        return view('dashboard', compact('empresa'));
+
+
+        $chart_options = [
+            'chart_title' => 'Users by months',
+            'report_type' => 'group_by_string',
+            'model' => 'App\Models\User',
+            'group_by_field' => 'sucursal_id',
+            'group_by_period' => 'month',
+            'chart_type' => 'bar',
+        ];
+
+        $chart = new LaravelChart($chart_options);
+        return view('dashboard', compact('empresa', 'chart'));
     }
 
     public function administracion()
@@ -59,17 +70,6 @@ class HomeController extends Controller
     {
         return view('admin.marcas.index');
     }
-
-    // public function employers()
-    // {
-    //     return view('admin.employers.index');
-    // }
-
-    // public function payments(Employer $employer)
-    // {
-    //     $this->authorize('sucursal', $employer);
-    //     return view('admin.employers.payments', compact('employer'));
-    // }
 
     public function promociones()
     {

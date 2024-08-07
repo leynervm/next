@@ -21,11 +21,11 @@ class Empresa extends Model
         'document', 'name', 'estado', 'condicion', 'direccion',
         'urbanizacion', 'email', 'web', 'icono',
         'usuariosol', 'clavesol', 'montoadelanto', 'uselistprice',
-        'viewpriceantes', 'viewlogomarca', 'viewtextopromocion',
+        'viewpriceantes', 'viewlogomarca', 'viewtextopromocion', 'viewespecificaciones',
         'usemarkagua', 'markagua', 'alignmark', 'widthmark', 'heightmark',
         'usepricedolar', 'viewpricedolar', 'tipocambio', 'tipocambioauto',
         'status', 'igv', 'default', 'ubigeo_id', 'cert', 'sendmode', 'passwordcert',
-        'clientid', 'clientsecret', 'limitsucursals'
+        'clientid', 'clientsecret', 'limitsucursals', 'afectacionigv'
     ];
 
     const DEFAULT = '1';
@@ -41,6 +41,8 @@ class Empresa extends Model
     const PASSWORD_SOL_PRUEBA = 'MODDATOS';
     const CLIENT_ID_GRE_PRUEBA = 'test-85e5b0ae-255c-4891-a595-0b98c65c9854';
     const CLIENT_SECRET_GRE_PRUEBA = 'test-Hty/M6QshYvPgItX2P0+Kw==';
+    const PASSWORD_CERT_PRUEBA = '12345678';
+    const URL_CERT_PRUEBA = '12345678';
 
     // public function getViewpriceantesAttribute($value)
     // {
@@ -82,6 +84,11 @@ class Empresa extends Model
         return $this->hasMany(Sucursal::class);
     }
 
+    public function isAfectacionIGV()
+    {
+        return $this->afectacionigv == self::OPTION_ACTIVE;
+    }
+
     public function isProduccion()
     {
         return $this->sendmode == self::OPTION_ACTIVE;
@@ -105,6 +112,11 @@ class Empresa extends Model
     public function usarMarkagua()
     {
         return $this->usemarkagua == self::OPTION_ACTIVE;
+    }
+
+    public function verEspecificaciones()
+    {
+        return $this->viewespecificaciones == Self::OPTION_ACTIVE;
     }
 
     public function verDolar()

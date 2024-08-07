@@ -41,41 +41,45 @@
                         @endif
                     </div>
 
-                    <div class="w-full flex gap-2 items-end justify-between mt-auto p-1">
+                    @canany(['admin.marketplace.sliders.order', 'admin.marketplace.sliders.pause',
+                        'admin.marketplace.sliders.edit', 'admin.marketplace.sliders.delete'])
+                        <div class="w-full flex gap-2 items-end justify-between mt-auto p-1">
+                            @can('admin.marketplace.sliders.order')
+                                <span
+                                    class="text-next-500 block cursor-grab h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                        stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                                        class="block w-6 h-6 xs:w-8 xs:h-8">
+                                        <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
+                                        <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
+                                        <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
+                                        <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
+                                        <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
+                                        <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
+                                        <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
+                                        <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
+                                        <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
+                                    </svg>
+                                </span>
+                            @endcan
 
-                        {{-- @can('admin.almacen.categorias.edit') --}}
-                        <span
-                            class="text-next-500 block cursor-grab h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
-                                class="block w-6 h-6 xs:w-8 xs:h-8">
-                                <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
-                                <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
-                                <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
-                                <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
-                                <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
-                                <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
-                                <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
-                                <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
-                                <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
-                            </svg>
-                        </span>
-                        {{-- @endcan --}}
+                            <div class="flex-1 flex gap-2 justify-end items-end">
+                                @can('admin.marketplace.sliders.pause')
+                                    <x-button-toggle onclick="confirmStatusSlider({{ $item }})"
+                                        wire:loading.attr="disabled" :checked="$item->isActivo() ? true : false" />
+                                @endcan
 
-                        <div class="flex-1 flex gap-2 justify-end items-end">
-                            <x-button-toggle onclick="confirmStatusSlider({{ $item }})"
-                                wire:loading.attr="disabled"
-                                class="{{ $item->isActivo() ? 'text-next-500' : 'text-neutral-300' }}" />
+                                @can('admin.marketplace.sliders.edit')
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                @endcan
 
-                            {{-- @can('admin.cajas.conceptos.edit') --}}
-                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
-                            {{-- @endcan --}}
-
-                            {{-- @can('admin.cajas.conceptos.delete') --}}
-                            <x-button-delete wire:loading.attr="disabled"
-                                onclick="confirmDeleteSlider({{ $item }})" />
+                                @can('admin.marketplace.sliders.delete')
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        onclick="confirmDeleteSlider({{ $item }})" />
+                                @endcan
+                            </div>
                         </div>
-                    </div>
+                    @endcanany
                 </x-simple-card>
             @endforeach
         @endif
@@ -84,7 +88,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar slider') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -152,11 +155,11 @@
                     </div>
                 </div>
 
-                {{ print_r($errors->all()) }}
+                {{-- {{ print_r($errors->all()) }} --}}
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
+                        {{ __('Save') }}
                     </x-button>
                 </div>
             </form>
@@ -203,10 +206,11 @@
         })
 
         function confirmStatusSlider(slider) {
-            const estado = slider.status == '0' ? 'INACTIVO' : 'ACTIVO';
+            const estado = slider.status == '0' ? 'PAUSAR' : 'ACTIVAR';
+            const text = slider.status == '0' ? 'dejará de mostrarse' : 'se mostrará';
             swal.fire({
-                title: 'Desea cambiar el estado de publicación del slider como ' + estado + ' ?',
-                text: "Se actualizará un registro de la base de datos",
+                title: estado + ' PUBLICACIÓN DEL SLIDER EN TIENDA WEB ' + '?',
+                text: 'El slider seleccionado ' + text + ' en la tienda web.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

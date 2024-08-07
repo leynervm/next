@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva subcategoría') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -21,25 +20,25 @@
                     <x-jet-input-error for="name" />
                 </div>
 
-                <x-title-next titulo="ASIGNAR CATEGORÍAS" class="mt-3" />
-
+                <x-label value="Seleccionar categorías :" />
                 @if (count($categories))
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($categories as $item)
-                            <x-label-check for="category_{{ $item->id }}">
-                                <x-input wire:model.defer="selectedCategories" name="categories[]" value="1"
-                                    type="checkbox" :value="$item->id" id="category_{{ $item->id }}" />
-                                {{ $item->name }}
-                            </x-label-check>
+                            <x-input-radio class="py-2" for="category_{{ $item->id }}" :text="$item->name">
+                                <input wire:model.defer="selectedCategories"
+                                    class="sr-only peer peer-disabled:opacity-25" type="checkbox"
+                                    id="category_{{ $item->id }}" name="categories" value="{{ $item->id }}" />
+                            </x-input-radio>
                         @endforeach
                     </div>
                 @endif
                 <x-jet-input-error for="selectedCategories" />
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex items-end gap-1 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button type="submit" wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

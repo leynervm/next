@@ -17,7 +17,7 @@ class ShowGuia extends Component
 {
 
     public $open = false;
-    public $guia, $documentdriver, $namedriver, $lastname, $placa, $licencia;   
+    public $guia, $documentdriver, $namedriver, $lastname, $placa, $licencia;
 
     public function mount(Guia $guia)
     {
@@ -307,6 +307,45 @@ class ShowGuia extends Component
             }
         } else {
             dd($response);
+        }
+    }
+
+    public function enviarsunat($id)
+    {
+
+        $guia =  Guia::with('tvitems')->find($id);
+
+        if ($guia && !$guia->isSendSunat()) {
+            $response = $guia->enviarGuiaRemision();
+
+            if ($response->success) {
+                if (empty($response->mensaje)) {
+                    $mensaje = response()->json([
+                        'title' => $response->title,
+                        'icon' => 'success'
+                    ]);
+                    $this->dispatchBrowserEvent('toast', $mensaje->getData());
+                } else {
+                    $mensaje = response()->json([
+                        'title' => $response->title,
+                        'text' => $response->mensaje,
+                    ]);
+                    $this->dispatchBrowserEvent('validation', $mensaje->getData());
+                }
+                $this->guia->refresh();
+            } else {
+                $mensaje = response()->json([
+                    'title' => $response->title,
+                    'text' => $response->mensaje,
+                ]);
+                $this->dispatchBrowserEvent('validation', $mensaje->getData());
+            }
+        } else {
+            $mensaje = response()->json([
+                'title' => 'GUÍA DE REMISIÓN ELECTRÓNICA ' . $guia->seriecompleta . ' YA FUÉ EMITIDO A SUNAT.',
+                'text' => null,
+            ]);
+            $this->dispatchBrowserEvent('validation', $mensaje->getData());
         }
     }
 }

@@ -154,19 +154,21 @@
             </x-link-next>
         @endcan
 
-        @can('admin.almacen.caracteristicas')
-            <x-link-next href="{{ route('admin.almacen.caracteristicas') }}" titulo="Caract. y especificaciones">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round" class="lucide lucide-list-todo">
-                    <rect x="3" y="5" width="6" height="6" rx="1" />
-                    <path d="m3 17 2 2 4-4" />
-                    <path d="M13 6h8" />
-                    <path d="M13 12h8" />
-                    <path d="M13 18h8" />
-                </svg>
-            </x-link-next>
-        @endcan
+        @if (Module::isEnabled('Marketplace'))
+            @can('admin.almacen.caracteristicas')
+                <x-link-next href="{{ route('admin.almacen.caracteristicas') }}" titulo="Caract. y especificaciones">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round" class="lucide lucide-list-todo">
+                        <rect x="3" y="5" width="6" height="6" rx="1" />
+                        <path d="m3 17 2 2 4-4" />
+                        <path d="M13 6h8" />
+                        <path d="M13 12h8" />
+                        <path d="M13 18h8" />
+                    </svg>
+                </x-link-next>
+            @endcan
+        @endif
 
         <x-link-next href="#" titulo="Historial precios">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"

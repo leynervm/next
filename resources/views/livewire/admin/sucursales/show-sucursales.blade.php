@@ -33,8 +33,7 @@
                 @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
                     'admin.administracion.sucursales.restore'])
                     <th scope="col" class="p-2 font-medium text-center">
-                        <span class="sr-only">OPCIONES</span>
-                    </th>
+                        OPCIONES</th>
                 @endcanany
             </tr>
         </x-slot>
@@ -91,18 +90,16 @@
 
                         @canany(['admin.administracion.sucursales.edit', 'admin.administracion.sucursales.delete',
                             'admin.administracion.sucursales.restore'])
-                            <td class="p-2 align-middle flex justify-end items-center gap-2 gap-x-5 ">
+                            <td class="p-2 text-center align-middle">
                                 @if ($item->trashed())
                                     @can('admin.administracion.sucursales.restore')
-                                        <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200"
-                                            onclick="restoreSucursal({{ $item }})" wire:loading.attr="disabled"
-                                            wire:key="restoresuc_{{ $item->id }}">DESACTIVAR</x-button-toggle>
+                                        <x-button-toggle :checked="false" onclick="restoreSucursal({{ $item }})"
+                                            wire:loading.attr="disabled" wire:key="restoresuc_{{ $item->id }}" />
                                     @endcan
                                 @else
                                     @can('admin.administracion.sucursales.delete')
-                                        <x-button-toggle class="text-green-500" onclick="confirmDelete({{ $item }})"
-                                            wire:loading.attr="disabled"
-                                            wire:key="seletesuc_{{ $item->id }}">DESACTIVAR</x-button-toggle>
+                                        <x-button-toggle onclick="confirmDelete({{ $item }})"
+                                            wire:loading.attr="disabled" wire:key="seletesuc_{{ $item->id }}" />
                                     @endcan
                                 @endif
                             </td>
@@ -111,6 +108,11 @@
                 @endforeach
             </x-slot>
         @endif
+        <x-slot name="loading">
+            <div class="loading-overlay fixed hidden" wire:loading.flex>
+                <x-loading-next />
+            </div>
+        </x-slot>
     </x-table>
 
     <script>
@@ -185,5 +187,4 @@
 
         })
     </script>
-
 </div>

@@ -40,7 +40,7 @@ class CreateProveedortype extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.proveedores.tipos.create');
         $this->name = trim($this->name);
@@ -61,7 +61,11 @@ class CreateProveedortype extends Component
 
             DB::commit();
             $this->emitTo('admin.proveedortypes.show-proveedortypes', 'render');
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

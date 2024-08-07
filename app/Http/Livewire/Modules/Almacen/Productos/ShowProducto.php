@@ -11,6 +11,7 @@ use App\Models\Marca;
 use App\Models\Producto;
 use App\Models\Unit;
 use App\Rules\CampoUnique;
+use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -31,8 +32,6 @@ class ShowProducto extends Component
     public $almacen_id;
     public $newcantidad = 0;
     public $subcategories = [];
-
-    protected $listeners = ['delete', 'deletealmacen'];
 
     protected function rules()
     {
@@ -56,6 +55,7 @@ class ShowProducto extends Component
             'producto.almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'producto.estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'producto.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
         ];
     }
 
@@ -103,6 +103,15 @@ class ShowProducto extends Component
         $this->dispatchBrowserEvent('updated');
     }
 
+    public function updatedProductoViewespecificaciones($value)
+    {
+        $this->authorize('admin.almacen.productos.edit');
+        // dd($value ? $value : 0);
+        $this->producto->viewespecificaciones = $value ? $value : 0;
+        $this->producto->save();
+        // $this->dispatchBrowserEvent('updated');
+    }
+
     public function setCategory($value)
     {
         $this->reset(['subcategories']);
@@ -119,6 +128,8 @@ class ShowProducto extends Component
     {
 
         $this->authorize('admin.almacen.productos.edit');
+        $this->producto->viewespecificaciones = $this->producto->viewespecificaciones == false ? 0 : 1;
+        // dd($this->producto->viewespecificaciones);
         $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;
         $this->producto->almacenarea_id = !empty(trim($this->producto->almacenarea_id)) ? trim($this->producto->almacenarea_id) : null;
         $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
@@ -243,18 +254,15 @@ class ShowProducto extends Component
     public function delete()
     {
         $this->authorize('admin.almacen.productos.delete');
-        $ofertasdisponibles = $this->producto->ofertasdisponibles()->count();
+        // $ofertasdisponibles = $this->producto->promocions()->disponibles()->count();
         $tvitems = $this->producto->tvitems()->count();
         $compraitems = $this->producto->compraitems()->count();
-        $itemguias = $this->producto->compraitems()->count();
         $cadena = extraerMensaje([
             'Items_Venta' => $tvitems,
             'Items_Compra' => $compraitems,
-            'Ofertas' => $ofertasdisponibles,
-            'Items_Guia' => $itemguias
         ]);
 
-        if ($tvitems > 0 || $compraitems > 0 || $ofertasdisponibles > 0) {
+        if ($tvitems > 0 || $compraitems > 0) {
             $mensaje = response()->json([
                 'title' => 'No se puede eliminar registro, ' . $this->producto->name,
                 'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
@@ -265,36 +273,25 @@ class ShowProducto extends Component
             DB::beginTransaction();
             try {
 
-                $this->producto->garantiaproductos()->delete();
-                $this->producto->especificaciones()->forceDelete();
-                $this->producto->detalleproductos()->delete();
-                $this->producto->ofertas()->forceDelete();
-                $this->producto->pricetypes()->delete();
-                $this->producto->ofertas()->forceDelete();
-
-                $carshoops = $this->producto->carshoops();
-                if ($carshoops->exists()) {
-                    foreach ($carshoops->get() as $carshoop) {
-                        $carshoop->carshoopseries()->delete();
-                        $carshoop->delete();
-                    }
-                }
-
-                if ($this->producto->images()->exists()) {
-                    foreach ($this->producto->images as $image) {
+                $images = $this->producto->images;
+                // $this->producto->pricetypes()->delete();
+                $this->producto->kardexes()->delete();
+                $this->producto->images()->delete();
+                $this->producto->carshoops()->delete();
+                // $this->producto->almacens()->detach();
+                $this->producto->series()->forceDelete();
+                $this->producto->promocions()->forceDelete();
+                $this->producto->forceDelete();
+                DB::commit();
+                if (count($images) > 0) {
+                    foreach ($images as $image) {
                         if (Storage::exists('productos/' . $image->url)) {
                             Storage::delete('productos/' . $image->url);
                         }
-                        $image->delete();
                     }
                 }
-
-                $this->producto->almacens()->detach();
-                $this->producto->series()->forceDelete();
-                $this->producto->forceDelete();
-                DB::commit();
                 $this->dispatchBrowserEvent('deleted');
-                return redirect()->route('admin.almacen');
+                return redirect()->route('admin.almacen.productos');
             } catch (\Exception $e) {
                 DB::rollBack();
                 throw $e;

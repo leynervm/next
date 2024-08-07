@@ -186,6 +186,8 @@ return [
         // Laravel Excel
         Maatwebsite\Excel\ExcelServiceProvider::class,
 
+        //  View Service
+        App\Providers\ViewServiceProvider::class,
     ],
 
     /*

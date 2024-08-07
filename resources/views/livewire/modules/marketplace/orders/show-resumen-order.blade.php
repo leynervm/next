@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex wire:target="reload,save" class="fixed loading-overlay rounded hidden overflow-hidden z-[99999]">
+    <div wire:loading.flex wire:target="reload,save" class="fixed loading-overlay hidden z-[99999]">
         <x-loading-next />
     </div>
 
@@ -25,7 +25,7 @@
 
                         <tr class="text-colorsubtitleform">
                             <td class="flex gap-2 text-left p-2">
-                                <div class="flex-shrink w-14 h-14 rounded-xl shadow overflow-hidden">
+                                <div class="flex-shrink w-14 h-14 rounded-xl overflow-hidden">
                                     @if ($image)
                                         <img src="{{ $image }}" alt=""
                                             class="w-full h-full object-cover rounded-xl aspect-square overflow-hidden">
@@ -45,8 +45,10 @@
                                                 <x-span-text type="green" text="STOCK ACTUALIZADO" />
                                             </div>
                                         @else
-                                            <x-button wire:click="descontarstock({{ $item->id }})"
-                                                wire:loading.attr="disabled">DESCONTAR STOCK</x-button>
+                                            @can('admin.marketplace.orders.confirmstock')
+                                                <x-button wire:click="descontarstock({{ $item->id }})"
+                                                    wire:loading.attr="disabled">DESCONTAR STOCK</x-button>
+                                            @endcan
                                         @endif
                                     @else
                                         <p class="text-colorerror text-[10px] leading-3">
@@ -83,7 +85,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar stock producto') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -106,12 +107,11 @@
                     <x-jet-input-error for="almacen_id" />
                 </div>
 
-                {{ print_r($errors->all()) }}
+                {{-- {{ print_r($errors->all()) }} --}}
 
                 <div class="w-full flex pt-4 gap-2 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

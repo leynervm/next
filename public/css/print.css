@@ -1,0 +1,227 @@
+@font-face {
+    font-family: "Ubuntu";
+    src: url("{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}") format('truetype');
+    font-weight: 100;
+}
+
+@font-face {
+    font-family: "Ubuntu";
+    src: url("{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}") format('truetype');
+    font-weight: 200;
+}
+
+@font-face {
+    font-family: "Ubuntu";
+    src: url("{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}") format('truetype');
+    font-weight: 400;
+}
+
+@font-face {
+    font-family: "Ubuntu";
+    src: url("{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}") format('truetype');
+    font-weight: 800;
+}
+
+
+* {
+    font-family: 'Ubuntu' !important;
+    font-weight: 200;
+}
+
+@page {
+    margin: 4cm 1cm 4.5cm 1cm;
+}
+
+#header {
+    position: fixed;
+    top: -3cm;
+    left: 0;
+    width: 100%;
+    height: 27.5cm;
+    /* background: #DDD; */
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#header .table {
+    padding: 10px;
+}
+
+#header .table thead,
+#header .table thead td,
+#header .table thead th {
+    vertical-align: baseline;
+    width: 100%;
+}
+
+.image {
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 2cm;
+}
+
+#footer {
+    position: fixed;
+    width: 100%;
+    /* VALOR BOTTOM DINAMICO EN DIV#FOOTER */
+    /* bottom: -2.75cm; */
+    left: 0;
+}
+
+p {
+    margin: 0;
+    padding: 0 10px;
+}
+
+.leading-2 {
+    line-height: 0.5rem;
+}
+
+.leading-3 {
+    line-height: 0.6rem;
+}
+
+.leading-4 {
+    line-height: 0.7rem;
+}
+
+.leading-5 {
+    line-height: 0.8rem;
+}
+
+.leading-6 {
+    line-height: 1rem;
+}
+
+.align-middle-center {
+    vertical-align: center !important;
+}
+
+.align-baseline {
+    vertical-align: baseline !important;
+}
+
+.align-middle {
+    vertical-align: middle !important;
+}
+
+.text-10 {
+    font-size: 10px;
+}
+
+.text-11 {
+    font-size: 11px;
+}
+
+.text-12 {
+    font-size: 12px;
+}
+
+.text-13 {
+    font-size: 13px;
+}
+
+.text-14 {
+    font-size: 14px;
+}
+
+.body {
+    padding: 10px;
+    font-weight: 200;
+}
+
+.border-table {
+    border: 0.5px solid black !important;
+}
+
+.border-l-table {
+    border-left: 0.5px solid black;
+}
+
+.border-r-table {
+    border-right: 0.5px solid black;
+}
+
+.border {
+    border: 1px solid black !important;
+}
+
+.border-2 {
+    border: 2px solid black !important;
+}
+
+.p-1 {
+    padding: 2px;
+}
+
+.p-2 {
+    padding: 4px;
+}
+
+.p-3 {
+    padding: 6px;
+}
+
+.rounded {
+    border-radius: 2rem;
+}
+
+.mt-2 {
+    margin-top: 4px;
+}
+
+.mt-3 {
+    margin-top: 6px !important;
+}
+
+.mt-4 {
+    margin-top: 8px !important;
+}
+
+.mt-5 {
+    margin-top: 10px !important;
+}
+
+.mt-6 {
+    margin-top: 18px !important;
+}
+
+.font-normal {
+    font-weight: 100 !important;
+}
+
+.font-regular {
+    font-weight: 200 !important;
+}
+
+.font-medium {
+    font-weight: 400 !important;
+}
+
+.font-bold {
+    font-weight: 800 !important;
+}
+
+.text-start {
+    text-align: left !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-end {
+    text-align: right !important;
+}
+
+.block {
+    display: block;
+}
+
+.w-full {
+    width: 100%;
+}

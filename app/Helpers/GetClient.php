@@ -3,11 +3,9 @@
 namespace App\Helpers;
 
 use App\Models\Client;
-use App\Models\Empresa;
 use App\Models\Pricetype;
 use App\Models\Ubigeo;
 use Carbon\Carbon;
-// use GuzzleHttp\Client as Http;
 use Illuminate\Support\Facades\Http;
 use jossmp\sunat\ruc;
 use PhpParser\ErrorHandler\Collecting;

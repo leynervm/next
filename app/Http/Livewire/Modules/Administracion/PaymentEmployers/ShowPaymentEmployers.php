@@ -12,6 +12,7 @@ use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Rules\ValidateBoxPayEqual;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -19,7 +20,7 @@ use Livewire\WithPagination;
 class ShowPaymentEmployers extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $employer;
     public $employerpayment;
@@ -79,6 +80,7 @@ class ShowPaymentEmployers extends Component
 
     public function pay(Employerpayment $employerpayment)
     {
+        $this->authorize('admin.administracion.employers.payments.create');
         $this->employerpayment = $employerpayment;
         $this->resetValidation();
         $this->reset(['amount', 'detalle',]);
@@ -88,7 +90,7 @@ class ShowPaymentEmployers extends Component
 
     public function save()
     {
-
+        $this->authorize('admin.administracion.employers.payments.create');
         if (!$this->monthbox || !$this->monthbox->isUsing()) {
             $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
@@ -156,6 +158,7 @@ class ShowPaymentEmployers extends Component
 
     public function delete(Employerpayment $employerpayment)
     {
+        $this->authorize('admin.administracion.employers.payments.delete');
         try {
             DB::beginTransaction();
             if ($employerpayment->cajamovimientos()->exists()) {

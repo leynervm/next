@@ -124,8 +124,8 @@
 
                     <div class="w-full">
                         <x-label value="Stock Mínimo :" />
-                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number"
-                            step="1" min="0" />
+                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number" step="1"
+                            min="0" />
                         <x-jet-input-error for="producto.minstock" />
                     </div>
 
@@ -168,7 +168,7 @@
                     @endif
                 </div>
 
-                @if (Module::isEnabled('Almacen'))
+                @if (Module::isEnabled('Marketplace'))
                     <div class="w-full">
                         <x-label-check for="publicado_dit">
                             <x-input wire:model="producto.publicado" name="publicado" value="1" type="checkbox"
@@ -176,7 +176,16 @@
                             DISPONIBLE TIENDA WEB
                         </x-label-check>
                     </div>
+
+                    <div class="w-full">
+                        <x-label-check for="viewespecificaciones_dit">
+                            <x-input wire:model="producto.viewespecificaciones" name="viewespecificaciones"
+                                value="1" type="checkbox" id="viewespecificaciones_dit" />
+                            MOSTRAR ESPECIFICACIONES EN TIENDA WEB
+                        </x-label-check>
+                    </div>
                 @endif
+
 
                 <div class="w-full flex pt-4 gap-2 justify-end">
                     @can('admin.almacen.productos.delete')
@@ -186,28 +195,10 @@
 
                     @can('admin.almacen.productos.edit')
                         <x-button type="submit" wire:loading.attr="disabled">
-                            {{ __('ACTUALIZAR') }}</x-button>
+                            {{ __('Save') }}</x-button>
                     @endcan
                 </div>
-
-                <div wire:loading.flex wire:target="update, producto.publicado, producto.category_id, delete"
-                    class="loading-overlay rounded hidden">
-                    <x-loading-next />
-                </div>
             </form>
-
-            {{-- <div class="w-full sm:w-1/2">
-                <div class="w-full inline-flex flex-wrap gap-1 justify-between items-start">
-                    <x-span-text :text="'MARCA:' . $producto->marca->name" />
-                    @if ($producto->marca->logo)
-                        <div class="w-24 h-14">
-                            <img src="{{ asset('storage/marcas/' . $producto->marca->logo) }}" alt=""
-                                class="w-full h-full object-scale-down">
-                        </div>
-                    @endif
-                </div>
-            </div> --}}
-
         </x-form-card>
 
         <x-form-card titulo="ALMACÉN" subtitulo="Permite tener el mismo producto en múltiples amacénes.">
@@ -216,7 +207,7 @@
                     <div class="w-full flex flex-wrap gap-2">
                         @foreach ($producto->almacens as $item)
                             <x-minicard :title="null" size="lg" alignFooter="justify-end">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 inline-block mx-auto"
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 inline-block mx-auto"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
                                     stroke-linecap="round" stroke-linejoin="round">
                                     <path
@@ -228,12 +219,12 @@
                                     <path d="M2 16H5" />
                                 </svg>
 
-                                <span class="text-[10px] text-center font-semibold">{{ $item->name }}</span>
-                                <h1 class="text-xl text-center leading-4 font-semibold">
+                                <h1 class="text-[10px] text-center font-semibold leading-3">{{ $item->name }}</h1>
+                                <p class="text-xl text-center font-semibold">
                                     {{ floatval($item->pivot->cantidad) }}
-                                    <span class="w-full text-center text-[10px] font-normal">
-                                        {{ $producto->unit->name }}</span>
-                                </h1>
+                                    <small class="w-full text-center text-[10px] font-normal">
+                                        {{ $producto->unit->name }}</small>
+                                </p>
 
                                 @can('admin.almacen.productos.almacen')
                                     <x-slot name="buttons">
@@ -260,20 +251,19 @@
         </x-form-card>
     </div>
 
-    <div wire:loading.flex wire:target="savealmacen, deletealmacen, update" class="loading-overlay rounded hidden fixed">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
         <x-loading-next />
     </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Agregar almacén') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
             <form wire:submit.prevent="savealmacen">
                 <div class="w-full">
-                    <x-label value="Nombre :" />
+                    <x-label value="Almacén :" />
                     @if ($almacen->id ?? null)
                         <x-disabled-text :text="$almacen->name" />
                     @else
@@ -302,8 +292,7 @@
 
                 <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

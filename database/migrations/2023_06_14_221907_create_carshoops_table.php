@@ -28,7 +28,7 @@ class CreateCarshoopsTable extends Migration
             $table->unsignedDecimal('total', 12, 4);
             $table->char('gratuito', 1)->default(0);
             $table->char('status', 1)->default(0);
-            $table->char('mode', 1)->default(0);
+            $table->char('alterstock', 1)->default(0);
             $table->unsignedBigInteger('promocion_id')->nullable();
             $table->unsignedBigInteger('producto_id');
             $table->unsignedTinyInteger('almacen_id')->nullable();
@@ -38,11 +38,11 @@ class CreateCarshoopsTable extends Migration
             $table->unsignedBigInteger('cartable_id')->nullable();
             $table->string('cartable_type');
             $table->foreign('promocion_id')->on('promocions')->references('id');
-            $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('almacen_id')->on('almacens')->references('id');
+            $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('almacen_id')->on('almacens')->references('id')->cascadeOnDelete()->cascadeOnUpdate();;
             $table->foreign('moneda_id')->on('monedas')->references('id');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->foreign('sucursal_id')->on('sucursals')->references('id');
+            $table->foreign('user_id')->on('users')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('sucursal_id')->on('sucursals')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
         // }
     }

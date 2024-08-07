@@ -22,8 +22,8 @@
                 <div class="w-full">
                     <x-label value="Ubigeo :" />
                     <div id="parentubs_id" class="relative" x-data="{ ubigeo_id: @entangle('sucursal.ubigeo_id').defer }" x-init="select2Ubigeo">
-                        <x-select class="block w-full" wire:model.defer="sucursal.ubigeo_id" x-ref="selectubigeosuc"
-                            id="ubs_id" data-minimum-results-for-search="3">
+                        <x-select class="block w-full" x-ref="selectubigeosuc" id="ubs_id"
+                            data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @if (count($ubigeos))
                                     @foreach ($ubigeos as $item)
@@ -36,6 +36,24 @@
                         <x-icon-select />
                     </div>
                     <x-jet-input-error for="sucursal.ubigeo_id" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Tipo establecimiento :" />
+                    <div class="relative" x-data="{ typesucursal_id: @entangle('sucursal.typesucursal_id').defer }" x-init="typeSucursal">
+                        <x-select class="block w-full" x-ref="selecttypesucursal" id="typesucursal_id"
+                            data-dropdown-parent="null">
+                            <x-slot name="options">
+                                @foreach ($typesucursals as $item)
+                                    <option value="{{ $item->id }}">[{{ $item->code }}]
+                                        {{ $item->name }}
+                                    </option>
+                                @endforeach
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="sucursal.typesucursal_id" />
                 </div>
 
                 <div class="w-full">
@@ -57,8 +75,7 @@
 
             <div class="w-full flex pt-4 justify-end">
                 <x-button type="submit" wire:loading.attr="disabled">
-                    {{ __('ACTUALIZAR') }}
-                </x-button>
+                    {{ __('Save') }}</x-button>
             </div>
         </form>
     </x-form-card>
@@ -79,6 +96,25 @@
             });
             Livewire.hook('message.processed', () => {
                 this.selectUB.select2().val(this.ubigeo_id).trigger('change');
+            });
+        }
+
+        function typeSucursal() {
+            this.selectTS = $(this.$refs.selecttypesucursal).select2();
+            this.selectTS.val(this.typesucursal_id).trigger("change");
+            this.selectTS.on("select2:select", (event) => {
+                this.typesucursal_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("typesucursal_id", (value) => {
+                this.selectTS.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectTS.select2().val(this.typesucursal_id).trigger('change');
             });
         }
     </script>

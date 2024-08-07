@@ -16,7 +16,9 @@ class CreateCaracteristicasTable extends Migration
         Schema::create('caracteristicas', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->integer('view')->default(0);
+            $table->unsignedSmallInteger('filterweb')->default(0);
+            $table->unsignedSmallInteger('view')->default(0);
+            $table->unsignedSmallInteger('orden');
         });
     }
 

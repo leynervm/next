@@ -145,6 +145,36 @@
                             </x-slot>
 
                             <x-slot name="content">
+
+                                <div class="px-4 py-2 flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
+                                    <button title="Light" theme="theme-next"
+                                        class="inline-block theme-switcher-button rounded-full bg-transparent text-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                            stroke-linejoin="round" class="block w-8 h-8 p-1">
+                                            <path
+                                                d="M6.08938 14.9992C5.71097 14.1486 5.5 13.2023 5.5 12.2051C5.5 8.50154 8.41015 5.49921 12 5.49921C15.5899 5.49921 18.5 8.50154 18.5 12.2051C18.5 13.2023 18.289 14.1486 17.9106 14.9992" />
+                                            <path d="M12 1.99921V2.99921" />
+                                            <path d="M22 11.9992H21" />
+                                            <path d="M3 11.9992H2" />
+                                            <path d="M19.0704 4.92792L18.3633 5.63503" />
+                                            <path d="M5.6368 5.636L4.92969 4.92889" />
+                                            <path
+                                                d="M14.517 19.3056C15.5274 18.9788 15.9326 18.054 16.0466 17.1238C16.0806 16.8459 15.852 16.6154 15.572 16.6154L8.47685 16.6156C8.18725 16.6156 7.95467 16.8614 7.98925 17.1489C8.1009 18.0773 8.3827 18.7555 9.45345 19.3056M14.517 19.3056C14.517 19.3056 9.62971 19.3056 9.45345 19.3056M14.517 19.3056C14.3955 21.2506 13.8338 22.0209 12.0068 21.9993C10.0526 22.0354 9.60303 21.0833 9.45345 19.3056" />
+                                        </svg>
+                                    </button>
+
+                                    <button title="Dark" theme="theme-darknext"
+                                        class="inline-block theme-switcher-button rounded-full bg-transparent text-neutral-900">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                            stroke-linejoin="round" class="block w-8 h-8 p-1">
+                                            <path
+                                                d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" />
+                                        </svg>
+                                    </button>
+                                </div>
+
                                 <!-- Account Management -->
                                 <div class="block px-4 py-2 text-xs text-textspancardproduct">
                                     {{ __('Manage Account') }}
@@ -376,6 +406,60 @@
         //permitir hacer enter en input
         return charCode == 13 ? true : false;
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        getTheme();
+        const buttonsTheme = document.querySelectorAll('.theme-switcher-button');
+        buttonsTheme.forEach((button) => {
+            button.addEventListener('click', () => {
+                setTheme(button);
+                getTheme();
+            });
+        })
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            getTheme(e);
+        });
+
+        function setActive(theme) {
+            const themeSwitcherButtons = document.querySelectorAll('.theme-switcher-button');
+            themeSwitcherButtons.forEach((button) => {
+                if (button.classList.contains('theme-active')) {
+                    button.classList.remove('theme-active');
+                }
+                if (button.getAttribute('theme') == theme) {
+                    button.classList.add('theme-active');
+                }
+            })
+            // let activeButton = document.querySelector(`.theme-switcher-${selectedButton}`);
+            // activeButton.classList.add('theme-active');
+        }
+
+        function getTheme() {
+            const localTheme = localStorage.theme;
+            if (localTheme !== null || localTheme !== undefined) {
+                let classes = document.body.className.split(' ');
+                let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
+                themeClasses.forEach(themeClass => {
+                    document.body.classList.remove(themeClass);
+                });
+                document.body.classList.add(localTheme);
+            } else {
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.remove("{{ config('app.theme') }}");
+                    document.body.classList.add('theme-darknext');
+                } else {
+                    document.body.classList.remove('theme-darknext');
+                    document.body.classList.add("{{ config('app.theme') }}");
+                }
+            }
+            setActive(localTheme);
+        }
+
+        function setTheme(event) {
+            localStorage.theme = event.getAttribute('theme');
+        }
+    })
 </script>
 
 </html>

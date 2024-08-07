@@ -21,7 +21,26 @@
     <script src="{{ asset('js/app.js') }}"></script>
 </body>
 
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 <script>
+    document.addEventListener('submit', function(e) {
+        e.preventDefault();
+        grecaptcha.ready(function() {
+            grecaptcha.execute("{{ config('services.recaptcha_v3.key_web') }}", {
+                action: 'submit'
+            }).then(function(token) {
+                let form = e.target;
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'g_recaptcha_response';
+                input.value = token;
+                form.appendChild(input);
+                form.submit();
+            });
+        });
+    })
+
     //onkeypress="return validarDecimal(event)"
     function validarDecimal(event, maxlenth = 0) {
         var charCode = (event.which) ? event.which : event.keyCode;

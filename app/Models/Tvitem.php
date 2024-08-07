@@ -16,7 +16,6 @@ class Tvitem extends Model
 {
     use HasFactory;
     use SoftDeletes;
-
     use KardexTrait;
 
     protected $guarded = ['created_at', 'updated_at'];
@@ -29,66 +28,17 @@ class Tvitem extends Model
         return \Modules\Marketplace\Database\factories\TvitemMarketplaceFactory::new();
     }
 
-    public function getGratuitoAttribute($value)
-    {
-        return (int) $value;
-    }
 
     public function tvitemable(): MorphTo
     {
         return $this->morphTo();
     }
 
-    public function producto(): BelongsTo
-    {
-        return $this->belongsTo(Producto::class);
-    }
-
-    public function almacen(): BelongsTo
-    {
-        return $this->belongsTo(Almacen::class);
-    }
-
     public function itemseries()
     {
         return $this->hasMany(Itemserie::class);
     }
-
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function kardex(): MorphOne
-    {
-        return $this->morphOne(Kardex::class, 'kardeable');
-    }
-
-    public function isGratuito()
-    {
-        return $this->gratuito == self::GRATUITO;
-    }
-
-    public function isDiscountStock()
-    {
-        return $this->alterstock == Almacen::DISMINUIR_STOCK;
-    }
-
-    public function isIncrementStock()
-    {
-        return $this->alterstock == Almacen::INCREMENTAR_STOCK;
-    }
-
-    public function isReservedStock()
-    {
-        return $this->alterstock == Almacen::RESERVAR_STOCK;
-    }
-
-    public function isNoAlterStock()
-    {
-        return $this->alterstock == Almacen::NO_ALTERAR_STOCK;
-    }
-
+    
     public function isPendingSerie()
     {
         return $this->requireserie == self::PENDING_SERIE;

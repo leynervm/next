@@ -2,7 +2,7 @@
     @if (Cart::instance('wishlist')->count() > 0)
         <div class="w-full flex flex-col gap-2 ">
             <h1 class="text-xs font-semibold text-colorlabel">MI LISTA DE DESEOS</h1>
-            <div class="w-full flex flex-col divide-y">
+            <div class="w-full flex flex-col">
                 @foreach (Cart::instance('wishlist')->content() as $item)
                     <x-simple-card class="w-full flex flex-col xs:flex-row gap-2 text-xs">
                         <div class="w-full xs:w-24 h-24 xs:h-full rounded overflow-hidden">
@@ -26,7 +26,7 @@
                                 {{ number_format($item->price * $item->qty, 2, '.', ',') }}
                             </p>
 
-                            <div class="w-full relative bg-fondominicard p-1 flex items-end gap-1 justify-end mt-2">
+                            <div class="w-full relative p-1 flex items-end gap-1 justify-end mt-2">
                                 <div class="w-full flex-1">
                                     <button wire:click="decrement('{{ $item->rowId }}')" type="button"
                                         wire:loading.attr="disabled"

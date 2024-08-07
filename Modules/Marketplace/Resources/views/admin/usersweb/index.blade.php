@@ -25,13 +25,16 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="">
-        <livewire:modules.marketplace.usersweb.create-userweb />
-    </div>
 
-    {{-- @can('admin.ventas') --}}
-    <div class="w-full ">
-        <livewire:modules.marketplace.usersweb.show-usersweb />
-    </div>
-    {{-- @endcan --}}
+    @can('admin.marketplace.userweb.create')
+        <div class="">
+            <livewire:modules.marketplace.usersweb.create-userweb />
+        </div>
+    @endcan
+
+    @can('admin.marketplace.userweb')
+        <div class="w-full ">
+            <livewire:modules.marketplace.usersweb.show-usersweb />
+        </div>
+    @endcan
 </x-admin-layout>

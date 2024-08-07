@@ -18,8 +18,8 @@ return new class extends Migration
             $table->dateTime('date');
             $table->unsignedBigInteger('serie_id');
             $table->unsignedBigInteger('carshoop_id');
-            $table->foreign('serie_id')->on('series')->references('id');
-            $table->foreign('carshoop_id')->on('carshoops')->references('id');
+            $table->foreign('serie_id')->on('series')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('carshoop_id')->on('carshoops')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 

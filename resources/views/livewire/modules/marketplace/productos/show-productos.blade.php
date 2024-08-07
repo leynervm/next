@@ -5,63 +5,29 @@
 
     <div class="w-full flex items-start gap-3 bg-body">
         <aside
-            class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-52 flex-shrink-0 absolute h-screen max-h-[calc(100vh-108px)] z-[199] lg:z-[100] top-0 mt-[108px] lg:mt-0 left-0 lg:top-0 overflow-hidden lg:relative lg:block rounded-r-xl transition-all duration-300"
+            class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-52 flex-shrink-0 absolute z-[199] lg:z-[90] top-0 mt-[108px] lg:mt-0 left-0 lg:top-0 h-[calc(100vh-110px)] lg:h-auto lg:relative lg:block rounded-r-xl transition-all duration-300"
             :class="sidebar ? 'translate-x-0 bg-inherit lg:bg-inherit' : '-translate-x-full bg-inherit lg:translate-x-0',
                 openSidebar ? '' : 'z-[199]'">
             <div class="w-full p-2 lg:p-0 relative overflow-y-auto overflow-x-hidden h-full">
                 <button x-cloak
-                    class="absolute flex items-center justify-center top-0 right-0 h-8 w-8 lg:hidden cursor-pointer text-colorsubtitleform rounded-full p-2"
-                    :class="sidebar ? 'bg-white' : ''" @click="sidebar=false,backdrop = false">✕</button>
+                    class="absolute flex items-center justify-center top-0 right-0 h-8 w-8 lg:hidden cursor-pointer text-colorbuttonclose hover:text-colorhoverbuttonclose rounded-full p-2"
+                    :class="sidebar ? 'bg-fondobuttonclose' : ''" @click="sidebar=false,backdrop = false">✕</button>
 
-                {{-- <div class="relative p-3">
-                    <h1 class="text-colorsubtitleform text-[10px]">VER</h1>
-                    <div class="flex flex-wrap">
-                        <button
-                            class="p-1.5 inline-block text-center rounded bg-neutral-100 hover:bg-neutral-200 text-neutral-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor"
-                                fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 block mx-auto">
-                                <path
-                                    d="M2 18C2 16.4596 2 15.6893 2.34673 15.1235C2.54074 14.8069 2.80693 14.5407 3.12353 14.3467C3.68934 14 4.45956 14 6 14C7.54044 14 8.31066 14 8.87647 14.3467C9.19307 14.5407 9.45926 14.8069 9.65327 15.1235C10 15.6893 10 16.4596 10 18C10 19.5404 10 20.3107 9.65327 20.8765C9.45926 21.1931 9.19307 21.4593 8.87647 21.6533C8.31066 22 7.54044 22 6 22C4.45956 22 3.68934 22 3.12353 21.6533C2.80693 21.4593 2.54074 21.1931 2.34673 20.8765C2 20.3107 2 19.5404 2 18Z" />
-                                <path
-                                    d="M14 18C14 16.4596 14 15.6893 14.3467 15.1235C14.5407 14.8069 14.8069 14.5407 15.1235 14.3467C15.6893 14 16.4596 14 18 14C19.5404 14 20.3107 14 20.8765 14.3467C21.1931 14.5407 21.4593 14.8069 21.6533 15.1235C22 15.6893 22 16.4596 22 18C22 19.5404 22 20.3107 21.6533 20.8765C21.4593 21.1931 21.1931 21.4593 20.8765 21.6533C20.3107 22 19.5404 22 18 22C16.4596 22 15.6893 22 15.1235 21.6533C14.8069 21.4593 14.5407 21.1931 14.3467 20.8765C14 20.3107 14 19.5404 14 18Z" />
-                                <path
-                                    d="M2 6C2 4.45956 2 3.68934 2.34673 3.12353C2.54074 2.80693 2.80693 2.54074 3.12353 2.34673C3.68934 2 4.45956 2 6 2C7.54044 2 8.31066 2 8.87647 2.34673C9.19307 2.54074 9.45926 2.80693 9.65327 3.12353C10 3.68934 10 4.45956 10 6C10 7.54044 10 8.31066 9.65327 8.87647C9.45926 9.19307 9.19307 9.45926 8.87647 9.65327C8.31066 10 7.54044 10 6 10C4.45956 10 3.68934 10 3.12353 9.65327C2.80693 9.45926 2.54074 9.19307 2.34673 8.87647C2 8.31066 2 7.54044 2 6Z" />
-                                <path
-                                    d="M14 6C14 4.45956 14 3.68934 14.3467 3.12353C14.5407 2.80693 14.8069 2.54074 15.1235 2.34673C15.6893 2 16.4596 2 18 2C19.5404 2 20.3107 2 20.8765 2.34673C21.1931 2.54074 21.4593 2.80693 21.6533 3.12353C22 3.68934 22 4.45956 22 6C22 7.54044 22 8.31066 21.6533 8.87647C21.4593 9.19307 21.1931 9.45926 20.8765 9.65327C20.3107 10 19.5404 10 18 10C16.4596 10 15.6893 10 15.1235 9.65327C14.8069 9.45926 14.5407 9.19307 14.3467 8.87647C14 8.31066 14 7.54044 14 6Z" />
-                            </svg>
-                        </button>
-                        <button
-                            class="p-1.5 inline-block text-center rounded bg-white hover:bg-neutral-200 text-neutral-600">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor"
-                                fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 block mx-auto">
-                                <path d="M9 5L21 5" />
-                                <path d="M3 5L5 5" />
-                                <path d="M9 12L21 12" />
-                                <path d="M3 12L5 12" />
-                                <path d="M9 19L21 19" />
-                                <path d="M3 19L5 19" />
-                            </svg>
-                        </button>
-                    </div>
-                </div> --}}
-
-                {{-- <span x-text="sidebar"></span> --}}
-
-                <h1 class="text-colorsubtitleform text-[10px] py-2">FILTRAR</h1>
+                {{-- <h1 class="text-colorsubtitleform text-[10px] py-2">FILTRAR</h1> --}}
 
                 @if (count($productos) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" class="w-full lg:shadow lg:rounded-md text-colorsubtitleform">
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
-                            <h1 class="pl-2 pt-2 font-semibold text-[11px]">ORDENAR</h1>
+                            <h1 class="pl-2 font-semibold text-[11px]">ORDENAR</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                 class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col text-xs" x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col text-xs" x-cloak x-show="openfilter" x-transition>
                             <button @click="sidebar=false,backdrop = false" wire:click="order('precio', 'asc')"
                                 wire:loading.attr="disabled"
                                 class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
@@ -123,19 +89,18 @@
                 @endif
 
                 @if (count($marcas) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }"
-                        class="w-full mt-3 lg:shadow lg:rounded-md text-colorsubtitleform">
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" class="w-full mt-3 text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
-                            <h1 class="pl-2 pt-2 font-semibold text-[11px]">MARCAS</h1>
+                            <h1 class="pl-2 font-semibold text-[11px]">MARCAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
                                 class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col" x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
                             @foreach ($marcas as $item)
                                 <label for="marca_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -150,19 +115,18 @@
                 @endif
 
                 @if (count($categories) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'false' : 'true' }} }"
-                        class="w-full mt-3 lg:shadow lg:rounded-md text-colorsubtitleform">
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'false' : 'true' }} }" class="w-full mt-3 text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
-                            <h1 class="pl-2 pt-2 font-semibold text-[11px]">CATEGORÍAS</h1>
+                            <h1 class="pl-2 font-semibold text-[11px]">CATEGORÍAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
                                 stroke-linejoin="round" class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col" x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
                             @foreach ($categories as $item)
                                 <label for="category_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -177,19 +141,18 @@
                 @endif
 
                 @if (count($subcategories) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'false' : 'true' }} }"
-                        class="w-full mt-3 lg:shadow lg:rounded-md text-colorsubtitleform">
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'false' : 'true' }} }" class="w-full mt-3 text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
-                            <h1 class="pl-2 pt-2 font-semibold text-[11px]">SUBCATEGORÍAS</h1>
+                            <h1 class="pl-2 font-semibold text-[11px]">SUBCATEGORÍAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
                                 stroke-linejoin="round" class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col" x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
                             @foreach ($subcategories as $item)
                                 <label for="subcategory_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -207,19 +170,18 @@
                 @if (count($caracteristicas) > 0)
                     @foreach ($caracteristicas as $item)
                         <x-simple-card x-data="{ openfilter: false }"
-                            class="w-full mt-3 flex flex-col lg:shadow lg:rounded-md text-colorsubtitleform">
-                            {{-- <h1 class="pl-2 pt-2 font-semibold text-[11px]">{{ $item->name }}</h1> --}}
+                            class="w-full mt-3 flex flex-col text-colorsubtitleform">
                             <button type="button"
                                 class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                                 @click="openfilter = !openfilter">
-                                <h1 class="pl-2 pt-2 font-semibold text-[11px]">{{ $item->name }}</h1>
+                                <h1 class="pl-2 font-semibold text-[11px]">{{ $item->name }}</h1>
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
                                     stroke-linejoin="round" class="block w-6 h-6">
                                     <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                 </svg>
                             </button>
-                            <div class="w-full flex flex-col" x-show="openfilter" x-transition>
+                            <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
                                 @foreach ($item->especificacions as $espec)
                                     <label for="especificacion_{{ $item->id }}{{ $espec->id }}"
                                         class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -239,9 +201,9 @@
         </aside>
 
         <div class="w-full flex-1">
-            <div class="w-full flex justify-end pb-3">
+            <div class="w-full flex justify-end">
                 <button @click="sidebar = true, backdrop = true"
-                    class="lg:hidden p-1.5 inline-flex items-center justify-center gap-1 rounded text-xs bg-neutral-200 text-colorsubtitleform">
+                    class="lg:hidden p-2.5 mb-3 tracking-wide inline-flex items-center justify-center gap-1 rounded-lg text-xs bg-fondospancardproduct text-textspancardproduct">
                     FILTRAR
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
@@ -265,7 +227,7 @@
                         :image="$image" :secondimage="$secondimage" :promocion="$promocion"
                         wire:key="cardproduct{{ $item->id }}" x-data="{ addcart: isXL ? false : true }"
                         @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
-                        class="w-full py-3 pb-5 rounded-xl shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
+                        class="w-full pt-0 pb-5 rounded-xl border border-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
                         @if ($combo)
                             @if (count($combo->products) > 0)
@@ -278,7 +240,8 @@
                                                     <img src="{{ $itemcombo->image }}" alt=""
                                                         class="w-full h-full object-scale-down">
                                                 @else
-                                                    <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
+                                                    <x-icon-image-unknown
+                                                        class="w-full h-full text-colorsubtitleform" />
                                                 @endif
                                             </div>
                                             <div class="p-1">

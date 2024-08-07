@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva forma pago') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -18,12 +17,12 @@
                     <x-label value="Forma pago :" />
                     <div class="w-full flex flex-wrap gap-2">
                         <x-input-radio class="py-2" for="efectivo" text="EFECTIVO">
-                            <input wire:model.defer="type" class="sr-only peer peer-disabled:opacity-25"
-                                type="radio" id="efectivo" name="type" value="0" />
+                            <input wire:model.defer="type" class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                id="efectivo" name="type" value="0" />
                         </x-input-radio>
                         <x-input-radio class="py-2" for="transferencia" text="TRANSFERENCIA">
-                            <input wire:model.defer="type" class="sr-only peer peer-disabled:opacity-25"
-                                type="radio" id="transferencia" name="type" value="1" />
+                            <input wire:model.defer="type" class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                id="transferencia" name="type" value="1" />
                         </x-input-radio>
                     </div>
                     <x-jet-input-error for="type" />
@@ -45,8 +44,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

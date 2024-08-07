@@ -4,7 +4,7 @@
     {{ $attributes->merge([
         'type' => 'button',
         'class' =>
-            'text-[10px] bg-fondobutton rounded-lg text-colorbutton block group relative font-semibold tracking-widest p-2.5 rounded-xs disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton transition ease-in duration-150',
+            'text-[10px] bg-fondobutton uppercase rounded-lg text-colorbutton block group relative font-semibold tracking-widest p-2.5 disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton transition ease-in duration-150',
     ]) }}>
 
     <span>{{ $slot }}</span>

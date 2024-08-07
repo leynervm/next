@@ -29,6 +29,7 @@ class ProductoController extends Controller
 
     public function edit(Producto $producto)
     {
+        $producto = $producto->with(['series', 'images', 'marca', 'category', 'subcategory', 'unit', 'almacens', 'especificacions'])->find($producto->id);
         return view('modules.almacen.productos.show', compact('producto'));
     }
 }

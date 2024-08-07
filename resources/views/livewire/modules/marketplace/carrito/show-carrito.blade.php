@@ -2,7 +2,7 @@
     @if (Cart::instance('shopping')->count() > 0)
         <div class="w-full grid grid-cols-1 lg:grid-cols-2 items-start gap-5">
             <div class="w-full flex flex-wrap gap-2 ">
-                <h1 class="text-xs font-semibold text-colorlabel">CARRITO DE COMPRAS</h1>
+                {{-- <h1 class="text-xs font-semibold text-colorlabel">CARRITO DE COMPRAS</h1> --}}
                 @foreach (Cart::instance('shopping')->content() as $item)
                     <x-simple-card
                         class="w-full flex flex-col xs:flex-row gap-2 text-xs rounded xs:rounded-xl shadow-md">
@@ -101,7 +101,7 @@
                     </p>
                 </div>
                 <div class="w-full pt-3 flex items-center justify-center">
-                    <a href="{{ route('carshoop.register') }}" class="btn-next">
+                    <a href="{{ route('carshoop.create') }}" class="btn-next">
                         <span class="btn-effect"><span>CONTINUAR COMPRA</span></span>
                     </a>
                 </div>

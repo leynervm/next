@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     @if ($employers->hasPages())
         <div class="pb-2">
             {{ $employers->onEachSide(0)->links('livewire::pagination-default') }}
@@ -200,17 +204,11 @@
                 @endforeach
             </x-slot>
         @endif
-        <x-slot name="loading">
-            <div wire:loading.flex class="loading-overlay rounded hidden overflow-hidden">
-                <x-loading-next />
-            </div>
-        </x-slot>
     </x-table>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar personal') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -378,13 +376,10 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
 
-                {{ print_r($errors->all()) }}
-
-                <div wire:loading.flex class="loading-overlay rounded hidden" wire:target="update">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
             </form>

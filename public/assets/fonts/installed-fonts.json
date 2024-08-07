@@ -1,7 +1,7 @@
 {
     "ubuntu": {
-        "normal": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_normal_556e6b16c30d84d939da75ec171faf93",
-        "bold": "ubuntu_bold_fa536e260de2bb6fa092d8f1bf490e65",
+        "normal": "ubuntu_normal_556e6b16c30d84d939da75ec171faf93",
+        "bold": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_bold_fa536e260de2bb6fa092d8f1bf490e65",
         "100": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_100_aab007cfb4874464bfa4ccff628bfff4",
         "200": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_200_f501b29a7d1ab16946c4235cf934456b",
         "800": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_800_fa536e260de2bb6fa092d8f1bf490e65",

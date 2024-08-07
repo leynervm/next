@@ -242,8 +242,7 @@
             {{-- <button class="text-next-500 hover:text-next-700 text-xs underline transition ease-in-out duration-150"
                 type="button" wire:click="$toggle('open')">YA ESTOY REGISTRADO</button> --}}
             <x-button type="submit" wire:loading.attr="disabled">
-                {{ __('REGISTRAR') }}
-            </x-button>
+                {{ __('Save') }}</x-button>
         </div>
     </form>
 

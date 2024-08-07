@@ -15,8 +15,11 @@ use Modules\Facturacion\Http\Controllers\GuiaController;
 |
 */
 
+Route::get('/facturacion/download/{comprobante:seriecompleta}/print/{format}', [FacturacionController::class, 'imprimirA4Public'])->name('facturacion.download.pdf');
+Route::get('/facturacion/download/{comprobante:seriecompleta}/file/{type}/', [FacturacionController::class, 'downloadXML'])->name('facturacion.download.xml');
 
-Route::get('/download/{comprobante:seriecompleta}/file/{type}/', [FacturacionController::class, 'downloadXML'])->name('download.xml');
+Route::get('/facturacion/guia-remision/download/{guia:seriecompleta}/print/{format}', [GuiaController::class, 'imprimirA4Public'])->name('facturacion.guia.download.pdf');
+Route::get('/facturacion/guia-remision/download/{guia:seriecompleta}/file/{type}/', [GuiaController::class, 'downloadXML'])->name('facturacion.guia.download.xml');
 // Route::get('/cdr/{comprobante:seriecompleta}/download', [FacturacionController::class, 'downloadCDR'])->name('download.cdr');
 
 

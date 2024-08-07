@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Box;
 use App\Models\Caja;
+use App\Models\Openbox;
 use App\Models\Opencaja;
 use Illuminate\Console\Command;
 
@@ -29,12 +31,11 @@ class CerrarCajasCommand extends Command
      */
     public function handle()
     {
-        Opencaja::CajasAbiertas()
-            ->update([
-                'status' => 1, 'expiredate' => now('America/Lima')
-            ]);
+        Openbox::open()->update([
+            'status' => Openbox::INACTIVO, 'expiredate' => now('America/Lima')
+        ]);
 
-        Caja::Abiertas()->update(['status' => 0, 'user_id' => null]);
+        Box::whereHas('user')->update(['status' => Box::INACTIVO, 'user_id' => null]);
 
         return $this->info("cajas cerradas correctamente");
     }

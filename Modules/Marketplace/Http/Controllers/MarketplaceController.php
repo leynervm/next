@@ -5,16 +5,14 @@ namespace Modules\Marketplace\Http\Controllers;
 use App\Enums\MethodPaymentOnlineEnum;
 use App\Enums\StatusPayWebEnum;
 use App\Models\Category;
-use App\Models\Empresa;
 use App\Models\Moneda;
-use App\Models\Pricetype;
 use App\Models\Producto;
-use App\Models\Promocion;
-use App\Models\Subcategory;
+use App\Models\Sucursal;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
 use Nwidart\Modules\Routing\Controller;
@@ -22,9 +20,29 @@ use Nwidart\Modules\Routing\Controller;
 class MarketplaceController extends Controller
 {
 
+
+    public function __construct()
+    {
+        $this->middleware('verifyproductocarshoop')->only(['create', 'productos', 'showproducto', 'carshoop', 'wishlist']);
+        $this->middleware('can:admin.almacen.caracteristicas')->only('caracteristicas');
+
+        $this->middleware('permission:admin.marketplace.orders|admin.marketplace.transacciones|admin.marketplace.userweb|admin.marketplace.trackingstates|admin.marketplace.shipmenttypes|admin.marketplace.sliders')->only('index');
+        $this->middleware('can:admin.marketplace.sliders')->only('sliders');
+        $this->middleware('can:admin.marketplace.shipmenttypes')->only('shipmenttypes');
+        $this->middleware('can:admin.marketplace.transacciones')->only('transacciones');
+        $this->middleware('can:admin.marketplace.userweb')->only('usersweb');
+        $this->middleware('can:admin.marketplace.trackingstates')->only('trackingstates');
+    }
+
     public function index()
     {
         return view('marketplace::index');
+    }
+
+
+    public function caracteristicas()
+    {
+        return view('marketplace::caracteristicas.index');
     }
 
     public function ofertas()
@@ -50,14 +68,57 @@ class MarketplaceController extends Controller
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
-
         return view('marketplace::orders.create',  compact('empresa', 'moneda', 'pricetype'));
+    }
+
+
+    public function generateSessionToken($order)
+    {
+        $auth = base64_encode(config('services.niubiz.user') . ':' . config('services.niubiz.password'));
+        $accessToken = Http::withHeaders([
+            'Authorization' => "Basic $auth",
+            'Content-Type' => "application/json",
+        ])->get(config('services.niubiz.url_api') . 'api.security/v1/security')->body();
+
+
+        $sessionToken = Http::withHeaders([
+            'Authorization' => $accessToken,
+            'Content-Type' => "application/json",
+        ])->post(config('services.niubiz.url_api') . 'api.ecommerce/v2/ecommerce/token/session/' . config('services.niubiz.merchant_id'), [
+            'channel' => 'web',
+            'amount' => formatDecimalOrInteger($order->total),
+            'antifraud' => [
+                'clientIp' => request()->ip(),
+                'merchantDefineData' => [
+                    'MDD4' => auth()->user()->email,
+                    'MDD21' => 0,
+                    'MDD32' => auth()->id(),
+                    'MDD75' => 'Registrado',
+                    'MDD77' => now('America/Lima')->diffInDays(auth()->user()->created_at) + 1,
+                ],
+            ],
+            // 'dataMap' => [
+            //     'cardholderCity' => ,
+            // 'cardholderCountry' => ,
+            // 'cardholderAddress' => ,
+            // 'cardholderPostalCode' => ,
+            // 'cardholderState' => ,
+            // 'cardholderPhoneNumber' => ,
+            // ],
+        ])->json();
+
+
+        return $sessionToken['sessionKey'];
     }
 
     public function payment(Order $order)
     {
         $this->authorize('user', $order);
-        return view('marketplace::orders.payment', compact('order'));
+        $order = Order::with(['transaccions' => function ($query) {
+            $query->autorizados();
+        }])->find($order->id);
+        $session_token = $this->generateSessionToken($order);
+        return view('marketplace::orders.payment', compact('order', 'session_token'));
     }
 
     public function deposito(Request $request, Order $order,)
@@ -108,14 +169,12 @@ class MarketplaceController extends Controller
 
     public function productos(Request $request)
     {
+
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
-        // $searchTerms = $request['coincidencias'] ?? null;
-        // if ($searchTerms) {
-        // }
-
-        return view('marketplace::productos.index', compact('empresa', 'moneda', 'pricetype'));
+        
+        return view('modules.marketplace.productos.index', compact('empresa', 'moneda', 'pricetype'));
     }
 
     public function showproducto(Producto $producto)
@@ -127,7 +186,7 @@ class MarketplaceController extends Controller
         // INNER JOIN SUCURSALS ON SUCURSALS.id = ALMACEN_SUCURSAL.sucursal_id
         // INNER JOIN UBIGEOS ON SUCURSALS.ubigeo_id = UBIGEOS.id
         // WHERE PRODUCTO_ID = ? GROUP BY name,direccion,lugar", [$producto->id]) ?? [];
-
+        $this->authorize('publicado', $producto);
         $stocksucursals = DB::table('almacen_sucursal')
             ->join('almacen_producto', 'almacen_producto.almacen_id', '=', 'almacen_sucursal.almacen_id')
             ->join('sucursals', 'sucursals.id', '=', 'almacen_sucursal.sucursal_id')
@@ -159,12 +218,15 @@ class MarketplaceController extends Controller
             ->whereNot('id', $producto->id)->orderBy('views', 'desc')
             ->orderBy('name', 'asc')->take(18)->get();
 
-        return view('marketplace::productos.show', compact('producto', 'stocksucursals', 'empresa', 'moneda', 'shipmenttypes', 'pricetype', 'recents', 'sugerencias', 'similares'));
+        return view('modules.marketplace.productos.show', compact('producto', 'stocksucursals', 'empresa', 'moneda', 'shipmenttypes', 'pricetype', 'recents', 'sugerencias', 'similares'));
     }
 
-    public function carshoop()
+    public function carshoop(Request $request)
     {
+
+        $mensaje = $request->attributes->get('message');
         $moneda = Moneda::default()->first();
+
         return view('marketplace::carrito', compact('moneda'));
     }
 
@@ -204,6 +266,31 @@ class MarketplaceController extends Controller
         return view('marketplace::admin.sliders.index');
     }
 
+    public function nosotros()
+    {
+        return view('partials.nosotros');
+    }
+
+    public function contactanos()
+    {
+        return view('partials.contactanos');
+    }
+
+    public function centroautorizado()
+    {
+        return view('partials.centro-autorizado');
+    }
+
+    public function ubicanos()
+    {
+        $sucursals = Sucursal::orderBy('codeanexo')->get();
+        return view('partials.ubicanos', compact('sucursals'));
+    }
+
+    public function trabaja()
+    {
+        return view('partials.trabaja-nosotros');
+    }
 
     public function search(Request $request)
     {
@@ -229,7 +316,7 @@ class MarketplaceController extends Controller
                         $q->where('especificacions.name', 'ilike', '%' . $term . '%');
                     });
             }
-        })->publicados()->orderBy('name', 'asc')->limit(10);
+        })->visibles()->publicados()->orderBy('name', 'asc')->limit(10);
 
         return response()->json($products->get());
     }

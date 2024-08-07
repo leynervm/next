@@ -3,11 +3,14 @@
 namespace App\Http\Livewire\Modules\Marketplace\Orders;
 
 use App\Enums\StatusPayWebEnum;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
 
 class ConfirmarPago extends Component
 {
+    
+    use AuthorizesRequests;
 
     public Order $order;
 
@@ -18,6 +21,7 @@ class ConfirmarPago extends Component
 
     public function confirmarpago()
     {
+        $this->authorize('admin.marketplace.orders.confirmpay');
         $this->order->status = StatusPayWebEnum::PAGO_CONFIRMADO;
         $this->order->save();
         $this->order->refresh();
@@ -27,6 +31,7 @@ class ConfirmarPago extends Component
 
     public function anularpago()
     {
+        $this->authorize('admin.marketplace.orders.confirmpay');
         $this->order->status = StatusPayWebEnum::CONFIRMAR_PAGO;
         $this->order->save();
         $this->order->refresh();

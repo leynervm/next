@@ -9,19 +9,20 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo tipo proveedor') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
             <form wire:submit.prevent="save">
                 <x-label value="Tipo proveedor :" />
-                <x-input class="block w-full" wire:model.defer="name" placeholder="Descripción del tipo de proveedor..." />
+                <x-input class="block w-full" wire:model.defer="name"
+                    placeholder="Descripción del tipo de proveedor..." />
                 <x-jet-input-error for="name" />
 
                 <div class="w-full flex pt-4 gap-2 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

@@ -54,21 +54,21 @@ class CreateCajamovimento extends Component
         $monedas = Moneda::orderBy('id', 'asc')->get();
 
         if ($this->monthbox) {
-            $sumatorias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            })->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->groupBy('typemovement')->orderBy('total', 'desc')->get();
+            $sumatorias = Cajamovimiento::with('moneda')->sumatorias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
+            // $sumatorias = Cajamovimiento::with('moneda')->where('sucursal_id', auth()->user()->sucursal_id)
+            //     ->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
+            //     ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+            //     ->groupBy('typemovement')->orderBy('total', 'desc')->get();
         } else {
             $sumatorias = [];
         }
 
         if ($this->monthbox) {
-            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+            $diferencias = Cajamovimiento::with('moneda')->diferencias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
+            // $diferencias = Cajamovimiento::with('moneda')->where('sucursal_id', auth()->user()->sucursal_id)
+            //     ->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
+            //     ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+            //     ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
         } else {
             $diferencias = [];
         }
@@ -111,13 +111,17 @@ class CreateCajamovimento extends Component
 
             $typemovement = Concept::find($this->concept_id);
             $methodpayment = Methodpayment::find($this->methodpayment_id);
-            $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment->type);
-            })->where('sucursal_id', auth()->user()->sucursal_id)
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
+            // $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
+            //     $query->where('type', $methodpayment->type);
+            // })->where('sucursal_id', auth()->user()->sucursal_id)
+            //     ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
+            //     ->where('moneda_id', $this->moneda_id)
+            //     ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
+            //     ->first()->diferencia ?? 0;
+
+            $saldocaja = Cajamovimiento::saldo($methodpayment->type, $this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id, $this->moneda_id)
                 ->first()->diferencia ?? 0;
+            // dd($saldocaja);
 
             if ($typemovement->isEgreso()) {
                 $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';

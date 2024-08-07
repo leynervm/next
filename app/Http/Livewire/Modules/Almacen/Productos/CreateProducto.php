@@ -43,7 +43,6 @@ class CreateProducto extends Component
             'name' => [
                 'required', 'min:3', new CampoUnique('productos', 'name', null, true)
             ],
-            'marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'modelo' => ['required', 'string'],
             // 'sku' => ['nullable', 'string', 'min:4'],
             'partnumber' => ['nullable', 'string', 'min:4'],
@@ -54,6 +53,7 @@ class CreateProducto extends Component
             ],
             'igv' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
             'minstock' => ['required', 'integer', 'min:0'],
+            'marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
             'subcategory_id' => ['required', 'integer', 'min:1', 'exists:subcategories,id'],

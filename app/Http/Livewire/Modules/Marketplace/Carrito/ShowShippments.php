@@ -3,23 +3,21 @@
 namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
 use App\Models\Almacen;
-use App\Models\Client;
 use App\Models\Direccion;
-use App\Models\Kardex;
 use App\Models\Moneda;
 use App\Models\Pricetype;
-use App\Models\Sucursal;
-use App\Models\Tvitem;
 use App\Models\Ubigeo;
+use App\Rules\Recaptcha;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
+use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
 use Modules\Marketplace\Entities\Trackingstate;
-use Modules\Ventas\Entities\Venta;
 
 class ShowShippments extends Component
 {
@@ -35,7 +33,8 @@ class ShowShippments extends Component
     ];
 
     public $lugar_id, $direccion, $referencia, $shipmenttype,
-        $shipmenttype_id, $local_id, $daterecojo, $direccionenvio_id;
+        $shipmenttype_id, $local_id, $daterecojo, $direccionenvio_id, $g_recaptcha_response;
+    public $terms;
     public $cart = [];
     public $phoneuser = [];
 
@@ -69,6 +68,9 @@ class ShowShippments extends Component
             'receiver_info.name' => ['required', 'string', 'min:8',],
             'receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
             'cart' => ['required', 'array', 'min:1'],
+            'terms' => ['required', 'boolean', 'min:0', 'max:1'],
+            'g_recaptcha_response' => ['required', new Recaptcha()],
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ];
     }
 
@@ -95,8 +97,32 @@ class ShowShippments extends Component
         return view('livewire.modules.marketplace.carrito.show-shippments', compact('shipmenttypes', 'direccions', 'ubigeos', 'locals'));
     }
 
-    public function save()
+    public function save($recaptcha)
     {
+
+        $this->g_recaptcha_response = $recaptcha;
+        if (Cart::instance('shopping')->count() > 0) {
+            $count = 0;
+            foreach (Cart::instance('shopping')->content() as $item) {
+                if (is_null($item->model)) {
+                    Cart::instance('shopping')->get($item->rowId);
+                    Cart::instance('shopping')->remove($item->rowId);
+                    $count++;
+                }
+            }
+            if (auth()->check()) {
+                Cart::instance('shopping')->store(auth()->id());
+            }
+            if ($count > 0) {
+                $mensaje = response()->json([
+                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO.",
+                    'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+        }
 
         $this->cart = Cart::instance('shopping')->content()->toArray();
         $monedascart_id = Arr::pluck($this->cart, 'options.moneda_id');
@@ -116,7 +142,6 @@ class ShowShippments extends Component
             $this->shipmenttype = Shipmenttype::find($this->shipmenttype_id);
         }
         $validateData = $this->validate();
-        // dd($validateData);
 
         DB::beginTransaction();
         try {
@@ -184,41 +209,7 @@ class ShowShippments extends Component
                     'producto_id' => $item->id,
                     'user_id' => auth()->user()->id
                 ]);
-
-
-                // if ($item->gratuito) {
-                //     $afectacion = $item->igv > 0 ? '15' : '21';
-                // } else {
-                //     $afectacion = $item->igv > 0 ? '10' : '20';
-                // }
-
-                // $codeafectacion = $item->igv > 0 ? '1000' : '9997';
-                // $nameafectacion = $item->igv > 0 ? 'IGV' : 'EXO';
-                // $typeafectacion = $item->igv > 0 ? 'VAT' : 'VAT';
-                // $abreviatureafectacion = $item->igv > 0 ? 'S' : 'E';
-
-                // $comprobante->facturableitems()->create([
-                //     'item' => $counter,
-                //     'descripcion' => $item->producto->name,
-                //     'code' => $item->producto->code,
-                //     'cantidad' => $item->cantidad,
-                //     'price' => number_format($item->price, 2, '.', ''),
-                //     'igv' => number_format($item->igv, 2, '.', ''),
-                //     'subtotaligv' => number_format($item->subtotaligv, 2, '.', ''),
-                //     'subtotal' => number_format($item->subtotal, 2, '.', ''),
-                //     'total' => number_format($item->total, 2, '.', ''),
-                //     'unit' => $item->producto->unit->code,
-                //     'codetypeprice' => $item->gratuito ? '02' : '01', //01: Precio unitario (incluye el IGV) 02: Valor referencial unitario en operaciones no onerosas
-                //     'afectacion' => $afectacion,
-                //     'codeafectacion' => $item->gratuito ? '9996' : $codeafectacion,
-                //     'nameafectacion' => $item->gratuito ? 'GRA' : $nameafectacion,
-                //     'typeafectacion' => $item->gratuito ? 'FRE' : $typeafectacion,
-                //     'abreviatureafectacion' => $item->gratuito ? 'Z' : $abreviatureafectacion,
-                //     'percent' => $item->igv > 0 ? $percent : 0,
-                // ]);
-                // $counter++;
             }
-
             DB::commit();
             Cart::instance('shopping')->destroy();
             $this->resetExcept(['moneda', 'shipmenttype', 'phoneuser']);

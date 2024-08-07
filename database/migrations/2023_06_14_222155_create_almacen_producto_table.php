@@ -18,8 +18,8 @@ class CreateAlmacenProductoTable extends Migration
             $table->decimal('cantidad', 10, 2);
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('almacen_id')->nullable();
-            $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('almacen_id')->on('almacens')->references('id');
+            $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('almacen_id')->on('almacens')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 

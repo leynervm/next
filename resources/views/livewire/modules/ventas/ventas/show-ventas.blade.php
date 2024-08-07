@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
 
@@ -92,36 +92,26 @@
                             </svg>
                         </button>
                     </th>
-
                     <th scope="col" class="p-2 font-medium">
-                        FECHA
-                    </th>
-
+                        FECHA</th>
                     <th scope="col" class="p-2 font-medium">
-                        CLIENTE
-                    </th>
-
+                        CLIENTE</th>
                     <th scope="col" class="p-2 font-medium">
                         EXONERADO</th>
-
                     <th scope="col" class="p-2 font-medium">
                         GRAVADO</th>
-
                     <th scope="col" class="p-2 font-medium">
                         IGV</th>
-
                     <th scope="col" class="p-2 font-medium">
                         GRATUITO</th>
-
                     <th scope="col" class="p-2 font-medium">
                         TOTAL</th>
-
                     <th scope="col" class="p-2 font-medium">
                         FORMA PAGO</th>
-
                     <th scope="col" class="p-2 font-medium">
                         PAGO</th>
-
+                    <th scope="col" class="p-2 font-medium">
+                        COMPROBANTE</th>
                     <th scope="col" class="p-2 font-medium text-center">
                         SUCURSAL</th>
                 </tr>
@@ -192,16 +182,32 @@
                         <td class="p-2 text-center">
                             {{ $item->typepayment->name }}
                             <div>
-                                @if ($item->typepayment->paycuotas)
+                                @if ($item->typepayment->isCredito())
                                     <x-span-text :text="$item->cuotas()->count() . ' CUOTAS'" class="leading-3 !tracking-normal" />
                                 @endif
                             </div>
                         </td>
                         <td class="p-2 text-center align-middle">
-                            @if ($item->total == $item->paymentactual)
-                                <x-span-text text="PAGADO" class="leading-3 !tracking-normal" type="green" />
-                            @elseif ($item->typepayment->paycuotas)
-                                <x-span-text text="PENDIENTE" class="leading-3 !tracking-normal" type="red" />
+                            @if ($item->typepayment->isCredito())
+                                @if (number_format($item->cuotas()->whereHas('cajamovimiento')->sum('amount'), 2, '.', '') ==
+                                        number_format($item->cuotas()->sum('amount'), 2, '.', ''))
+                                    <x-span-text text="PAGADO" class="leading-3" type="green" />
+                                @else
+                                    <x-span-text text="PENDIENTE" class="leading-3" type="red" />
+                                @endif
+                            @else
+                                @if (number_format($item->cajamovimientos()->sum('amount') ?? 0, 2, '.', '') == number_format($item->total, 2, '.', ''))
+                                    <x-span-text text="PAGADO" class="leading-3" type="green" />
+                                @else
+                                    <x-span-text text="PENDIENTE" class="leading-3" type="red" />
+                                @endif
+                            @endif
+                        </td>
+                        <td class="p-2 text-center align-middle">
+                            @if (Module::isEnabled('Facturacion'))
+                                @if ($item->comprobante)
+                                    <p class="text-linktable">{{ $item->comprobante->seriecompleta }}</p>
+                                @endif
                             @endif
                         </td>
                         <td class="p-2 text-center">

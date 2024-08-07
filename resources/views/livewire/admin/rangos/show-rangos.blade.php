@@ -1,57 +1,7 @@
 <div x-data="rangos">
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+    <div wire:loading.flex class="loading-overlay hidden fixed">
         <x-loading-next />
     </div>
-
-    @can('admin.administracion.rangos.import')
-        <div class="w-full flex flex-col gap-2 items-start">
-            <form wire:submit.prevent="import">
-                <label class="">
-                    <x-icon-file-upload type="excel"
-                        class="w-24 h-24 p-3 {{ $file ? 'border-fondobutton text-colorsubtitleform shadow-fondobutton animate-pulse' : '' }}  text-colorlabel cursor-pointer hover:border-fondobutton hover:text-fondobutton hover:shadow-fondobutton transition ease-in-out duration-150">
-                    </x-icon-file-upload>
-                    <input type="file" class="hidden" wire:model="file" id="{{ $identificador }}" accept=".xlsx, .csv" />
-
-                    <p class="text-[9px] mt-2 text-center leading-3 font-semibold tracking-widest">
-                        @if ($file)
-                            ARCHIVO LISTO
-                        @else
-                            IMPORTAR LISTA RANGOS
-                        @endif
-                    </p>
-                </label>
-
-                @if ($file)
-                    <div class="w-full flex gap-2 mt-1">
-                        <x-button wire:loading.attr="disabled" type="submit">
-                            IMPORTAR
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
-                                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
-                                <path d="M2 15h10" />
-                                <path d="m9 18 3-3-3-3" />
-                            </svg>
-                        </x-button>
-                        <x-button type="reset" class="inline-flex" wire:loading.attr="disabled" wire:click="resetFile">
-                            LIMPIAR
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 6h18" />
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                <line x1="10" x2="10" y1="11" y2="17" />
-                                <line x1="14" x2="14" y1="11" y2="17" />
-                            </svg>
-                        </x-button>
-                    </div>
-                @endif
-            </form>
-            <x-jet-input-error for="file" />
-        </div>
-    @endcan
 
     <div class="block w-full mt-1">
         @if ($rangos->hasPages())
@@ -74,8 +24,8 @@
                         <th scope="col" class="p-2 font-medium text-center">
                             <label for="checkall"
                                 class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
-                                <x-input wire:model.lazy="checkall" class="cursor-pointer p-2" name="checkall"
-                                    type="checkbox" id="checkall" wire:loading.attr="disabled" />
+                                <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-0"
+                                    name="checkall" type="checkbox" id="checkall" wire:loading.attr="disabled" />
                                 TODO
                             </label>
                         </th>
@@ -123,7 +73,8 @@
                         <tr>
                             <td class="p-1 text-xs text-center">
                                 <x-input type="checkbox" name="selectedrangos" class="p-2 cursor-pointer"
-                                    x-model="selectedrangos" value="{{ $item->id }}" wire:loading.attr="disabled" />
+                                    id="{{ $item->id }}" x-model="selectedrangos" value="{{ $item->id }}"
+                                    wire:loading.attr="disabled" />
                             </td>
                             <td class="p-1 text-xs">
                                 {{ $item->desde }}
@@ -188,7 +139,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar rango precio') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -218,8 +168,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

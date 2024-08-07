@@ -42,4 +42,23 @@ return [
         'redirect' => env('GOOGLE_REDIRECT'),
     ],
 
+    'recaptcha_v2' => [
+        'key_web' => env('RECAPTCHA_KEY_WEB_V2'),
+        'key_secret' => env('RECAPTCHA_KEY_SECRET_V2'),
+    ],
+
+    'recaptcha_v3' => [
+        'key_web' => env('RECAPTCHA_KEY_WEB_V3'),
+        'key_secret' => env('RECAPTCHA_KEY_SECRET_V3'),
+    ],
+
+    'niubiz' => [
+        'url_api' => env('NIUBIZ_URL_API'),
+        'url_js' => env('NIUBIZ_URL_JS'),
+        'user' => env('NIUBIZ_USER'),
+        'password' => env('NIUBIZ_PASSWORD'),
+        'merchant_id' => env('NIUBIZ_MERCHANT_ID'),
+        'currency' => env('NIUBIZ_CURRENCY')
+    ],
+
 ];

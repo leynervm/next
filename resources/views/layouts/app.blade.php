@@ -26,8 +26,7 @@
     <!-- Scripts -->
 </head>
 
-<body
-    class="{{ config('app.theme') }} bg-body mt-[108px] xl:mt-[70px] animate__animated animate__fadeIn animate__faster"
+<body class="bg-body mt-[108px] xl:mt-[70px] animate__animated animate__fadeIn animate__faster"
     :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, isXL: window.innerWidth >= 1280, isSM: window.innerWidth >= 640, subcategories: [], category: '' }"
     @resize.window="isXL = window.innerWidth >= 1280, isSM = window.innerWidth >= 640">
     <x-jet-banner />
@@ -45,14 +44,31 @@
             @endif
 
             <div class="contenedor bg-body min-h-screen">
+                @if (session('message'))
+                    <x-alert :titulo="session('message')->title" :mensaje="session('message')->text" :type="session('message')->type">
+                        <x-slot name="icono">
+                            <svg class="w-6 h-6 p-0.5 animate-bounce" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M5.32171 9.68293C7.73539 5.41199 8.94222 3.27651 10.5983 2.72681C11.5093 2.4244 12.4907 2.4244 13.4017 2.72681C15.0578 3.27651 16.2646 5.41199 18.6783 9.68293C21.092 13.9539 22.2988 16.0893 21.9368 17.8293C21.7376 18.7866 21.2469 19.6549 20.535 20.3097C19.241 21.5 16.8274 21.5 12 21.5C7.17265 21.5 4.75897 21.5 3.46496 20.3097C2.75308 19.6549 2.26239 18.7866 2.06322 17.8293C1.70119 16.0893 2.90803 13.9539 5.32171 9.68293Z" />
+                                <path
+                                    d="M12.2422 17V13C12.2422 12.5286 12.2422 12.2929 12.0957 12.1464C11.9493 12 11.7136 12 11.2422 12" />
+                                <path d="M11.992 9H12.001" />
+                            </svg>
+                        </x-slot>
+                    </x-alert>
+                @endif
+
                 @if (isset($breadcrumb))
-                    <div class="w-full overflow-hidden">
+                    <div class="w-full overflow-hidden pt-2">
                         <x-breadcrumb-next home="/">
                             {{ $breadcrumb }}
                         </x-breadcrumb-next>
                     </div>
                 @endif
                 {{ $slot }}
+
             </div>
             {{-- FOOTER --}}
             @include('partials.footer-marketplace')
@@ -87,12 +103,16 @@
     <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
 
-    @yield('scripts')
 
     <div x-cloak x-show="backdrop" @click="openSidebar= false, subMenu= false, backdrop=false, sidebar=false"
         class="bg-neutral-900 bg-opacity-70 content-[''] fixed z-[100] w-full h-full top-0 left-0 lg:fixed transition-all ease-in-out duration-200">
     </div>
+
+    @stack('scripts')
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 </body>
+
+
 <script>
     // document.addEventListener('Livewire:load', function() {
 
@@ -183,6 +203,61 @@
         //permitir hacer enter en input
         return charCode == 13 ? true : false;
     }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        getTheme();
+        const buttonsTheme = document.querySelectorAll('.theme-switcher-button');
+        buttonsTheme.forEach((button) => {
+            button.addEventListener('click', () => {
+                setTheme(button);
+                getTheme();
+            });
+        })
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            getTheme(e);
+        });
+
+        function setActive(theme) {
+            const themeSwitcherButtons = document.querySelectorAll('.theme-switcher-button');
+            themeSwitcherButtons.forEach((button) => {
+                if (button.classList.contains('theme-active')) {
+                    button.classList.remove('theme-active');
+                }
+                if (button.getAttribute('theme') == theme) {
+                    button.classList.add('theme-active');
+                }
+            })
+            // let activeButton = document.querySelector(`.theme-switcher-${selectedButton}`);
+            // activeButton.classList.add('theme-active');
+        }
+
+        function getTheme() {
+            const localTheme = localStorage.theme;
+            if (localTheme !== null || localTheme !== undefined) {
+                let classes = document.body.className.split(' ');
+                let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
+                themeClasses.forEach(themeClass => {
+                    document.body.classList.remove(themeClass);
+                });
+                document.body.classList.add(localTheme);
+            } else {
+                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.remove("{{ config('app.theme') }}");
+                    document.body.classList.add('theme-darknext');
+                } else {
+                    document.body.classList.remove('theme-darknext');
+                    document.body.classList.add("{{ config('app.theme') }}");
+                }
+            }
+            setActive(localTheme);
+        }
+
+        function setTheme(event) {
+            localStorage.theme = event.getAttribute('theme');
+        }
+    })
 </script>
 
 </html>

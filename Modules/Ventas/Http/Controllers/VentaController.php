@@ -89,4 +89,5 @@ class VentaController extends Controller
         $pdf =  PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('ventas::pdf.ticket', compact('venta'));
         return $pdf->stream();
     }
+
 }

@@ -79,5 +79,6 @@ class Kernel extends HttpKernel
         'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
         'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
         'carshoop' => \App\Http\Middleware\Carshoop::class,
+        'verifyproductocarshoop' => \App\Http\Middleware\VerifyProductoCarshoop::class,
     ];
 }

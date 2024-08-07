@@ -40,8 +40,7 @@
                         </div>
                         <div class="w-full flex justify-end">
                             <x-button type="submit" wire:loading.attr="disabled">
-                                REGISTRAR
-                            </x-button>
+                                {{ __('Save') }}</x-button>
                         </div>
                     </form>
                 </div>

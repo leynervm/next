@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva unidad medida') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -22,7 +21,7 @@
 
                 <div>
                     <x-label value="Código :" />
-                    <x-input class="block w-full" wire:model.defer="code" placeholder="Ingrese nombre unidad..." />
+                    <x-input class="block w-full" wire:model.defer="code" placeholder="Codigo unidad..." />
                     <x-jet-input-error for="code" />
                 </div>
 
@@ -38,10 +37,11 @@
                     </div>
                 </div> --}}
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex flex-wrap gap-1 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

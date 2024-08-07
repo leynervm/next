@@ -1,4 +1,8 @@
 <div x-data="data">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     @if ($combos->hasPages())
         <div class="pt-3 pb-1">
             {{ $combos->onEachSide(0)->links('livewire::pagination-default') }}
@@ -49,9 +53,17 @@
 
                             @php
                                 if (mi_empresa()->uselistprice) {
-                                    $precios = \App\Helpers\GetPrice::getPriceProducto($item->producto, $pricetype_id, mi_empresa()->tipocambio)->getData();
+                                    $precios = \App\Helpers\GetPrice::getPriceProducto(
+                                        $item->producto,
+                                        $pricetype_id,
+                                        mi_empresa()->tipocambio,
+                                    )->getData();
                                 } else {
-                                    $precios = \App\Helpers\GetPrice::getPriceProducto($item->producto, null, mi_empresa()->tipocambio)->getData();
+                                    $precios = \App\Helpers\GetPrice::getPriceProducto(
+                                        $item->producto,
+                                        null,
+                                        mi_empresa()->tipocambio,
+                                    )->getData();
                                 }
 
                             @endphp
@@ -68,7 +80,9 @@
                                     </x-label-price>
                                 @else
                                     @php
-                                        $price = !is_null($precios->pricemanual) ? $precios->pricemanual : $precios->pricewithdescount ?? $precios->pricesale;
+                                        $price = !is_null($precios->pricemanual)
+                                            ? $precios->pricemanual
+                                            : $precios->pricewithdescount ?? $precios->pricesale;
                                     @endphp
 
                                     <x-input class="block w-full p-2 disabled:bg-gray-200" name="price" type="number"
@@ -174,10 +188,6 @@
                     </div>
                 </x-simple-card>
             @endforeach
-
-            <div wire:loading.flex class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </div>
     @endif
 

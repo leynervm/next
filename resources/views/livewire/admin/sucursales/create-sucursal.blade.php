@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva sucursal') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -47,6 +46,24 @@
                 </div>
 
                 <div class="w-full">
+                    <x-label value="Tipo establecimiento :" />
+                    <div class="relative" x-data="{ typesucursal_id: @entangle('typesucursal_id').defer }" x-init="typeSucursal">
+                        <x-select class="block w-full" x-ref="selecttypesucursal" id="typesucursal_id"
+                            data-dropdown-parent="null">
+                            <x-slot name="options">
+                                @foreach ($typesucursals as $item)
+                                    <option value="{{ $item->id }}">[{{ $item->code }}]
+                                        {{ $item->name }}
+                                    </option>
+                                @endforeach
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="typesucursal_id" />
+                </div>
+
+                <div class="w-full">
                     <x-label value="Código anexo :" />
                     <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..."
                         maxlength="4" />
@@ -62,10 +79,11 @@
                     <x-jet-input-error for="empresa.id" />
                 </div>
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex flex-row gap-2 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled" wire:target="save">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -85,6 +103,25 @@
             });
             this.$watch("ubigeo_id", (value) => {
                 this.selectUB.val(value).trigger("change");
+            });
+        }
+
+        function typeSucursal() {
+            this.selectTS = $(this.$refs.selecttypesucursal).select2();
+            this.selectTS.val(this.typesucursal_id).trigger("change");
+            this.selectTS.on("select2:select", (event) => {
+                this.typesucursal_id = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("typesucursal_id", (value) => {
+                this.selectTS.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectTS.select2().val(this.typesucursal_id).trigger('change');
             });
         }
     </script>

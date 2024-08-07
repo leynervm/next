@@ -59,12 +59,12 @@ class Cajamovimiento extends Model
 
     public function openbox(): BelongsTo
     {
-        return $this->belongsTo(Openbox::class);
+        return $this->belongsTo(Openbox::class)->withTrashed();
     }
 
     public function monthbox(): BelongsTo
     {
-        return $this->belongsTo(Monthbox::class);
+        return $this->belongsTo(Monthbox::class)->withTrashed();
     }
 
     public function user(): BelongsTo
@@ -95,5 +95,31 @@ class Cajamovimiento extends Model
     public function isEgreso()
     {
         return $this->typemovement == MovimientosEnum::EGRESO;
+    }
+
+    public function scopeSumatorias($query, $monthbox_id, $openbox_id, $user_id)
+    {
+        return $query->where('sucursal_id', $user_id)
+            ->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
+            ->where('monthbox_id', $monthbox_id)->where('openbox_id', $openbox_id)
+            ->groupBy('typemovement')->orderBy('total', 'desc');
+    }
+
+    public function scopeDiferencias($query, $monthbox_id, $openbox_id, $user_id)
+    {
+        return $query->where('sucursal_id', $user_id)
+            ->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
+            ->where('monthbox_id', $monthbox_id)->where('openbox_id', $openbox_id)
+            ->groupBy('moneda_id')->orderBy('diferencia', 'desc');
+    }
+
+    public function scopeSaldo($query, $typepayment, $monthbox_id, $openbox_id, $sucursal_id, $moneda_id)
+    {
+        return $query->withWhereHas('methodpayment', function ($query) use ($typepayment) {
+            $query->where('type', $typepayment);
+        })->where('monthbox_id', $monthbox_id)->where('openbox_id', $openbox_id)
+            ->where('sucursal_id', $sucursal_id)->where('moneda_id', $moneda_id)
+            ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia");
+        // ->where('sucursal_id', auth()->user()->sucursal_id)
     }
 }

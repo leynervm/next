@@ -58,6 +58,8 @@ class CreateSlider extends Component
     public function save()
     {
 
+        $this->authorize('admin.marketplace.sliders.create');
+
         $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
         $this->validate();
 

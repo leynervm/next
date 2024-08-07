@@ -14,8 +14,7 @@ class CreateEspecificacion extends Component
     use AuthorizesRequests;
 
     public $open = false;
-    public $name;
-    public $view = 0;
+    public $name, $view = 0, $filterweb = 0;
 
     protected function rules()
     {
@@ -24,7 +23,8 @@ class CreateEspecificacion extends Component
                 'required', 'min:2', 'max:100',
                 new CampoUnique('caracteristicas', 'name', null),
             ],
-            'view' => ['nullable', 'integer', 'min:0', 'max:1',]
+            'filterweb' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'view' => ['nullable', 'integer', 'min:0', 'max:1']
         ];
     }
 
@@ -42,21 +42,30 @@ class CreateEspecificacion extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.almacen.caracteristicas.create');
         $this->name = trim($this->name);
+        $this->filterweb = $this->filterweb > 0 ? 1 : 0;
+        $this->view = $this->view > 0 ? 1 : 0;
         $this->validate();
         DB::beginTransaction();
         try {
+            $orden = Caracteristica::max('orden') ?? 0;
             Caracteristica::create([
                 'name' => $this->name,
                 'view' => $this->view,
+                'filterweb' => $this->filterweb,
+                'orden' => $orden + 1
             ]);
             DB::commit();
             $this->emitTo('admin.especificaciones.show-especificaciones', 'render');
             $this->dispatchBrowserEvent('created');
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

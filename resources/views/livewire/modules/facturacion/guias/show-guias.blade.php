@@ -1,4 +1,7 @@
-<div class="relative" x-data="{ loading: false }">
+<div class="relative">
+    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
+        <x-loading-next />
+    </div>
 
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
         <div class="w-full sm:max-w-md">
@@ -19,10 +22,6 @@
             <x-label value="Hasta :" />
             <x-input type="date" wire:model.lazy="dateto" class="w-full block" />
         </div>
-    </div>
-
-    <div x-show="loading" wire:loading wire:loading.flex class="loading-overlay rounded">
-        <x-loading-next />
     </div>
 
     @if ($guias->hasPages())
@@ -51,12 +50,12 @@
                         </svg>
                     </button>
                 </th>
-                <th scope="col" class="p-2 font-medium text-left">
-                    DESTINATARIO</th>
                 <th scope="col" class="p-2 font-medium">
                     MOTIVO TRASLADO</th>
                 <th scope="col" class="p-2 font-medium">
                     MODALIDAD TRANSPORTE</th>
+                <th scope="col" class="p-2 font-medium text-left">
+                    DESTINATARIO</th>
                 <th scope="col" class="p-2 font-medium text-left">
                     DATOS TRANSPORTE</th>
                 <th scope="col" class="p-2 font-medium">
@@ -106,21 +105,33 @@
                         <td class="p-2 uppercase">
                             {{ formatdate($item->date) }}
                         </td>
+                        <td class="p-2 text-[10px] text-center leading-3">
+                            {{ $item->motivotraslado->name }}
+
+                            @if ($item->motivotraslado->code == '02')
+                                <p class="leading-3 mt-1"><b>PROVEEDOR : </b>
+                                    {{ $item->rucproveedor }}
+                                    <br>
+                                    {{ $item->nameproveedor }}
+                                </p>
+                            @elseif($item->motivotraslado->code == '03')
+                                <p class="leading-3 mt-1"><b>COMPRADOR : </b>
+                                    {{ $item->client->document }}
+                                    <br>
+                                    {{ $item->client->name }}
+                                </p>
+                            @endif
+                        </td>
+                        <td class="p-2 text-[10px] text-center uppercase leading-3">
+                            {{ $item->modalidadtransporte->name }}
+                        </td>
                         <td class="p-2 text-[10px] text-left">
                             <p>{{ $item->documentdestinatario }}</p>
-                            <p>{{ $item->namedestinatario }}</p>
-                            {{-- <p>{{ $item->client->document }}</p>
-                            <p>{{ $item->client->name }}</p> --}}
-                        </td>
-                        <td class="p-2 text-[10px] text-center">
-                            {{ $item->motivotraslado->name }}
-                        </td>
-                        <td class="p-2 text-[10px] text-center uppercase">
-                            {{ $item->modalidadtransporte->name }}
+                            <p class="leading-3">{{ $item->namedestinatario }}</p>
                         </td>
                         <td class="p-2 text-[10px]">
                             <p>{{ $item->ructransport }}</p>
-                            <p>{{ $item->nametransport }}</p>
+                            <p class="leading-3">{{ $item->nametransport }}</p>
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             <p>{{ formatDecimalOrInteger($item->peso) }} {{ $item->unit }}</p>
@@ -145,41 +156,43 @@
                                 {{ $item->ubigeodestino->distrito }}</p>
                         </td>
                         <td class="p-2">
-                            @if ($item->indicadortransbordo == '1')
-                                <p>{{ getIndicadorTransbProg()->name }}</p>
-                            @endif
-                            @if ($item->indicadorvehiculosml == '1')
-                                <p>{{ getIndicadorVehiculoML()->name }}</p>
-                            @endif
-                            @if ($item->indicadorvehretorenvacios == '1')
-                                <p>{{ getIndicadorRetornoVehEnvaVacio()->name }}</p>
-                            @endif
-                            @if ($item->indicadorvehretorvacio == '1')
-                                <p>{{ getIndicadorRetornoVehVacio()->name }}</p>
-                            @endif
-                            @if ($item->indicadordamds == '1')
-                                <p>{{ getIndicadorTotalDAMDS()->name }}</p>
-                            @endif
-                            @if ($item->indicadorconductor == '1')
-                                <p>{{ getIndicadorRegistrarVehCondTransport()->name }}</p>
-                            @endif
+                            <p class="leading-3">
+                                @if ($item->indicadortransbordo == '1')
+                                    {{ getIndicadorTransbProg()->name }}
+                                @endif
+                                @if ($item->indicadorvehiculosml == '1')
+                                    {{ getIndicadorVehiculoML()->name }}
+                                @endif
+                                @if ($item->indicadorvehretorenvacios == '1')
+                                    {{ getIndicadorRetornoVehEnvaVacio()->name }}
+                                @endif
+                                @if ($item->indicadorvehretorvacio == '1')
+                                    {{ getIndicadorRetornoVehVacio()->name }}
+                                @endif
+                                @if ($item->indicadordamds == '1')
+                                    {{ getIndicadorTotalDAMDS()->name }}
+                                @endif
+                                @if ($item->indicadorconductor == '1')
+                                    {{ getIndicadorRegistrarVehCondTransport()->name }}
+                                @endif
+                            </p>
                         </td>
                         <td class="p-2 text-center">
                             @if ($item->guiable)
                                 {{ $item->guiable->seriecompleta }}
                             @endif
                         </td>
-                        <td class="p-2 text-center">
-                            {{ $item->sucursal->name }}
+                        <td class="p-2 text-center min-w-[120px]">
+                            <p class="leading-3">{{ $item->sucursal->name }}</p>
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
-                            <p class="text-[10px] text-colorsubtitleform leading-3">USUARIO : {{ $item->user->name }}
-                            </p>
+                            <p class="text-[10px] text-colorsubtitleform leading-3">
+                                {{ $item->user->name }}</p>
                         </td>
                         <td class="p-2 text-center">
                             @if ($item->seriecomprobante->typecomprobante->sendsunat)
-                                @if ($item->codesunat == '0')
+                                @if ($item->isSendSunat())
                                     <x-span-text text="ENVIADO" class="leading-3 !tracking-normal" type="green" />
                                 @else
                                     @can('admin.facturacion.guias.sunat')
@@ -192,17 +205,13 @@
                                 <x-span-text text="LOCAL" class="leading-3 !tracking-normal" />
                             @endif
                         </td>
-                        <td class="p-2 text-center">
-                            <div class="max-w-[120px] relative" x-data="{ showmessage: false }" @mouseover="showmessage=true"
-                                @mouseover.away = "showmessage = false">
-                                <p class="truncate"> {{ $item->descripcion }}</p>
-                                @if (!$item->isSendSunat())
-                                    <p>{{ $item->codesunat }}</p>
-                                @endif
-                                <small x-show="showmessage" x-transition
-                                    class="cursor-pointer absolute right-0 font-medium rounded-md p-0.5 bg-fondolinknav text-[9px] leading-3 whitespace-normal text-colorlinknav transition duration-150">
-                                    {{ $item->descripcion }}</small>
-                            </div>
+                        <td class="p-2 text-center w-48">
+                            <p class="text-center text-wrap leading-3">
+                                {{ $item->descripcion }}</p>
+
+                            @if (!$item->isSendSunat())
+                                <p>{{ $item->codesunat }}</p>
+                            @endif
                         </td>
                         <td class="p-2 align-middle">
                             <div class="flex items-center justify-end gap-1">
@@ -232,7 +241,8 @@
                                         </button>
                                         <div x-show="dropdownOpen" @click.away="dropdownOpen = false"
                                             class="absolute right-0 mt-1 w-36 bg-fondodropdown rounded-md shadow shadow-fondominicard border border-borderminicard z-20">
-                                            <a href="#"
+                                            <a target="_blank"
+                                                href="{{ route('facturacion.guia.download.xml', ['guia' => $item, 'type' => 'xml']) }}"
                                                 class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
                                                 DESCARGAR XML
                                                 <svg class="w-4 h-4 block scale-110"
@@ -246,7 +256,8 @@
                                                         d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                                 </svg>
                                             </a>
-                                            <a href="#"
+                                            <a target="_blank"
+                                                href="{{ route('facturacion.guia.download.xml', ['guia' => $item, 'type' => 'cdr']) }}"
                                                 class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
                                                 DESCARGAR CDR
                                                 <svg class="w-4 h-4 block scale-110"
@@ -260,8 +271,9 @@
                                                         d="M4.5 7.5C4.99153 8.0057 6.29977 10 7 10M9.5 7.5C9.00847 8.0057 7.70023 10 7 10M7 10L7 2" />
                                                 </svg>
                                             </a>
-                                            <a href="#"
-                                                class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
+                                            <button wire:click="enviarxml({{ $item->id }})"
+                                                wire:loading.attr="disabled"
+                                                class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between disabled:opacity-25">
                                                 ENVIAR CORREO
                                                 <svg class="w-4 h-4 block scale-110"
                                                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -273,7 +285,7 @@
                                                     <path
                                                         d="M22 17.5L14 17.5M22 17.5C22 16.7998 20.0057 15.4915 19.5 15M22 17.5C22 18.2002 20.0057 19.5085 19.5 20" />
                                                 </svg>
-                                            </a>
+                                            </button>
                                         </div>
                                     </div>
                                 @endif

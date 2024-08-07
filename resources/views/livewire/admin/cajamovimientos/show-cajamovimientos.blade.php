@@ -147,9 +147,9 @@
                 <th scope="col" class="p-2 font-medium">
                     CAJA</th>
                 <th scope="col" class="p-2 font-medium">
-                    SUCURSAL</th>
+                    SUCURSAL / USUARIO</th>
                 <th scope="col" class="p-2 font-medium">
-                    ELIMINAR</th>
+                    OPCIONES</th>
             </tr>
         </x-slot>
         @if (count($movimientos) > 0)
@@ -209,9 +209,11 @@
                         <td class="p-2 text-center">
                             {{ $item->sucursal->name }}
                             <p class="text-[10px] leading-3 text-colorsubtitleform">
-                                USUARIO : {{ $item->user->name }}</p>
+                                {{ $item->user->name }}</p>
                         </td>
-                        <td class="p-2 text-center">
+                        <td class="p-2 text-center flex gap-1 items-center justify-end">
+                            <x-button-print href="{{ route('admin.payments.print', $item) }}" target="_blank" />
+
                             @if ($item->concept->isDeletemanual())
                                 @if (auth()->user()->isAdmin() || $item->user_id == auth()->user()->id)
                                     <x-button-delete onclick="confirmDelete({{ $item->id }})"

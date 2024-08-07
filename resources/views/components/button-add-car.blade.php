@@ -1,5 +1,5 @@
 <button
-    {{ $attributes->merge(['type' => 'button', 'class' => ' block border border-amber-400 group relative font-semibold tracking-widest bg-amber-400 text-white p-2.5 rounded-sm disabled:opacity-25 hover:bg-amber-700 focus:bg-amber-700 hover:border-amber-700 focus:border-amber-700 hover:ring-2 hover:ring-amber-300 focus:ring-2 focus:ring-amber-300 transition ease-in duration-150']) }}>
+    {{ $attributes->merge(['type' => 'button', 'class' => ' block group relative font-semibold tracking-widest bg-amber-400 text-white p-2.5 rounded-lg disabled:opacity-25 hover:bg-amber-700 focus:bg-amber-700 hover:border-amber-700 focus:border-amber-700 hover:ring-2 hover:ring-amber-300 focus:ring-2 focus:ring-amber-300 transition ease-in duration-150']) }}>
 
     <span>{{ $slot }}</span>
 

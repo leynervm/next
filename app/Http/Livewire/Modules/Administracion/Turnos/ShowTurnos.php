@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Modules\Administracion\Turnos;
 
 use App\Models\Turno;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -11,7 +12,7 @@ use Livewire\WithPagination;
 class ShowTurnos extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     protected $listeners = ['render'];
 
@@ -44,6 +45,7 @@ class ShowTurnos extends Component
 
     public function edit(Turno $turno)
     {
+        $this->authorize('admin.administracion.turnos.edit');
         $this->resetValidation();
         $this->reset();
         $this->turno = $turno;
@@ -52,6 +54,7 @@ class ShowTurnos extends Component
 
     public function update()
     {
+        $this->authorize('admin.administracion.turnos.edit');
         $this->turno->name = trim($this->turno->name);
         $this->validate();
         DB::beginTransaction();
@@ -72,6 +75,7 @@ class ShowTurnos extends Component
 
     public function delete(Turno $turno)
     {
+        $this->authorize('admin.administracion.turnos.delete');
         try {
             DB::beginTransaction();
             $turno->delete();

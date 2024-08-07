@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Modules\Marketplace\Trackingstates;
 
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Marketplace\Entities\Trackingstate;
@@ -11,7 +12,7 @@ use Modules\Marketplace\Entities\Trackingstate;
 class ShowTrackingstates extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $open = false;
     public $trackingstate;
@@ -50,6 +51,7 @@ class ShowTrackingstates extends Component
 
     public function edit(Trackingstate $trackingstate)
     {
+        $this->authorize('admin.marketplace.trackingstates.edit');
         $this->resetValidation();
         $this->resetExcept(["trackingstate"]);
         $this->trackingstate = $trackingstate;
@@ -59,6 +61,7 @@ class ShowTrackingstates extends Component
 
     public function update()
     {
+        $this->authorize('admin.marketplace.trackingstates.edit');
         // $this->finish = $this->finish ? 1 : 0;
         $this->trackingstate->name = trim($this->trackingstate->name);
         $this->trackingstate->finish = $this->finish ? 1 : 0;
@@ -71,6 +74,7 @@ class ShowTrackingstates extends Component
 
     public function delete(Trackingstate $trackingstate)
     {
+        $this->authorize('admin.marketplace.trackingstates.delete');
         $trackingstate->delete();
         $this->dispatchBrowserEvent('toast', toastJSON('Estado eliminado correctamente'));
     }

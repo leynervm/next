@@ -8,6 +8,15 @@
     width: auto;
 }
 
+.ck-content .table .ck-table-resized,
+.ck-table-resized {
+    width: 100% !important;
+}
+
+table{
+    width: 100% !important;
+}
+
 .ck.ck-toolbar {
     @apply w-full flex-wrap;
 }

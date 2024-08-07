@@ -15,18 +15,18 @@ class CreateTransaccionsTable extends Migration
     {
         Schema::create('transaccions', function (Blueprint $table) {
             $table->id();
-            $table->dateTime("date");
-            $table->unsignedDecimal("amount", 18, 4);
-            $table->string("descripcion", 255);
-            $table->string("idtransaccion", 255);
-            $table->string("signature", 255);
-            $table->string("status");
-            $table->string("code");
-            $table->string("card");
-            $table->string("cardtype");
-            $table->string("currency");
-            $table->string("idunico");
-            $table->string("brand");
+            $table->dateTime("date")->nullable();
+            $table->unsignedDecimal("amount", 18, 4)->nullable();
+            $table->string("currency", 4);
+            $table->string("eci_description", 255)->nullable();
+            $table->string("action_description", 255)->nullable();
+            $table->string("transaction_id", 255)->nullable();
+            $table->string("card")->nullable();
+            $table->string("card_type")->nullable();
+            $table->string("status")->nullable();
+            $table->string("action_code")->nullable();
+            $table->string("brand")->nullable();
+            $table->string("email", 255)->nullable();
             $table->unsignedBigInteger("order_id");
             $table->unsignedBigInteger("user_id");
             $table->foreign('order_id')->on('orders')->references('id');

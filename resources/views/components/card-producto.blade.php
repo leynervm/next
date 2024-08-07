@@ -1,7 +1,7 @@
 <div
     {{ $attributes->merge([
         'class' =>
-            'w-full xs:w-56 bg-fondominicard flex flex-col justify-between text-xs relative group rounded shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
+            'w-full xs:w-56 border border-borderminicard flex flex-col justify-between text-xs relative group rounded-lg hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
     ]) }}>
 
     <div class="w-full flex flex-col gap-2">
@@ -29,7 +29,7 @@
 
         <div class="w-full p-1">
             @if (isset($name))
-                <h1 class="text-colortitleform text-[10px] font-semibold leading-3 text-justify xs:text-center mt-1">
+                <h1 class="text-colorlabel text-[10px] font-semibold tracking-wide leading-3 text-justify xs:text-center mt-1">
                     {{ $name }}</h1>
             @endif
 

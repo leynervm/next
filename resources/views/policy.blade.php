@@ -1,13 +1,19 @@
-<x-guest-layout>
-    <div class="pt-4 bg-gray-100">
-        <div class="min-h-screen flex flex-col items-center pt-6 sm:pt-0">
-            <div>
-                <x-jet-authentication-card-logo />
-            </div>
+<x-app-layout>
+    <div class="pt-4">
+        <div class="min-h-screen flex flex-col items-center py-8 sm:pt-0">
+            {{-- <div class="w-full max-w-sm h-32 xs:mx-auto xs:col-span-3 sm:col-span-3 md:col-span-1">
+                @if ($empresa->image)
+                    <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
+                        alt="">
+                @else
+                    <h1 class="text-center p-3 font-bold tracking-widest text-xl leading-5 truncate max-w-xs">
+                        {{ $empresa->name }}</h1>
+                @endif
+            </div> --}}
 
-            <div class="w-full sm:max-w-2xl mt-6 p-6 bg-white shadow-md overflow-hidden sm:rounded-lg prose">
+            <div class="w-full text-sm text-colorsubtitleform sm:max-w-4xl p-0 sm:p-6 bg-fondominicard shadow-md overflow-hidden sm:rounded-lg prose">
                 {!! $policy !!}
             </div>
         </div>
     </div>
-</x-guest-layout>
+</x-app-layout>

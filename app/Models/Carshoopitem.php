@@ -14,7 +14,7 @@ class Carshoopitem extends Model
     use KardexTrait;
 
     public $timestamps = false;
-    protected $fillable = ['pricebuy', 'price', 'requireserie', 'producto_id', 'carshoop_id'];
+    protected $fillable = ['pricebuy', 'price', 'igv', 'requireserie', 'producto_id', 'carshoop_id'];
 
 
     public function carshoop(): BelongsTo

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Modules\Marketplace\Shipmenttypes;
 
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Marketplace\Entities\Shipmenttype;
@@ -10,7 +11,7 @@ use Modules\Marketplace\Entities\Shipmenttype;
 class ShowShipmenttypes extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $open = false;
     public $shipmenttype;
@@ -41,6 +42,7 @@ class ShowShipmenttypes extends Component
 
     public function edit(Shipmenttype $shipmenttype)
     {
+        $this->authorize('admin.marketplace.shipmenttypes.edit');
         $this->resetValidation();
         $this->resetExcept(['shipmenttype']);
         $this->shipmenttype = $shipmenttype;
@@ -49,13 +51,13 @@ class ShowShipmenttypes extends Component
 
     public function update()
     {
+        $this->authorize('admin.marketplace.shipmenttypes.edit');
         $this->shipmenttype->name = trim($this->shipmenttype->name);
         $this->shipmenttype->descripcion = trim($this->shipmenttype->descripcion);
         $this->validate();
         $this->shipmenttype->save();
         $this->resetValidation();
         $this->resetExcept(['shipmenttype']);
-        $this->dispatchBrowserEvent('toast', toastJSON('Tipo de envío actualizado correctamente'));
-
+        $this->dispatchBrowserEvent('updated');
     }
 }

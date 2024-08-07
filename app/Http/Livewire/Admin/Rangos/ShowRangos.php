@@ -2,19 +2,17 @@
 
 namespace App\Http\Livewire\Admin\Rangos;
 
-use App\Imports\RangoImport;
 use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Rango;
 use App\Rules\ValidateRango;
 use Exception;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
-use Maatwebsite\Excel\Facades\Excel;
+
 
 class ShowRangos extends Component
 {
@@ -27,7 +25,6 @@ class ShowRangos extends Component
     public $open = false;
     public $rango;
     public $minHasta;
-    public $file, $identificador;
 
     public $checkall = false;
     public $selectedrangos = [];
@@ -54,7 +51,6 @@ class ShowRangos extends Component
     public function mount()
     {
         $this->rango = new Rango();
-        $this->identificador = rand();
     }
 
     public function render()
@@ -171,38 +167,6 @@ class ShowRangos extends Component
         }
     }
 
-    public function import()
-    {
-        $this->validate([
-            'file' => ['required', 'mimes:xlsx,csv,txt']
-        ]);
-
-        try {
-            Excel::import(new RangoImport, $this->file);
-
-            $pricetypes = Pricetype::orderBy('id', 'asc')->pluck('id')->toArray();
-            $rangos = Rango::orderBy('desde', 'asc')->get();
-            $rangos->each(function ($rango) use ($pricetypes) {
-                $rango->pricetypes()->syncWithPivotValues($pricetypes, [
-                    'ganancia' => 0
-                ]);
-            });
-
-            $this->dispatchBrowserEvent('toast', toastJSON('Importado correctamente'));
-            $this->reset(['file']);
-        } catch (Exception $e) {
-            $json = response()->json([
-                'title' => 'Error al importar rangos de precios !',
-                'text' => $e->getMessage()
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $json);
-        }
-    }
-
-    public function resetFile()
-    {
-        $this->reset(['file']);
-    }
 
     public function updatedCheckall()
     {

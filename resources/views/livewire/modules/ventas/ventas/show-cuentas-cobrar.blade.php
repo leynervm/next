@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded h-[calc(100vh-10px)] hidden">
+    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
         <x-loading-next />
     </div>
 
@@ -42,10 +42,10 @@
             </x-input>
         </div>
 
-        <div class="w-full max-w-xs">
+        {{-- <div class="w-full max-w-xs">
             <x-label value="Fecha pago :" />
             <x-input type="date" wire:model.lazy="datepay" class="w-full block" />
-        </div>
+        </div> --}}
     </div>
 
     @if ($cuotas->hasPages())
@@ -60,9 +60,7 @@
                 <tr>
                     <th scope="col" class="p-2 font-medium">
                         <button class="flex items-center gap-x-3 focus:outline-none">
-                            <span>COMPROBAMNTE</span>
-
-                            {{-- <svg class="h-3" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"> --}}
+                            <span>COMPROBANTE</span>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 10 11"
                                 stroke-width="0.1" stroke="currentColor" class="w-3 h-3">
                                 <path
@@ -77,29 +75,29 @@
                     </th>
 
                     <th scope="col" class="p-2 font-medium">
-                        CLIENTE
-                    </th>
+                        CLIENTE</th>
+                    {{-- <th scope="col" class="p-2 font-medium">
+                        PRÓXIMA FECHA PAGO</th> --}}
                     <th scope="col" class="p-2 font-medium">
-                        PRÓXIMA FECHA PAGO
-                    </th>
-                    <th scope="col" class="p-2 font-medium">
-                        MONTO</th>
+                        TIPO PAGO</th>
+                    {{-- <th scope="col" class="p-2 font-medium">
+                        MONTO</th> --}}
                     <th scope="col" class="p-2 font-medium">
                         SALDO PENDIENTE</th>
                     <th scope="col" class="p-2 font-medium">
-                        MONTO TOTAL</th>
+                        TOTAL VENTA</th>
                     <th scope="col" class="p-2 font-medium">
                         SUCURSAL</th>
                 </tr>
             </x-slot>
-            @if (count($cuotas))
+            @if (count($cuotas) > 0)
                 <x-slot name="body">
                     @foreach ($cuotas as $item)
                         <tr>
                             <td class="p-2 text-[10px]">
                                 @can('admin.ventas.edit')
                                     <a class="inline-block text-linktable hover:text-hoverlinktable transition-all ease-in-out duration-150"
-                                        href="{{ route('admin.ventas.edit', $item->id) }}">
+                                        href="{{ route('admin.ventas.edit', $item) }}">
                                         {{ $item->seriecompleta }}
                                         <br>
                                         {{ $item->comprobante->seriecomprobante->typecomprobante->descripcion }}
@@ -119,8 +117,8 @@
                                 <p class="text-[10px]">{{ $item->client->name }}</p>
                             </td>
                             <td class="p-2 text-center uppercase">
-                                @if (count($item->cuotas))
-                                    {{-- <p>{{ $item->nextpagos }}</p> --}}
+                                {{ $item->typepayment->name }}
+                                {{-- @if (count($item->cuotas))
                                     @php
                                         $fechapago = $item->cuotas->first()->expiredate;
                                     @endphp
@@ -135,9 +133,9 @@
                                     @elseif (\Carbon\Carbon::parse($fechapago)->isPast())
                                         <x-span-text text="VENCIDO" class="leading-3" type="red" />
                                     @endif
-                                @endif
+                                @endif --}}
                             </td>
-                            <td class="p-2 text-center">
+                            {{-- <td class="p-2 text-center">
                                 @if (count($item->cuotas))
                                     <x-span-text :text="'CUOTA' . substr('000' . $item->cuotas->first()->cuota, -3)" class="leading-3" />
 
@@ -145,18 +143,21 @@
                                         {{ number_format($item->cuotas->first()->amount, 3, '.', ', ') }}
                                     </p>
                                 @endif
+                            </td> --}}
+                            <td class="p-2 text-center">
+                                @if ($item->typepayment->isCredito())
+                                    {{ number_format($item->cuotas()->sum('amount') - $item->cuotas()->whereHas('cajamovimiento')->sum('amount') ?? 0, 2, '.', '') }}
+                                @else
+                                   {{ number_format($item->total - $item->cajamovimientos()->sum('amount') ?? 0, 2, '.', '')}}
+                                @endif
                             </td>
                             <td class="p-2 text-center">
                                 {{ $item->moneda->simbolo }}
-                                {{ number_format($item->cuotas->whereNull('cajamovimiento_id')->sum('amount'), 3, '.', ', ') }}
-                            </td>
-                            <td class="p-2 text-center">
-                                {{ $item->moneda->simbolo }}
-                                {{ number_format($item->total - $item->paymentactual, 3, '.', ', ') }}
+                                {{ number_format($item->total, 2, '.', ', ') }}
                             </td>
 
                             <td class="p-2 text-[10px] text-center">
-                               {{$item->sucursal->name}}
+                                {{ $item->sucursal->name }}
                             </td>
                         </tr>
                     @endforeach

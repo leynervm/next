@@ -6,10 +6,9 @@
             <line x1="5" x2="19" y1="12" y2="12" />
         </svg>
     </x-button-next>
-    <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo almacén') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -20,22 +19,21 @@
                     <x-jet-input-error for="name" />
                 </div>
 
-                <div class="w-full mt-2">
+                {{-- <div class="w-full mt-2">
                     <x-label-check for="default">
                         <x-input wire:model.defer="default" name="default" value="1" type="checkbox"
                             id="default" />
                         SELECCIONAR COMO PREDETERMINADO
                     </x-label-check>
                     <x-jet-input-error for="default" />
-                </div>
+                </div> --}}
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
 
-                <div wire:loading.flex class="loading-overlay rounded hidden">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
             </form>

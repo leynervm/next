@@ -46,7 +46,7 @@ class CreateConcept extends Component
         }
     }
 
-    public function save()
+    public function save($closeModal = false)
     {
         $this->authorize('admin.cajas.conceptos.create');
         $this->name = trim($this->name);
@@ -68,7 +68,12 @@ class CreateConcept extends Component
             }
             DB::commit();
             $this->emitTo('admin.concepts.show-concepts', 'render');
-            $this->reset();
+
+            if ($closeModal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

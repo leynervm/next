@@ -11,18 +11,24 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManagerStatic as ImageIntervention;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class ShowDetalles extends Component
 {
 
-    use WithFileUploads, AuthorizesRequests;
+    use WithPagination, WithFileUploads, AuthorizesRequests;
 
     public $open = false;
     public $openimage = false;
     public $producto;
     public $imagen, $identificador;
+    public $searchcaracteristica = '';
 
     public $selectedEspecificacion = [];
+
+    // protected $queryString = [
+    //     'searchcaracteristica' => ['except' => '', 'as' => 'search_especificacion'],
+    // ];
 
     public function mount(Producto $producto)
     {
@@ -33,27 +39,47 @@ class ShowDetalles extends Component
     public function render()
     {
 
-        $caracteristicas = Caracteristica::orderBy('name', 'asc')->get();
+        $caracteristicas = Caracteristica::with('especificacions');
+
+        if (trim($this->searchcaracteristica) != '') {
+            $caracteristicas->where('name', 'ilike', '%' . $this->searchcaracteristica . '%');
+        }
+
+        $caracteristicas = $caracteristicas->orderBy('orden', 'asc')->paginate(15, ['*'], 'caracteristicasPage');
         return view('livewire.modules.almacen.productos.show-detalles', compact('caracteristicas'));
+    }
+
+    public function updatedSearchcaracteristica()
+    {
+        $this->resetPage('caracteristicasPage');
     }
 
     public function openmodal()
     {
         $this->authorize('admin.almacen.productos.especificaciones');
+        $this->resetPage('caracteristicasPage');
+        $this->reset(['searchcaracteristica']);
         $this->selectedEspecificacion = $this->producto->especificacions()
-            ->pluck('especificacion_id', 'caracteristica_id',)->toArray();
+            ->pluck('especificacion_id', 'caracteristica_id')->toArray();
         $this->open = true;
     }
 
     public function saveespecificacion()
     {
         $this->authorize('admin.almacen.productos.especificaciones');
-        $this->producto->especificacions()->syncWithPivotValues($this->selectedEspecificacion, [
-            'user_id' => auth()->user()->id,
-            'created_at' => now('America/Lima')
-        ]);
-
-        $this->reset(['selectedEspecificacion', 'open']);
+        $orden = 1;
+        $arrayPivotValues = [];
+        foreach ($this->selectedEspecificacion as $item) {
+            $arrayPivotValues[$item] = [
+                'orden' => $orden
+            ];
+            $orden++;
+        }
+        // dd($this->selectedEspecificacion, $arrayPivotValues);
+        // dd($this->selectedEspecificacion, $item, $value);
+        $this->producto->especificacions()->sync($arrayPivotValues);
+        $this->reset(['selectedEspecificacion', 'searchcaracteristica', 'open']);
+        $this->resetPage('caracteristicasPage');
         $this->producto->refresh();
         $this->dispatchBrowserEvent('updated');
     }
@@ -143,7 +169,7 @@ class ShowDetalles extends Component
 
         $this->resetValidation();
         $this->identificador = rand();
-        $this->reset(['imagen', 'openimage']);
+        $this->reset(['imagen']);
         $this->producto->refresh();
         $this->dispatchBrowserEvent('created');
     }

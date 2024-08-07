@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
 
@@ -90,7 +90,7 @@
                     <th scope="col" class="p-2 font-medium text-center">TIPO ENVÍO</th>
                     <th scope="col" class="p-2 font-medium">FORMA PAGO</th>
                     <th scope="col" class="p-2 font-medium">PAGO</th>
-                    <th scope="col" class="p-2 font-medium text-center">ESTADO</th>
+                    <th scope="col" class="p-2 font-medium text-center">TRACKING</th>
                 </tr>
             </x-slot>
 
@@ -106,16 +106,16 @@
                                 </p>
                                 <x-span-text :text="'ELIMINADO ' . formatDate($item->deleted_at, 'DD MMMM YYYY')" type="red" class="leading-3 !tracking-normal" />
                             @else
-                                {{-- @can('admin.ventas.edit') --}}
-                                <a href="{{ route('admin.marketplace.orders.show', $item) }}"
-                                    class="text-linktable hover:text-hoverlinktable whitespace-nowrap inline-block transition-colors ease-out duration-150">
-                                    {{ $item->seriecompleta }}
-                                    <br>
-                                    {{ formatDate($item->date) }}
-                                </a>
-                                {{-- @endcan --}}
+                                @can('admin.marketplace.orders')
+                                    <a href="{{ route('admin.marketplace.orders.show', $item) }}"
+                                        class="text-linktable hover:text-hoverlinktable whitespace-nowrap inline-block transition-colors ease-out duration-150">
+                                        {{ $item->seriecompleta }}
+                                        <br>
+                                        {{ formatDate($item->date) }}
+                                    </a>
+                                @endcan
 
-                                @cannot('admin.ventas.edit')
+                                @cannot('admin.marketplace.orders')
                                     <p class="text-linktable">
                                         {{ $item->seriecompleta }}
                                         <br>

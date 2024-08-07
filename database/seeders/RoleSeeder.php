@@ -579,5 +579,7 @@ class RoleSeeder extends Seeder
         //     'descripcion' => '',
         //     'table' => ''
         // ])->syncRoles([$desarrollador]);
+
+        
     }
 }

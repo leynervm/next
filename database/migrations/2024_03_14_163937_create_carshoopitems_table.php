@@ -17,11 +17,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedDecimal('pricebuy', 18, 4);
             $table->unsignedDecimal('price', 18, 4);
+            $table->unsignedDecimal('igv', 18, 4);
             $table->char('requireserie', 1)->default(0);
             $table->unsignedBigInteger('producto_id');
             $table->unsignedBigInteger('carshoop_id');
-            $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('carshoop_id')->on('carshoops')->references('id');
+            $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('carshoop_id')->on('carshoops')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 

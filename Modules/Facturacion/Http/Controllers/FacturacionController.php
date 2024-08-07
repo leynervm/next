@@ -3,8 +3,6 @@
 namespace Modules\Facturacion\Http\Controllers;
 
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
-use Illuminate\Contracts\Support\Renderable;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Modules\Facturacion\Entities\Comprobante;
@@ -37,7 +35,7 @@ class FacturacionController extends Controller
     {
         $this->authorize('sucursal', $comprobante);
         if (Module::isEnabled('Facturacion')) {
-            $pdf = PDF::loadView('facturacion::pdf.a4', compact('comprobante'));
+            $pdf = PDF::loadView('facturacion::pdf.comprobantes.a4', compact('comprobante'));
             return $pdf->stream();
         }
     }
@@ -51,7 +49,7 @@ class FacturacionController extends Controller
             $heightBody = (count($comprobante->facturableitems) * 3 * 12) * 2.8346;
             $heightFooter = 400; #Incl. Totales, QR, Leyenda, Info, Web
             $heightPage = number_format($heightHeader + $heightBody + $heightFooter, 2, '.', '');
-            $pdf = PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('facturacion::pdf.ticket', compact('comprobante'));
+            $pdf = PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('facturacion::pdf.comprobantes.ticket', compact('comprobante'));
             return $pdf->stream();
         }
     }
@@ -99,6 +97,17 @@ class FacturacionController extends Controller
             }
         } else {
             return response()->json(['error' => 'No existe el archivo ZIP.'], 404);
+        }
+    }
+
+    public function imprimirA4Public(Comprobante $comprobante, $format)
+    {
+        if (Module::isEnabled('Facturacion')) {
+            if (!in_array($format, ['a4', 'a5'])) {
+                abort(404);
+            }
+            $pdf = PDF::loadView('facturacion::pdf.comprobantes.' . $format, compact('comprobante'));
+            return $pdf->stream();
         }
     }
 

@@ -16,7 +16,7 @@ class Seriecomprobante extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['serie', 'code', 'contador', 'default', 'typecomprobante_id', 'sucursal_id'];
+    protected $fillable = ['serie', 'code', 'contador', 'contadorprueba', 'default', 'typecomprobante_id', 'sucursal_id'];
     const DEFAULT = '1';
 
     public function setSerieAttribute($value)

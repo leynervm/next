@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\CajaController;
+use App\Http\Controllers\CarshoopController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmpresaController;
@@ -44,10 +45,10 @@ Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->grou
     // Route::post('/users/update/{user}', [UserController::class, 'update'])->name('admin.users.update');
 });
 
-Route::get('/roles', [RoleController::class, 'index'])->name('admin.roles');
-Route::get('/roles/create', [RoleController::class, 'create'])->name('admin.roles.create');
-Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('admin.roles.edit');
-Route::get('/roles/permisos', [RoleController::class, 'permisos'])->name('admin.roles.permisos');
+Route::get('/administracion/roles', [RoleController::class, 'index'])->name('admin.roles');
+Route::get('/administracion/roles/create', [RoleController::class, 'create'])->name('admin.roles.create');
+Route::get('/administracion/roles/{role}/edit', [RoleController::class, 'edit'])->name('admin.roles.edit');
+Route::get('/administracion/roles/permisos', [RoleController::class, 'permisos'])->name('admin.roles.permisos');
 
 
 Route::prefix('clientes')->name('admin.clientes')->group(function () {
@@ -96,7 +97,6 @@ Route::prefix('administracion')->name('admin.administracion')->group(function ()
 Route::get('/marcas', [HomeController::class, 'marcas'])->name('admin.almacen.marcas');
 Route::get('/categorias', [AlmacenController::class, 'categorias'])->name('admin.almacen.categorias');
 Route::get('/subcategorias', [AlmacenController::class, 'subcategorias'])->name('admin.almacen.subcategorias');
-Route::get('/caracteristicas-&-especificaciones', [AlmacenController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
 
 
 if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
@@ -108,9 +108,15 @@ if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
 Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class, 'imprimirticket'])->name('admin.payments.print');
 
 
+
+
+Route::post('admin/carshoops/{carshoop}/delete', [CarshoopController::class, 'delete'])->name('admin.carshoop.delete');
+Route::post('admin/carshoops/delete/all', [CarshoopController::class, 'deleteall'])->name('admin.carshoop.delete.all');
+Route::post('admin/carshoops/moneda/{moneda_id}/update', [CarshoopController::class, 'updatemoneda'])->name('admin.carshoop.updatemoneda');
+
+
+
 // Route::get('/email/{comprobante:seriecompleta}/enviar-xml', [EmailController::class, 'enviarxml'])->name('admin.email.enviarxml');
-
-
 // });
 
 

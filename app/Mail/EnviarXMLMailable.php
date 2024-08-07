@@ -10,7 +10,6 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Storage;
 use Modules\Facturacion\Entities\Comprobante;
 
 class EnviarXMLMailable extends Mailable implements ShouldQueue
@@ -39,7 +38,7 @@ class EnviarXMLMailable extends Mailable implements ShouldQueue
     {
         return new Envelope(
             from: new Address('nexttechnologies@next.net.pe', 'NEXT TECHNOLOGIES'),
-            subject: 'Se adjunta archivos XML de su comprobante electrónico',
+            subject: 'RESUMEN DE VENTA DEL COMPROBANTE ' . $this->comprobante->seriecompleta,
         );
     }
 
@@ -51,7 +50,7 @@ class EnviarXMLMailable extends Mailable implements ShouldQueue
     public function content()
     {
         return new Content(
-            view: 'emails.enviar-xml',
+            markdown: 'emails.enviar-xml',
         );
     }
 

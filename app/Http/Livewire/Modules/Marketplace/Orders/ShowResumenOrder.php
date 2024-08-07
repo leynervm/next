@@ -5,12 +5,16 @@ namespace App\Http\Livewire\Modules\Marketplace\Orders;
 use App\Models\Almacen;
 use App\Models\Kardex;
 use App\Models\Tvitem;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
 
 class ShowResumenOrder extends Component
 {
+
+    use AuthorizesRequests;
+
 
     public Order $order;
     public $tvitem;
@@ -30,8 +34,7 @@ class ShowResumenOrder extends Component
 
     public function descontarstock(Tvitem $tvitem)
     {
-        // dd($tvitem->producto->almacens);
-        // $this->authorize('admin.almacen.productos.almacen');
+        $this->authorize('admin.marketplace.orders.confirmstock');
         $this->resetValidation();
         $this->resetExcept(['order', 'tvitem']);
         $this->tvitem = $tvitem;
@@ -41,6 +44,7 @@ class ShowResumenOrder extends Component
 
     public function save()
     {
+        $this->authorize('admin.marketplace.orders.confirmstock');
         $this->validate([
             'tvitem.cantidad' => ['required', 'numeric', 'min:1', 'decimal:0,4'],
             'tvitem.id' => ['required', 'integer', 'min:1', 'exists:tvitems,id'],
@@ -99,7 +103,6 @@ class ShowResumenOrder extends Component
             $this->resetValidation();
             $this->resetExcept(['order', 'tvitem']);
             $this->order->refresh();
-            // $this->dispatchBrowserEvent('reload');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

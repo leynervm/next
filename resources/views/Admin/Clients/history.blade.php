@@ -46,9 +46,8 @@
     @if (count($ventas) > 0)
         <div class="w-full flex flex-col gap-5 mt-5">
             @foreach ($ventas as $item)
-                <div
-                    class="w-full sm:flex sm:gap-3 rounded-md cursor-default bg-fondominicard shadow shadow-shadowminicard p-3 hover:shadow-md hover:shadow-shadowminicard">
-                    <div class="w-full text-colortitleform">
+                <x-simple-card class="w-full flex flex-col sm:flex-row gap-3 p-3">
+                    <div class="w-full flex-1 text-colortitleform">
                         <h1 class="font-semibold text-xs">
                             {{ $item->seriecompleta }} - {{ $item->seriecomprobante->typecomprobante->descripcion }}
                         </h1>
@@ -74,44 +73,44 @@
                         @endif --}}
                     </div>
 
-                    <div class="w-full text-colortitleform">
-                        <p class="font-medium text-xs text-end">
+                    <div class="w-full sm:max-w-xs sm:text-end flex-shrink-0 text-colortitleform">
+                        <p class="font-medium text-xs">
                             TOTAL {{ $item->moneda->simbolo }}</p>
 
                         <h3
-                            class="font-semibold text-[10px] text-end leading-3 @if ($item->descuento > 0) text-green-500 @endif">
+                            class="font-semibold text-[10px] leading-3 @if ($item->descuento > 0) text-green-500 @endif">
                             <small class="font-medium">DSCT</small>
                             {{ number_format($item->descuento, 2, '.', ', ') }}
                             <small class="font-medium">{{ $item->moneda->currency }}</small>
                         </h3>
 
                         <h3
-                            class="font-semibold text-[10px] text-end leading-3 @if ($item->descuento > 0) text-green-500 @endif">
+                            class="font-semibold text-[10px] leading-3 @if ($item->descuento > 0) text-green-500 @endif">
                             <small class="font-medium">GRATUITO</small>
                             {{ number_format($item->gratuito + $item->igvgratuito, 2, '.', ', ') }}
                             <small class="font-medium">{{ $item->moneda->currency }}</small>
                         </h3>
 
-                        <h3 class="font-semibold text-[10px] text-end leading-3">
+                        <h3 class="font-semibold text-[10px] leading-3">
                             <small class="font-medium">IGV</small>
                             {{ number_format($item->igv, 2, '.', ', ') }}
                             <small class="font-medium">{{ $item->moneda->currency }}</small>
                         </h3>
 
-                        <h3 class="font-semibold text-2xl text-end leading-normal">
+                        <h3 class="font-semibold text-2xl leading-normal">
                             {{ number_format($item->total, 2, '.', ', ') }}
                             <small class="text-[10px] font-medium">{{ $item->moneda->currency }}</small>
                         </h3>
 
                         @if ($item->moneda->code == 'USD')
                             <h3
-                                class="font-semibold text-[10px] text-end leading-3 @if ($item->descuento > 0) text-green-500 @endif">
+                                class="font-semibold text-[10px] leading-3 @if ($item->descuento > 0) text-green-500 @endif">
                                 <small class="font-medium">TIPO CAMBIO</small>
                                 {{ number_format($item->tipocambio, 2, '.', ', ') }}
                             </h3>
                         @endif
                     </div>
-                </div>
+                </x-simple-card>
             @endforeach
         </div>
     @endif

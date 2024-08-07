@@ -12,6 +12,7 @@ use App\Models\Sucursal;
 use App\Models\Tribute;
 use App\Models\Typepayment;
 use App\Models\User;
+use App\Traits\EnviarComprobanteSunat;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,6 +27,7 @@ class Comprobante extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use EnviarComprobanteSunat;
 
     const ENVIADO_SUNAT = '0';
 
@@ -116,6 +118,11 @@ class Comprobante extends Model
 
     public function isSendSunat()
     {
-        return $this->codesunat == self::ENVIADO_SUNAT;
+        return trim($this->codesunat) == self::ENVIADO_SUNAT;
+    }
+
+    public function isProduccion()
+    {
+        return $this->sendmode == Empresa::PRODUCCION;
     }
 }

@@ -96,7 +96,7 @@ class ShowEmployers extends Component
 
     public function edit(Employer $employer)
     {
-        // $this->reset();
+        $this->authorize('admin.administracion.employers.edit');
         $this->resetValidation();
         $this->employer = $employer;
         $this->telefono = $employer->telephone->phone ?? null;
@@ -110,6 +110,7 @@ class ShowEmployers extends Component
 
     public function update()
     {
+        $this->authorize('admin.administracion.employers.edit');
         try {
             DB::beginTransaction();
             $this->validate();
@@ -147,6 +148,7 @@ class ShowEmployers extends Component
 
     public function desvincularuser()
     {
+        $this->authorize('admin.administracion.employers.edit');
         try {
             DB::beginTransaction();
             if ($this->employer->user->openboxes()->open()->exists()) {
@@ -183,6 +185,7 @@ class ShowEmployers extends Component
 
     public function delete(Employer $employer)
     {
+        $this->authorize('admin.administracion.employers.delete');
         DB::beginTransaction();
         try {
             if ($employer->user) {
@@ -222,6 +225,7 @@ class ShowEmployers extends Component
 
     public function restoreemployer($employer)
     {
+        $this->authorize('admin.administracion.employers.edit');
         $employer = Employer::onlyTrashed()->find($employer);
         $employer->restore();
         $this->dispatchBrowserEvent('updated');
@@ -229,7 +233,7 @@ class ShowEmployers extends Component
 
     public function getClient()
     {
-
+        $this->authorize('admin.administracion.employers.edit');
         $this->employer->document = trim($this->employer->document);
         $this->validate([
             'employer.document' => [

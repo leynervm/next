@@ -12,29 +12,38 @@
         <div>
             <ul class="">
                 <li>
-                    <a class="item-footer" href="">NOSOTROS</a>
+                    <a class="item-footer !flex gap-1 items-center justify-center" href="{{ route('claimbook.create') }}">
+                        <div class="inline-block w-10 h-8 bg-white p-0.5 rounded">
+                            <img class="w-full h-full object-scale-down overflow-hidden"
+                                src="{{ asset('images/libro-negro.png') }}" alt="">
+                        </div>
+                        LIBRO DE RECLAMACIONES
+                    </a>
                 </li>
                 <li>
-                    <a class="item-footer" href="">CENTRO AUTORIZADO</a>
+                    <a class="item-footer" href="{{ route('nosotros') }}">NOSOTROS</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="">CONTÁCTANOS</a>
+                    <a class="item-footer" href="{{ route('centroautorizado') }}">CENTRO AUTORIZADO</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="">UBÍCANOS</a>
+                    <a class="item-footer" href="{{ route('contactanos') }}">CONTÁCTANOS</a>
+                </li>
+                <li>
+                    <a class="item-footer" href="{{ route('ubicanos') }}">UBÍCANOS</a>
                 </li>
             </ul>
         </div>
         <div>
             <ul>
                 <li>
-                    <a class="item-footer" href="">TRABAJA CON NOSOTROS</a>
+                    <a class="item-footer" href="{{ route('trabaja') }}">TRABAJA CON NOSOTROS</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="">TÉRMINOS Y CONDICIONES</a>
+                    <a class="item-footer" href="{{ route('terms.show') }}">TÉRMINOS Y CONDICIONES</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="">POLÍTICAS DE PRIVACIDAD</a>
+                    <a class="item-footer" href="{{ route('policy.show') }}">POLÍTICAS DE PRIVACIDAD</a>
                 </li>
             </ul>
         </div>
@@ -54,14 +63,16 @@
                     <li>
                         <div class="w-full mt-2 flex flex-wrap gap-2 justify-around">
                             @foreach ($empresa->telephones as $item)
-                                <x-span-text class="tracking-wide leading-3" :text="formatTelefono($item->phone)" />
+                                <small class="tracking-wide leading-3">
+                                    {{ formatTelefono($item->phone) }}
+                                </small>
                             @endforeach
                         </div>
                     </li>
                 @endif
             </ul>
             <div class="footer-social w-full flex flex-wrap justify-center items-center gap-3">
-                <a class="social-footer whatsapp" href="whatsapp://send?phone=+51928393901">
+                <a class="social-footer whatsapp" href="https://wa.link/0fnbp6">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" color="currentColor" fill="currentColor"
                         stroke="currentColor" stroke-width="0" stroke-linejoin="round" class="block w-full h-full">
                         <path

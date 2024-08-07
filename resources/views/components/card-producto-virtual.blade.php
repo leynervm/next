@@ -11,7 +11,7 @@
     'classFooter' => 'absolute',
 ])
 <div
-    {{ $attributes->merge(['class' => 'w-full group bg-fondominicard flex flex-col justify-between text-xs relative group cursor-pointer']) }}>
+    {{ $attributes->merge(['class' => 'w-full group bg-fondominicard flex flex-col justify-between text-xs relative cursor-pointer']) }}>
 
     @if ($type == 'link')
         <a href="{{ $route }}" class="w-full flex flex-col gap-2">
@@ -28,7 +28,7 @@
                     class="absolute opacity-0 top-0 object-scale-down w-full h-full group-hover:scale-105 group-hover:opacity-100 transition-all ease-in duration-700">
             @endif
         @else
-            <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+            <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
         @endif
     </div>
 
@@ -42,7 +42,7 @@
         </div>
 
         <p
-            class="text-colorlabel text-[10px] mb-5 text-center block font-semibold leading-3 xs:text-center mt-1 group-hover:text-hoverlinktable transition ease-in-out duration-150">
+            class="text-colorlabel text-[10px] tracking-wide mb-5 text-center block font-semibold leading-3 xs:text-center mt-1 group-hover:text-hoverlinktable transition ease-in-out duration-150">
             {{ $name }}</p>
 
         {{ $slot }}

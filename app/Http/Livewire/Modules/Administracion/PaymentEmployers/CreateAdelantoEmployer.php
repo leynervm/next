@@ -73,8 +73,8 @@ class CreateAdelantoEmployer extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.employers.adelantos.create');
         if ($this->open == false) {
-            $this->authorize('admin.administracion.employers.adelantos.create');
             $this->reset(['employer', 'employer_id', 'adelantos', 'detalle', 'amount']);
             $this->employer = new Employer();
             $this->resetValidation();

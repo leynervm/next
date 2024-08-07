@@ -104,7 +104,7 @@ class ShowProductos extends Component
         $categories = Category::whereHas('productos')->get();
         $subcategories = Subcategory::whereHas('productos')->get();
         $marcas = Marca::whereHas('productos')->get();
-        $caracteristicas = Caracteristica::withWhereHas('especificacions', function ($query) {
+        $caracteristicas = Caracteristica::filterweb()->withWhereHas('especificacions', function ($query) {
             $query->whereHas('productos');
         })->get();
 
@@ -153,7 +153,7 @@ class ShowProductos extends Component
             $query->disponibles();
         });
 
-        $productos = $productos->publicados()
+        $productos = $productos->visibles()->publicados()
             ->orderBy($this->sort, $this->direction)->paginate();
 
         // dd($productos);

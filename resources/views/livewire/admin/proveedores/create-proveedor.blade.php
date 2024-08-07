@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="fixed loading-overlay rounded hidden h-screen">
+    <div wire:loading.flex class="fixed loading-overlay hidden">
         <x-loading-next />
     </div>
 
@@ -109,8 +109,8 @@
                         <x-input class="block w-full flex-1 prevent" wire:model.defer="document2" type="number"
                             wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
                             onkeydown="disabledEnter(event)" />
-                        <x-button-add class="px-2 flex-shrink-0" wire:click="searchcontacto" wire:loading.attr="disabled"
-                            wire:target="searchcontacto">
+                        <x-button-add class="px-2 flex-shrink-0" wire:click="searchcontacto"
+                            wire:loading.attr="disabled" wire:target="searchcontacto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -140,8 +140,7 @@
 
         <div class="w-full flex pt-4 justify-end">
             <x-button type="submit" wire:loading.attr="disabled">
-                {{ __('REGISTRAR') }}
-            </x-button>
+                {{ __('Save') }}</x-button>
         </div>
     </form>
 

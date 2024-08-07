@@ -24,6 +24,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('sort/categories', [SortController::class, 'categories'])->name('api.sort.categories');
 Route::post('sort/subcategories', [SortController::class, 'subcategories'])->name('api.sort.subcategories');
+Route::post('sort/caracteristicas', [SortController::class, 'caracteristicas'])->name('api.sort.caracteristicas');
+Route::post('sort/especificacions', [SortController::class, 'especificacions'])->name('api.sort.especificacions');
 Route::post('sort/sliders', [SortController::class, 'sliders'])->name('api.sort.sliders');
 
 

@@ -346,13 +346,11 @@
             </x-form-card>
         @endif
 
-        {{-- {{ print_r($errors->all()) }} --}}
-
         <div class="w-full flex justify-end">
             <x-button type="submit">REGISTRAR</x-button>
         </div>
 
-        <div wire:loading.flex wire:target="save" class="loading-overlay rounded hidden">
+        <div wire:loading.flex class="loading-overlay fixed hidden">
             <x-loading-next />
         </div>
     </form>

@@ -48,8 +48,7 @@
     </x-slot>
 
     <x-slot name="actions">
-        <x-button type="submit" wire:loading.attr="disabled" class="uppercase">
-            {{ __('Save') }}
-        </x-button>
+        <x-button type="submit" wire:loading.attr="disabled">
+            {{ __('Save') }}</x-button>
     </x-slot>
 </x-jet-form-section>

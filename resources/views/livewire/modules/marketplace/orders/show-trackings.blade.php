@@ -27,35 +27,37 @@
             </div>
         </div>
     </div> --}}
-    @if (count($trackingstates) > 0)
-        @if (!$order->trackings()->finalizados()->exists())
-            <div class="w-full py-5 sm:max-w-md shadow-xl rounded-xl p-3">
-                <form wire:submit.prevent="save" class="flex flex-col gap-2">
-                    <div class="w-full">
-                        <x-label for="trackingstate_id" value="Seleccionar estado :" />
-                        <div class="relative" id="parenttrackingstate_id" x-data="{ trackingstate_id: @entangle('trackingstate_id').defer }" x-init="select2Tracking">
-                            <x-select class="block w-full" id="trackingstate_id" x-ref="select"
-                                x-model="trackingstate_id">
-                                <x-slot name="options">
-                                    @foreach ($trackingstates as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
+    @can('admin.marketplace.trackings.create')
+        @if (count($trackingstates) > 0)
+            @if (!$order->trackings()->finalizados()->exists())
+                <div class="w-full py-5 sm:max-w-md shadow-xl rounded-xl p-3">
+                    <form wire:submit.prevent="save" class="flex flex-col gap-2">
+                        <div class="w-full">
+                            <x-label for="trackingstate_id" value="Seleccionar estado :" />
+                            <div class="relative" id="parenttrackingstate_id" x-data="{ trackingstate_id: @entangle('trackingstate_id').defer }" x-init="select2Tracking">
+                                <x-select class="block w-full" id="trackingstate_id" x-ref="select"
+                                    x-model="trackingstate_id">
+                                    <x-slot name="options">
+                                        @foreach ($trackingstates as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="trackingstate_id" />
                         </div>
-                        <x-jet-input-error for="trackingstate_id" />
-                    </div>
 
-                    <div class="w-full flex pt-4 justify-end">
-                        <x-button type="submit" wire:loading.attr="disabled">
-                            {{ __('REGISTRAR') }}
-                        </x-button>
-                    </div>
-                </form>
-            </div>
+                        <div class="w-full flex pt-4 justify-end">
+                            <x-button type="submit" wire:loading.attr="disabled">
+                                {{ __('Save') }}
+                            </x-button>
+                        </div>
+                    </form>
+                </div>
+            @endif
         @endif
-    @endif
+    @endcan
 
     @if (count($order->trackings) > 0)
         <div class="w-full sm:overflow-x-auto pt-6 pb-16 flex flex-col sm:flex-row divide-y sm:divide-y-0">
@@ -70,11 +72,13 @@
                         <div class="flex-shrink rounded-full h-3 w-3 bg-next-500"></div>
                         <div
                             class="{{ $loop->first ? 'sm:mt-6' : '' }} flex-1 sm:absolute w-full flex flex-col justify-center sm:items-center text-[10px] sm:top-[90%] sm:left-1/2 sm:-translate-x-1/2">
-                            @if (!$item->trackingstate->isDefault())
-                                <x-button-delete
-                                    class="absolute top-1/2 -translate-y-1/2 right-0 sm:relative sm:translate-y-0"
-                                    wire:click="delete({{ $item->id }})" wire:loading.attr="disabled" />
-                            @endif
+                            @can('admin.marketplace.trackings.delete')
+                                @if (!$item->trackingstate->isDefault())
+                                    <x-button-delete
+                                        class="absolute top-1/2 -translate-y-1/2 right-0 sm:relative sm:translate-y-0"
+                                        wire:click="delete({{ $item->id }})" wire:loading.attr="disabled" />
+                                @endif
+                            @endcan
 
                             <p class="leading-3 sm:text-center">{{ $item->trackingstate->name }}</p>
 

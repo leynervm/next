@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Modules\Marketplace\Usersweb;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
@@ -13,7 +14,7 @@ use Livewire\WithPagination;
 class ShowUsersweb extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $open = false;
     public  $user, $emai, $password, $terms;
@@ -65,6 +66,7 @@ class ShowUsersweb extends Component
 
     public function edit(User $user)
     {
+        $this->authorize('admin.marketplace.userweb.edit');
         $this->user = $user;
         $this->resetValidation();
         $this->resetExcept(['user']);
@@ -73,17 +75,19 @@ class ShowUsersweb extends Component
 
     public function update()
     {
+        $this->authorize('admin.marketplace.userweb.edit');
         $this->validate();
         $this->user->save();
-        $this->dispatchBrowserEvent('toast', toastJSON('Usuario web actualizado correctamente'));
+        $this->dispatchBrowserEvent('updated');
         $this->resetValidation();
         $this->resetExcept(['user']);
     }
 
     public function delete(User $user)
     {
+        $this->authorize('admin.marketplace.userweb.delete');
         $user->delete();
-        $this->dispatchBrowserEvent('toast', toastJSON('Usuario web anulado correctamente'));
+        $this->dispatchBrowserEvent('toast', toastJSON('Usuario web desactivado correctamente'));
     }
 
     public function restoreuser($user_id)

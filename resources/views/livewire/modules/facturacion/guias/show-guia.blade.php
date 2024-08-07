@@ -1,16 +1,19 @@
 <div>
-    {{-- {{ $guia }} --}}
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     <div class="w-full flex flex-col gap-8">
         <div class="w-full flex flex-col gap-8">
             <x-form-card titulo="RESUMEN GUÍA REMISIÓN">
-                <p class="text-colorminicard text-xl font-semibold">
+                <p class="text-colorlabel text-xl font-semibold">
                     {{ $guia->seriecompleta }}
                     <small class="text-sm">{{ $guia->seriecomprobante->typecomprobante->name }}</small>
                 </p>
 
                 <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -18,10 +21,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         MOTIVO TRASLADO :
-                        <span class="font-medium inline-block">{{ $guia->motivotraslado->name }}</span>
+                        <span
+                            class="font-medium inline-block text-colorsubtitleform">{{ $guia->motivotraslado->name }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -29,10 +33,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         MODALIDAD TRANSPORTE :
-                        <span class="font-medium inline-block">{{ $guia->modalidadtransporte->name }}</span>
+                        <span
+                            class="font-medium inline-block text-colorsubtitleform">{{ $guia->modalidadtransporte->name }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -40,10 +45,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         FECHA TRASLADO :
-                        <span class="font-medium inline-block">{{ formatDate($guia->datetraslado, 'DD MMMM Y') }}</span>
+                        <span
+                            class="font-medium inline-block text-colorsubtitleform">{{ formatDate($guia->datetraslado, 'DD MMMM Y') }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -51,10 +57,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         PESO BRUTO TOTAL :
-                        <span class="font-medium inline-block">{{ $guia->peso }} {{ $guia->unit }}</span>
+                        <span class="font-medium inline-block text-colorsubtitleform">{{ $guia->peso }}
+                            {{ $guia->unit }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -62,11 +69,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         DESCRIPCIÓN :
-                        <span class="font-medium inline-block">{{ $guia->note }}</span>
+                        <span class="font-medium inline-block text-colorsubtitleform">{{ $guia->note }}</span>
                     </h1>
 
                     @if ($guia->indicadorvehiculosml)
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -74,12 +81,13 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             PLACA VEHÍCULO :
-                            <span class="font-medium inline-block">{{ $guia->placavehiculo }}</span>
+                            <span
+                                class="font-medium inline-block text-colorsubtitleform">{{ $guia->placavehiculo }}</span>
                         </h1>
                     @endif
 
                     @if ($guia->comprobante)
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -87,11 +95,12 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             COMPROBANTE REFERENCIA EMITIDO :
-                            <span class="font-medium inline-block">{{ $guia->comprobante->seriecompleta }}</span>
+                            <span
+                                class="font-medium inline-block text-colorsubtitleform">{{ $guia->comprobante->seriecompleta }}</span>
                         </h1>
                     @endif
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -99,11 +108,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         TRASLADO EN VEHÍCULOS DE CATEGORÍA M1 O L :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->indicadorvehiculosml == 1 ? 'SI' : 'NO' }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -111,11 +120,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         RETORNO DE VEHÍCULO VACÍO :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->indicadorvehretorvacio == 1 ? 'SI' : 'NO' }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -123,11 +132,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         RETORNO DE VEHÍCULO CON ENVASES O EMBALAJES VACÍOS :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->indicadorvehretorenvacios == 1 ? 'SI' : 'NO' }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -135,11 +144,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         TRANSBORDO PROGRAMADO :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->indicadortransbordo == 1 ? 'SI' : 'NO' }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -147,11 +156,11 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         TRASLADO TOTAL DE LA DAM O LA DS :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->indicadordamds == 1 ? 'SI' : 'NO' }}</span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -159,12 +168,12 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         REGISTRO DE VEHÍCULOS Y CONDUCTORES DEL TRANSPORTISTA :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->indicadorconductor == 1 ? 'SI' : 'NO' }}</span>
                     </h1>
 
                     @if ($guia->motivotraslado->code == '03' || $guia->motivotraslado->code == '13')
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -172,7 +181,7 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             COMPRADOR :
-                            <span class="font-medium inline-block">
+                            <span class="font-medium inline-block text-colorsubtitleform">
                                 @if ($guia->motivotraslado->code == '03' || $guia->motivotraslado->code == '13')
                                     {{ $guia->client->document }},
                                     {{ $guia->client->name }}
@@ -181,7 +190,7 @@
                         </h1>
                     @endif
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -189,7 +198,7 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         LUGAR DE EMISIÓN :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->ubigeoorigen->region }},
                             {{ $guia->ubigeoorigen->provincia }},
                             {{ $guia->ubigeoorigen->distrito }},
@@ -200,7 +209,7 @@
                         </span>
                     </h1>
 
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -208,7 +217,7 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         LUGAR DE DESTINO :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->ubigeodestino->region }},
                             {{ $guia->ubigeodestino->provincia }},
                             {{ $guia->ubigeodestino->distrito }},
@@ -224,24 +233,34 @@
                     <x-link-button href="{{ route('admin.facturacion.guias.print', $guia) }}" target="_blank">
                         IMPRIMIR A4</x-link-button>
 
-                    @can('admin.facturacion.sunat')
+                    @can('admin.facturacion.guias.sunat')
+                        @if ($guia->seriecomprobante->typecomprobante->isSunat())
+                            @if (!$guia->isSendSunat())
+                                <x-button wire:click="enviarsunat({{ $guia->id }})" wire:loading.attr="disabled"
+                                    class="inline-block">
+                                    ENVIAR SUNAT</x-button>
+                            @endif
+                        @endif
+                    @endcan
+
+                    {{-- @can('admin.facturacion.sunat')
                         @if ($guia->seriecomprobante->typecomprobante->isSunat())
                             <x-button>ENVIAR SUNAT</x-button>
                         @endif
-                    @endcan
+                    @endcan --}}
                 </div>
             </x-form-card>
 
             @if ($guia->guiable)
                 <x-form-card titulo="COMPROBANTE RELACIONADO">
                     <div class="w-full flex flex-col gap-2">
-                        <p class="text-colorminicard text-2xl font-semibold">
+                        <p class="text-colorlabel text-2xl font-semibold">
                             {{ $guia->guiable->seriecompleta }}
                             <small
                                 class="text-sm">{{ $guia->guiable->seriecomprobante->typecomprobante->descripcion }}</small>
                         </p>
 
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -267,18 +286,9 @@
                                         d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                 </svg>
                             </a>
-                            <a href="{{ route('admin.facturacion.print.ticket', $guia->guiable) }}" target="_blank"
-                                class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
-                                <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
-                                    fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path
-                                        d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
-                                    <path
-                                        d="M17 8V6C17 4.11438 17 3.17157 16.4142 2.58579C15.8284 2 14.8856 2 13 2H11C9.11438 2 8.17157 2 7.58579 2.58579C7 3.17157 7 4.11438 7 6V8" />
-                                    <path
-                                        d="M13.9887 16L10.0113 16C9.32602 16 8.98337 16 8.69183 16.1089C8.30311 16.254 7.97026 16.536 7.7462 16.9099C7.57815 17.1904 7.49505 17.5511 7.32884 18.2724C7.06913 19.3995 6.93928 19.963 7.02759 20.4149C7.14535 21.0174 7.51237 21.5274 8.02252 21.7974C8.40513 22 8.94052 22 10.0113 22L13.9887 22C15.0595 22 15.5949 22 15.9775 21.7974C16.4876 21.5274 16.8547 21.0174 16.9724 20.4149C17.0607 19.963 16.9309 19.3995 16.6712 18.2724C16.505 17.5511 16.4218 17.1904 16.2538 16.9099C16.0297 16.536 15.6969 16.254 15.3082 16.1089C15.0166 16 14.674 16 13.9887 16Z" />
-                                </svg>
-                            </a>
+
+                            <x-button-print href="{{ route('admin.facturacion.print.ticket', $guia->guiable) }}"
+                                target="_blank" />
                         </div>
                     </div>
                 </x-form-card>
@@ -286,7 +296,7 @@
 
             <x-form-card titulo="DESTINATARIO">
                 <div class="w-full bg-body p-3 rounded-md">
-                    <h1 class="text-colorminicard text-xs font-semibold">
+                    <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round">
@@ -294,7 +304,7 @@
                                 d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                         </svg>
                         DESTINATARIO :
-                        <span class="font-medium inline-block">
+                        <span class="font-medium inline-block text-colorsubtitleform">
                             {{ $guia->documentdestinatario }},
                             {{ $guia->namedestinatario }}</span>
                     </h1>
@@ -304,7 +314,7 @@
             @if ($guia->modalidadtransporte->code == '01' && $guia->indicadorvehiculosml == '0')
                 <x-form-card titulo="TRANSPORTISTA">
                     <div class="w-full bg-body p-3 rounded-md">
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -312,7 +322,7 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             TRANSPORTISTA :
-                            <span class="font-medium inline-block">
+                            <span class="font-medium inline-block text-colorsubtitleform">
                                 {{ $guia->ructransport }},
                                 {{ $guia->nametransport }}</span>
                         </h1>
@@ -323,7 +333,7 @@
             @if ($guia->motivotraslado->code == '02' || $guia->motivotraslado->code == '07' || $guia->motivotraslado->code == '13')
                 <x-form-card titulo="PROVEEDOR" class="animate__animated animate__fadeInDown">
                     <div class="w-full bg-body p-3 rounded-md">
-                        <h1 class="text-colorminicard text-xs font-semibold">
+                        <h1 class="text-colorlabel text-xs font-semibold">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                 stroke-linecap="round" stroke-linejoin="round">
@@ -331,7 +341,7 @@
                                     d="M21.8606 5.39176C22.2875 6.49635 21.6888 7.2526 20.5301 7.99754C19.5951 8.5986 18.4039 9.24975 17.1417 10.363C15.9044 11.4543 14.6968 12.7687 13.6237 14.0625C12.5549 15.351 11.6465 16.586 11.0046 17.5005C10.5898 18.0914 10.011 18.9729 10.011 18.9729C9.60281 19.6187 8.86895 20.0096 8.08206 19.9998C7.295 19.99 6.57208 19.5812 6.18156 18.9251C5.18328 17.248 4.41296 16.5857 4.05891 16.3478C3.11158 15.7112 2 15.6171 2 14.1335C2 12.9554 2.99489 12.0003 4.22216 12.0003C5.08862 12.0323 5.89398 12.373 6.60756 12.8526C7.06369 13.1591 7.54689 13.5645 8.04948 14.0981C8.63934 13.2936 9.35016 12.3653 10.147 11.4047C11.3042 10.0097 12.6701 8.51309 14.1349 7.22116C15.5748 5.95115 17.2396 4.76235 19.0042 4.13381C20.1549 3.72397 21.4337 4.28718 21.8606 5.39176Z" />
                             </svg>
                             PROVEEDOR :
-                            <span class="font-medium inline-block">
+                            <span class="font-medium inline-block text-colorsubtitleform">
                                 {{ $guia->rucproveedor }},
                                 {{ $guia->nameproveedor }}</span>
                         </h1>
@@ -457,11 +467,6 @@
                                     <x-button type="submit">{{ __('AGREGAR') }}</x-button>
                                 </div>
                             </form>
-
-                            <div x-show="loading" wire:loading.flex wire:target="savevehiculo"
-                                class="loading-overlay rounded">
-                                <x-loading-next />
-                            </div>
                         </div>
                     @endif
                     <div class="w-full relative rounded">

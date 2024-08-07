@@ -18,8 +18,8 @@ class CreatePricetypeProductoTable extends Migration
             $table->decimal('price', 18, 4);
             $table->unsignedSmallInteger('pricetype_id');
             $table->bigInteger('producto_id');
-            $table->foreign('pricetype_id')->on('pricetypes')->references('id')->onDelete('cascade')->onUpdate('cascade');
-            $table->foreign('producto_id')->on('productos')->references('id')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('pricetype_id')->on('pricetypes')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 

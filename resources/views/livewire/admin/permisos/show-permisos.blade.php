@@ -7,8 +7,8 @@
                     MÓDULO : {{ $module }}</h1>
                 <div class="w-full flex flex-wrap gap-3 justify-start mt-2">
                     @foreach ($modulePermission->groupBy('table') as $table => $permissions)
-                        <x-simple-card class="w-full sm:max-w-xs p-1 bg-body">
-                            <h1 class="text-primary uppercase text-xs font-semibold">{{ $table }}</h1>
+                        <x-simple-card class="w-full sm:max-w-xs p-1 !shadow-none">
+                            <h1 class="text-primary uppercase text-xs font-semibold py-1">{{ $table }}</h1>
                             <div class="w-full flex flex-col justify-start items-start gap-2 mt-1">
                                 @foreach ($permissions as $permiso)
                                     <div class="w-full flex items-center gap-2">
@@ -35,7 +35,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar permiso') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -55,8 +54,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

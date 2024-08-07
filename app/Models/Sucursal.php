@@ -105,6 +105,11 @@ class Sucursal extends Model
         return $this->hasMany(Comprobante::class);
     }
 
+    public function claimbooks(): HasMany
+    {
+        return $this->hasMany(Claimbook::class);
+    }
+
     public function openboxes(): HasMany
     {
         return $this->hasMany(Openbox::class);

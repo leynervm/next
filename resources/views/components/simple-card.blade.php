@@ -1,3 +1,3 @@
-<div {{ $attributes->merge(['class' => 'rounded shadow shadow-shadowminicard bg-fondominicard hover:shadow-md hover:shadow-shadowminicard']) }}>
+<div {{ $attributes->merge(['class' => 'rounded-xl border border-borderminicard hover:shadow hover:shadow-shadowminicard']) }}>
     {{ $slot }}
 </div>

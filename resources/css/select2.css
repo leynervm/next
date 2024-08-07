@@ -15,7 +15,7 @@
 }
 
 .select2.select2-container .select2-selection {
-    @apply p-2.5 px-4 border border-next-300 rounded-sm outline-none transition-all duration-150;
+    @apply p-1.5 px-4 border border-next-300 rounded-lg outline-none transition-all duration-150;
 }
 
 .select2-container .select2-selection--single {
@@ -23,7 +23,7 @@
 }
 
 .select2.select2-container .select2-selection .select2-selection__rendered {
-    @apply text-colorlabel text-sm leading-3 px-0;
+    @apply text-colorlabel text-sm !leading-normal px-0;
 }
 
 .select2.select2-container .select2-selection .select2-selection__arrow {
@@ -94,6 +94,15 @@
 }
 
 
+/* #form-configuracion .select2.select2-container .select2-selection {
+    @apply rounded-lg p-2;
+}
+
+#form-configuracion .select2.select2-container .select2-selection .select2-selection__rendered {
+    @apply !leading-normal;
+} */
+
+
 
 /* .soft-scrollbar::-webkit-scrollbar {
     @apply cursor-pointer h-[4px] w-[4px];
@@ -132,6 +141,12 @@
 .select2-container--default .select2-results__option--highlighted[aria-selected] .select2-subtitle-option {
     @apply text-subtitleactiveselect2 !important;
 }
+
 .select2-container--default .select2-results__option[aria-selected=true] .select2-subtitle-option {
     @apply text-subtitleactiveselect2 !important;
+}
+
+.select2-container--default.select2-container--open.select2-container--below .select2-selection--single,
+.select2-container--default.select2-container--open.select2-container--below .select2-selection--multiple {
+    @apply rounded-br-lg rounded-bl-lg;
 }

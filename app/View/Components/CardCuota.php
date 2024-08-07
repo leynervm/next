@@ -18,7 +18,7 @@ class CardCuota extends Component
     {
         $this->titulo = $titulo;
         $this->detallepago = $detallepago;
-        $this->clases = 'p-2 relative bg-body flex flex-col justify-between text-[10px] rounded shadow-md shadow-shadowform hover:shadow-lg hover:shadow-shadowform';
+        $this->clases = 'p-2 relative flex flex-col justify-between text-[10px] rounded-lg border border-borderminicard hover:shadow-lg hover:shadow-shadowform';
     }
 
     /**

@@ -43,9 +43,12 @@ class ConfiguracionFacturacion extends Component
                 'string', 'min:3'
             ],
             'cert' => [
-                'nullable', 'file',  new ValidateFileKey("pfx")
+                'nullable',
+                Rule::requiredIf($this->empresa->isProduccion()),
+                'file',  new ValidateFileKey("pfx")
             ],
             'empresa.sendmode' => ['integer', 'min:0', 'max:1'],
+            'empresa.afectacionigv' => ['integer', 'min:0', 'max:1'],
         ];
     }
 

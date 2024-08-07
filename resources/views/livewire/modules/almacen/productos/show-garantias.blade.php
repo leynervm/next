@@ -2,20 +2,21 @@
     @can('admin.almacen.productos.garantias')
         <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto." class="relative">
             <div class="w-full flex flex-wrap lg:flex-nowrap gap-3" x-data="{ loading: false }">
-                <div x-show="loading" wire:loading.flex wire:target="save, delete, render, " class="loading-overlay rounded">
+                <div x-show="loading" wire:loading.flex wire:target="save, delete, render, "
+                    class="loading-overlay fixed rounded">
                     <x-loading-next />
                 </div>
 
                 @can('admin.almacen.productos.garantias.edit')
-                    <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0 bg-body p-3 rounded">
-                        <form wire:submit.prevent="save" class="w-full">
-                            <div class="w-full">
-                                <x-label value="Garantías disponibles :" />
-                                <div class="relative" id="parenttypegarantia_id" x-init="select2Garantia">
-                                    <x-select class="block w-full select2" x-ref="select" id="typegarantia_id"
-                                        data-placeholder="null">
-                                        <x-slot name="options">
-                                            @if (count($typegarantias))
+                    <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
+                        @if (count($typegarantias) > 0)
+                            <form wire:submit.prevent="save" class="w-full">
+                                <div class="w-full">
+                                    <x-label value="Garantías disponibles :" />
+                                    <div class="relative" id="parenttypegarantia_id" x-init="select2Garantia">
+                                        <x-select class="block w-full select2" x-ref="select" id="typegarantia_id"
+                                            data-placeholder="null">
+                                            <x-slot name="options">
                                                 @foreach ($typegarantias as $item)
                                                     <option value="{{ $item->id }}" data-time="{{ $item->time }}">
                                                         {{ $item->name }} -
@@ -26,29 +27,35 @@
                                                         @endif
                                                     </option>
                                                 @endforeach
-                                            @endif
-                                        </x-slot>
-                                    </x-select>
-                                    <x-icon-select />
+                                            </x-slot>
+                                        </x-select>
+                                        <x-icon-select />
+                                    </div>
+                                    <x-jet-input-error for="typegarantia_id" />
                                 </div>
-                                <x-jet-input-error for="typegarantia_id" />
-                            </div>
 
-                            <div class="w-full mt-2">
-                                <x-label value="Tiempo garantía :" />
-                                <x-input class="block w-full" x-model="time" type="number" placeholder="Meses garantía..." />
-                                <x-jet-input-error for="time" />
-                            </div>
+                                <div class="w-full mt-2">
+                                    <x-label value="Tiempo garantía :" />
+                                    <x-input class="block w-full" x-model="time" type="number"
+                                        placeholder="Meses garantía..." />
+                                    <x-jet-input-error for="time" />
+                                </div>
 
-                            <div class="w-full pt-4 flex justify-end">
-                                <x-button type="submit" wire:loading.atrr="disabled">
-                                    REGISTRAR</x-button>
-                            </div>
-                        </form>
+                                <div class="w-full pt-4 flex justify-end">
+                                    <x-button type="submit" wire:loading.atrr="disabled">
+                                        {{ __('Save') }}</x-button>
+                                </div>
+                            </form>
+                        @else
+                            @can('admin.almacen.typegarantias')
+                                <x-link-button href="{{ route('admin.almacen.typegarantias') }}">
+                                    NUEVOS TIPOS GARANTÍA...</x-link-button>
+                            @endcan
+                        @endif
                     </div>
                 @endcan
                 @if (count($producto->garantiaproductos))
-                    <div class="w-full flex flex-wrap gap-2">
+                    <div class="w-full flex-1 flex flex-wrap gap-2">
                         @foreach ($producto->garantiaproductos as $item)
                             @php
                                 if ($item->typegarantia->datecode == 'MM') {
@@ -59,19 +66,6 @@
                             @endphp
 
                             <x-minicard size="lg" :title="$item->typegarantia->name" :content="$item->time . $timestring" class="!bg-body">
-                                {{-- <span class="absolute right-2 -top-3 w-4 h-4 block text-next-500 ml-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 320 512"
-                                    fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path
-                                        d="M310.6 246.6l-127.1 128C176.4 380.9 168.2 384 160 384s-16.38-3.125-22.63-9.375l-127.1-128C.2244 237.5-2.516 223.7 2.438 211.8S19.07 192 32 192h255.1c12.94 0 24.62 7.781 29.58 19.75S319.8 237.5 310.6 246.6z" />
-                                </svg>
-                            </span>
-
-                            <span
-                                class="absolute right-0 -top-8 bg-next-500 text-white text-[10px] font-semibold tracking-widest p-1.5 px-2 rounded-sm">
-                                {{ $item->time . $timestring }}</span> --}}
-
                                 <span class="block mx-auto">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-colorlinknav"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
@@ -145,33 +139,29 @@
             </x-form-card>
         @endif
     @endcan
-    {{-- {{ $producto->detalleproducto->descripcion }} --}}
 
-    <x-form-card titulo="DETALLE PRODUCTO">
-        <div class="w-full overflow-hidden">
-            <form wire:submit.prevent="savedetalle" class="w-full">
+    @if (Module::isEnabled('Marketplace'))
+        <x-form-card titulo="DETALLE PRODUCTO" style="display: none;" x-cloak x-show="showespecificaciones">
+            <div class="w-full overflow-hidden">
+                <form wire:submit.prevent="savedetalle" class="w-full">
 
-                <div wire:ignore>
-                    <x-ckeditor-5 id="myckeditor3" wire:model.defer="descripcion" />
-                </div>
-
-                <x-jet-input-error for="descripcion" />
-                <x-jet-input-error for="producto.id" />
-
-                @can('admin.almacen.productos.especificaciones')
-                    <div class="mt-3 flex justify-end">
-                        <x-button type="submit" wire:loading.atrr="disabled">
-                            @if ($producto->detalleproducto)
-                                ACTUALIZAR
-                            @else
-                                REGISTRAR
-                            @endif
-                        </x-button>
+                    <div wire:ignore>
+                        <x-ckeditor-5 id="myckeditor3" wire:model.defer="descripcion" />
                     </div>
-                @endcan
-            </form>
-        </div>
-    </x-form-card>
+
+                    <x-jet-input-error for="descripcion" />
+                    <x-jet-input-error for="producto.id" />
+
+                    @can('admin.almacen.productos.especificaciones')
+                        <div class="mt-3 flex justify-end">
+                            <x-button type="submit" wire:loading.atrr="disabled">
+                                {{ __('Save') }}</x-button>
+                        </div>
+                    @endcan
+                </form>
+            </div>
+        </x-form-card>
+    @endif
 
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
@@ -221,8 +211,16 @@
             Alpine.data('datagarantia', () => ({
                 typegarantia_id: @entangle('typegarantia_id').defer,
                 time: @entangle('time').defer,
+                showespecificaciones: @entangle('showespecificaciones').defer,
 
-                init() {},
+                init() {
+                    let checkbox = document.getElementById('viewespecificaciones_dit');
+                    if (checkbox) {
+                        checkbox.addEventListener('change', event => {
+                            this.showespecificaciones = event.target.checked;
+                        })
+                    }
+                },
                 getTimegarantia(target) {
                     let time = target.options[target.selectedIndex].getAttribute('data-time');
                     this.time = time;

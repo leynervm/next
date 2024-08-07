@@ -12,6 +12,16 @@
         </x-link-breadcrumb>
     </x-slot>
 
+    <style>
+        figure.zoom img:hover {
+            opacity: 0;
+        }
+
+        figure.zoom img:not(:hover) {
+            background: #fff;
+        }
+    </style>
+
     @php
         $image = $producto->getImageURL();
         $promocion = $producto->getPromocionDisponible();
@@ -21,36 +31,26 @@
     @endphp
 
     <div x-data="showproducto">
-        <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}' }">
+        <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex bg-fondominicard">
-                <div class="w-full md:w-[42%] md:px-3 py-2">
-                    <style>
-                        figure.zoom img:hover {
-                            opacity: 0;
-                        }
-
-                        figure.zoom img:not(:hover) {
-                            background: #fff;
-                        }
-                    </style>
-
+                <div class="w-full md:flex-shrink-0 md:w-[42%] md:px-3 py-2">
                     <div class="w-full max-w-full h-96 rounded overflow-hidden relative">
                         @if ($image)
                             <template x-if="currentImage">
                                 <figure id="imageproducto" x-ref="figure"
                                     class="zoom relative w-full h-full bg-no-repeat object-scale-down overflow-hidden"
                                     :style="'background-image: url(\'' + currentImage + '\');'" @mousemove="zoom"
-                                    @touchmove="zoom">
+                                    @mouseover="showesp = false" @mouseleave="showesp = true" @touchmove="zoom">
                                     <img :src="currentImage" x-ref="image"
                                         class="zoom-hover block w-full h-full object-scale-down transition ease-linear duration-300">
                                 </figure>
                             </template>
 
                             <template x-if="!currentImage">
-                                <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+                                <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
                             </template>
                         @else
-                            <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+                            <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
                         @endif
 
                         @if ($producto->marca)
@@ -62,8 +62,8 @@
                             @endif
                         @endif
                         @if (count($producto->especificacions) > 0)
-                            <ul
-                                class="text-white py-3 text-[10px] absolute left-0 top-20 flex flex-col gap-1 justify-start items-start">
+                            <ul class="text-white py-3 text-[10px] absolute left-0 top-20 flex flex-col gap-1 justify-start items-start"
+                                x-cloak x-show="showesp" @mousemove="showesp=false">
                                 @foreach ($producto->especificacions()->take(5)->get() as $item)
                                     <li class="p-1 px-1.5 bg-next-500 rounded-xl tracking-[0.0625em] text-[10px]">
                                         <span class="font-medium">
@@ -129,15 +129,15 @@
                                 @endif
                             </div>
                         </div>
-                        <p class="text-neutral-500 leading-5">{{ $producto->name }}</p>
+                        <p class="text-colorsubtitleform leading-5">{{ $producto->name }}</p>
                     </div>
 
                     <div class="w-full grid xl:grid-cols-2 gap-5 mt-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-1 gap-2">
-                            <div class="w-full p-5 bg-neutral-100 text-xs">
+                            <div class="w-full p-5 bg-body text-xs">
                                 @if (count($producto->especificacions) > 0)
-                                    <h1 class="font-semibold">Especificaciones principales</h1>
-                                    <ul class="text-neutral-500 py-3 text-[10px]">
+                                    <h1 class="text-colortitleform font-semibold">Especificaciones principales</h1>
+                                    <ul class="text-colorsubtitleform py-3 text-[10px]">
                                         @foreach ($producto->especificacions()->take(2)->get() as $item)
                                             <li class="py-1">
                                                 <span class="font-semibold">{{ $item->caracteristica->name }} :
@@ -149,7 +149,7 @@
                                     <a href="#especificacions" class="underline py-5 text-colorsubtitleform text-xs">Ver
                                         más especificaciones</a>
                                 @else
-                                    <p class="text-[10px]">PRODUCTO SIN ESPECIFICACIONES</p>
+                                    <p class="text-[10px] text-colorsubtitleform">PRODUCTO SIN ESPECIFICACIONES</p>
                                 @endif
                             </div>
 
@@ -158,7 +158,7 @@
                                 <div class="w-full flex flex-wrap gap-2 lg:pt-5 lg:border-t border-t-borderminicard">
                                     @foreach ($shipmenttypes as $item)
                                         <div
-                                            class="w-full inline-flex max-w-full lg:max-w-[220px] xl:max-w-full gap-3 text-neutral-700 p-2 bg-fondominicard shadow">
+                                            class="w-full border border-borderminicard inline-flex max-w-full lg:max-w-[220px] xl:max-w-full gap-3 text-colorlabel p-2 bg-fondominicard shadow">
                                             <div class="w-8 h-8 flex-shrink-0">
                                                 @if ($item->isEnviodomicilio())
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 33"
@@ -206,7 +206,7 @@
 
                             <div class="w-full mt-5 text-center">
                                 <button @click="openModal()"
-                                    class="text-[10px] text-neutral-700 inline-flex gap-1 font-semibold items-center underline">
+                                    class="text-[10px] text-colortitleform inline-flex gap-1 font-semibold items-center underline">
                                     <span class="w-6 h-6 block ">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                             color="currentColor" fill="none" stroke="currentColor"
@@ -235,7 +235,7 @@
                             </div>
                         </div>
 
-                        <div class="text-neutral-700">
+                        <div class="text-colorlabel">
                             <div class="w-full flex items-center justify-between gap-2">
                                 <div class="w-full flex-1">
                                     @if ($pricesale > 0)
@@ -385,15 +385,29 @@
             </div>
         </div>
 
-        <div class="w-full flex flex-col gap-2 lg:gap-0 lg:flex-wrap bg-fondominicard overflow-x-hidden">
+        <div class="w-full flex flex-col gap-2 lg:gap-0 lg:flex-row bg-fondominicard overflow-x-hidden">
+            @php
+                $class = '';
+                if ($producto->detalleproducto) {
+                    if (!empty($producto->detalleproducto->descripcion)) {
+                        if (
+                            $producto->verEspecificaciones() ||
+                            ($producto->verEspecificaciones() == false && $empresa->verEspecificaciones())
+                        ) {
+                            $class = 'lg:w-[42%]';
+                        }
+                    }
+                }
+            @endphp
             @if (count($producto->especificacions) > 0)
-                <div class="w-full lg:w-[42%] lg:px-3 flex-shrink-0" id="especificacions">
-                    <h1 class="font-bold py-3 border-b-2 border-b-borderminicard">Especificaciones</h1>
+                <div class="w-full {{ $class }} lg:px-3 lg:flex-shrink-0" id="especificacions">
+                    <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">Especificaciones</h1>
                     <table class="w-full text-[10px] mt-5">
                         <tbody>
                             @foreach ($producto->especificacions as $item)
-                                <tr class="{{ $loop->index % 2 == 0 ? 'bg-neutral-100' : '' }}">
-                                    <th class="p-2 py-5 text-left">{{ $item->caracteristica->name }}</th>
+                                <tr
+                                    class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
+                                    <th class="p-2 py-5 text-left max-w-xs w-60">{{ $item->caracteristica->name }}</th>
                                     <td class="p-2 py-5 text-left">{{ $item->name }}</td>
                                 </tr>
                             @endforeach
@@ -401,17 +415,22 @@
                     </table>
                 </div>
             @endif
-            <div class="w-full flex-1 overflow-x-hidden">
-                <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
-                    Información adicional</h1>
-                <div class="w-full block mt-5 ">
-                    {{-- @if ($producto->detalleproducto)
-                        {!! $producto->detalleproducto->descripcion !!}
-                    @endif --}}
-                </div>
-            </div>
-        </div>
 
+            @if ($producto->detalleproducto)
+                @if (!empty($producto->detalleproducto->descripcion))
+                @if ($producto->verEspecificaciones() || ($producto->verEspecificaciones() == false && $empresa->verEspecificaciones()))
+                        <div class="w-full lg:flex-1 overflow-x-hidden">
+                            <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">
+                                Descripcion del producto</h1>
+
+                            <div class="w-full block mt-5 overflow-x-hidden">
+                                {!! $producto->detalleproducto->descripcion !!}
+                            </div>
+                        </div>
+                    @endif
+                @endif
+            @endif
+        </div>
 
         <div @keydown.escape.window="closeModal()"
             class="fixed z-20 h-screen inset-0 bg-neutral-700 bg-opacity-75 transition-opacity" x-show="open" x-cloak
@@ -426,7 +445,8 @@
                     <div class="w-full flex items-start justify-between">
                         <h3 class="flex-1 w-full text-sm leading-4 font-medium text-colorsubtitleform">
                             {{ $producto->name }}</h3>
-                        <span class="flex-shrink-0 cursor-pointer text-colorsubtitleform ml-2" @click="closeModal()">✕</span>
+                        <span class="flex-shrink-0 cursor-pointer text-colorsubtitleform ml-2"
+                            @click="closeModal()">✕</span>
                     </div>
 
                     <div class="w-full flex flex-col gap-2 text-left mt-5 p-5">
@@ -510,7 +530,7 @@
                                         <small class="text-[10px]">USD</small>
                                     </h1>
                                 @endif
-                                <h1 class="text-neutral-700 text-center">
+                                <h1 class="text-colorlabel text-center">
                                     <small class="text-[10px]">{{ $moneda->simbolo }}</small>
                                     <span
                                         class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
@@ -577,7 +597,7 @@
                                         <small class="text-[10px]">USD</small>
                                     </h1>
                                 @endif
-                                <h1 class="text-neutral-700 text-center">
+                                <h1 class="text-colorlabel text-center">
                                     <small class="text-[10px]">{{ $moneda->simbolo }}</small>
                                     <span
                                         class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
@@ -651,7 +671,7 @@
                                         <small class="text-[10px]">USD</small>
                                     </h1>
                                 @endif
-                                <h1 class="text-neutral-700 text-center">
+                                <h1 class="text-colorlabel text-center">
                                     <small class="text-[10px]">{{ $moneda->simbolo }}</small>
                                     <span
                                         class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>

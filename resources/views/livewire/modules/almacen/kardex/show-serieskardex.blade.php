@@ -1,4 +1,8 @@
-<div class="relative" x-data="{ loading: false }">
+<div class="relative">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
         <div class="w-full xs:max-w-sm">
             <x-label value="Buscar serie :" />
@@ -130,12 +134,6 @@
                 @endforeach
             </x-slot>
         @endif
-
-        <x-slot name="loading">
-            <div x-show="loading" wire:loading.flex class="loading-overlay rounded">
-                <x-loading-next />
-            </div>
-        </x-slot>
     </x-table>
 
     <script>

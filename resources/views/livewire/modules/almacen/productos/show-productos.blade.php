@@ -1,4 +1,8 @@
 <div x-data="loadproductos">
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
     @if ($productos->hasPages())
         <div class="w-full pb-2">
             {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
@@ -6,7 +10,7 @@
     @endif
 
     <div class="flex flex-wrap items-center gap-2 mt-4 ">
-        <div class="w-full max-w-lg">
+        <div class="w-full max-w-md">
             <x-label value="Buscar producto :" />
             <div class="relative flex items-center">
                 <span class="absolute">
@@ -106,13 +110,36 @@
         </div>
     </div>
 
+    {{-- @can('admin.ventas.deletes') --}}
+    <div class="w-full mt-1">
+        <x-label-check for="ocultos">
+            <x-input wire:model.lazy="ocultos" name="ocultos" value="true" type="checkbox" id="ocultos" />
+            MOSTRAR PRODUCTOS OCULTOS
+        </x-label-check>
+    </div>
+    {{-- @endcan --}}
+
+    <div class="w-full pt-2" x-cloak x-show="selectedproductos.length>0">
+        <x-button-secondary @click="confirmDeleteAllProductos()" wire:loading.attr="disabled">
+            {{ __('ELIMINAR SELECCIONADOS') }}
+            <span x-text="selectedproductos.length" :class="selectedproductos.length < 10 ? 'px-1' : ''"
+                class="bg-white p-0.5 lead text-[9px] rounded-full !tracking-normal font-semibold text-red-500"></span>
+        </x-button-secondary>
+    </div>
+
     <x-table class="mt-1">
         <x-slot name="header">
             <tr>
+                <th scope="col" class="p-2 font-medium text-center">
+                    <label for="checkall" class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
+                        TODO
+                        <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none" name="productos"
+                            type="checkbox" id="checkall" wire:loading.attr="disabled" />
+                    </label>
+                </th>
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>PRODUCTO</span>
-
                         <svg class="h-3" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path
                                 d="M2.13347 0.0999756H2.98516L5.01902 4.79058H3.86226L3.45549 3.79907H1.63772L1.24366 4.79058H0.0996094L2.13347 0.0999756ZM2.54025 1.46012L1.96822 2.92196H3.11227L2.54025 1.46012Z"
@@ -126,49 +153,38 @@
                         </svg>
                     </button>
                 </th>
-
                 <th scope="col" class="p-2 font-medium">
-                    COD. PRODUCTO
-                </th>
-
+                    SKU</th>
                 <th scope="col" class="p-2 font-medium">
-                    COD. FABRICANTE
-                </th>
-
+                    COD. FABRICANTE</th>
                 <th scope="col" class="p-2 font-medium">
-                    CATEGORÍA
-                </th>
-
+                    CATEGORÍA</th>
                 <th scope="col" class="p-2 font-medium">
                     ALMACÉN</th>
-
                 @if (Module::isEnabled('Almacen'))
                     <th scope="col" class="p-2 font-medium">
                         PUBLICADO</th>
                 @endif
-
                 <th scope="col" class="p-2 font-medium">
-                    PRECIO COMPRA
-                </th>
-
+                    PRECIO COMPRA</th>
                 @if (mi_empresa())
                     @if (!mi_empresa()->usarLista())
                         <th scope="col" class="p-2 font-medium">
-                            PRECIO VENTA
-                        </th>
+                            PRECIO VENTA</th>
                     @endif
                 @endif
 
                 @if (Module::isEnabled('Almacen'))
                     <th scope="col" class="p-2 font-medium">
                         ÚLT. INGRESO</th>
-
                     <th scope="col" class="p-2 font-medium">
                         AREA</th>
-
                     <th scope="col"class="p-2 font-medium">
                         ESTANTE</th>
                 @endif
+
+                <th scope="col" class="p-2 font-medium">
+                </th>
             </tr>
         </x-slot>
 
@@ -176,23 +192,21 @@
             <x-slot name="body">
                 @foreach ($productos as $item)
                     <tr>
+                        <td class="p-2 align-middle text-center">
+                            <x-input type="checkbox" value="{{ $item->id }}" x-model="selectedproductos"
+                                name="productos" class="p-2 !rounded-0 !rounded-none cursor-pointer"
+                                id="{{ $item->id }}" />
+                        </td>
                         <td class="p-2">
                             <div class="inline-flex gap-2 items-start justify-start">
                                 @php
-                                    $image = null;
-                                    if (count($item->images) > 0) {
-                                        if ($item->images()->default()->exists()) {
-                                            $image = $item->images()->default()->first()->url;
-                                        } else {
-                                            $image = $item->images->first()->url;
-                                        }
-                                    }
+                                    $image = $item->getImageURL();
                                 @endphp
 
                                 <button
                                     class="block rounded overflow-hidden w-16 h-16 flex-shrink-0 shadow relative hover:shadow-lg cursor-pointer">
                                     @if ($image)
-                                        <img src="{{ asset('storage/productos/' . $image) }}" alt=""
+                                        <img src="{{ $image }}" alt=""
                                             class="w-full h-full object-cover">
                                     @else
                                         <x-icon-image-unknown class="w-full h-full" />
@@ -205,7 +219,7 @@
                                     @endif
                                 </button>
 
-                                <div class="flex-shrink-1">
+                                <div class="w-full flex-1">
                                     @can('admin.almacen.productos.edit')
                                         <a href="{{ route('admin.almacen.productos.edit', $item) }}"
                                             class="inline-block leading-3 text-[10px] font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
@@ -225,7 +239,7 @@
                             </div>
                         </td>
                         <td class="p-2 text-center">
-                            {{ $item->code }}
+                            {{ $item->sku }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->codefabricante }}
@@ -294,20 +308,40 @@
                                 @endif
                             </td>
                         @endif
+
+                        <td class="p-2 text-center">
+                            <x-button-toggle onclick="confirmHiddenProducto({{ $item }})" :checked="$item->isVisible() ? true : false" />
+                        </td>
                     </tr>
                 @endforeach
             </x-slot>
         @endif
 
-        <x-slot name="loading">
-            <div wire:loading.flex class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
-        </x-slot>
     </x-table>
-
-
     <script>
+        function confirmHiddenProducto(producto) {
+            swal.fire({
+                title: 'EL PRODUCTO ' + producto.name + ' DEJARÁ DE ESTAR VISIBLE',
+                text: null,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.call('hiddenproducto', producto.id).then(() => {
+                        console.log('function ejecutado correctamente');
+                    }).catch(error => {
+                        console.error('Error al ejecutar la función:', error);
+                    });
+                }
+            })
+        }
+
+
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('loadproductos', () => ({
                 searchmarca: @entangle('searchmarca'),
@@ -315,11 +349,32 @@
                 searchsubcategory: @entangle('searchsubcategory'),
                 searchalmacen: @entangle('searchalmacen'),
                 publicado: @entangle('publicado'),
+                selectedproductos: @entangle('selectedproductos').defer,
 
                 init() {
                     // selectMarca();
-                },
 
+                },
+                confirmDeleteAllProductos() {
+                    swal.fire({
+                        title: 'ELIMINAR PRODUCTOS SELECCIONADOS',
+                        text: "Se eliminará todos los registros seleccionados de la base de datos.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.call('deleteall').then(() => {
+                                console.log('function ejecutado correctamente');
+                            }).catch(error => {
+                                console.error('Error al ejecutar la función:', error);
+                            });
+                        }
+                    })
+                }
             }));
         })
 

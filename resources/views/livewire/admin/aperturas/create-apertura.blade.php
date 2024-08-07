@@ -12,7 +12,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Aperturar caja') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -65,9 +64,8 @@
                 </div>
 
                 <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled" wire:target="save">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

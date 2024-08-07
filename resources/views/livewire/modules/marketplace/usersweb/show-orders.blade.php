@@ -42,7 +42,7 @@
             <table class="w-full min-w-full text-[10px]">
                 <tbody class="divide-y text-neutral-700">
                     @foreach ($orders as $item)
-                        <tr class="border-b">
+                        <tr class="border-b border-dividetable">
                             <td class="flex gap-2 text-left p-3">
                                 <span class="flex-shrink block w-6 h-6 text-neutral-500">
                                     @if ($item->isDeposito())

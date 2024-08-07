@@ -34,9 +34,8 @@ class ShowEspecificaciones extends Component
                 'required', 'min:2', 'max:100',
                 new CampoUnique('caracteristicas', 'name', $this->caracteristica->id),
             ],
-            'caracteristica.view' => [
-                'nullable', 'integer', 'min:0', 'max:1',
-            ]
+            'caracteristica.filterweb' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'caracteristica.view' => ['nullable', 'integer', 'min:0', 'max:1']
         ];
     }
 
@@ -49,7 +48,7 @@ class ShowEspecificaciones extends Component
 
     public function render()
     {
-        $caracteristicas = Caracteristica::orderBy('name', 'asc')->paginate();
+        $caracteristicas = Caracteristica::orderBy('orden', 'asc')->paginate();
         return view('livewire.admin.especificaciones.show-especificaciones', compact('caracteristicas'));
     }
 
@@ -61,14 +60,17 @@ class ShowEspecificaciones extends Component
         $this->open = true;
     }
 
-    public function update()
+    public function update($closemodal = false)
     {
         $this->authorize('admin.almacen.caracteristicas.edit');
         $this->caracteristica->name = trim($this->caracteristica->name);
-        $this->caracteristica->view = $this->caracteristica->view == 1 ? 1 : 0;
+        $this->caracteristica->view = $this->caracteristica->view > 0 ? 1 : 0;
+        $this->caracteristica->filterweb = $this->caracteristica->filterweb > 0 ? 1 : 0;
         $this->validate();
         $this->caracteristica->save();
-        $this->reset(['open']);
+        if ($closemodal) {
+            $this->reset(['open']);
+        }
         $this->dispatchBrowserEvent('updated');
     }
 
@@ -81,11 +83,11 @@ class ShowEspecificaciones extends Component
         $this->openespecificacion = true;
     }
 
-    public function saveespecificacion()
+    public function saveespecificacion($closemodal = false)
     {
         $this->authorize('admin.almacen.especificacions.create');
         $this->name = trim($this->name);
-        $validatedata = $this->validate([
+        $this->validate([
             'name' => [
                 'required', 'min:2',
                 new CampoUnique('especificacions', 'name', null, false, 'caracteristica_id', $this->caracteristica->id)
@@ -96,7 +98,11 @@ class ShowEspecificaciones extends Component
             'name' => $this->name
         ]);
         $this->resetValidation();
-        $this->reset(['name', 'openespecificacion']);
+        if ($closemodal) {
+            $this->reset(['name', 'openespecificacion']);
+        } else {
+            $this->reset(['name']);
+        }
         $this->dispatchBrowserEvent('created');
     }
 
@@ -110,12 +116,12 @@ class ShowEspecificaciones extends Component
         $this->openeditespecificacion = true;
     }
 
-    public function update_especificacion()
+    public function update_especificacion($closemodal = false)
     {
 
         $this->authorize('admin.almacen.especificacions.edit');
         $this->name = trim($this->name);
-        $validatedata = $this->validate([
+        $this->validate([
             'name' => [
                 'required', 'min:2',
                 Rule::unique('especificacions', 'name')
@@ -129,8 +135,10 @@ class ShowEspecificaciones extends Component
 
         $this->especificacion->name = trim($this->name);
         $this->especificacion->save();
+        if ($closemodal) {
+            $this->reset(['name', 'openeditespecificacion']);
+        }
         $this->resetValidation();
-        $this->reset(['name', 'especificacion', 'openeditespecificacion']);
         $this->dispatchBrowserEvent('updated');
     }
 

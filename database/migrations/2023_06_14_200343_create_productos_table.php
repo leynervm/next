@@ -21,11 +21,14 @@ class CreateProductosTable extends Migration
             $table->decimal('pricebuy', 10, 4);
             $table->decimal('pricesale', 10, 4)->nullable()->default(0);
             $table->decimal('igv', 10, 4)->default(0);
-            $table->integer('publicado')->default(0);
             $table->string('code', 24)->nullable();
+            $table->string('sku', 32)->nullable();
             $table->string('partnumber', 24)->nullable();
             $table->integer('views')->default(0);
             $table->integer('minstock')->default(0);
+            $table->unsignedTinyInteger('publicado')->default(0);
+            $table->unsignedTinyInteger('viewespecificaciones')->default(0);
+            $table->unsignedTinyInteger('visivility')->default(0);
             $table->decimal('precio_1', 12, 4)->nullable();
             $table->decimal('precio_2', 12, 4)->nullable();
             $table->decimal('precio_3', 12, 4)->nullable();

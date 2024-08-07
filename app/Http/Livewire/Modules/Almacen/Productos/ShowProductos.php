@@ -6,13 +6,17 @@ use App\Models\Almacen;
 use App\Models\Category;
 use App\Models\Marca;
 use App\Models\Producto;
+use Exception;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class ShowProductos extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public $subcategories = [];
     public $search = '';
@@ -21,7 +25,13 @@ class ShowProductos extends Component
     public $searchsubcategory = '';
     public $searchalmacen = '';
     public $page = 1;
+    public $checkall = false;
+    public $ocultos = false;
     public $publicado = '';
+
+    public $selectedproductos = [];
+
+    protected $listeners = ['render'];
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -30,6 +40,7 @@ class ShowProductos extends Component
         'searchsubcategory' => ['except' => '', 'as' => 'subcategoria'],
         'searchalmacen' => ['except' => '', 'as' => 'almacen'],
         'publicado' => ['except' => '', 'as' => 'publicado'],
+        'ocultos'   =>  ['except' => false, 'as' => 'ver-ocultos'],
         'page' => ['except' => 1],
     ];
 
@@ -43,7 +54,25 @@ class ShowProductos extends Component
     public function render()
     {
 
-        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems']);
+        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems', 'images']);
+
+        if (trim($this->search) !== '') {
+            $searchTerms = explode(' ', $this->search);
+            $productos->where(function ($query) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $query->orWhere('name', 'ilike', '%' . $term . '%')
+                        ->orWhereHas('marca', function ($q) use ($term) {
+                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
+                        })
+                        ->orWhereHas('category', function ($q) use ($term) {
+                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
+                        })
+                        ->orWhereHas('especificacions', function ($q) use ($term) {
+                            $q->where('especificacions.name', 'ilike', '%' . $term . '%');
+                        });
+                }
+            });
+        }
 
         if (trim($this->searchalmacen) != '') {
             $productos->whereHas('almacens', function ($query) {
@@ -63,12 +92,15 @@ class ShowProductos extends Component
             $productos->where('subcategory_id', $this->searchsubcategory);
         }
 
-        if ($this->search !== '') {
-            $productos->where('name', 'ilike', '%' . $this->search . '%');
-        }
-
         if ($this->publicado !== '') {
             $productos->where('publicado', $this->publicado);
+        }
+
+        if ($this->ocultos) {
+            $productos->ocultos();
+        }
+        else {
+            $productos->visibles();
         }
 
         $productos = $productos->orderBy('name', 'asc')->paginate();
@@ -83,17 +115,17 @@ class ShowProductos extends Component
         return view('livewire.modules.almacen.productos.show-productos', compact('productos', 'marcas', 'categorias', 'almacens'));
     }
 
-    public function updatedSearch($value)
+    public function updatedSearch()
     {
         $this->resetPage();
     }
 
-    public function updatedSearchalmacen($value)
+    public function updatedSearchalmacen()
     {
         $this->resetPage();
     }
 
-    public function updatedSearchmarca($value)
+    public function updatedSearchmarca()
     {
         $this->resetPage();
     }
@@ -107,13 +139,88 @@ class ShowProductos extends Component
         }
     }
 
-    public function updatedSearchsubcategory($value)
+    public function updatedSearchsubcategory()
     {
         $this->resetPage();
     }
 
-    public function updatedPublicado($value)
+    public function updatedPublicado()
     {
         $this->resetPage();
+    }
+
+    public function updatedCheckall()
+    {
+        if ($this->checkall) {
+            $this->selectedproductos = Producto::all()->pluck('id');
+        } else {
+            $this->reset(['selectedproductos']);
+        }
+    }
+
+    public function deleteall()
+    {
+        $this->authorize('admin.almacen.productos.delete');
+
+        if (count($this->selectedproductos) > 0) {
+            $count = 0;
+            foreach ($this->selectedproductos as $item) {
+                $producto = Producto::with(['tvitems', 'compraitems', 'images'])->find($item);
+                $tvitems = $producto->tvitems()->count();
+                $compraitems = $producto->compraitems()->count();
+                $cadena = extraerMensaje([
+                    'Items_Venta' => $tvitems,
+                    'Items_Compra' => $compraitems,
+                ]);
+
+                if ($tvitems > 0 || $compraitems > 0) {
+                    $mensaje = response()->json([
+                        'title' => 'No se puede eliminar registro, ' . $producto->name,
+                        'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                } else {
+                    DB::beginTransaction();
+                    try {
+
+                        $images = $producto->images;
+                        $producto->kardexes()->delete();
+                        $producto->images()->delete();
+                        $producto->carshoops()->delete();
+                        $producto->series()->forceDelete();
+                        $producto->promocions()->forceDelete();
+                        $producto->forceDelete();
+                        DB::commit();
+                        if (count($images) > 0) {
+                            foreach ($images as $image) {
+                                if (Storage::exists('productos/' . $image->url)) {
+                                    Storage::delete('productos/' . $image->url);
+                                }
+                            }
+                        }
+                        $count++;
+                    } catch (\Exception $e) {
+                        DB::rollBack();
+                        throw $e;
+                    } catch (\Throwable $e) {
+                        DB::rollBack();
+                        throw $e;
+                    }
+                }
+            }
+            if ($count > 0) {
+                $this->reset(['selectedproductos']);
+                $this->dispatchBrowserEvent('toast', toastJSON("$count PRODUCTOS ELIMINADOS CORRECTAMENTE !"));
+            }
+        }
+    }
+
+    public function hiddenproducto(Producto $producto)
+    {
+        $this->authorize('admin.almacen.productos.delete');
+        $mensaje = $producto->isVisible() ? 'ocultado' : 'mostrado';
+        $producto->visivility = $producto->isVisible() ? Producto::OCULTAR : Producto::MOSTRAR;
+        $producto->save();
+        $this->dispatchBrowserEvent('toast', toastJSON('Producto ' . $mensaje . ' corrrectamnente'));
     }
 }

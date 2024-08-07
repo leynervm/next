@@ -124,91 +124,38 @@ class ShowComprobantes extends Component
     public function enviarsunat($id)
     {
 
-        $comprobante =  Comprobante::find($id)->with(['sucursal' => function ($query) {
-            $query->withTrashed();
-        }])->find($id);
+        $comprobante =  Comprobante::find($id);
 
-        if ($comprobante->sucursal->empresa->cert) {
-            $filename = 'company/cert/' . $comprobante->sucursal->empresa->cert;
-            if (!Storage::disk('local')->exists($filename)) {
-                $mensaje = response()->json([
-                    'title' => 'Certificado digital SUNAT no encontrado !',
-                    'text' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-        } else {
-            $mensaje = response()->json([
-                'title' => 'No se ha configurado el certificado digital SUNAT !',
-                'text' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
+        if ($comprobante && !$comprobante->isSendSunat()) {
+            $response = $comprobante->enviarComprobante();
 
-        if (!$comprobante->sucursal->empresa->usuariosol || !$comprobante->sucursal->empresa->usuariosol) {
-            $mensaje = response()->json([
-                'title' => 'Configurar usuario y clave SOL para la emisión de comprobantes electrónicos !',
-                'text' => 'No se pudo encontrar los datos de usuario y clave SOL para emitir guías de remisión a SUNAT.',
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
-
-        $codetypecomprobante = $comprobante->seriecomprobante->typecomprobante->code;
-        $nombreXML = $comprobante->sucursal->empresa->document . '-' . $codetypecomprobante . '-' . $comprobante->seriecompleta;
-        $ruta = 'xml/' . $codetypecomprobante . '/';
-
-        try {
-            verificarCarpeta($ruta, 'local');
-            $xml = new createXML();
-
-            if ($codetypecomprobante == '07') {
-                $xml->notaCreditoXML($ruta . $nombreXML, $comprobante->sucursal->empresa, $comprobante->client, $comprobante);
-            } else {
-                $xml->comprobanteVentaXML($ruta . $nombreXML, $comprobante->sucursal->empresa, $comprobante->client, $comprobante);
-            }
-
-            $objApi = new SendXML();
-            $pass_firma = $comprobante->sucursal->empresa->passwordcert;
-            $response = $objApi->enviarComprobante($comprobante->sucursal->empresa, $nombreXML, storage_path('app/company/cert/' . $comprobante->sucursal->empresa->cert), $pass_firma, storage_path('app/' . $ruta), storage_path('app/' . $ruta));
-
-            if ($response->code == '0') {
-                $comprobante->codesunat = $response->code;
-                if ($response->notes !== '') {
+            if ($response->success) {
+                if (empty($response->mensaje)) {
                     $mensaje = response()->json([
-                        'title' => $response->descripcion,
-                        'text' => $response->notes,
-                    ]);
-                    $this->dispatchBrowserEvent('validation', $mensaje->getData());
-                    $comprobante->notasunat = $response->notes;
-                } else {
-                    $mensaje = response()->json([
-                        'title' => $response->descripcion,
+                        'title' => $response->title,
                         'icon' => 'success'
                     ]);
                     $this->dispatchBrowserEvent('toast', $mensaje->getData());
-                }
-
-                if ($response->hash) {
-                    $comprobante->hash = $response->hash;
+                } else {
+                    $mensaje = response()->json([
+                        'title' => $response->title,
+                        'text' => $response->mensaje,
+                    ]);
+                    $this->dispatchBrowserEvent('validation', $mensaje->getData());
                 }
             } else {
                 $mensaje = response()->json([
-                    'title' => $response->descripcion,
-                    'text' => 'Código de respuesta : ' . $response->code,
+                    'title' => $response->title,
+                    'text' => $response->mensaje,
                 ]);
                 $this->dispatchBrowserEvent('validation', $mensaje->getData());
             }
-
-            // dd($mensaje->getData());
-            $comprobante->descripcion = $response->descripcion;
-            $comprobante->save();
-        } catch (\Exception $e) {
-            throw $e;
-        } catch (\Throwable $e) {
-            throw $e;
+        } else {
+            $mensaje = response()->json([
+                'title' => 'COMPROBANTE ELECTRÓNICO ' . $comprobante->seriecompleta. ' YA FUÉ EMITIDO A SUNAT.',
+                'text' => null,
+            ]);
+            $this->dispatchBrowserEvent('validation', $mensaje->getData());
         }
     }
 

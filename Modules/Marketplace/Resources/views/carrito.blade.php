@@ -12,6 +12,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
+
     {{-- @can('admin.ventas') --}}
     <div class="w-full">
         <livewire:modules.marketplace.carrito.show-carrito :moneda="$moneda" wire:key="carshoop" />

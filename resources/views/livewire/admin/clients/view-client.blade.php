@@ -84,12 +84,11 @@
                         wire:loading.attr="disabled">{{ __('ELIMINAR CLIENTE ') }}</x-button-secondary>
                 @endcan
 
-                <x-button type="submit" wire:loading.attr="disabled" wire:target="update">
-                    {{ __('ACTUALIZAR') }}
-                </x-button>
+                <x-button type="submit" wire:loading.attr="disabled">
+                    {{ __('Save') }}</x-button>
             </div>
 
-            <div wire:loading wire:loading.flex wire:target="searchclient" class="loading-overlay rounded hidden">
+            <div wire:loading.flex class="loading-overlay fixed hidden">
                 <x-loading-next />
             </div>
         </form>
@@ -206,14 +205,7 @@
 
                     @can('admin.clientes.contacts.edit')
                         <div class="w-full flex pt-4 justify-end">
-                            <x-button wire:click="openmodalcontacto" wire:loading.attr="disabled"
-                                wire:target="openmodalcontacto">
-                                {{-- <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 20v-1a7 7 0 017-7v0a7 7 0 017 7v1" />
-                            <path d="M13 14v0a5 5 0 015-5v0a5 5 0 015 5v.5" />
-                            <path d="M8 12a4 4 0 100-8 4 4 0 000 8zM18 9a3 3 0 100-6 3 3 0 000 6z" />
-                        </svg> --}}
+                            <x-button wire:click="openmodalcontacto" wire:loading.attr="disabled">
                                 AGREGAR CONTACTO
                             </x-button>
                         </div>
@@ -270,7 +262,6 @@
     <x-jet-dialog-modal wire:model="opencontacto" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Contacto cliente') }}
-            <x-button-close-modal wire:click="$toggle('opencontacto')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -311,18 +302,11 @@
                 </div>
 
                 <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
-                    <x-button type="submit" size="xs" class="" wire:loading.attr="disabled"
-                        wire:target="savecontacto">
-                        @if ($contact)
-                            {{ __('ACTUALIZAR') }}
-                        @else
-                            {{ __('REGISTRAR') }}
-                        @endif
-                    </x-button>
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('Save') }}</x-button>
                 </div>
 
-                <div x-show="searchingcontacto" wire:loading wire:loading.flex wire:target="searchcontacto"
-                    class="loading-overlay rounded">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
 
@@ -337,7 +321,6 @@
             @else
                 {{ __('Registrar nuevo teléfono') }}
             @endif
-            <x-button-close-modal wire:click="$toggle('openphone')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -351,12 +334,7 @@
 
                 <div class="w-full flex justify-end pt-4">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        @if ($telephone)
-                            {{ __('ACTUALIZAR') }}
-                        @else
-                            {{ __('REGISTRAR') }}
-                        @endif
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -369,7 +347,6 @@
             @else
                 {{ __('Registrar dirección') }}
             @endif
-            <x-button-close-modal wire:click="$toggle('opendireccion')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -405,12 +382,7 @@
 
                 <div class="w-full flex justify-end gap-2">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        @if ($direccion)
-                            {{ __('ACTUALIZAR') }}
-                        @else
-                            {{ __('REGISTRAR') }}
-                        @endif
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

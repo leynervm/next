@@ -19,10 +19,12 @@ class CreateUnit extends Component
     {
         return [
             'name' => [
-                'required', 'min:2', 'max:100', new CampoUnique('units', 'name', null, true),
+                'required', 'min:2', 'max:100',
+                new CampoUnique('units', 'name', null, true),
             ],
             'code' => [
-                'required', 'min:1', 'max:4', new CampoUnique('units', 'code', null, true)
+                'required', 'min:1', 'max:4',
+                new CampoUnique('units', 'code', null, true)
             ]
         ];
     }
@@ -41,7 +43,7 @@ class CreateUnit extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
 
         $this->authorize('admin.administracion.units.create');
@@ -64,6 +66,10 @@ class CreateUnit extends Component
 
         $this->emitTo('admin.units.show-units', 'render');
         $this->dispatchBrowserEvent('created');
-        $this->reset();
+        if ($closemodal) {
+            $this->reset();
+        } else {
+            $this->resetExcept(['open']);
+        }
     }
 }

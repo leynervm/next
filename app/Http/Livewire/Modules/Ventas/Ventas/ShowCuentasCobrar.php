@@ -27,10 +27,10 @@ class ShowCuentasCobrar extends Component
     public function render()
     {
 
-        $sumatorias = Cuota::with(['moneda'])
+        $sumatorias = Venta::with(['moneda'])
             ->where('sucursal_id', auth()->user()->sucursal_id)
-            ->whereHasMorph('cuotable', Venta::class)->doesntHave('cajamovimiento')
-            ->selectRaw('moneda_id, SUM(amount) as total')
+            ->whereColumn('paymentactual', '<', 'total')
+            ->selectRaw('moneda_id, SUM(total-paymentactual) as total')
             ->groupBy('moneda_id')->orderBy('total', 'desc')->get();
 
         $cuotas = Venta::with('sucursal')->withWhereHas('client', function ($query) {
@@ -38,13 +38,8 @@ class ShowCuentasCobrar extends Component
                 $query->where('document', 'ILIKE', '%' . $this->search . '%')
                     ->orWhere('name', 'ILIKE', '%' . $this->search . '%');
             }
-        })->withWhereHas('cuotas', function ($query) {
-            $query->whereDoesntHave('cajamovimiento')
-                ->orderBy('expiredate', 'asc');
-            if (trim($this->datepay) !== '') {
-                $query->where('expiredate', $this->datepay);
-            }
-        })->where('sucursal_id', auth()->user()->sucursal_id);
+        })->whereColumn('paymentactual', '<', 'total')
+            ->where('sucursal_id', auth()->user()->sucursal_id);
 
         if (trim($this->comprobante) !== '') {
             $cuotas->where('seriecompleta', 'ILIKE', '%' . $this->comprobante . '%');
@@ -59,12 +54,10 @@ class ShowCuentasCobrar extends Component
     public function updatedSearch()
     {
         $this->resetPage();
-        // $this->reset(['datepay']);
     }
 
     public function updatedDatepay()
     {
         $this->resetPage();
-        // $this->reset(['search']);
     }
 }

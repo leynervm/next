@@ -1,4 +1,8 @@
 <div class="flex flex-col gap-8">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
         <div class="w-full grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div class="w-full text-colortitleform">
@@ -37,7 +41,7 @@
             <div class="w-full text-colortitleform">
                 <h3 class="font-semibold text-xs text-end leading-3">
                     <small class="font-medium">SUBTOTAL {{ $compra->moneda->simbolo }}</small>
-                    {{ number_format($compra->exonerado + $compra->gravado + $compra->igv + $compra->otros + $compra->descuento, 3, '.', ', ') }}
+                    {{ number_format($compra->exonerado + $compra->gravado + $compra->igv + $compra->otros + $compra->descuento, 2, '.', ', ') }}
                 </h3>
 
                 {{-- <h3 class="font-semibold text-xs text-end leading-3">
@@ -63,13 +67,13 @@
                 @if ($compra->descuento > 0)
                     <h3 class="font-semibold text-xs text-end leading-3 text-green-500">
                         <small class="font-medium">DESCUENTOS {{ $compra->moneda->simbolo }}</small>
-                        {{ number_format($compra->descuento, 3, '.', ', ') }}
+                        {{ number_format($compra->descuento, 2, '.', ', ') }}
                     </h3>
                 @endif
 
                 <h3 class="font-semibold text-3xl leading-normal text-end">
                     <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
-                    {{ number_format($compra->total, 3, '.', ', ') }}
+                    {{ number_format($compra->total, 2, '.', ', ') }}
                 </h3>
             </div>
         </div>
@@ -83,15 +87,13 @@
 
             @can('admin.almacen.compras.delete')
                 <x-button-secondary onclick="comfirmDelete()" wire:loading.attr="disabled" wire:target="delete">
-                    {{ __('ELIMINAR') }}
-                </x-button-secondary>
+                    {{ __('ELIMINAR') }}</x-button-secondary>
             @endcan
         </div>
     </x-simple-card>
 
     @if ($compra->typepayment->isContado())
         <x-form-card titulo="PAGOS" subtitulo="Control de pagos de su compra.">
-
             @if (count($compra->cajamovimientos) > 0)
                 <div class="w-full flex flex-wrap gap-2">
                     @foreach ($compra->cajamovimientos as $item)
@@ -141,17 +143,12 @@
                     @endif
                 @endif
             @endcan
-
-            <div wire:loading.flex class="loading-overlay rounded hidden">
-                <x-loading-next />
-            </div>
         </x-form-card>
     @endif
 
     <x-jet-dialog-modal wire:model="open" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Realizar pago compra') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -220,8 +217,7 @@
                 <div class="w-full">
                     <x-label value="Monto pagar :" />
                     <x-input class="block w-full numeric" x-model="amount" @input="calcular" placeholder="0.00"
-                        type="number" min="0" step="0.001"
-                        onkeypress="return validarDecimal(event, 12)" />
+                        type="number" min="0" step="0.001" onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="paymentactual" />
                 </div>
 
@@ -235,7 +231,8 @@
                     </div>
 
                     {{-- <span x-text="tipocambio"></span> --}}
-                    <div class="w-full text-xs text-end text-neutral-500 font-semibold" x-show="totalamount > 0">
+                    <div class="w-full text-xs text-end text-colorsubtitleform font-semibold"
+                        x-show="totalamount > 0">
                         <small class="inline-block" x-text="simbolo"></small>
                         <template x-if="totalamount > 0">
                             <h1 x-text="totalamount" class="text-2xl inline-block"></h1>
@@ -276,8 +273,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

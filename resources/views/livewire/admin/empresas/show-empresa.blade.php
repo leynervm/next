@@ -1,5 +1,5 @@
 <div class="w-full flex flex-col gap-8" x-data="showempresa">
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
 
@@ -91,7 +91,7 @@
                 </div>
             </div>
             <div class="w-full flex justify-end">
-                <x-button type="submit">{{ __('ACTUALIZAR') }}</x-button>
+                <x-button type="submit">{{ __('Save') }}</x-button>
             </div>
         </form>
     </x-form-card>
@@ -239,42 +239,42 @@
         </x-form-card>
 
         <x-form-card titulo="TELÉFONOS" subtitulo="Agregue números de teléfono para contactarse.">
-            <div class="w-full flex flex-col gap-3 justify-between h-full">
-                @if (count($empresa->telephones))
-                    <div class="w-full flex gap-2 flex-wrap h-full">
-                        @foreach ($empresa->telephones as $item)
-                            <x-minicard title="" :content="formatTelefono($item->phone)">
-                                <x-slot name="title">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mx-auto"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                        <path d="M14.05 2a9 9 0 0 1 8 7.94" />
-                                        <path d="M14.05 6A5 5 0 0 1 18 10" />
-                                    </svg>
-                                </x-slot>
-                                <x-slot name="buttons">
-                                    <x-button-edit wire:click="editphone({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
-                                    <x-button-delete wire:click="deletephone({{ $item->id }})"
-                                        wire:loading.attr="disabled" />
-                                </x-slot>
-                            </x-minicard>
-                        @endforeach
-                    </div>
-                @endif
-
-                <div class="w-full mt-3 flex justify-end">
-                    <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path
-                                d="M16.243 5.243h3m3 0h-3m0 0v-3m0 3v3M18.118 14.702L14 15.5c-2.782-1.396-4.5-3-5.5-5.5l.77-4.13L7.815 2H4.064c-1.128 0-2.016.932-1.847 2.047.42 2.783 1.66 7.83 5.283 11.453 3.805 3.805 9.286 5.456 12.302 6.113 1.165.253 2.198-.655 2.198-1.848v-3.584l-3.882-1.479z" />
-                        </svg>
-                    </x-button>
+            {{-- <div class="w-full flex flex-col gap-3 justify-between"> --}}
+            @if (count($empresa->telephones))
+                <div class="w-full flex gap-2 flex-wrap">
+                    @foreach ($empresa->telephones as $item)
+                        <x-minicard title="" :content="formatTelefono($item->phone)">
+                            <x-slot name="title">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mx-auto" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path
+                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                    <path d="M14.05 2a9 9 0 0 1 8 7.94" />
+                                    <path d="M14.05 6A5 5 0 0 1 18 10" />
+                                </svg>
+                            </x-slot>
+                            <x-slot name="buttons">
+                                <x-button-edit wire:click="editphone({{ $item->id }})"
+                                    wire:loading.attr="disabled" />
+                                <x-button-delete wire:click="deletephone({{ $item->id }})"
+                                    wire:loading.attr="disabled" />
+                            </x-slot>
+                        </x-minicard>
+                    @endforeach
                 </div>
+            @endif
+
+            <div class="w-full flex justify-end mt-auto">
+                <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M16.243 5.243h3m3 0h-3m0 0v-3m0 3v3M18.118 14.702L14 15.5c-2.782-1.396-4.5-3-5.5-5.5l.77-4.13L7.815 2H4.064c-1.128 0-2.016.932-1.847 2.047.42 2.783 1.66 7.83 5.283 11.453 3.805 3.805 9.286 5.456 12.302 6.113 1.165.253 2.198-.655 2.198-1.848v-3.584l-3.882-1.479z" />
+                    </svg>
+                </x-button>
             </div>
+            {{-- </div> --}}
         </x-form-card>
     </div>
 
@@ -379,6 +379,15 @@
                         </div>
 
                         <div class="block">
+                            <x-label-check for="viewespecificaciones">
+                                <x-input wire:model.defer="empresa.viewespecificaciones" value="1" name="viewlogomarca"
+                                    type="checkbox" id="viewespecificaciones" />
+                                MOSTRAR ESPECFICACIONES DEL PRODUCTO
+                            </x-label-check>
+                            <x-jet-input-error for="empresa.viewespecificaciones" />
+                        </div>
+
+                        <div class="block">
                             <x-label-check for="viewlogomarca">
                                 <x-input wire:model.defer="empresa.viewlogomarca" value="1" name="viewlogomarca"
                                     type="checkbox" id="viewlogomarca" />
@@ -442,7 +451,8 @@
                                 <div class="w-full">
                                     <x-simple-card class="w-full h-28 md:max-w-xs mb-1 mx-auto !shadow-none">
                                         <template x-if="markagua">
-                                            <img id="markagua" class="object-scale-down block w-full max-w-full h-full"
+                                            <img id="markagua"
+                                                class="object-scale-down block w-full max-w-full h-full"
                                                 :src="markagua" />
                                         </template>
                                         <template x-if="!markagua">
@@ -526,10 +536,9 @@
 
 
 
-    <x-jet-dialog-modal wire:model="openphone" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="openphone" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo teléfono') }}
-            <x-button-close-modal wire:click="$toggle('openphone')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -544,8 +553,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

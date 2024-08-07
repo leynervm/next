@@ -30,6 +30,9 @@
     --ring-link-nav: theme("colors.gray.300");
 
     --color-primary: theme("colors.gray.600");
+
+    --color-button-theme: theme("colors.white");
+    --fondo-button-theme: theme("colors.next.500");
 }
 
 .theme-next {
@@ -65,6 +68,9 @@
     --fondo-hover-button: theme("colors.next.700");
     --ring-button: theme("colors.next.300");
 
+    --color-button-theme: theme("colors.next.700");
+    --fondo-button-theme: theme("colors.gray.100");
+
     --fondo-minicard: theme("colors.white");
     --color-minicard: theme("colors.next.500");
     --shadow-minicard: theme("colors.gray.300");
@@ -80,7 +86,7 @@
 
 
     --fondo-header-modal: theme("colors.next.600");
-    --color-header-modal: theme("colors.white");
+    --color-header-modal: theme("colors.next.800");
     --fondo-body-modal: theme("colors.white");
 
     --fondo-select2: theme("colors.white");
@@ -132,7 +138,7 @@
 
 .theme-darknext {
     --body: theme("colors.neutral.700");
-    --sidebar: theme("colors.neutral.950");
+    --sidebar: theme("colors.neutral.800");
     --icon-menu: theme("colors.next.500");
 
     --color-label: theme("colors.white");
@@ -163,6 +169,9 @@
     --fondo-hover-button: theme("colors.next.700");
     --ring-button: theme("colors.next.300");
 
+    --color-button-theme: theme("colors.white");
+    --fondo-button-theme: theme("colors.neutral.900");
+
     --fondo-minicard: theme("colors.neutral.600");
     --color-minicard: theme("colors.white");
     --shadow-minicard: theme("colors.neutral.500");
@@ -183,8 +192,7 @@
     --fondo-select2: theme("colors.neutral.700");
     --color-select2: theme("colors.white");
     --fondo-hover-select2: theme("colors.neutral.500");
-    --color-hover-select2: theme("colors.white") 
-    --color-active-select2: theme("colors.white");
+    --color-hover-select2: theme("colors.white") --color-active-select2: theme("colors.white");
     --fondo-active-select2: theme("colors.next.500");
     --shadow-select2: theme("colors.neutral.950");
     --color-subtitle-select2: theme("colors.neutral.400");
@@ -267,7 +275,7 @@
 
 
 .loading-overlay {
-    @apply absolute top-0 left-0 w-full h-full bg-fondoloading opacity-90 flex flex-wrap justify-center items-center z-50;
+    @apply absolute top-0 left-0 w-full h-full bg-fondoloading opacity-70 flex flex-wrap justify-center items-center z-50;
 
     /* background-color: rgba(255, 255, 255, 0.8);
     z-index: 9999; */
@@ -303,6 +311,27 @@ input[type="radio"]:checked {
 #form-configuracion input[type="checkbox"]:checked,
 #form-configuracion input[type="radio"]:checked {
     @apply text-fondobutton;
+}
+
+
+.btn-desvincular {
+    @apply h-full !text-red-500 !bg-transparent absolute right-0 top-0 !px-2;
+}
+
+.btn-desvincular:hover {
+    @apply animate-none !ring-0;
+}
+
+.btn-desvincular:focus {
+    @apply bg-transparent ring-0;
+}
+
+.jetstream-modal {
+    @apply flex flex-col items-center justify-center;
+}
+
+.theme-active {
+    @apply !bg-fondobuttontheme !text-colorbuttontheme;
 }
 
 /* 20600129997 */

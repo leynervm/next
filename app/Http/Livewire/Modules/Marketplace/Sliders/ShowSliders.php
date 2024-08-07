@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Modules\Marketplace\Sliders;
 
 use App\Models\Slider;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -12,8 +13,7 @@ use Intervention\Image\ImageManagerStatic as ImageIntervention;
 class ShowSliders extends Component
 {
 
-    use WithPagination;
-    use WithFileUploads;
+    use WithPagination, WithFileUploads, AuthorizesRequests;
 
     public $open = false;
     public $slider, $image, $id_image;
@@ -56,6 +56,7 @@ class ShowSliders extends Component
 
     public function save()
     {
+        $this->authorize('admin.marketplace.sliders.edit');
         $this->validate();
         if ($this->image) {
             $compressedImage = ImageIntervention::make($this->image->getRealPath())
@@ -90,26 +91,14 @@ class ShowSliders extends Component
 
     public function delete(Slider $slider)
     {
+        $this->authorize('admin.marketplace.sliders.delete');
         $slider->delete();
         $this->dispatchBrowserEvent('deleted');
     }
 
-    public function active(Slider $slider)
-    {
-        $slider->status = Slider::ACTIVO;
-        $slider->save();
-        $this->dispatchBrowserEvent('updated');
-    }
-
-    public function disable(Slider $slider)
-    {
-        $slider->status = Slider::INACTIVO;
-        $slider->save();
-        $this->dispatchBrowserEvent('updated');
-    }
-
     public function updatestatus(Slider $slider)
     {
+        $this->authorize('admin.marketplace.sliders.pause');
         $slider->status = $slider->status == Slider::ACTIVO ? Slider::INACTIVO : Slider::ACTIVO;
         $slider->save();
         $this->dispatchBrowserEvent('updated');

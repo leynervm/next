@@ -1,5 +1,5 @@
 <div class="">
-    @if (count($units))
+    @if ($units->hasPages())
         <div class="pb-2">
             {{ $units->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
@@ -8,7 +8,10 @@
     <div class="flex gap-2 flex-wrap justify-start">
         @if (count($units))
             @foreach ($units as $item)
-                <x-minicard :title="$item->name" :content="$item->code" size="md">
+                <x-minicard :title="$item->name" size="md">
+
+                    <h1 class="text-colorsubtitleform font-semibold text-sm">{{ $item->code }}</h1>
+
                     @canany(['admin.administracion.units.edit', 'admin.administracion.units.delete'])
                         <x-slot name="buttons">
                             <div class="ml-auto">
@@ -29,7 +32,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar unidad medida') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -59,8 +61,7 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('ACTUALIZAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>

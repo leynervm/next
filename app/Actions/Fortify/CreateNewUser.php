@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Models\User;
 use App\Rules\CampoUnique;
+use App\Rules\Recaptcha;
 use App\Rules\ValidateDocument;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -22,6 +23,7 @@ class CreateNewUser implements CreatesNewUsers
      */
     public function create(array $input)
     {
+        // dd($input);
         Validator::make($input, [
             'document' => [
                 'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
@@ -30,6 +32,7 @@ class CreateNewUser implements CreatesNewUsers
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => $this->passwordRules(),
+            'g-recaptcha-response' => ['required', new Recaptcha("v2")], //TENER CUIDADO NOMBRE TIENE QUE MARCAR NO AUTO
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ])->validate();
 

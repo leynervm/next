@@ -76,9 +76,9 @@ class Order extends Model
         return $this->belongsTo(Direccion::class)->withTrashed();;
     }
 
-    public function transaccion(): HasOne
+    public function transaccions(): HasMany
     {
-        return $this->hasOne(Transaccion::class);
+        return $this->hasMany(Transaccion::class);
     }
 
     public function trackings(): HasMany

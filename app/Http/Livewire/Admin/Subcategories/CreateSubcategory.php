@@ -44,7 +44,7 @@ class CreateSubcategory extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.almacen.subcategorias.create');
         $this->name = trim($this->name);
@@ -58,9 +58,13 @@ class CreateSubcategory extends Component
             ]);
             $subcategory->categories()->sync($this->selectedCategories);
             DB::commit();
-            $this->reset();
-            $this->resetValidation();
             $this->emitTo('admin.subcategories.show-subcategories', 'render');
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
+            $this->resetValidation();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

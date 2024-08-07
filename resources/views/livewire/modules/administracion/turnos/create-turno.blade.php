@@ -9,10 +9,13 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo turno laboral') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
+            <div wire:loading.flex class="loading-overlay fixed hidden">
+                <x-loading-next />
+            </div>
+
             <form wire:submit.prevent="save" class="relative block w-full">
                 <div class="w-full grid xs:grid-cols-2 gap-2">
                     <div class="w-full xs:col-span-2">
@@ -114,13 +117,11 @@
                     </div> --}}
                 </div>
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex flex-wrap gap-1 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled" class="inline-block">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
-                </div>
-                <div wire:loading.flex wire:target="save" class="loading-overlay rounded hidden">
-                    <x-loading-next />
+                        {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled" class="inline-block">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

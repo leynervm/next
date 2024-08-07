@@ -193,13 +193,6 @@ class SeedRoleTableSeeder extends Seeder
             'orden' => '4'
         ])->syncRoles([$desarrollador, $admin, $ventas]);
         Permission::firstOrCreate([
-            'name' => 'admin.ventas.create.igv',
-            'descripcion' => 'Registrar ventas con IGV',
-            'table' => 'Ventas',
-            'module' => 'Ventas',
-            'orden' => '4'
-        ])->syncRoles([$desarrollador, $admin, $ventas, $cotizador]);
-        Permission::firstOrCreate([
             'name' => 'admin.ventas.create.guias',
             'descripcion' => 'Generar y vincular GRE con ventas',
             'table' => 'Ventas',

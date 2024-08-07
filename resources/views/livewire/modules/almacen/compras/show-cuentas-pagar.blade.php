@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     @if (count($sumatorias) > 0)
         <div class="w-full flex flex-wrap gap-5">
             @foreach ($sumatorias as $item)
@@ -49,7 +53,7 @@
         </div>
     @endif
 
-    <div class="w-full relative mt-1" x-data="{ loading: false }">
+    <div class="w-full relative mt-1">
         <x-table class="w-full relative mt-1">
             <x-slot name="header">
                 <tr>
@@ -94,10 +98,8 @@
                         <tr>
                             <td class="p-2">
                                 @can('admin.almacen.compras.create')
-                                    
                                 @endcan
                                 @cannot('admin.almacen.compras.create')
-                                    
                                 @endcannot
                                 <a class="inline-block text-linktable hover:underline hover:text-hoverlinktable"
                                     href="{{ route('admin.almacen.compras.edit', $item->id) }}">
@@ -155,8 +157,5 @@
                 </x-slot>
             @endif
         </x-table>
-        <div x-show="loading" wire:loading wire:loading.flex class="loading-overlay rounded">
-            <x-loading-next />
-        </div>
     </div>
 </div>

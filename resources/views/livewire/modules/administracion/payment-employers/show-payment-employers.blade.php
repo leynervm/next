@@ -6,7 +6,6 @@
     @endif
 
     <div class="flex items-center gap-2 mt-4 mb-1">
-        {{-- @if (count($sucursalusers) > 1) --}}
         <div class="w-full xs:max-w-xs">
             <x-label value="Filtrar mes :" />
             <div class="relative" id="parentsearchmonth" x-data="{ searchmonth: @entangle('searchmonth') }" x-init="selectSearchmonth">
@@ -24,7 +23,6 @@
             </div>
             <x-jet-input-error for="searchmonth" />
         </div>
-        {{-- @endif --}}
     </div>
 
     @if (count($payments) > 0)
@@ -35,9 +33,9 @@
                     $paymenttotal = $employer->sueldo + $item->bonus - $item->descuentos;
                 @endphp
 
-                <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
-                    <div class="w-full sm:flex sm:gap-3">
-                        <div class="w-full text-colortitleform">
+                <x-simple-card class="w-full flex flex-col gap-3 p-3 cursor-default">
+                    <div class="w-full flex flex-col sm:flex-row gap-3">
+                        <div class="w-full flex-1 text-colortitleform">
                             <h1 class="font-semibold text-sm leading-4">
                                 {{ formatDate($item->month, 'MMMM Y') }}
                                 - {{ $employer->name }}
@@ -59,7 +57,8 @@
                             </h3>
                         </div>
 
-                        <div class="w-full text-colortitleform">
+                        <div
+                            class="w-full flex flex-col gap-2 sm:max-w-xs sm:text-end flex-shrink-0 text-colortitleform">
                             <h3 class="font-semibold text-xs text-end leading-3">
                                 <small class="font-medium">SUELDO </small>
                                 {{ number_format($employer->sueldo, 2, '.', ', ') }}
@@ -93,8 +92,7 @@
                         </div>
                     </div>
 
-                    <div
-                        class="w-full flex items-end @if ($paymentactual < $paymenttotal) justify-between @else justify-end @endif">
+                    <div class="w-full flex flex-wrap items-end justify-between">
                         @can('admin.administracion.employers.payments.create')
                             @if ($paymentactual < $paymenttotal)
                                 <x-button wire:click="pay({{ $item->id }})" wire:key="pay_({{ $item->id }}"
@@ -114,7 +112,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo pago personal') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -191,11 +188,10 @@
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
 
-                <div wire:loading.flex class="loading-overlay rounded hidden">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
             </form>

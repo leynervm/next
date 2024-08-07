@@ -1,4 +1,4 @@
-<div class="w-full h-[calc(100vh-145px)] overflow-hidden m-auto" x-data="app()" id="form-configuracion">
+<div class="w-full h-[calc(100vh-145px)] overflow-hidden m-auto" x-data="{ typesucursal_id: @entangle('typesucursal_id').defer, ubigeosucursal_id: @entangle('ubigeosucursal_id').defer }" id="form-configuracion">
 
     <style>
         [x-cloak] {
@@ -37,9 +37,8 @@
         }
     </style>
 
-    <div x-cloak class="grid w-full h-full overflow-y-auto lg:py-10">
+    <div x-cloak class="grid w-full h-full overflow-y-auto lg:py-10" x-data="app()">
         <div class="w-full lg:my-auto md:max-w-2xl mx-auto p-2 lg:p-4 shadow-md shadow-shadowminicard rounded-xl">
-
             <div x-cloak x-show="step === 'complete'">
                 <div class="w-full bg-white rounded-lg p-10 flex items-center shadow justify-between">
                     <div class="w-full">
@@ -90,7 +89,7 @@
                             </div>
                             <div x-show="step === 6">
                                 <div class="text-lg font-bold text-colorsubtitleform leading-tight">
-                                    Resumen perfil</div>
+                                    Finalizar configuración</div>
                             </div>
                         </div>
 
@@ -115,7 +114,7 @@
                                     <x-input class="block w-full flex-1" wire:keydown.enter="searchclient"
                                         type="number" x-model="document" wire:model.defer="document"
                                         onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
-                                    <x-button-add class="px-2.5 !rounded-lg" wire:click="searchclient"
+                                    <x-button-add class="px-2.5 " wire:click="searchclient"
                                         wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
@@ -237,6 +236,15 @@
                                 </div>
 
                                 <div class="block">
+                                    <x-label-check for="viewespecificaciones">
+                                        <x-input x-model="viewespecificaciones" name="viewespecificaciones"
+                                            type="checkbox" id="viewespecificaciones" />
+                                        MOSTRAR ESPECFICACIONES DEL PRODUCTO
+                                    </x-label-check>
+                                    <x-jet-input-error for="viewespecificaciones" />
+                                </div>
+
+                                <div class="block">
                                     <x-label-check for="viewlogomarca">
                                         <x-input x-model="viewlogomarca" name="viewlogomarca" type="checkbox"
                                             id="viewlogomarca" />
@@ -320,7 +328,7 @@
 
                                     <div class="w-full flex gap-2 flex-wrap justify-center">
                                         <template x-if="markagua">
-                                            <x-button class="inline-flex !rounded-lg" @click="reset"
+                                            <x-button class="inline-flex " @click="reset"
                                                 wire:loading.attr="disabled">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -338,7 +346,7 @@
                                         </template>
 
                                         <x-input-file for="fileMark" titulo="SELECCIONAR MARCA AGUA"
-                                            wire:loading.class="disabled:opacity-25" class="!rounded-lg">
+                                            wire:loading.class="disabled:opacity-25" class="">
                                             <input type="file" class="hidden" wire:model="markagua"
                                                 id="fileMark" accept="image/png" @change="loadlogo" />
                                         </x-input-file>
@@ -454,8 +462,7 @@
                                         <x-jet-input-error for="namealmacen" />
                                     </div>
                                     <div class="flex justify-end">
-                                        <x-button class="!rounded-lg p-3" type="submit"
-                                            wire:loading.attr="disabled">
+                                        <x-button class=" p-3" type="submit" wire:loading.attr="disabled">
                                             AGREGAR ALMACÉN</x-button>
                                     </div>
                                     <div>
@@ -507,7 +514,7 @@
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <x-button class="!rounded-lg p-3" type="submit" wire:loading.attr="disabled">
+                                    <x-button class=" p-3" type="submit" wire:loading.attr="disabled">
                                         AGREGAR TELÉFONO</x-button>
                                 </div>
                                 <x-jet-input-error for="telephones" />
@@ -532,9 +539,8 @@
 
                     <div x-show="step === 4" x-transition>
                         <div class="w-full flex justify-end">
-                            <x-button class="!rounded-lg p-3" wire:click="$toggle('open')">
-                                {{ __('AGREGAR NUEVA SUCURSAL') }}
-                            </x-button>
+                            <x-button class=" p-3" wire:click="$toggle('open')">
+                                {{ __('AGREGAR NUEVA SUCURSAL') }}</x-button>
                         </div>
 
                         @if (count($sucursals) > 0)
@@ -543,19 +549,28 @@
                             <div class="w-full flex flex-col gap-2 mt-3">
                                 @foreach ($sucursals as $index => $item)
                                     <x-simple-card
-                                        class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl">
-                                        <div class="inline-block py-1">
-                                            <x-input class="cursor-pointer" type="checkbox"
-                                                name="selectedsucursals[]" wire:model.defer="selectedsucursals"
-                                                id="{{ $item['codigo'] }}" value="{{ $item['codigo'] }}" />
-                                            <x-label class="inline-block pl-2 cursor-pointer font-semibold"
-                                                value="SELECCIONAR" for="{{ $item['codigo'] }}" />
-                                        </div>
-                                        <div>
-                                            <x-label value="DESCRIPCIÓN:" class="font-semibold" />
-                                            <p class="text-colorsubtitleform leading-3 uppercase">
-                                                {{ $item['descripcion'] }}</p>
-                                        </div>
+                                        class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-next-100 !border-next-600' : '' }}">
+                                        @if ($item['default'] > 0)
+                                            <h1 class="text-xs text-colortitleform align-middle">
+                                                <x-icon-default class="inline-block m-auto align-middle" />
+                                                TIENDA PRINCIPAL
+                                            </h1>
+                                        @else
+                                            <div class="inline-block py-1">
+                                                <x-input class="cursor-pointer" type="checkbox"
+                                                    name="selectedsucursals[]" wire:model.defer="selectedsucursals"
+                                                    id="{{ $item['codigo'] }}" value="{{ $item['codigo'] }}" />
+                                                <x-label
+                                                    class="inline-block pl-2 cursor-pointer font-semibold text-colortitleform"
+                                                    value="SELECCIONAR" for="{{ $item['codigo'] }}" />
+                                            </div>
+                                            <div>
+                                                <x-label value="DESCRIPCIÓN:" class="font-semibold" />
+                                                <p class="text-colorsubtitleform leading-3 uppercase">
+                                                    {{ $item['descripcion'] }}</p>
+                                            </div>
+                                        @endif
+
                                         <div>
                                             <x-label value="DIRECCIÓN :" class="font-semibold" />
                                             <p class="text-colorsubtitleform leading-3 uppercase">
@@ -565,28 +580,33 @@
                                                 {{ $item['departamento'] }}
                                             </p>
                                         </div>
-                                        <div>
-                                            <x-label value="CÓDIGO ESTABLECIMIENTO :" class="font-semibold" />
-                                            <p class="text-colorsubtitleform leading-3">
-                                                {{ $item['codigo'] }}</p>
-                                        </div>
-                                        <div>
-                                            <x-label value="TIPO ESTABLECIMIENTO :" class="font-semibold" />
-                                            <p class="text-colorsubtitleform leading-3">
-                                                [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
-                                        </div>
 
-                                        {{-- <div class="w-full flex items-end gap-2 justify-between">
-                                            @if ($item['default'])
+                                        @if ($item['default'] <= 0)
+                                            <div>
+                                                <x-label value="CÓDIGO ESTABLECIMIENTO :" class="font-semibold" />
+                                                <p class="text-colorsubtitleform leading-3">
+                                                    {{ $item['codigo'] }}</p>
+                                            </div>
+                                            <div>
+                                                <x-label value="TIPO ESTABLECIMIENTO :" class="font-semibold" />
+                                                <p class="text-colorsubtitleform leading-3">
+                                                    [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
+                                            </div>
+                                        @endif
+
+                                        <div class="w-full flex items-end gap-2 justify-end">
+                                            {{-- @if ($item['default'])
                                                 <x-icon-default wire:loading.attr="disabled"
                                                     class="cursor-pointer hover:!text-next-500" />
                                             @else
                                                 <x-icon-default wire:loading.attr="disabled"
                                                     class="!text-gray-400 inline-block cursor-pointer hover:!text-next-500" />
+                                            @endif --}}
+                                            @if ($item['default'] <= 0)
+                                                <x-button-delete wire:click="removesucursal({{ $index }})"
+                                                    wire:loading.attr="disabled" />
                                             @endif
-                                            <x-button-delete wire:click="removesucursal({{ $index }})"
-                                                wire:loading.attr="disabled" />
-                                        </div> --}}
+                                        </div>
                                     </x-simple-card>
                                 @endforeach
                             </div>
@@ -599,6 +619,21 @@
                         <form wire:submit.prevent="validatestep('5')" class="w-full flex flex-col gap-2">
                             @if (module::isEnabled('Facturacion'))
                                 <div class="w-full grid gap-2 grid-cols-1">
+                                    <div class="w-full">
+                                        <x-label value="Afectación IGV :" />
+                                        <div class="w-full relative" id="parentafectacionigv" x-init="SelectAfectacionIGV"
+                                            wire:ignore>
+                                            <x-select class="block w-full" x-ref="selectafectacionigv"
+                                                id="afectacionigv">
+                                                <x-slot name="options">
+                                                    <option value="0">EXONERAR IGV</option>
+                                                    <option value="1">INCLUIR IGV</option>
+                                                </x-slot>
+                                            </x-select>
+                                            <x-icon-select />
+                                        </div>
+                                        <x-jet-input-error for="afectacionigv" />
+                                    </div>
                                     <div class="w-full">
                                         <x-label value="Modo envío SUNAT :" />
                                         <div class="w-full relative" id="parentsendmode" x-init="SelectMode"
@@ -615,36 +650,62 @@
                                     </div>
                                     <div class="w-full">
                                         <x-label value="Usuario SOL :" />
-                                        <x-input class="block w-full" wire:model.defer="usuariosol"
-                                            placeholder="Ingrese usuario SOL Sunat..." />
+                                        <template x-if="sendmode > 0">
+                                            <x-input class="block w-full" x-model="usuariosol"
+                                                placeholder="Ingrese usuario SOL Sunat..." />
+                                        </template>
+                                        <template x-if="sendmode <= 0">
+                                            <x-disabled-text x-text="usuariosol" text="" class="input-text" />
+                                        </template>
                                         <x-jet-input-error for="usuariosol" />
                                     </div>
                                     <div class="w-full">
                                         <x-label value="Clave SOL :" />
-                                        <x-input class="block w-full" wire:model.defer="clavesol"
-                                            placeholder="Ingrese clave SOL Sunat..." type="password" />
+                                        <template x-if="sendmode > 0">
+                                            <x-input class="block w-full" x-model="clavesol"
+                                                placeholder="Ingrese clave SOL Sunat..." type="password" />
+                                        </template>
+                                        <template x-if="sendmode <= 0">
+                                            <x-disabled-text x-text="clavesol" text="" class="input-text" />
+                                        </template>
                                         <x-jet-input-error for="clavesol" />
                                     </div>
                                     <div class="w-full">
                                         <x-label value="Client ID (Guías Remisión):" />
-                                        <x-input class="block w-full" wire:model.defer="clientid"
-                                            placeholder="Ingrese client id..." />
+                                        <template x-if="sendmode > 0">
+                                            <x-input class="block w-full" x-model="clientid"
+                                                placeholder="Ingrese client id..." />
+                                        </template>
+                                        <template x-if="sendmode <= 0">
+                                            <x-disabled-text x-text="clientid" text="" class="input-text" />
+                                        </template>
                                         <x-jet-input-error for="clientid" />
                                     </div>
                                     <div class="w-full">
                                         <x-label value="Client secret (Guías Remisión):" />
-                                        <x-input class="block w-full" wire:model.defer="clientsecret"
-                                            placeholder="Ingrese client secret..." />
+                                        <template x-if="sendmode > 0">
+                                            <x-input class="block w-full" x-model="clientsecret"
+                                                placeholder="Ingrese client secret..." />
+                                        </template>
+                                        <template x-if="sendmode <= 0">
+                                            <x-disabled-text x-text="clientsecret" text=""
+                                                class="input-text" />
+                                        </template>
                                         <x-jet-input-error for="clientsecret" />
                                     </div>
                                     <div class="w-full">
                                         <x-label value="Clave certificado digital :" />
-                                        <x-input class="block w-full" wire:model.defer="passwordcert"
-                                            placeholder="Contraseña del certificado..." type="password" />
+                                        <template x-if="sendmode > 0">
+                                            <x-input class="block w-full" x-model="passwordcert"
+                                                placeholder="Contraseña del certificado..." type="password" />
+                                        </template>
+                                        <template x-if="sendmode <= 0">
+                                            <x-disabled-text text="••••••••" class="input-text" />
+                                        </template>
                                         <x-jet-input-error for="passwordcert" />
                                     </div>
                                 </div>
-                                <div class="relative w-full xs:max-w-xs text-center">
+                                <div x-cloak x-show="sendmode == 1" class="relative w-full xs:max-w-xs text-center">
                                     @if (isset($cert))
                                         <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()"
                                             class="w-40 h-full text-gray-300" />
@@ -655,13 +716,13 @@
 
                                     <div class="w-full flex gap-1 flex-wrap justify-center">
                                         <x-input-file :for="$idcert" titulo="CARGAR CERTIFICADO DIGITAL"
-                                            wire:loading.remove class="!rounded-lg p-3">
+                                            wire:loading.remove class=" p-3">
                                             <input type="file" class="hidden" wire:model="cert"
                                                 id="{{ $idcert }}" accept=".pfx" />
                                         </x-input-file>
 
                                         @if (isset($cert))
-                                            <x-button class="inline-flex !rounded-lg p-3" wire:loading.attr="disabled"
+                                            <x-button class="inline-flex  p-3" wire:loading.attr="disabled"
                                                 wire:click="clearCert">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -923,12 +984,20 @@
                                 <div class="w-full flex flex-col gap-2 mt-3">
                                     @foreach ($filteredSucursals as $index => $item)
                                         <x-simple-card
-                                            class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl">
-                                            <div>
-                                                <x-label value="DESCRIPCIÓN:" class="font-semibold" />
-                                                <p class="text-colorsubtitleform uppercase leading-3">
-                                                    {{ $item['descripcion'] }}</p>
-                                            </div>
+                                            class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-next-100 !border-next-600' : '' }}">
+                                            @if ($item['default'] > 0)
+                                                <h1 class="text-xs text-colortitleform align-middle">
+                                                    <x-icon-default class="inline-block m-auto align-middle" />
+                                                    TIENDA PRINCIPAL
+                                                </h1>
+                                            @else
+                                                <div>
+                                                    <x-label value="DESCRIPCIÓN:" class="font-semibold" />
+                                                    <p class="text-colorsubtitleform uppercase leading-3">
+                                                        {{ $item['descripcion'] }}</p>
+                                                </div>
+                                            @endif
+
                                             <div>
                                                 <x-label value="DIRECCIÓN :" class="font-semibold" />
                                                 <p class="text-colorsubtitleform uppercase leading-3">
@@ -938,16 +1007,19 @@
                                                     {{ $item['departamento'] }}
                                                 </p>
                                             </div>
-                                            <div>
-                                                <x-label value="CÓDIGO ESTABLECIMIENTO :" class="font-semibold" />
-                                                <p class="text-colorsubtitleform leading-3">
-                                                    {{ $item['codigo'] }}</p>
-                                            </div>
-                                            <div>
-                                                <x-label value="TIPO ESTABLECIMIENTO :" class="font-semibold" />
-                                                <p class="text-colorsubtitleform leading-3">
-                                                    [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
-                                            </div>
+
+                                            @if ($item['default'] <= 0)
+                                                <div>
+                                                    <x-label value="CÓDIGO ESTABLECIMIENTO :" class="font-semibold" />
+                                                    <p class="text-colorsubtitleform leading-3">
+                                                        {{ $item['codigo'] }}</p>
+                                                </div>
+                                                <div>
+                                                    <x-label value="TIPO ESTABLECIMIENTO :" class="font-semibold" />
+                                                    <p class="text-colorsubtitleform leading-3">
+                                                        [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
+                                                </div>
+                                            @endif
                                         </x-simple-card>
                                     @endforeach
                                 </div>
@@ -1029,22 +1101,22 @@
                 <div class="max-w-3xl mx-auto">
                     <div class="flex gap-2 justify-end lg:justify-between">
                         <div class="lg:w-1/2">
-                            <x-button wire:loading.attr="disabled" class="inline-flex !rounded-lg" x-show="step > 1"
-                                x-cloak @click="step--">
+                            <x-button wire:loading.attr="disabled" class="inline-flex " x-show="step > 1" x-cloak
+                                @click="step--">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                     color="currentColor" fill="none" class="w-6 h-6 inline-block">
                                     <path d="M4 12L20 12" />
                                     <path d="M8.99996 17C8.99996 17 4.00001 13.3176 4 12C3.99999 10.6824 9 7 9 7" />
                                 </svg>
-                                ANTERIOR
+                                {{ __('Previus') }}
                             </x-button>
                         </div>
 
                         <div class="lg:w-1/2 text-right">
-                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" x-show="step < 6"
+                            <x-button class="inline-flex " wire:loading.attr="disabled" x-show="step < 6"
                                 @click="$wire.validatestep(step)">
-                                SIGUIENTE
+                                {{ __('Next') }}
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                     color="currentColor" fill="none" class="w-6 h-6 inline-block">
@@ -1053,8 +1125,8 @@
                                 </svg>
                             </x-button>
                             <x-button type="submit" wire:click="save" wire:loading.attr="disabled"
-                                class="inline-block !rounded-lg" {{--  @click="step = 'complete'" --}} x-cloak x-show="step === 6">
-                                REGISTRAR
+                                class="inline-block " {{--  @click="step = 'complete'" --}} x-cloak x-show="step === 6">
+                                {{ __('Save') }}
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                     color="currentColor" fill="none" class="w-6 h-6 inline-block">
@@ -1071,11 +1143,9 @@
         </div>
     </div>
 
-
     <x-jet-dialog-modal wire:model="open">
         <x-slot name="title">
             {{ __('Nueva sucursal') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -1121,7 +1191,8 @@
                             data-dropdown-parent="null">
                             <x-slot name="options">
                                 @foreach ($typesucursals as $item)
-                                    <option value="{{ $item->id }}">[{{ $item->code }}] {{ $item->name }}
+                                    <option value="{{ $item->id }}">[{{ $item->code }}]
+                                        {{ $item->name }}
                                     </option>
                                 @endforeach
                             </x-slot>
@@ -1138,19 +1209,11 @@
                     <x-jet-input-error for="codeanexo" />
                 </div>
 
-                {{-- <div class="block">
-                    <x-label-check for="defaultsucursal">
-                        <x-input wire:model.defer="defaultsucursal" value="1" type="checkbox"
-                            id="defaultsucursal" />
-                        DEFINIR COMO ESTABLECIMIENTO PRINCIPAL
-                    </x-label-check>
-                    <x-jet-input-error for="defaultsucursal" />
-                </div> --}}
-
                 <div class="w-full flex pt-4 justify-end">
-                    <x-button class="!rounded-lg p-3" type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                    <x-button class="p-3" type="submit" wire:loading.attr="disabled">
+                        {{ __('Save') }}</x-button>
+                    <x-button class="p-3" wire:click="addsucursal(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -1161,8 +1224,8 @@
             return {
                 viewpriceantes: @entangle('viewpriceantes').defer,
                 viewlogomarca: @entangle('viewlogomarca').defer,
+                viewespecificaciones: @entangle('viewespecificaciones').defer,
                 ubigeo_id: @entangle('ubigeo_id').defer,
-                ubigeosucursal_id: @entangle('ubigeosucursal_id').defer,
                 uselistprice: @entangle('uselistprice').defer,
                 viewtextopromocion: @entangle('viewtextopromocion').defer,
                 usepricedolar: @entangle('usepricedolar').defer,
@@ -1175,13 +1238,18 @@
                 openvalidatemail: false,
                 step: @entangle('step').defer,
                 document: '',
-                typesucursal_id: @entangle('typesucursal_id').defer,
                 sendmode: @entangle('sendmode').defer,
+                afectacionigv: @entangle('afectacionigv').defer,
                 alignmark: @entangle('alignmark').defer,
                 image: null,
                 icono: @entangle('icono').defer,
                 openmark: false,
                 markagua: null,
+                usuariosol: @entangle('usuariosol').defer,
+                clavesol: @entangle('clavesol').defer,
+                clientid: @entangle('clientid').defer,
+                clientsecret: @entangle('clientsecret').defer,
+                passwordcert: @entangle('passwordcert').defer,
 
                 changePricedolar() {
                     if (this.usepricedolar) {
@@ -1333,6 +1401,35 @@
             });
             this.$watch("sendmode", (value) => {
                 this.selectMode.val(value).trigger("change");
+                if (value > 0) {
+                    @this.clearCert();
+                    this.usuariosol = '';
+                    this.clavesol = '';
+                    this.clientid = '';
+                    this.clientsecret = '';
+                    this.passwordcert = '';
+                } else {
+                    this.usuariosol = '{{ \App\Models\Empresa::USER_SOL_PRUEBA }}';
+                    this.clavesol = '{{ \App\Models\Empresa::PASSWORD_SOL_PRUEBA }}';
+                    this.clientid = '{{ \App\Models\Empresa::CLIENT_ID_GRE_PRUEBA }}';
+                    this.clientsecret = '{{ \App\Models\Empresa::CLIENT_SECRET_GRE_PRUEBA }}';
+                    this.passwordcert = '{{ \App\Models\Empresa::PASSWORD_CERT_PRUEBA }}';
+                }
+            });
+        }
+
+        function SelectAfectacionIGV() {
+            this.selectAfe = $(this.$refs.selectafectacionigv).select2();
+            this.selectAfe.val(this.afectacionigv).trigger("change");
+            this.selectAfe.on("select2:select", (event) => {
+                this.afectacionigv = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("afectacionigv", (value) => {
+                this.selectAfe.val(value).trigger("change");
             });
         }
 

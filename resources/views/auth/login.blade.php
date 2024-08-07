@@ -56,9 +56,9 @@
 
     <div class="login" x-data="authForm">
         <div class="container-login" id="container" x-bind:class="{ 'active': activeForm === 'register' }">
-            @if (Module::isEnabled('Marketplace'))
+            @if ($empresa && Module::isEnabled('Marketplace'))
                 <div class="form-container sign-up" style="display: none" x-show="activeForm === 'register'" x-cloak>
-                    <form method="POST" action="{{ route('register') }}">
+                    <form method="POST" action="{{ route('register') }}" id="register_form">
                         @csrf
                         <h1 class="title-login">{{ __('Create Account') }}</h1>
 
@@ -83,31 +83,36 @@
                         <x-jet-input-error for="password_confirmation" class="w-full" />
 
                         @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
-                            <div class="mt-4">
+                            <div class="w-full mt-4">
                                 <x-jet-label for="terms">
-                                    <div class="flex items-center">
-                                        <x-jet-checkbox name="terms" id="terms" />
+                                    <div class="flex justify-center items-center">
+                                        <x-input type="checkbox" name="terms" id="terms" class="!rounded-none" />
 
-                                        <div class="ml-2">
+                                        <div class="flex-1 w-full ml-2 text-colorsubtitleform text-xs leading-3">
                                             {!! __('I agree to the :terms_of_service and :privacy_policy', [
                                                 'terms_of_service' =>
                                                     '<a target="_blank" href="' .
                                                     route('terms.show') .
-                                                    '" class="underline text-sm text-gray-600 hover:text-gray-900">' .
+                                                    '" class="underline text-xs text-orange-600 hover:text-orange-900">' .
                                                     __('Terms of Service') .
                                                     '</a>',
                                                 'privacy_policy' =>
                                                     '<a target="_blank" href="' .
                                                     route('policy.show') .
-                                                    '" class="underline text-sm text-gray-600 hover:text-gray-900">' .
+                                                    '" class="underline text-xs text-orange-600 hover:text-orange-900">' .
                                                     __('Privacy Policy') .
                                                     '</a>',
                                             ]) !!}
                                         </div>
                                     </div>
                                 </x-jet-label>
+                                <x-jet-input-error for="terms" class="w-full" />
                             </div>
                         @endif
+
+                        <div class="g-recaptcha py-3" data-sitekey="{{ config('services.recaptcha_v2.key_web') }}">
+                        </div>
+                        <x-jet-input-error for="g-recaptcha-response" class="w-full" />
 
                         <x-button-web type="submit" :text="__('Register')" />
 
@@ -158,9 +163,9 @@
                     </form>
                 </div>
             @endif
-            <div class="form-container sign-in" style="display: none" x-show="activeForm === 'login'" x-cloak>
 
-                <form method="POST" action="{{ route('login') }}">
+            <div class="form-container sign-in" style="display: none" x-show="activeForm === 'login'" x-cloak>
+                <form method="POST" action="{{ route('login') }}" id="login_form">
                     @csrf
 
                     @if (session('status'))
@@ -185,11 +190,13 @@
                             {{ __('Remember me') }}</x-label-check>
                     </div>
 
+                    <x-jet-input-error for="g_recaptcha_response" />
+
                     <a href="{{ route('password.request') }}" class="forget">{{ __('Forgot your password?') }}</a>
 
                     <x-button-web type="submit" :text="__('Log in')" />
 
-                    @if (Module::isEnabled('Marketplace'))
+                    @if ($empresa && Module::isEnabled('Marketplace'))
                         <div class="w-full pt-3 text-center md:hidden">
                             <span class="tittle-footer-login">
                                 {{ __("I'm not registered yet?") }}
@@ -242,7 +249,7 @@
             </div>
             <div class="toggle-container">
                 <div class="toggle">
-                    @if (Module::isEnabled('Marketplace'))
+                    @if ($empresa && Module::isEnabled('Marketplace'))
                         <div class="toggle-panel toggle-left">
                             <h1>{{ __('Bienvenido Nuevamente') }}!</h1>
                             <h5>{{ __('Enter your Personal details to use all of site features') }}</h5>
@@ -253,7 +260,7 @@
                     <div class="toggle-panel toggle-right">
                         <h1>{{ __('Hola, Somos NEXT!') }}</h1>
 
-                        @if (Module::isEnabled('Marketplace'))
+                        @if ($empresa && Module::isEnabled('Marketplace'))
                             <h5>{{ __('Register with your Personal details to use all of site features') }}</h5>
                             <x-button-web class="btn-white" :text="__('Register')" id="register"
                                 @click="setActiveForm('register')" />
@@ -264,8 +271,28 @@
         </div>
     </div>
 
+    {{-- <script async src="https://www.google.com/recaptcha/api.js"></script> --}}
 
     <script>
+        grecaptcha.ready(function() {
+            document.getElementById('register_form').addEventListener("submit", function(event) {
+                event.preventDefault();
+                grecaptcha.execute('{{ config('services.recaptcha_v3.key_web') }}', {
+                        action: 'register'
+                    })
+                    .then(function(token) {
+                        let form = event.target;
+                        let input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'g_recaptcha_response';
+                        input.value = token;
+                        form.appendChild(input);
+                        document.getElementById('register_form').submit();
+                    });
+            });
+        });
+
+
         function authForm() {
             return {
                 activeForm: 'login',
@@ -289,19 +316,29 @@
             const registerSM = document.getElementById('miniregister');
             const loginSM = document.getElementById('minilogin')
 
-            registerBtn.addEventListener('click', () => {
-                container.classList.add('active');
-            });
-            registerSM.addEventListener('click', () => {
-                container.classList.add('active');
-            });
+            if (registerBtn) {
+                registerBtn.addEventListener('click', () => {
+                    container.classList.add('active');
+                });
+            }
 
-            loginBtn.addEventListener('click', () => {
-                container.classList.remove('active');
-            });
-            loginSM.addEventListener('click', () => {
-                container.classList.remove('active');
-            });
+            if (registerSM) {
+                registerSM.addEventListener('click', () => {
+                    container.classList.add('active');
+                });
+            }
+
+            if (loginBtn) {
+                loginBtn.addEventListener('click', () => {
+                    container.classList.remove('active');
+                });
+            }
+
+            if (loginBtn) {
+                loginSM.addEventListener('click', () => {
+                    container.classList.remove('active');
+                });
+            }
         })
     </script>
 </x-guest-layout>

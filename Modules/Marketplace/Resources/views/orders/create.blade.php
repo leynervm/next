@@ -31,22 +31,22 @@
         @endif
 
         <div class="w-full">
-            <h1 class="block w-full font-semibold text-[10px] rounded-t-xl p-2 bg-fondospancardproduct text-colorlabel">
-                RESUMEN DEL CARRITO</h1>
+            {{-- <h1 class="block w-full font-semibold text-[10px] rounded-t-xl p-2 bg-fondospancardproduct text-colorlabel">
+                RESUMEN DEL CARRITO</h1> --}}
 
             @if (Cart::instance('shopping')->count() > 0)
-                <div class="w-full flex flex-col divide-y rounded-b-xl">
+                <div class="w-full flex flex-col gap-1">
                     @foreach (Cart::instance('shopping')->content() as $item)
                         <x-simple-card class="w-full flex flex-col xs:flex-row gap-2 text-xs">
-                            <div class="w-full xs:w-16 h-16 xs:h-full rounded overflow-hidden">
+                            <div class="w-full xs:w-16 flex-shrink-0 h-16 xs:h-full rounded">
                                 @if ($item->model->getImageURL())
                                     <img src="{{ $item->model->getImageURL() }}" alt=""
-                                        class="w-full h-full object-scale-down aspect-square">
+                                        class="block w-full h-full object-scale-down aspect-square">
                                 @else
-                                    <x-icon-file-upload class="!w-full !h-full !m-0 text-neutral-500" type="unknown" />
+                                    <x-icon-file-upload class="!w-full !h-full !m-0 text-colorsubtitleform" type="unknown" />
                                 @endif
                             </div>
-                            <div class="w-full flex flex-col gap-2 flex-1 h-full justify-between p-2">
+                            <div class="w-full flex flex-1 flex-col gap-2 h-full justify-between p-2">
                                 <a class="leading-3 text-center xs:text-left text-xs text-colorlabel">
                                     {{ $item->model->name }}</a>
 
@@ -63,7 +63,7 @@
                                             P. UNIT : {{ $item->options->simbolo }}
                                             {{ number_format($item->price, 2, '.', ', ') }}
                                         </h1>
-                                        <h1 class="font-medium leading-3 text-left text-center">
+                                        <h1 class="font-medium leading-3 text-right">
                                             CANT: {{ $item->qty }} {{ $item->model->unit->name }}</h1>
                                     </div>
                                 </div>
@@ -72,7 +72,7 @@
                     @endforeach
                 </div>
 
-                <x-simple-card class="w-full p-3 shadow-xl rounded-xl mt-4 text-colorlabel">
+                <x-simple-card class="w-full p-3 mt-4 text-colorlabel">
                     <p class="text-[10px] text-right font-semibold0">TOTAL</p>
                     <p class="text-xl text-right font-semibold">
                         <small class="text-[10px] font-medium">{{ $moneda->simbolo }}</small>

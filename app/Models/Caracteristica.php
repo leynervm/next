@@ -10,8 +10,9 @@ class Caracteristica extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'view'];
+    protected $fillable = ['name', 'view', 'filterweb', 'orden'];
     public $timestamps = false;
+    const OPTION_ACTIVE = '1';
 
     public function setNameAttribute($value)
     {
@@ -21,5 +22,20 @@ class Caracteristica extends Model
     public function especificacions(): HasMany
     {
         return $this->hasMany(Especificacion::class);
+    }
+
+    public function scopeFilterweb($query)
+    {
+        return $query->where('filterweb', self::OPTION_ACTIVE);
+    }
+
+    public function isVisibleSupport()
+    {
+        return $this->view == self::OPTION_ACTIVE;
+    }
+
+    public function isFilterWeb()
+    {
+        return $this->filterweb == self::OPTION_ACTIVE;
     }
 }

@@ -1,410 +1,529 @@
-<div>
-    <div wire:loading.flex class="fixed loading-overlay rounded hidden">
+<div class="w-full flex flex-wrap xl:flex-nowrap gap-8 xl:h-[calc(100vh_-_4rem)]">
+    <div wire:loading.flex class="fixed loading-overlay hidden">
         <x-loading-next />
     </div>
 
-    <x-form-card titulo="PRODUCTOS">
-        <div class="w-full">
-            <div class="w-full flex flex-col gap-2 md:flex-row">
-                <div class="w-full md:flex-1">
-                    <x-label value="Descripcion producto :" />
-                    <x-input class="block w-full disabled:bg-gray-200" wire:model.lazy="search"
-                        placeholder="Buscar producto..." />
-                    <x-jet-input-error for="search" />
-                </div>
+    <div
+        class="w-full flex flex-col gap-5 xl:flex-shrink-0 xl:w-96 xl:overflow-y-auto soft-scrollbar h-full"x-data="loader">
+        <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+                <div class="w-full flex flex-col gap-1">
 
-                @if ($empresa->usarLista())
-                    @if (count($pricetypes) > 1)
-                        <div class="w-full md:w-64 lg:w-80 md:flex-shrink-0">
-                            <x-label value="Lista precios :" />
-                            <div id="parentventapricetype_id" class="relative" x-data="{ pricetype_id: @entangle('pricetype_id') }"
-                                x-init="select2Pricetype">
-                                <x-select class="block w-full" id="ventapricetype_id" x-ref="selectp">
-                                    <x-slot name="options">
-                                        @foreach ($pricetypes as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->name }}</option>
-                                        @endforeach
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="pricetype_id" />
+                    @include('ventas::ventas.forms.comprobante')
+
+                    @if (Module::isEnabled('Facturacion'))
+                        @can('admin.ventas.create.guias')
+                            @include('ventas::ventas.forms.guia-remision')
+                        @endcan
+                    @endif
+
+                    <div class="w-full flex flex-col gap-1">
+                        <x-jet-input-error for="typepayment.id" />
+                        <x-jet-input-error for="items" />
+                        <x-jet-input-error for="typepay" />
+                        <x-jet-input-error for="concept.id" />
+                        <x-jet-input-error for="parcialpayments" />
+                        {{-- <x-jet-input-error for="client_id" /> --}}
+                    </div>
+
+                    <div
+                        class="w-full flex flex-col sm:flex-row xl:flex-col gap-1 pt-4 justify-between items-start sm:items-end xl:items-start">
+                        @can('admin.ventas.create.guias')
+                            @if (count($comprobantesguia) > 0)
+                                <div class="inline-block" x-show="!sincronizegre">
+                                    <x-label-check for="incluyeguia" x-show="openguia">
+                                        <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
+                                            id="incluyeguia" />GENERAR GUÍA REMISIÓN
+                                    </x-label-check>
+                                </div>
+                            @endif
+                        @endcan
+
+                        <x-button class="block w-full sm:inline-block sm:w-auto xl:w-full" type="submit"
+                            wire:loading.attr="disabled">
+                            {{ __('Save') }}</x-button>
+                    </div>
+
+                    @if ($errors->any())
+                        <div class="w-full flex flex-col gap-1">
+                            @foreach ($errors->keys() as $key)
+                                <x-jet-input-error :for="$key" />
+                            @endforeach
                         </div>
                     @endif
-                @endif
-            </div>
-
-            <div class="w-full flex flex-wrap gap-2 mt-2">
-                <div class="w-full md:max-w-xs">
-                    <x-label value="Buscar serie :" />
-                    <x-input class="block w-full" wire:keydown.enter="getProductoBySerie" wire:model.defer="searchserie"
-                        placeholder="Buscar serie..." />
-                    <x-jet-input-error for="searchserie" />
                 </div>
+            </form>
+        </x-form-card>
 
-                @if (count($sucursal->almacens) > 1)
-                    <div class="w-full md:max-w-xs">
-                        <x-label value="Almacén :" />
-                        <div id="parentalmacen_id" class="relative" x-data="{ almacen_id: @entangle('almacen_id') }" x-init="select2Almacen">
-                            <x-select class="block w-full" id="almacen_id" x-ref="selecta">
-                                <x-slot name="options">
-                                    @foreach ($sucursal->almacens as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="almacen_id" />
-                    </div>
-                @endif
+        <x-form-card titulo="RESUMEN DE VENTA" class="text-colorlabel">
+            <div class="w-full">
+                <p class="text-[10px]">EXONERADO : {{ $moneda->simbolo }}
+                    <span class="font-bold text-xs">{{ number_format($exonerado, 2, '.', ', ') }}</span>
+                </p>
 
-                <div class=" w-full md:max-w-xs">
-                    <x-label value="Marca :" />
-                    <div id="parentsearchmarca" class="relative" x-data="{ searchmarca: @entangle('searchmarca') }" x-init="select2Marca">
-                        <x-select class="block w-full" id="searchmarca" x-ref="selectmarca" data-placeholder="null"
-                            data-minimum-results-for-search="3">
-                            <x-slot name="options">
-                                @if (count($marcas))
-                                    @foreach ($marcas as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
+                <p class="text-[10px]">GRAVADO : {{ $moneda->simbolo }}
+                    <span class="font-bold text-xs">{{ number_format($gravado, 2, '.', ', ') }}</span>
+                </p>
+
+                <p class="text-[10px]">IGV : {{ $moneda->simbolo }}
+                    <span class="font-bold text-xs">{{ number_format($igv, 2, '.', ', ') }}</span>
+                </p>
+
+                <p class="text-[10px]">GRATUITO : {{ $moneda->simbolo }}
+                    <span class="font-bold text-xs">{{ number_format($gratuito + $igvgratuito, 2, '.', ', ') }}</span>
+                </p>
+
+                <p class="text-[10px]">DESCUENTOS : {{ $moneda->simbolo }}
+                    <span class="font-bold text-xs">{{ number_format($descuentos, 2, '.', ', ') }}</span>
+                </p>
+
+                <p class="text-[10px]">SUBTOTAL : {{ $moneda->simbolo }}
+                    <span class="font-bold text-xs">{{ number_format($total, 2, '.', ', ') }}</span>
+                </p>
+
+                <p class="text-[10px]">TOTAL PAGAR : {{ $moneda->simbolo }}
+                    <span
+                        class="font-bold text-xl">{{ number_format($total - ($gratuito + $igvgratuito), 2, '.', ', ') }}</span>
+                    @if ($increment > 0)
+                        INC. + {{ formatDecimalOrInteger($increment) }}%
+                        ({{ number_format($amountincrement, 2, '.', ', ') }})
+                    @endif
+                </p>
+
+                <p class="text-[10px]">PENDIENTE : {{ $moneda->simbolo }}
+                    <span
+                        class="font-bold text-xl text-red-600">{{ number_format($total - ($gratuito + $igvgratuito + $paymentactual), 2, '.', ', ') }}</span>
+                </p>
+            </div>
+        </x-form-card>
+
+        <x-form-card titulo="PAGO PARCIAL" class="text-colorlabel" style="display: none" x-show="typepay > 0">
+            <div class="w-full flex flex-wrap gap-2">
+                @foreach ($parcialpayments as $index => $item)
+                    <x-minicard size="md" alignFooter="justify-end">
+                        <h1 class="text-lg text-center leading-5 font-semibold text-colorlabel">
+                            {{ number_format($item['amount'], 2, '.', ', ') }}</h1>
+                        <span class="text-[10px] text-center text-colorsubtitleform mt-2">{{ $item['method'] }}</span>
+                        <slot name="buttons">
+                            <x-button-delete wire:click="removepay({{ $index }})" />
+                        </slot>
+                    </x-minicard>
+                @endforeach
+            </div>
+        </x-form-card>
+
+        <div class="w-full" x-data="{ showcart: true }">
+            <div class="text-end px-3">
+                <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer" @click="showcart=!showcart">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" class="w-full h-full block">
+                        <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" />
+                        <path d="M6 6H22" />
+                        <circle cx="6" cy="20" r="2" />
+                        <circle cx="17" cy="20" r="2" />
+                        <path d="M8 20L15 20" />
+                        <path
+                            d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" />
+                    </svg>
+                    <small
+                        class="bg-amber-500 text-white animate-bounce font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
+                        {{ count($carshoops) }}</small>
+                </button>
+            </div>
+            @if (count($carshoops) > 0)
+                <div class="w-full" x-show="showcart" x-transition>
+                    <div class="flex gap-2 flex-wrap justify-start">
+                        @foreach ($carshoops as $item)
+                            <x-simple-card
+                                class="w-full flex flex-col border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
+
+                                <h1 class="text-colorlabel w-full text-[10px] leading-3 text-left z-[1]">
+                                    <span class="font-semibold text-sm">
+                                        {{ formatDecimalOrInteger($item->cantidad) }}
+                                        {{ $item->producto->unit->name }}</span>
+                                    {{ $item->producto->name }}
+
+                                    @if (count($item->carshoopseries) == 1)
+                                        - SN: {{ $item->carshoopseries()->first()->serie->serie }}
+                                    @endif
+                                </h1>
+
+                                @if ($item->promocion)
+                                    <div class="w-auto h-auto bg-red-600 absolute left-1 top-1  rounded-sm">
+                                        <p class=" text-white text-[9px] inline-block font-medium p-1 leading-3">
+                                            PROMOCIÓN</p>
+                                    </div>
                                 @endif
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
-                    </div>
-                    <x-jet-input-error for="searchmarca" />
-                </div>
 
-                <div class=" w-full md:max-w-xs">
-                    <x-label value="Categoría :" />
-                    <div id="parentsearchcategory" class="relative" x-data="{ searchcategory: @entangle('searchcategory') }" x-init="select2Category">
-                        <x-select class="block w-full" id="searchcategory" x-ref="selectcat" data-placeholder="null"
-                            data-minimum-results-for-search="3">
-                            <x-slot name="options">
-                                @if (count($categories))
-                                    @foreach ($categories as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
+                                @if (count($item->carshoopitems) > 0)
+                                    @if (count($item->carshoopitems) > 0)
+                                        <div class="w-full mb-2 mt-1">
+                                            @foreach ($item->carshoopitems as $itemcarshop)
+                                                <h1 class="text-next-500 text-[10px] leading-3 text-left">
+                                                    <span
+                                                        class="w-1.5 h-1.5 bg-next-500 inline-block rounded-full"></span>
+                                                    {{ $itemcarshop->producto->name }}
+                                                </h1>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 @endif
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
-                    </div>
-                    <x-jet-input-error for="searchcategory" />
-                </div>
 
-                @if (count($subcategories) > 1)
-                    <div class=" w-full md:max-w-xs">
-                        <x-label value="Subcategoría :" />
-                        <div id="parentsearchsubcategory" class="relative" x-data="{ searchsubcategory: @entangle('searchsubcategory') }"
-                            x-init="SelectSubcategory">
-                            <x-select class="block w-full" id="searchsubcategory" x-ref="selectsubcat"
-                                data-placeholder="null" data-minimum-results-for-search="3">
-                                <x-slot name="options">
-                                    @foreach ($subcategories as $item)
-                                        <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                    @endforeach
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="searchsubcategory" />
-                    </div>
-                @endif
-            </div>
 
-            <div class="w-full mt-1">
-                <x-label-check for="disponibles">
-                    <x-input wire:model="disponibles" name="disponibles" value="1" type="checkbox"
-                        id="disponibles" />
-                    MOSTRAR SOLO DISPONIBLES
-                </x-label-check>
-            </div>
+                                <div class="w-full flex gap-1 items-end">
+                                    <h1 class="text-colorlabel whitespace-nowrap text-xs text-right">
+                                        <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
+                                        {{ number_format($item->price + $item->igv, 2) }}
+                                    </h1>
 
-            @if (count($productos) > 0)
-                @if ($productos->hasPages())
-                    <div class="w-full py-2">
-                        {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
-                    </div>
-                @endif
+                                    <h1
+                                        class="flex-1 w-full text-colorlabel whitespace-nowrap leading-3 text-lg font-semibold text-right">
+                                        <small class="text-[9px] font-medium">IMPORTE <br>
+                                            {{ $item->moneda->simbolo }}</small>
+                                        {{ number_format($item->total, 2) }}
+                                    </h1>
+                                </div>
 
-                <div class="flex gap-2 flex-wrap justify-around xl:justify-start mt-1">
-                    @foreach ($productos as $item)
-                        <form id="cardproduct{{ $item->id }}" class="w-full xs:w-auto"
-                            wire:submit.prevent="addtocar(Object.fromEntries(new FormData($event.target)), {{ $item->id }})">
-                            @php
-                                $image = $item->getImageURL();
-                                $pricesale = $item->obtenerPrecioVenta($pricetype);
-                                $promocion = $item->getPromocionDisponible();
-                                $descuento = $item->getPorcentajeDescuento($promocion);
-                                $combo = $item->getAmountCombo($promocion, $pricetype, $almacen_id);
-                                // $priceCombo = $combo ? $combo->total : 0;
-                                $almacen = null;
+                                <div class="w-full flex flex-wrap gap-1 mt-2">
+                                    <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
 
-                                if ($almacendefault->name) {
-                                    $stock = formatDecimalOrInteger($item->almacens->first()->pivot->cantidad);
-                                    $almacenStock = $almacendefault->name . " [$stock " . $item->unit->name . ']';
-                                }
-                            @endphp
+                                    @if ($item->isNoAlterStock())
+                                        <x-span-text text="NO ALTERA STOCK" class="leading-3 !tracking-normal" />
+                                    @elseif ($item->isReservedStock())
+                                        <x-span-text text="STOCK RESERVADO" class="leading-3 !tracking-normal"
+                                            type="orange" />
+                                    @elseif ($item->isIncrementStock())
+                                        <x-span-text text="INCREMENTA STOCK" class="leading-3 !tracking-normal"
+                                            type="green" />
+                                    @elseif($item->isDiscountStock())
+                                        <x-span-text text="DISMINUYE STOCK" class="leading-3 !tracking-normal"
+                                            type="red" />
+                                    @endif
+                                </div>
 
-                            <x-card-producto :name="$item->name" :image="$image ?? null" :category="$item->category->name ?? null" :almacen="$item->marca->name ?? null"
-                                :promocion="$promocion" class="h-full overflow-hidden">
+                                {{-- <h1 class="text-colorlabel whitespace-nowrap text-xs font-semibold">
+                                        <small class="text-[10px] font-medium">P.U : </small>
+                                        {{ number_format($item->price, 2) }}</h1>
+                                    <h1 class="text-colorlabel whitespace-nowrap text-xs font-semibold">
+                                        <small class="text-[10px] font-medium">IGV : </small>
+                                        {{ number_format($item->igv, 2) }}</h1> --}}
 
-                                <p class="text-colorlabel text-[9px]">
-                                    {{-- {{ var_dump($precioProducto) }}</p> --}}
-                                    {{-- <p class="text-colorlabel text-[9px]">{{ var_dump($precios) }}</p> --}}
-                                    @if ($combo)
-                                        @if (count($combo->products) > 0)
-                                            <div class="w-full my-2">
-                                                @foreach ($combo->products as $itemcombo)
-                                                    <div class="w-full flex gap-2 bg-body rounded relative">
-                                                        <div
-                                                            class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 shadow relative hover:shadow-lg cursor-pointer">
-                                                            @if ($itemcombo->image)
-                                                                <img src="{{ $itemcombo->image }}" alt=""
-                                                                    class="w-full h-full object-scale-down">
-                                                            @else
-                                                                <x-icon-image-unknown
-                                                                    class="w-full h-full text-neutral-500" />
-                                                            @endif
-                                                        </div>
-                                                        <div class="p-1 w-full flex-1">
-                                                            <h1 class="text-[10px] leading-3 text-left">
-                                                                {{ $itemcombo->name }}
-                                                                <b>[{{ $itemcombo->stock }}
-                                                                    {{ $itemcombo->unit }}]</b>
-                                                            </h1>
-                                                        </div>
-                                                    </div>
+                                @if (count($item->carshoopseries) > 1)
+                                    <div x-data="{ showForm: false }" class="mt-1">
+                                        <x-button @click="showForm = !showForm" class="whitespace-nowrap">
+                                            {{ __('VER SERIES') }}
+                                        </x-button>
+                                        <div x-show="showForm" x-transition class="block w-full rounded mt-1">
+                                            <div class="w-full flex flex-wrap gap-1">
+                                                @foreach ($item->carshoopseries as $itemserie)
+                                                    <span
+                                                        class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
+                                                        {{ $itemserie->serie->serie }}
+                                                        <x-button-delete
+                                                            onclick="confirmDeleteSerie({{ $itemserie }})"
+                                                            wire:loading.attr="disabled" />
+                                                    </span>
                                                 @endforeach
                                             </div>
-                                        @endif
-                                    @endif
+                                        </div>
+                                    </div>
+                                @endif
 
-                                    <x-prices-card-product :name="$almacenStock ?? '***'">
 
-                                        @if ($pricesale > 0)
-                                            @if ($descuento > 0)
-                                                <span class="block w-full line-through text-red-600 text-right">
-                                                    {{ $moneda->simbolo }}
-                                                    {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
-                                                </span>
-                                            @endif
+                                <div class="w-full flex items-end gap-2 justify-between mt-2">
+                                    @can('admin.ventas.create.gratuito')
+                                        <div>
+                                            <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
+                                                <x-input wire:change="updategratis({{ $item->id }})" value="1"
+                                                    type="checkbox" id="gratuito_{{ $item->id }}"
+                                                    :checked="$item->isGratuito()" />
+                                                GRATUITO</x-label-check>
+                                        </div>
+                                    @endcan
+                                    <x-button-delete wire:loading.attr="disabled"
+                                        @click="confirmDeleteCarshoop('{{ $item->id }}')" />
+                                </div>
+                            </x-simple-card>
+                        @endforeach
+                    </div>
 
-                                            <small
-                                                class="text-[10px] font-semibold text-right">{{ $moneda->currency }}</small>
-                                            @if ($moneda->code == 'USD')
-                                                <x-input class="block w-full text-right p-2 disabled:bg-gray-200"
-                                                    name="price" type="number" min="0" step="0.0001"
-                                                    value="{{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) }}"
-                                                    onkeypress="return validarDecimal(event, 12)" />
-                                            @else
-                                                <x-input class="block w-full text-right p-2 disabled:bg-gray-200"
-                                                    name="price" type="number" min="0" step="0.0001"
-                                                    value="{{ formatDecimalOrInteger($pricesale, 3) }}"
-                                                    onkeypress="return validarDecimal(event, 12)" />
-                                            @endif
-                                        @else
-                                            <p class="text-colorerror text-[10px] font-semibold text-center">
-                                               PRECIO DE VENTA NO ENCONTRADO</p>
-                                        @endif
-                                    </x-prices-card-product>
-
-                                    @if (Module::isEnabled('Almacen'))
-                                        @if (count($item->garantiaproductos) > 0)
-                                            <div class="absolute right-1 flex flex-col gap-1 top-1">
-                                                @foreach ($item->garantiaproductos as $garantia)
-                                                    <div x-data="{ isHovered: false }" @mouseover="isHovered = true"
-                                                        @mouseleave="isHovered = false"
-                                                        class="relative w-5 h-5 bg-green-500 text-white rounded-full p-0.5">
-                                                        <svg class="w-full h-full block"
-                                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                            fill="none" stroke="currentColor" stroke-width="2"
-                                                            stroke-linecap="round" stroke-linejoin="round">
-                                                            <path
-                                                                d="M11.9982 2C8.99043 2 7.04018 4.01899 4.73371 4.7549C3.79589 5.05413 3.32697 5.20374 3.1372 5.41465C2.94743 5.62556 2.89186 5.93375 2.78072 6.55013C1.59143 13.146 4.1909 19.244 10.3903 21.6175C11.0564 21.8725 11.3894 22 12.0015 22C12.6135 22 12.9466 21.8725 13.6126 21.6175C19.8116 19.2439 22.4086 13.146 21.219 6.55013C21.1078 5.93364 21.0522 5.6254 20.8624 5.41449C20.6726 5.20358 20.2037 5.05405 19.2659 4.75499C16.9585 4.01915 15.0061 2 11.9982 2Z" />
-                                                            <path d="M9 13C9 13 10 13 11 15C11 15 14.1765 10 17 9" />
-                                                        </svg>
-
-                                                        <p class="absolute w-5 top-0 left-0 text-white rounded-md p-0.5 text-[8px] h-full whitespace-nowrap opacity-0 overflow-hidden bg-green-500 ease-in-out duration-150"
-                                                            :class="isHovered &&
-                                                                '-translate-x-full opacity-100 w-auto max-w-[100px] truncate'">
-                                                            {{ $garantia->typegarantia->name }}</p>
-
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    @endif
-
-                                    @if ($pricesale > 0)
-                                        <x-slot name="footer">
-                                            <div class="w-full flex items-end gap-1 justify-end mt-1">
-                                                @if (count($item->seriesdisponibles) > 0)
-                                                    <div class="w-full flex-1">
-                                                        <x-label value="Ingresar serie :" />
-                                                        <x-input class="block w-full p-2 disabled:bg-gray-200"
-                                                            name="serie" required min="3" />
-                                                    </div>
-                                                @else
-                                                    <div class="w-full flex-1">
-                                                        <x-label value="Cantidad :" />
-                                                        <x-input class="block w-full p-2 disabled:bg-gray-200"
-                                                            name="cantidad" type="number" min="1" required
-                                                            max="{{ $stock }}" value="1"
-                                                            onkeypress="return validarDecimal(event, 12)" />
-                                                    </div>
-                                                @endif
-                                                <x-button-add-car type="submit" wire:loading.attr="disabled" />
-                                            </div>
-                                        </x-slot>
-                                    @endif
-
-                                    <x-slot name="messages">
-                                        <x-jet-input-error for="cart.{{ $item->id }}.price" />
-                                        <x-jet-input-error for="cart.{{ $item->id }}.almacen_id" />
-                                        <x-jet-input-error for="cart.{{ $item->id }}.serie" />
-                                        <x-jet-input-error for="cart.{{ $item->id }}.cantidad" />
-                                    </x-slot>
-
-                                    {{-- <div wire:loading.flex
-                                    class="loading-overlay rounded shadow-md shadow-shadowminicard hidden">
-                                    <x-loading-next />
-                                </div> --}}
-                            </x-card-producto>
-                        </form>
-                    @endforeach
-                </div>
-            @else
-                <div>
-                    @php
-                        $almacenstring = is_null($almacendefault)
-                            ? '...[SUCURSAL SIN ALAMACENES]'
-                            : $almacendefault->name;
-                    @endphp
-                    <x-span-text :text="'NO SE ENCONTRARON REGISTROS DE PRODUCTOS PARA EL ALMACEN, ' . $almacenstring" class="inline-block" type="" />
+                    <div class="w-full flex justify-end mt-2">
+                        <x-button-secondary wire:loading.attr="disabled" class="inline-block"
+                            @click="confirmDeleteAllCarshoop">ELIMINAR TODO</x-button-secondary>
+                    </div>
                 </div>
             @endif
         </div>
-    </x-form-card>
+    </div>
+
+    <div class="w-full xl:flex-1 xl:overflow-y-auto soft-scrollbar h-full">
+        <x-form-card titulo="PRODUCTOS">
+            <div class="w-full">
+                @include('ventas::ventas.forms.filters')
+
+                @if (count($productos) > 0)
+                    @if ($productos->hasPages())
+                        <div class="w-full py-2">
+                            {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
+                        </div>
+                    @endif
+
+                    @include('ventas::ventas.forms.productos')
+                @else
+                    <div>
+                        @php
+                            $almacenstring = is_null($almacendefault)
+                                ? '...[SUCURSAL SIN ALAMACENES]'
+                                : $almacendefault->name;
+                        @endphp
+                        <x-span-text :text="'NO SE ENCONTRARON REGISTROS DE PRODUCTOS PARA EL ALMACEN, ' . $almacenstring" class="inline-block" type="" />
+                    </div>
+                @endif
+            </div>
+        </x-form-card>
+    </div>
 
 
     <script>
-        function select2Almacen() {
-            this.selectA = $(this.$refs.selecta).select2();
-            this.selectA.val(this.almacen_id).trigger("change");
-            this.selectA.on("select2:select", (event) => {
-                this.almacen_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("almacen_id", (value) => {
-                this.selectA.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectA.select2().val(this.almacen_id).trigger('change');
-            });
-        }
-
-        function select2Marca() {
-            this.selectM = $(this.$refs.selectmarca).select2();
-            this.selectM.val(this.searchmarca).trigger("change");
-            this.selectM.on("select2:select", (event) => {
-                this.searchmarca = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("searchmarca", (value) => {
-                this.selectM.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectM.select2().val(this.searchmarca).trigger('change');
-            });
-        }
-
-        function select2Category() {
-            this.selectC = $(this.$refs.selectcat).select2();
-            this.selectC.val(this.searchcategory).trigger("change");
-            this.selectC.on("select2:select", (event) => {
-                this.searchcategory = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("searchcategory", (value) => {
-                this.selectC.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectC.select2().val(this.searchcategory).trigger('change');
-            });
-        }
-
-        function select2Pricetype() {
-            this.selectP = $(this.$refs.selectp).select2();
-            this.selectP.val(this.pricetype_id).trigger("change");
-            this.selectP.on("select2:select", (event) => {
-                @this.setPricetypeId(event.target.value);
-                // this.pricetype_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("pricetype_id", (value) => {
-                this.selectP.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectP.select2().val(this.pricetype_id).trigger('change');
-            });
-        }
-
-        function SelectSubcategory() {
-            this.selectSC = $(this.$refs.selectsubcat).select2();
-            this.selectSC.val(this.searchsubcategory).trigger("change");
-            this.selectSC.on("select2:select", (event) => {
-                this.searchsubcategory = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("searchsubcategory", (value) => {
-                this.selectSC.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectSC.select2('destroy');
-                this.selectSC.select2().val(this.searchsubcategory).trigger('change');
-            });
-        }
-
-        window.addEventListener('show-resumen-venta', (event) => {
-            if (event.detail.form_id == null) {
-                @this.render();
-            }
-        });
-
-        window.addEventListener('setMoneda', data => {
-            @this.setMoneda(data.detail);
-        });
-
-        window.addEventListener('setPricetypeId', data => {
-            if (data.detail) {
-                if (@this.pricetype_id !== data.detail) {
-                    @this.setPricetypeId(data.detail);
+        function confirmDeleteSerie(itemserie) {
+            swal.fire({
+                title: 'Eliminar serie ' + itemserie.serie.serie + ' del carrito de ventas ?',
+                text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.deleteserie(itemserie.id);
                 }
-            }
-        });
+            })
+        }
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('loader', () => ({
+                incluyeguia: @entangle('incluyeguia').defer,
+                vehiculosml: false,
+                loadingprivate: false,
+                loadingpublic: false,
+                loadingdestinatario: false,
+                codemotivotraslado: '',
+                codemodalidad: '',
+                paymentcuotas: false,
+                formapago: '',
+                code: '',
+                sendsunat: '',
+                openguia: true,
+                sincronizegre: @entangle('sincronizegre').defer,
+
+                cotizacion_id: @entangle('cotizacion_id').defer,
+                moneda_id: @entangle('moneda_id'),
+                seriecomprobante_id: @entangle('seriecomprobante_id').defer,
+                typepayment_id: @entangle('typepayment_id'),
+                methodpayment_id: @entangle('methodpayment_id').defer,
+                serieguia_id: @entangle('serieguia_id').defer,
+                motivotraslado_id: @entangle('motivotraslado_id').defer,
+                modalidadtransporte_id: @entangle('modalidadtransporte_id').defer,
+                ubigeoorigen_id: @entangle('ubigeoorigen_id').defer,
+                ubigeodestino_id: @entangle('ubigeodestino_id').defer,
+                typepay: @entangle('typepay').defer,
+                parcialpayments: @entangle('parcialpayments').defer,
+
+                init() {
+                    this.$watch("moneda_id", (value) => {
+                        const message = this.updatemonedacart(value);
+                    });
+                    this.$watch("typepay", (value) => {
+                        // console.log('Typepay : ' + value);
+                    });
+                },
+                toggle() {
+                    this.vehiculosml = !this.vehiculosml;
+                    if (this.vehiculosml) {
+                        this.loadingpublic = false;
+                        this.loadingprivate = false;
+                    } else {
+                        this.selectedModalidadtransporte(this.codemodalidad);
+                    }
+                },
+                toggleguia() {
+                    this.incluyeguia = !this.incluyeguia;
+                },
+                getCodeMotivo(target) {
+                    this.codemotivotraslado = target.options[target.selectedIndex].getAttribute(
+                        'data-code');
+                    this.selectedMotivotraslado(this.codemotivotraslado);
+                },
+                getCodeModalidad(target) {
+                    this.codemodalidad = target.options[target.selectedIndex].getAttribute(
+                        'data-code');
+                    if (!this.vehiculosml) {
+                        this.selectedModalidadtransporte(this.codemodalidad);
+                    }
+                },
+                selectedModalidadtransporte(value) {
+                    // console.log(value);
+                    switch (value) {
+                        case '01':
+                            this.loadingpublic = true;
+                            this.loadingprivate = false;
+                            break;
+                        case '02':
+                            this.loadingprivate = true;
+                            this.loadingpublic = false;
+                            break;
+                        default:
+                            this.loadingprivate = false;
+                            this.loadingpublic = false;
+                    }
+                },
+                selectedMotivotraslado(value) {
+                    switch (value) {
+                        case '01':
+                            this.loadingdestinatario = false;
+                            break;
+                        case '03':
+                            this.loadingdestinatario = true;
+                            break;
+                        default:
+                            this.loadingdestinatario = false;
+                            this.loadingprivate = false;
+                            this.loadingpublic = false;
+                    }
+                },
+                getCodeSend(target) {
+                    this.sendsunat = target.options[target.selectedIndex].getAttribute(
+                        'data-sunat');
+                    // console.log(this.sendsunat);
+
+                    switch (this.sendsunat) {
+                        case '0':
+                            this.incluyeguia = false;
+                            this.openguia = false;
+                            break;
+                        case '1':
+                            this.openguia = true;
+                            break;
+                        default:
+                            this.openguia = false;
+                            this.incluyeguia = false;
+                            this.sendsunat = '';
+                    }
+                },
+                savepay(event) {
+                    this.$wire.call('savepay').then(() => {
+                        // console.log('function ejecutado correctamente');
+                    });
+                    event.preventDefault();
+                },
+                confirmDeleteCarshoop(carshoop_id) {
+                    swal.fire({
+                        title: 'ELIMINAR ITEM DEL CARRITO ?',
+                        text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // @this.delete(carshoop_id);
+                            const message = this.deleteitem(carshoop_id);
+                        }
+                    })
+                },
+                confirmDeleteAllCarshoop() {
+                    swal.fire({
+                        title: 'Eliminar carrito de ventas ?',
+                        text: "Se eliminarán todos los productos del carrito de ventas y se actualizará su stock correspondientes.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            const message = this.deleteAll();
+                            // @this.deleteallcarshoop();
+                        }
+                    })
+                },
+                async updatemonedacart(moneda_id) {
+                    const route =
+                        "{{ route('admin.carshoop.updatemoneda', ['moneda_id' => ':moneda_id']) }}"
+                        .replace(':moneda_id', moneda_id);
+                    const response = await axios.post(route, {
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector(
+                                    'meta[name="csrf-token"]')
+                                .getAttribute('content')
+                        },
+                        moneda_id: moneda_id
+                    }).catch(function(error) {
+                        console.log(error);
+                    });
+
+                    if (response.status === 200) {
+                        this.$wire.call('setTotal').then(() => {
+                            console.log('setTotal ejecutado correctamente');
+                        });
+                    } else {
+                        throw new Error('Error al actualizar moneda del carrito');
+                    }
+                },
+                async deleteitem(carshoop_id) {
+                    try {
+                        const route =
+                            "{{ route('admin.carshoop.delete', ['carshoop' => ':carshoop_id']) }}"
+                            .replace(':carshoop_id', carshoop_id);
+                        const response = await axios.post(route, {
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            }
+                        })
+
+                        if (response.status === 200) {
+                            this.$wire.call('setTotal').then(() => {
+                                console.log('setTotal ejecutado correctamente');
+                            });
+                        } else {
+                            throw new Error('Error al vaciar el carrito');
+                        }
+                    } catch (error) {
+                        console.error('Error al vaciar el carrito:', error);
+                        throw error;
+                    }
+                },
+                async deleteAll() {
+                    try {
+                        const response = await axios.post(
+                            "{{ route('admin.carshoop.delete.all') }}", {
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]')
+                                        .getAttribute('content')
+                                }
+                            })
+
+                        if (response.status === 200) {
+                            this.$wire.call('setTotal').then(() => {
+                                console.log('setTotal ejecutado correctamente');
+                            });
+                        } else {
+                            throw new Error('Error al vaciar el carrito');
+                        }
+                    } catch (error) {
+                        console.error('Error al vaciar el carrito:', error);
+                        throw error;
+                    }
+                }
+            }));
+        })
     </script>
 </div>

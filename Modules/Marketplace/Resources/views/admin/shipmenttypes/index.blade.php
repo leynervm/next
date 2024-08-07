@@ -25,8 +25,9 @@
         </x-link-breadcrumb>
     </x-slot>
 
-
-    <div class="w-full">
-        <livewire:modules.marketplace.shipmenttypes.show-shipmenttypes />
-    </div>
+    @can('admin.marketplace.shipmenttypes')
+        <div class="w-full">
+            <livewire:modules.marketplace.shipmenttypes.show-shipmenttypes />
+        </div>
+    @endcan
 </x-admin-layout>

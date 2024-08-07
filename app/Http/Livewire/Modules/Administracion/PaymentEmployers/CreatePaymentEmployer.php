@@ -12,13 +12,14 @@ use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Rules\ValidateEmployerpayment;
 use App\Traits\CajamovimientoTrait;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class CreatePaymentEmployer extends Component
 {
 
-    use CajamovimientoTrait;
+    use CajamovimientoTrait, AuthorizesRequests;
 
     public $employer, $employerpayment;
     public $open = false;
@@ -69,6 +70,7 @@ class CreatePaymentEmployer extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.employers.payments.create');
         if ($this->open == false) {
             $this->reset(['descuentos', 'bonus', 'detalle', 'amount']);
             $this->resetValidation();
@@ -100,7 +102,7 @@ class CreatePaymentEmployer extends Component
 
     public function save()
     {
-
+        $this->authorize('admin.administracion.employers.payments.create');
         if (!$this->monthbox || !$this->monthbox->isUsing()) {
             $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;

@@ -10,7 +10,6 @@
         <x-jet-dialog-modal wire:model="open" maxWidth="4xl" footerAlign="justify-end">
             <x-slot name="title">
                 {{ __('Crear promoción') }}
-                <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
             </x-slot>
 
             <x-slot name="content">
@@ -50,7 +49,7 @@
 
                                         @if ($producto)
                                             <div
-                                                class="absolute right-1 bottom-1 flex flex-col gap-1 bg-fondospancardproduct text-colorminicard justify-center items-center w-20 h-20 border rounded-xl shadow shadow-shadowminicard p-1 cursor-pointer hover:shadow-md hover:shadow-shadowminicard">
+                                                class="absolute right-1 bottom-1 flex flex-col gap-1 bg-fondominicard text-colorminicard justify-center items-center w-20 h-20 border border-borderminicard rounded-xl shadow shadow-shadowminicard p-1 cursor-pointer hover:shadow-md hover:shadow-shadowminicard">
                                                 <span class="block w-6 h-6 mx-auto">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full"
                                                         viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -70,7 +69,7 @@
                                                     @if ($agotarstock)
                                                     @else
                                                         {{ floatval(getCombo()->get('limit')) }}
-                                                        {{ getCombo()->get('unit') }}
+                                                        <small class="text-[10px]">{{ getCombo()->get('unit') }}</small>
                                                     @endif
                                                 </h1>
                                             </div>
@@ -211,13 +210,13 @@
                                                     </svg>
                                                 </span>
 
-                                                <h1 class="text-[10px] text-center leading-3 font-semibold">STOCK TOTAL
-                                                </h1>
+                                                <h1 class="text-[10px] text-center leading-3 font-semibold">
+                                                    STOCK TOTAL</h1>
 
                                                 <h1 class="text-xl text-center leading-4 font-semibold">
                                                     {{ floatval($sumstock) }}
-                                                    <span class="w-full text-center text-[10px] font-normal">
-                                                        {{ $productosec->unit->name }}</span>
+                                                    <small class="w-full text-center !text-[10px] font-normal">
+                                                        {{ $productosec->unit->name }}</small>
                                                 </h1>
                                             </div>
 
@@ -378,15 +377,14 @@
                                                         </svg>
                                                     </span>
 
-                                                    <h1 class="text-[10px] text-center leading-3 font-semibold">STOCK
-                                                        TOTAL
-                                                    </h1>
+                                                    <h1 class="text-[10px] text-center leading-3 font-semibold">
+                                                        STOCK TOTAL</h1>
 
-                                                    <h1 class="text-xl text-center leading-4 font-semibold">
+                                                    <p class="text-xl text-center leading-4 font-semibold">
                                                         {{ floatval($sumstock) }}
                                                         <span class="w-full text-center text-[10px] font-normal">
                                                             {{ $producto->unit->name }}</span>
-                                                    </h1>
+                                                    </p>
                                                 </div>
 
                                                 @foreach ($producto->almacens as $item)

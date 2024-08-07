@@ -17,6 +17,7 @@ class CounterCarrito extends Component
 
     public function mount($pricetype = null)
     {
+        $this->verifyProductoCarshoop();
         $this->pricetype = $pricetype;
     }
 
@@ -63,7 +64,34 @@ class CounterCarrito extends Component
 
     public function open()
     {
+        $this->verifyProductoCarshoop();
         $this->render();
         $this->opencounter = true;
+    }
+
+    public function verifyProductoCarshoop()
+    {
+        if (Cart::instance('shopping')->count() > 0) {
+            $count = 0;
+            foreach (Cart::instance('shopping')->content() as $item) {
+                if (is_null($item->model)) {
+                    Cart::instance('shopping')->get($item->rowId);
+                    Cart::instance('shopping')->remove($item->rowId);
+                    $count++;
+                }
+            }
+            if (auth()->check()) {
+                Cart::instance('shopping')->store(auth()->id());
+            }
+            if ($count > 0) {
+                $mensaje = response()->json([
+                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO.",
+                    'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+        }
     }
 }

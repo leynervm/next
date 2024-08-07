@@ -7,16 +7,12 @@ use App\Models\Guiaitem;
 use App\Models\Tvitem;
 use App\Models\Almacen;
 use App\Traits\KardexTrait;
-use Cviebrock\EloquentSluggable\Sluggable;
-
-use App\Models\Caracteristica;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Marca;
 use App\Models\Pricetype;
 use App\Models\Serie;
 use App\Models\Unit;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,12 +23,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Almacen\Entities\Compraitem;
 use App\Models\Detalleproducto;
 use App\Models\Garantiaproducto;
-use App\Models\Oferta;
 use App\Models\Category;
 use App\Models\Subcategory;
 use App\Traits\CalcularPrecioVenta;
 use App\Traits\ObtenerImage;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Cviebrock\EloquentSluggable\Sluggable;
 
 class Producto extends Model
 {
@@ -45,6 +41,8 @@ class Producto extends Model
     use ObtenerImage;
 
     const PUBLICADO = '1';
+    const MOSTRAR = '0';
+    const OCULTAR = '1';
 
     // protected static function newFactory()
     // {
@@ -112,10 +110,10 @@ class Producto extends Model
             ->withPivot('cantidad')->orderByPivot('cantidad', 'desc');
     }
 
-    // public function scopeDisponibles($query)
-    // {
-    //     return $this->almacens()->wherePivot('cantidad', '>', 0);
-    // }
+    public function scopeDisponibles($query)
+    {
+        return $query->wherePivot('cantidad', '>', 0);
+    }
 
     public function series(): HasMany
     {
@@ -130,6 +128,11 @@ class Producto extends Model
     public function garantiaproductos(): HasMany
     {
         return $this->hasMany(Garantiaproducto::class);
+    }
+
+    public function kardexes(): HasMany
+    {
+        return $this->hasMany(Kardex::class);
     }
 
     public function tvitems(): HasMany
@@ -152,12 +155,6 @@ class Producto extends Model
         return $this->morphMany(Image::class, 'imageable')
             ->orderBy('default', 'desc')->orderBy('id', 'asc');
     }
-
-    // public function defaultImage(): MorphMany
-    // {
-    //     return $this->morphMany(Image::class, 'imageable')->where('default', 1);
-    // }
-
 
     public function category(): BelongsTo
     {
@@ -191,13 +188,10 @@ class Producto extends Model
 
     public function especificacions(): BelongsToMany
     {
-        return $this->belongsToMany(Especificacion::class)->withPivot('user_id');
+        return $this->belongsToMany(Especificacion::class)
+            ->withPivot('orden')->orderByPivot('orden', 'asc');
     }
 
-    public function caracteristica(): BelongsTo
-    {
-        return $this->belongsTo(Caracteristica::class)->withTrashed();
-    }
 
     public function detalleproducto(): HasOne
     {
@@ -209,19 +203,6 @@ class Producto extends Model
         return $this->hasMany(Carshoop::class)->orderBy('id', 'asc');
     }
 
-    // public function ofertas(): HasMany
-    // {
-    //     return $this->hasMany(Oferta::class);
-    // }
-
-    // public function ofertasdisponibles(): HasMany
-    // {
-    //     return $this->hasMany(Oferta::class)
-    //         ->whereDate('datestart', '<=', Carbon::now('America/Lima')->format('Y-m-d'))
-    //         ->whereDate('dateexpire', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
-    //         ->where('status', 0);
-    // }
-
     public function promocions(): HasMany
     {
         return $this->hasMany(Promocion::class);
@@ -232,26 +213,21 @@ class Producto extends Model
         return $query->where('publicado', self::PUBLICADO);
     }
 
+    public function scopeVisibles($query)
+    {
+        return $query->where('visivility', self::MOSTRAR);
+    }
+
+    public function scopeOcultos($query)
+    {
+        return $query->where('visivility', self::OCULTAR);
+    }
+
     public function scopeWhereRangoBetween($query, $desde, $hasta)
     {
         return $query->where('pricebuy', '<=', $hasta)
             ->where('pricebuy', '>=', $desde);
     }
-
-    // public function ofertasdisponibles(): HasMany
-    // {
-    //     return $this->hasMany(Promocion::class)->disponibles();
-    // }
-
-    // public function descuentosactivos()
-    // {
-    //     return $this->hasMany(Promocion::class)->descuentos()->disponibles();
-    // }
-
-    // public function scoopeCombos()
-    // {
-    //     return $this->hasMany(Promocion::class)->descuentosDisponibles();
-    // }
 
     public function existStock(): BelongsToMany
     {
@@ -263,5 +239,25 @@ class Producto extends Model
     public function pricetypes(): BelongsToMany
     {
         return $this->belongsToMany(Pricetype::class)->withPivot('price');
+    }
+
+    public function verEspecificaciones()
+    {
+        return $this->viewespecificaciones == Self::PUBLICADO;
+    }
+
+    public function isVisible()
+    {
+        return $this->visivility == self::MOSTRAR;
+    }
+
+    public function isOculto()
+    {
+        return $this->visivility == self::OCULTAR;
+    }
+
+    public function isPublicado()
+    {
+        return $this->publicado == self::PUBLICADO;
     }
 }

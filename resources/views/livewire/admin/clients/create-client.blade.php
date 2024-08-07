@@ -9,7 +9,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo cliente') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -20,18 +19,16 @@
                         @if ($exists)
                             <div class="w-full inline-flex relative">
                                 <x-disabled-text :text="$document" class="w-full block" />
-                                <x-button-close-modal
-                                    class="hover:animate-none h-full !text-red-500 !bg-transparent focus:!bg-transparent hover:!ring-0 focus:!ring-0 absolute right-0 top-0 !px-2"
-                                    wire:click="limpiarcliente" wire:loading.attr="disabled" />
+                                <x-button-close-modal class="btn-desvincular" wire:click="limpiarcliente"
+                                    wire:loading.attr="disabled" />
                             </div>
                         @else
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full prevent flex-1" x-model="document"
+                                <x-input class="block flex-1 w-full prevent" x-model="document"
                                     @keyup="togglecontact($event.target.value)" wire:model.defer="document"
                                     wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
                                     onkeydown="disabledEnter(event)" />
-                                <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient"
-                                    wire:loading.attr="disabled">
+                                <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                         stroke-linejoin="round">
@@ -142,7 +139,7 @@
                         <div class="w-full">
                             <x-label value="DNI :" />
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full" wire:model.defer="documentContact"
+                                <x-input class="block w-full flex-1" wire:model.defer="documentContact"
                                     wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
                                     type="number" onkeydown="disabledEnter(event)" />
                                 <x-button-add class="px-2" wire:click="searchcontacto"
@@ -189,14 +186,14 @@
                 @endif
 
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex flex-wrap gap-2 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
 
-                <div wire:loading.flex wire:target="searchclient,searchcontacto"
-                    class="loading-overlay rounded hidden">
+                <div wire:loading.flex class="loading-overlay fixed hidden">
                     <x-loading-next />
                 </div>
 

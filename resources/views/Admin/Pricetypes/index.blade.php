@@ -29,12 +29,13 @@
     </x-slot>
 
     <div class="mt-3 flex gap-2">
-        {{-- @can('admin.administracion.pricetypes.create')
-            <livewire:admin.pricetypes.create-pricetype />
-        @endcan --}}
-
+       
         @can('admin.administracion.rangos.create')
             <livewire:admin.rangos.create-rango />
+        @endcan
+
+        @can('admin.administracion.rangos.import')
+            <livewire:admin.rangos.importar-rangos />
         @endcan
     </div>
 

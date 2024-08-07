@@ -5,7 +5,7 @@
         'type' => 'button',
         'class' =>
             $size .
-            ' inline-flex items-center group relative font-semibold tracking-widest bg-red-500 text-white p-2.5 rounded-sm hover:bg-red-700 focus:bg-red-700 hover:border-red-700 focus:border-red-700 hover:ring-2 hover:ring-red-300 focus:ring-2 focus:ring-red-300 disabled:opacity-25 transition ease-in duration-150',
+            ' inline-flex items-center group uppercase relative font-semibold tracking-widest bg-red-500 text-white p-2.5 rounded-lg hover:bg-red-700 focus:bg-red-700 hover:border-red-700 focus:border-red-700 hover:ring-2 hover:ring-red-300 focus:ring-2 focus:ring-red-300 disabled:opacity-25 transition ease-in duration-150',
     ]) }}>
     {{ $slot }}
     @if (isset($icono))

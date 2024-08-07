@@ -251,5 +251,13 @@
     "I'm not registered yet?": "Aún no estoy registrado?",
     "I'm already registered": "Ya estoy registrado",
     "categories": "categorías",
-    "methodpayments": "métodos pago"
+    "methodpayments": "métodos pago",
+    "This driver does not support creating temporary URLs.": "Este controlador no admite la creación de direcciones URL temporales.",
+    "All rights reserved.": "Todos los derechos reservados.",
+    "Save and close": "Guardar y cerrar",
+    "The verification of Recaptcha failed.": "La verificación de Recaptcha ha fallado.",
+    "The": "El",
+    "is incorrect.": "es incorrecto",
+    "Registration Success": "Registrado correctamente",
+    "Send message" : "Enviar mensaje"
 }

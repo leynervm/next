@@ -13,8 +13,9 @@ class EmployerController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:admin.administracion.employers')->only('employers');
+        $this->middleware('can:admin.administracion.employers')->only('index');
         $this->middleware('can:admin.administracion.employers.payments')->only('payments');
+        $this->middleware('can:admin.administracion.turnos')->only('turnos');
     }
 
     public function index()

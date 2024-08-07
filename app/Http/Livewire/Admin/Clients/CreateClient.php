@@ -88,7 +88,8 @@ class CreateClient extends Component
         $this->reset(['document', 'name', 'direccion', 'ubigeo_id', 'user', 'exists']);
     }
 
-    public function save()
+
+    public function save($closemodal = false)
     {
 
         $this->authorize('admin.clientes.create');
@@ -152,7 +153,11 @@ class CreateClient extends Component
 
             DB::commit();
             $this->emitTo('admin.clients.show-clients', 'render');
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
             $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
             DB::rollBack();

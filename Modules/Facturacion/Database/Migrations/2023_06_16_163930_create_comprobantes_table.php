@@ -1,8 +1,10 @@
 <?php
 
+use App\Models\Empresa;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Modules\Facturacion\Entities\Comprobante;
 
 class CreateComprobantesTable extends Migration
 {
@@ -37,6 +39,7 @@ class CreateComprobantesTable extends Migration
             $table->text('descripcion')->nullable();
             $table->text('notasunat')->nullable();
             $table->string('leyenda', 255);
+            $table->string('sendmode', 1)->default(Empresa::PRUEBA);
             $table->bigInteger('client_id')->nullable();
             $table->tinyInteger('typepayment_id');
             $table->tinyInteger('seriecomprobante_id');

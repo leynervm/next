@@ -48,6 +48,7 @@ class ShowEmpresa extends Component
             'empresa.viewlogomarca' => ['integer', 'min:0', 'max:1'],
             'empresa.viewtextopromocion' => ['integer', 'min:0', 'max:2'],
             'empresa.usemarkagua' => ['integer', 'min:0', 'max:1'],
+            'empresa.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
             'empresa.alignmark' => [
                 'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
                 'string', 'max:25'
@@ -61,8 +62,8 @@ class ShowEmpresa extends Component
                 'integer', 'min:50', 'max:300'
             ],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
+            'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1', 'min:0'],
             'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
-            'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1', 'numeric', 'decimal:0,4', 'min:0'],
             'empresa.tipocambioauto' => ['integer', 'min:0', 'max:1'],
             'empresa.montoadelanto' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
         ];
@@ -419,7 +420,7 @@ class ShowEmpresa extends Component
             $url = $file->temporaryUrl();
         } catch (\Exception $e) {
             $this->reset(['logo']);
-            $this->addError('logo', $e->getMessage());
+            $this->addError('logo', __($e->getMessage()));
             return;
         }
     }
