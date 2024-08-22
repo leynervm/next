@@ -102,8 +102,8 @@
                         </x-alert>
                     @endif
 
-                    <div class="relative flex flex-col-reverse gap-2 md:flex-row items-end md:justify-between pb-2">
-                        <div class="w-full md:w-auto">
+                    <div class="relative flex gap-2 items-start justify-between pb-2">
+                        <div class="w-full flex-1 mt-auto">
                             <x-breadcrumb-next home="{{ route('admin') }}">
                                 @if (isset($breadcrumb))
                                     {{ $breadcrumb }}
@@ -146,7 +146,8 @@
 
                             <x-slot name="content">
 
-                                <div class="px-4 py-2 flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
+                                <div
+                                    class="px-4 py-2 flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
                                     <button title="Light" theme="theme-next"
                                         class="inline-block theme-switcher-button rounded-full bg-transparent text-white">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -311,12 +312,14 @@
     });
 
     window.addEventListener('validation', data => {
-        console.log(data.detail);
+        // console.log(data.detail);
+        var icon = data.detail.icon ? data.detail.icon : 'info';
+        console.log(icon);
         swal.fire({
             title: data.detail.title,
             text: data.detail.text,
             html: data.detail.text,
-            icon: 'info',
+            icon: icon,
             confirmButtonColor: '#0FB9B9',
             confirmButtonText: 'Cerrar',
         })
@@ -407,6 +410,18 @@
         return charCode == 13 ? true : false;
     }
 
+    function validarSerie(event, maxlenth = 0) {
+        const regex = /^[a-zA-Z0-9-_]$/;
+        const charTyped = String.fromCharCode(event.which || event.keyCode);
+
+        if (regex.test(charTyped)) {
+            return true;
+        } else {
+            event.preventDefault();
+            return false;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         getTheme();
         const buttonsTheme = document.querySelectorAll('.theme-switcher-button');
@@ -437,7 +452,7 @@
 
         function getTheme() {
             const localTheme = localStorage.theme;
-            if (localTheme !== null || localTheme !== undefined) {
+            if (localTheme != null || localTheme != undefined) {
                 let classes = document.body.className.split(' ');
                 let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
                 themeClasses.forEach(themeClass => {
@@ -445,7 +460,7 @@
                 });
                 document.body.classList.add(localTheme);
             } else {
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
                     document.body.classList.remove("{{ config('app.theme') }}");
                     document.body.classList.add('theme-darknext');
                 } else {

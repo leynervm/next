@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SortController;
 use Illuminate\Http\Request;
@@ -37,3 +38,16 @@ Route::post('searchsubcategories', [MarketplaceController::class, 'searchsubcate
 Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('api.tipocambio');
 Route::get('consulta-ruc/{ruc}', [HomeController::class, 'consultaruc'])->name('api.ruc');
 Route::get('consulta-sunat/{document?}', [HomeController::class, 'consultasunat'])->name('consultasunat');
+
+
+Route::post('productos', [ApiController::class, 'productos'])->name('api.producto.all');
+
+Route::post('data', [ApiController::class, 'data'])->name('api.data');
+Route::post('ventas/create/marcas', [ApiController::class, 'marcas'])->name('api.ventas.create.marcas');
+Route::post('ventas/create/categories', [ApiController::class, 'categories'])->name('api.ventas.create.categories');
+Route::post('ventas/create/subcategories', [ApiController::class, 'subcategories'])->name('api.ventas.create.subcategories');
+Route::post('ventas/create/ubigeos', [ApiController::class, 'ubigeos'])->name('api.ventas.create.ubigeos');
+Route::post('ventas/create/pricetypes', [ApiController::class, 'pricetypes'])->name('api.ventas.create.pricetypes');
+Route::post('ventas/create/almacens', [ApiController::class, 'almacens'])->name('api.ventas.create.almacens');
+Route::post('ventas/create/typepayments', [ApiController::class, 'typepayments'])->name('api.ventas.create.typepayments');
+Route::post('ventas/create/methodpayments', [ApiController::class, 'methodpayments'])->name('api.ventas.create.methodpayments');

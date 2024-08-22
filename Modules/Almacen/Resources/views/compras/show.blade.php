@@ -55,9 +55,5 @@
                 <livewire:modules.almacen.compras.show-cuotas-compra :compra="$compra" />
             </div>
         @endif
-
-        <div>
-            <livewire:modules.almacen.compras.show-resumen-compra :compra="$compra" />
-        </div>
     </div>
 </x-admin-layout>

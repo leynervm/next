@@ -21,6 +21,7 @@
         "tailwindcss": "^3.1.0"
     },
     "dependencies": {
+        "@alpinejs/focus": "^3.14.1",
         "@alpinejs/mask": "^3.14.0"
     }
 }

@@ -1,65 +1,70 @@
 <div x-data="loader">
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+    <div wire:loading.flex class="loading-overlay hidden fixed">
         <x-loading-next />
     </div>
 
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="RESUMEN GUÍA REMISIÓN"
             subtitulo="Complete todos los campos para registrar una nueva guía de remisión.">
-            <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-3 gap-2">
-                    <div class="w-full xs:col-span-2 md:col-span-1">
+            <div class="w-full flex flex-col gap-2">
+                <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2">
+                    <div class="w-full xs:col-span-2 sm:col-span-1">
                         <x-label value="Tipo guía :" />
-                        <x-select class="block w-full uppercase" id="motivotraslado_id"
-                            wire:model.lazy="seriecomprobante_id" @change="resetMotivotraslado($event.target)">
-                            <x-slot name="options">
-                                @if (count($seriecomprobantes) > 0)
-                                    @foreach ($seriecomprobantes as $item)
-                                        <option value="{{ $item->id }}"
-                                            data-sendsunat="{{ $item->typecomprobante->sendsunat }}">
-                                            [{{ $item->serie }}] - {{ $item->typecomprobante->descripcion }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
+                        <div class="relative" id="parenttipoguia_id" x-init="select2Typecomprobante">
+                            <x-select class="block w-full uppercase" id="tipoguia_id" x-ref="typecomprobante"
+                                {{-- @change="resetMotivotraslado($event.target)" --}}>
+                                <x-slot name="options">
+                                    @if (count($seriecomprobantes) > 0)
+                                        @foreach ($seriecomprobantes as $item)
+                                            <option value="{{ $item->id }}"
+                                                data-sendsunat="{{ $item->typecomprobante->sendsunat }}">
+                                                [{{ $item->serie }}] - {{ $item->typecomprobante->descripcion }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                         <x-jet-input-error for="seriecomprobante_id" />
                         <x-jet-input-error for="seriecomprobante.id" />
                     </div>
 
-                    <div class="w-full xs:col-span-2 md:col-span-1">
+                    <div class="w-full xs:col-span-2 sm:col-span-2 xl:col-span-1">
                         <x-label value="Motivo traslado :" />
-                        <x-select class="block w-full uppercase" id="motivotraslado_id"
-                            wire:model.defer="motivotraslado_id" @change="getCodeMotivo($event.target)">
-                            <x-slot name="options">
-                                @if (count($motivotraslados))
-                                    @foreach ($motivotraslados as $item)
-                                        <option value="{{ $item->id }}" data-code="{{ $item->code }}">
-                                            {{ $item->name }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        {{-- <span x-text="codemotivotraslado"></span> --}}
+                        <div class="relative" id ="parentmotivotraslado_id" x-init="select2Motivo">
+                            <x-select class="block w-full uppercase" id="motivotraslado_id" x-ref="motivotraslado">
+                                <x-slot name="options">
+                                    @if (count($motivotraslados) > 0)
+                                        @foreach ($motivotraslados as $item)
+                                            <option value="{{ $item->id }}" data-code="{{ $item->code }}">
+                                                {{ $item->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                         <x-jet-input-error for="motivotraslado_id" />
                     </div>
 
                     <div class="w-full">
                         <x-label value="Modalidad transporte :" />
-                        <x-select class="block w-full uppercase" id="modalidadtransporte_id"
-                            wire:model.defer="modalidadtransporte_id" @change="getCodeModalidad($event.target)">
-                            <x-slot name="options">
-                                @if (count($modalidadtransportes))
-                                    @foreach ($modalidadtransportes as $item)
-                                        <option value="{{ $item->id }}" data-code="{{ $item->code }}">
-                                            {{ $item->name }}
-                                        </option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        {{-- <span x-text="codemodalidad"></span> --}}
+                        <div class="relative" id="parentmodalidadtransporte_id" x-init="select2Modalidad">
+                            <x-select class="block w-full uppercase" id="modalidadtransporte_id" x-ref="modalidad">
+                                <x-slot name="options">
+                                    @if (count($modalidadtransportes) > 0)
+                                        @foreach ($modalidadtransportes as $item)
+                                            <option value="{{ $item->id }}" data-code="{{ $item->code }}">
+                                                {{ $item->name }}
+                                            </option>
+                                        @endforeach
+                                    @endif
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
                         <x-jet-input-error for="modalidadtransporte_id" />
                     </div>
 
@@ -83,10 +88,10 @@
                         <x-jet-input-error for="packages" />
                     </div>
 
-                    <div class="w-full xs:col-span-2 lg:col-span-1">
+                    <div class="w-full">
                         <x-label value="Descripción :" />
                         <x-input class="block w-full" wire:model.defer="note"
-                            placeholder="Descripcion, detalle de la guía (Opcional)..." />
+                            placeholder="Detalle de guía (Opcional)..." />
                         <x-jet-input-error for="note" />
                     </div>
 
@@ -104,8 +109,8 @@
                         <div class="w-full" x-show="codemotivotraslado == '01' || codemotivotraslado == '03'">
                             <x-label value="Comprobante referencia emitido :" />
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full flex-1 prevent" wire:model.defer="referencia"
-                                    wire:keydown.enter="searchreferencia" minlength="6" maxlength="13" />
+                                <x-input class="block w-full flex-1" wire:model.defer="referencia"
+                                    wire:keydown.enter.prevent="searchreferencia" minlength="6" maxlength="13" />
                                 <x-button-add class="px-2" wire:click="searchreferencia" wire:loading.attr="disable">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -127,7 +132,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div class="w-full flex flex-wrap gap-1 items-start">
                     <div class="inline-block">
                         <x-label-check for="vehiculosml" class="uppercase">
                             <x-input wire:model.defer="vehiculosml" name="vehiculosml" type="checkbox"
@@ -153,8 +158,8 @@
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 prevent numeric" x-model="documentdestinatario"
-                            wire:model.defer="documentdestinatario" wire:keydown.enter="getDestinatario"
+                        <x-input class="block w-full flex-1 numeric" x-model="documentdestinatario"
+                            wire:model.defer="documentdestinatario" wire:keydown.enter.prevent="getDestinatario"
                             minlength="0" maxlength="11" />
                         <x-button-add class="px-2" wire:click="getDestinatario" wire:target="getDestinatario"
                             wire:loading.attr="disable">
@@ -179,7 +184,7 @@
         </x-form-card>
 
         <x-form-card titulo="COMPRADOR" x-show="loadingcomprador" class="animate__animated animate__fadeInDown">
-            <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
                     <div class="w-full inline-flex gap-1">
@@ -208,7 +213,7 @@
         </x-form-card>
 
         <x-form-card titulo="PROVEEDOR" x-show="loadingproveedor" class="animate__animated animate__fadeInDown">
-            <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
@@ -238,7 +243,7 @@
         </x-form-card>
 
         <x-form-card titulo="TRANSPORTISTA" x-show="loadingpublic" class="animate__animated animate__fadeInDown">
-            <div class="w-full bg-body p-3 grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-3 gap-1">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-3 gap-2">
                 <div class="w-full xs:col-span-2 lg:col-span-1">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
@@ -266,85 +271,80 @@
         </x-form-card>
 
         <x-form-card titulo="LUGAR DE EMISIÓN">
-            <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-1">
-                    <div class="w-full">
-                        <x-label value="Lugar emisión :" />
-                        <div class="relative" id="parentuborig" x-data="{ ubigeoorigen_id: @entangle('ubigeoorigen_id').defer }" x-init="SelectUbigeoOrigen"
-                            wire:ignore>
-                            <x-select class="block w-full" id="uborig" x-ref="selectubigeoorigen"
-                                data-minimum-results-for-search="3">
-                                <x-slot name="options">
-                                    @if (count($ubigeos))
-                                        @foreach ($ubigeos as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
-                                                / {{ $item->ubigeo_reniec }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="ubigeoorigen_id" />
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div class="w-full">
+                    <x-label value="Lugar emisión :" />
+                    <div class="relative" id="parentuborig" x-init="SelectUbigeoOrigen" wire:ignore>
+                        <x-select class="block w-full" id="uborig" x-ref="selectubigeoorigen"
+                            data-minimum-results-for-search="3">
+                            <x-slot name="options">
+                                @if (count($ubigeos))
+                                    @foreach ($ubigeos as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                            / {{ $item->ubigeo_reniec }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
                     </div>
+                    <x-jet-input-error for="ubigeoorigen_id" />
+                </div>
 
-                    <div class="w-full">
-                        <x-label value="Direccion origen :" />
-                        <x-input class="block w-full" wire:model.defer="direccionorigen"
-                            placeholder="Dirección del punto de partida..." />
-                        <x-jet-input-error for="direccionorigen" />
-                    </div>
+                <div class="w-full">
+                    <x-label value="Direccion origen :" />
+                    <x-input class="block w-full" wire:model.defer="direccionorigen"
+                        placeholder="Dirección del punto de partida..." />
+                    <x-jet-input-error for="direccionorigen" />
+                </div>
 
-                    <div class="w-full" x-show="codemotivotraslado == '04'">
-                        <x-label value="Codigo anexo :" />
-                        <x-input class="block w-full" wire:model.defer="anexoorigen"
-                            placeholder="Anexo del punto de partida..." />
-                        <x-jet-input-error for="anexoorigen" />
-                    </div>
+                <div class="w-full" x-show="codemotivotraslado == '04'">
+                    <x-label value="Codigo anexo :" />
+                    <x-input class="block w-full" wire:model.defer="anexoorigen"
+                        placeholder="Anexo del punto de partida..." />
+                    <x-jet-input-error for="anexoorigen" />
                 </div>
             </div>
         </x-form-card>
 
         <x-form-card titulo="LUGAR DE DESTINO">
-            <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-                <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-1">
-                    <div class="w-full">
-                        <x-label value="Lugar destino :" />
-                        <div class="relative" id="parentubdest" x-data="{ ubigeodestino_id: @entangle('ubigeodestino_id').defer }" x-init="SelectUbigeoDestino"
-                            wire:ignore>
-                            <x-select class="block w-full" id="ubdest" x-ref="selectubigeodest"
-                                data-minimum-results-for-search="3">
-                                <x-slot name="options">
-                                    @if (count($ubigeos))
-                                        @foreach ($ubigeos as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
-                                                / {{ $item->ubigeo_reniec }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="ubigeodestino_id" />
+            <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-2">
+                <div class="w-full">
+                    <x-label value="Lugar destino :" />
+                    <div class="relative" id="parentubdest" x-data="{ ubigeodestino_id: @entangle('ubigeodestino_id').defer }" x-init="SelectUbigeoDestino"
+                        wire:ignore>
+                        <x-select class="block w-full" id="ubdest" x-ref="selectubigeodest"
+                            data-minimum-results-for-search="3">
+                            <x-slot name="options">
+                                @if (count($ubigeos))
+                                    @foreach ($ubigeos as $item)
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                            / {{ $item->ubigeo_reniec }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
                     </div>
+                    <x-jet-input-error for="ubigeodestino_id" />
+                </div>
 
-                    <div class="w-full">
-                        <x-label value="Direccion destino :" />
-                        <x-input class="block w-full" wire:model.defer="direcciondestino"
-                            placeholder="Direccion del punto de llegada.." />
-                        <x-jet-input-error for="direcciondestino" />
-                    </div>
+                <div class="w-full">
+                    <x-label value="Direccion destino :" />
+                    <x-input class="block w-full" wire:model.defer="direcciondestino"
+                        placeholder="Direccion del punto de llegada.." />
+                    <x-jet-input-error for="direcciondestino" />
+                </div>
 
-                    <div class="w-full" x-show="codemotivotraslado == '04'">
-                        <x-label value="Codigo anexo :" />
-                        <x-input class="block w-full" wire:model.defer="anexodestino"
-                            placeholder="Anexo del punto de llegada..." />
-                        <x-jet-input-error for="anexodestino" />
-                    </div>
+                <div class="w-full" x-show="codemotivotraslado == '04'">
+                    <x-label value="Codigo anexo :" />
+                    <x-input class="block w-full" wire:model.defer="anexodestino"
+                        placeholder="Anexo del punto de llegada..." />
+                    <x-jet-input-error for="anexodestino" />
                 </div>
             </div>
         </x-form-card>
@@ -352,12 +352,13 @@
         <x-form-card titulo="CONDUCTOR VEHÍCULO" x-show="loadingprivate"
             class="animate__animated animate__fadeInDown">
             <div class="w-full relative rounded flex flex-col gap-2">
-                <div class="w-full bg-body p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     <div class="w-full">
                         <x-label value="Documento :" />
-                        <div class="w-full inline-flex gap-1">
-                            <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="documentdriver"
-                                wire:keydown.enter="getDriver" minlength="0" maxlength="11" />
+                        <div class="w-full inline-flex gap-1" x-data="{ documentdriver: '' }">
+                            <x-input class="block w-full flex-1" wire:model.defer="documentdriver"
+                                wire:keydown.enter.prevent="getDriver" minlength="0" maxlength="11"
+                                @input="event.target.value = event.target.value.replace(/[^0-9]/g, '')" />
                             <x-button-add class="px-2" wire:click="getDriver" wire:loading.attr="disable">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -392,8 +393,8 @@
                     </div>
                 </div>
 
-                <div class="w-full relative rounded">
-                    {{-- @if (count($guia->transportdrivers))
+                {{-- <div class="w-full relative rounded"> --}}
+                {{-- @if (count($guia->transportdrivers))
                     <div class="w-full">
                         <x-table>
                             <x-slot name="header">
@@ -432,31 +433,28 @@
                         </x-table>
                     </div>
                 @endif --}}
-                </div>
+                {{-- </div> --}}
             </div>
         </x-form-card>
 
         <x-form-card titulo="VEHÍCULOS TRANSPORTE" x-show="loadingprivate"
             class="animate__animated animate__fadeInDown">
-            <div class="w-full relative rounded flex flex-wrap md:flex-nowrap gap-3">
-                <div class="w-full md:w-96 md:flex-shrink-0 bg-body p-3 rounded relative" x-data="{ loading: false }">
-                    <div class="w-full flex flex-col gap-2">
-                        <div class="w-full">
-                            <x-label value="Placa vehículo :" />
-                            <x-input class="block w-full defer" wire:model.defer="placa"
-                                wire:keydown.enter="addplacavehiculo"
-                                placeholder="placa del del vehículo transporte..." />
-                            <x-jet-input-error for="placa" />
-                            <x-jet-input-error for="placavehiculos" />
-                        </div>
+            <div class="w-full relative grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                <div class="w-full flex flex-col gap-2 relative" x-data="{ loading: false }">
+                    <div class="w-full">
+                        <x-label value="Placa vehículo :" />
+                        <x-input class="block w-full defer" wire:model.defer="placa"
+                            wire:keydown.enter.prevent="addplacavehiculo" placeholder="placa vehículo..." />
+                        <x-jet-input-error for="placa" />
+                        <x-jet-input-error for="placavehiculos" />
+                    </div>
 
-                        <div class="w-full mt-3 flex justify-end">
-                            <x-button type="button" wire:click="addplacavehiculo">{{ __('AGREGAR') }}</x-button>
-                        </div>
+                    <div class="w-full mt-3 flex justify-end">
+                        <x-button type="button" wire:click="addplacavehiculo">{{ __('AGREGAR') }}</x-button>
                     </div>
                 </div>
 
-                <div class="w-full flex-1 relative rounded">
+                <div class="w-full sm:col-span-2 lg:col-span-3 relative">
                     @if (count($placavehiculos))
                         <div class="w-full flex flex-wrap items-start gap-2">
                             @foreach ($placavehiculos as $item)
@@ -485,7 +483,7 @@
         @endforeach --}}
     </div>
 
-    <x-form-card titulo="PRODUCTOS VINCULADOS" class="mt-3">
+    <x-form-card titulo="RESUMEN PRODUCTOS" class="mt-3">
         <div class="w-full relative rounded flex flex-col gap-3">
             <form wire:submit.prevent="addtoguia" class="w-full flex flex-col gap-2">
                 <div class="w-full grid lg:grid-cols-3 gap-2">
@@ -591,7 +589,8 @@
             </form>
 
             @if (count($carshoops) > 0)
-                <div class="w-full flex flex-wrap gap-2 relative rounded">
+                <div
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                     @foreach ($carshoops as $item)
                         @php
                             $image = $item->producto->getImageURL();
@@ -655,6 +654,69 @@
     </x-form-card>
 
     <script>
+        function select2Typecomprobante() {
+            this.selectTC = $(this.$refs.typecomprobante).select2();
+            this.selectTC.val(this.seriecomprobante_id).trigger("change");
+            this.selectTC.on("select2:select", (event) => {
+                // this.seriecomprobante_id = event.target.value;
+                this.$wire.set('seriecomprobante_id', event.target.value, true)
+                this.resetMotivotraslado(event.target);
+                this.$wire.$refresh()
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("seriecomprobante_id", (value) => {
+                this.selectTC.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectTC.select2('destroy');
+                this.selectTC.select2().val(this.seriecomprobante_id).trigger('change');
+            });
+        }
+
+        function select2Motivo() {
+            this.selectMOT = $(this.$refs.motivotraslado).select2();
+            this.selectMOT.val(this.motivotraslado_id).trigger("change");
+            this.selectMOT.on("select2:select", (event) => {
+                this.motivotraslado_id = event.target.value;
+                this.getCodeMotivo(event.target);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("motivotraslado_id", (value) => {
+                this.selectMOT.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectMOT.select2('destroy');
+                this.selectMOT.select2().val(this.motivotraslado_id).trigger('change');
+            });
+        }
+
+        function select2Modalidad() {
+            this.selectMT = $(this.$refs.modalidad).select2();
+            this.selectMT.val(this.modalidadtransporte_id).trigger("change");
+            this.selectMT.on("select2:select", (event) => {
+                this.modalidadtransporte_id = event.target.value;
+                this.getCodeModalidad(event.target);
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("modalidadtransporte_id", (value) => {
+                this.selectMT.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectMT.select2('destroy');
+                this.selectMT.select2().val(this.modalidadtransporte_id).trigger('change');
+            });
+        }
+
+
         function select2Stock() {
             this.selectSTK = $(this.$refs.selectstock).select2();
             this.selectSTK.val(this.mode).trigger("change");
@@ -798,12 +860,19 @@
                 local: false,
                 codemotivotraslado: '',
                 codemodalidad: '',
+
+                seriecomprobante_id: @entangle('seriecomprobante_id').defer,
+                motivotraslado_id: @entangle('motivotraslado_id').defer,
+                modalidadtransporte_id: @entangle('modalidadtransporte_id').defer,
+
                 documentdestinatario: @entangle('documentdestinatario').defer,
                 namedestinatario: @entangle('namedestinatario').defer,
                 documentcomprador: @entangle('documentcomprador').defer,
                 namecomprador: @entangle('namecomprador').defer,
                 rucproveedor: @entangle('rucproveedor').defer,
                 nameproveedor: @entangle('nameproveedor').defer,
+
+                ubigeoorigen_id: @entangle('ubigeoorigen_id').defer,
 
                 alterstock: null,
                 mode: @entangle('mode'),
@@ -814,7 +883,7 @@
                 producto_id: @entangle('producto_id'),
 
                 init() {
-                    console.log("loaded Alpine on create-guia");
+                    // console.log("loaded Alpine on create-guia");
                 },
                 toggle() {
                     this.vehiculosml = !this.vehiculosml;

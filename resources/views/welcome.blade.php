@@ -168,7 +168,7 @@
         </script>
     @endif
 
-    <div class="w-full py-5">
+    <div class="contenedor w-full py-5">
         {{-- <h3 class="tracking-wide font-bold text-next-500 text-xs mb-3">NOSOTROS</h3> --}}
 
         <section class="w-full flex flex-col justify-center items-center mx-auto py-12">

@@ -24,14 +24,22 @@ class CreateMethodpayment extends Component
     {
         return [
             'name' => [
-                'required', 'min:3', 'max:100',
+                'required',
+                'min:3',
+                'max:100',
                 new CampoUnique('methodpayments', 'name', null, true),
             ],
             'type' => [
-                'required', 'integer', 'min:0', 'max:1',
+                'required',
+                'integer',
+                'min:0',
+                'max:1',
             ],
             'default' => [
-                'required', 'integer', 'min:0', 'max:1',
+                'required',
+                'integer',
+                'min:0',
+                'max:1',
                 new DefaultValue('methodpayments', 'default', null, true)
             ]
         ];
@@ -51,7 +59,7 @@ class CreateMethodpayment extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.cajas.methodpayments.create');
         $this->name = trim($this->name);
@@ -78,7 +86,11 @@ class CreateMethodpayment extends Component
 
             DB::commit();
             $this->emitTo('admin.methodpayments.show-methodpayments', 'render');
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept('open');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

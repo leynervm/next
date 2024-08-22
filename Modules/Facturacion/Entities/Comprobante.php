@@ -116,6 +116,17 @@ class Comprobante extends Model
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
     }
 
+    public function scopeSendSunat($query)
+    {
+        return $query->where('codesunat', self::ENVIADO_SUNAT);
+    }
+
+    public function scopeNoEnviadoSunat($query)
+    {
+        return $query->where('codesunat', '<>', self::ENVIADO_SUNAT)
+            ->orWhereNull('codesunat');
+    }
+
     public function isSendSunat()
     {
         return trim($this->codesunat) == self::ENVIADO_SUNAT;

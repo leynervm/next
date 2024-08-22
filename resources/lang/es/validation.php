@@ -320,7 +320,11 @@ return [
         'direcciondestino'          =>  'dirección destino',
         'documentdestinatario'      =>  'documento destinatario',
         'namedestinatario'          =>  'nombre destinatario',
+        'documentdriver'            =>  'documento conductor',
+        'namedriver'                =>  'nombre conductor',
+        'lastname'                  =>  'apellidos',
         'packages'                  =>  'paquetes',
+        'placavehiculos'            =>  'placa vehícular',
         'datetraslado'              =>  'fecha traslado',
         'motivotraslado_id'         =>  'motivo traslado',
         'modalidadtransporte_id'    =>  'modalidad transporte',
@@ -348,5 +352,6 @@ return [
         'horasalida'                =>  'hora salida',
         'g_recaptcha_response'      =>  'código recaptcha',
         'g-recaptcha-response'      =>  'código recaptcha',
+        'parcialpayments'           =>  'pagos parciales',
     ],
 ];

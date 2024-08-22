@@ -26,7 +26,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl animate__animated animate__fadeIn animate__faster">
+    <div class="mx-auto xl:max-w-7xl">
         @livewire('admin.proveedores.show-proveedor', ['proveedor' => $proveedor])
     </div>
 </x-admin-layout>

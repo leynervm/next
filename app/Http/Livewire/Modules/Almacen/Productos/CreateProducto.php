@@ -31,6 +31,7 @@ class CreateProducto extends Component
     public $pricesale = 0;
     public $igv = 0;
     public $publicado = 0;
+    public $requireserie = 0;
     public $minstock = 0;
     public $name, $marca_id, $modelo, $partnumber, $sku, $unit_id, $category_id,
         $subcategory_id, $almacenarea_id, $estante_id;
@@ -41,14 +42,19 @@ class CreateProducto extends Component
     {
         return [
             'name' => [
-                'required', 'min:3', new CampoUnique('productos', 'name', null, true)
+                'required',
+                'min:3',
+                new CampoUnique('productos', 'name', null, true)
             ],
             'modelo' => ['required', 'string'],
             // 'sku' => ['nullable', 'string', 'min:4'],
             'partnumber' => ['nullable', 'string', 'min:4'],
             'pricebuy' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0'],
             'pricesale' => [
-                'required', 'numeric', 'decimal:0,4', 'min:0',
+                'required',
+                'numeric',
+                'decimal:0,4',
+                'min:0',
                 !mi_empresa()->usarLista() ? 'gt:0' : ''
             ],
             'igv' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
@@ -61,6 +67,7 @@ class CreateProducto extends Component
             'almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'dimensions:min_width=600,min_height=600'],
             'descripcionproducto' => ['nullable', 'string']
         ];
@@ -101,6 +108,8 @@ class CreateProducto extends Component
 
         // dd($this->descripcionproducto);
         $this->authorize('admin.almacen.productos.create');
+        $this->publicado = trim($this->publicado) == 1 ? 1 : 0;
+        $this->requireserie = trim($this->requireserie) == 1 ? 1 : 0;
         $this->name = trim($this->name);
         $this->modelo = trim($this->modelo);
         $this->partnumber = trim($this->partnumber);
@@ -128,6 +137,7 @@ class CreateProducto extends Component
                 'igv' => $this->igv,
                 'minstock' => $this->minstock,
                 'publicado' => $this->publicado,
+                'requireserie' => $this->requireserie,
                 'code' => Str::random(9),
                 'almacenarea_id' => $this->almacenarea_id,
                 'estante_id' => $this->estante_id,

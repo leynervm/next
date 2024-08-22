@@ -275,7 +275,7 @@
 
 
 .loading-overlay {
-    @apply absolute top-0 left-0 w-full h-full bg-fondoloading opacity-70 flex flex-wrap justify-center items-center z-50;
+    @apply absolute top-0 left-0 w-full h-full bg-fondoloading opacity-60 flex flex-wrap justify-center items-center z-50;
 
     /* background-color: rgba(255, 255, 255, 0.8);
     z-index: 9999; */

@@ -190,10 +190,15 @@ class CreateGuia extends Component
             'items' => ['required', 'array', 'min:1']
         ];
     }
+    
+    protected $messages = [
+        'placa.uppercase' => 'El campo placa debe contener letras en mayusculas.',
+    ];
 
     protected $validationAttributes = [
         'seriecomprobante_id'   => 'tipo guía',
-        'items'                 =>   'items de guia'
+        'items'                 =>   'items de guia',
+
     ];
 
     public function mount(Sucursal $sucursal)
@@ -1028,7 +1033,6 @@ class CreateGuia extends Component
         $this->documentdriver = trim($this->documentdriver);
         $this->validate([
             'documentdriver' => [
-                'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02'),
                 'numeric', 'regex:/^\d{8}(?:\d{3})?$/'
             ],
@@ -1047,10 +1051,5 @@ class CreateGuia extends Component
         } else {
             dd($response);
         }
-    }
-
-    public function hydrate()
-    {
-        $this->dispatchBrowserEvent('renderselect2');
     }
 }

@@ -19,7 +19,7 @@
             <div class="w-full flex flex-col gap-2">
     @endif
 
-    <div class="w-full h-40 rounded overflow-hidden relative">
+    <div class="w-full h-24 sm:h-40 rounded overflow-hidden relative">
         @if (isset($image))
             <img src="{{ $image }}" alt=""
                 class="w-full h-full object-scale-down group-hover:scale-105 {{ $secondimage ? 'group-hover:opacity-0 duration-700' : 'scale-90 duration-1000' }} transition-all ease-in">
@@ -34,7 +34,7 @@
 
     <div class="p-1">
         <div class="w-full flex flex-wrap gap-3 justify-between py-1">
-            <span class="inline-block text-colorsubtitleform">{{ $marca }}</span>
+            <span class="inline-block text-colorsubtitleform text-[10px] sm:text-sm">{{ $marca }}</span>
             @if (!empty($partnumber))
                 <span class="inline-block text-[10px] text-colorsubtitleform">
                     N° PARTE: {{ $partnumber }}</span>
@@ -42,7 +42,7 @@
         </div>
 
         <p
-            class="text-colorlabel text-[10px] tracking-wide mb-5 text-center block font-semibold leading-3 xs:text-center mt-1 group-hover:text-hoverlinktable transition ease-in-out duration-150">
+            class="text-colorlabel text-[9px] sm:text-[10px] tracking-wide mb-5 text-center block font-semibold leading-3 xs:text-center mt-1 group-hover:text-hoverlinktable transition ease-in-out duration-150">
             {{ $name }}</p>
 
         {{ $slot }}

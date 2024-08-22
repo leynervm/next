@@ -13,7 +13,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <form class="w-full flex flex-col gap-5" method="POST" action="{{ route('claimbook.store') }}"
+    <form class="contenedor w-full flex flex-col gap-5" method="POST" action="{{ route('claimbook.store') }}"
         x-data="shipment">
         @csrf
         <h1 class="font-semibold text-3xl text-colortitleform py-3 text-center">

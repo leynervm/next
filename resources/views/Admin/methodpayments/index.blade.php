@@ -1,6 +1,7 @@
 <x-admin-layout>
     <x-slot name="breadcrumb">
-        @can('admin.cajas')
+        @canany(['admin.cajas', 'admin.cajas.methodpayments', 'admin.cajas.movimientos', 'admin.cajas.mensuales.create',
+            'admin.cajas.aperturas', 'admin.administracion.employers.adelantos.create', 'admin.cajas.conceptos'])
             <x-link-breadcrumb text="CAJAS" route="admin.cajas">
                 <x-slot name="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
@@ -14,7 +15,7 @@
                     </svg>
                 </x-slot>
             </x-link-breadcrumb>
-        @endcan
+        @endcanany
 
         <x-link-breadcrumb text="FORMAS PAGO" active>
             <x-slot name="icon">

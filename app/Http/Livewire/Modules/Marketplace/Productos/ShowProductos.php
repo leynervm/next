@@ -154,7 +154,7 @@ class ShowProductos extends Component
         });
 
         $productos = $productos->visibles()->publicados()
-            ->orderBy($this->sort, $this->direction)->paginate();
+            ->orderBy($this->sort, $this->direction)->paginate(30);
 
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'subcategories', 'marcas', 'caracteristicas'));

@@ -48,7 +48,7 @@
                             </form>
                         @else
                             @can('admin.almacen.typegarantias')
-                                <x-link-button href="{{ route('admin.almacen.typegarantias') }}">
+                                <x-link-button href="{{ route('admin.almacen.typegarantias') }}" class="inline-block">
                                     NUEVOS TIPOS GARANTÍA...</x-link-button>
                             @endcan
                         @endif

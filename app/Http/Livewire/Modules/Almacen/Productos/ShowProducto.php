@@ -55,6 +55,7 @@ class ShowProducto extends Component
             'producto.almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'producto.estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'producto.requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'producto.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
         ];
     }
@@ -95,13 +96,13 @@ class ShowProducto extends Component
         return view('livewire.modules.almacen.productos.show-producto', compact('units', 'categories', 'marcas', 'almacenareas', 'estantes'));
     }
 
-    public function updatedProductoPublicado($value)
-    {
-        $this->authorize('admin.almacen.productos.edit');
-        $this->producto->publicado = $value ? $value : 0;
-        $this->producto->save();
-        $this->dispatchBrowserEvent('updated');
-    }
+    // public function updatedProductoPublicado($value)
+    // {
+    //     $this->authorize('admin.almacen.productos.edit');
+    //     $this->producto->publicado = $value ? $value : 0;
+    //     $this->producto->save();
+    //     $this->dispatchBrowserEvent('updated');
+    // }
 
     public function updatedProductoViewespecificaciones($value)
     {

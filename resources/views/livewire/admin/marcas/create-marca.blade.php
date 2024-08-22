@@ -63,9 +63,11 @@
                 <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese nombre de marca..." />
                 <x-jet-input-error for="name" />
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex pt-4 justify-end gap-2">
                     <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

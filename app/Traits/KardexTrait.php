@@ -106,6 +106,11 @@ trait KardexTrait
         ]);
     }
 
+    public function kardex(): MorphOne
+    {
+        return $this->morphOne(Kardex::class, 'kardeable');
+    }
+
     public function getGratuitoAttribute($value)
     {
         return (int) $value;
@@ -124,11 +129,6 @@ trait KardexTrait
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function kardex(): MorphOne
-    {
-        return $this->morphOne(Kardex::class, 'kardeable');
     }
 
     public function isGratuito()

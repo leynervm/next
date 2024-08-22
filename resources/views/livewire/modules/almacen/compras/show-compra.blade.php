@@ -5,8 +5,8 @@
 
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
         <div class="w-full grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div class="w-full text-colortitleform">
-                <h1 class="font-semibold text-sm leading-4">
+            <div class="w-full text-colorsubtitleform">
+                <h1 class="font-semibold text-sm leading-4 text-colortitleform">
                     <span class="text-3xl">{{ $compra->referencia }}</span>
                     {{ $compra->proveedor->name }}
                 </h1>
@@ -33,64 +33,216 @@
                     @endif
                 </h1>
 
-                @if ($compra->isClose())
+                <h1 class="font-medium text-xs">
+                    TIPO PAGO : {{ $compra->typepayment->name }}
+                </h1>
+
+                {{-- @if ($compra->isClose())
                     <x-span-text text="CERRADO" type="red" class="leading-3 !tracking-normal" />
-                @endif
+                @endif --}}
             </div>
 
-            <div class="w-full text-colortitleform">
-                <h3 class="font-semibold text-xs text-end leading-3">
-                    <small class="font-medium">SUBTOTAL {{ $compra->moneda->simbolo }}</small>
-                    {{ number_format($compra->exonerado + $compra->gravado + $compra->igv + $compra->otros + $compra->descuento, 2, '.', ', ') }}
+            <div class="w-full text-colorsubtitleform">
+                <h3 class="font-semibold text-sm text-end leading-4">
+                    <small class="font-medium text-[10px]">EXONERADO </small>
+                    {{ number_format($compra->exonerado, 2, '.', ', ') }}
                 </h3>
 
-                {{-- <h3 class="font-semibold text-xs text-end leading-3">
-                    <small class="font-medium">EXONERADO </small>
-                    {{ number_format($compra->exonerado, 3, '.', ', ') }}
+                <h3 class="font-semibold text-sm text-end leading-4">
+                    <small class="font-medium text-[10px]">GRAVADO</small>
+                    {{ number_format($compra->gravado, 2, '.', ', ') }}
                 </h3>
 
-                <h3 class="font-semibold text-xs text-end leading-3">
-                    <small class="font-medium">GRAVADO</small>
-                    {{ number_format($compra->gravado, 3, '.', ', ') }}
+                <h3 class="font-semibold text-sm text-end leading-4">
+                    <small class="font-medium text-[10px]">IGV</small>
+                    {{ number_format($compra->igv, 2, '.', ', ') }}
                 </h3>
 
-                <h3 class="font-semibold text-xs text-end leading-3">
-                    <small class="font-medium">IGV</small>
-                    {{ number_format($compra->igv, 3, '.', ', ') }}
+                <h3 class="font-semibold text-sm text-end leading-4">
+                    <small class="font-medium text-[10px]">SUBTOTAL {{ $compra->moneda->simbolo }}</small>
+                    {{ number_format($compra->total + $compra->descuento, 2, '.', ', ') }}
                 </h3>
-
-                <h3 class="font-semibold text-xs text-end leading-3">
-                    <small class="font-medium">OTROS</small>
-                    {{ number_format($compra->otros, 3, '.', ', ') }}
-                </h3> --}}
 
                 @if ($compra->descuento > 0)
-                    <h3 class="font-semibold text-xs text-end leading-3 text-green-500">
-                        <small class="font-medium">DESCUENTOS {{ $compra->moneda->simbolo }}</small>
+                    <h3 class="font-semibold text-sm text-end leading-4">
+                        <small class="font-medium text-[10px]">DESCUENTOS {{ $compra->moneda->simbolo }}</small>
                         {{ number_format($compra->descuento, 2, '.', ', ') }}
                     </h3>
                 @endif
 
-                <h3 class="font-semibold text-3xl leading-normal text-end">
+                <h3 class="font-semibold text-3xl leading-normal text-colortitleform text-end">
                     <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
                     {{ number_format($compra->total, 2, '.', ', ') }}
                 </h3>
             </div>
         </div>
 
-        <div class="w-full flex gap-2 items-end justify-end">
-            @can('admin.almacen.compras.close')
-                @if ($compra->isOpen())
-                    <x-button onclick="confirmCloseCompra()">CERRAR COMPRA</x-button>
-                @endif
-            @endcan
-
-            @can('admin.almacen.compras.delete')
-                <x-button-secondary onclick="comfirmDelete()" wire:loading.attr="disabled" wire:target="delete">
+        @can('admin.almacen.compras.delete')
+            <div class="w-full flex gap-2 items-end justify-end">
+                <x-button-secondary onclick="comfirmDelete()" wire:loading.attr="disabled">
                     {{ __('ELIMINAR') }}</x-button-secondary>
-            @endcan
-        </div>
+            </div>
+        @endcan
     </x-simple-card>
+
+
+
+
+    <x-form-card titulo="RESUMEN COMPRA" subtitulo="Resumen de productos adquiridos en la compra.">
+        <div class="w-full relative flex flex-col gap-2">
+            <div class="w-full">
+                @if ($compra->sucursal->empresa->usarLista())
+                    @if (count($pricetypes) > 1)
+                        <div class="w-full md:w-64 lg:w-80">
+                            <x-label value="Lista precios :" />
+                            <div id="parentpricetype_id" class="relative" x-data="{ pricetype_id: @entangle('pricetype_id') }"
+                                x-init="Pricetype">
+                                <x-select class="block w-full" id="pricetype_id" x-ref="selectprice">
+                                    <x-slot name="options">
+                                        @foreach ($pricetypes as $item)
+                                            <option value="{{ $item->id }}">
+                                                {{ $item->name }}</option>
+                                        @endforeach
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="pricetype_id" />
+                        </div>
+                    @endif
+                @endif
+            </div>
+            @if (count($compra->compraitems) > 0)
+                <div
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
+                    @foreach ($compra->compraitems as $item)
+                        @php
+                            $image = $item->producto->getImageURL();
+                            $promocion = $item->producto->getPromocionDisponible();
+                            $descuento = $item->producto->getPorcentajeDescuento($promocion);
+                            $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
+                        @endphp
+
+                        <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" x-data="{ showForm: false }">
+                            <div
+                                class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
+                                @foreach ($item->almacencompras as $almac)
+                                    <div
+                                        class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
+                                        {{ formatDecimalOrInteger($almac->cantidad) }}
+                                        <small class="text-[10px] font-medium">
+                                            {{ $almac->compraitem->producto->unit->name }} \
+                                            {{ $almac->almacen->name }}</small>
+                                    </div>
+                                    @if (count($almac->series) > 0)
+                                        <div class="w-full flex flex-wrap gap-1 items-start">
+                                            @foreach ($almac->series as $ser)
+                                                <x-span-text :text="$ser->serie" />
+                                                {{-- <div
+                                                    class="rounded-lg p-0.5 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
+                                                    <small
+                                                        class="text-[10px] leading-3 tracking-wider">{{ $ser }}</small>
+                                                    <x-button-delete @click="" wire:loading.attr="disabled" />
+                                                </div> --}}
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                @endforeach
+                            </div>
+
+                            <table class="w-full table text-[10px] text-colorsubtitleform">
+                                <tr>
+                                    <td colspan="3" class=" text-center text-colorlabel">
+                                        TOTAL
+                                        <span class="font-semibold text-xl">
+                                            {{ formatDecimalOrInteger($item->total, 2, ', ') }}</span>
+                                        <small>{{ $compra->moneda->currency }}</small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle">P. U. C.</td>
+                                    <td class="text-end">
+                                        <span
+                                            class="text-sm font-semibold">{{ formatDecimalOrInteger($item->price + $item->igv, 2, ', ') }}</span>
+                                        <small>{{ $compra->moneda->currency }}</small>
+                                    </td>
+                                </tr>
+                                @if ($compra->moneda->isDolar())
+                                    <tr>
+                                        <td class="align-middle">P. U. C.</td>
+                                        <td class="text-end">
+                                            <span class="text-sm font-semibold">
+                                                {{ formatDecimalOrInteger(($item->price + $item->igv) * $compra->tipocambio, 2, ', ') }}</span>
+                                            <small>SOLES</small>
+                                        </td>
+                                    </tr>
+                                @endif
+                                @if ($item->subtotaldescuento > 0)
+                                    <tr>
+                                        <td class="align-middle">SUBTOTAL</td>
+                                        <td class="text-end">
+                                            <span
+                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item->subtotal, 2, ', ') }}</span>
+                                            <small>{{ $compra->moneda->currency }}</small>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="align-middle">DESCUENTOS</td>
+                                        <td class="text-end">
+                                            <span
+                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item->subtotaldescuento, 2, ', ') }}</span>
+                                            <small>{{ $compra->moneda->currency }}</small>
+                                        </td>
+                                    </tr>
+                                @endif
+                                {{-- @if (!mi_empresa()->usarLista())
+                                    <tr>
+                                        <td colspan="3" class=" text-center text-colorlabel">
+                                            VENTA S/.
+                                            <span class="font-semibold text-xl">
+                                                {{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                            SOLES
+                                        </td>
+                                    </tr>
+                                @endif --}}
+                            </table>
+
+                            @if ($promocion)
+                                @if ($promocion->isDescuento() || $promocion->isRemate())
+                                    @if ($descuento > 0)
+                                        <span class="block w-full line-through text-red-600 text-center">
+                                            S/.
+                                            {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                                        </span>
+                                    @endif
+                                @endif
+                            @endif
+
+                            <h1 class="text-xl text-center font-semibold text-colorlabel">
+                                <small class="text-[10px] font-medium">VENTA S/.</small>
+                                {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                <small class="text-[10px] font-medium">SOLES</small>
+                            </h1>
+
+                            @can('admin.almacen.compras.create')
+                                <x-slot name="footer">
+                                    {{-- <x-button-delete onclick="confirmDeleteItemCompra({{ $item->id }})"
+                                        wire:loading.attr="disabled" /> --}}
+                                </x-slot>
+                            @endcan
+                        </x-card-producto>
+                    @endforeach
+                </div>
+            @else
+                <x-span-text text="NO EXISTEN REGISTROS DE PRODUCTOS..." class="mt-3 bg-transparent" />
+            @endif
+        </div>
+    </x-form-card>
+
+
+
+
+
 
     @if ($compra->typepayment->isContado())
         <x-form-card titulo="PAGOS" subtitulo="Control de pagos de su compra.">
@@ -109,7 +261,8 @@
                                     <a href="{{ route('admin.payments.print', $item) }}" target="_blank"
                                         class="p-1.5 bg-neutral-900 text-white block rounded-lg transition-colors duration-150">
                                         <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg"
-                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                            stroke="currentColor">
                                             <path
                                                 d="M7.35396 18C5.23084 18 4.16928 18 3.41349 17.5468C2.91953 17.2506 2.52158 16.8271 2.26475 16.3242C1.87179 15.5547 1.97742 14.5373 2.18868 12.5025C2.36503 10.8039 2.45321 9.95455 2.88684 9.33081C3.17153 8.92129 3.55659 8.58564 4.00797 8.35353C4.69548 8 5.58164 8 7.35396 8H16.646C18.4184 8 19.3045 8 19.992 8.35353C20.4434 8.58564 20.8285 8.92129 21.1132 9.33081C21.5468 9.95455 21.635 10.8039 21.8113 12.5025C22.0226 14.5373 22.1282 15.5547 21.7352 16.3242C21.4784 16.8271 21.0805 17.2506 20.5865 17.5468C19.8307 18 18.7692 18 16.646 18" />
                                             <path
@@ -217,7 +370,8 @@
                 <div class="w-full">
                     <x-label value="Monto pagar :" />
                     <x-input class="block w-full numeric" x-model="amount" @input="calcular" placeholder="0.00"
-                        type="number" min="0" step="0.001" onkeypress="return validarDecimal(event, 12)" />
+                        type="number" min="0" step="0.001"
+                        onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="paymentactual" />
                 </div>
 
@@ -387,23 +541,6 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     @this.deletepay(payment.id);
-                }
-            })
-        }
-
-        function confirmCloseCompra() {
-            swal.fire({
-                title: 'Desea cerrar el registro de la compra ?',
-                text: "Se quitará la opción de agregar productos a la compra.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.closecompra();
                 }
             })
         }

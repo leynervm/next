@@ -23,7 +23,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full grid grid-cols-1 lg:grid-cols-2 items-start gap-5 py-10">
+    <div class="contenedor file:w-full grid grid-cols-1 lg:grid-cols-2 items-start gap-5 py-10">
         @if (auth()->user())
             <div class="w-full">
                 <livewire:modules.marketplace.carrito.show-shippments :empresa="$empresa" :moneda="$moneda" />

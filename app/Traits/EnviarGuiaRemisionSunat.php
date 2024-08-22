@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 trait EnviarGuiaRemisionSunat
 {
 
+    
+
     public function enviarGuiaRemision()
     {
 

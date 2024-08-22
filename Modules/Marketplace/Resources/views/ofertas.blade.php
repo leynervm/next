@@ -13,7 +13,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full">
+    <div class="contenedor w-full">
         <div class="relative w-full m-0 mb-10">
             <h1 class="text-colorsubtitleform flex items-start text-xl leading-normal px-0 py-4 gap-2.5 bg-white">
                 Descubre nuestras ofertas que tenemos para tí</h1>

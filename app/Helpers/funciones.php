@@ -404,3 +404,37 @@ function toUTF8Import(string $value = null, $toUppercase = true, $especialcharac
         return null;
     }
 }
+
+function sanitizeWord($word)
+{
+    $replacements = [
+        'ñ' => 'n',
+        'á' => 'a',
+        'é' => 'e',
+        'í' => 'i',
+        'ó' => 'o',
+        'ú' => 'u',
+        'Á' => 'A',
+        'É' => 'E',
+        'Í' => 'I',
+        'Ó' => 'O',
+        'Ú' => 'U',
+        ' ' => '_',
+        '-' => '_',
+        '.' => '_',
+        ',' => '_',
+        ';' => '_',
+        ':' => '_',
+    ];
+    return strtr($word, $replacements);
+}
+
+
+function pathURLProductImage($filename = null)
+{
+    if (is_null($filename)) {
+        return asset('storage/productos/');
+    } else {
+        return asset('storage/productos/' . $filename);
+    }
+}

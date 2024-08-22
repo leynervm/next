@@ -35,12 +35,12 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full" x-data="modal()">
+    <div class="contenedor w-full" x-data="modal()">
         {{-- <div style="display: none" x-cloak x-show="loading" class="fixed loading-overlay overflow-hidden">
             <x-loading-next />
         </div> --}}
 
-        @if (!$order->isPagoconfirmado()))
+        @if (!$order->isPagoconfirmado())
             <div
                 class="mx-auto w-full flex flex-col gap-3 xl:gap-8 xl:max-w-md flex-shrink-0 shadow-md rounded-xl border border-borderminicard p-2 sm:p-5 my-12">
 

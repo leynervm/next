@@ -11,8 +11,7 @@
                     <small class="text-sm">{{ $guia->seriecomprobante->typecomprobante->name }}</small>
                 </p>
 
-                <div class="w-full flex flex-col gap-2 bg-body p-3 rounded-md">
-
+                <div class="w-full flex flex-col gap-2 mt-3">
                     <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -295,7 +294,7 @@
             @endif
 
             <x-form-card titulo="DESTINATARIO">
-                <div class="w-full bg-body p-3 rounded-md">
+                <div class="w-full">
                     <h1 class="text-colorlabel text-xs font-semibold">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 inline-block text-next-500"
                             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -498,36 +497,28 @@
         <x-form-card titulo="RESUMEN PRODUCTOS">
             <div class="w-full">
                 @if (count($guia->tvitems) > 0)
-                    <div class="flex gap-2 flex-wrap justify-start">
+                    <div
+                        class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                         @foreach ($guia->tvitems as $item)
                             @php
-                                $image = null;
                                 $class = '';
-
                                 if ($item->trashed()) {
                                     $class = 'bg-opacity-20 opacity-80 !shadow-red-400 bg-red-500 !cursor-default';
                                 }
                                 if ($item->cantidad == 0) {
                                     $class = 'bg-opacity-20 bg-neutral-400 !cursor-default';
                                 }
-
-                                if (count($item->producto->images) > 0) {
-                                    if ($item->producto->images()->default()->exists()) {
-                                        $image = asset(
-                                            'storage/productos/' . $item->producto->images()->default()->first()->url,
-                                        );
-                                    } else {
-                                        $image = asset('storage/productos/' . $item->producto->images->first()->url);
-                                    }
-                                }
                             @endphp
 
-                            <x-card-producto :name="$item->producto->name" :image="$image" :almacen="$item->almacen->name" :class="$class">
-                                <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
-                                    <x-span-text :text="formatDecimalOrInteger($item->cantidad) .
-                                        ' ' .
-                                        $item->producto->unit->name" class="leading-3 !tracking-normal" />
+                            <x-card-producto :name="$item->producto->name" :image="$item->producto->getImageURL()" :almacen="$item->almacen->name" :class="$class">
 
+                                <p class="text-center text-colorlabel text-xl">
+                                    {{ formatDecimalOrInteger($item->cantidad) }}
+                                    <small class="text-[10px]">
+                                        {{ $item->producto->unit->name }}</small>
+                                </p>
+
+                                <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
                                     @if ($item->isNoAlterStock())
                                         <x-span-text text="NO ALTERA STOCK" class="leading-3 !tracking-normal" />
                                     @elseif ($item->isReservedStock())

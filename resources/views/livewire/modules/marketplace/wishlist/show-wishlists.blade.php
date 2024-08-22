@@ -8,7 +8,7 @@
                         <div class="w-full xs:w-24 h-24 xs:h-full rounded overflow-hidden">
                             @if ($item->model->getImageURL())
                                 <img src="{{ $item->model->getImageURL() }}" alt=""
-                                    class="w-full h-full object-scale-down aspect-square">
+                                    class="w-full max-w-full max-h-full h-full block rounded object-scale-down aspect-square overflow-hidden">
                             @else
                                 <x-icon-file-upload class="!w-full !h-full !m-0 text-neutral-500" type="unknown" />
                             @endif

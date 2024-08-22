@@ -10,7 +10,7 @@
     @endif
 
     <div class="flex flex-wrap items-center gap-2 mt-4 ">
-        <div class="w-full max-w-md">
+        <div class="w-full xs:max-w-sm">
             <x-label value="Buscar producto :" />
             <div class="relative flex items-center">
                 <span class="absolute">
@@ -26,7 +26,7 @@
         </div>
 
         @if (count($marcas) > 1)
-            <div class="w-full max-w-xs">
+            <div class="w-full xs:max-w-[220px]">
                 <x-label value="Marca :" />
                 <div class="relative" id="parentmarca" x-init="selectMarca">
                     <x-select class="block w-full" id="marca" x-ref="selectmarca" data-placeholder="null"
@@ -44,7 +44,7 @@
         @endif
 
         @if (count($categorias) > 1)
-            <div class="w-full max-w-xs">
+            <div class="w-full xs:max-w-[220px]">
                 <x-label value="Categoría :" />
                 <div class="relative" id="parentcategory" x-init="selectCategory">
                     <x-select class="block w-full" id="category" x-ref="selectcategory" data-placeholder="null"
@@ -62,7 +62,7 @@
         @endif
 
         @if (count($subcategories) > 1)
-            <div class="w-full max-w-xs">
+            <div class="w-full xs:max-w-[220px]">
                 <x-label value="Subcategoría :" />
                 <div class="relative" id="parentsubcategory" x-init="selectSubcategory">
                     <x-select class="block w-full" id="subcategory" x-ref="selectsubcategory" data-placeholder="null">
@@ -79,7 +79,7 @@
         @endif
 
         @if (count($almacens) > 1)
-            <div class="w-full max-w-xs">
+            <div class="w-full xs:max-w-[220px]">
                 <x-label value="Almacén :" />
                 <div class="relative" id="parentalmacen" x-init="selectAlmacen">
                     <x-select class="block w-full" id="almacen" x-ref="selectalmacen" data-placeholder="null">
@@ -95,7 +95,7 @@
             </div>
         @endif
 
-        <div class="w-full max-w-xs">
+        <div class="w-full xs:max-w-[220px]">
             <x-label value="Estado web :" />
             <div class="relative" id="parentweb" x-init="selectWeb">
                 <x-select class="block w-full" id="web" x-ref="selectweb" data-placeholder="null">
@@ -131,10 +131,12 @@
         <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium text-center">
-                    <label for="checkall" class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
+                    <label for="checkall" class="text-xs flex flex-col justify-center leading-3 items-center gap-1 leading-3">
                         TODO
-                        <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none" name="productos"
-                            type="checkbox" id="checkall" wire:loading.attr="disabled" />
+                        @if (count($productos) > 0)
+                            <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none"
+                                name="productos" type="checkbox" id="checkall" wire:loading.attr="disabled" />
+                        @endif
                     </label>
                 </th>
                 <th scope="col" class="p-2 font-medium">
@@ -155,7 +157,7 @@
                 </th>
                 <th scope="col" class="p-2 font-medium">
                     SKU</th>
-                <th scope="col" class="p-2 font-medium">
+                <th scope="col" class="p-2 font-medium leading-3">
                     COD. FABRICANTE</th>
                 <th scope="col" class="p-2 font-medium">
                     CATEGORÍA</th>
@@ -165,18 +167,18 @@
                     <th scope="col" class="p-2 font-medium">
                         PUBLICADO</th>
                 @endif
-                <th scope="col" class="p-2 font-medium">
+                <th scope="col" class="p-2 font-medium leading-3">
                     PRECIO COMPRA</th>
                 @if (mi_empresa())
                     @if (!mi_empresa()->usarLista())
-                        <th scope="col" class="p-2 font-medium">
+                        <th scope="col" class="p-2 font-medium leading-3">
                             PRECIO VENTA</th>
                     @endif
                 @endif
 
                 @if (Module::isEnabled('Almacen'))
-                    <th scope="col" class="p-2 font-medium">
-                        ÚLT. INGRESO</th>
+                    <th scope="col" class="p-2 font-medium leading-3">
+                       PROVEEDOR <br> ÚLT. INGRESO</th>
                     <th scope="col" class="p-2 font-medium">
                         AREA</th>
                     <th scope="col"class="p-2 font-medium">
@@ -288,12 +290,12 @@
                         @endif
 
                         @if (Module::isEnabled('Almacen'))
-                            <td class="p-2">
+                            <td class="p-2 text-[10px] text-center leading-3">
                                 @if (count($item->compraitems) > 0)
-                                    <p>
+                                    <p class="">
                                         {{ formatDate($item->compraitems->first()->compra->date, 'DD MMMM Y') }}
                                     </p>
-                                    <p>{{ $item->compraitems->first()->compra->proveedor->name }}</p>
+                                    <p class="leading-3">{{ $item->compraitems->first()->compra->proveedor->name }}</p>
                                 @endif
                             </td>
 

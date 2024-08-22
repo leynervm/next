@@ -33,11 +33,21 @@ class Moneda extends Model
 
     public function isDefault()
     {
-        return $this->code == self::DEFAULT;
+        return $this->default == self::DEFAULT;
     }
 
     public function isLocal()
     {
         return $this->code == 'PEN';
+    }
+
+    public function isSoles()
+    {
+        return $this->code == 'PEN';
+    }
+
+    public function isDolar()
+    {
+        return $this->code == 'USD';
     }
 }

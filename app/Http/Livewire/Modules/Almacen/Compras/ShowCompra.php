@@ -52,16 +52,14 @@ class ShowCompra extends Component
     {
 
         $this->authorize('admin.almacen.compras.delete');
-        if ($this->compra->compraitems->count() > 0) {
-            $seriesouts = $this->compra->compraitems()
-                ->WhereHas('series', function ($query) {
-                    $query->whereNotNull('dateout');
-                })->count();
-
-            if ($seriesouts) {
+        foreach ($this->compra->compraitems as $compraitem) {
+            $exists_seriesout = $compraitem->almacencompras()->WhereHas('series', function ($query) {
+                $query->whereNotNull('dateout');
+            })->count();
+            if ($exists_seriesout) {
                 $message = response()->json([
-                    'title' => 'No se puede eliminar el registro seleccionado !',
-                    'text' => 'Existen series relacionados en salidas, eliminarlo causará conflictos en los datos'
+                    'title' => "LA COMPRA CUENTA CON SERIES QUE HAN SIDO MARCADAS COMO SALIDAS EN OTROS REGISTROS.",
+                    'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $message);
                 return false;
@@ -70,8 +68,8 @@ class ShowCompra extends Component
 
         if ($this->compra->cuotas()->withWhereHas('cajamovimiento')->count() > 0) {
             $mensaje = response()->json([
-                'title' => 'No se puede eliminar la compra seleccionada',
-                'text' => "La compra contiene cuotas de pago realizadas, eliminar pagos manualmente e inténtelo nuevamente."
+                'title' => "PRIMERO DEBE ELIMINAR LOS PAGOS REGISTRADOS EN LA COMPRA.",
+                'text' => null
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
@@ -79,23 +77,31 @@ class ShowCompra extends Component
 
         DB::beginTransaction();
         try {
-            $this->compra->compraitems()->each(function ($compraitem) {
+            $this->compra->compraitems()->with(['almacencompras', 'producto.almacens',])->each(function ($compraitem) {
+                $compraitem->almacencompras()->with(['series', 'kardex'])->each(function ($almacencompra) use ($compraitem) {
+                    $productoAlmacen = $compraitem->producto->almacens()
+                        ->where('almacen_id', $almacencompra->almacen_id)->first();
 
-                $productoAlmacen = $compraitem->producto->almacens()
-                    ->where('almacen_id', $compraitem->almacen_id)->first();
+                    if ($productoAlmacen->pivot->cantidad - $almacencompra->cantidad < 0) {
+                        $mensaje = response()->json([
+                            'title' => `STOCK DEL PRODUCTO $compraitem->producto->name en almacen "$almacencompra->almacen->name" es menor a 0.`,
+                            'text' => null
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+                    if ($almacencompra->kardex) {
+                        $almacencompra->kardex()->delete();
+                    }
+                    $compraitem->producto->almacens()->updateExistingPivot($almacencompra->almacen_id, [
+                        'cantidad' => $productoAlmacen->pivot->cantidad - $almacencompra->cantidad,
+                    ]);
+                    $almacencompra->series()->forceDelete();
+                });
 
-                // $compraitem->deleteKardex($compraitem->id);
-                if ($compraitem->kardex) {
-                    $compraitem->kardex()->delete();
-                }
-
-                $compraitem->producto->almacens()->updateExistingPivot($compraitem->almacen_id, [
-                    'cantidad' => $productoAlmacen->pivot->cantidad - $compraitem->cantidad,
-                ]);
-                $compraitem->producto->pricebuy = $compraitem->oldpricebuy;
+                $compraitem->producto->pricebuy = $compraitem->oldprice;
                 $compraitem->producto->pricesale = $compraitem->oldpricesale;
                 $compraitem->producto->save();
-                $compraitem->series()->forceDelete();
                 $compraitem->forceDelete();
             });
 
@@ -158,7 +164,10 @@ class ShowCompra extends Component
             'tipocambio' => [
                 'nullable',
                 Rule::requiredIf($this->showtipocambio),
-                'numeric', 'min:0', 'gt:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,3'
             ],
             'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
@@ -218,7 +227,6 @@ class ShowCompra extends Component
         }
     }
 
-
     public function deletepay(Cajamovimiento $cajamovimiento)
     {
 
@@ -236,13 +244,5 @@ class ShowCompra extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function closecompra()
-    {
-        $this->authorize('admin.almacen.compras.close');
-        $this->compra->status = 1;
-        $this->compra->save();
-        $this->dispatchBrowserEvent('updated');
     }
 }

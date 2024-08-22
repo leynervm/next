@@ -31,7 +31,8 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
     use Importable;
 
     const HEADERS_IMPORT_PRODUCT = [
-        'item', 'nombre', 'categoria', 'subcategoria', 'marca',
+        /* 'item',  */
+        'nombre', 'categoria', 'subcategoria', 'marca',
         'codigo_unidad_medida', 'unidad_medida',
         'area_almacen', 'estante_almacen', 'modelo',
         'sku', 'numero_parte', 'precio_compra', 'precio_venta',
@@ -58,105 +59,104 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
         DB::beginTransaction();
         try {
 
-            // if (empty(toUTF8Import($row['nombre']))) {
-            //     return null;
-            // }
+            if (!empty($row['nombre'])) {
 
-            $category = Category::firstOrCreate([
-                'name' => toUTF8Import($row['categoria']),
-            ], [
-                'orden' => 1 + Category::max('orden') ?? 0
-            ]);
-            $subcategory = Subcategory::firstOrCreate([
-                'name' => toUTF8Import($row['subcategoria']),
-            ], [
-                'orden' => 1 + Subcategory::max('orden') ?? 0
-            ]);
-            $marca = Marca::firstOrCreate([
-                'name' => toUTF8Import($row['marca']),
-            ]);
-            $unit = Unit::firstOrCreate([
-                'code' => toUTF8Import($row['codigo_unidad_medida']),
-            ], [
-                'name' => toUTF8Import($row['unidad_medida']),
-            ]);
+                $category = Category::firstOrCreate([
+                    'name' => toUTF8Import($row['categoria']),
+                ], [
+                    'orden' => 1 + Category::max('orden') ?? 0
+                ]);
+                $subcategory = Subcategory::firstOrCreate([
+                    'name' => toUTF8Import($row['subcategoria']),
+                ], [
+                    'orden' => 1 + Subcategory::max('orden') ?? 0
+                ]);
+                $marca = Marca::firstOrCreate([
+                    'name' => toUTF8Import($row['marca']),
+                ]);
+                $unit = Unit::firstOrCreate([
+                    'code' => toUTF8Import($row['codigo_unidad_medida']),
+                ], [
+                    'name' => toUTF8Import($row['unidad_medida']),
+                ]);
 
-            if (!$category->subcategories()->where('subcategory_id', $subcategory->id)->exists()) {
-                $category->subcategories()->attach([$subcategory->id]);
-            }
-
-            $almacenarea = null;
-            $estante = null;
-            if (Module::isEnabled('Almacen')) {
-                if (!empty(toUTF8Import($row['area_almacen']))) {
-                    $almacenarea = Almacenarea::firstOrCreate([
-                        'name' => toUTF8Import($row['area_almacen']),
-                    ]);
+                if (!$category->subcategories()->where('subcategory_id', $subcategory->id)->exists()) {
+                    $category->subcategories()->attach([$subcategory->id]);
                 }
-                if (!empty(toUTF8Import($row['estante_almacen']))) {
-                    $estante = Estante::firstOrCreate([
-                        'name' => toUTF8Import($row['estante_almacen']),
-                    ]);
+
+                $almacenarea = null;
+                $estante = null;
+                if (Module::isEnabled('Almacen')) {
+                    if (!empty(toUTF8Import($row['area_almacen']))) {
+                        $almacenarea = Almacenarea::firstOrCreate([
+                            'name' => toUTF8Import($row['area_almacen']),
+                        ]);
+                    }
+                    if (!empty(toUTF8Import($row['estante_almacen']))) {
+                        $estante = Estante::firstOrCreate([
+                            'name' => toUTF8Import($row['estante_almacen']),
+                        ]);
+                    }
                 }
-            }
 
-            $producto = Producto::updateOrCreate(
-                [
-                    'name' => toUTF8Import($row['nombre']),
-                ],
-                [
+                $producto = Producto::updateOrCreate(
+                    [
+                        'name' => toUTF8Import($row['nombre']),
+                    ],
+                    [
 
-                    'modelo' => toUTF8Import($row['modelo']),
-                    'sku' => toUTF8Import($row['sku']),
-                    'code' => Str::random(9),
-                    'partnumber' => toUTF8Import($row['numero_parte']),
-                    'pricebuy' => $row['precio_compra'],
-                    'pricesale' => $row['precio_venta'],
-                    'minstock' => $row['stock_minimo'],
-                    'publicado' => $row['publicado_web'],
-                    'marca_id' => $marca->id,
-                    'unit_id' => $unit->id,
-                    'category_id' => $category->id,
-                    'subcategory_id' => $subcategory->id,
-                    'almacenarea_id' => Module::isEnabled('Almacen') && !empty($almacenarea) ? $almacenarea->id : null,
-                    'estante_id' => Module::isEnabled('Almacen') && !empty($estante) ? $estante->id : null,
-                    'user_id'   => auth()->user()->id
-                ]
-            );
+                        'modelo' => toUTF8Import($row['modelo']),
+                        'sku' => toUTF8Import($row['sku']),
+                        'code' => Str::random(9),
+                        'partnumber' => toUTF8Import($row['numero_parte']),
+                        'pricebuy' => $row['precio_compra'],
+                        'pricesale' => $row['precio_venta'],
+                        'minstock' => !empty($row['stock_minimo']) ? $row['stock_minimo'] : 0,
+                        'publicado' => in_array($row['publicado_web'], ['0', '1']) ? $row['publicado_web'] : 0,
+                        'marca_id' => $marca->id,
+                        'unit_id' => $unit->id,
+                        'category_id' => $category->id,
+                        'subcategory_id' => $subcategory->id,
+                        'almacenarea_id' => Module::isEnabled('Almacen') && !empty($almacenarea) ? $almacenarea->id : null,
+                        'estante_id' => Module::isEnabled('Almacen') && !empty($estante) ? $estante->id : null,
+                        'user_id'   => auth()->user()->id
+                    ]
+                );
 
-            if (Module::isEnabled('Marketplace')) {
-                if (count($this->headers_especificaciones) > 0) {
-                    foreach ($this->headers_especificaciones as $c) {
-                        if (!empty(toUTF8Import($row[$c]))) {
+                if (Module::isEnabled('Marketplace')) {
+                    if (count($this->headers_especificaciones) > 0) {
+                        foreach ($this->headers_especificaciones as $c) {
+                            if (!empty(toUTF8Import($row[$c]))) {
 
-                            $caracteristica = Caracteristica::firstOrCreate([
-                                'name' => str_replace("_", " ", toUTF8Import($c)),
-                            ], [
-                                'orden' => 1 + Caracteristica::max('orden') ?? 0
-                            ]);
+                                $caracteristica = Caracteristica::firstOrCreate([
+                                    'name' => str_replace("_", " ", toUTF8Import($c)),
+                                ], [
+                                    'orden' => 1 + Caracteristica::max('orden') ?? 0
+                                ]);
 
-                            $especificacion = $caracteristica->especificacions()
-                                ->firstOrCreate(['name' => toUTF8Import($row[$c])]);
+                                $especificacion = $caracteristica->especificacions()
+                                    ->firstOrCreate(['name' => toUTF8Import($row[$c])]);
 
-                            $withPivotData = [$especificacion->id => [
-                                'orden' => 1 + $producto->especificacions()->max('orden') ?? 0,
-                            ]];
+                                $withPivotData = [$especificacion->id => [
+                                    'orden' => 1 + $producto->especificacions()->max('orden') ?? 0,
+                                ]];
 
 
-                            if (!$producto->especificacions()->where('especificacion_id', $especificacion->id)->exists()) {
-                                //     $producto->especificacions()->updateExistingPivot($especificacion->id, [
-                                //         'orden' => 1 + $producto->especificacions()->max('orden') ?? 0,
-                                //     ]);
-                                // } else {
-                                $producto->especificacions()->syncWithoutDetaching($withPivotData);
+                                if (!$producto->especificacions()->where('especificacion_id', $especificacion->id)->exists()) {
+                                    //     $producto->especificacions()->updateExistingPivot($especificacion->id, [
+                                    //         'orden' => 1 + $producto->especificacions()->max('orden') ?? 0,
+                                    //     ]);
+                                    // } else {
+                                    $producto->especificacions()->syncWithoutDetaching($withPivotData);
+                                }
+                                // $producto->especificacions()->syncWithoutDetaching($withPivotData);
                             }
-                            // $producto->especificacions()->syncWithoutDetaching($withPivotData);
                         }
                     }
                 }
-            }
 
-            $producto->assignPriceProduct();
+                $producto->assignPriceProduct();
+            }
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -287,7 +287,7 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
                 'nullable', Rule::requiredIf(!$this->empresa->usarLista()),
                 'numeric', 'decimal:0,4', $this->empresa->usarLista() ? '' : 'gt:*.0'
             ],
-            'stock_minimo' => ['required', 'integer', 'min:0'],
+            'stock_minimo' => ['nullable', 'integer', 'min:0'],
             'publicado_web' => ['nullable', 'integer', 'min:0', 'max:1'],
             'marca' => ['required', 'string', 'min:2'],
             'unidad_medida' => ['required', 'string', 'min:1'],
@@ -314,7 +314,7 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
     public function beforeSheet(BeforeSheet $event)
     {
         $sheet = $event->getSheet(0);
-        $headers = self::extractHeaders($sheet, 'A', '2');
+        $headers = self::extractHeaders($sheet, 'A', '1');
         self::validateHeaders($headers);
         $this->headers_especificaciones = self::extractHeadersEspecificaciones($headers);
     }
@@ -383,7 +383,7 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
 
     public function headingRow(): int
     {
-        return 2;
+        return 1;
     }
 
     public function batchSize(): int

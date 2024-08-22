@@ -13,20 +13,21 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <x-card-success titulo="">
-        <x-slot:subtitulo>
-            <p class="text-colorsubtitleform mb-8 text-sm text-center">
-                GRACIAS,
-                <br>
-                SOLICITUD <b>{{ $claimbook->serie }}-{{ $claimbook->correlativo }}</b> REGISTRADO CORRECTAMENTE
-                <br>
-                Se ha enviado un correo de su solicitud a {{ $claimbook->email }}
-            </p>
-        </x-slot>
+    <div class="contenedor w-full">
+        <x-card-success titulo="">
+            <x-slot:subtitulo>
+                <p class="text-colorsubtitleform mb-8 text-sm text-center">
+                    GRACIAS,
+                    <br>
+                    SOLICITUD <b>{{ $claimbook->serie }}-{{ $claimbook->correlativo }}</b> REGISTRADO CORRECTAMENTE
+                    <br>
+                    Se ha enviado un correo de su solicitud a {{ $claimbook->email }}
+                </p>
+            </x-slot>
 
-        <div class="w-full flex justify-center items-center">
-            <x-link-button href="{{ route('claimbook.print.pdf', $claimbook) }}">IMPRIMIR</x-link-button>
-        </div>
-
-    </x-card-success>
+            <div class="w-full flex justify-center items-center">
+                <x-link-button href="{{ route('claimbook.print.pdf', $claimbook) }}">IMPRIMIR</x-link-button>
+            </div>
+        </x-card-success>
+    </div>
 </x-app-layout>

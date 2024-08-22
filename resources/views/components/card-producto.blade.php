@@ -1,7 +1,7 @@
 <div
     {{ $attributes->merge([
         'class' =>
-            'w-full xs:w-56 border border-borderminicard flex flex-col justify-between text-xs relative group rounded-lg hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
+            'w-full border border-borderminicard flex flex-col justify-between text-xs relative group rounded-lg hover:shadow-md hover:shadow-shadowminicard cursor-pointer',
     ]) }}>
 
     <div class="w-full flex flex-col gap-2">

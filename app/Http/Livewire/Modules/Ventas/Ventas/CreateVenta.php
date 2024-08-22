@@ -114,7 +114,8 @@ class CreateVenta extends Component
         return [
             // 'empresa_id' => ['required', 'integer', 'exists:empresas,id'],
             'document' => [
-                'required', 'numeric',
+                'required',
+                'numeric',
                 $this->typecomprobante->code == "01" ? 'digits:11' : new ValidateDocument,
                 'regex:/^\d{8}(?:\d{3})?$/',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
@@ -127,32 +128,52 @@ class CreateVenta extends Component
             'typepayment.id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             'paymentactual' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'numeric', 'min:0', $this->typepayment->paycuotas ? 'lt:' . $this->total : '',
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 1),
+                'numeric',
+                'min:0',
+                $this->typepayment->paycuotas ? 'lt:' . $this->total : '',
                 'decimal:0,2'
             ],
             'increment' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'numeric', 'min:0', 'decimal:0,2'
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 1),
+                'numeric',
+                'min:0',
+                'decimal:0,2'
             ],
             'countcuotas' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'integer', 'min:1'
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 1),
+                'integer',
+                'min:1'
             ],
             'concept.id' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'min:1', 'exists:concepts,id',
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'integer',
+                'min:1',
+                'exists:concepts,id',
             ],
             'openbox.id' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'min:1', 'exists:openboxes,id',
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'integer',
+                'min:1',
+                'exists:openboxes,id',
             ],
             'monthbox.id' => [
-                'nullable', Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer', 'min:1', 'exists:monthboxes,id',
+                'nullable',
+                Rule::requiredIf($this->typepayment->paycuotas == 0),
+                'integer',
+                'min:1',
+                'exists:monthboxes,id',
             ],
             'typepay' => [
-                'required', 'integer', 'min:0', 'max:1',
+                'required',
+                'integer',
+                'min:0',
+                'max:1',
             ],
             'parcialpayments' => [
                 'nullable',
@@ -160,99 +181,152 @@ class CreateVenta extends Component
                 'array'
             ],
             'methodpayment_id' => [
-                'nullable', Rule::requiredIf($this->typepayment->isContado() && $this->typepay == '0'),
-                'integer', 'min:1', 'exists:methodpayments,id',
+                'nullable',
+                Rule::requiredIf($this->typepayment->isContado() && $this->typepay == '0'),
+                'integer',
+                'min:1',
+                'exists:methodpayments,id',
             ],
             'detallepago' => ['nullable'],
             'cotizacion_id' => ['nullable', 'integer', 'min:1', 'exists:cotizacions,id'],
             'sucursal.id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'seriecomprobante_id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
             'items' => [
-                'required', 'array', 'min:1',
+                'required',
+                'array',
+                'min:1',
                 new ValidateCarrito($this->moneda->id, $this->sucursal->id)
             ],
             'ructransport' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'numeric', 'digits:11', 'regex:/^\d{11}$/',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+                'numeric',
+                'digits:11',
+                'regex:/^\d{11}$/',
                 $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
             ],
             'nametransport' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'string', 'min:6',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+                'string',
+                'min:6',
                 $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.name' : '',
             ],
             'documentdestinatario' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 $this->incluyeguia && $this->motivotraslado->code == '03' ? 'different:document' : '',
                 // 'different:document'
             ],
             'namedestinatario' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'min:6',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'string',
+                'min:6',
                 $this->incluyeguia && $this->motivotraslado->code == '03' ? 'different:document' : '',
             ],
             'documentdriver' => [
                 'nullable',
                 Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 // 'different:document'
             ],
             'namedriver' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:6'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'string',
+                'min:6'
             ],
             'lastname' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:6'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'string',
+                'min:6'
             ],
             'licencia' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:9', 'max:10'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'string',
+                'min:9',
+                'max:10'
             ],
             'placa' => [
-                'nullable', Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:6', 'max:8'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
+                'string',
+                'min:6',
+                'max:8'
             ],
             'peso' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'numeric', 'gt:0', 'decimal:0,4',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'numeric',
+                'gt:0',
+                'decimal:0,4',
             ],
             'packages' => [
-                'nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'integer',
+                'min:1',
             ],
             'datetraslado' => [
-                'nullable', Rule::requiredIf($this->incluyeguia), 'date', 'after_or_equal:today',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'date',
+                'after_or_equal:today',
             ],
             'placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
             'note' => ['nullable', 'string', 'min:10'],
             'ubigeoorigen_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:ubigeos,id'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'integer',
+                'min:1',
+                'exists:ubigeos,id'
             ],
             'direccionorigen' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'min:6',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'string',
+                'min:6',
             ],
             'ubigeodestino_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:ubigeos,id'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'integer',
+                'min:1',
+                'exists:ubigeos,id'
             ],
             'direcciondestino' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'string', 'min:6',
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'string',
+                'min:6',
             ],
             'motivotraslado_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:motivotraslados,id'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'integer',
+                'min:1',
+                'exists:motivotraslados,id'
             ],
             'modalidadtransporte_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:modalidadtransportes,id'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'integer',
+                'min:1',
+                'exists:modalidadtransportes,id'
             ],
             'serieguia_id' => [
-                'nullable', Rule::requiredIf($this->incluyeguia),
-                'integer', 'min:1', 'exists:seriecomprobantes,id'
+                'nullable',
+                Rule::requiredIf($this->incluyeguia),
+                'integer',
+                'min:1',
+                'exists:seriecomprobantes,id'
             ],
         ];
     }
@@ -266,6 +340,8 @@ class CreateVenta extends Component
 
     protected $validationAttributes = [
         'items' => 'carrito de ventas',
+        'document' => 'dni / ruc',
+        'searchgre' =>  'serie guía remisión'
     ];
 
 
@@ -315,16 +391,17 @@ class CreateVenta extends Component
             $almacens[] = $this->almacen_id;
         }
 
-        $productos = Producto::withWhereHas('almacens', function ($query) use ($almacens) {
-            $query->whereIn('almacens.id', $almacens);
-            if ($this->disponibles) {
-                $query->where('cantidad', '>', 0);
-            }
-        })->with('seriesdisponibles', function ($query) {
-            $query->where('almacen_id', $this->almacen_id);
-        })->with('promocions', function ($query) {
-            $query->disponibles();
-        })->with(['images', 'category', 'marca', 'unit']);
+        $productos = Producto::select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'marca_id', 'category_id', 'subcategory_id', 'unit_id')
+            ->withWhereHas('almacens', function ($query) use ($almacens) {
+                $query->whereIn('almacens.id', $almacens);
+                if ($this->disponibles) {
+                    $query->where('cantidad', '>', 0);
+                }
+            })->with('seriesdisponibles', function ($query) {
+                $query->where('almacen_id', $this->almacen_id);
+            })->with('promocions', function ($query) {
+                $query->disponibles();
+            })->with(['images', 'category', 'marca', 'unit']);
 
         if (trim($this->search) !== '') {
             $searchTerms = explode(' ', $this->search);
@@ -356,18 +433,7 @@ class CreateVenta extends Component
             $productos->where('subcategory_id', $this->searchsubcategory);
         }
 
-        $productos = $productos->orderBy('name', 'asc')->paginate();
-        $marcas = Marca::whereHas('productos')->orderBy('name', 'asc')->get();
-        $categories = Category::whereHas('productos')->orderBy('orden', 'asc')->get();
-        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
-        $almacens = Almacen::whereHas('productos')->orderBy('name', 'asc')->get();
-
-
-
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')
-            ->orderBy('distrito', 'asc')->get();
-        $typepayments = Typepayment::orderBy('name', 'asc')->get();
-        $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
+        $productos = $productos->orderBy('name', 'asc')->paginate(20);
 
         if (Module::isEnabled('Facturacion')) {
             $modalidadtransportes = Modalidadtransporte::orderBy('code', 'asc')->get();
@@ -404,7 +470,7 @@ class CreateVenta extends Component
             $monedas = Moneda::where('code', 'PEN')->orderBy('currency', 'asc')->get();
         }
 
-        return view('livewire.modules.ventas.ventas.create-venta', compact('productos', 'pricetypes', 'categories', 'almacens', 'marcas', 'carshoops', 'typecomprobantes', 'comprobantesguia', 'typepayments', 'methodpayments', 'monedas', 'modalidadtransportes', 'motivotraslados', 'ubigeos'));
+        return view('livewire.modules.ventas.ventas.create-venta', compact('productos', 'carshoops', 'typecomprobantes', 'comprobantesguia', 'monedas', 'modalidadtransportes', 'motivotraslados'));
     }
 
     public function updatedSearch()
@@ -412,18 +478,12 @@ class CreateVenta extends Component
         $this->resetPage();
     }
 
-    public function updatedSearchcategory($value)
+    public function updatedSearchmarca()
     {
         $this->resetPage();
-        $this->reset(['searchsubcategory', 'subcategories']);
-        $this->resetValidation();
-        if (trim($value) !== '') {
-            $this->subcategories = Category::with('subcategories')->find($value)->subcategories()
-                ->whereHas('productos')->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
-        }
     }
 
-    public function updatedSearchmarca()
+    public function updatedSearchcategory()
     {
         $this->resetPage();
     }
@@ -517,7 +577,7 @@ class CreateVenta extends Component
             $combo = $serieProducto->producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
             $pricesale = $serieProducto->producto->obtenerPrecioVenta($this->pricetype ?? null);
 
-            if ($this->moneda->code == 'USD') {
+            if ($this->moneda->isDolar()) {
                 $pricesale = convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2);
             } else {
                 $pricesale = formatDecimalOrInteger($pricesale, 2);
@@ -703,23 +763,36 @@ class CreateVenta extends Component
         $this->validate(
             [
                 "cart.*.price" => [
-                    'required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0',
+                    'required',
+                    'numeric',
+                    'min:0',
+                    'decimal:0,4',
+                    'gt:0',
                 ],
                 "cart.*.almacen_id" => [
-                    'required', 'integer', 'exists:almacens,id',
+                    'required',
+                    'integer',
+                    'exists:almacens,id',
                     new ValidateStock($producto->id, $this->almacen_id)
                 ],
                 "cart.*.cantidad" => [
-                    'required', 'numeric', 'min:1', 'integer',
+                    'required',
+                    'numeric',
+                    'min:1',
+                    'integer',
                     new ValidateStock($producto->id, $this->almacen_id, $cantidad)
                 ],
                 "cart.$producto->id.serie" => [
                     'nullable',
                     Rule::requiredIf($producto->seriesdisponibles()->where('almacen_id', $this->almacen_id)->exists()),
-                    'string', 'min:4',
+                    'string',
+                    'min:4',
                 ],
                 "moneda.id" => [
-                    'required', 'integer', 'min:1', 'exists:monedas,id'
+                    'required',
+                    'integer',
+                    'min:1',
+                    'exists:monedas,id'
                 ],
             ],
             [],
@@ -953,10 +1026,17 @@ class CreateVenta extends Component
     {
         $this->validate([
             'amountparcial' => [
-                'required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'
+                'required',
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,4'
             ],
             'methodpayment_id' => [
-                'required', 'integer', 'min:1', 'exists:methodpayments,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:methodpayments,id',
             ],
         ]);
 
@@ -1049,12 +1129,20 @@ class CreateVenta extends Component
         }
     }
 
-
     public function updatedTypepaymentId($value)
     {
         $this->reset([
-            'increment', 'paymentactual', 'amountincrement', 'gravado',
-            'exonerado', 'igv', 'countcuotas', 'cuotas', 'typepay', 'parcialpayments', 'amountparcial'
+            'increment',
+            'paymentactual',
+            'amountincrement',
+            'gravado',
+            'exonerado',
+            'igv',
+            'countcuotas',
+            'cuotas',
+            'typepay',
+            'parcialpayments',
+            'amountparcial'
         ]);
         if ($value) {
             $this->setTotal();
@@ -1546,8 +1634,18 @@ class CreateVenta extends Component
             DB::commit();
             $this->resetValidation();
             $this->resetExcept([
-                'concept', 'openbox', 'monthbox', 'empresa', 'typecomprobante', 'typepayment', 'moneda',
-                'sucursal', 'ubigeoorigen_id', 'direccionorigen', 'motivotraslado', 'modalidadtransporte'
+                'concept',
+                'openbox',
+                'monthbox',
+                'empresa',
+                'typecomprobante',
+                'typepayment',
+                'moneda',
+                'sucursal',
+                'ubigeoorigen_id',
+                'direccionorigen',
+                'motivotraslado',
+                'modalidadtransporte'
             ]);
             $this->dispatchBrowserEvent('toast', toastJSON('Venta registrado correctamente'));
             if (auth()->user()->hasPermissionTo('admin.ventas.edit')) {
@@ -1562,7 +1660,6 @@ class CreateVenta extends Component
             throw $e;
         }
     }
-
 
     public function updategratis(Carshoop $carshoop)
     {
@@ -1683,50 +1780,30 @@ class CreateVenta extends Component
 
     public function confirmaradditemsventa($tvitems)
     {
-        dd("Refactorizar codigo");
+
         foreach ($tvitems as $item) {
             $date = now('America/Lima');
-            $precios = GetPrice::getPriceProducto($item->producto, mi_empresa()->usarlista() ? $this->pricetype_id : null)->getData();
+            $empresa = mi_empresa();
+            $promocion = $item->producto->getPromocionDisponible();
+            $combo = $item->producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
+            $pricesale = $item->producto->obtenerPrecioVenta($this->pricetype ?? null);
 
-            if ($precios->success) {
-                if (mi_empresa()->uselistprice) {
-                    if (!$precios->existsrango) {
-                        $mensaje =  response()->json([
-                            'title' => 'RANGO DE PRECIO DEL PRODUCTO NO DISPONIBLE !',
-                            'text' => "No se encontraron rangos de precio de compra del producto."
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-                    if ($this->moneda->code == 'USD') {
-                        $price =  $precios->pricewithdescountDolar ??  $precios->priceDolar;
-                    } else {
-                        $price = !is_null($precios->pricemanual) ? $precios->pricemanual : $precios->pricewithdescount ?? $precios->pricesale;
-                    }
-                } else {
-                    if ($this->moneda->code  == 'USD') {
-                        $price = $precios->pricewithdescountDolar ?? $precios->priceDolar;
-                    } else {
-                        $price = $precios->pricewithdescount ?? $precios->pricesale;
-                    }
-                }
+            if ($this->moneda->isDolar()) {
+                $pricesale = convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2);
             } else {
-                $mensaje =  response()->json([
-                    'title' => 'NO SE PUDO OBTENER PRECIO DEL PRODUCTO !',
-                    'text' => "No se encontraron registros de precios del producto seleccionado $precios->error"
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
+                $pricesale = formatDecimalOrInteger($pricesale, 2);
             }
+
+            dd($pricesale);
 
             $carshoop = Carshoop::create([
                 'date' => $date,
                 'cantidad' =>  $item->cantidad,
                 'pricebuy' => $item->producto->pricebuy,
-                'price' => $price,
+                'price' => $pricesale,
                 'igv' => 0,
-                'subtotal' => $price * $item->cantidad,
-                'total' => $price * $item->cantidad,
+                'subtotal' => $pricesale * $item->cantidad,
+                'total' => $pricesale * $item->cantidad,
                 'gratuito' => 0,
                 'status' => 0,
                 'producto_id' => $item->producto_id,
@@ -1770,7 +1847,9 @@ class CreateVenta extends Component
         $this->document = trim($this->document);
         $this->validate([
             'document' => [
-                'required', 'numeric', new ValidateDocument,
+                'required',
+                'numeric',
+                new ValidateDocument,
                 'regex:/^\d{8}(?:\d{3})?$/',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
             ],

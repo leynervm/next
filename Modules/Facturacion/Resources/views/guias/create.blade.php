@@ -1,7 +1,6 @@
 <x-admin-layout>
 
     <x-slot name="breadcrumb">
-
         @can('admin.facturacion')
             <x-link-breadcrumb text="FACTURACIÓN" route="admin.facturacion">
                 <x-slot name="icon">
@@ -51,7 +50,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl">
+    <div class="mx-auto xl:max-w-6xl">
         <livewire:modules.facturacion.guias.create-guia :sucursal="$sucursal" />
     </div>
 

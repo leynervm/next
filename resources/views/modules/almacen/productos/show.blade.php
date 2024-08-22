@@ -49,7 +49,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="flex flex-col gap-8">
+    <div class="w-full mx-auto xl:max-w-7xl flex flex-col gap-8">
         <div>
             <livewire:modules.almacen.productos.show-producto :producto="$producto" />
         </div>
@@ -57,11 +57,13 @@
             <livewire:modules.almacen.productos.show-detalles :producto="$producto" />
         </div>
 
-        @can('admin.almacen.productos.series')
-            <div>
-                <livewire:modules.almacen.productos.show-series :producto="$producto" />
-            </div>
-        @endcan
+        @if ($producto->isRequiredserie())
+            @can('admin.almacen.productos.series')
+                <div>
+                    <livewire:modules.almacen.productos.show-series :producto="$producto" />
+                </div>
+            @endcan
+        @endif
 
         @if (Module::isEnabled('Almacen'))
             <div>

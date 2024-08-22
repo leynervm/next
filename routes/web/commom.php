@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Models\Category;
 use App\Models\Moneda;
 use App\Models\Slider;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Http\Controllers\Livewire\UserProfileController;
@@ -22,7 +23,9 @@ use Modules\Marketplace\Entities\Order;
 */
 
 Route::middleware([
-    'auth:sanctum', config('jetstream.auth_session'), 'dashboard'
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'dashboard'
 ])->get('/user/profile', [UserProfileController::class, 'show'])->name('profile.show');
 
 
@@ -55,3 +58,10 @@ Route::get('/', function () {
 
     return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
 });
+
+
+
+// Route::get('/prueba', function () {
+//     $query = DB::select("select (pg_database.datname) as name, pg_size_pretty(pg_database_size(pg_database.datname)) as size from pg_database  where pg_database.datname = '" . env('DB_DATABASE') . "'");
+//     return $query;
+// });

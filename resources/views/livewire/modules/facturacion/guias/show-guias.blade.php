@@ -1,4 +1,7 @@
-<div class="relative">
+<div class="relative" x-data="{
+    selectedcomprobantes: @entangle('selectedcomprobantes').defer,
+    checkall: @entangle('checkall')
+}">
     <div wire:loading.flex class="loading-overlay rounded fixed hidden">
         <x-loading-next />
     </div>
@@ -24,15 +27,34 @@
         </div>
     </div>
 
-    @if ($guias->hasPages())
-        <div class="pt-3 pb-1">
-            {{ $guias->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
+    <div class="w-full flex flex-col items-start sm:flex-row justify-between sm:items-end gap-2 sm:gap-5 pt-3 pb-1">
+        @can('admin.facturacion.guias.sunat')
+            <x-button class="inline-block flex-shrink-0" x-cloak x-show="selectedcomprobantes.length>0"
+                @click="$wire.multisend()" wire:loading.attr="disabled" style="display: none;">
+                {{ __('ENVIAR SELECCIONADOS') }}
+                <span x-text="selectedcomprobantes.length" :class="selectedcomprobantes.length < 10 ? 'px-1' : ''"
+                    class="bg-white p-0.5 text-[9px] rounded-full !tracking-normal font-semibold text-next-500"></span>
+            </x-button>
+        @endcan
+        @if ($guias->hasPages())
+            <div class="w-full flex-1">
+                {{ $guias->onEachSide(0)->links('livewire::pagination-default') }}
+            </div>
+        @endif
+    </div>
 
     <x-table class="mt-1">
         <x-slot name="header">
             <tr>
+                @can('admin.facturacion.guias.sunat')
+                    <th scope="col" class="p-2 font-medium text-center">
+                        @if (count($guias) > 0)
+                            <x-label value="TODO" class="text-textheadertable cursor-pointer" for="allcomprobantes" />
+                            <x-input x-model="checkall" type="checkbox" @change="$wire.allcomprobantes(checkall)"
+                                class="p-2 !rounded-0 !rounded-none cursor-pointer" id="allcomprobantes" />
+                        @endif
+                    </th>
+                @endcan
                 <th scope="col" class="p-2 font-medium text-left">
                     SERIE</th>
                 <th scope="col" class="p-2 font-medium">
@@ -71,7 +93,7 @@
                 <th scope="col" class="p-2 font-medium text-center">
                     REFERENCIA</th>
                 <th scope="col" class="p-2 font-medium">
-                    SUCURSAL</th>
+                    SUCURSAL / USUARIO</th>
                 <th scope="col" class="p-2 font-medium">
                     SUNAT</th>
                 <th scope="col" class="p-2 font-medium">
@@ -84,6 +106,20 @@
             <x-slot name="body">
                 @foreach ($guias as $item)
                     <tr>
+                        @can('admin.facturacion.guias.sunat')
+                            <td class="p-2 text-[10px] text-center">
+                                @if (!$item->trashed())
+                                    @if ($item->seriecomprobante->typecomprobante->isSunat())
+                                        @if (!$item->isSendSunat())
+                                            <x-input type="checkbox" value="{{ $item->id }}"
+                                                x-model="selectedcomprobantes" name="comprobantes"
+                                                class="p-2 !rounded-0 !rounded-none cursor-pointer"
+                                                id="{{ $item->id }}" />
+                                        @endif
+                                    @endif
+                                @endif
+                            </td>
+                        @endcan
                         <td class="p-2 text-[10px]">
                             @can('admin.facturacion.guias.create')
                                 <a href="{{ route('admin.facturacion.guias.edit', $item) }}"

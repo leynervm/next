@@ -28,11 +28,16 @@ class CreateMarca extends Component
     {
         return [
             'name' => [
-                'required', 'min:2', 'max:100',
+                'required',
+                'min:2',
+                'max:100',
                 new CampoUnique('marcas', 'name', null, true),
             ],
             'logo' => [
-                'nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120'
+                'nullable',
+                'file',
+                'mimes:jpeg,png,gif',
+                'max:5120'
             ]
         ];
     }
@@ -57,7 +62,7 @@ class CreateMarca extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
         $this->authorize('admin.almacen.marcas.create');
         // $this->name = mb_strtoupper(trim($this->name), "UTF-8");
@@ -107,7 +112,11 @@ class CreateMarca extends Component
             }
             DB::commit();
             $this->resetValidation();
-            $this->reset();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept('open');
+            }
             $this->emitTo('admin.marcas.show-marcas', 'render');
             $this->identificador = rand();
             $this->dispatchBrowserEvent('created');

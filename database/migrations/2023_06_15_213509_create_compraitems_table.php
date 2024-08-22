@@ -14,26 +14,21 @@ class CreateCompraitemsTable extends Migration
     public function up()
     {
         Schema::create('compraitems', function (Blueprint $table) {
-            $table->id();
-            $table->decimal('oldstock', 12, 2);
-            $table->decimal('oldpricebuy', 18, 2);
-            $table->decimal('oldpricesale', 18, 2);
-            $table->decimal('cantidad', 12, 2);
-            $table->decimal('pricebuy', 18, 4);
-            $table->decimal('igv', 18, 4);
-            $table->decimal('descuento', 18, 4);
-            $table->decimal('subtotal', 18, 4);
-            $table->decimal('total', 18, 4);
+            $table->bigIncrements('id')->unsigned();
+            $table->unsignedDecimal('cantidad', 12, 2);
+            $table->unsignedDecimal('price', 18, 2);
+            $table->unsignedDecimal('igv', 18, 2);
+            $table->unsignedDecimal('descuento', 18, 2);
+            $table->unsignedDecimal('subtotaligv', 18, 2);
+            $table->unsignedDecimal('subtotaldescuento', 18, 2);
+            $table->unsignedDecimal('subtotal', 18, 2);
+            $table->unsignedDecimal('total', 18, 2);
+            $table->unsignedDecimal('oldprice', 18, 2);
+            $table->unsignedDecimal('oldpricesale', 18, 2);
             $table->bigInteger('producto_id')->nullable();
-            $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('compra_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
             $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->foreign('compra_id')->on('compras')->references('id');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

@@ -1,8 +1,8 @@
 <div style="display: none;" class="block relative" x-cloak x-show="incluyeguia" x-transition>
     <x-title-next titulo="MENÚ GUIA REMISION" class="my-3" />
 
-    <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-1 gap-1">
-        <div class="w-full xs:col-span-2 lg:col-span-1">
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1">
+        <div class="w-full">
             <x-label value="Guía remisión :" />
             <div class="relative" id="parentsrgr" x-init="selectSerieguia">
                 <x-select class="block w-full uppercase" x-ref="selectguia" id="srgr" data-placeholder="null">
@@ -22,7 +22,7 @@
             <x-jet-input-error for="serieguia_id" />
         </div>
 
-        <div class="w-full xs:col-span-2 lg:col-span-1">
+        <div class="w-full">
             <x-label value="Motivo traslado :" />
             <div class="relative" id="parentmtvtr" x-init="selectMotivo">
                 <x-select class="block w-full uppercase" x-ref="selectmotivo" id="mtvtr" data-placeholder="null"
@@ -38,7 +38,6 @@
                 </x-select>
                 <x-icon-select />
             </div>
-            <span x-text="codemotivotraslado"></span>
             <x-jet-input-error for="motivotraslado_id" />
         </div>
 
@@ -59,7 +58,6 @@
                 </x-select>
                 <x-icon-select />
             </div>
-            <span x-text="codemodalidad"></span>
             <x-jet-input-error for="modalidadtransporte_id" />
         </div>
 
@@ -83,14 +81,14 @@
             <x-jet-input-error for="peso" />
         </div>
 
-        <div class="w-full xs:col-span-2 lg:col-span-1">
+        <div class="w-full lg:col-span-1" :class="vehiculosml ? 'sm:col-span-2 ' : 'xs:col-span-2 sm:col-span-3'">
             <x-label value="Descripción :" />
             <x-input class="block w-full" wire:model.defer="note"
                 placeholder="Descripcion, detalle de la guía (Opcional)..." />
             <x-jet-input-error for="note" />
         </div>
 
-        <div class="w-full animate__animated animate__fadeInDown" x-show="vehiculosml">
+        <div class="w-full" x-cloak x-show="vehiculosml" style="display:none" x-transition>
             <x-label value="Placa vehículo (Opcional) :" />
             <x-input class="block w-full" wire:model.defer="placavehiculo"
                 placeholder="Placa del vehículo de transporte..." />
@@ -99,21 +97,21 @@
     </div>
 
     <div class="w-full">
-        <x-label-check for="vehiculosml" class="mt-2">
+        <x-label-check for="vehiculosml" class="mt-2 !text-[9px]">
             <x-input wire:model.defer="vehiculosml" name="vehiculosml" type="checkbox" id="vehiculosml"
                 @change="toggle" />
             TRASLADO EN VEHÍCULOS DE CATEGORÍA M1 O L
         </x-label-check>
     </div>
 
-    <div class="w-full animate__animated animate__fadeInDown" x-show="loadingdestinatario">
+    <div class="w-full animate__animated animate__fadeInDown" x-cloak x-show="loadingdestinatario">
         <x-title-next titulo="DATOS DEL DESTINATARIO" class="my-3" />
 
-        <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-1">
             <div class="w-full">
                 <x-label value="DNI / RUC :" />
-                <div class="w-full inline-flex">
-                    <x-input class="block w-full prevent numeric" wire:model.defer="documentdestinatario"
+                <div class="w-full inline-flex gap-1">
+                    <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="documentdestinatario"
                         wire:keydown.enter="getDestinatario" minlength="0" maxlength="11"
                         onkeypress="return validarNumero(event, 11)" />
                     <x-button-add class="px-2" wire:click="getDestinatario" wire:target="getDestinatario"
@@ -129,7 +127,7 @@
                 <x-jet-input-error for="documentdestinatario" />
             </div>
 
-            <div class="w-full lg:col-span-2 xl:col-span-1">
+            <div class="w-full md:col-span-2 lg:col-span-1">
                 <x-label value="Nombres :" />
                 <x-input class="block w-full" wire:model.defer="namedestinatario"
                     placeholder="Nombres / razón social del destinatario" />
@@ -144,8 +142,8 @@
         <div class="w-full grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-1 gap-1">
             <div class="w-full">
                 <x-label value="RUC transportista :" />
-                <div class="w-full inline-flex">
-                    <x-input class="block w-full prevent numeric" wire:model.defer="ructransport"
+                <div class="w-full inline-flex gap-1">
+                    <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="ructransport"
                         wire:keydown.enter="getTransport" minlength="0" maxlength="11"
                         onkeypress="return validarNumero(event, 11)" />
                     <x-button-add class="px-2" wire:click="getTransport" wire:loading.attr="disabled">
@@ -172,11 +170,11 @@
     <div class="w-full animate__animated animate__fadeInDown" x-show="loadingprivate">
         <x-title-next titulo="DATOS DEL CONDUCTOR / VEHÍCULO" class="my-3" />
 
-        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+        <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-1 gap-1">
             <div class="w-full">
                 <x-label value="Documento conductor :" />
-                <div class="w-full inline-flex">
-                    <x-input class="block w-full prevent numeric" wire:model.defer="documentdriver"
+                <div class="w-full inline-flex gap-1">
+                    <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="documentdriver"
                         wire:keydown.enter="getDriver" minlength="0" maxlength="11"
                         onkeypress="return validarNumero(event, 8)" />
                     <x-button-add class="px-2" wire:click="getDriver" wire:loading.attr="disabled">
@@ -221,22 +219,22 @@
     <div class="w-full">
         <x-title-next titulo="LUGAR DE EMISIÓN" class="my-3" />
 
-        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1">
 
             <div class="w-full">
                 <x-label value="Lugar emisión :" />
-                <div class="relative" x-init="selectUbigeoEmision" id="parentemision_id">
+                <div class="relative" id="parentemision_id">
                     <x-select class="block w-full" id="emision_id" x-ref="ubigeoemision"
                         data-minimum-results-for-search="3">
                         <x-slot name="options">
-                            @if (count($ubigeos))
+                            {{-- @if (count($ubigeos))
                                 @foreach ($ubigeos as $item)
                                     <option value="{{ $item->id }}">
                                         {{ $item->region }} / {{ $item->provincia }} /
                                         {{ $item->distrito }} / {{ $item->ubigeo_reniec }}
                                     </option>
                                 @endforeach
-                            @endif
+                            @endif --}}
                         </x-slot>
                     </x-select>
                     <x-icon-select />
@@ -244,7 +242,7 @@
                 <x-jet-input-error for="ubigeoorigen_id" />
             </div>
 
-            <div class="w-full lg:col-span-3 xl:col-span-1">
+            <div class="w-full">
                 <x-label value="Direccion origen :" />
                 <x-input class="block w-full" wire:model.defer="direccionorigen"
                     placeholder="Dirección del punto de partida..." />
@@ -256,13 +254,13 @@
     <div class="w-full">
         <x-title-next titulo="LUGAR DE DESTINO" class="my-3" />
 
-        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-1 gap-1">
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1">
             <div class="w-full">
                 <x-label value="Lugar destino :" />
-                <div class="relative" x-init="selectUbigeoDestino" id="parentdestino_id" wire:ignore>
+                <div class="relative" id="parentdestino_id">
                     <x-select class="block w-full" id="destino_id" x-ref="ubigeodestino"
                         data-minimum-results-for-search="3">
-                        <x-slot name="options">
+                        {{-- <x-slot name="options">
                             @if (count($ubigeos))
                                 @foreach ($ubigeos as $item)
                                     <option value="{{ $item->id }}">
@@ -271,14 +269,14 @@
                                     </option>
                                 @endforeach
                             @endif
-                        </x-slot>
+                        </x-slot> --}}
                     </x-select>
                     <x-icon-select />
                 </div>
                 <x-jet-input-error for="ubigeodestino_id" />
             </div>
 
-            <div class="w-full lg:col-span-3 xl:col-span-1">
+            <div class="w-full">
                 <x-label value="Direccion destino :" />
                 <x-input class="block w-full" wire:model.defer="direcciondestino"
                     placeholder="Direccion del punto de llegada.." />
@@ -288,40 +286,6 @@
     </div>
 
     <script>
-        function selectUbigeoEmision() {
-            this.selectUE = $(this.$refs.ubigeoemision).select2();
-            this.selectUE.val(this.ubigeoorigen_id).trigger("change");
-            this.selectUE.on("select2:select", (event) => {
-                this.ubigeoorigen_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("ubigeoorigen_id", (value) => {
-                this.selectUE.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectUE.select2('destroy');
-                this.selectUE.select2().val(this.ubigeoorigen_id).trigger('change');
-            });
-        }
-
-        function selectUbigeoDestino() {
-            this.selectUD = $(this.$refs.ubigeodestino).select2();
-            this.selectUD.val(this.ubigeodestino_id).trigger("change");
-            this.selectUD.on("select2:select", (event) => {
-                this.ubigeodestino_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("ubigeodestino_id", (value) => {
-                this.selectUD.val(value).trigger("change");
-            });
-        }
-
         function selectSerieguia() {
             this.selectGR = $(this.$refs.selectguia).select2();
             this.selectGR.val(this.serieguia_id).trigger("change");

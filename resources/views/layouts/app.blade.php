@@ -43,7 +43,7 @@
                 {{ $slider }}
             @endif
 
-            <div class="contenedor bg-body min-h-screen">
+            <div class="{{-- contenedor --}} bg-body min-h-screen">
                 @if (session('message'))
                     <x-alert :titulo="session('message')->title" :mensaje="session('message')->text" :type="session('message')->type">
                         <x-slot name="icono">
@@ -139,12 +139,14 @@
     })
 
     window.addEventListener('validation', data => {
-        console.log(data.detail);
+        // console.log(data.detail);
+        var icon = data.detail.icon ? data.detail.icon : 'info';
+        console.log(icon);
         swal.fire({
             title: data.detail.title,
             text: data.detail.text,
             html: data.detail.text,
-            icon: 'info',
+            icon: icon,
             confirmButtonColor: '#0FB9B9',
             confirmButtonText: 'Cerrar',
         })
@@ -235,7 +237,7 @@
 
         function getTheme() {
             const localTheme = localStorage.theme;
-            if (localTheme !== null || localTheme !== undefined) {
+            if (localTheme != null || localTheme != undefined) {
                 let classes = document.body.className.split(' ');
                 let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
                 themeClasses.forEach(themeClass => {
@@ -243,7 +245,7 @@
                 });
                 document.body.classList.add(localTheme);
             } else {
-                if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
                     document.body.classList.remove("{{ config('app.theme') }}");
                     document.body.classList.add('theme-darknext');
                 } else {

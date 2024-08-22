@@ -44,20 +44,21 @@ class Producto extends Model
     const MOSTRAR = '0';
     const OCULTAR = '1';
 
+    // protected $appends = ['precio_real_compra'];
+    // protected $appends = ['precio_lista'];
+
     // protected static function newFactory()
     // {
     //     return \Database\Factories\ProductoFactory::new();
     // }
 
     protected $guarded = ['created_at', 'updated_at'];
-
-    // protected $appends = ['precio_real_compra'];
-    // protected $appends = ['precio_lista'];
-
-    // public function getRouteKeyName()
-    // {
-    //     return 'slug';
-    // }
+    protected $casts = [
+        'requireserie' => 'integer',
+        'publicado' => 'integer',
+        'viewespecificaciones' => 'integer',
+        'visivility' => 'integer',
+    ];
 
     public function sluggable(): array
     {
@@ -67,7 +68,6 @@ class Producto extends Model
             ]
         ];
     }
-
 
     // public function precioVenta($pricetype_id, $descuento = 0)
     // {
@@ -142,7 +142,7 @@ class Producto extends Model
 
     public function compraitems(): HasMany
     {
-        return $this->hasMany(Compraitem::class)->orderBy('created_at', 'desc');
+        return $this->hasMany(Compraitem::class)->orderBy('id', 'desc');
     }
 
     public function guiaitems(): HasMany
@@ -259,5 +259,10 @@ class Producto extends Model
     public function isPublicado()
     {
         return $this->publicado == self::PUBLICADO;
+    }
+
+    public function isRequiredserie()
+    {
+        return $this->requireserie == self::PUBLICADO;
     }
 }

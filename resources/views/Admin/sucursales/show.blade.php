@@ -46,7 +46,7 @@
     </x-slot>
 
     <div
-        class="mx-auto lg:max-w-4xl xl:max-w-7xl flex flex-col gap-8">
+        class="mx-auto xl:max-w-7xl flex flex-col gap-8">
         @can('admin.administracion.sucursales.edit')
             <div>
                 <livewire:admin.sucursales.show-sucursal :sucursal="$sucursal">

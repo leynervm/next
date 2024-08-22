@@ -7,14 +7,14 @@
                         <div
                             class="w-full flex gap-2 text-[10px] bg-fondoheadertable text-textheadertable rounded-t-md p-2">
                             <div class="w-full flex-1">ESPECIFICACION</div>
-                            <div>OPCIONES</div>
+                            <div class="flex-shrink-0">OPCIONES</div>
                         </div>
                     @endif
 
-                    <div class="w-full" id="especificacions">
+                    <ul class="w-full max-h-60 overflow-x-auto" id="especificacions">
                         @foreach ($producto->especificacions as $item)
-                            <div data-id="{{ $item->id }}"
-                                class="w-full p-1 flex gap-2 border-none rounded text-textbodytable bg-fondobodytable text-[10px] hover:bg-fondohovertable">
+                            <li data-id="{{ $item->id }}"
+                                class="w-full p-1 flex gap-2 rounded text-textbodytable bg-fondobodytable text-[10px] hover:bg-fondohovertable">
                                 <div class="w-full flex-1 flex gap-2 items-center">
                                     <button type="button"
                                         class="text-next-500 inline-block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
@@ -32,18 +32,18 @@
                                             <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
                                         </svg>
                                     </button>
-                                    <h1 class="font-medium">
+                                    <p class="w-full flex-1 font-medium">
                                         {{ $item->caracteristica->name }} :
                                         <b>{{ $item->name }}</b>
-                                    </h1>
+                                    </p>
                                 </div>
-                                <div>
+                                <div class="flex-shrink-0">
                                     <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
                                         wire:loading.attr="disabled" />
                                 </div>
-                            </div>
+                            </li>
                         @endforeach
-                    </div>
+                    </ul>
 
 
                     <div class="w-full pt-4 flex items-end gap-1 justify-end mt-auto">

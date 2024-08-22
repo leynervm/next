@@ -2,15 +2,11 @@
 
 namespace App\Http\Livewire\Modules\Facturacion\Comprobantes;
 
-use App\Helpers\Facturacion\createXML;
-use App\Helpers\Facturacion\SendXML;
 use App\Mail\EnviarXMLMailable;
-use App\Models\Sucursal;
 use App\Models\Typecomprobante;
 use App\Models\Typepayment;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Facturacion\Entities\Comprobante;
@@ -27,6 +23,9 @@ class ShowComprobantes extends Component
     public $searchtypepayment = '';
     public $searchtypecomprobante = '';
     public $searchuser = '';
+
+    public $checkall = false;
+    public $selectedcomprobantes = [];
 
 
     protected $queryString = [
@@ -116,6 +115,9 @@ class ShowComprobantes extends Component
             $comprobantes->where('seriecompleta', 'ilike', trim($this->serie) . '%');
         }
 
+        if ($this->checkall) {
+            $this->allcomprobantes();
+        }
         $comprobantes = $comprobantes->orderBy("id", "desc")->paginate();
 
         return view('livewire.modules.facturacion.comprobantes.show-comprobantes', compact('comprobantes', 'typepayments', 'typecomprobantes', 'users'));
@@ -152,7 +154,7 @@ class ShowComprobantes extends Component
             }
         } else {
             $mensaje = response()->json([
-                'title' => 'COMPROBANTE ELECTRÓNICO ' . $comprobante->seriecompleta. ' YA FUÉ EMITIDO A SUNAT.',
+                'title' => 'COMPROBANTE ELECTRÓNICO ' . $comprobante->seriecompleta . ' YA FUÉ EMITIDO A SUNAT.',
                 'text' => null,
             ]);
             $this->dispatchBrowserEvent('validation', $mensaje->getData());
@@ -178,6 +180,111 @@ class ShowComprobantes extends Component
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
+        }
+    }
+
+    public function multisend()
+    {
+
+        if (count($this->selectedcomprobantes) > 0) {
+            $correctos = 0;
+            $con_observaciones = 0;
+
+            foreach ($this->selectedcomprobantes as $key => $id) {
+                $comprobante =  Comprobante::find($id);
+                if ($comprobante && !$comprobante->isSendSunat()) {
+                    $response = $comprobante->enviarComprobante();
+
+                    if ($response->success) {
+                        if (empty($response->mensaje)) {
+                            $correctos++;
+                        } else {
+                            $con_observaciones++;
+                        }
+                        unset($this->selectedcomprobantes[$key]);
+                    }
+                }
+            }
+
+            $text = "<ul>";
+            if ($correctos > 0) {
+                $text .= "<li>$correctos comprobantes electrónicos emitidos correctamente.</li>";
+            }
+            if ($con_observaciones > 0) {
+                $text .= "<li>$con_observaciones comprobantes electrónicos emitidos con observaciones.</li>";
+            }
+            $text .= "</ul>";
+
+            if ($correctos + $con_observaciones > 0) {
+                $mensaje = response()->json([
+                    'title' => "COMPROBANTES ELECTRÓNICOS ENVIADOS CORRECTAMENTE A SUNAT",
+                    'text' => $text,
+                    'icon' => 'success'
+                ]);
+            } else {
+                $mensaje = response()->json([
+                    'title' => "COMPROBANTES ELECTRÓNICOS NO FUERON EMITIDOS A SUNAT !",
+                    'text' => "Intente nuevamente enviar los comprobantes electrónicos seleccionados.",
+                ]);
+            }
+
+            $this->resetValidation();
+            $this->reset(['selectedcomprobantes', 'checkall']);
+            $this->dispatchBrowserEvent('validation', $mensaje->getData());
+        } else {
+            $mensaje = response()->json([
+                'title' => "SELECCIONE LOS COMPROBANTES ELECTRÓNICOS A EMITIR !",
+                'text' => null,
+            ]);
+            $this->dispatchBrowserEvent('validation', $mensaje->getData());
+        }
+    }
+
+    public function allcomprobantes()
+    {
+        if ($this->checkall) {
+            $comprobantes = Comprobante::noEnviadoSunat()
+                ->where('sucursal_id', auth()->user()->sucursal_id);
+
+            if ($this->search !== '') {
+                $comprobantes->whereHas('client', function ($query) {
+                    $query->where('name', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('document', 'ilike', $this->search . '%');
+                });
+            }
+
+            if ($this->date) {
+                if ($this->dateto) {
+                    $comprobantes->whereDateBetween('date', $this->date, $this->dateto);
+                } else {
+                    $comprobantes->whereDate('date', $this->date);
+                }
+            }
+
+            if ($this->searchtypepayment !== '') {
+                $comprobantes->whereHas('typepayment', function ($query) {
+                    $query->where('typepayments.name', $this->searchtypepayment);
+                });
+            }
+
+            if ($this->searchtypecomprobante !== '') {
+                $comprobantes->whereHas('seriecomprobante.typecomprobante', function ($query) {
+                    $query->where('typecomprobantes.code', $this->searchtypecomprobante);
+                });
+            }
+
+            if ($this->searchuser !== '') {
+                $comprobantes->where('user_id', $this->searchuser);
+            }
+
+            if ($this->serie !== '') {
+                $comprobantes->where('seriecompleta', 'ilike', trim($this->serie) . '%');
+            }
+
+            // $comprobantes = $comprobantes->get()->pluck('id');
+            $this->selectedcomprobantes = $comprobantes->get()->pluck('id');
+        } else {
+            $this->reset(['selectedcomprobantes']);
         }
     }
 }

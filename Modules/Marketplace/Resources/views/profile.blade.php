@@ -14,7 +14,7 @@
     </x-slot>
 
     {{-- @can('admin.ventas') --}}
-    <div class="w-full">
+    <div class="contenedor w-full">
         <div>
             <div class="w-full py-10">
 

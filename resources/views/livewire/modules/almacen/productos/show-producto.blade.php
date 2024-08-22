@@ -1,9 +1,8 @@
 <div>
-    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+    <div class="flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del producto registrado.">
-            <form class="w-full bg-body p-3 rounded relative flex flex-col gap-2" wire:submit.prevent="update"
-                x-data="showproducto">
-                <div class="w-full grid grid-cols-1 sm:grid-cols-2 4xl:grid-cols-3 gap-2">
+            <form class="w-full relative flex flex-col gap-2" wire:submit.prevent="update" x-data="showproducto">
+                <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                     <div class="w-full sm:col-span-2">
                         <x-label value="Descripcion producto :" />
                         <x-input class="block w-full" wire:model.defer="producto.name" />
@@ -168,36 +167,36 @@
                     @endif
                 </div>
 
-                @if (Module::isEnabled('Marketplace'))
-                    <div class="w-full">
+
+                <div class="w-full flex flex-col gap-2 justify-start items-start">
+                    @if (Module::isEnabled('Marketplace'))
                         <x-label-check for="publicado_dit">
-                            <x-input wire:model="producto.publicado" name="publicado" value="1" type="checkbox"
-                                id="publicado_dit" />
+                            <x-input wire:model.defer="producto.publicado" name="publicado" value="1"
+                                type="checkbox" id="publicado_dit" />
                             DISPONIBLE TIENDA WEB
                         </x-label-check>
-                    </div>
+                        <x-jet-input-error for="producto.publicado" />
 
-                    <div class="w-full">
                         <x-label-check for="viewespecificaciones_dit">
-                            <x-input wire:model="producto.viewespecificaciones" name="viewespecificaciones"
+                            <x-input wire:model.defer="producto.viewespecificaciones" name="viewespecificaciones"
                                 value="1" type="checkbox" id="viewespecificaciones_dit" />
                             MOSTRAR ESPECIFICACIONES EN TIENDA WEB
                         </x-label-check>
-                    </div>
-                @endif
+                    @endif
 
+                    <x-label-check for="requireserie">
+                        <x-input wire:model.defer="producto.requireserie" name="requireserie" value="1"
+                            type="checkbox" id="requireserie" />REQUIERE AGREGAR SERIES
+                    </x-label-check>
+                    <x-jet-input-error for="producto.requireserie" />
+                </div>
 
-                <div class="w-full flex pt-4 gap-2 justify-end">
-                    @can('admin.almacen.productos.delete')
-                        <x-button-secondary onclick="confirmDelete({{ $producto }})" wire:loading.attr="disabled">
-                            ELIMINAR</x-button-secondary>
-                    @endcan
-
-                    @can('admin.almacen.productos.edit')
+                @can('admin.almacen.productos.edit')
+                    <div class="w-full flex gap-2 justify-end">
                         <x-button type="submit" wire:loading.attr="disabled">
                             {{ __('Save') }}</x-button>
-                    @endcan
-                </div>
+                    </div>
+                @endcan
             </form>
         </x-form-card>
 

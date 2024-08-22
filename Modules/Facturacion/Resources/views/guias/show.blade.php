@@ -47,7 +47,7 @@
     </x-slot>
 
     <div
-        class="mx-auto lg:max-w-4xl xl:max-w-7xl flex flex-col gap-8 animate__animated animate__fadeIn animate__faster">
+        class="mx-auto xl:max-w-7xl flex flex-col gap-8">
         {{-- <div> --}}
         <livewire:modules.facturacion.guias.show-guia :guia="$guia" />
         {{-- </div> --}}

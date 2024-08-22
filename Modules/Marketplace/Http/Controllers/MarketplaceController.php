@@ -173,7 +173,7 @@ class MarketplaceController extends Controller
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
-        
+
         return view('modules.marketplace.productos.index', compact('empresa', 'moneda', 'pricetype'));
     }
 
@@ -296,7 +296,10 @@ class MarketplaceController extends Controller
     {
 
         $search = $request->input('search');
-        $products = Producto::query()->select('id', 'name', 'slug');
+        $products = Producto::query()->select('id', 'name', 'slug', 'marca_id')
+            ->with(['images' => function ($query) {
+                $query->default();
+            }])->with('marca');
 
         if (strlen(trim($search)) < 2) {
             return response()->json([]);

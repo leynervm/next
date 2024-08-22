@@ -8,10 +8,10 @@
             class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-52 flex-shrink-0 absolute z-[199] lg:z-[90] top-0 mt-[108px] lg:mt-0 left-0 lg:top-0 h-[calc(100vh-110px)] lg:h-auto lg:relative lg:block rounded-r-xl transition-all duration-300"
             :class="sidebar ? 'translate-x-0 bg-inherit lg:bg-inherit' : '-translate-x-full bg-inherit lg:translate-x-0',
                 openSidebar ? '' : 'z-[199]'">
-            <div class="w-full p-2 lg:p-0 relative overflow-y-auto overflow-x-hidden h-full">
+            <div class="w-full p-2 pt-10 lg:p-0 relative overflow-y-auto overflow-x-hidden h-full">
                 <button x-cloak
-                    class="absolute flex items-center justify-center top-0 right-0 h-8 w-8 lg:hidden cursor-pointer text-colorbuttonclose hover:text-colorhoverbuttonclose rounded-full p-2"
-                    :class="sidebar ? 'bg-fondobuttonclose' : ''" @click="sidebar=false,backdrop = false">✕</button>
+                    class="absolute flex font-semibold items-center justify-center leading-3 top-1 right-1 lg:hidden cursor-pointer rounded-lg text-lg text-textspancardproduct p-2"
+                    :class="sidebar ? '' : ''" @click="sidebar=false,backdrop = false">✕</button>
 
                 {{-- <h1 class="text-colorsubtitleform text-[10px] py-2">FILTRAR</h1> --}}
 
@@ -211,7 +211,7 @@
                     </svg>
                 </button>
             </div>
-            <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 ">
+            <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                 @foreach ($productos as $item)
                     @php
                         $image = $item->getImageURL();
@@ -262,7 +262,7 @@
                                     <small class="text-[10px]">USD</small>
                                 </h1>
                             @endif
-                            <h1 class="text-colorlabel font-semibold text-2xl text-center">
+                            <h1 class="text-colorlabel font-semibold text-sm sm:text-2xl text-center">
                                 <small class="text-[10px]">{{ $moneda->simbolo }}</small>
                                 {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                 <small class="text-[10px]">{{ $moneda->currency }}</small>

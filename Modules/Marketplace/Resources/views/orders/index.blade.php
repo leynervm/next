@@ -14,7 +14,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full flex flex-col gap-5 mt-3">
+    <div class="contenedor w-full flex flex-col gap-5 mt-3">
         <div class="w-full bg-fondominicard shadow-md shadow-shadowminicard rounded-xl border border-borderminicard">
             <h1 class="text-xl font-semibold text-colorlabel p-5">
                 PEDIDOS RECIENTES</h1>

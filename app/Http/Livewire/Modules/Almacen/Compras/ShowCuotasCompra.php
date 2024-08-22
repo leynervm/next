@@ -49,11 +49,7 @@ class ShowCuotasCompra extends Component
         $typepayments = Typepayment::orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('default', 'desc')->orderBy('name', 'asc')->get();
         if ($this->monthbox && $this->openbox) {
-            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+            $diferencias = Cajamovimiento::with('moneda')->diferencias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
         } else {
             $diferencias = [];
         }
@@ -306,12 +302,7 @@ class ShowCuotasCompra extends Component
         try {
 
             $methodpayment = Methodpayment::find($this->methodpayment_id);
-            $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment->type);
-            })->where('sucursal_id', $this->compra->sucursal_id)
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
+            $saldocaja = Cajamovimiento::saldo($methodpayment->type, $this->monthbox->id, $this->openbox->id, $this->compra->sucursal_id, $this->moneda_id)
                 ->first()->diferencia ?? 0;
             $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 

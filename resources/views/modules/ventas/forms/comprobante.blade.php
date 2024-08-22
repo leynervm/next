@@ -63,8 +63,8 @@
         @endif
     @endcan
 
-    <div class="w-full flex flex-wrap lg:flex-nowrap xl:flex-wrap gap-1">
-        <div class="w-full lg:w-1/3 xl:w-full">
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1">
+        <div class="w-full">
             <x-label value="DNI / RUC :" />
             @if ($client_id)
                 <div class="w-full inline-flex relative">
@@ -88,23 +88,23 @@
             @endif
             <x-jet-input-error for="document" />
         </div>
-        <div class="w-full lg:w-2/3 xl:w-full">
+        <div class="w-full sm:col-span-2 lg:col-span-1">
             <x-label value="Cliente / Razón Social :" />
             <x-input class="block w-full" wire:model.defer="name" placeholder="Nombres / razón social del cliente" />
             <x-jet-input-error for="name" />
         </div>
     </div>
 
-    <div class="w-full flex flex-wrap lg:flex-nowrap xl:flex-wrap gap-1">
-        <div class="w-full lg:w-full xl:w-full">
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1">
+        <div class="w-full {{ mi_empresa()->usarLista() ? 'sm:col-span-2' : 'sm:col-span-3' }} lg:col-span-1">
             <x-label value="Dirección :" />
             <x-input class="block w-full" wire:model.defer="direccion" placeholder="Dirección del cliente" />
             <x-jet-input-error for="direccion" />
         </div>
 
-        @if (mi_empresa()->uselistprice)
+        @if (mi_empresa()->usarLista())
             @if ($pricetypeasigned)
-                <div class="w-full lg:w-1/3 xl:w-full">
+                <div class="w-full">
                     <x-label value="Lista precio asignado :" />
                     <x-disabled-text :text="$pricetypeasigned ?? ' - '" />
                 </div>
@@ -112,7 +112,7 @@
         @endif
     </div>
 
-    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1">
         <div class="w-full">
             <x-label value="Tipo comprobante :" />
             <div id="parenttpcmpbt" class="relative" x-init="selectComprobante">
@@ -137,41 +137,55 @@
         @if (Module::isEnabled('Facturacion'))
             <div class="w-full">
                 <x-label value="Tipo pago :" />
-                <div id="parenttpymt" class="relative" x-init="selectPayment">
+                <div id="parenttpymt" class="relative">
                     <x-select class="block w-full" id="tpymt" x-ref="selectpayment" data-placeholder="null">
-                        <x-slot name="options">
+                        {{-- <x-slot name="options">
                             @if (count($typepayments))
                                 @foreach ($typepayments as $item)
                                     <option value="{{ $item->id }}" data-paycredito="{{ $item->isCredito() }}">
                                         {{ $item->name }} </option>
                                 @endforeach
                             @endif
-                        </x-slot>
+                        </x-slot> --}}
                     </x-select>
                     <x-icon-select />
                 </div>
                 <x-jet-input-error for="typepayment_id" />
             </div>
         @endif
-    </div>
 
-    <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-1">
-        <div style="display: none;" x-show="!paymentcuotas">
+        <div class="w-full" x-cloak x-show="paymentcuotas" x-transition style="display: none;">
+            <x-label value="Cuotas :" />
+            <div class="w-full inline-flex">
+                <x-input class="block w-full" type="number" min="1" step="1" max="100"
+                    wire:model.defer="countcuotas" wire:key="countcuotas"
+                    onkeypress="return validarNumero(event, 3)" />
+            </div>
+            <x-jet-input-error for="countcuotas" />
+        </div>
+
+        <div class="w-full" x-cloak x-show="paymentcuotas" x-transition style="display: none;">
+            <x-label value="Incrementar venta (%):" />
+            <x-input class="block w-full prevent" type="number" min="0" step="0.10"
+                wire:model.lazy="increment" wire:key="increment" onkeypress="return validarDecimal(event, 5)" />
+            <x-jet-input-error for="increment" />
+        </div>
+
+        <div class="w-full" x-cloak x-show="!paymentcuotas" style="display: none;">
             <x-label value="Seleccionar pago :" />
-            <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2">
-                <x-input-radio class="py-2" for="paytotal" text="PAGO TOTAL">
-                    <input x-model="typepay" class="sr-only peer peer-disabled:opacity-25" type="radio"
-                        id="paytotal" name="payment" value="0" />
-                </x-input-radio>
-                <x-input-radio class="py-2" for="payparcial" text="PAGO PARCIAL">
-                    <input x-model="typepay" class="sr-only peer peer-disabled:opacity-25" type="radio"
-                        id="payparcial" name="payment" value="1" />
-                </x-input-radio>
+            <div id="parenttypepay" class="relative" x-init="selectTypepay">
+                <x-select class="block w-full" x-ref="typepay" id="typepay">
+                    <x-slot name="options">
+                        <option value="0">PAGO TOTAL</option>
+                        <option value="1">PAGO PARCIAL</option>
+                    </x-slot>
+                </x-select>
+                <x-icon-select />
             </div>
             <x-jet-input-error for="typepay" />
         </div>
 
-        <div class="w-full" style="display: none;" x-show="typepay == '1'" x-transition>
+        <div class="w-full" x-cloak x-show="typepay == '1'" style="display: none;" x-transition>
             <x-label value="Monto parcial pago :" />
             <x-input class="block w-full" type="number" min="1" step="0.01" min="0.01"
                 wire:model.defer="amountparcial" wire:key="amountparcial"
@@ -181,9 +195,9 @@
 
         <div class="w-full">
             <x-label value="Método pago :" />
-            <div id="parenttmpym" class="relative" x-init="selectMethodpayment">
+            <div id="parenttmpym" class="relative">
                 <x-select class="block w-full" id="tmpym" x-ref="selectmethodpayment" data-placeholder="null">
-                    <x-slot name="options">
+                    {{-- <x-slot name="options">
                         @if (count($methodpayments) > 0)
                             @foreach ($methodpayments as $item)
                                 <option value="{{ $item->id }}">
@@ -191,46 +205,24 @@
                                 </option>
                             @endforeach
                         @endif
-                    </x-slot>
+                    </x-slot> --}}
                 </x-select>
                 <x-icon-select />
             </div>
             <x-jet-input-error for="methodpayment_id" />
         </div>
 
-        <div class="w-full flex mt-2 justify-end items-end" style="display: none;" x-show="typepay == '1'"
+        <div class="w-full flex justify-end items-end" x-cloak x-show="typepay == '1'" style="display: none;"
             x-transition>
-            <x-button @click.prevent="savepay" type="button" wire:loading.attr="disabled">
+            <x-button class="w-full block" @click.prevent="savepay" type="button" wire:loading.attr="disabled">
                 {{ __('AGREGAR PAGO') }}</x-button>
         </div>
+    </div>
 
-        {{-- <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas">
-            <x-label value="Pago actual:" />
-            <x-input class="block w-full prevent" type="number" min="0" step="0.100"
-                wire:model.lazy="paymentactual" wire:key="paymentactual"
-                wire:keydown.enter="setpaymentactual($event.target.value)"
-                onkeypress="return validarDecimal(event, 12)" />
-            <x-jet-input-error for="paymentactual" />
-        </div> --}}
+    <div class="w-full grid grid-cols-1 gap-1">
+        {{-- AQUI BOTON AGREGAR PAGO --}}
 
-        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas"
-            style="display: none;">
-            <x-label value="Incrementar venta (%):" />
-            <x-input class="block w-full prevent" type="number" min="0" step="0.10"
-                wire:model.lazy="increment" wire:key="increment" onkeypress="return validarDecimal(event, 5)" />
-            <x-jet-input-error for="increment" />
-        </div>
-
-        <div class="w-full lg:w-full animate__animated animate__fadeInDown" x-show="paymentcuotas"
-            style="display: none;">
-            <x-label value="Cuotas :" />
-            <div class="w-full inline-flex">
-                <x-input class="block w-full" type="number" min="1" step="1" max="100"
-                    wire:model.defer="countcuotas" wire:key="countcuotas"
-                    onkeypress="return validarNumero(event, 3)" />
-            </div>
-            <x-jet-input-error for="countcuotas" />
-        </div>
+        {{-- AQUI ESTAB CUOTAS --}}
 
         {{-- <div class="w-full" x-show="!paymentcuotas">
             <x-label value="Detalle pago :" />
@@ -299,57 +291,22 @@
             });
         }
 
-        function selectPayment() {
-            this.selectTP = $(this.$refs.selectpayment).select2();
-            this.selectTP.val(this.typepayment_id).trigger("change");
-            this.selectTP.on("select2:select", (event) => {
-                this.typepayment_id = event.target.value;
+        function selectTypepay() {
+            this.selectTPay = $(this.$refs.typepay).select2();
+            this.selectTPay.val(this.typepay).trigger("change");
+            this.selectTPay.on("select2:select", (event) => {
+                this.typepay = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("typepayment_id", (value) => {
-                this.selectTP.val(value).trigger("change");
+            this.$watch("typepay", (value) => {
+                this.selectTPay.val(value).trigger("change");
             });
 
             Livewire.hook('message.processed', () => {
-                this.selectTP.select2().val(this.typepayment_id).trigger('change');
-                let target = this.$refs.selectpayment;
-                let selectedOption = target.options[target.selectedIndex];
-                let paycredito = Boolean(selectedOption.getAttribute('data-paycredito'));
-
-                switch (paycredito) {
-                    case true:
-                        this.paymentcuotas = true;
-                        this.typepay = '1';
-                        break;
-                    case false:
-                        this.paymentcuotas = false;
-                        break;
-                    default:
-                        this.paymentcuotas = false;
-                        this.formapago = '';
-                }
-            });
-        }
-
-        function selectMethodpayment() {
-            this.selectMP = $(this.$refs.selectmethodpayment).select2();
-            this.selectMP.val(this.methodpayment_id).trigger("change");
-            this.selectMP.on("select2:select", (event) => {
-                this.methodpayment_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("methodpayment_id", (value) => {
-                this.selectMP.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectMP.select2().val(this.methodpayment_id).trigger('change');
+                this.selectTPay.select2().val(this.typepay).trigger('change');
             });
         }
     </script>

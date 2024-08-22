@@ -1,7 +1,11 @@
 <div x-data="createproducto">
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
-            <div class="w-full grid grid-cols-1 xs:grid-cols-2 xl:grid xl:grid-cols-3 gap-2">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 <div class="w-full xs:col-span-2 xl:col-span-3">
                     <x-label value="Descripcion producto :" />
                     <x-input class="block w-full disabled:bg-gray-200" wire:model.defer="name"
@@ -158,33 +162,48 @@
                         <x-jet-input-error for="estante_id" />
                     </div>
                 @endif
+            </div>
 
-                @if (Module::isEnabled('Almacen'))
-                    <div class="w-full xs:col-span-2 xl:col-span-3">
-                        <x-label-check for="publicado">
-                            <x-input wire:model.defer="publicado" name="publicado" value="1" type="checkbox"
-                                id="publicado" />DISPONIBLE TIENDA WEB
-                        </x-label-check>
+            <div class="w-full flex flex-col gap-2 justify-start items-start mt-2">
+                @if (Module::isEnabled('Marketplace'))
+                    <x-label-check for="publicado">
+                        <x-input wire:model.defer="publicado" name="publicado" value="1" type="checkbox"
+                            id="publicado" />DISPONIBLE TIENDA WEB
+                    </x-label-check>
+                    <x-jet-input-error for="publicado" />
+                @endif
+
+                <x-label-check for="requireserie">
+                    <x-input wire:model.defer="requireserie" name="requireserie" value="1" type="checkbox"
+                        id="requireserie" />REQUIERE AGREGAR SERIES
+                </x-label-check>
+                <x-jet-input-error for="requireserie" />
+            </div>
+
+            <x-simple-card class="mt-2 !border-0 hover:!shadow-none">
+                <x-label value="SELECCIONAR ALMACÉNES" class="!text-colortitleform font-semibold mt-6 mb-2" />
+
+                @if (count($almacens) > 0)
+                    <div class="w-full flex flex-wrap gap-2 items-start justify-start">
+                        @foreach ($almacens as $item)
+                            <x-input-radio class="py-2" for="almacen_{{ $item->id }}" :text="$item->name"
+                                textSize="xs">
+                                <input wire:model.defer="selectedAlmacens"
+                                    class="sr-only peer peer-disabled:opacity-25" type="checkbox"
+                                    id="almacen_{{ $item->id }}" name="almacens" value="{{ $item->id }}" />
+                            </x-input-radio>
+                        @endforeach
                     </div>
                 @endif
+                <x-jet-input-error for="selectedAlmacens" />
+            </x-simple-card>
+
+            <div class="w-full flex pt-4 gap-2 justify-end">
+                <x-button type="submit" wire:loading.attr="disabled">{{ __('Save') }}</x-button>
             </div>
         </x-form-card>
 
-        <x-form-card titulo="ALMACÉN">
-            <div class="w-full flex flex-wrap gap-2 items-start justify-start">
-                @if (count($almacens))
-                    @foreach ($almacens as $item)
-                        <x-input-radio class="py-2" for="almacen_{{ $item->id }}" :text="$item->name"
-                            textSize="xs">
-                            <input wire:model.defer="selectedAlmacens" class="sr-only peer peer-disabled:opacity-25"
-                                type="checkbox" id="almacen_{{ $item->id }}" name="almacens"
-                                value="{{ $item->id }}" />
-                        </x-input-radio>
-                    @endforeach
-                @endif
-            </div>
-            <x-jet-input-error for="selectedAlmacens" />
-        </x-form-card>
+
 
         <x-form-card titulo="IMÁGEN REFERENCIAL">
             <div class="w-full xs:max-w-xs">
@@ -196,10 +215,6 @@
                     @else
                         <x-icon-file-upload class="w-full h-60 text-gray-300" />
                     @endif
-
-                    <div wire:loading.flex class="loading-overlay rounded hidden">
-                        <x-loading-next />
-                    </div>
 
                     <div class="w-full flex flex-wrap gap-2 justify-center">
                         <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
@@ -231,7 +246,6 @@
         <div class="w-full block" wire:ignore>
             <x-ckeditor-5 id="myckeditor" wire:model.defer="descripcionproducto" />
         </div>
-
 
         {{-- <x-form-card titulo="DETALLE PRODUCTO">
             <div wire:ignore>
@@ -422,21 +436,10 @@
             {!! $descripcionproducto !!}
         </textarea>
         </div> --}}
-
-
-        <div class="w-full flex pt-4 gap-2 justify-end">
-            <x-button type="submit" wire:loading.attr="disabled">{{ __('REGISTRAR') }}</x-button>
-        </div>
     </form>
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
-        <x-loading-next />
-    </div>
-
     {{-- <script src="{{ asset('assets/vendor/ckeditor5/build/ckeditor.js') }}"></script> --}}
-
     <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
     {{-- <script src="https://cdn.ckeditor.com/ckeditor5/41.3.1/classic/ckeditor.js"></script> --}}
-
 
     <script>
         document.addEventListener('alpine:init', () => {

@@ -32,7 +32,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full flex flex-col gap-8 mx-auto lg:max-w-4xl xl:max-w-7xl">
+    <div class="w-full flex flex-col gap-8 mx-auto xl:max-w-7xl">
         <div>
             <livewire:admin.empresas.show-empresa :empresa="$empresa" />
         </div>

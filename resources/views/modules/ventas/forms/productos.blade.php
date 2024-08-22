@@ -1,6 +1,7 @@
-<div class="flex gap-2 flex-wrap justify-around xl:justify-start mt-1" x-data="shoppingCart()">
+<div
+    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
     @foreach ($productos as $item)
-        <form id="cardproduct{{ $item->id }}" class="w-full xs:w-auto"
+        <form id="cardproduct{{ $item->id }}" class="w-full block"
             @submit.prevent="addtocarrito($event, {{ $item->id }})" {{-- wire:submit.prevent="addtocar(Object.fromEntries(new FormData($event.target)), {{ $item->id }})" --}}>
             @php
                 $image = $item->getImageURL();
@@ -18,7 +19,7 @@
             @endphp
 
             <x-card-producto :name="$item->name" :image="$image ?? null" :category="$item->category->name ?? null" :almacen="$item->marca->name ?? null" :promocion="$promocion"
-                class="h-full overflow-hidden">
+                class="w-full h-full overflow-hidden">
 
                 @if ($combo)
                     @if (count($combo->products) > 0)
@@ -56,8 +57,9 @@
                             </span>
                         @endif
 
-                        <small class="text-[10px] font-semibold text-right">{{ $moneda->currency }}</small>
-                        @if ($moneda->code == 'USD')
+                        <small
+                            class="text-[10px] font-semibold text-right text-colorlabel">{{ $moneda->currency }}</small>
+                        @if ($moneda->isDolar())
                             <x-input class="block w-full text-right disabled:bg-gray-200" name="price" type="number"
                                 min="0" step="0.0001"
                                 value="{{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) }}"
@@ -135,24 +137,4 @@
             </x-card-producto>
         </form>
     @endforeach
-
-    <script>
-        function shoppingCart() {
-            return {
-                addtocarrito(event, producto_id) {
-                    let form = event.target;
-                    const cart = {
-                        price: form.price.value,
-                        cantidad: form.cantidad == undefined ? 1 : form.cantidad.value,
-                        serie: form.serie == undefined ? null : form.serie.value
-                    };
-                    this.$wire.addtocar(producto_id, cart).then(result => {
-                        console.log('addtocar ejecutado correctamente');
-                    }).catch(error => {
-                        console.error(error);
-                    });
-                }
-            }
-        }
-    </script>
 </div>

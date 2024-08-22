@@ -1,21 +1,33 @@
-<div class="w-full flex flex-wrap xl:flex-nowrap gap-8 xl:h-[calc(100vh_-_4rem)]">
-    <div wire:loading.flex class="fixed loading-overlay hidden">
+<div class="w-full flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh_-_4rem)]" x-data="loader">
+    <div wire:loading.flex
+        wire:target="page,typepayment_id,pricetype_id,almacen_id,save,addtocar,disponibles,gratuito,searchcategory,searchsubcategory,searchmarca,setTotal"
+        class="fixed loading-overlay hidden">
         <x-loading-next />
     </div>
 
-    <div
-        class="w-full flex flex-col gap-5 xl:flex-shrink-0 xl:w-96 xl:overflow-y-auto soft-scrollbar h-full"x-data="loader">
+    <div class="w-full flex flex-col gap-5 lg:flex-shrink-0 lg:w-80 lg:overflow-y-auto soft-scrollbar h-full">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
                 <div class="w-full flex flex-col gap-1">
 
-                    @include('ventas::ventas.forms.comprobante')
+                    @include('modules.ventas.forms.comprobante')
 
                     @if (Module::isEnabled('Facturacion'))
                         @can('admin.ventas.create.guias')
-                            @include('ventas::ventas.forms.guia-remision')
+                            @include('modules.ventas.forms.guia-remision')
                         @endcan
                     @endif
+
+                    @can('admin.ventas.create.guias')
+                        @if (count($comprobantesguia) > 0)
+                            <div class="block w-full" x-show="!sincronizegre">
+                                <x-label-check for="incluyeguia" x-show="openguia">
+                                    <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
+                                        id="incluyeguia" />GENERAR GUÍA REMISIÓN
+                                </x-label-check>
+                            </div>
+                        @endif
+                    @endcan
 
                     <div class="w-full flex flex-col gap-1">
                         <x-jet-input-error for="typepayment.id" />
@@ -26,89 +38,113 @@
                         {{-- <x-jet-input-error for="client_id" /> --}}
                     </div>
 
-                    <div
-                        class="w-full flex flex-col sm:flex-row xl:flex-col gap-1 pt-4 justify-between items-start sm:items-end xl:items-start">
-                        @can('admin.ventas.create.guias')
-                            @if (count($comprobantesguia) > 0)
-                                <div class="inline-block" x-show="!sincronizegre">
-                                    <x-label-check for="incluyeguia" x-show="openguia">
-                                        <x-input x-model="incluyeguia" name="incluyeguia" type="checkbox"
-                                            id="incluyeguia" />GENERAR GUÍA REMISIÓN
-                                    </x-label-check>
-                                </div>
-                            @endif
-                        @endcan
-
-                        <x-button class="block w-full sm:inline-block sm:w-auto xl:w-full" type="submit"
-                            wire:loading.attr="disabled">
+                    <div class="w-full">
+                        <x-button class="block w-full" type="submit" wire:loading.attr="disabled">
                             {{ __('Save') }}</x-button>
                     </div>
 
-                    @if ($errors->any())
+                    {{-- @if ($errors->any())
                         <div class="w-full flex flex-col gap-1">
                             @foreach ($errors->keys() as $key)
                                 <x-jet-input-error :for="$key" />
                             @endforeach
                         </div>
-                    @endif
+                    @endif --}}
                 </div>
             </form>
         </x-form-card>
 
         <x-form-card titulo="RESUMEN DE VENTA" class="text-colorlabel">
             <div class="w-full">
-                <p class="text-[10px]">EXONERADO : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($exonerado, 2, '.', ', ') }}</span>
-                </p>
+                <table class="w-full table text-[10px]">
+                    <tr>
+                        <td>EXONERADO :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-sm">{{ number_format($exonerado, 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>GRAVADO :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-sm"> {{ number_format($gravado, 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>IGV :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-sm"> {{ number_format($igv, 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>GRATUITO :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-sm">
+                                {{ number_format($gratuito + $igvgratuito, 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>DESCUENTOS :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-sm">
+                                {{ number_format($descuentos, 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>SUBTOTAL :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-sm">
+                                {{ number_format($total, 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
 
-                <p class="text-[10px]">GRAVADO : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($gravado, 2, '.', ', ') }}</span>
-                </p>
+                    <tr>
+                        <td>TOTAL PAGAR :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-xl">
+                                {{ number_format($total - ($gratuito + $igvgratuito), 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
 
-                <p class="text-[10px]">IGV : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($igv, 2, '.', ', ') }}</span>
-                </p>
-
-                <p class="text-[10px]">GRATUITO : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($gratuito + $igvgratuito, 2, '.', ', ') }}</span>
-                </p>
-
-                <p class="text-[10px]">DESCUENTOS : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($descuentos, 2, '.', ', ') }}</span>
-                </p>
-
-                <p class="text-[10px]">SUBTOTAL : {{ $moneda->simbolo }}
-                    <span class="font-bold text-xs">{{ number_format($total, 2, '.', ', ') }}</span>
-                </p>
-
-                <p class="text-[10px]">TOTAL PAGAR : {{ $moneda->simbolo }}
-                    <span
-                        class="font-bold text-xl">{{ number_format($total - ($gratuito + $igvgratuito), 2, '.', ', ') }}</span>
-                    @if ($increment > 0)
-                        INC. + {{ formatDecimalOrInteger($increment) }}%
-                        ({{ number_format($amountincrement, 2, '.', ', ') }})
-                    @endif
-                </p>
-
-                <p class="text-[10px]">PENDIENTE : {{ $moneda->simbolo }}
-                    <span
-                        class="font-bold text-xl text-red-600">{{ number_format($total - ($gratuito + $igvgratuito + $paymentactual), 2, '.', ', ') }}</span>
-                </p>
+                            @if ($increment > 0)
+                                <br>
+                                INC. {{ formatDecimalOrInteger($increment) }}%
+                                ({{ number_format($amountincrement, 2, '.', ', ') }})
+                            @endif
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>PENDIENTE :</td>
+                        <td class="text-end">
+                            <span class="font-semibold text-xl text-red-600">
+                                {{ number_format($total - ($gratuito + $igvgratuito + $paymentactual), 2, '.', ', ') }}</span>
+                            <small>{{ $moneda->currency }}</small>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </x-form-card>
 
         <x-form-card titulo="PAGO PARCIAL" class="text-colorlabel" style="display: none" x-show="typepay > 0">
-            <div class="w-full flex flex-wrap gap-2">
-                @foreach ($parcialpayments as $index => $item)
-                    <x-minicard size="md" alignFooter="justify-end">
-                        <h1 class="text-lg text-center leading-5 font-semibold text-colorlabel">
-                            {{ number_format($item['amount'], 2, '.', ', ') }}</h1>
-                        <span class="text-[10px] text-center text-colorsubtitleform mt-2">{{ $item['method'] }}</span>
-                        <slot name="buttons">
-                            <x-button-delete wire:click="removepay({{ $index }})" />
-                        </slot>
-                    </x-minicard>
-                @endforeach
+            <div class="w-full flex flex-col">
+                <div class="w-full flex flex-wrap gap-2">
+                    @foreach ($parcialpayments as $index => $item)
+                        <x-minicard size="md" alignFooter="justify-end">
+                            <h1 class="text-lg text-center leading-5 font-semibold text-colorlabel">
+                                {{ number_format($item['amount'], 2, '.', ', ') }}</h1>
+                            <span
+                                class="text-[10px] text-center text-colorsubtitleform mt-2">{{ $item['method'] }}</span>
+                            <slot name="buttons">
+                                <x-button-delete wire:click="removepay({{ $index }})" />
+                            </slot>
+                        </x-minicard>
+                    @endforeach
+                </div>
+                <x-jet-input-error for="parcialpayments" />
             </div>
         </x-form-card>
 
@@ -126,7 +162,7 @@
                             d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" />
                     </svg>
                     <small
-                        class="bg-amber-500 text-white animate-bounce font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
+                        class="bg-amber-500 text-white font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
                         {{ count($carshoops) }}</small>
                 </button>
             </div>
@@ -256,10 +292,10 @@
         </div>
     </div>
 
-    <div class="w-full xl:flex-1 xl:overflow-y-auto soft-scrollbar h-full">
+    <div class="w-full flex-1 lg:overflow-y-auto soft-scrollbar h-full">
         <x-form-card titulo="PRODUCTOS">
             <div class="w-full">
-                @include('ventas::ventas.forms.filters')
+                @include('modules.ventas.forms.filters')
 
                 @if (count($productos) > 0)
                     @if ($productos->hasPages())
@@ -268,7 +304,7 @@
                         </div>
                     @endif
 
-                    @include('ventas::ventas.forms.productos')
+                    @include('modules.ventas.forms.productos')
                 @else
                     <div>
                         @php
@@ -302,6 +338,30 @@
             })
         }
 
+        async function fetchAsyncDatos(ruta, data = {}) {
+            try {
+                const response = await fetch(ruta, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    console.log('Error en la respuesta del servidor');
+                    throw new Error('Error en la respuesta del servidor');
+                }
+
+                const datos = await response.json();
+                return datos;
+            } catch (error) {
+                console.error('Error al realizar la petición:', error);
+                return null;
+            }
+        }
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('loader', () => ({
                 incluyeguia: @entangle('incluyeguia').defer,
@@ -331,13 +391,23 @@
                 typepay: @entangle('typepay').defer,
                 parcialpayments: @entangle('parcialpayments').defer,
 
+                ubigeos: [],
+                typepayments: [],
+                methodpayments: [],
+                searchmarca: @entangle('searchmarca'),
+                searchcategory: @entangle('searchcategory'),
+                searchsubcategory: @entangle('searchsubcategory'),
+                pricetype_id: @entangle('pricetype_id'),
+                almacen_id: @entangle('almacen_id'),
+
+
                 init() {
+                    this.obtenerDatos();
+
                     this.$watch("moneda_id", (value) => {
                         const message = this.updatemonedacart(value);
                     });
-                    this.$watch("typepay", (value) => {
-                        // console.log('Typepay : ' + value);
-                    });
+
                 },
                 toggle() {
                     this.vehiculosml = !this.vehiculosml;
@@ -452,6 +522,19 @@
                         }
                     })
                 },
+                addtocarrito(event, producto_id) {
+                    let form = event.target;
+                    const cart = {
+                        price: form.price.value,
+                        cantidad: form.cantidad == undefined ? 1 : form.cantidad.value,
+                        serie: form.serie == undefined ? null : form.serie.value
+                    };
+                    this.$wire.addtocar(producto_id, cart).then(result => {
+                        console.log('addtocar ejecutado correctamente');
+                    }).catch(error => {
+                        console.error(error);
+                    });
+                },
                 async updatemonedacart(moneda_id) {
                     const route =
                         "{{ route('admin.carshoop.updatemoneda', ['moneda_id' => ':moneda_id']) }}"
@@ -522,6 +605,143 @@
                         console.error('Error al vaciar el carrito:', error);
                         throw error;
                     }
+                },
+                async obtenerDatos() {
+
+                    let urltypepayments = "{{ route('api.ventas.create.typepayments') }}";
+                    let urlmethodpayments = "{{ route('api.ventas.create.methodpayments') }}";
+
+                    const [typepayments, methodpayments] = await Promise.all([
+                        fetchAsyncDatos(urltypepayments),
+                        fetchAsyncDatos(urlmethodpayments),
+                    ]);
+
+                    this.typepayments = typepayments;
+                    this.methodpayments = methodpayments;
+
+                    this.selectMethodpayment()
+                    this.selectPayment()
+
+                    const ubigeos = await fetchAsyncDatos(
+                        "{{ route('api.ventas.create.ubigeos') }}");
+                    this.ubigeos = ubigeos;
+
+                    this.selectUbigeoEmision()
+                    this.selectUbigeoDestino()
+                },
+                selectUbigeoEmision() {
+                    this.selectUE = $(this.$refs.ubigeoemision).select2({
+                        data: this.ubigeos
+                    });
+                    this.selectUE.val(this.ubigeoorigen_id).trigger("change");
+                    this.selectUE.on("select2:select", (event) => {
+                        this.ubigeoorigen_id = event.target.value;
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                    this.$watch("ubigeoorigen_id", (value) => {
+                        this.selectUE.val(value).trigger("change");
+                    });
+                    Livewire.hook('message.processed', () => {
+                        this.selectUE.select2('destroy');
+                        this.selectUE.select2({
+                            data: this.ubigeos
+                        }).val(this.ubigeoorigen_id).trigger('change');
+                    });
+                },
+                selectUbigeoDestino() {
+                    this.selectUD = $(this.$refs.ubigeodestino).select2({
+                        data: this.ubigeos
+                    });
+                    this.selectUD.val(this.ubigeodestino_id).trigger("change");
+                    this.selectUD.on("select2:select", (event) => {
+                        this.ubigeodestino_id = event.target.value;
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                    this.$watch("ubigeodestino_id", (value) => {
+                        this.selectUD.val(value).trigger("change");
+                    });
+                    Livewire.hook('message.processed', () => {
+                        this.selectUD.select2('destroy');
+                        this.selectUD.select2({
+                            data: this.ubigeos
+                        }).val(this.ubigeodestino_id).trigger('change');
+                    });
+                },
+                selectMethodpayment() {
+                    this.selectMP = $(this.$refs.selectmethodpayment).select2({
+                        data: this.methodpayments
+                    });
+                    this.selectMP.val(this.methodpayment_id).trigger("change");
+                    this.selectMP.on("select2:select", (event) => {
+                        this.methodpayment_id = event.target.value;
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                    this.$watch("methodpayment_id", (value) => {
+                        this.selectMP.val(value).trigger("change");
+                    });
+
+                    Livewire.hook('message.processed', () => {
+                        this.selectMP.select2({
+                            data: this.methodpayments
+                        }).val(this.methodpayment_id).trigger('change');
+                    });
+                },
+                selectPayment() {
+                    this.selectTP = $(this.$refs.selectpayment).select2({
+                        data: this.typepayments
+                    }).val(this.typepayment_id).trigger("change");
+                    this.selectTP.on("select2:select", (event) => {
+                        this.$wire.set('typepayment_id', event.target.value, true)
+                        this.$wire.$refresh()
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    });
+                    this.$watch("typepayment_id", (value) => {
+                        this.selectTP.val(value).trigger("change");
+                    });
+
+                    Livewire.hook('message.processed', () => {
+                        let typepayment = this.typepayments.find(item => item.id == this
+                            .typepayment_id);
+                        if (typepayment) {
+                            switch (typepayment.paycuotas) {
+                                case true:
+                                    this.paymentcuotas = true;
+                                    this.typepay = '1';
+                                    break;
+                                case false:
+                                    this.paymentcuotas = false;
+                                    break;
+                                default:
+                                    this.paymentcuotas = false;
+                                    this.formapago = '';
+                            }
+                        }
+                        else {
+                            this.paymentcuotas = false;
+                        }
+                        this.selectTP.select2({
+                            data: this.typepayments,
+                            templateResult: function(item) {
+                                var $option = $('<span data-paycuotas="' + item
+                                    .paycuotas +
+                                    '">' + item.text + '</span>'
+                                );
+                                return $option;
+                            },
+                        }).val(this.typepayment_id).trigger('change');
+                    });
                 }
             }));
         })

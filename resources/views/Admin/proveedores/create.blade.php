@@ -26,7 +26,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto lg:max-w-4xl xl:max-w-7xl">
+    <div class="mx-auto xl:max-w-7xl">
         @livewire('admin.proveedores.create-proveedor')
     </div>
 </x-admin-layout>

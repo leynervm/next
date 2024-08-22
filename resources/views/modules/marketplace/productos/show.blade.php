@@ -30,11 +30,11 @@
         $pricesale = $producto->obtenerPrecioVenta($pricetype ?? null);
     @endphp
 
-    <div x-data="showproducto">
+    <div class="contenedor w-full" x-data="showproducto">
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex bg-fondominicard">
                 <div class="w-full md:flex-shrink-0 md:w-[42%] md:px-3 py-2">
-                    <div class="w-full max-w-full h-96 rounded overflow-hidden relative">
+                    <div class="w-full max-w-full h-64 xs:h-96 rounded overflow-hidden relative">
                         @if ($image)
                             <template x-if="currentImage">
                                 <figure id="imageproducto" x-ref="figure"
@@ -62,7 +62,7 @@
                             @endif
                         @endif
                         @if (count($producto->especificacions) > 0)
-                            <ul class="text-white py-3 text-[10px] absolute left-0 top-20 flex flex-col gap-1 justify-start items-start"
+                            <ul class="text-white py-3 text-[10px] absolute left-0 top-20 hidden md:flex flex-col gap-1 justify-start items-start"
                                 x-cloak x-show="showesp" @mousemove="showesp=false">
                                 @foreach ($producto->especificacions()->take(5)->get() as $item)
                                     <li class="p-1 px-1.5 bg-next-500 rounded-xl tracking-[0.0625em] text-[10px]">
@@ -129,7 +129,7 @@
                                 @endif
                             </div>
                         </div>
-                        <p class="text-colorsubtitleform leading-5">{{ $producto->name }}</p>
+                        <p class="text-colorsubtitleform text-[10px] leading-3 xs:text-sm xs:leading-5">{{ $producto->name }}</p>
                     </div>
 
                     <div class="w-full grid xl:grid-cols-2 gap-5 mt-5">
@@ -239,19 +239,19 @@
                             <div class="w-full flex items-center justify-between gap-2">
                                 <div class="w-full flex-1">
                                     @if ($pricesale > 0)
-                                        <h1 class="font-semibold text-3xl">
+                                        <h1 class="font-semibold text-3xl text-center md:text-start">
                                             {{ $moneda->simbolo }}
                                             {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                         </h1>
 
                                         @if ($descuento > 0 && $empresa->verOldprice())
-                                            <span class="text-colorsubtitleform text-xs line-through text-red-600">
+                                            <span class="text-colorsubtitleform text-xs line-through text-red-600 text-center md:text-start">
                                                 {{ $moneda->simbolo }}
                                                 {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                             </span>
                                         @endif
                                         @if ($empresa->verDolar())
-                                            <h1 class="text-blue-700 font-medium text-xs">
+                                            <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
                                                 <small class="text-[10px]">$. </small>
                                                 {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                                 <small class="text-[10px]">USD</small>
@@ -407,7 +407,8 @@
                             @foreach ($producto->especificacions as $item)
                                 <tr
                                     class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
-                                    <th class="p-2 py-5 text-left max-w-xs w-60">{{ $item->caracteristica->name }}</th>
+                                    <th class="p-2 py-5 text-left max-w-xs w-60">{{ $item->caracteristica->name }}
+                                    </th>
                                     <td class="p-2 py-5 text-left">{{ $item->name }}</td>
                                 </tr>
                             @endforeach
@@ -418,7 +419,7 @@
 
             @if ($producto->detalleproducto)
                 @if (!empty($producto->detalleproducto->descripcion))
-                @if ($producto->verEspecificaciones() || ($producto->verEspecificaciones() == false && $empresa->verEspecificaciones()))
+                    @if ($producto->verEspecificaciones() || ($producto->verEspecificaciones() == false && $empresa->verEspecificaciones()))
                         <div class="w-full lg:flex-1 overflow-x-hidden">
                             <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">
                                 Descripcion del producto</h1>
@@ -498,208 +499,213 @@
                 </div>
             </div>
         </div>
+
+
+        @if (count($recents) > 0)
+            <div class="w-full bg-fondominicard mt-10">
+                <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
+                    Clientes que vieron este producto también vieron</h1>
+
+                <div class="w-full relative xl:p-10">
+                    <div class="w-full flex overflow-x-hidden transition-transform ease-in-out duration-700"
+                        id="recents">
+                        @foreach ($recents as $item)
+                            @php
+                                $image = $item->getImageURL();
+                                $promocion = $item->getPromocionDisponible();
+                                $descuento = $item->getPorcentajeDescuento($promocion);
+                                $combo = $item->getAmountCombo($promocion, $pricetype);
+                                $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
+                            @endphp
+
+                            <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
+                                :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
+                                wire:key="cardproduct{{ $item->id }}"
+                                class="card-recents flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
+
+                                @if ($pricesale > 0)
+                                    @if ($empresa->verDolar())
+                                        <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
+                                            <small class="text-[10px]">$. </small>
+                                            {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                            <small class="text-[10px]">USD</small>
+                                        </h1>
+                                    @endif
+                                    <h1 class="text-colorlabel text-center">
+                                        <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                        <span
+                                            class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                        <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                    </h1>
+                                    @if ($descuento > 0 && $empresa->verOldprice())
+                                        <small class="block w-full line-through text-red-600 text-center text-xs">
+                                            {{ $moneda->simbolo }}
+                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                        </small>
+                                    @endif
+                                @else
+                                    <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                                        PRECIO DE VENTA NO ENCONTRADO</p>
+                                @endif
+                            </x-card-producto-virtual>
+                        @endforeach
+                    </div>
+                    <button id="leftrecents"
+                        class="absolute bg-fondominicard text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M15 7L10 12L15 17" />
+                        </svg>
+                    </button>
+                    <button id="rightrecents"
+                        class="absolute bg-fondominicard text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M10 7L15 12L10 17" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        @if (count($sugerencias) > 0)
+            <div class="w-full bg-fondominicard mt-10">
+                <h1 class="font-medium text-colorsubtitleform p-3 border-b border-b-borderminicard">
+                    Tenemos más productos similares para ti</h1>
+
+                <div class="w-full relative xl:p-10">
+                    <div class="w-full flex overflow-x-hidden" id="sugerencias">
+                        @foreach ($sugerencias as $item)
+                            @php
+                                $image = $item->getImageURL();
+                                $promocion = $item->getPromocionDisponible();
+                                $descuento = $item->getPorcentajeDescuento($promocion);
+                                $combo = $item->getAmountCombo($promocion, $pricetype);
+                                $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
+                            @endphp
+
+                            <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
+                                :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
+                                wire:key="cardproduct{{ $item->id }}"
+                                class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
+
+                                @if ($pricesale > 0)
+                                    @if ($empresa->verDolar())
+                                        <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
+                                            <small class="text-[10px]">$. </small>
+                                            {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                            <small class="text-[10px]">USD</small>
+                                        </h1>
+                                    @endif
+                                    <h1 class="text-colorlabel text-center">
+                                        <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                        <span
+                                            class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                        <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                    </h1>
+                                    @if ($descuento > 0 && $empresa->verOldprice())
+                                        <small class="block w-full line-through text-red-600 text-center text-xs">
+                                            {{ $moneda->simbolo }}
+                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                        </small>
+                                    @endif
+                                @else
+                                    <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                                        PRECIO DE VENTA NO ENCONTRADO</p>
+                                @endif
+                            </x-card-producto-virtual>
+                        @endforeach
+                    </div>
+                    <button id="leftsugerencias"
+                        class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M15 7L10 12L15 17" />
+                        </svg>
+                    </button>
+                    <button id="rightrecents"
+                        class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M10 7L15 12L10 17" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        @endif
+
+        @if (count($similares) > 0)
+            <div class="w-full bg-fondominicard mt-10">
+                <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
+                    También podría interesarte</h1>
+
+                <div class="w-full relative xl:p-10">
+                    <button id="leftsimilares"
+                        class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M15 7L10 12L15 17" />
+                        </svg>
+                    </button>
+                    <div class="w-full flex overflow-x-hidden" id="similares">
+                        @foreach ($similares as $item)
+                            @php
+                                $image = $item->getImageURL();
+                                $promocion = $item->getPromocionDisponible();
+                                $descuento = $item->getPorcentajeDescuento($promocion);
+                                $combo = $item->getAmountCombo($promocion, $pricetype);
+                                $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
+                            @endphp
+
+                            <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
+                                :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
+                                wire:key="cardproduct{{ $item->id }}"
+                                class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
+
+                                @if ($pricesale > 0)
+                                    @if ($empresa->verDolar())
+                                        <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
+                                            <small class="text-[10px]">$. </small>
+                                            {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                            <small class="text-[10px]">USD</small>
+                                        </h1>
+                                    @endif
+                                    <h1 class="text-colorlabel text-center">
+                                        <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                        <span
+                                            class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                        <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                    </h1>
+                                    @if ($descuento > 0 && $empresa->verOldprice())
+                                        <small class="block w-full line-through text-red-600 text-center text-xs">
+                                            {{ $moneda->simbolo }}
+                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
+                                        </small>
+                                    @endif
+                                @else
+                                    <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
+                                        PRECIO DE VENTA NO ENCONTRADO</p>
+                                @endif
+                            </x-card-producto-virtual>
+                        @endforeach
+                    </div>
+                    <button id="rightsimilares"
+                        class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M10 7L15 12L10 17" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        @endif
     </div>
-
-    @if (count($recents) > 0)
-        <div class="w-full bg-fondominicard mt-10">
-            <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
-                Clientes que vieron este producto también vieron</h1>
-
-            <div class="w-full relative xl:p-10">
-                <div class="w-full flex overflow-x-hidden transition-transform ease-in-out duration-700"
-                    id="recents">
-                    @foreach ($recents as $item)
-                        @php
-                            $image = $item->getImageURL();
-                            $promocion = $item->getPromocionDisponible();
-                            $descuento = $item->getPorcentajeDescuento($promocion);
-                            $combo = $item->getAmountCombo($promocion, $pricetype);
-                            $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
-                        @endphp
-
-                        <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                            :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
-                            wire:key="cardproduct{{ $item->id }}"
-                            class="card-recents flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
-
-                            @if ($pricesale > 0)
-                                @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
-                                        <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                        <small class="text-[10px]">USD</small>
-                                    </h1>
-                                @endif
-                                <h1 class="text-colorlabel text-center">
-                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                    <span
-                                        class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
-                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                </h1>
-                                @if ($descuento > 0 && $empresa->verOldprice())
-                                    <small class="block w-full line-through text-red-600 text-center text-xs">
-                                        {{ $moneda->simbolo }}
-                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
-                                    </small>
-                                @endif
-                            @else
-                                <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
-                                    PRECIO DE VENTA NO ENCONTRADO</p>
-                            @endif
-                        </x-card-producto-virtual>
-                    @endforeach
-                </div>
-                <button id="leftrecents"
-                    class="absolute bg-fondominicard text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M15 7L10 12L15 17" />
-                    </svg>
-                </button>
-                <button id="rightrecents"
-                    class="absolute bg-fondominicard text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M10 7L15 12L10 17" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    @endif
-
-
-    @if (count($sugerencias) > 0)
-        <div class="w-full bg-fondominicard mt-10">
-            <h1 class="font-medium text-colorsubtitleform p-3 border-b border-b-borderminicard">
-                Tenemos más productos similares para ti</h1>
-
-            <div class="w-full relative xl:p-10">
-                <div class="w-full flex overflow-x-hidden" id="sugerencias">
-                    @foreach ($sugerencias as $item)
-                        @php
-                            $image = $item->getImageURL();
-                            $promocion = $item->getPromocionDisponible();
-                            $descuento = $item->getPorcentajeDescuento($promocion);
-                            $combo = $item->getAmountCombo($promocion, $pricetype);
-                            $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
-                        @endphp
-
-                        <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                            :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
-                            wire:key="cardproduct{{ $item->id }}"
-                            class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
-
-                            @if ($pricesale > 0)
-                                @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
-                                        <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                        <small class="text-[10px]">USD</small>
-                                    </h1>
-                                @endif
-                                <h1 class="text-colorlabel text-center">
-                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                    <span
-                                        class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
-                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                </h1>
-                                @if ($descuento > 0 && $empresa->verOldprice())
-                                    <small class="block w-full line-through text-red-600 text-center text-xs">
-                                        {{ $moneda->simbolo }}
-                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
-                                    </small>
-                                @endif
-                            @else
-                                <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
-                                    PRECIO DE VENTA NO ENCONTRADO</p>
-                            @endif
-                        </x-card-producto-virtual>
-                    @endforeach
-                </div>
-                <button id="leftsugerencias"
-                    class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M15 7L10 12L15 17" />
-                    </svg>
-                </button>
-                <button id="rightrecents"
-                    class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M10 7L15 12L10 17" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    @endif
-
-
-    @if (count($similares) > 0)
-        <div class="w-full bg-fondominicard mt-10">
-            <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
-                También podría interesarte</h1>
-
-            <div class="w-full relative xl:p-10">
-                <button id="leftsimilares"
-                    class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M15 7L10 12L15 17" />
-                    </svg>
-                </button>
-                <div class="w-full flex overflow-x-hidden" id="similares">
-                    @foreach ($similares as $item)
-                        @php
-                            $image = $item->getImageURL();
-                            $promocion = $item->getPromocionDisponible();
-                            $descuento = $item->getPorcentajeDescuento($promocion);
-                            $combo = $item->getAmountCombo($promocion, $pricetype);
-                            $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
-                        @endphp
-
-                        <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                            :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
-                            wire:key="cardproduct{{ $item->id }}"
-                            class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
-
-                            @if ($pricesale > 0)
-                                @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
-                                        <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                        <small class="text-[10px]">USD</small>
-                                    </h1>
-                                @endif
-                                <h1 class="text-colorlabel text-center">
-                                    <small class="text-[10px]">{{ $moneda->simbolo }}</small>
-                                    <span
-                                        class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
-                                    <small class="text-[10px]">{{ $moneda->currency }}</small>
-                                </h1>
-                                @if ($descuento > 0 && $empresa->verOldprice())
-                                    <small class="block w-full line-through text-red-600 text-center text-xs">
-                                        {{ $moneda->simbolo }}
-                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
-                                    </small>
-                                @endif
-                            @else
-                                <p class="text-colorerror text-[10px] font-semibold text-center leading-3">
-                                    PRECIO DE VENTA NO ENCONTRADO</p>
-                            @endif
-                        </x-card-producto-virtual>
-                    @endforeach
-                </div>
-                <button id="rightsimilares"
-                    class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
-                        <path d="M10 7L15 12L10 17" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    @endif
 
     <script>
         document.addEventListener('alpine:init', () => {
