@@ -34,7 +34,7 @@
 
     <div class="p-1">
         <div class="w-full flex flex-wrap gap-3 justify-between py-1">
-            <span class="inline-block text-colorsubtitleform text-[10px] sm:text-sm">{{ $marca }}</span>
+            <span class="inline-block text-colorsubtitleform text-[10px] sm:text-xs">{{ $marca }}</span>
             @if (!empty($partnumber))
                 <span class="inline-block text-[10px] text-colorsubtitleform">
                     N° PARTE: {{ $partnumber }}</span>

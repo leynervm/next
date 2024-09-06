@@ -6,7 +6,6 @@ use App\Enums\MovimientosEnum;
 use App\Helpers\GetClient;
 use App\Models\Category;
 use App\Models\Moneda;
-use App\Models\Pricetype;
 use App\Models\Serie;
 use App\Rules\ValidateStock;
 use Illuminate\Validation\Rule;
@@ -19,7 +18,6 @@ use App\Models\Client;
 use App\Models\Concept;
 use App\Models\Guia;
 use App\Models\Kardex;
-use App\Models\Marca;
 use App\Models\Methodpayment;
 use App\Models\Modalidadtransporte;
 use App\Models\Monthbox;
@@ -29,7 +27,6 @@ use App\Models\Producto;
 use App\Models\Seriecomprobante;
 use App\Models\Tvitem;
 use App\Models\Typepayment;
-use App\Models\Ubigeo;
 use App\Rules\ValidateCarrito;
 use App\Rules\ValidateDocument;
 use Carbon\Carbon;
@@ -71,7 +68,7 @@ class CreateVenta extends Component
     public $cotizacion_id, $client_id, $direccion_id, $mensaje;
     public $moneda_id, $monthbox, $openbox, $methodpayment_id, $typepayment_id, $detallepago, $concept;
     public $typecomprobante, $typecomprobante_id, $seriecomprobante_id, $tribute_id;
-    public $document, $name, $direccion, $pricetypeasigned;
+    public $document = '', $name, $direccion, $pricetypeasigned;
 
     public $serieguia_id, $ructransport, $nametransport,
         $documentdriver, $namedriver, $lastname, $licencia, $placa, $placavehiculo,

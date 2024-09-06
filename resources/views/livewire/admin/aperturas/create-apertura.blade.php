@@ -18,8 +18,9 @@
             <form wire:submit.prevent="save" x-data="data">
                 <div class="w-full">
                     <x-label value="Seleccionar caja :" />
-                    <div x-init="select2Box" class="relative">
-                        <x-select class="block w-full" x-ref="select" id="aperturacaja_id" data-dropdown-parent="null">
+                    <div id="parentaperturabox_id" x-init="boxApetura" class="relative">
+                        <x-select class="block w-full" x-ref="boxapertura" id="aperturabox_id"
+                            data-dropdown-parent="null">
                             <x-slot name="options">
                                 @if (count($boxes) > 0)
                                     @foreach ($boxes as $item)
@@ -79,22 +80,21 @@
             }))
         })
 
-        function select2Box() {
-            this.select2 = $(this.$refs.select).select2({
+        function boxApetura() {
+            this.select2B = $(this.$refs.boxapertura).select2({
                 templateResult: formatOption
             });
-            this.select2.val(this.box_id).trigger("change");
-            this.select2.on("select2:select", (event) => {
+            this.select2B.val(this.box_id).trigger("change");
+            this.select2B.on("select2:select", (event) => {
                 this.box_id = event.target.value;
                 this.apertura = event.target.options[event.target.selectedIndex].getAttribute('data-apertura');
             })
             this.$watch('box_id', (value) => {
-                this.select2.val(value).trigger("change");
+                this.select2B.val(value).trigger("change");
             });
 
             Livewire.hook('message.processed', () => {
-                // this.select2.select2('destroy');
-                this.select2.select2({
+                this.select2B.select2({
                     templateResult: formatOption
                 }).val(this.box_id).trigger('change');
             });

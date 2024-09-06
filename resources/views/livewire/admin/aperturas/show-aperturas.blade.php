@@ -1,4 +1,91 @@
-<div>
+<div x-data="{
+    searchuser: @entangle('searchuser'),
+    searchbox: @entangle('searchbox'),
+    searchmonthbox: @entangle('searchmonthbox'),
+    searchsucursal: @entangle('searchsucursal')
+}">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
+    <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-7 gap-1">
+        <div class="w-full">
+            <x-label value="Fecha :" />
+            <x-input type="date" wire:model.debounce.500ms="date" class="w-full block" />
+        </div>
+
+        <div class="w-full">
+            <x-label value="Hasta :" />
+            <x-input type="date" wire:model.debounce.500ms="dateto" class="w-full block" />
+        </div>
+
+        @if (count($boxes) > 1)
+            <div class="w-full ">
+                <x-label value="Caja :" />
+                <div class="relative" x-init="select2Box" id="parentsearchbox">
+                    <x-select id="searchbox" x-ref="selectbox" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($boxes as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+            </div>
+        @endif
+
+        @if (count($monthboxes) > 1)
+            <div class="w-full">
+                <x-label value="Caja mensual :" />
+                <div class="relative" x-init="select2Monthbox" id="parentsearchmonthbox">
+                    <x-select id="searchmonthbox" x-ref="selectmonthbox" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($monthboxes as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+            </div>
+        @endif
+
+        @if (count($sucursals) > 1)
+            <div class="w-full">
+                <x-label value="Sucursal :" />
+                <div class="relative" x-init="select2Sucursal" id="parentsearchsucursal">
+                    <x-select id="searchsucursal" x-ref="selectsuc" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($sucursals as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+            </div>
+        @endif
+
+
+        @if (count($users) > 1)
+            <div class="w-full">
+                <x-label value="Usuario :" />
+                <div class="relative" x-init="select2User" id="parentsearchuser">
+                    <x-select id="searchuser" x-ref="selectuser" data-placeholder="null">
+                        <x-slot name="options">
+                            @foreach ($users as $item)
+                                <option value="{{ $item->id }}">{{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
+                </div>
+            </div>
+        @endif
+    </div>
+
+
     @if ($openboxes->hasPages())
         <div class="">
             {{ $openboxes->onEachSide(0)->links('livewire::pagination-default') }}
@@ -13,7 +100,7 @@
                     <th scope="col" class="p-2 font-medium text-center">FECHA APERTURA</th>
                     <th scope="col" class="p-2 font-medium text-center">FECHA CIERRE</th>
                     <th scope="col" class="p-2 font-medium">APERTURA</th>
-                    <th scope="col" class="p-2 font-medium">SALDO</th>
+                    <th scope="col" class="p-2 font-medium">SALDOS</th>
                     <th scope="col" class="p-2 font-medium">CERRAR CAJA</th>
                     <th scope="col" class="p-2 font-medium">ESTADO</th>
                     <th scope="col" class="p-2 font-medium">SUCURSAL / USUARIO</th>
@@ -32,20 +119,31 @@
                                     {{ formatDate($item->monthbox->month, 'MMMM Y') }}</p>
                             </td>
                             <td class="p-2 text-center uppercase">
-                                {{ formatDate($item->startdate) }}
+                                {{ formatDate($item->startdate, 'DD MMMM Y') }} <br>
+                                {{ formatDate($item->startdate, 'hh:mm A') }}
                             </td>
                             <td class="p-2 text-center uppercase">
-                                {{ formatDate($item->expiredate) }}
+                                {{ formatDate($item->expiredate, 'DD MMMM Y') }} <br>
+                                {{ formatDate($item->expiredate, 'hh:mm A') }}
                             </td>
                             <td class="p-2 text-center">
-                                {{ $item->apertura }}
+                                {{ $item->cajamovimiento->moneda->simbolo }}
+                                {{ formatDecimalOrInteger($item->cajamovimiento->amount, 2, ', ') }}
                             </td>
                             <td class="p-2 text-center">
-                                SIN SALDO
+                                @foreach ($item->cajamovimientos as $saldo)
+                                    <p class="text-[10px]">
+                                        {{ $saldo->moneda->simbolo }}
+                                        <span
+                                            class="text-xs font-semibold">{{ formatDecimalOrInteger($saldo->diferencia, 2, ', ') }}</span>
+                                        {{ $saldo->moneda->currency }}
+                                    </p>
+                                @endforeach
                             </td>
                             <td class="p-2 text-center uppercase">
                                 @if ($item->isClosed())
-                                    {{ formatDate($item->closedate) }}
+                                    {{ formatDate($item->closedate, 'DD MMMM Y') }} <br>
+                                    {{ formatDate($item->closedate, 'hh:mm A') }}
                                 @else
                                     @if ($item->isExpired() || auth()->user()->isAdmin())
                                         @canany(['admin.cajas.aperturas.close', 'admin.cajas.aperturas.closeothers'])
@@ -143,6 +241,78 @@
     </x-jet-dialog-modal>
 
     <script>
+        function select2Monthbox() {
+            this.selectMB = $(this.$refs.selectmonthbox).select2();
+            this.selectMB.val(this.searchmonthbox).trigger("change");
+            this.selectMB.on("select2:select", (event) => {
+                this.searchmonthbox = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch('searchmonthbox', (value) => {
+                this.selectMB.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectMB.select2().val(this.searchmonthbox).trigger('change');
+            });
+        }
+
+        function select2Sucursal() {
+            this.selectS = $(this.$refs.selectsuc).select2();
+            this.selectS.val(this.searchsucursal).trigger("change");
+            this.selectS.on("select2:select", (event) => {
+                this.searchsucursal = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchsucursal", (value) => {
+                this.selectS.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectS.select2().val(this.searchsucursal).trigger('change');
+            });
+        }
+
+        function select2User() {
+            this.select2USR = $(this.$refs.selectuser).select2();
+            this.select2USR.val(this.searchuser).trigger("change");
+            this.select2USR.on("select2:select", (event) => {
+                this.searchuser = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchuser", (value) => {
+                this.select2USR.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.select2USR.select2().val(this.searchuser).trigger('change');
+            });
+        }
+
+        function select2Box() {
+            this.selectBX = $(this.$refs.selectbox).select2();
+            this.selectBX.val(this.searchbox).trigger("change");
+            this.selectBX.on("select2:select", (event) => {
+                this.searchbox = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("searchbox", (value) => {
+                this.selectBX.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectBX.select2().val(this.searchbox).trigger('change');
+            });
+        }
+
         function confirmClose(openbox) {
             swal.fire({
                 title: 'Cerrar apertura ' + openbox.box.name,

@@ -2,11 +2,13 @@
 
 namespace App\Http\Livewire\Admin\Mounthboxes;
 
+use App\Enums\MovimientosEnum;
 use App\Models\Monthbox;
 use App\Models\Sucursal;
 use App\Rules\ValidateStartmonthbox;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,26 +18,30 @@ class ShowMounthboxes extends Component
     use AuthorizesRequests;
     use WithPagination;
 
-    protected $listeners = ['render'];
 
-    protected $queryString = [
-        'searchmonth' => ['except' => '', 'as' => 'mes'],
-    ];
 
     public $open = false;
     public $monthbox;
-    public $searchmonth = '';
+    public $searchmonth = '', $searchsucursal;
+
+    protected $listeners = ['render'];
+    protected $queryString = [
+        'searchmonth' => ['except' => '', 'as' => 'mes'],
+        'searchsucursal' => ['except' => '', 'as' => 'sucursal']
+    ];
 
     protected function rules()
     {
         return [
             'monthbox.name' => ['required', 'string', 'min:6'],
             'monthbox.startdate' => [
-                'required', 'date_format:Y-m-d\TH:i',
+                'required',
+                'date_format:Y-m-d\TH:i',
                 new ValidateStartmonthbox($this->monthbox->month)
             ],
             'monthbox.expiredate' => [
-                'required', 'date_format:Y-m-d\TH:i',
+                'required',
+                'date_format:Y-m-d\TH:i',
                 'after:startdate'
             ],
         ];
@@ -49,9 +55,21 @@ class ShowMounthboxes extends Component
     public function render()
     {
 
-        $sucursalboxes = Sucursal::whereHas('monthboxes')->orderBy('name', 'asc')->get();
-        $monthboxes = Monthbox::withTrashed()->withWhereHas('sucursal', function ($query) {
-            $query->where('id', auth()->user()->sucursal_id)->withTrashed();
+        $sucursals = Sucursal::whereHas('monthboxes')->orderBy('name', 'asc')->get();
+        $monthboxes = Monthbox::withTrashed()->with(['cajamovimientos' => function ($query) {
+            $query->with('moneda')->select(
+                'monthbox_id',
+                'moneda_id',
+                DB::raw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
+            )->groupBy('monthbox_id', 'moneda_id')->orderBy('moneda_id', 'asc');
+        }])->withWhereHas('sucursal', function ($query) {
+            if (auth()->user()->isAdmin()) {
+                if (trim($this->searchsucursal) !== '') {
+                    $query->where('id', $this->searchsucursal);
+                }
+            } else {
+                $query->where('id', auth()->user()->sucursal_id);
+            }
         });
 
         if (trim($this->searchmonth) !== '') {
@@ -59,7 +77,7 @@ class ShowMounthboxes extends Component
         }
         $monthboxes =  $monthboxes->orderBy('month', 'desc')->paginate();
 
-        return view('livewire.admin.mounthboxes.show-mounthboxes', compact('monthboxes', 'sucursalboxes'));
+        return view('livewire.admin.mounthboxes.show-mounthboxes', compact('monthboxes', 'sucursals'));
     }
 
     public function edit(Monthbox $monthbox)
@@ -205,5 +223,14 @@ class ShowMounthboxes extends Component
             $monthbox->restore();
             $this->dispatchBrowserEvent('toast', toastJSON('Restaurado correctamente'));
         }
+    }
+
+    public function updatedSearchmonth()
+    {
+        $this->resetPage();
+    }
+    public function updatedSearchsucursal()
+    {
+        $this->resetPage();
     }
 }

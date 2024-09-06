@@ -1,6 +1,6 @@
 @props(['fontSize' => 'text-[10px]'])
 <a
-    {{ $attributes->merge(['class' => $fontSize . ' block group relative font-semibold tracking-widest bg-next-500 text-white p-2.5 rounded-lg disabled:opacity-25 hover:bg-next-700 focus:bg-next-700 hover:border-next-700 focus:border-next-700 hover:ring-2 hover:ring-next-300 focus:ring-2 focus:ring-next-300 cursor-pointer transition ease-in duration-150']) }}>
+    {{ $attributes->merge(['class' => $fontSize . ' block group relative font-bold tracking-widest bg-fondobutton text-colorbutton p-2.5 rounded-lg disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton cursor-pointer transition ease-in duration-150']) }}>
 
     <span>{{ $slot }}</span>
 

@@ -27,15 +27,14 @@
             @endif
 
             @if (isset($title))
-                <p class="relative text-[10px] leading-3 font-semibold text-center break-words">
-                    {{ $title }}
-                </p>
+                <p class="relative text-[10px] leading-3 font-bold text-center break-words">
+                    {{ $title }}</p>
             @endif
 
             {{ $slot }}
 
             @if (isset($content))
-                <x-span-text :text="$content" class="!tracking-normal !leading-3" />
+                <x-span-text :text="$content" />
             @endif
         </div>
 

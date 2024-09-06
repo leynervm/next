@@ -16,7 +16,7 @@
                         <path d="M2 16H5" />
                     </svg>
 
-                    <span class="text-[10px] text-center font-semibold">{{ $item->name }}</span>
+                    <span class="text-[10px] text-center font-bold">{{ $item->name }}</span>
 
                     <x-slot name="buttons">
                         @if ($item->default)

@@ -113,7 +113,7 @@
                     <th scope="col" class="p-2 font-medium">
                         COMPROBANTE</th>
                     <th scope="col" class="p-2 font-medium text-center">
-                        SUCURSAL</th>
+                        SUCURSAL / USUARIO</th>
                 </tr>
             </x-slot>
 
@@ -161,23 +161,23 @@
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->exonerado, 3, '.', ', ') }}
+                            {{ number_format($item->exonerado, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gravado, 3, '.', ', ') }}
+                            {{ number_format($item->gravado, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->igv, 3, '.', ', ') }}
+                            {{ number_format($item->igv, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gratuito + $item->igvgratuito, 3, '.', ', ') }}
+                            {{ number_format($item->gratuito + $item->igvgratuito, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->total, 3, '.', ', ') }}
+                            {{ number_format($item->total, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->typepayment->name }}
@@ -189,7 +189,7 @@
                         </td>
                         <td class="p-2 text-center align-middle">
                             @if ($item->typepayment->isCredito())
-                                @if (number_format($item->cuotas()->whereHas('cajamovimiento')->sum('amount'), 2, '.', '') ==
+                                @if (number_format($item->cuotas()->whereHas('cajamovimientos')->sum('amount'), 2, '.', '') ==
                                         number_format($item->cuotas()->sum('amount'), 2, '.', ''))
                                     <x-span-text text="PAGADO" class="leading-3" type="green" />
                                 @else
@@ -206,7 +206,7 @@
                         <td class="p-2 text-center align-middle">
                             @if (Module::isEnabled('Facturacion'))
                                 @if ($item->comprobante)
-                                    <p class="text-linktable">{{ $item->comprobante->seriecompleta }}</p>
+                                    <p class="">{{ $item->comprobante->seriecompleta }}</p>
                                 @endif
                             @endif
                         </td>

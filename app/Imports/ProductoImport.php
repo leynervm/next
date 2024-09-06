@@ -2,6 +2,7 @@
 
 namespace App\Imports;
 
+use App\Models\Almacen;
 use App\Models\Almacenarea;
 use App\Models\Caracteristica;
 use App\Models\Category;
@@ -32,11 +33,21 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
 
     const HEADERS_IMPORT_PRODUCT = [
         /* 'item',  */
-        'nombre', 'categoria', 'subcategoria', 'marca',
-        'codigo_unidad_medida', 'unidad_medida',
-        'area_almacen', 'estante_almacen', 'modelo',
-        'sku', 'numero_parte', 'precio_compra', 'precio_venta',
-        'stock_minimo', 'publicado_web'
+        'nombre',
+        'categoria',
+        'subcategoria',
+        'marca',
+        'codigo_unidad_medida',
+        'unidad_medida',
+        'area_almacen',
+        'estante_almacen',
+        'modelo',
+        'sku',
+        'numero_parte',
+        'precio_compra',
+        'precio_venta',
+        'stock_minimo',
+        'publicado_web'
     ];
 
     private $empresa;
@@ -156,6 +167,15 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
                 }
 
                 $producto->assignPriceProduct();
+                $almacensDB = Almacen::get()->pluck('id')->toArray();
+                $newalmacens = array_fill_keys($almacensDB, ['cantidad' => 0]);
+
+                $almacens = $producto->almacens()->pluck('almacen_id')->toArray();
+                $almacenSync = array_filter($newalmacens, function ($key) use ($almacens) {
+                    return !in_array($key, $almacens);
+                }, ARRAY_FILTER_USE_KEY);
+
+                $producto->almacens()->syncWithoutDetaching($almacenSync);
             }
             DB::commit();
         } catch (\Exception $e) {
@@ -280,12 +300,17 @@ class ProductoImport implements ToModel, WithEvents, WithHeadingRow, WithValidat
             'sku' => ['nullable', 'string', 'min:4'],
             'numero_parte' => ['nullable', 'string', 'min:4'],
             'precio_compra' => [
-                'required', 'numeric', 'decimal:0,4',
+                'required',
+                'numeric',
+                'decimal:0,4',
                 $this->empresa->usarLista() ? 'gt:*.0' : ''
             ],
             'precio_venta' => [
-                'nullable', Rule::requiredIf(!$this->empresa->usarLista()),
-                'numeric', 'decimal:0,4', $this->empresa->usarLista() ? '' : 'gt:*.0'
+                'nullable',
+                Rule::requiredIf(!$this->empresa->usarLista()),
+                'numeric',
+                'decimal:0,4',
+                $this->empresa->usarLista() ? '' : 'gt:*.0'
             ],
             'stock_minimo' => ['nullable', 'integer', 'min:0'],
             'publicado_web' => ['nullable', 'integer', 'min:0', 'max:1'],

@@ -87,4 +87,17 @@ class ShowCarrito extends Component
             Cart::instance('shopping')->store(auth()->id());
         }
     }
+
+    public function updateitem($rowId, $cantidad)
+    {
+        // $item = Cart::instance('shopping')->get($rowId);
+        if ($cantidad > 0) {
+            Cart::instance('shopping')->update($rowId, $cantidad);
+        }
+        $this->render();
+        $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
+        if (auth()->check()) {
+            Cart::instance('shopping')->store(auth()->id());
+        }
+    }
 }

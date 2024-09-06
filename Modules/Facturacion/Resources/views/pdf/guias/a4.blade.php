@@ -10,38 +10,9 @@
     <title>
         {{ $guia->seriecomprobante->typecomprobante->descripcion }} - {{ $guia->seriecompleta }}
     </title>
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}') format('truetype');
-        font-weight: 100;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}') format('truetype');
-        font-weight: 200;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}') format('truetype');
-        font-weight: 400;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}') format('truetype');
-        font-weight: 800;
-    }
-
-
-    * {
-        font-family: 'Ubuntu' !important;
-        font-weight: 200;
-    }
-
     @page {
         margin: 4cm 1cm 2cm 1cm;
     }
@@ -209,19 +180,19 @@
     }
 
     .font-normal {
-        font-weight: 100 !important;
+        font-weight: 300 !important;
     }
 
     .font-regular {
-        font-weight: 200 !important;
-    }
-
-    .font-medium {
         font-weight: 400 !important;
     }
 
+    .font-medium {
+        font-weight: 500 !important;
+    }
+
     .font-bold {
-        font-weight: 800 !important;
+        font-weight: 700 !important;
     }
 
     .text-start {
@@ -565,7 +536,7 @@
 
         <h1 class="font-bold text-10 align-middle text-left mt-3">INFORMACIÓN DE BIENES TRASLADADOS</h1>
         @if (count($guia->tvitems) > 0)
-            <table class="table mt-3 text-10">
+            <table class="table mt-3 text-10 font-regular">
                 <thead style="background: #CCC">
                     <tr class="border-table">
                         <th class="font-bold p-2 text-center align-middle">ITEM</th>
@@ -593,7 +564,7 @@
             </table>
         @endif
 
-        <p class="text-9 mt-3" style="margin:0; padding:0;">
+        <p class="text-9 mt-3 font-medium" style="margin:0; padding:0;">
             INDICADOR TRASLADO EN VEHÍCULOS DE CATEGORÍA M1 o L:
             <span class="font-bold">
                 @if ($guia->isVehiculosml())

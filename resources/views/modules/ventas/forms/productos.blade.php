@@ -60,13 +60,14 @@
                         <small
                             class="text-[10px] font-semibold text-right text-colorlabel">{{ $moneda->currency }}</small>
                         @if ($moneda->isDolar())
-                            <x-input class="block w-full text-right disabled:bg-gray-200" name="price" type="number"
-                                min="0" step="0.0001"
+                            <x-input class="block w-full text-right disabled:bg-gray-200 input-number-none"
+                                name="price" type="number" min="0" step="0.001"
                                 value="{{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) }}"
                                 onkeypress="return validarDecimal(event, 12)" />
                         @else
-                            <x-input class="block w-full text-right disabled:bg-gray-200" name="price" type="number"
-                                min="0" step="0.0001" value="{{ formatDecimalOrInteger($pricesale, 3) }}"
+                            <x-input class="block w-full text-right disabled:bg-gray-200 input-number-none"
+                                name="price" type="number" min="0" step="0.0001"
+                                value="{{ formatDecimalOrInteger($pricesale, 3) }}"
                                 onkeypress="return validarDecimal(event, 12)" />
                         @endif
                     @else
@@ -113,8 +114,8 @@
                             @else
                                 <div class="w-full flex-1">
                                     <x-label value="Cantidad :" />
-                                    <x-input class="block w-full disabled:bg-gray-200" name="cantidad" type="number"
-                                        min="1" required max="{{ $stock }}" value="1"
+                                    <x-input class="block w-full disabled:bg-gray-200 input-number-none" name="cantidad"
+                                        type="number" min="1" required max="{{ $stock }}" value="1"
                                         onkeypress="return validarDecimal(event, 12)" />
                                 </div>
                             @endif

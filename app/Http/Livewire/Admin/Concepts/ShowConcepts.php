@@ -40,7 +40,7 @@ class ShowConcepts extends Component
 
     public function render()
     {
-        $concepts = Concept::orderBy('default', 'asc')->orderBy('name', 'asc')->paginate();
+        $concepts = Concept::default()->orderBy('default', 'asc')->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.concepts.show-concepts', compact('concepts'));
     }
 

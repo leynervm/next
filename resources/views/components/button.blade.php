@@ -1,11 +1,7 @@
 @props(['size' => '[10px]', 'disabled' => false])
 
 <button
-    {{ $attributes->merge([
-        'type' => 'button',
-        'class' =>
-            'text-[10px] bg-fondobutton uppercase rounded-lg text-colorbutton block group relative font-semibold tracking-widest p-2.5 disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton transition ease-in duration-150',
-    ]) }}>
+    {{ $attributes->merge(['class' => 'text-[10px] bg-fondobutton uppercase rounded-lg text-colorbutton block group relative font-bold tracking-widest p-2.5 disabled:opacity-25 hover:bg-fondohoverbutton focus:bg-fondohoverbutton hover:ring-2 hover:ring-ringbutton focus:ring-2 focus:ring-ringbutton transition ease-in duration-150', 'type' => 'button']) }}>
 
     <span>{{ $slot }}</span>
 

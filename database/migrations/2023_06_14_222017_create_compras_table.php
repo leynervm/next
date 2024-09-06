@@ -26,6 +26,7 @@ class CreateComprasTable extends Migration
             $table->decimal('descuento', 10, 4)->default(0);
             $table->decimal('otros', 18, 4)->default(0);
             $table->decimal('total', 18, 4)->default(0);
+            $table->char('afectacion', 1);
             $table->char('status', 1)->default(0);
             $table->tinyInteger('moneda_id')->nullable();
             $table->tinyInteger('typepayment_id')->nullable();

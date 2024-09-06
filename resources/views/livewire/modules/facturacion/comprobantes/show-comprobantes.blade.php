@@ -197,23 +197,23 @@
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gravado, 3, '.', ', ') }}
+                            {{ number_format($item->gravado, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->exonerado, 3, '.', ', ') }}
+                            {{ number_format($item->exonerado, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->igv, 3, '.', ', ') }}
+                            {{ number_format($item->igv, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gratuito + $item->igvgratuito, 3, '.', ', ') }}
+                            {{ number_format($item->gratuito + $item->igvgratuito, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->total, 3, '.', ', ') }}
+                            {{ number_format($item->total, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->typepayment->name }}

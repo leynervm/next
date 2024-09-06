@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="{{ asset('assets/select2/select2.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
 
     <!-- Scripts -->
@@ -375,15 +376,16 @@
         var charCode = (event.which) ? event.which : event.keyCode;
         var charTyped = String.fromCharCode(charCode);
         var regex = /^[0-9.]+$/;
+        var selectedText = window.getSelection().toString();
 
-        if (maxlenth > 0) {
+        if (maxlenth > 0 && !selectedText.length) {
             if (event.target.value.length >= maxlenth) {
                 return charCode == 13 ? true : false;
             }
         }
 
         if (regex.test(charTyped)) {
-            if (charTyped === '.' && event.target.value.includes('.')) {
+            if (charTyped === '.' && event.target.value.includes('.') && !selectedText.length) {
                 return false;
             }
             return true;
@@ -396,8 +398,9 @@
         var charCode = (event.which) ? event.which : event.keyCode;
         var charTyped = String.fromCharCode(charCode);
         var regex = /^[0-9]+$/;
+        var selectedText = window.getSelection().toString();
 
-        if (maxlenth > 0) {
+        if (maxlenth > 0 && !selectedText.length) {
             if (event.target.value.length >= maxlenth) {
                 return charCode == 13 ? true : false;
             }

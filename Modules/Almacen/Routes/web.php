@@ -28,6 +28,8 @@ Route::middleware([
     Route::get('/compras/{compra:id}/edit', [CompraController::class, 'show'])->name('admin.almacen.compras.edit')->middleware(['verifymethodpayment']);
     Route::get('/compras/pagos', [CompraController::class, 'cuentaspagar'])->name('admin.almacen.compras.pagos');
 
+    Route::get('/compras/{compra:id}/print/a4', [CompraController::class, 'printA4'])->name('admin.almacen.compras.print.a4');
+
 
     Route::get('/areas-&-estantes', [AlmacenController::class, 'almacenareas'])->name('admin.almacen.almacenareas');
     Route::get('/tipo-garantias', [AlmacenController::class, 'typegarantias'])->name('admin.almacen.typegarantias');

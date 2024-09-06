@@ -23,40 +23,40 @@
             <h1 class="font-semibold text-lg text-colorsubtitleform">
                 Datos de la persona que presenta el reclamo</h1>
 
-            <div class="w-full grid grid-cols-3 gap-2 pt-3">
-                <div class="col-span-3 lg:col-span-1">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
+                <div class="">
                     <x-label value="N° DNI :" />
-                    <x-input class="block w-full flex-1 prevent" name="document"
-                        onkeypress="return validarNumero(event, 11)" value="{{ old('document') }}" required />
+                    <x-input class="block w-full prevent" name="document" onkeypress="return validarNumero(event, 11)"
+                        value="{{ old('document') }}" required />
                     <x-jet-input-error for="document" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-2">
+                <div class="lg:col-span-2">
                     <x-label value="NOMBRES Y APELLIDOS :" />
                     <x-input class="block w-full" name="name" value="{{ old('name') }}" required />
                     <x-jet-input-error for="name" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-2">
+                <div class="lg:col-span-2">
                     <x-label value="DIRECCIÓN :" />
                     <x-input class="block w-full" name="direccion" value="{{ old('direccion') }}" required />
                     <x-jet-input-error for="direccion" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="TELÉFONO :" />
                     <x-input class="block w-full" name="telefono" onkeypress="return validarNumero(event, 9)"
                         value="{{ old('telefono') }}" required />
                     <x-jet-input-error for="telefono" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="CORREO ELECTRÓNICO :" />
                     <x-input class="block w-full" type="email" name="email" value="{{ old('email') }}" required />
                     <x-jet-input-error for="email" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="FECHA :" />
                     <x-input class="block w-full" type="date" name="date"
                         value="{{ old('date') ?? now('America/Lima')->format('Y-m-d') }}" required />
@@ -80,27 +80,27 @@
             <h1 class="font-semibold text-lg text-colorsubtitleform">
                 Datos del apoderado</h1>
 
-            <div class="w-full grid grid-cols-3 gap-2 pt-3">
-                <div class="col-span-3 lg:col-span-1">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
+                <div class="">
                     <x-label value="N° DNI :" />
                     <x-input class="block w-full flex-1 prevent" name="document_apoderado" type="number"
                         onkeypress="return validarNumero(event, 8)" value="{{ old('document_apoderado') }}" />
                     <x-jet-input-error for="document_apoderado" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-2">
+                <div class="lg:col-span-2">
                     <x-label value="NOMBRES Y APELLIDOS :" />
                     <x-input class="block w-full" name="name_apoderado" value="{{ old('name_apoderado') }}" />
                     <x-jet-input-error for="name_apoderado" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-2">
+                <div class="lg:col-span-2">
                     <x-label value="DIRECCIÓN :" />
                     <x-input class="block w-full" name="direccion_apoderado" value="{{ old('direccion_apoderado') }}" />
                     <x-jet-input-error for="direccion_apoderado" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="TELÉFONO :" />
                     <x-input class="block w-full" name="telefono_apoderado" onkeypress="return validarNumero(event, 9)"
                         value="{{ old('telefono_apoderado') }}" />
@@ -120,7 +120,7 @@
             <h1 class="font-semibold text-lg text-colorsubtitleform">
                 Canal de venta</h1>
 
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 pt-3">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
                 <x-input-radio class="py-2" for="channel_web" text="TIENDA WEB">
                     <input x-model="channelsale" class="sr-only peer peer-disabled:opacity-25" type="radio"
                         id="channel_web" name="channelsale" value="{{ \App\Models\Claimbook::TIENDA_WEB }}" />
@@ -137,9 +137,8 @@
             <h1 class="font-semibold text-lg text-colorsubtitleform">
                 Detalle del reclamo</h1>
 
-            <div class="w-full grid grid-cols-3 gap-2 pt-3">
-                <div class="col-span-3 lg:col-span-1" style="display: none;" x-cloak
-                    x-show="channelsale=='TIENDA FISICA'">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
+                <div class="" style="display: none;" x-cloak x-show="channelsale=='TIENDA FISICA'">
                     <x-label value="TIENDA DE COMPRA :" />
                     <div class="relative" id="parenttiendacompra">
                         <x-select class="block w-full" name="tienda_compra" id="tiendacompra"
@@ -160,7 +159,7 @@
                     <x-jet-input-error for="tienda_compra" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="BIEN CONTRATADO :" />
                     <div class="relative" id="parentbiencontratado">
                         <x-select class="block w-full" name="biencontratado" id="biencontratado"
@@ -175,7 +174,7 @@
                     <x-jet-input-error for="biencontratado" />
                 </div>
 
-                <div class="col-span-3">
+                <div class="xs:col-span-2 md:col-span-3 lg:col-span-5">
                     <x-label value="DESCRIPCIÓN DEL PRODUCTO / SERVICIO :" />
                     <x-text-area class="w-full" rows="6" name="descripcion_producto_servicio" required>
                         {{ old('descripcion_producto_servicio') }}
@@ -183,7 +182,7 @@
                     <x-jet-input-error for="descripcion_producto_servicio" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="TIPO DE RECLAMACIÓN :" />
                     <div class="relative" id="parenttiporeclamo">
                         <x-select class="select2 block w-full" name="tipo_reclamo" id="tiporeclamo"
@@ -198,7 +197,7 @@
                     <x-jet-input-error for="tipo_reclamo" />
                 </div>
 
-                <div class="col-span-3">
+                <div class="xs:col-span-2 md:col-span-3 lg:col-span-5">
                     <x-label value="DETALLE DEL RECLAMO :" />
                     <x-text-area class="w-full" rows="6" name="detalle_reclamo" required>
                         {{ old('detalle_reclamo') }}
@@ -206,7 +205,7 @@
                     <x-jet-input-error for="detalle_reclamo" />
                 </div>
 
-                <div class="col-span-3 lg:col-span-1">
+                <div class="">
                     <x-label value="PEDIDO :" />
                     <x-input class="block w-full" name="pedido" value="{{ old('pedido') }}" />
                     <x-jet-input-error for="pedido" />

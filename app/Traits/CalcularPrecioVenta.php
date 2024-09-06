@@ -113,27 +113,6 @@ trait CalcularPrecioVenta
     public function obtenerPrecioVenta($pricetype = null)
     {
 
-        // if (is_null($this->precio_real_compra)) {
-        //     return null;
-        // }
-
-        // $precioManual = $this->calcularPrecioManualLista($pricetype);
-        // if ($precioManual) {
-        //     $precioVenta = $precioManual;
-        // } else {
-        //     $ganancia = $this->obtenerPorcentajeGanancia($pricetype->id);
-        //     if (is_null($ganancia)) {
-        //         return null;
-        //     }
-        //     $precioVenta = $this->precio_real_compra + ($this->precio_real_compra * ($ganancia / 100));
-        // }
-
-        // if ($pricetype->rounded > 0) {
-        //     $precioVenta = round_decimal($precioVenta, $pricetype->rounded);
-        // }
-
-        // return number_format($precioVenta, $pricetype->decimals, '.', '');
-
         if (!empty($pricetype)) {
             if ($pricetype->campo_table == 'precio_1') {
                 $precioVenta = $this->precio_1;

@@ -69,6 +69,7 @@ class CreateCompra extends Component
             'total' => ['required', 'numeric', 'gt:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             // 'detalle' => ['nullable', 'string'],
+            'afectacion' => ['required', 'in:S,E'],
             'itemcompras' => ['required', 'array', 'min:1']
         ];
     }
@@ -118,8 +119,8 @@ class CreateCompra extends Component
                 $compraitem = $compra->compraitems()->create([
                     'cantidad' => $item['sumstock'],
                     'price' => $item['priceunitario'],
-                    'oldprice' => $producto['pricebuy'],
-                    'oldpricesale' => $producto['pricesale'],
+                    'oldprice' => $producto->pricebuy,
+                    'oldpricesale' => $producto->pricesale,
                     'igv' => $item['igvunitario'],
                     'descuento' => $item['descuentounitario'],
                     'subtotaligv' => $item['subtotaligvitem'],
@@ -138,7 +139,7 @@ class CreateCompra extends Component
                     if ($item['requireserie']) {
                         if (count($almacen['series']) != $almacen['cantidad']) {
                             $message = response()->json([
-                                'title' => "Series agregadas no coinciden con la cantidad entrante.",
+                                'title' => "SERIES AGREGADAS NO COINCIDEN CON EL STOCK ENTRANTE.",
                                 'text' => null,
                             ])->getData();
                             $this->dispatchBrowserEvent('validation', $message);
@@ -243,10 +244,12 @@ class CreateCompra extends Component
             }
         }
 
-        $collection = collect($this->itemcompras);
-        $index = $collection->search(function ($item) {
-            return $item['producto_id'] == $this->producto_id;
-        });
+        $item = collect($this->itemcompras)->firstWhere('producto_id', $this->producto_id);
+
+        if ($item) {
+            $this->addError('producto_id', 'El valor del campo producto ya está en uso.');
+            return false;
+        }
 
         $almacens = collect($this->almacens);
         $myalmacens = $almacens->filter(function ($item) {
@@ -269,75 +272,28 @@ class CreateCompra extends Component
             $pricebuysoles = $this->pricebuy * $this->tipocambio ?? 1;
         }
 
-        if ($index !== false) {
-            $item = $collection->get($index);
-            $sumstock = $item['sumstock'] + $this->sumstock;
-            $totalitem = formatDecimalOrInteger($sumstock * ($this->priceunitario + $this->igvunitario), 2);
-            $subtotalitem = formatDecimalOrInteger($sumstock * $this->priceunitario, 2);
-            $subtotaligvitem = formatDecimalOrInteger($sumstock * $this->igvunitario, 2);
-            $subtotaldsctoitem = formatDecimalOrInteger($sumstock * $this->descuentounitario, 2);
+        $this->itemcompras[] = [
+            'id' => uniqid(),
+            'producto_id' => $this->producto_id,
+            'name' => $producto['name'],
+            'unit' => $producto['unit'],
+            'sumstock' => $this->sumstock,
+            'priceunitario' => $this->priceunitario,
+            'igvunitario' => $this->igvunitario,
+            'descuentounitario' => $this->descuentounitario,
+            'pricebuy' => $this->pricebuy,
+            'pricebuysoles' => $pricebuysoles,
+            'subtotaligvitem' => $this->subtotaligvitem,
+            'subtotalitem' => $this->subtotalitem,
+            'totalitem' => $this->totalitem,
+            'subtotaldsctoitem' => $this->subtotaldsctoitem,
+            'priceventa' => $this->priceventa,
+            'almacens' => $myalmacens,
+            'image' => $producto['image_url'],
+            'requireserie' => $this->requireserie,
+            'typedescuento' => $this->typedescuento,
+        ];
 
-            $item['sumstock'] = $sumstock;
-            $item['priceunitario'] = $this->priceunitario;
-            $item['igvunitario'] = $this->igvunitario;
-            $item['descuentounitario'] = $this->descuentounitario;
-            $item['pricebuy'] = $this->pricebuy;
-            $item["pricebuysoles"] = $pricebuysoles;
-            $item['subtotalitem'] = $subtotalitem;
-            $item['subtotaligvitem'] = $subtotaligvitem;
-            $item['totalitem'] = $totalitem;
-            $item['subtotaldsctoitem'] = $subtotaldsctoitem;
-            $item['priceventa'] = $this->priceventa;
-            $item['image'] = $producto['image_url'];
-            $item['requireserie'] = $this->requireserie;
-
-            $collectalmacens = collect($item['almacens']);
-            foreach ($myalmacens as $almacen) {
-                $indexalmacen = $collectalmacens->search(function ($itemalmacen) use ($almacen) {
-                    return $itemalmacen['id'] == $almacen['id'];
-                });
-
-                if ($indexalmacen !== false) {
-                    $almacenedit =  $collectalmacens->get($indexalmacen);
-                    $almacenedit['cantidad'] = (float) $almacenedit['cantidad'] + (float) $almacen['cantidad'];
-
-                    if (count($almacen['series']) > 0) {
-                        $almacenedit['series'] = array_merge($almacenedit['series'], $almacen['series']);
-                    }
-
-                    $collectalmacens->put($indexalmacen, $almacenedit);
-                } else {
-                    $collectalmacens->push($almacen);
-                }
-            }
-            $item['almacens'] = $collectalmacens->toArray();
-            $collection->put($index, $item);
-            // dd($collection->toArray());
-            $this->itemcompras = $collection->toArray();
-        } else {
-            $this->itemcompras[] = [
-                'id' => uniqid(),
-                'producto_id' => $this->producto_id,
-                'name' => $producto['name'],
-                'unit' => $producto['unit'],
-                'sumstock' => $this->sumstock,
-                'priceunitario' => $this->priceunitario,
-                'igvunitario' => $this->igvunitario,
-                'descuentounitario' => $this->descuentounitario,
-                'pricebuy' => $this->pricebuy,
-                'pricebuysoles' => $pricebuysoles,
-                'subtotaligvitem' => $this->subtotaligvitem,
-                'subtotalitem' => $this->subtotalitem,
-                'totalitem' => $this->totalitem,
-                'subtotaldsctoitem' => $this->subtotaldsctoitem,
-                'priceventa' => $this->priceventa,
-                'almacens' => $myalmacens,
-                'image' => $producto['image_url'],
-                'requireserie' => $this->requireserie,
-            ];
-        }
-
-        // dd($collection->all());
         if ($this->afectacion == 'S') {
             $this->gravado = formatDecimalOrInteger($this->gravado + ($this->totalitem - $this->subtotaligvitem), 2);
             $this->igv = formatDecimalOrInteger($this->igv + $this->subtotaligvitem, 2);
@@ -349,7 +305,6 @@ class CreateCompra extends Component
         $this->total = formatDecimalOrInteger($this->total + $this->totalitem, 2);
         $this->subtotal = formatDecimalOrInteger($this->subtotal + $this->subtotalitem, 2);
 
-        // dd($this->itemcompras);
         $this->reset([
             'producto_id',
             'almacens',
@@ -442,5 +397,40 @@ class CreateCompra extends Component
             unset($this->almacens[$almacenindex]['series'][$index]);
             $this->almacens[$almacenindex]['series'] = array_values($this->almacens[$almacenindex]['series']);
         }
+    }
+
+    public function edit($producto_id)
+    {
+        $collect = collect($this->itemcompras ?? []);
+        $item = $collect->firstWhere('producto_id', $producto_id);
+
+        $this->producto_id = $item['producto_id'];
+        $this->priceunitario = $item['priceunitario'];
+        $this->igvunitario = $item['igvunitario'];
+        $this->descuentounitario = $item['descuentounitario'];
+        $this->pricebuy = $item['pricebuy'];
+        $this->priceventa =  $item['priceventa'];
+        $this->requireserie = $item['requireserie'];
+        $this->typedescuento = $item['typedescuento'];
+
+        $arrayalmacens = $item['almacens'];
+        $combined = Producto::find($producto_id)->almacens->map(function ($item) use ($arrayalmacens) {
+            $almacencompra = collect($arrayalmacens)->firstWhere('id', $item['id']);
+            if ($almacencompra) {
+                $almacen['cantidad'] = formatDecimalOrInteger($almacencompra['cantidad']);
+                $almacen['series'] = $almacencompra['series'];
+            } else {
+                $almacen['cantidad'] = 0;
+                $almacen['series'] = [];
+            }
+            $almacen['id'] = $item->id;
+            $almacen['name'] =  $item->name;
+            $almacen['newserie'] = '';
+            $almacen['pivot'] =  $item->pivot->toArray();
+            return $almacen;
+        })->toArray();
+        // dd($combined);
+        $this->almacens = $combined;
+        $this->removeitem($producto_id);
     }
 }

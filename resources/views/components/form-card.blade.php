@@ -2,7 +2,7 @@
     {{ $attributes->merge(['class' => 'relative w-full flex flex-col border rounded-xl border-shadowform p-1 lg:p-2']) }}>
     <div class="w-full text-colortitleform mb-2">
         <h1
-            class="text-xs flex items-center gap-1 font-semibold relative before:absolute before:h-[3px] before:bg-colortitleform before:-bottom-1 {{ $widthBefore }} ">
+            class="text-xs flex items-center gap-1 font-bold relative before:absolute before:h-[3px] before:bg-colortitleform before:-bottom-1 {{ $widthBefore }} ">
             @if ($default)
                 <span class="block w-4 h-4">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full text-next-500 scale-125"

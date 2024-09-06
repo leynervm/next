@@ -20,9 +20,9 @@ trait CajamovimientoTrait
     {
         return Cajamovimiento::create([
             'date' => now('America/Lima'),
-            'amount' => number_format($amount, 4, '.', ''),
-            'totalamount' => number_format($totalamount, 4, '.', ''),
-            'tipocambio' => number_format($tipocambio, 4, '.', ''),
+            'amount' => number_format($amount, 3, '.', ''),
+            'totalamount' => number_format($totalamount, 3, '.', ''),
+            'tipocambio' => number_format($tipocambio, 3, '.', ''),
             'moneda_id' => $moneda_id,
             'methodpayment_id' => $methodpayment_id,
             'typemovement' => $typemovement,

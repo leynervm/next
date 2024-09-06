@@ -1,6 +1,6 @@
 <footer class="w-full footer-marketplace">
     <div
-        class="contenedor md:divide-x-[0.5px] divide-neutral-200 grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 gap-3 mx-auto py-3 md:py-10">
+        class="contenedor md:divide-x-[0.5px] divide-borderminicard grid grid-cols-1 xs:grid-cols-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-3 mx-auto py-3 md:py-10">
         <div class="w-full max-w-sm h-16 xs:mx-auto xs:col-span-3 sm:col-span-3 md:col-span-1">
             @if ($empresa->image)
                 <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
@@ -47,7 +47,14 @@
                 </li>
             </ul>
         </div>
-        <div class="">
+        <div class="xl:col-span-2">
+            <div class="w-full h-48 xl:h-72 px-1">
+                <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1985.024222362466!2d-78.80980694270073!3d-5.706141436028993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91b4fbc87b6535f7%3A0x7b9aa3d2c1e84bd1!2sNEXT%20TECHNOLOGIES!5e0!3m2!1ses-419!2spe!4v1725493222836!5m2!1ses-419!2spe"
+                    class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+
             <ul>
                 @if ($empresa->email)
                     <li>

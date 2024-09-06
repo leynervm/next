@@ -31,7 +31,7 @@ class ShowCuotasCompra extends Component
     public $compra, $cuota, $moneda_id, $concept_id, $openbox, $monthbox;
     public $countcuotas = 1;
     public $amountcuotas = 0;
-    public $amount, $totalamount, $tipocambio;
+    public $amount, $pendiente, $totalamount, $tipocambio;
 
     public $methodpayment_id, $detalle;
     public $cuotas = [];
@@ -50,11 +50,13 @@ class ShowCuotasCompra extends Component
         $methodpayments = Methodpayment::orderBy('default', 'desc')->orderBy('name', 'asc')->get();
         if ($this->monthbox && $this->openbox) {
             $diferencias = Cajamovimiento::with('moneda')->diferencias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
+            $diferenciasbytype = Cajamovimiento::diferenciasByType($this->openbox->id, auth()->user()->sucursal_id)->get();
         } else {
             $diferencias = [];
+            $diferenciasbytype = [];
         }
 
-        return view('livewire.modules.almacen.compras.show-cuotas-compra', compact('typepayments', 'methodpayments', 'diferencias'));
+        return view('livewire.modules.almacen.compras.show-cuotas-compra', compact('typepayments', 'methodpayments', 'diferencias', 'diferenciasbytype'));
     }
 
     public function calcularcuotas()
@@ -107,7 +109,11 @@ class ShowCuotasCompra extends Component
             "cuotas.*.date" => ['required', 'date', 'after_or_equal:today'],
             "cuotas.*.amount" => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3'],
             'amountcuotas' => [
-                'required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3',
+                'required',
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,3',
                 new ValidateNumericEquals($this->compra->total)
             ]
         ]);
@@ -146,7 +152,7 @@ class ShowCuotasCompra extends Component
                     'id' => $cuota->id,
                     'cuota' => $cuota->cuota,
                     'date' => $cuota->expiredate,
-                    'cajamovimiento_id' => $cuota->cajamovimiento->id ?? null,
+                    'cajamovimientos' => $cuota->cajamovimientos->toArray(),
                     'amount' => number_format($cuota->amount, 3, '.', ''),
                 ];
             }
@@ -171,7 +177,7 @@ class ShowCuotasCompra extends Component
             'id' => null,
             'cuota' => count($this->cuotas) + 1,
             'date' => $date,
-            'cajamovimiento_id' => null,
+            'cajamovimientos' => [],
             'amount' => '0.00',
         ];
     }
@@ -200,14 +206,14 @@ class ShowCuotasCompra extends Component
 
         try {
             foreach ($responseCuotas as $key => $item) {
-                if (!$item->cajamovimiento_id) {
+                if (count($item->cajamovimientos) == 0) {
                     if (Carbon::parse($item->date)->isBefore(Carbon::now()->format('Y-m-d'))) {
                         $this->addError("cuotas.$key.date", 'La fecha debe ser mayor a la fecha actual.');
                         return false;
                     }
                 }
                 if ($item->id) {
-                    if (!$item->cajamovimiento_id) {
+                    if (count($item->cajamovimientos) == 0) {
                         $cuota = Cuota::find($item->id);
                         $cuota->expiredate = $item->date;
                         $cuota->amount = $item->amount;
@@ -243,11 +249,12 @@ class ShowCuotasCompra extends Component
     {
         $this->authorize('admin.almacen.compras.pagos');
         $this->resetValidation();
-        $this->reset(['methodpayment_id', 'detalle', 'tipocambio', 'totalamount', 'showtipocambio', 'amount', 'moneda_id']);
+        $this->reset(['methodpayment_id', 'detalle', 'tipocambio', 'totalamount', 'showtipocambio', 'amount', 'pendiente', 'moneda_id']);
         $this->cuota = $cuota;
-        $this->amount = number_format($cuota->amount, 3, '.', '');
-        $this->moneda_id = $this->compra->moneda_id;
+        // $this->moneda_id = $this->compra->moneda_id;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->pendiente = (float)($cuota->amount - $cuota->cajamovimientos->sum('amount'));
+        $this->amount = $this->pendiente;
         $this->openpaycuota = true;
     }
 
@@ -274,28 +281,49 @@ class ShowCuotasCompra extends Component
             return false;
         }
 
-        $this->totalamount = number_format($this->cuota->amount, 3, '.', '');
+        $this->amount = empty($this->amount) ? 0 : (float) $this->amount;
         $this->concept_id = Concept::PaycuotaCompra()->first()->id ?? null;
+
+        $istransferencia = false;
+        if ($this->methodpayment_id) {
+            $istransferencia = Methodpayment::find($this->methodpayment_id)->isTransferencia();
+        }
+
+        $this->tipocambio = empty($this->tipocambio) ? null : (float) $this->tipocambio;
+        $this->totalamount = $this->amount;
+        if ($this->compra->moneda_id != $this->moneda_id) {
+            if ($this->amount > 0 && $this->tipocambio > 0) {
+                $monedaConvertir = $this->compra->moneda->isDolar() ? 'PEN' : 'USD';
+                $this->totalamount = convertMoneda($this->amount, $monedaConvertir, $this->tipocambio);
+            }
+        }
         $this->validate([
             'cuota.id' => ['required', 'integer', 'min:1', 'exists:cuotas,id'],
             'openbox.id' => ['required', 'integer', 'min:1', 'exists:openboxes,id'],
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
-            'amount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
-            'totalamount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'amount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3'],
+            'totalamount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,3'],
             'tipocambio' => [
                 'nullable',
                 Rule::requiredIf($this->showtipocambio),
-                'numeric', 'min:0', 'gt:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,3'
             ],
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'concept_id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
             'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
-            'detalle' => ['nullable'],
+            'detalle' => [Rule::requiredIf($istransferencia)],
         ]);
 
-        if ($this->showtipocambio) {
-            $monedaConvertir = $this->compra->moneda->code == 'USD' ? 'PEN' : 'USD';
-            $this->totalamount = convertMoneda($this->amount, $monedaConvertir, $this->tipocambio);
+        if (($this->cuota->cajamovimientos->sum('amount') + $this->amount) > $this->cuota->amount) {
+            $mensaje =  response()->json([
+                'title' => "MONTO TOTAL DE PAGO NO DEBE SUPERAR AL TOTAL DE LA CUOTA !",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
 
         DB::beginTransaction();
@@ -309,7 +337,7 @@ class ShowCuotasCompra extends Component
             if (($saldocaja - $this->totalamount) < 0) {
                 $mensaje =  response()->json([
                     'title' => 'SALDO DE CAJA INSUFICIENTE PARA REALIZAR PAGO DE COMPRA MEDIANTE ' . $forma . ' !',
-                    'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
+                    'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
@@ -317,7 +345,7 @@ class ShowCuotasCompra extends Component
 
             $this->cuota->savePayment(
                 $this->compra->sucursal_id,
-                number_format($this->cuota->amount, 3, '.', ''),
+                number_format($this->amount, 3, '.', ''),
                 number_format($this->totalamount, 3, '.', ''),
                 $this->showtipocambio ? number_format($this->tipocambio, 3, '.', '') : null,
                 $this->moneda_id,
@@ -343,13 +371,13 @@ class ShowCuotasCompra extends Component
         }
     }
 
-    public function deletepaycuota(Cuota $cuota)
+    public function deletepaycuota(Cajamovimiento $cajamovimiento)
     {
 
         $this->authorize('admin.almacen.compras.pagos');
         DB::beginTransaction();
         try {
-            $cuota->cajamovimiento->delete();
+            $cajamovimiento->delete();
             DB::commit();
             $this->compra->refresh();
             $this->dispatchBrowserEvent('deleted');
@@ -372,6 +400,8 @@ class ShowCuotasCompra extends Component
             DB::commit();
             $this->compra->refresh();
             $this->dispatchBrowserEvent('deleted');
+            $this->reset(['cuotas', 'cuota', 'countcuotas']);
+            $this->cuota = new Cuota();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

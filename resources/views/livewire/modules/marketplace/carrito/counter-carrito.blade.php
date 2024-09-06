@@ -34,9 +34,9 @@
                             <div class="w-14 h-14 rounded overflow-hidden">
                                 @if ($item->model->getImageURL())
                                     <img src="{{ $item->model->getImageURL() }}" alt=""
-                                        class="w-full h-full object-scale-down" />
+                                        class="w-full h-full object-cover" />
                                 @else
-                                    <x-icon-file-upload class="!w-full !h-full !m-0" type="unknown" />
+                                    <x-icon-file-upload class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform" type="unknown" />
                                 @endif
                             </div>
                             <div class="flex-1">
@@ -44,14 +44,13 @@
                                     {{ $item->model->name }}</p>
                                 <div class="w-full flex justify-between items-end gap-2">
                                     <h1 class="text-xs text-colorsubtitleform">
-                                        <small class="text-[10px]">CANT: </small>
-                                        {{ $item->qty }}
-                                        <small class="text-[10px]">{{ $item->model->unit->name }}</small>
+                                        <small class="text-[10px]">P. UNIT : </small>
+                                        {{ formatDecimalOrInteger($item->price, 2, ', ') }}
                                     </h1>
                                     <h1 class="text-xs text-colorlabel">
                                         <small class="text-[10px] text-colorsubtitleform">
-                                            P. UNIT : {{ $item->options->simbolo }}</small>
-                                        {{ number_format($item->price, 2, '.', ', ') }}
+                                            SUBTOTAL : {{ $item->options->simbolo }}</small>
+                                        {{ formatDecimalOrInteger($item->price * $item->qty, 2, ', ') }}
                                     </h1>
                                 </div>
 
@@ -59,13 +58,14 @@
                                     <div class="w-full flex-1">
                                         <button wire:click="decrement('{{ $item->rowId }}')" type="button"
                                             wire:loading.attr="disabled"
-                                            class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">-</button>
+                                            @if ($item->qty == 1) disabled @endif
+                                            class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-neutral-300 transition ease-in-out duration-150">-</button>
                                         <small
                                             class="font-medium text-xs px-2 text-colorlabel inline-block text-center">
-                                            {{ $item->qty }} {{ $item->model->unit->name }}</small>
+                                            {{ $item->qty }}</small>
                                         <button wire:click="increment('{{ $item->rowId }}')" type="button"
                                             wire:loading.attr="disabled"
-                                            class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                                            class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-neutral-300 transition ease-in-out duration-150">+</button>
                                     </div>
 
                                     <x-button-delete wire:click="deleteitem('{{ $item->rowId }}')"

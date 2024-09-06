@@ -353,14 +353,13 @@
             <x-form-card titulo="CONDUCTORES VEHÍCULO">
                 <div class="w-full relative rounded flex flex-wrap lg:flex-nowrap gap-3">
                     @if ($guia->codesunat != '0')
-                        <div class="w-full lg:w-96 lg:flex-shrink-0 bg-body p-3 rounded relative"
-                            x-data="{ loading: false }">
+                        <div class="w-full lg:w-96 relative" x-data="{ loading: false }">
                             <form wire:submit.prevent="savedriver" class="w-full flex flex-col gap-2">
                                 <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-1">
                                     <div class="w-full">
                                         <x-label value="Documento :" />
-                                        <div class="w-full inline-flex">
-                                            <x-input class="block w-full prevent numeric"
+                                        <div class="w-full inline-flex gap-1">
+                                            <x-input class="block w-full flex-1 prevent numeric"
                                                 wire:model.defer="documentdriver" wire:keydown.enter="getDriver"
                                                 minlength="0" maxlength="11" />
                                             <x-button-add class="px-2" wire:click="getDriver"
@@ -403,47 +402,45 @@
                             </form>
                         </div>
                     @endif
-                    <div class="w-full relative rounded">
+                    <div class="w-full flex-1 relative rounded">
                         @if (count($guia->transportdrivers))
-                            <div class="w-full">
-                                <x-table>
-                                    <x-slot name="header">
-                                        <tr>
-                                            <th class="p-2 text-left">DOCUMENTO</th>
-                                            <th class="p-2 text-left">NOMBRES</th>
-                                            <th class="p-2 text-center">LICENCIA</th>
+                            <x-table class="w-full">
+                                <x-slot name="header">
+                                    <tr>
+                                        <th class="p-2 text-left">DOCUMENTO</th>
+                                        <th class="p-2 text-left">NOMBRES</th>
+                                        <th class="p-2 text-center">LICENCIA</th>
+                                        @if ($guia->codesunat != '0')
+                                            <th class="p-2">OPCIONES</th>
+                                        @endif
+                                    </tr>
+                                </x-slot>
+                                <x-slot name="body">
+                                    @foreach ($guia->transportdrivers as $item)
+                                        <tr class="text-[10px]">
+                                            <td class="p-2">
+                                                {{ $item->document }}
+                                                @if ($item->principal)
+                                                    <x-span-text text="PRINCIPAL"
+                                                        class="!tracking-normal leading-3 ml-1" type="green" />
+                                                @else
+                                                    <x-span-text text="SECUNDARIO"
+                                                        class="!tracking-normal leading-3 ml-1" />
+                                                @endif
+                                            </td>
+                                            <td class="p-2">{{ $item->name }} {{ $item->lastname }}</td>
+                                            <td class="p-2 text-center">{{ $item->licencia }}</td>
                                             @if ($guia->codesunat != '0')
-                                                <th class="p-2">OPCIONES</th>
+                                                <td class="text-center align-middle">
+                                                    <x-button-delete
+                                                        onclick="confirmDeletedriver({{ $item }})"
+                                                        wire:loading.attr="disabled" />
+                                                </td>
                                             @endif
                                         </tr>
-                                    </x-slot>
-                                    <x-slot name="body">
-                                        @foreach ($guia->transportdrivers as $item)
-                                            <tr class="text-[10px]">
-                                                <td class="p-2">
-                                                    {{ $item->document }}
-                                                    @if ($item->principal)
-                                                        <x-span-text text="PRINCIPAL"
-                                                            class="!tracking-normal leading-3 ml-1" type="green" />
-                                                    @else
-                                                        <x-span-text text="SECUNDARIO"
-                                                            class="!tracking-normal leading-3 ml-1" />
-                                                    @endif
-                                                </td>
-                                                <td class="p-2">{{ $item->name }} {{ $item->lastname }}</td>
-                                                <td class="p-2 text-center">{{ $item->licencia }}</td>
-                                                @if ($guia->codesunat != '0')
-                                                    <td class="text-center align-middle">
-                                                        <x-button-delete
-                                                            onclick="confirmDeletedriver({{ $item }})"
-                                                            wire:loading.attr="disabled" />
-                                                    </td>
-                                                @endif
-                                            </tr>
-                                        @endforeach
-                                    </x-slot>
-                                </x-table>
-                            </div>
+                                    @endforeach
+                                </x-slot>
+                            </x-table>
                         @endif
                     </div>
                 </div>
@@ -452,8 +449,7 @@
             <x-form-card titulo="VEHÍCULOS TRANSPORTE">
                 <div class="w-full relative rounded flex flex-wrap md:flex-nowrap gap-3">
                     @if ($guia->codesunat != '0')
-                        <div class="w-full md:w-96 md:flex-shrink-0 bg-body p-3 rounded relative"
-                            x-data="{ loading: false }">
+                        <div class="w-full md:w-96 relative" x-data="{ loading: false }">
                             <form wire:submit.prevent="savevehiculo" class="w-full flex flex-col gap-2">
                                 <div class="w-full">
                                     <x-label value="Placa vehículo :" />
@@ -468,7 +464,7 @@
                             </form>
                         </div>
                     @endif
-                    <div class="w-full relative rounded">
+                    <div class="w-full flex-1 relative rounded">
                         @if (count($guia->transportvehiculos))
                             <div class="w-full flex flex-wrap items-start gap-2">
                                 @foreach ($guia->transportvehiculos as $item)

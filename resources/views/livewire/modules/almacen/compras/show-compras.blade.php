@@ -145,7 +145,7 @@
                         </td>
                         <td class="p-2 align-middle text-center">
                             {{ $item->moneda->currency }}
-                            @if ($item->moneda->code == 'USD')
+                            @if ($item->moneda->isDolar())
                                 <p><x-span-text :text="formatDecimalOrInteger($item->tipocambio)" class="leading-3 !tracking-normal" /></p>
                             @endif
                         </td>

@@ -211,7 +211,8 @@
                     </svg>
                 </button>
             </div>
-            <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
+            <div
+                class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                 @foreach ($productos as $item)
                     @php
                         $image = $item->getImageURL();
@@ -287,12 +288,14 @@
                                     x-transition:leave="transition translate-y-full ease-in-out duration-300"
                                     x-transition:leave-start="opacity-100 translate-y-0"
                                     x-transition:leave-end="opacity-0 translate-y-0">
-                                    <div class="w-full flex-1">
+                                    <div class="w-full flex-1 flex gap-1">
                                         <button type="button" wire:loading.attr="disabled" @click="qty = qty-1"
                                             x-bind:disabled="qty == 1"
                                             class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">-</button>
-                                        <span x-text="qty"
-                                            class="font-medium text-sm px-2 text-colorlabel inline-block w-8 text-center">1</span>
+                                        <x-input x-model="qty"
+                                            class="w-10 text-center text-colorlabel input-number-none" type="number"
+                                            step="1" min="1" onkeypress="return validarNumero(event, 4)"
+                                            @blur="if (!qty || qty === '0') qty = '1'" />
                                         <button type="button" wire:loading.attr="disabled" @click="qty = qty+1"
                                             class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
                                     </div>

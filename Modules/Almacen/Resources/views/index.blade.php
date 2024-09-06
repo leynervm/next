@@ -208,4 +208,10 @@
             <livewire:admin.almacens.show-almacens />
         </div>
     @endcan
+
+    {{-- <p class="text-sm text-center font-light">ALMACEN JAEN LIGHT</p>
+    <p class="text-sm text-center font-normal">ALMACEN JAEN NORMAL</p>
+    <p class="text-sm text-center font-medium">ALMACEN JAEN MEDIUM</p>
+    <p class="text-sm text-center font-bold">ALMACEN JAEN BOLD</p> --}}
+
 </x-admin-layout>

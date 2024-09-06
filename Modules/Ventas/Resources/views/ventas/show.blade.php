@@ -26,7 +26,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mx-auto">
+    <div class="w-full flex flex-col gap-8 mx-auto xl:max-w-7xl">
         <livewire:modules.ventas.ventas.show-venta :venta="$venta" />
     </div>
 </x-admin-layout>

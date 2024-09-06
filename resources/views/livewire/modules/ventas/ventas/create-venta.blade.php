@@ -237,13 +237,6 @@
                                     @endif
                                 </div>
 
-                                {{-- <h1 class="text-colorlabel whitespace-nowrap text-xs font-semibold">
-                                        <small class="text-[10px] font-medium">P.U : </small>
-                                        {{ number_format($item->price, 2) }}</h1>
-                                    <h1 class="text-colorlabel whitespace-nowrap text-xs font-semibold">
-                                        <small class="text-[10px] font-medium">IGV : </small>
-                                        {{ number_format($item->igv, 2) }}</h1> --}}
-
                                 @if (count($item->carshoopseries) > 1)
                                     <div x-data="{ showForm: false }" class="mt-1">
                                         <x-button @click="showForm = !showForm" class="whitespace-nowrap">
@@ -374,11 +367,13 @@
                 paymentcuotas: false,
                 formapago: '',
                 code: '',
+                codecomprobante: '',
                 sendsunat: '',
                 openguia: true,
                 sincronizegre: @entangle('sincronizegre').defer,
 
                 cotizacion_id: @entangle('cotizacion_id').defer,
+                document: @entangle('document').defer,
                 moneda_id: @entangle('moneda_id'),
                 seriecomprobante_id: @entangle('seriecomprobante_id').defer,
                 typepayment_id: @entangle('typepayment_id'),
@@ -400,12 +395,22 @@
                 pricetype_id: @entangle('pricetype_id'),
                 almacen_id: @entangle('almacen_id'),
 
-
                 init() {
                     this.obtenerDatos();
 
                     this.$watch("moneda_id", (value) => {
                         const message = this.updatemonedacart(value);
+                    });
+                    this.$watch("seriecomprobante_id", (value, oldvalue) => {
+                        let digits = this.document.length ?? 0;
+                        if (this.codecomprobante == '01' && digits !== 11) {
+                            this.$dispatch('validation', {
+                                title: 'INGRESE N° RUC VÁLIDO PARA EL COMPROBANTE SELECCIONADO !',
+                                text: null
+                            });
+                            this.seriecomprobante_id = '';
+                            return false;
+                        }
                     });
 
                 },
@@ -466,8 +471,6 @@
                 getCodeSend(target) {
                     this.sendsunat = target.options[target.selectedIndex].getAttribute(
                         'data-sunat');
-                    // console.log(this.sendsunat);
-
                     switch (this.sendsunat) {
                         case '0':
                             this.incluyeguia = false;
@@ -727,8 +730,7 @@
                                     this.paymentcuotas = false;
                                     this.formapago = '';
                             }
-                        }
-                        else {
+                        } else {
                             this.paymentcuotas = false;
                         }
                         this.selectTP.select2({

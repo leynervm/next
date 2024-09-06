@@ -14,12 +14,12 @@ class ShowTrackings extends Component
 
     use AuthorizesRequests;
 
-
     public Order $order;
 
     public $open = false;
     public $trackingstate_id;
 
+    protected $listeners = ['render'];
 
     public function render()
     {

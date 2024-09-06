@@ -4,12 +4,14 @@ namespace Modules\Marketplace\Entities;
 
 use App\Enums\MethodPaymentOnlineEnum;
 use App\Enums\StatusPayWebEnum;
+use App\Models\Cajamovimiento;
 use App\Models\Client;
 use App\Models\Direccion;
 use App\Models\Image;
 use App\Models\Moneda;
 use App\Models\Tvitem;
 use App\Models\User;
+use App\Traits\CajamovimientoTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,11 +26,25 @@ class Order extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    use CajamovimientoTrait;
 
     protected $fillable = [
-        'date', 'seriecompleta', 'exonerado', 'gravado',  'igv',
-        'subtotal', 'total', 'tipocambio', 'receiverinfo', 'methodpay', 'direccion_id',
-        'status', 'shipmenttype_id', 'moneda_id', 'client_id', 'user_id',
+        'date',
+        'seriecompleta',
+        'exonerado',
+        'gravado',
+        'igv',
+        'subtotal',
+        'total',
+        'tipocambio',
+        'receiverinfo',
+        'methodpay',
+        'direccion_id',
+        'status',
+        'shipmenttype_id',
+        'moneda_id',
+        'client_id',
+        'user_id',
     ];
 
     const EQUAL_RECEIVER = '0';
@@ -74,6 +90,11 @@ class Order extends Model
     public function direccion(): BelongsTo
     {
         return $this->belongsTo(Direccion::class)->withTrashed();;
+    }
+
+    public function cajamovimientos(): MorphMany
+    {
+        return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
     }
 
     public function transaccions(): HasMany

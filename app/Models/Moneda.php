@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Moneda extends Model
@@ -24,6 +25,11 @@ class Moneda extends Model
     public function setCurrencyAttribute($value)
     {
         $this->attributes['currency'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function cajamovimientos(): HasMany
+    {
+        return $this->hasMany(Cajamovimiento::class);
     }
 
     public function scopeDefault($query)

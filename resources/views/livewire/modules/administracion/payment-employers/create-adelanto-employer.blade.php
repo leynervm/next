@@ -16,23 +16,6 @@
         </x-slot>
 
         <x-slot name="content">
-
-            @if (count($diferencias) > 0)
-                <div class="w-full flex flex-wrap gap-2 justify-end">
-                    @foreach ($diferencias as $item)
-                        <x-minicard :title="null" size="lg" class="cursor-pointer text-colorlabel">
-                            <div class="text-xs font-medium text-center">
-                                <small>SALDO CAJA</small>
-                                <h3 class="font-semibold text-xl">
-                                    {{ number_format($item->diferencia, 2, '.', ', ') }}
-                                </h3>
-                                <small>{{ $item->moneda->currency }}</small>
-                            </div>
-                        </x-minicard>
-                    @endforeach
-                </div>
-            @endif
-
             @if ($monthbox)
                 <p class="text-colorlabel text-md md:text-3xl font-semibold text-end mt-2 mb-5">
                     <small class="text-[10px] font-medium w-full block leading-3">CAJA MENSUAL</small>
@@ -43,10 +26,28 @@
                 <p class="text-colorerror text-[10px] text-end">APERTURA DE CAJA MENSUAL NO DISPONIBLE...</p>
             @endif
 
-            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2" x-data="adelantoemployer">
+                <div>
+                    <x-label value="Seleccionar moneda pago :" />
+                    @if (count($diferencias) > 0)
+                        <div class="w-full flex flex-wrap gap-2 justify-start items-center">
+                            @foreach ($diferencias as $item)
+                                <div class="inline-flex">
+                                    <input class="sr-only peer" x-model="moneda_id" type="radio" name="monedas"
+                                        id="monedapagoempl_{{ $item->moneda_id }}" value="{{ $item->moneda_id }}"
+                                        @change="getCodeMoneda('{{ $item->moneda }}')" />
+                                    <x-label-check-moneda for="monedapagoempl_{{ $item->moneda_id }}" :simbolo="$item->moneda->simbolo"
+                                        :saldo="$item->diferencia" :diferenciasbytype="$diferenciasbytype->where('moneda_id', $item->moneda_id)" />
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <x-jet-input-error for="moneda_id" />
+                </div>
+
                 <div class="w-full">
                     <x-label value="Personal :" />
-                    <div class="relative" x-data="{ employer_id: @entangle('employer_id') }" x-init="SelectEmployer">
+                    <div class="relative" x-init="SelectEmployer">
                         <x-select class="block w-full" id="employ_id" data-dropdown-parent="null" x-ref="selectemployer"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
@@ -65,27 +66,31 @@
 
                 <div class="w-full">
                     <x-label value="Monto :" />
-                    <x-input class="block w-full" wire:model.defer="amount" type="number" placeholder="0.00"
-                        onkeypress="return validarDecimal(event, 9)" step="0.001" />
+                    <x-input class="block w-full" x-model="amount" type="number" placeholder="0.00"
+                        onkeypress="return validarDecimal(event, 9)" step="0.001" @input="calcular" />
                     <x-jet-input-error for="amount" />
                 </div>
 
-                <div class="w-full">
-                    <x-label value="Moneda :" />
-                    <div class="relative" x-data="{ moneda_id: @entangle('moneda_id').defer }" x-init="MonedaPago" wire:ignore>
-                        <x-select class="block w-full" id="monedaae_id" wire:model.defer="moneda_id"
-                            data-dropdown-parent="null" x-ref="selectmep">
-                            <x-slot name="options">
-                                @if (count($monedas) > 0)
-                                    @foreach ($monedas as $item)
-                                        <option value="{{ $item->id }}">{{ $item->currency }}</option>
-                                    @endforeach
-                                @endif
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
+                <div class="w-full" x-cloak style="display: none;" x-show="showtipocambio">
+                    <div class="w-full">
+                        <x-label value="Tipo cambio :" />
+                        <x-input class="block w-full" x-model="tipocambio" @input="calcular" type="number"
+                            placeholder="0.00" onkeypress="return validarDecimal(event, 7)" step="0.001"
+                            min="0.001" />
+                        <x-jet-input-error for="tipocambio" />
                     </div>
-                    <x-jet-input-error for="moneda_id" />
+
+                    <div class="w-full text-xs text-end text-colorsubtitleform font-semibold" x-show="totalamount > 0"
+                        x-cloak style="display: none;">
+                        <small class="inline-block" x-text="simbolo"></small>
+                        <template x-if="totalamount > 0">
+                            <h1 x-text="totalamount" class="text-2xl inline-block"></h1>
+                        </template>
+                        <template x-if="totalamount == null">
+                            <small class="inline-block text-colorerror">SELECCIONAR TIPO DE MONEDA...</small>
+                        </template>
+                        <small class="inline-block" x-text="currency"></small>
+                    </div>
                 </div>
 
                 <div class="w-full">
@@ -143,11 +148,59 @@
     </x-jet-dialog-modal>
 
     <script>
-        // document.addEventListener('alpine:init', () => {
-        //     Alpine.data('datapayment', () => ({
-        //         concept_id: @entangle('concept.id').defer,
-        //     }))
-        // })
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('adelantoemployer', () => ({
+                employer_id: @entangle('employer_id'),
+                showtipocambio: @entangle('showtipocambio').defer,
+                amount: @entangle('amount').defer,
+                tipocambio: @entangle('tipocambio').defer,
+                totalamount: @entangle('totalamount').defer,
+                moneda_id: @entangle('moneda_id').defer,
+                simbolo: null,
+                code: null,
+                currency: null,
+
+                init() {
+                    this.$watch("showtipocambio", (value) => {
+                        this.tipocambio = null;
+                        this.totalamount = '0.00';
+                    });
+                },
+                getCodeMoneda(moneda) {
+                    const monedaJSON = JSON.parse(moneda);
+                    this.code = monedaJSON.code;
+                    if (this.code == 'PEN') {
+                        this.simbolo = '$.';
+                        this.currency = 'DÓLARES';
+                        this.showtipocambio = false;
+                    } else if (this.code == 'USD') {
+                        this.simbolo = 'S/.';
+                        this.currency = 'SOLES';
+                        this.showtipocambio = true;
+                    }
+                    this.calcular();
+                    this.currency = monedaJSON.currency;
+                    this.simbolo = monedaJSON.simbolo;
+                },
+                calcular() {
+                    if (this.code == 'PEN') {
+                        if (toDecimal(this.amount) > 0 && toDecimal(this.tipocambio) > 0) {
+                            this.totalamount = toDecimal(this.amount * this.tipocambio, 2);
+                        } else {
+                            this.totalamount = '0.00'
+                        }
+                    } else if (this.code == 'USD') {
+                        if (toDecimal(this.amount) > 0 && toDecimal(this.tipocambio) > 0) {
+                            this.totalamount = toDecimal(this.amount / this.tipocambio, 2);
+                        } else {
+                            this.totalamount = '0.00'
+                        }
+                    } else {
+                        this.totalamount = null
+                    }
+                }
+            }))
+        })
 
         function FormaPago() {
             this.selectFPM = $(this.$refs.selectmep).select2();
@@ -164,24 +217,6 @@
             });
             Livewire.hook('message.processed', () => {
                 this.selectFPM.select2().val(this.methodpayment_id).trigger('change');
-            });
-        }
-
-        function MonedaPago() {
-            this.selectMPM = $(this.$refs.selectmep).select2();
-            this.selectMPM.val(this.moneda_id).trigger("change");
-            this.selectMPM.on("select2:select", (event) => {
-                this.moneda_id = event.target.value;
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch('moneda_id', (value) => {
-                this.selectMPM.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectMPM.select2().val(this.moneda_id).trigger('change');
             });
         }
 

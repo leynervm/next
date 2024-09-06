@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Cajamovimiento extends Model
 {
@@ -18,9 +19,22 @@ class Cajamovimiento extends Model
     // const EGRESO = "EGRESO";
 
     protected $fillable = [
-        'date', 'amount', 'totalamount', 'tipocambio', 'typemovement', 'referencia', 'detalle', 'moneda_id',
-        'methodpayment_id', 'concept_id', 'monthbox_id', 'openbox_id',
-        'sucursal_id', 'user_id', 'cajamovimientable_id', 'cajamovimientable_type'
+        'date',
+        'amount',
+        'totalamount',
+        'tipocambio',
+        'typemovement',
+        'referencia',
+        'detalle',
+        'moneda_id',
+        'methodpayment_id',
+        'concept_id',
+        'monthbox_id',
+        'openbox_id',
+        'sucursal_id',
+        'user_id',
+        'cajamovimientable_id',
+        'cajamovimientable_type'
     ];
 
     protected $casts = [
@@ -100,16 +114,16 @@ class Cajamovimiento extends Model
     public function scopeSumatorias($query, $monthbox_id, $openbox_id, $user_id)
     {
         return $query->where('sucursal_id', $user_id)
-            ->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
             ->where('monthbox_id', $monthbox_id)->where('openbox_id', $openbox_id)
+            ->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
             ->groupBy('typemovement')->orderBy('total', 'desc');
     }
 
     public function scopeDiferencias($query, $monthbox_id, $openbox_id, $user_id)
     {
         return $query->where('sucursal_id', $user_id)
-            ->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
             ->where('monthbox_id', $monthbox_id)->where('openbox_id', $openbox_id)
+            ->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
             ->groupBy('moneda_id')->orderBy('diferencia', 'desc');
     }
 
@@ -121,5 +135,15 @@ class Cajamovimiento extends Model
             ->where('sucursal_id', $sucursal_id)->where('moneda_id', $moneda_id)
             ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia");
         // ->where('sucursal_id', auth()->user()->sucursal_id)
+    }
+
+    public function scopeDiferenciasByType($query, $openbox_id, $sucursal_id)
+    {
+        return $query->where('sucursal_id', $sucursal_id)
+            ->where('openbox_id', $openbox_id)
+            ->join('methodpayments', 'methodpayments.id', '=', 'cajamovimientos.methodpayment_id')
+            ->selectRaw("moneda_id, (CASE WHEN type = '" . Methodpayment::EFECTIVO . "' THEN 'EFECTIVO' ELSE 'TRANSFERENCIA' END) as type, 
+                SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
+            ->groupBy('moneda_id', 'type')->orderBy('diferencia', 'desc');
     }
 }

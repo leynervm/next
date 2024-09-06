@@ -353,5 +353,12 @@ return [
         'g_recaptcha_response'      =>  'código recaptcha',
         'g-recaptcha-response'      =>  'código recaptcha',
         'parcialpayments'           =>  'pagos parciales',
+        'itemcompras'               =>  'items de compra',
+        'priceventa'                =>  'precio de venta',
+        'sumstock'                  =>  'stock total',
+        'priceunitario'             =>  'precio unitario',
+        'paymentactual'             =>  'monto de pago',
+        'box_id'                    =>  'caja',
+        'totalamount'               =>  'total de pago',
     ],
 ];

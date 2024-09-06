@@ -25,12 +25,12 @@ class ShowPromociones extends Component
     public function mount()
     {
         if (mi_empresa()->usarLista()) {
-            $pricetypes = Pricetype::default();
+            $pricetypes = Pricetype::activos()->default();
             if (count($pricetypes->get()) > 0) {
                 $this->pricetype = $pricetypes->first();
                 $this->pricetype_id = $this->pricetype->id ?? null;
             } else {
-                $this->pricetype = Pricetype::orderBy('id', 'asc')->first();
+                $this->pricetype = Pricetype::activos()->orderBy('id', 'asc')->first();
                 $this->pricetype_id = $this->pricetype->id ?? null;
             }
         }
@@ -38,7 +38,7 @@ class ShowPromociones extends Component
 
     public function render()
     {
-        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
         $promociones = Promocion::with(['producto.images', 'itempromos']);
         if (trim($this->estado) != '') {
             $promociones->where('status', $this->estado);

@@ -60,7 +60,7 @@ class MarketplaceController extends Controller
 
     public function orders()
     {
-        return view('marketplace::orders.index');
+        return view('modules.marketplace.orders.index');
     }
 
     public function create()
@@ -68,7 +68,7 @@ class MarketplaceController extends Controller
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
-        return view('marketplace::orders.create',  compact('empresa', 'moneda', 'pricetype'));
+        return view('modules.marketplace.orders.create',  compact('empresa', 'moneda', 'pricetype'));
     }
 
 
@@ -118,7 +118,7 @@ class MarketplaceController extends Controller
             $query->autorizados();
         }])->find($order->id);
         $session_token = $this->generateSessionToken($order);
-        return view('marketplace::orders.payment', compact('order', 'session_token'));
+        return view('modules.marketplace.orders.payment', compact('order', 'session_token'));
     }
 
     public function deposito(Request $request, Order $order,)

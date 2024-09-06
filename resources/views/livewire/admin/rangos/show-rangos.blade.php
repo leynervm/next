@@ -22,12 +22,14 @@
                 <x-slot name="header">
                     <tr>
                         <th scope="col" class="p-2 font-medium text-center">
-                            <label for="checkall"
-                                class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
-                                <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-0"
-                                    name="checkall" type="checkbox" id="checkall" wire:loading.attr="disabled" />
-                                TODO
-                            </label>
+                            @if (count($rangos) > 0)
+                                <label for="checkall"
+                                    class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
+                                    <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none"
+                                        name="checkall" type="checkbox" id="checkall" wire:loading.attr="disabled" />
+                                    TODO
+                                </label>
+                            @endif
                         </th>
                         <th scope="col" class="p-2 font-medium">
                             <button class="flex items-center gap-x-3 focus:outline-none">
@@ -72,7 +74,7 @@
                     @foreach ($rangos as $item)
                         <tr>
                             <td class="p-1 text-xs text-center">
-                                <x-input type="checkbox" name="selectedrangos" class="p-2 cursor-pointer"
+                                <x-input type="checkbox" name="selectedrangos" class="p-2 !rounded-none cursor-pointer"
                                     id="{{ $item->id }}" x-model="selectedrangos" value="{{ $item->id }}"
                                     wire:loading.attr="disabled" />
                             </td>
@@ -104,12 +106,14 @@
                                             step="0.01" min="0" id="ganancia_{{ $item->id . $lista->id }}"
                                             x-mask:dynamic="$money($input, '.', '', 2)"
                                             onkeypress="return validarDecimal(event, 5)" wire:loading.attr="disabled"
-                                            onblur="actualizar(this, {{ $item->id }}, {{ $lista->id }}, {{ $lista->pivot->ganancia }})" />
+                                            @keydown.enter.prevent="actualizar($event.target.value, {{ $item->id }}, {{ $lista->id }}, {{ $lista->pivot->ganancia }})"
+                                            @blur="$el.value = getBlurValue($el.value)" />
                                     @endcan
 
                                     @cannot('admin.administracion.rangos.edit')
                                         <x-disabled-text :text="$lista->pivot->ganancia" class="inline-block md:px-5 border-0" />
                                     @endcannot
+                                    <p class="text-[10px] text-center text-colorsubtitleform">Enter para acualizar</p>
                                 </td>
                             @endforeach
 
@@ -177,16 +181,24 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('rangos', () => ({
                 selectedrangos: @entangle('selectedrangos').defer,
+                actualizar(value, rango_id, lista_id, oldpercent) {
+                    let ganancia = value > 0 ? toDecimal(value, 2) : 0;
+                    if (ganancia != toDecimal(oldpercent, 2)) {
+                        this.$wire.updatepricerango(rango_id, lista_id, ganancia).then(function() {
+                            // console.log('updatepricerango proceess finish successfull');
+                        });
+                    }
+                },
+                getBlurValue(value) {
+                    if (value === '' || isNaN(value)) {
+                        value = '0.00';
+                    } else {
+                        value = toDecimal(value, 2);
+                    }
+                    return value;
+                }
             }))
         })
-
-        function actualizar(event, rango_id, lista_id, oldpercent) {
-            var ganancia = event.value;
-            ganancia = ganancia !== '' ? toDecimal(ganancia, 2) : '0.00';
-            if (ganancia !== toDecimal(oldpercent, 2)) {
-                @this.updatepricerango(rango_id, lista_id, ganancia);
-            }
-        }
 
         function confirmDeleteAll() {
             swal.fire({

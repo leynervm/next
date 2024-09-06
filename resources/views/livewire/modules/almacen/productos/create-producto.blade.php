@@ -203,8 +203,6 @@
             </div>
         </x-form-card>
 
-
-
         <x-form-card titulo="IMÁGEN REFERENCIAL">
             <div class="w-full xs:max-w-xs">
                 <div class="relative" class="w-full relative">

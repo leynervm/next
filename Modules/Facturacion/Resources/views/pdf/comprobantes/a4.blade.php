@@ -9,38 +9,9 @@
     <title>
         {{ $comprobante->seriecomprobante->typecomprobante->descripcion }} - {{ $comprobante->seriecompleta }}
     </title>
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}') format('truetype');
-        font-weight: 100;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}') format('truetype');
-        font-weight: 200;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}') format('truetype');
-        font-weight: 400;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}') format('truetype');
-        font-weight: 800;
-    }
-
-
-    * {
-        font-family: 'Ubuntu' !important;
-        font-weight: 200;
-    }
-
     @page {
         margin: 4cm 1cm 4.5cm 1cm;
     }
@@ -192,19 +163,19 @@
     }
 
     .font-normal {
-        font-weight: 100 !important;
+        font-weight: 300 !important;
     }
 
     .font-regular {
-        font-weight: 200 !important;
-    }
-
-    .font-medium {
         font-weight: 400 !important;
     }
 
+    .font-medium {
+        font-weight: 500 !important;
+    }
+
     .font-bold {
-        font-weight: 800 !important;
+        font-weight: 700 !important;
     }
 
     .text-start {
@@ -357,7 +328,7 @@
                         : {{ $comprobante->typepayment->name }}</td>
                 </tr>
 
-                @if ($comprobante->typepayment->isCredito())
+                {{-- @if ($comprobante->typepayment->isCredito())
                     <tr>
                         <td colspan="2" class="p-1 font-medium" style="width: 50px">
                             MONTO PENDIENTE PAGO :
@@ -365,7 +336,7 @@
                                 class="font-bold">{{ number_format($comprobante->total - $comprobante->paymentactual, 2, '.', ', ') }}</span>
                         </td>
                     </tr>
-                @endif
+                @endif --}}
 
                 <tr>
                     <td class="p-1 font-medium" style="width: 100px;">
@@ -388,8 +359,8 @@
                 </thead>
                 <tbody>
                     @foreach ($comprobante->facturableitems as $item)
-                        <tr class="border-table">
-                            <td class="p-2 font-normal text-center align-middle" style="width: 30px;">
+                        <tr class="border-table font-regular">
+                            <td class="p-2 text-center align-middle" style="width: 30px;">
                                 {{ $item->item }}
                             </td>
                             <td class="p-2 align-middle text-start leading-3">
@@ -475,7 +446,7 @@
                     <div class="" style="width: 100%; text-align: justify;">
                         <h1 class="text-10 font-bold">INFORMACIÓN DE CUOTAS</h1>
                         @foreach ($cuotas as $item)
-                            <div class="p-1 font-normal border mt-2" style="width:224px; display: inline-flex;">
+                            <div class="p-1 font-regular border mt-2" style="width:224px; display: inline-flex;">
                                 <p class="text-10 leading-4">
                                     N° CUOTA : <span class="font-bold">{{ $item->cuota }}</span>
                                 </p>
@@ -493,18 +464,6 @@
                 @endif
             @endif
         @endif
-
-        {{-- <span class="font-normal">NORMAL</span>
-        <span class="font-regular">REGULAR</span>
-        <span class="font-medium">MEDIUM</span>
-        <span class="font-bold">BOLD</span> --}}
-
-
-        {{-- @for ($i = 1; $i < 100; $i++)
-            <div style="background:#7e7e7e; margin:2px; font-size: 11px">
-                <p class="font-normal">{{ $i }}</p>
-            </div>
-        @endfor --}}
     </div>
 </body>
 

@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
 
@@ -172,7 +172,7 @@
                                 <p class="text-xs text-colorsubtitleform leading-3">
                                     {{ number_format($item->amount, 2, '.', ', ') }}
                                     <small class="text-[8px]">
-                                        @if ($item->moneda->code == 'USD')
+                                        @if ($item->moneda->isDolar())
                                             SOLES
                                         @else
                                             DÓLARES
@@ -188,8 +188,6 @@
                         <td class="p-2 text-center">
                             <x-span-text :text="$item->typemovement->value" class="!leading-3 !tracking-normal"
                                 type="{{ $item->isIngreso() ? 'green' : 'red' }}" />
-                            {{-- <p class="{{ $item->isIngreso() ? 'text-green-500' : 'text-red-500' }}">
-                                {{ $item->typemovement->value }}</p> --}}
                             <p class="text-[10px]">{{ $item->methodpayment->name }}</p>
                         </td>
                         <td class="p-2 text-center">

@@ -24,9 +24,23 @@ class Compra extends Model
     use CajamovimientoTrait;
 
     protected $fillable = [
-        'date', 'referencia', 'guia', 'detalle', 'tipocambio', 'gravado',
-        'exonerado', 'igv', 'descuento', 'otros', 'total', 'moneda_id',
-        'typepayment_id', 'proveedor_id', 'user_id', 'status',
+        'date',
+        'referencia',
+        'guia',
+        'detalle',
+        'tipocambio',
+        'gravado',
+        'exonerado',
+        'igv',
+        'descuento',
+        'otros',
+        'total',
+        'moneda_id',
+        'typepayment_id',
+        'proveedor_id',
+        'user_id',
+        'status',
+        'afectacion',
         'sucursal_id'
     ];
 
@@ -65,6 +79,11 @@ class Compra extends Model
     public function isClose()
     {
         return $this->status == self::CLOSE;
+    }
+
+    public function isExonerado()
+    {
+        return $this->afectacion == 'E';
     }
 
     public function sucursal(): BelongsTo
@@ -110,7 +129,7 @@ class Compra extends Model
     public function cuotaspendientes(): MorphMany
     {
         return $this->morphMany(Cuota::class, 'cuotable')
-            ->doesntHave('cajamovimiento')
+            ->doesntHave('cajamovimientos')
             ->orderBy('id', 'asc');
     }
 }

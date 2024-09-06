@@ -10,4 +10,5 @@ enum MethodPaymentOnlineEnum: String
     case YAPE = '4';
     case PLIN = '5';
     case PAYPAL = '6';
+    case EFECTIVO = '7';
 }

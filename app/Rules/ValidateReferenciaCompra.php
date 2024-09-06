@@ -13,12 +13,13 @@ class ValidateReferenciaCompra implements Rule
      * @return void
      */
 
-    protected $proveedor_id, $sucursal_id;
+    protected $proveedor_id, $sucursal_id, $ignore_id;
 
-    public function __construct($proveedor_id, $sucursal_id)
+    public function __construct($proveedor_id, $sucursal_id, $ignore_id = null)
     {
         $this->proveedor_id = $proveedor_id;
         $this->sucursal_id = $sucursal_id;
+        $this->ignore_id = $ignore_id;
     }
 
     /**
@@ -32,6 +33,10 @@ class ValidateReferenciaCompra implements Rule
     {
         $query = Compra::whereRaw('UPPER(referencia) = ?', [mb_strtoupper(trim($value), "UTF-8")])
             ->where('proveedor_id', $this->proveedor_id);
+
+        if ($this->ignore_id) {
+            $query->where('id', '<>', $this->ignore_id);
+        }
 
         return $query->exists() === false;
     }

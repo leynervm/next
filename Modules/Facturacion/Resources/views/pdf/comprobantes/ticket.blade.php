@@ -9,35 +9,11 @@
     <title>
         {{ $comprobante->seriecomprobante->typecomprobante->descripcion }} - {{ $comprobante->seriecompleta }}
     </title>
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}') format('truetype');
-        font-weight: 100;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}') format('truetype');
-        font-weight: 200;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}') format('truetype');
-        font-weight: 400;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}') format('truetype');
-        font-weight: 800;
-    }
-
     * {
         font-family: 'Ubuntu' !important;
-        font-weight: 200;
         font-size: 9px;
     }
 
@@ -108,19 +84,19 @@
     }
 
     .font-normal {
-        font-weight: 100 !important;
+        font-weight: 300 !important;
     }
 
     .font-regular {
-        font-weight: 200 !important;
-    }
-
-    .font-medium {
         font-weight: 400 !important;
     }
 
+    .font-medium {
+        font-weight: 500 !important;
+    }
+
     .font-bold {
-        font-weight: 800 !important;
+        font-weight: 700 !important;
     }
 
     .text-8 {
@@ -175,8 +151,8 @@
 <body class="">
     @if ($comprobante->sucursal->empresa->image)
         <div class="text-center">
-            <img src="{{ Storage::url('images/company/' . $comprobante->sucursal->empresa->image->url) }}" alt=""
-                class="image" />
+            <img src="{{ Storage::url('images/company/' . $comprobante->sucursal->empresa->image->url) }}"
+                alt="" class="image" />
         </div>
     @endif
 
@@ -264,18 +240,18 @@
                         : {{ $comprobante->typepayment->name }}</td>
                 </tr>
                 @if ($comprobante->typepayment->isCredito())
-                    <tr>
+                    {{-- <tr>
                         <td colspan="2" class="font-medium" style="width: 50px;text-align: left;">
                             MONTO PENDIENTE PAGO :
                             <span
                                 class="font-bold">{{ number_format($comprobante->total - $comprobante->paymentactual, 2, '.', ', ') }}</span>
                         </td>
-                    </tr>
+                    </tr> --}}
                     @if (count($comprobante->cuotas) > 0)
                         <tr>
                             <td colspan="2" class="font-medium"
                                 style="width: 50px;text-align: left; vertical-align:middle">
-                                TOTAL DE CUOTAS :
+                                N° CUOTAS :
                                 <span class="font-bold">{{ count($comprobante->cuotas) }}</span>
                             </td>
                         </tr>
@@ -283,7 +259,7 @@
                         <tr>
                             <td colspan="2" class="font-medium"
                                 style="width: 50px;text-align: left; vertical-align:middle">
-                                TOTAL DE CUOTAS :
+                                N° CUOTAS :
                                 <span class="font-bold">{{ count($comprobante->facturable->cuotas) }}</span>
                             </td>
                         </tr>
@@ -315,7 +291,7 @@
                 </thead>
                 <tbody>
                     @foreach ($comprobante->facturableitems as $item)
-                        <tr>
+                        <tr class="font-regular">
                             <td class="p-1 text-9 leading-5 text-start" style="width:100%">
                                 <p>
                                     <small class="font-medium">[
@@ -400,15 +376,15 @@
         <img class="border-2" style="padding:1mm;" src="data:image/svg;base64, {!! base64_encode(QrCode::format('svg')->size(80)->generate($hashcomprobante)) !!} ">
     </div>
 
-    <p class="font-normal leading-4 mt-3" style="text-align: justify">
+    <p class="font-normal leading-5 mt-3" style="text-align: justify">
         Estimado cliente, no hay devolución de dinero. Todo cambio de mercadería solo podrá
         realizarse dentro de las 48 horas, previa presentacion del comprobante.
     </p>
-    <p class="font-normal leading-4 mt-1" style="text-align: justify;">
+    <p class="font-normal leading-5 mt-1" style="text-align: justify;">
         Representación impresa del comprobante de venta electrónico, este puede ser consultado en
         www.sunat.gob.pe.
     </p>
-    <p class="font-normal leading-4 mt-1" style="text-align: justify">
+    <p class="font-normal leading-5 mt-1" style="text-align: justify">
         Autorizado mediante resolución N° 155-2017/Sunat.</p>
 
     <p class="text-center font-bold leading-5" style="font-size: 10px; margin-top: 10px;">

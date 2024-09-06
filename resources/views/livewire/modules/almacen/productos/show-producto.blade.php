@@ -255,9 +255,7 @@
     </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
-        <x-slot name="title">
-            {{ __('Agregar almacén') }}
-        </x-slot>
+        <x-slot name="title">{{ __('Agregar almacén') }}</x-slot>
 
         <x-slot name="content">
             <form wire:submit.prevent="savealmacen">
@@ -285,11 +283,12 @@
 
                 <div class="w-full mt-2">
                     <x-label value="Cantidad (Stock) :" />
-                    <x-input class="block w-full" wire:model.defer="newcantidad" type="number" step="0.01" />
+                    <x-input class="block w-full input-number-none" wire:model.defer="newcantidad" type="number" step="0.01"
+                        min="0" />
                     <x-jet-input-error for="newcantidad" />
                 </div>
 
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
+                <div class="w-full flex pt-4 gap-2 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
                 </div>

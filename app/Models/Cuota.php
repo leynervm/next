@@ -8,6 +8,7 @@ use App\Traits\CajamovimientoTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -24,9 +25,14 @@ class Cuota extends Model
         return $this->morphTo();
     }
 
-    public function cajamovimiento(): MorphOne
+    // public function cajamovimiento(): MorphOne
+    // {
+    //     return $this->morphOne(Cajamovimiento::class, 'cajamovimientable');
+    // }
+
+    public function cajamovimientos(): MorphMany
     {
-        return $this->morphOne(Cajamovimiento::class, 'cajamovimientable');
+        return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
     }
 
     public function userpay(): BelongsTo

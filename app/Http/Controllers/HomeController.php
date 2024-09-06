@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\GetClient;
+use App\Models\Cajamovimiento;
 use App\Models\Empresa;
 use App\Models\Ubigeo;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use jossmp\sunat\ruc;
 use jossmp\sunat\tipo_cambio;
 use LaravelDaily\LaravelCharts\Classes\LaravelChart;
@@ -26,19 +28,47 @@ class HomeController extends Controller
     public function index()
     {
         $empresa = Empresa::first();
-
-
         $chart_options = [
             'chart_title' => 'Users by months',
             'report_type' => 'group_by_string',
             'model' => 'App\Models\User',
             'group_by_field' => 'sucursal_id',
-            'group_by_period' => 'month',
+            'group_by_period' => 'day',
             'chart_type' => 'bar',
         ];
-
         $chart = new LaravelChart($chart_options);
-        return view('dashboard', compact('empresa', 'chart'));
+
+        // $chart_options = [
+        //     'chart_title' => 'Transactions by local',
+        //     'chart_type' => 'bar',
+        //     'report_type' => 'group_by_relationship',
+        //     'model' => 'App\Models\Cajamovimiento',
+        //     'relationship_name' => 'sucursal', // represents function user() on Transaction model
+        //     'group_by_field' => 'name', // users.name
+        //     'aggregate_function' => 'sum',
+        //     'aggregate_field' => 'amount',
+        //     'filter_field' => 'date',
+        // ];
+        $chart_options1 = [
+            'name' => 'Payments',
+            'chart_title' => 'Transactions by local',
+            'report_type' => 'group_by_string',
+            'model' => 'App\Models\Cajamovimiento',
+            'group_by_field' => 'openbox_id',
+            // 'group_by_period' => 'month',
+            'aggregate_function' => 'sum',
+            'aggregate_field' => 'amount',
+            'chart_type' => 'bar',
+            'where_raw' => "sucursal_id = '1' and deleted_at is null",
+            'filter_field' => 'typemovement',
+            // 'labels' => [
+            //     'INGRESO' => 'INGRESO',
+            //     'EGRESO' => 'EGRESO'
+            // ]
+        ];
+        $chart1 = new LaravelChart($chart_options1);
+
+        return view('dashboard', compact('empresa', 'chart', 'chart1'));
     }
 
     public function administracion()

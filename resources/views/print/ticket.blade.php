@@ -1,43 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
-    <title>
-        VOUCHER DE PAGO - N°{{ $cajamovimiento->id }}
-    </title>
+    <title>VOUCHER PAGO - N°{{ $cajamovimiento->id }}</title>
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}') format('truetype');
-        font-weight: 100;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}') format('truetype');
-        font-weight: 200;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}') format('truetype');
-        font-weight: 400;
-    }
-
-    @font-face {
-        font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}') format('truetype');
-        font-weight: 800;
-    }
-
     * {
-        font-family: 'Ubuntu' !important;
-        font-weight: 200;
+        font-family: 'Ubuntu';
         font-size: 9px;
     }
 
@@ -109,11 +83,11 @@
     }
 
     .font-normal {
-        font-weight: 100 !important;
+        font-weight: 300 !important;
     }
 
     .font-regular {
-        font-weight: 200 !important;
+        font-weight: 400 !important;
     }
 
     .font-medium {
@@ -121,7 +95,7 @@
     }
 
     .font-bold {
-        font-weight: 800 !important;
+        font-weight: 700 !important;
     }
 
     .text-8 {

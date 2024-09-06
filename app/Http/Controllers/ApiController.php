@@ -168,7 +168,7 @@ class ApiController extends Controller
 
     public function pricetypes()
     {
-        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
         $pricetypes = $pricetypes->map(function ($item) {
             return [
                 'id' => $item->id,

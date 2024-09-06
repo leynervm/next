@@ -58,6 +58,8 @@ class Producto extends Model
         'publicado' => 'integer',
         'viewespecificaciones' => 'integer',
         'visivility' => 'integer',
+        'pricebuy' => 'decimal:2',
+        'pricesale' => 'decimal:2',
     ];
 
     public function sluggable(): array
@@ -67,6 +69,19 @@ class Producto extends Model
                 'source' => 'name'
             ]
         ];
+    }
+
+    protected function getAmountEfectivo()
+    {
+        $rango = Rango::where('desde', '<=', $this->pricebuy)
+            ->where('hasta', '>=', $this->pricebuy)->first();
+
+        if (!$rango) {
+            return null;
+        }
+
+        $precioRealCompra = $this->pricebuy + ($this->pricebuy * ($rango->incremento / 100));
+        return number_format($precioRealCompra, 3, '.', '');
     }
 
     // public function precioVenta($pricetype_id, $descuento = 0)

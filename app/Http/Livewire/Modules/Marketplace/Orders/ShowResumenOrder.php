@@ -15,6 +15,7 @@ class ShowResumenOrder extends Component
 
     use AuthorizesRequests;
 
+    protected $listeners = ['render'];
 
     public Order $order;
     public $tvitem;

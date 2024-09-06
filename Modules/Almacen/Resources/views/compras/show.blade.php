@@ -46,14 +46,10 @@
     </x-slot>
 
     <div class="w-full flex flex-col gap-8 mx-auto xl:max-w-7xl">
-        <div>
-            <livewire:modules.almacen.compras.show-compra :compra="$compra" />
-        </div>
+        <livewire:modules.almacen.compras.show-compra :compra="$compra" />
 
         @if ($compra->typepayment->isCredito())
-            <div>
-                <livewire:modules.almacen.compras.show-cuotas-compra :compra="$compra" />
-            </div>
+            <livewire:modules.almacen.compras.show-cuotas-compra :compra="$compra" />
         @endif
     </div>
 </x-admin-layout>

@@ -28,7 +28,6 @@ class Openbox extends Model
         if ($value === null) {
             return null;
         }
-
         return Carbon::parse($value)->format('Y-m-d H:i');
     }
 
@@ -72,6 +71,11 @@ class Openbox extends Model
         return $query->open()->where('user_id', auth()->user()->id)
             ->where('sucursal_id', $sucursal_id)
             ->orderBy('startdate', 'desc');
+    }
+
+    public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
+    {
+        return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
     }
 
     public function isClosed()

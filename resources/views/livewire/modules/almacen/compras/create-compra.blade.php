@@ -165,24 +165,53 @@
                             </div>
 
                             <table class="w-full table text-[10px] text-colorsubtitleform">
-                                <tr>
+                                {{-- <tr>
                                     <td colspan="3" class="text-center text-colorlabel">
                                         TOTAL
                                         <span class="font-semibold text-xl">
                                             {{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
                                         <small x-text="namemoneda"></small>
                                     </td>
-                                </tr>
+                                </tr> --}}
+
                                 <tr>
-                                    <td class="align-middle">P. U. C.</td>
+                                    <td class="align-middle">P. U. C. </td>
                                     <td class="text-end">
                                         <span
-                                            class="text-sm font-semibold">{{ formatDecimalOrInteger($item['pricebuy'], 2, ', ') }}</span>
+                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['pricebuy'], 2, ', ') }}</span>
                                         <small x-text="namemoneda"></small>
                                     </td>
                                 </tr>
-                                <template x-if="namemoneda == 'USD'">
-                                    <tr>
+                                {{-- @if ($item['subtotaldsctoitem'] > 0) --}}
+                                <tr>
+                                    <td class="align-middle">SUBTOTAL</td>
+                                    <td class="text-end">
+                                        <span
+                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotalitem'], 2, ', ') }}</span>
+                                        <small x-text="namemoneda"></small>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="align-middle">DESCUENTOS</td>
+                                    <td class="text-end">
+                                        <span
+                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotaldsctoitem'], 2, ', ') }}</span>
+                                        <small x-text="namemoneda"></small>
+                                    </td>
+                                </tr>
+                                {{-- @endif --}}
+
+                                <tr>
+                                    <td class="align-middle">TOTAL </td>
+                                    <td class="text-end">
+                                        <span
+                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
+                                        <small x-text="namemoneda"></small>
+                                    </td>
+                                </tr>
+
+                                <template x-if="codemoneda == 'USD'">
+                                    <tr class="text-colorlabel">
                                         <td class="align-middle">P. U. C.</td>
                                         <td class="text-end">
                                             <span
@@ -191,37 +220,31 @@
                                         </td>
                                     </tr>
                                 </template>
-                                @if ($item['subtotaldsctoitem'] > 0)
-                                    <tr>
-                                        <td class="align-middle">SUBTOTAL</td>
-                                        <td  class="text-end">
-                                            <span
-                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item['subtotalitem'], 2, ', ') }}</span>
-                                            <small x-text="namemoneda"></small>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="align-middle">DESCUENTOS</td>
-                                        <td  class="text-end">
-                                            <span
-                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item['subtotaldsctoitem'], 2, ', ') }}</span>
-                                            <small x-text="namemoneda"></small>
-                                        </td>
-                                    </tr>
-                                @endif
+
+
                                 @if (!mi_empresa()->usarLista())
-                                    <tr>
+                                    <tr class="text-colorlabel">
+                                        <td class="align-middle"> P. U. V. </td>
+                                        <td class="text-end">
+                                            <span
+                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
+                                            SOLES
+                                        </td>
+                                    </tr>
+                                    {{-- <tr>
                                         <td colspan="3" class=" text-center text-colorlabel">
                                             VENTA S/.
                                             <span class="font-semibold text-xl">
                                                 {{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
                                             SOLES
                                         </td>
-                                    </tr>
+                                    </tr> --}}
                                 @endif
                             </table>
 
                             <x-slot name="footer">
+                                <x-button-edit wire:key="edit_{{ $item['producto_id'] }}"
+                                    wire:click="edit('{{ $item['producto_id'] }}')" wire:loading.attr="disabled" />
                                 <x-button-delete wire:key="delete_{{ $item['producto_id'] }}"
                                     wire:click="removeitem('{{ $item['producto_id'] }}')"
                                     wire:loading.attr="disabled" />
@@ -229,10 +252,12 @@
                         </x-card-producto>
                     @endforeach
                 </div>
+            @else
+                <p class="font-semibold text-xs text-colorerror">Compra no contiene productos agregados</p>
             @endif
 
-            <x-jet-input-error for="itemcompras" />
-            <x-jet-input-error for="total" />
+            {{-- <x-jet-input-error for="itemcompras" />
+            <x-jet-input-error for="total" /> --}}
 
             @if (count($itemcompras) > 0)
                 <table class="w-full table text-xs text-colorsubtitleform">
@@ -283,7 +308,7 @@
                     </tr>
                     <tr>
                         <td colspan="2" class="text-sm text-colorlabel lg:text-3xl font-semibold text-end w-24">
-                            <span x-text="simbolo + ' '+ total"></span>
+                            <span x-text="simbolo + ' '+ (total).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
                         </td>
                     </tr>
                 </table>
@@ -405,12 +430,10 @@
                     <div id="parenttypedscto" class="relative" x-init="select2Typedescto">
                         <x-select class="block w-full" x-ref="selectypedscto" id="typedscto">
                             <x-slot name="options">
-                                <option value="0" title="">NO APLICAR DSCTO</option>
-                                <option value="1" title="PRECIO UNITARIO APLICANDO DESCUENTO">APLICAR DSCTO AL
-                                    PRECIO UNITARIO</option>
-                                <option value="2" title="PRECIO UNITARIO SIN APLICAR DESCUENTO">APLICAR DSCTO AL
-                                    PRECIO UNITARIO</option>
-                                <option value="3" title="">APLICAR DSCTO AL TOTAL DEL ITEM</option>
+                                <option value="0">NO APLICAR DSCTO</option>
+                                <option value="1">PRECIO UNITARIO CON DESCUENTO APLICADO</option>
+                                <option value="2">PRECIO UNITARIO SIN APLICAR DESCUENTO</option>
+                                <option value="3">APLICAR DSCTO AL TOTAL DEL ITEM</option>
                             </x-slot>
                         </x-select>
                         <x-icon-select />
@@ -444,7 +467,7 @@
             @endif --}}
 
             @if (count($almacens) > 0)
-                <div class="w-full flex flex-wrap gap-2">
+                <div class="w-full flex flex-wrap gap-2" wire:target="producto_id" wire:loading.remove>
                     @foreach ($almacens as $key => $item)
                         <x-simple-card wire:key="{{ $key }}"
                             class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
@@ -529,11 +552,11 @@
                                 <small>PRECIO UNIT. COMPRA : </small>
                             </td>
                             <td class="text-end w-40">
-                                <span x-text="pricebuy" class="text-sm font-semibold"></span>
+                                <span x-text="pricebuy" class="text-sm font-medium"></span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
-                        <tr>
+                        {{-- <tr>
                             <td class="align-middle text-end">
                                 <small>SUBTOTAL IGV : </small>
                             </td>
@@ -541,13 +564,13 @@
                                 <span x-text="subtotaligvitem" class="text-sm font-semibold"></span>
                                 <small x-text="namemoneda"></small>
                             </td>
-                        </tr>
+                        </tr> --}}
                         <tr>
                             <td class="align-middle text-end">
                                 <small>SUBTOTAL : </small>
                             </td>
                             <td class="text-end">
-                                <span x-text="subtotalitem" class="text-sm font-semibold"></span>
+                                <span x-text="subtotalitem" class="text-sm font-medium"></span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -556,7 +579,7 @@
                                 <small>DESCUENTOS : </small>
                             </td>
                             <td class="text-end">
-                                <span x-text="subtotaldsctoitem" class="text-sm font-semibold"></span>
+                                <span x-text="subtotaldsctoitem" class="text-sm font-medium"></span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -565,7 +588,7 @@
                                 <small>TOTAL : </small>
                             </td>
                             <td class="text-end">
-                                <span x-text="totalitem" class="text-sm font-semibold"></span>
+                                <span x-text="totalitem" class="text-sm font-medium"></span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -882,31 +905,11 @@
         }
 
         function select2Typedescto() {
-            this.selectTD = $(this.$refs.selectypedscto).select2({
-                templateResult: formatOption
-            });
+            this.selectTD = $(this.$refs.selectypedscto).select2();
             this.selectTD.val(this.typedescuento).trigger("change");
             this.selectTD.on("select2:select", (event) => {
                 this.typedescuento = event.target.value;
                 this.calcular();
-                // this.pricebuy = toDecimal(parseFloat(this.priceunitario) + parseFloat(this
-                //     .igvunitario), 2);
-                // if (this.typedescuento > 0 && this.sumstock > 0) {
-                //     if (this.typedescuento == '1') {
-                //         this.subtotaldsctoitem = toDecimal(parseFloat(this.descuentounitario) *
-                //             parseFloat(this.sumstock), 2);
-                //     } else if (this.typedescuento == '2') {
-                //         this.pricebuy = toDecimal((parseFloat(this.priceunitario) - parseFloat(this
-                //             .descuentounitario)) + parseFloat(this.igvunitario), 2);
-                //         this.subtotaldsctoitem = toDecimal(parseFloat(this.descuentounitario) *
-                //             parseFloat(this.sumstock), 2);
-                //     } else if (this.typedescuento == '3') {
-                //         this.subtotaldsctoitem = this.descuentounitario;
-                //     }
-                // } else {
-                //     this.subtotaldsctoitem = 0;
-                //     this.descuentounitario = 0;
-                // }
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
@@ -917,9 +920,7 @@
             });
 
             Livewire.hook('message.processed', () => {
-                this.selectTD.select2({
-                    templateResult: formatOption
-                }).val(this.typedescuento).trigger('change');
+                this.selectTD.select2().val(this.typedescuento).trigger('change');
             });
         }
 

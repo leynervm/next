@@ -2,7 +2,12 @@
 
 namespace App\Http\Livewire\Admin\Aperturas;
 
+use App\Enums\MovimientosEnum;
+use App\Models\Box;
+use App\Models\Monthbox;
 use App\Models\Openbox;
+use App\Models\Sucursal;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
@@ -17,19 +22,49 @@ class ShowAperturas extends Component
 
     public $open = false;
     public $openbox;
-    public $searchcaja = '';
-    public $searchsucursal = '';
-
+    public $date = '', $dateto = '', $searchuser = '', $searchbox = '',
+        $searchsucursal = '', $searchmonthbox = '';
     protected $listeners = ['render'];
+    protected $queryString = [
+        'date' => [
+            'except' => '',
+            'as' => 'fecha-apertura'
+        ],
+        'dateto' => [
+            'except' => '',
+            'as' => 'hasta-fecha-apertura'
+        ],
+        'searchsucursal' => [
+            'except' => '',
+            'as' => 'sucursal'
+        ],
+        'searchuser' => [
+            'except' => '',
+            'as' => 'usuario'
+        ],
+        'searchbox' => [
+            'except' => '',
+            'as' => 'caja'
+        ],
+        'searchmonthbox' => [
+            'except' => '',
+            'as' => 'caja-mensual'
+        ]
+    ];
 
     protected function rules()
     {
         return [
             'openbox.apertura' => [
-                'required', 'numeric', 'min:0', 'decimal:0,4'
+                'required',
+                'numeric',
+                'min:0',
+                'decimal:0,4'
             ],
             'openbox.expiredate' => [
-                'required', 'date', 'after:' . Carbon::parse($this->openbox->startdate)->format('Y-m-d h:i'),
+                'required',
+                'date',
+                'after:' . Carbon::parse($this->openbox->startdate)->format('Y-m-d h:i'),
             ],
         ];
     }
@@ -41,23 +76,94 @@ class ShowAperturas extends Component
 
     public function render()
     {
-        $openboxes = Openbox::with('monthbox')->withWhereHas('box', function ($query) {
-            $query->withTrashed()->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed();
-                if (auth()->user()->isAdmin()) {
-                    if (trim($this->searchsucursal !== '')) {
-                        $query->where('id', $this->searchsucursal);
-                    }
-                } else {
-                    $query->where('id', auth()->user()->sucursal_id);
-                }
-            });
 
-            if (trim($this->searchcaja !== '')) {
-                $query->where('id', $this->searchcaja);
+        $openboxes = Openbox::with(['user', 'monthbox', 'cajamovimiento.moneda', 'cajamovimientos' => function ($query) {
+            $query->with('moneda')->select(
+                'openbox_id',
+                'moneda_id',
+                // DB::raw("SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE 0 END) as total_ingresos"),
+                // DB::raw("SUM(CASE WHEN typemovement = 'EGRESO' THEN totalamount ELSE 0 END) as total_egresos"),
+                DB::raw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN totalamount ELSE -totalamount END), 0) as diferencia")
+            )->groupBy('openbox_id', 'moneda_id')->orderBy('moneda_id', 'asc');
+        }])->withWhereHas('sucursal', function ($query) {
+            if (auth()->user()->isAdmin()) {
+                if (trim($this->searchsucursal !== '')) {
+                    $query->where('id', $this->searchsucursal);
+                }
+            } else {
+                $query->where('id', auth()->user()->sucursal_id);
             }
-        })->orderBy('startdate', 'desc')->paginate();
-        return view('livewire.admin.aperturas.show-aperturas', compact('openboxes'));
+        })->withWhereHas('box', function ($query) {
+            if (trim($this->searchbox !== '')) {
+                $query->where('id', $this->searchbox);
+            }
+        });
+
+        if ($this->date) {
+            if ($this->dateto) {
+                $openboxes->whereDateBetween('startdate', $this->date, $this->dateto);
+            } else {
+                $openboxes->whereDate('startdate', $this->date);
+            }
+        }
+
+        if ($this->searchsucursal !== '') {
+            $openboxes->where('sucursal_id', $this->searchsucursal);
+        }
+
+        if ($this->searchuser !== '') {
+            $openboxes->where('user_id', $this->searchuser);
+        }
+
+        if ($this->searchmonthbox !== '') {
+            $openboxes->where('monthbox_id', $this->searchmonthbox);
+        }
+        $openboxes = $openboxes->orderBy('startdate', 'desc')->paginate();
+
+        $users = User::whereHas('openboxes', function ($query) {
+            $query->whereHas('cajamovimientos');
+        })->get();
+        $boxes = Box::whereHas('openboxes', function ($query) {
+            $query->whereHas('cajamovimientos');
+        })->get();
+        $monthboxes = Monthbox::whereHas('openboxes', function ($query) {
+            $query->whereHas('cajamovimientos');
+        })->get();
+        $sucursals = Sucursal::whereHas('openboxes', function ($query) {
+            $query->whereHas('cajamovimientos');
+        })->get();
+
+        return view('livewire.admin.aperturas.show-aperturas', compact('openboxes', 'sucursals', 'users', 'boxes', 'monthboxes'));
+    }
+
+    public function updatedDate()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateto()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchuser()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchbox()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchsucursal()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchmonthbox()
+    {
+        $this->resetPage();
     }
 
     public function edit(Openbox $openbox)

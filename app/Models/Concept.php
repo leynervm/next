@@ -56,6 +56,11 @@ class Concept extends Model
         return $query->where('default', DefaultConceptsEnum::PAYCUOTACOMPRA);
     }
 
+    public function scopePayManualOrder($query)
+    {
+        return $query->where('default', DefaultConceptsEnum::PAYMANUALORDER);
+    }
+
     public function scopeAdelantoemployer($query)
     {
         return $query->where('default', DefaultConceptsEnum::ADELANTOEMPLOYER);
@@ -69,6 +74,11 @@ class Concept extends Model
     public function scopeOpenbox($query)
     {
         return $query->where('default', DefaultConceptsEnum::OPENBOX);
+    }
+
+    public function scopeDefault($query)
+    {
+        return $query->where('default', DefaultConceptsEnum::DEFAULT);
     }
 
     public function isDefault()

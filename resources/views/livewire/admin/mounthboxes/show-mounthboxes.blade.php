@@ -1,5 +1,5 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
 
@@ -9,11 +9,27 @@
         </div>
     @endif
 
-    <div class="flex items-center gap-2 mt-4 mb-1">
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-6 mb-1 gap-1">
         <div class="w-full sm:max-w-xs">
             <x-label value="Filtrar Mes :" />
-            <x-input class="block w-full" wire:model.lazy="searchmonth" type="month" />
+            <x-input class="block w-full" wire:model.debounce.500ms="searchmonth" type="month" />
         </div>
+
+        {{-- @if (count($sucursals) > 1) --}}
+        <div class="w-full">
+            <x-label value="Sucursal :" />
+            <div class="relative" x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2Sucursal" id="parentsearchsucursal">
+                <x-select id="searchsucursal" x-ref="selectsuc" data-placeholder="null">
+                    <x-slot name="options">
+                        @foreach ($sucursals as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                        @endforeach
+                    </x-slot>
+                </x-select>
+                <x-icon-select />
+            </div>
+        </div>
+        {{-- @endif --}}
     </div>
 
     <x-table class="relative">
@@ -40,6 +56,8 @@
                     FECHA INICIO</th>
                 <th scope="col" class="p-2 font-medium">
                     FECHA CIERRE</th>
+                <th scope="col" class="p-2 font-medium">
+                    SALDOS</th>
                 <th scope="col" class="p-2 font-medium text-center">
                     ESTADO</th>
                 <th scope="col" class="p-2 relative">
@@ -65,10 +83,22 @@
                             {{ formatDate($item->month, 'MMMM Y') }}
                         </td>
                         <td class="p-2 text-center">
-                            {{ formatDate($item->startdate) }}
+                            {{ formatDate($item->startdate, 'DD MMMM Y') }} <br>
+                            {{ formatDate($item->startdate, 'hh:mm A') }}
                         </td>
                         <td class="p-2 text-center">
-                            {{ formatDate($item->expiredate) }}
+                            {{ formatDate($item->expiredate, 'DD MMMM Y') }} <br>
+                            {{ formatDate($item->expiredate, 'hh:mm A') }}
+                        </td>
+                        <td class="p-2 text-center">
+                            @foreach ($item->cajamovimientos as $saldo)
+                                <p class="text-[10px]">
+                                    {{ $saldo->moneda->simbolo }}
+                                    <span
+                                        class="text-xs font-semibold">{{ formatDecimalOrInteger($saldo->diferencia, 2, ', ') }}</span>
+                                    {{ $saldo->moneda->currency }}
+                                </p>
+                            @endforeach
                         </td>
                         <td class="p-2 text-center">
                             @if ($item->isRegister())
@@ -274,18 +304,21 @@
             })
         }
 
-        function selectSucursal() {
-            this.selectSuc = $(this.$refs.editselectsuc).select2();
-            this.selectSuc.val(this.sucursal_id).trigger("change");
-            this.selectSuc.on("select2:select", (event) => {
-                this.sucursal_id = event.target.value;
+        function select2Sucursal() {
+            this.selectS = $(this.$refs.selectsuc).select2();
+            this.selectS.val(this.searchsucursal).trigger("change");
+            this.selectS.on("select2:select", (event) => {
+                this.searchsucursal = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("sucursal_id", (value) => {
-                this.selectSuc.val(value).trigger("change");
+            this.$watch("searchsucursal", (value) => {
+                this.selectS.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectS.select2().val(this.searchsucursal).trigger('change');
             });
         }
     </script>

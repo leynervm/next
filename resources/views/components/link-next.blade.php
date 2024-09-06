@@ -25,8 +25,7 @@
     </span>
 
     @if (isset($titulo))
-        <p class="leading-3 text-center mt-1 text-[10px] sm:text-xs font-bold">
-            {{ $titulo }}
-        </p>
+        <p class="leading-3 text-center mt-1 text-[11px] font-bold">
+            {{ $titulo }}</p>
     @endif
 </a>

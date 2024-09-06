@@ -35,15 +35,25 @@ class ShowRangos extends Component
     {
         return [
             'rango.desde' => [
-                'required', 'numeric', 'min:0', 'decimal:0,2', 'unique:rangos,desde,' . $this->rango->id,
+                'required',
+                'numeric',
+                'min:0',
+                'decimal:0,2',
+                'unique:rangos,desde,' . $this->rango->id,
                 new ValidateRango($this->rango->desde, $this->rango->hasta, $this->rango->id),
             ],
             'rango.hasta' => [
-                'required', 'numeric', 'min:' . $this->minHasta, 'decimal:0,2',
+                'required',
+                'numeric',
+                'min:' . $this->minHasta,
+                'decimal:0,2',
                 new ValidateRango($this->rango->desde, $this->rango->hasta, $this->rango->id),
             ],
             'rango.incremento' => [
-                'required', 'numeric', 'min:0', 'decimal:0,2',
+                'required',
+                'numeric',
+                'min:0',
+                'decimal:0,2',
             ]
         ];
     }
@@ -114,12 +124,13 @@ class ShowRangos extends Component
         $this->authorize('admin.administracion.rangos.edit');
 
         if (empty($ganancia)) {
-            $json = response()->json([
-                'title' => 'INGRESE UN NÚMERO VÁLIDO !',
-                'text' => 'el campo requiere un valor de tipo numérico'
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $json);
-            return false;
+            $ganancia = 0;
+            // $json = response()->json([
+            //     'title' => 'INGRESE UN NÚMERO VÁLIDO !',
+            //     'text' => 'el campo requiere un valor de tipo numérico'
+            // ])->getData();
+            // $this->dispatchBrowserEvent('validation', $json);
+            // return false;
         }
 
         DB::beginTransaction();

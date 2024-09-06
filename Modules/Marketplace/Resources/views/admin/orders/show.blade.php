@@ -26,77 +26,18 @@
 
     <div class="w-full" x-data="modal()">
         <div class="w-full flex flex-col gap-8">
-            <x-simple-card class="w-full">
-                <h1 class="text-xl font-semibold text-colorsubtitleform p-5 uppercase">
+            <x-simple-card class="w-full p-5">
+                <h1 class="text-xl font-semibold text-colorsubtitleform  uppercase">
                     N° ORDEN : {{ $order->seriecompleta }}</h1>
+                <p class="text-colorsubtitleform text-2xl font-bold">
+                    <small class="text-[10px] font-medium">TOTAL : {{ $order->moneda->simbolo }}</small>
+                    {{ number_format($order->total, 2, '.', ', ') }}
+                </p>
             </x-simple-card>
 
             {{-- PAYMENT --}}
-            <x-simple-card class="w-full flex-1 p-5">
-                <h1 class="text-xl font-semibold text-colorsubtitleform">
-                    RESUMEN PAGO</h1>
+            <livewire:modules.marketplace.orders.confirmar-pago :order="$order" />
 
-                @if ($order->isDeposito())
-                    @if ($order->image)
-                        <button
-                            @click="openModal(); src = '{{ Storage::url('payments/depositos/' . $order->image->url) }}'"
-                            class="w-full h-[150px] md:max-w-[100px] border border-borderminicard rounded-md overflow-hidden">
-                            <img src="{{ Storage::url('payments/depositos/' . $order->image->url) }}"
-                                class="w-full h-full object-cover">
-                        </button>
-                    @endif
-
-                    <p class="text-xs text-neutral-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"
-                            class="w-4 h-4 inline-block">
-                            <path
-                                d="M19 9H6.65856C5.65277 9 5.14987 9 5.02472 8.69134C4.89957 8.38268 5.25517 8.01942 5.96637 7.29289L8.21091 5" />
-                            <path
-                                d="M5 15H17.3414C18.3472 15 18.8501 15 18.9753 15.3087C19.1004 15.6173 18.7448 15.9806 18.0336 16.7071L15.7891 19" />
-                        </svg>
-                        {{ str_replace('_', ' ', $order->methodpay->name) }}
-                    </p>
-
-                    <livewire:modules.marketplace.orders.confirmar-pago :order="$order" />
-
-                    <p class="text-xl font-semibold text-neutral-500">
-                        <small class="text-[10px]">TOTAL {{ $order->moneda->simbolo }}</small>
-                        {{ number_format($order->total, 2, '.', ', ') }}
-                        <small class="text-[10px]">{{ $order->moneda->code }}</small>
-                    </p>
-                @else
-                    <p class="text-blue-600 text-xs font-semibold">
-                        {{ $order->methodpay->name }}</p>
-
-                    @foreach ($order->transaccions as $item)
-                        <p class="text-green-600 text-xs">
-                            <small class="text-colorsubtitleform">ESTADO :</small>
-                            <b>{{ $item->action_description }}</b>
-                        </p>
-
-                        <p class="text-green-600 text-xs">
-                            <small class="text-colorsubtitleform">DESCRIPCION :</small>
-                            <b>{{ $item->eci_description }}</b>
-                        </p>
-
-                        <p class="text-green-600 text-xs">
-                            <small class="text-colorsubtitleform">ID TRANSACCIÓN :</small>
-                            <b>{{ $item->transaction_id }}</b>
-                        </p>
-                        <p class="text-green-600 text-xs">
-                            <small class="text-colorsubtitleform">FECHA Y HORA PAGO :</small>
-                            <b>{{ formatDate($item->date) }}</b>
-                        </p>
-                        {{-- <p class="text-green-600 text-xs">
-                        TARJETA: </p> --}}
-                        <p class="text-green-600 text-xs">
-                            <small class="text-colorsubtitleform">IMPORTE :</small>
-                            <b>{{ number_format($item->amount, 2, '.', ', ') }} {{ $item->currency }}</b>
-                        </p>
-                    @endforeach
-                @endif
-            </x-simple-card>
 
             <x-simple-card class="w-full p-5">
                 <h1 class="text-xl font-semibold text-colorsubtitleform">

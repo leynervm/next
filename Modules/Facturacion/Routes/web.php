@@ -24,7 +24,10 @@ Route::get('/facturacion/guia-remision/download/{guia:seriecompleta}/file/{type}
 
 
 Route::middleware([
-    'auth:sanctum', config('jetstream.auth_session'), 'auth', 'verifysucursal'
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'auth',
+    'verifysucursal'
     // 'verified'
 ])->prefix('admin/facturacion')->name('admin.')->group(function () {
     Route::get('/', [FacturacionController::class, 'index'])->name('facturacion');
@@ -40,7 +43,7 @@ Route::middleware([
 
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'auth'])
     ->prefix('admin/facturacion')->name('admin.facturacion')->group(function () {
-        Route::get('/{comprobante:seriecompleta}/imprimir-A4', [FacturacionController::class, 'imprimirA4'])->name('.print.a4');
-        Route::get('/{comprobante:seriecompleta}/imprimir-ticket', [FacturacionController::class, 'imprimirticket'])->name('.print.ticket');
-        Route::get('/guias/{guia:seriecompleta}/imprimir-A4', [GuiaController::class, 'imprimirA4'])->name('.guias.print');
+        Route::get('/{comprobante:seriecompleta}/print/a4', [FacturacionController::class, 'imprimirA4'])->name('.print.a4');
+        Route::get('/{comprobante:seriecompleta}/print/ticket', [FacturacionController::class, 'imprimirticket'])->name('.print.ticket');
+        Route::get('/guias/{guia:seriecompleta}/print/a4', [GuiaController::class, 'imprimirA4'])->name('.guias.print');
     });

@@ -6,15 +6,16 @@
                 @foreach (Cart::instance('shopping')->content() as $item)
                     <x-simple-card
                         class="w-full flex flex-col xs:flex-row gap-2 text-xs rounded xs:rounded-xl shadow-md">
-                        <div class="w-full xs:w-24 h-24 xs:h-full rounded overflow-hidden">
+                        <div class="w-full xs:w-28 h-40 xs:h-full rounded overflow-hidden">
                             @if ($item->model->getImageURL())
                                 <img src="{{ $item->model->getImageURL() }}" alt=""
-                                    class="w-full h-full object-scale-down aspect-square">
+                                    class="w-full h-full object-cover object-center">
                             @else
-                                <x-icon-file-upload class="!w-full !h-full !m-0 text-neutral-500" type="unknown" />
+                                <x-icon-file-upload class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform"
+                                    type="unknown" />
                             @endif
                         </div>
-                        <div class="w-full flex flex-col gap-2 flex-1 xs:h-full justify-between p-2">
+                        <div class="w-full flex flex-col gap-1 flex-1 xs:h-full justify-between p-1 px-2">
                             <a class="leading-3 text-xs text-colorlabel">{{ $item->model->name }}</a>
                             <div class="w-full flex flex-wrap items-start justify-between gap-2">
                                 <h1 class="text-sm text-green-500">
@@ -33,15 +34,26 @@
                             </div>
 
                             <div class="w-full mt-auto flex items-end gap-1 justify-between">
-                                <div class="w-full flex-1">
+                                <div class="w-full flex-1 flex gap-1">
                                     <button wire:click="decrement('{{ $item->rowId }}')" type="button"
-                                        wire:loading.attr="disabled"
-                                        class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">-</button>
-                                    <small class="font-medium text-xs px-2 text-colorlabel inline-block text-center">
-                                        {{ $item->qty }} {{ $item->model->unit->name }}</small>
+                                        wire:loading.attr="disabled" @if ($item->qty == 1) disabled @endif
+                                        class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-neutral-300 transition ease-in-out duration-150">-</button>
+
+                                    <x-input value="{{ $item->qty }}"
+                                        class="w-14 text-center text-colorlabel input-number-none" type="number"
+                                        step="1" min="1" onkeypress="return validarNumero(event, 4)"
+                                        @blur="
+                                            if ($el.value == '' || $el.value == 0 ) {
+                                                $el.value = {{ $item->qty }}
+                                            }
+
+                                            if ( $el.value != {{ $item->qty }}) {
+                                                console.log('update')
+                                                $wire.updateitem('{{ $item->rowId }}', $el.value)
+                                            }" />
                                     <button wire:click="increment('{{ $item->rowId }}')" type="button"
                                         wire:loading.attr="disabled"
-                                        class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                                        class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-neutral-300 transition ease-in-out duration-150">+</button>
                                 </div>
                                 <div x-data="{ dropdownOpen: false }" class="relative">
                                     <button @click="dropdownOpen = !dropdownOpen"

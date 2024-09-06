@@ -55,25 +55,19 @@ class CreateCajamovimento extends Component
 
         if ($this->monthbox) {
             $sumatorias = Cajamovimiento::with('moneda')->sumatorias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
+            $diferencias = Cajamovimiento::with('moneda')->diferencias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
+            $diferenciasbytype = Cajamovimiento::diferenciasByType($this->openbox->id, auth()->user()->sucursal_id)->get();
             // $sumatorias = Cajamovimiento::with('moneda')->where('sucursal_id', auth()->user()->sucursal_id)
             //     ->selectRaw('moneda_id, typemovement, SUM(totalamount) as total')->groupBy('moneda_id')
             //     ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
             //     ->groupBy('typemovement')->orderBy('total', 'desc')->get();
         } else {
+            $diferenciasbytype = [];
             $sumatorias = [];
-        }
-
-        if ($this->monthbox) {
-            $diferencias = Cajamovimiento::with('moneda')->diferencias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
-            // $diferencias = Cajamovimiento::with('moneda')->where('sucursal_id', auth()->user()->sucursal_id)
-            //     ->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN totalamount ELSE -totalamount END) as diferencia")
-            //     ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-            //     ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
-        } else {
             $diferencias = [];
         }
 
-        return view('livewire.admin.cajamovimientos.create-cajamovimento', compact('methodpayments', 'concepts', 'monedas', 'sumatorias', 'diferencias'));
+        return view('livewire.admin.cajamovimientos.create-cajamovimento', compact('methodpayments', 'concepts', 'monedas', 'sumatorias', 'diferencias', 'diferenciasbytype'));
     }
 
     public function updatingOpen()

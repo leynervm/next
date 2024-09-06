@@ -1,10 +1,12 @@
 {
     "ubuntu": {
-        "normal": "ubuntu_normal_556e6b16c30d84d939da75ec171faf93",
-        "bold": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_bold_fa536e260de2bb6fa092d8f1bf490e65",
-        "100": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_100_aab007cfb4874464bfa4ccff628bfff4",
-        "200": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_200_f501b29a7d1ab16946c4235cf934456b",
-        "800": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_800_fa536e260de2bb6fa092d8f1bf490e65",
-        "600": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_600_556e6b16c30d84d939da75ec171faf93"
+        "normal": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_normal_a9b4465f75f1e035e352908784fee311",
+        "300_italic": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_300_italic_b8fe9e8d47652aef8a27f80ec07e6de9",
+        "italic": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_italic_a0618d1762a0d0e8737a12a06551ac1d",
+        "500_italic": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_500_italic_cd00fb9f9bb8f502217a9e38f1a2bd1c",
+        "bold_italic": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_bold_italic_ba188971224e3e78d6ee81a5d3d98e31",
+        "300": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_300_78caa070e669b23c12005b68678fc64d",
+        "500": "C:\\xampp\\htdocs\\next\\public\\assets\/fonts\/ubuntu_500_77b379fb022b48e8a5f4b688af8ca205",
+        "bold": "ubuntu_bold_01f1f5adaa8ee473febf98094d81e93b"
     }
 }

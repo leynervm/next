@@ -10,9 +10,9 @@ use App\Models\Methodpayment;
 use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
-use App\Rules\ValidateEmployerpayment;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class CreateAdelantoEmployer extends Component
@@ -21,15 +21,18 @@ class CreateAdelantoEmployer extends Component
     use AuthorizesRequests;
 
     public $open = false;
+    public $showtipocambio = false;
     public $employer;
-    public $openbox, $monthbox, $employer_id, $amount, $concept_id, $moneda_id, $methodpayment_id, $detalle;
+    public $openbox, $monthbox, $employer_id, $amount, $totalamount, $concept_id, $moneda_id, $methodpayment_id, $detalle;
     public $amountadelantos = 0;
+    public $tipocambio;
     public $adelantomaximo;
     public $adelantos = [];
 
     protected function rules()
     {
         return [
+            'totalamount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
             'amount' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
             'employer_id' => ['required', 'integer', 'min:1', 'exists:employers,id'],
             'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
@@ -38,6 +41,14 @@ class CreateAdelantoEmployer extends Component
             'monthbox.id' => ['required', 'integer', 'min:1', 'exists:monthboxes,id'],
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'detalle' => ['nullable', 'string'],
+            'tipocambio' => [
+                'nullable',
+                Rule::requiredIf($this->showtipocambio),
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,3'
+            ],
         ];
     }
 
@@ -56,28 +67,25 @@ class CreateAdelantoEmployer extends Component
         $employers = Employer::with('areawork')->where('sucursal_id', auth()->user()->sucursal_id)
             ->orderBy('name', 'asc')->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
-        $monedas = Moneda::orderBy('code', 'asc')->get();
 
         if ($this->monthbox) {
-            $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
-                $query->withTrashed()->where('id', auth()->user()->sucursal_id);
-            })->selectRaw("moneda_id, SUM(CASE WHEN typemovement = 'INGRESO' THEN amount ELSE -amount END) as diferencia")
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->groupBy('moneda_id')->orderBy('diferencia', 'desc')->get();
+            $diferencias = Cajamovimiento::with('moneda')->diferencias($this->monthbox->id, $this->openbox->id, auth()->user()->sucursal_id)->get();
+            $diferenciasbytype = Cajamovimiento::diferenciasByType($this->openbox->id, auth()->user()->sucursal_id)->get();
         } else {
             $diferencias = [];
+            $diferenciasbytype = [];
         }
 
-        return view('livewire.modules.administracion.payment-employers.create-adelanto-employer', compact('employers', 'methodpayments', 'monedas', 'diferencias'));
+        return view('livewire.modules.administracion.payment-employers.create-adelanto-employer', compact('employers', 'methodpayments', 'diferencias', 'diferenciasbytype'));
     }
 
     public function updatingOpen()
     {
         $this->authorize('admin.administracion.employers.adelantos.create');
         if ($this->open == false) {
-            $this->reset(['employer', 'employer_id', 'adelantos', 'detalle', 'amount']);
-            $this->employer = new Employer();
             $this->resetValidation();
+            $this->resetExcept(['openbox', 'monthbox', 'concept_id', 'moneda_id']);
+            $this->employer = new Employer();
             $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         }
     }
@@ -116,6 +124,18 @@ class CreateAdelantoEmployer extends Component
             return false;
         }
 
+        $this->totalamount = number_format($this->amount, 3, '.', '');
+        $this->concept_id = Concept::adelantoemployer()->first()->id ?? null;
+        $this->validate();
+
+        if ($this->showtipocambio) {
+            $monedaConvertir = Moneda::find($this->moneda_id)->isDolar() ? 'PEN' : 'USD';
+            $this->totalamount = convertMoneda($this->amount, $monedaConvertir, $this->tipocambio);
+        }
+
+        // amount = "MONTO ORIGINAL PAGAR SIEMPRE VA SER SOLES EN ACTUAL CASO"
+        // totalamount = "MONTO DE MONEDA AFECTAR EN MOVIMIENTO DE CAJA"
+
         $mi_empresa = mi_empresa();
         $this->adelantomaximo = $mi_empresa->montoadelanto > 0 ? $mi_empresa->montoadelanto : null;
         $adelantos = $this->employer->cajamovimientos()
@@ -140,23 +160,15 @@ class CreateAdelantoEmployer extends Component
             }
         }
 
-        $this->concept_id = Concept::adelantoemployer()->first()->id ?? null;
-        $this->validate();
         DB::beginTransaction();
-
         try {
-
             $methodpayment = Methodpayment::find($this->methodpayment_id);
-            $saldocaja = Cajamovimiento::withWhereHas('methodpayment', function ($query) use ($methodpayment) {
-                $query->where('type', $methodpayment->type);
-            })->where('sucursal_id', $this->employer->sucursal_id)
-                ->where('openbox_id', $this->openbox->id)->where('monthbox_id', $this->monthbox->id)
-                ->where('moneda_id', $this->moneda_id)
-                ->selectRaw("COALESCE(SUM(CASE WHEN typemovement = '" . MovimientosEnum::INGRESO->value . "' THEN amount ELSE -amount END), 0) as diferencia")
+            $saldocaja = Cajamovimiento::saldo($methodpayment->type, $this->monthbox->id, $this->openbox->id, $this->employer->sucursal_id, $this->moneda_id)
                 ->first()->diferencia ?? 0;
             $forma = $methodpayment->isEfectivo() ? 'EFECTIVO' : 'TRANSFERENCIA';
 
-            if (($saldocaja - $this->amount) < 0) {
+            //SALDO MONEDA PAGO DEBE SER >= A TOTALAMOUNT PUESTO QUE AFECTARA SALDO CAJA
+            if (($saldocaja - $this->totalamount) < 0) {
                 $mensaje =  response()->json([
                     'title' => 'SALDO INSUFICIENTE PARA REALIZAR ADELANTO DE PAGO DEL PERSONAL !',
                     'text' => "Monto de egreso en moneda seleccionada supera el saldo disponible en caja, mediante $forma."
@@ -168,8 +180,8 @@ class CreateAdelantoEmployer extends Component
             $this->employer->savePayment(
                 $this->employer->sucursal_id,
                 $this->amount,
-                $this->amount,
-                null,
+                number_format($this->totalamount, 3, '.', ''),
+                $this->showtipocambio ? number_format($this->tipocambio, 3, '.', '') : null,
                 $this->moneda_id,
                 $this->methodpayment_id,
                 MovimientosEnum::EGRESO->value,
@@ -177,11 +189,11 @@ class CreateAdelantoEmployer extends Component
                 $this->openbox->id,
                 $this->monthbox->id,
                 'PERSONAL: ' . $this->employer->name,
-                $this->detalle,
+                trim($this->detalle),
             );
 
             DB::commit();
-            $this->reset(['employer', 'employer_id', 'adelantos', 'detalle', 'open', 'amount']);
+            $this->resetExcept(['openbox', 'monthbox', 'concept_id', 'moneda_id']);
             $this->employer = new Employer();
             $this->resetValidation();
             $this->dispatchBrowserEvent('created');
