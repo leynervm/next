@@ -274,23 +274,23 @@
     {{-- <script async src="https://www.google.com/recaptcha/api.js"></script> --}}
 
     <script>
-        grecaptcha.ready(function() {
-            document.getElementById('register_form').addEventListener("submit", function(event) {
-                event.preventDefault();
-                grecaptcha.execute('{{ config('services.recaptcha_v3.key_web') }}', {
-                        action: 'register'
-                    })
-                    .then(function(token) {
-                        let form = event.target;
-                        let input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'g_recaptcha_response';
-                        input.value = token;
-                        form.appendChild(input);
-                        document.getElementById('register_form').submit();
-                    });
-            });
-        });
+        // grecaptcha.ready(function() {
+        //     document.getElementById('register_form').addEventListener("submit", function(event) {
+        //         event.preventDefault();
+        //         grecaptcha.execute('{{ config('services.recaptcha_v3.key_web') }}', {
+        //                 action: 'register'
+        //             })
+        //             .then(function(token) {
+        //                 let form = event.target;
+        //                 let input = document.createElement('input');
+        //                 input.type = 'hidden';
+        //                 input.name = 'g_recaptcha_response';
+        //                 input.value = token;
+        //                 form.appendChild(input);
+        //                 document.getElementById('register_form').submit();
+        //             });
+        //     });
+        // });
 
 
         function authForm() {
