@@ -321,7 +321,7 @@
                                                 :src="markagua" />
                                         </template>
                                         <template x-if="!markagua">
-                                            <x-icon-fileupload class="w-full h-full !my-0" />
+                                            <x-icon-file-upload class="w-full h-full !my-0" />
                                         </template>
                                     </x-simple-card>
                                     <x-jet-input-error for="markagua" />
@@ -400,7 +400,7 @@
                                             :src="image" />
                                     </template>
                                     <template x-if="!image">
-                                        <x-icon-fileupload class="w-full h-full !my-0" />
+                                        <x-icon-file-upload class="w-full h-full !my-0" />
                                     </template>
                                 </div>
                                 <label for="fileInput" type="button"
@@ -428,7 +428,7 @@
                                             :src="icono" />
                                     </template>
                                     <template x-if="!icono">
-                                        <x-icon-fileupload class="w-full h-full !my-0" />
+                                        <x-icon-file-upload class="w-full h-full !my-0" />
                                     </template>
                                 </div>
 

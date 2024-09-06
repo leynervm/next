@@ -96,7 +96,7 @@
                             <img id="editimage" class="object-scale-down block w-full h-full"
                                 src="{{ $category->image->getCategoryURL() }}" />
                         @else
-                            <x-icon-fileupload class="w-full h-full !my-0" />
+                            <x-icon-file-upload class="w-full h-full !my-0" />
                         @endif
                     </template>
                 </div>

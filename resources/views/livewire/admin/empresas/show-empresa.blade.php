@@ -461,7 +461,7 @@
                                                     class="object-scale-down block w-full max-w-full h-full"
                                                     src="{{ $empresa->getMarkAguaURL() }}" />
                                             @else
-                                                <x-icon-fileupload class="w-full h-full !my-0" />
+                                                <x-icon-file-upload class="w-full h-full !my-0" />
                                             @endif
                                         </template>
                                     </x-simple-card>

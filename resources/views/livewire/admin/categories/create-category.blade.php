@@ -28,7 +28,7 @@
                                     :src="image" />
                             </template>
                             <template x-if="!image">
-                                <x-icon-fileupload class="w-full h-full !my-0" />
+                                <x-icon-file-upload class="w-full h-full !my-0" />
                             </template>
                         </div>
 
