@@ -26,7 +26,7 @@ class Seriecomprobante extends Model
 
     public function typecomprobante(): BelongsTo
     {
-        return $this->belongsTo(typecomprobante::class);
+        return $this->belongsTo(Typecomprobante::class);
     }
 
     public function comprobantes(): HasMany
