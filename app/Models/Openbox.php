@@ -53,7 +53,7 @@ class Openbox extends Model
 
     public function cajamovimiento(): MorphOne
     {
-        return $this->morphOne(cajamovimiento::class, 'cajamovimientable');
+        return $this->morphOne(Cajamovimiento::class, 'cajamovimientable');
     }
 
     public function cajamovimientos(): HasMany
