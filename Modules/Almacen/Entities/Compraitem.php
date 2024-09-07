@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Compraitem extends Model
 {
     use HasFactory;
-    use SoftDeletes;
 
     public $timestamps = false;
     protected $fillable = [
