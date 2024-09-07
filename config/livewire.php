@@ -54,8 +54,8 @@ return [
     |
     */
 
-    'asset_url' => null,
-
+    'asset_url' => env('APP_URL'),
+    'force_https' => true, // Agrega esta línea
     /*
     |--------------------------------------------------------------------------
     | Livewire App URL
