@@ -3,6 +3,8 @@
 use App\Enums\MovimientosEnum;
 use App\Enums\StatusPayWebEnum;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserController;
 use App\Models\Cajamovimiento;
 use App\Models\Category;
 use App\Models\Moneda;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
 use Laravel\Jetstream\Http\Controllers\Livewire\UserProfileController;
 use Modules\Marketplace\Entities\Order;
+use Nwidart\Modules\Facades\Module;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,49 +28,17 @@ use Modules\Marketplace\Entities\Order;
 |
 */
 
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'dashboard'
-])->get('/user/profile', [UserProfileController::class, 'show'])->name('profile.show');
+Route::get('/', [HomeController::class, 'welcome']);
 
+Route::get('/user/completar-perfil', [UserController::class, 'profilecomplete'])->name('profile.complete')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+Route::post('/user/complete-perfil/save', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
+Route::get('/user/profile', [UserController::class, 'viewprofilesuserweb'])->name('profile.show')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
 
 if (Features::enabled(Features::registration())) {
-    Route::get('/register', function () {
-        return redirect()->route('login')->with('activeForm', 'register');
-    })->name('register');
+    Route::get('/register', [AuthController::class, 'register'])->name('register');
 }
-
-
-// AUTH WITH REDES SOCIALES
-Route::get('/login/auth/{driver}/redirect', [AuthController::class, 'redirect'])->name('auth.redirect');
-Route::get('/login/auth/{driver}/callback', [AuthController::class, 'callback'])->name('auth.callback');
-
-
-Route::get('/', function () {
-    $empresa = mi_empresa();
-    $moneda = Moneda::default()->first();
-    $pricetype = getPricetypeAuth($empresa);
-    $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
-
-    if (auth()->user()) {
-        $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
-        $orderspending = Order::where('status', $status_pendiente)->count();
-        if ($orderspending) {
-            $mensaje = "Usted tiene $orderspending ordenes pendientes. <a class='font-semibold' href='" . route('orders') . "?estado-pago=$status_pendiente' >Ir a pagar</a>";
-            session()->flash('flash.banner', $mensaje);
-        }
-    }
-
-    return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
-});
-
-
-
-// Route::get('/prueba', function () {
-//     $query = DB::select("select (pg_database.datname) as name, pg_size_pretty(pg_database_size(pg_database.datname)) as size from pg_database  where pg_database.datname = '" . env('DB_DATABASE') . "'");
-//     return $query;
-// });
 
 Route::get('/charts/resumen-movimientos', function () {
 
@@ -125,3 +96,8 @@ Route::get('/charts/resumen-movimientos', function () {
     //     'datasets' => $datasets
     // ]);
 });
+
+// Route::get('/prueba', function () {
+//     $query = DB::select("select (pg_database.datname) as name, pg_size_pretty(pg_database_size(pg_database.datname)) as size from pg_database  where pg_database.datname = '" . env('DB_DATABASE') . "'");
+//     return $query;
+// });

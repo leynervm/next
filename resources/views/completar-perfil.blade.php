@@ -1,0 +1,75 @@
+<x-guest-layout>
+    <x-jet-authentication-card>
+        <x-slot name="logo">
+            @php
+                $empresa = mi_empresa();
+            @endphp
+            @if ($empresa)
+                @if ($empresa->image)
+                    <img class="w-48 h-32 object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
+                @endif
+            @endif
+        </x-slot>
+
+        <div class="mb-4 text-sm text-colorlabel">
+            {{ __('Antes de continuar, complete los datos de su perfil.') }}
+        </div>
+
+        <form id="form_complete_profile" action="{{ route('profile.complete.save') }}" method="post" class="w-full flex flex-col gap-5">
+            @csrf
+            <x-form-card :titulo="__('PROFILE INFORMATION')" :subtitulo="__('Update your account\'s profile information and email address.')" class="">
+                <div class="w-full grid grid-cols-1 gap-2">
+                    <div class="w-full">
+                        <x-label for="name" value="{{ __('Document') }}" />
+                        <x-input id="document" type="text" class="first-letter:block w-full" name="document"
+                            value="{{ old('document') ?? auth()->user()->document }}" autocomplete="document" />
+                        <x-jet-input-error for="document" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label for="name" value="{{ __('Name') }}" />
+                        <x-input id="name" type="text" name="name" class="first-letter:block w-full"
+                            value="{{ old('name') ?? auth()->user()->name }}" autocomplete="name" />
+                        <x-jet-input-error for="name" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label for="email" value="{{ __('Email') }}" />
+                        <x-disabled-text :text="auth()->user()->email" />
+                        <x-jet-input-error for="email" />
+                    </div>
+                </div>
+            </x-form-card>
+
+            <x-form-card :titulo="__('UPDATE PASSWORD')" :subtitulo="__('Ensure your account is using a long, random password to stay secure.')" class="">
+                <div class="w-full grid grid-cols-1 gap-2">
+                    <div class="w-full">
+                        <x-label for="password" value="{{ __('New Password') }}" />
+                        <x-input id="password" name="password" type="password" class="block w-full"
+                            autocomplete="new-password" />
+                        <x-jet-input-error for="password" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
+                        <x-input id="password_confirmation" type="password" class="block w-full"
+                            name="password_confirmation" autocomplete="new-password" />
+                        <x-jet-input-error for="password_confirmation" />
+                    </div>
+                </div>
+                <x-jet-input-error for="g_recaptcha_response" />
+            </x-form-card>
+
+            <div class="w-full flex justify-center items-center">
+                <x-button-web type="submit" :text="__('Save changes')" />
+            </div>
+        </form>
+
+
+        <form method="POST" action="{{ route('logout') }}" class="w-full mt-5 flex justify-center items-end gap-3">
+            @csrf
+            <button class="text-colorsubtitleform underline hover:text-colorlabel transition ease-in-out duration-150"
+                type="submit">{{ __('Log Out') }}</button>
+        </form>
+    </x-jet-authentication-card>
+</x-guest-layout>

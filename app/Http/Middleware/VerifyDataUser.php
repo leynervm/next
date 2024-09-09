@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Nwidart\Modules\Facades\Module;
 
-class Dashboard
+class VerifyDataUser
 {
     /**
      * Handle an incoming request.
@@ -17,13 +17,14 @@ class Dashboard
      */
     public function handle(Request $request, Closure $next)
     {
+
         $user = auth()->user();
 
-        if ($user) {
-            if (!auth()->user()->isAdmin()) {
-                if (auth()->user()->sucursal_id == null) {
-                    return redirect()->to('/');
-                }
+        if ($user && Module::isEnabled('Marketplace')) {
+            if (empty($user->document)) {
+                $request->session()->put('route.intended', $request->route()->getName());
+                // session(['url.intended' => url()->current()]);
+                return redirect()->route('profile.complete');
             }
         }
 

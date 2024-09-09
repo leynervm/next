@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\StatusPayWebEnum;
 use App\Helpers\GetClient;
-use App\Models\Cajamovimiento;
 use App\Models\Empresa;
+use App\Models\Moneda;
+use App\Models\Slider;
 use App\Models\Ubigeo;
 use Exception;
 use Illuminate\Http\Request;
@@ -12,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use jossmp\sunat\ruc;
 use jossmp\sunat\tipo_cambio;
 use LaravelDaily\LaravelCharts\Classes\LaravelChart;
+use Modules\Marketplace\Entities\Order;
 
 class HomeController extends Controller
 {
@@ -25,7 +28,26 @@ class HomeController extends Controller
         $this->middleware('can:admin.promociones')->only('promociones');
     }
 
-    public function index()
+    public function welcome()
+    {
+        $empresa = mi_empresa();
+        $moneda = Moneda::default()->first();
+        $pricetype = getPricetypeAuth($empresa);
+        $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
+
+        if (auth()->user()) {
+            $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
+            $orderspending = Order::where('status', $status_pendiente)->count();
+            if ($orderspending) {
+                $mensaje = "Usted tiene $orderspending ordenes pendientes. <a class='font-semibold' href='" . route('orders') . "?estado-pago=$status_pendiente' >Ir a pagar</a>";
+                session()->flash('flash.banner', $mensaje);
+            }
+        }
+
+        return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
+    }
+
+    public function dashboard()
     {
         $empresa = Empresa::first();
         $chart_options = [
@@ -105,13 +127,6 @@ class HomeController extends Controller
     {
         return view('admin.promociones.index');
     }
-
-    // public function tipocambio()
-    // {
-    //     $http = new GetClient();
-    //     $response = $http->getTipoCambio();
-    //     return response()->json($response);
-    // }
 
     public function tipocambio()
     {

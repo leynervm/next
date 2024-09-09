@@ -255,9 +255,14 @@
     "This driver does not support creating temporary URLs.": "Este controlador no admite la creación de direcciones URL temporales.",
     "All rights reserved.": "Todos los derechos reservados.",
     "Save and close": "Guardar y cerrar",
+    "Save changues" : "Guardar cambios",
     "The verification of Recaptcha failed.": "La verificación de Recaptcha ha fallado.",
     "The": "El",
     "is incorrect.": "es incorrecto",
     "Registration Success": "Registrado correctamente",
-    "Send message" : "Enviar mensaje"
+    "Send message" : "Enviar mensaje",
+    "PROFILE INFORMATION" : "INFORMACIÓN DEL PERFIL",
+    "UPDATE PASSWORD" : "ACTUALIZAR CONTRASEÑA",
+    "Save changes" : "Guardar cambios",
+    "users" : "usuarios"
 }

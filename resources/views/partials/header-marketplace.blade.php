@@ -66,10 +66,11 @@
                     :class="products.length ? 'rounded-b-none' : ''">
                     <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                         Barra de búsqueda</label>
-                    <input type="text" autocomplete="off" x-model="search" @focus="backdrop=true,openSidebar=false"
-                        @input.debounce.300ms="fetchProducts" @keydown.enter="redirectEnter"
+                    <input type="search" name="search" autocomplete="off" x-model="search"
+                        @focus="backdrop=true,openSidebar=false" @input.debounce.300ms="fetchProducts"
+                        @keydown.enter="redirectEnter"
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
-                        value="" placeholder="Buscar en NEXT">
+                        placeholder="Buscar en NEXT STORE">
                 </div>
                 <button
                     class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">

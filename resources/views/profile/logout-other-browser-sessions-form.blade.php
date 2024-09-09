@@ -1,22 +1,14 @@
-<x-jet-action-section>
-    <x-slot name="title">
-        {{ __('Browser Sessions') }}
-    </x-slot>
-
-    <x-slot name="description">
-        {{ __('Manage and log out your active sessions on other browsers and devices.') }}
-    </x-slot>
-
-    <x-slot name="content">
-        <div class="max-w-xl text-sm text-colorsubtitleform">
+<x-form-card :titulo="__('Browser Sessions')" :subtitulo="__('Manage and log out your active sessions on other browsers and devices.')">
+    <div class="w-full">
+        <div class="w-full text-xs sm:text-sm text-colorsubtitleform">
             {{ __('If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.') }}
         </div>
 
         @if (count($this->sessions) > 0)
-            <div class="mt-5 space-y-6">
+            <div class="w-full mt-5">
                 <!-- Other Browser Sessions -->
                 @foreach ($this->sessions as $session)
-                    <div class="flex items-center">
+                    <div class="inline-flex items-center shadow shadow-shadowminicard p-2 rounded-lg">
                         <div>
                             @if ($session->agent->isDesktop())
                                 <svg fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -37,7 +29,7 @@
                         </div>
 
                         <div class="ml-3">
-                            <div class="text-sm text-colorsubtitleform">
+                            <div class="text-sm text-colorlabel">
                                 {{ $session->agent->platform() ? $session->agent->platform() : 'Unknown' }} -
                                 {{ $session->agent->browser() ? $session->agent->browser() : 'Unknown' }}
                             </div>
@@ -59,7 +51,7 @@
             </div>
         @endif
 
-        <div class="flex items-center mt-5">
+        <div class="w-full flex items-center justify-end mt-5">
             <x-button wire:click="confirmLogout" wire:loading.attr="disabled">
                 {{ __('Log Out Other Browser Sessions') }}
             </x-button>
@@ -94,5 +86,5 @@
                 </x-button-secondary>
             </x-slot>
         </x-jet-dialog-modal>
-    </x-slot>
-</x-jet-action-section>
+    </div>
+</x-form-card>

@@ -31,7 +31,7 @@
             </form>
 
             <div class="flex items-end gap-3">
-                <a href="{{ route('profile') }}"
+                <a href="{{ route('profile.show') }}"
                     class="underline tracking-wide uppercase text-xs text-colorsubtitleform hover:text-hoverlinktable">
                     {{ __('Edit Profile') }}</a>
 

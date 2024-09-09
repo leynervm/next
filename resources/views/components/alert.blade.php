@@ -33,7 +33,7 @@
     }
 @endphp
 
-<div x-data="timer()" x-init="start()">
+<div x-data="timer()" x-init="start()" class="z-[9999]">
     <div class="fixed z-50 border-stroke flex items-center rounded-xl border border-l-[6px] {{ $borderalert }} bg-fondominicard p-2 w-full max-w-sm bg-opacity-80"
         x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100" x-transition:leave="transition ease-in duration-300"

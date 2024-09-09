@@ -3,15 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
-use App\Models\Pricetype;
 use App\Models\User;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
+use Nwidart\Modules\Facades\Module;
 
 class AuthController extends Controller
 {
+
+
+    public function register()
+    {
+        return redirect()->route('login')->with('activeForm', 'register');
+    }
+
 
     public function redirect($driver)
     {
@@ -67,8 +74,12 @@ class AuthController extends Controller
                         }
                     }
 
-                    DB::commit();
                     auth()->login($user);
+                    DB::commit();
+
+                    if (empty($user->document) && Module::isEnabled('Marketplace')) {
+                        return redirect()->route('profile.complete');
+                    }
                     return redirect()->route('admin');
                 } catch (\Exception $e) {
                     DB::rollBack();

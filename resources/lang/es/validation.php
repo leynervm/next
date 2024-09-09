@@ -360,5 +360,6 @@ return [
         'paymentactual'             =>  'monto de pago',
         'box_id'                    =>  'caja',
         'totalamount'               =>  'total de pago',
+        'users'                     =>   'usuarios',
     ],
 ];

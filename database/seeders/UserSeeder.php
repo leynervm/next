@@ -26,6 +26,7 @@ class UserSeeder extends Seeder
             'name' => 'DEVELOPER ROOT',
             'email' => 'admin@gmail.com',
             'password' => bcrypt('12345678'),
+            'email_verified_at' => now('America/Lima'),
             'admin' => 1,
         ]);
 

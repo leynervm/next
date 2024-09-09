@@ -1,18 +1,10 @@
-<x-jet-action-section>
-    <x-slot name="title">
-        {{ __('Delete Account') }}
-    </x-slot>
-
-    <x-slot name="description">
-        {{ __('Permanently delete your account.') }}
-    </x-slot>
-
-    <x-slot name="content">
-        <div class="max-w-xl text-sm text-colorsubtitleform">
+<x-form-card :titulo="__('Delete Account')" :subtitulo="__('Permanently delete your account.')">
+    <div class="w-full">
+        <div class="w-full text-xs sm:text-sm text-colorsubtitleform">
             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
         </div>
 
-        <div class="mt-5">
+        <div class="w-full flex justify-end">
             <x-button-secondary wire:click="confirmUserDeletion" wire:loading.attr="disabled">
                 {{ __('Delete Account') }}
             </x-button-secondary>
@@ -43,5 +35,5 @@
                 </x-button-secondary>
             </x-slot>
         </x-jet-dialog-modal>
-    </x-slot>
-</x-jet-action-section>
+    </div>
+</x-form-card>

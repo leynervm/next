@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\CampoUnique;
+use App\Rules\Recaptcha;
+use App\Rules\ValidateDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -24,6 +27,42 @@ class UserController extends Controller
     public function create()
     {
         return view('admin.users.create');
+    }
+
+    public function viewprofilesuserweb()
+    {
+        return view('profile-user-web');
+    }
+
+    public function profilecomplete()
+    {
+        return view('completar-perfil');
+    }
+
+    public function storeprofilecomplete(Request $request)
+    {
+        $validatedData = $request->validate([
+            'document' => [
+                'required',
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
+                new ValidateDocument(),
+                new CampoUnique('users', 'document', auth()->user()->id, true)
+            ],
+            'name' => ['required', 'string', 'min:3', 'max:255'],
+            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
+            'password_confirmation' => ['required', 'string', 'min:8', 'max:255'],
+            // 'g_recaptcha_response' => ['required', new Recaptcha("v3")]
+        ]);
+
+        $user = auth()->user();
+        $user->document = $validatedData['document'];
+        $user->name = $validatedData['name'];
+        $user->password = bcrypt($validatedData['password']);
+        $user->save();
+        $intendedRoute = $request->session()->get('route.intended', 'admin');
+
+        return redirect()->route($intendedRoute);
     }
 
     public function store(Request $request)

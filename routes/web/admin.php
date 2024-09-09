@@ -32,8 +32,8 @@ use Nwidart\Modules\Facades\Module;
 //     'auth:sanctum',
 //     config('jetstream.auth_session'),
 //     'verified'
-// ])->prefix('admin/')->group(function () {
-Route::get('/', [HomeController::class, 'index'])->name('admin');
+// ])->prefix('admin/')->group(unction () {
+Route::get('/', [HomeController::class, 'dashboard'])->name('admin')->middleware('dashboard');
 
 Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
