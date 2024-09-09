@@ -2,8 +2,8 @@
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="PERFIL" active>
             <x-slot name="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path
                         d="M7.78256 17.1112C6.68218 17.743 3.79706 19.0331 5.55429 20.6474C6.41269 21.436 7.36872 22 8.57068 22H15.4293C16.6313 22 17.5873 21.436 18.4457 20.6474C20.2029 19.0331 17.3178 17.743 16.2174 17.1112C13.6371 15.6296 10.3629 15.6296 7.78256 17.1112Z" />
                     <path
@@ -15,37 +15,27 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    {{-- @can('admin.ventas') --}}
-    <div class="contenedor w-full">
-        <div>
-            <div class="w-full py-10">
+    <div class="w-full contenedor mx-auto p-0 sm:py-10 sm:px-8">
+        @if (Laravel\Fortify\Features::canUpdateProfileInformation())
+            @livewire('profile.update-profile-information-form')
 
-                @if (Laravel\Fortify\Features::canUpdateProfileInformation())
-                    @livewire('profile.update-profile-information-form')
+            <x-jet-section-border />
+        @endif
 
-                    <x-jet-section-border />
-                @endif
+        @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
+            <div class="w-full mt-10 sm:mt-0">
+                @livewire('profile.update-password-form')
+            </div>
 
-                @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
-                    <div class="mt-10 sm:mt-0">
-                        @livewire('profile.update-password-form')
-                    </div>
+            <x-jet-section-border />
+        @endif
 
-                    <x-jet-section-border />
-                @endif
+        <div class="w-full mt-10 sm:mt-0">
+            @livewire('profile.logout-other-browser-sessions-form')
+        </div>
 
-                {{-- @if (Laravel\Fortify\Features::canManageTwoFactorAuthentication())
-                    <div class="mt-10 sm:mt-0">
-                        @livewire('profile.two-factor-authentication-form')
-                    </div>
-
-                    <x-jet-section-border />
-                @endif --}}
-
-                <div class="mt-10 sm:mt-0">
-                    @livewire('profile.logout-other-browser-sessions-form')
-                </div>
-
+        @if (auth()->user())
+            @if (!auth()->user()->isAdmin())
                 @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
                     <x-jet-section-border />
 
@@ -53,8 +43,7 @@
                         @livewire('profile.delete-user-form')
                     </div>
                 @endif
-            </div>
-        </div>
+            @endif
+        @endif
     </div>
-    {{-- @endcan --}}
 </x-app-layout>

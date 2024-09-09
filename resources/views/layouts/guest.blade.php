@@ -3,10 +3,20 @@
 
 <head>
     <meta charset="utf-8">
+
+    @php
+        $empresa = mi_empresa();
+    @endphp
+    @if ($empresa)
+        @if ($empresa->icono ?? null)
+            <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
+        @endif
+    @endif
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
     <!-- Fonts -->
     <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />

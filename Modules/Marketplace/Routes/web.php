@@ -12,6 +12,7 @@
 */
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Modules\Marketplace\Http\Controllers\ClaimbookController;
 use Modules\Marketplace\Http\Controllers\ContactController;
@@ -24,13 +25,24 @@ Route::get('/login/auth/{driver}/redirect', [AuthController::class, 'redirect'])
 Route::get('/login/auth/{driver}/callback', [AuthController::class, 'callback'])->name('auth.callback');
 
 
+Route::get('/completar-perfil', [UserController::class, 'profilecomplete'])->name('profile.complete')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+Route::post('/completar-perfil/store', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
+
+Route::get('/user/profile', [UserController::class, 'viewprofilesuserweb'])->name('profile.show');
+Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile')
+    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+
+
+
+
+
 Route::middleware('verifyproductocarshoop')->group(function () {
     Route::get('/productos', [MarketplaceController::class, 'productos'])->name('productos');
     Route::get('/productos/{producto:slug}', [MarketplaceController::class, 'showproducto'])->name('productos.show');
     Route::get('/ofertas', [MarketplaceController::class, 'ofertas'])->name('ofertas');
     Route::get('/carshoop', [MarketplaceController::class, 'carshoop'])->name('carshoop');
     Route::get('/mis-deseos', [MarketplaceController::class, 'wishlist'])->name('wishlist');
-    Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile');
 
     Route::get('/libro-reclamaciones/create', [ClaimbookController::class, 'create'])->name('claimbook.create');
     Route::post('/libro-reclamaciones/store', [ClaimbookController::class, 'store'])->name('claimbook.store');

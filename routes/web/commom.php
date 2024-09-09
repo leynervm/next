@@ -28,14 +28,7 @@ use Nwidart\Modules\Facades\Module;
 |
 */
 
-Route::get('/', [HomeController::class, 'welcome']);
-
-Route::get('/user/completar-perfil', [UserController::class, 'profilecomplete'])->name('profile.complete')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
-Route::post('/user/complete-perfil/save', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
-Route::get('/user/profile', [UserController::class, 'viewprofilesuserweb'])->name('profile.show')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
-
+Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 if (Features::enabled(Features::registration())) {
     Route::get('/register', [AuthController::class, 'register'])->name('register');
 }

@@ -31,14 +31,23 @@ class UserController extends Controller
 
     public function viewprofilesuserweb()
     {
-        return view('profile-user-web');
+        return redirect()->route('profile');
+        // return view('profile-user-web');
     }
 
     public function profilecomplete()
     {
+        $user = auth()->user();
+        if ($user) {
+            if (!empty($user->document) && !empty($user->password)) {
+                return redirect()->route('welcome');
+            }
+        }
         return view('completar-perfil');
     }
 
+
+    //Para local comentar linea de validacion recaptcha
     public function storeprofilecomplete(Request $request)
     {
         $validatedData = $request->validate([
@@ -52,7 +61,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'min:3', 'max:255'],
             'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'min:8', 'max:255'],
-            // 'g_recaptcha_response' => ['required', new Recaptcha("v3")]
+            'g_recaptcha_response' => ['required', new Recaptcha("v3")]
         ]);
 
         $user = auth()->user();

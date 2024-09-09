@@ -61,7 +61,8 @@
             </div>
         </div> --}}
         <div class="mr-6 relative flex-1 hidden xl:flex" x-data="productSearch()" @click.away="products= []">
-            <div class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[999]'">
+            <form @submit.prevent="redirectEnter" autocomplete="off"
+                class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[999]'">
                 <div class="w-full flex h-[46px] m-0 bg-white justify-center items-center pl-6 rounded-3xl border-0.5 border-white"
                     :class="products.length ? 'rounded-b-none' : ''">
                     <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
@@ -70,7 +71,7 @@
                         @focus="backdrop=true,openSidebar=false" @input.debounce.300ms="fetchProducts"
                         @keydown.enter="redirectEnter"
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
-                        placeholder="Buscar en NEXT STORE">
+                        placeholder="Buscar en NEXT STORE" id="search">
                 </div>
                 <button
                     class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">
@@ -81,7 +82,7 @@
                         <path d="m21 21-4.3-4.3" />
                     </svg>
                 </button>
-            </div>
+            </form>
 
             <ul class="w-full block absolute overflow-hidden left-0 top-[58px] p-1 rounded-b-3xl bg-fondominicard z-[999]"
                 x-show="products.length">
