@@ -20,6 +20,7 @@ use Modules\Ventas\Entities\Venta;
 use Spatie\Permission\Traits\HasRoles;
 
 use Illuminate\Support\Str;
+use Modules\Marketplace\Entities\Order;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -162,5 +163,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isDashboard()
     {
         return $this->sucursal_id != null;
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }

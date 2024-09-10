@@ -142,6 +142,16 @@ class Order extends Model
         return $this->methodpay == MethodPaymentOnlineEnum::DEPOSITO_BANCARIO;
     }
 
+    public function scopePendientepago($query)
+    {
+        return $query->where('status', StatusPayWebEnum::PENDIENTE->value);
+    }
+
+    public function scopePagoconfirmado($query)
+    {
+        return $query->where('status', StatusPayWebEnum::PAGO_CONFIRMADO->value);
+    }
+
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
     {
         return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);

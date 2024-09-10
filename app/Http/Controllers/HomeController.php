@@ -15,6 +15,7 @@ use jossmp\sunat\ruc;
 use jossmp\sunat\tipo_cambio;
 use LaravelDaily\LaravelCharts\Classes\LaravelChart;
 use Modules\Marketplace\Entities\Order;
+use Nwidart\Modules\Facades\Module;
 
 class HomeController extends Controller
 {
@@ -35,9 +36,9 @@ class HomeController extends Controller
         $pricetype = getPricetypeAuth($empresa);
         $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
 
-        if (auth()->user()) {
+        if (auth()->user() && Module::isEnabled('Marketplace')) {
             $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
-            $orderspending = Order::where('status', $status_pendiente)->count();
+            $orderspending = auth()->user()->orders()->pendientepago()->count();
             if ($orderspending) {
                 $mensaje = "Usted tiene $orderspending ordenes pendientes. <a class='font-semibold' href='" . route('orders') . "?estado-pago=$status_pendiente' >Ir a pagar</a>";
                 session()->flash('flash.banner', $mensaje);
