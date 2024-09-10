@@ -8,6 +8,7 @@ use App\Rules\Recaptcha;
 use App\Rules\ValidateDocument;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -50,24 +51,50 @@ class UserController extends Controller
     //Para local comentar linea de validacion recaptcha
     public function storeprofilecomplete(Request $request)
     {
-        $validatedData = $request->validate([
-            'document' => [
-                'required',
-                'numeric',
-                'regex:/^\d{8}(?:\d{3})?$/',
-                new ValidateDocument(),
-                new CampoUnique('users', 'document', auth()->user()->id, true)
+
+        $validatedData = $request->validate(
+            [
+                'document' => [
+                    Rule::requiredIf(empty(auth()->user()->document)),
+                    'numeric',
+                    'regex:/^\d{8}(?:\d{3})?$/',
+                    new ValidateDocument(),
+                    new CampoUnique('users', 'document', auth()->user()->id),
+                ],
+                'name' => ['required', 'string', 'min:3', 'max:255'],
+                'password' => [
+                    Rule::requiredIf(empty(auth()->user()->password)),
+                    'string',
+                    'min:8',
+                    'max:255',
+                    'confirmed'
+                ],
+                'password_confirmation' => [
+                    Rule::requiredIf(empty(auth()->user()->password)),
+                    'string',
+                    'min:8',
+                    'max:255'
+                ],
+                'current_password' => [
+                    Rule::requiredIf(!empty(auth()->user()->password)),
+                    'string',
+                    'current_password:web'
+                ],
+                'g_recaptcha_response' => ['required', new Recaptcha("v3")]
             ],
-            'name' => ['required', 'string', 'min:3', 'max:255'],
-            'password' => ['required', 'string', 'min:8', 'max:255', 'confirmed'],
-            'password_confirmation' => ['required', 'string', 'min:8', 'max:255'],
-            'g_recaptcha_response' => ['required', new Recaptcha("v3")]
-        ]);
+            [
+                'current_password.current_password' => __('The provided password does not match your current password.'),
+            ]
+        );
 
         $user = auth()->user();
-        $user->document = $validatedData['document'];
         $user->name = $validatedData['name'];
-        $user->password = bcrypt($validatedData['password']);
+        if (empty(auth()->user()->document)) {
+            $user->document = $validatedData['document'];
+        }
+        if (empty(auth()->user()->password)) {
+            $user->password = bcrypt($validatedData['password']);
+        }
         $user->save();
         $intendedRoute = $request->session()->get('route.intended', 'admin');
 

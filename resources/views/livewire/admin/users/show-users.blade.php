@@ -163,10 +163,9 @@
                                         <div
                                             class="inline-flex items-center justify-center gap-1 bg-fondospancardproduct text-textspancardproduct p-1 rounded-md">
                                             <span class="w-3 h-3 block">
-                                                <svg xmlns="http://www.w3.org/2000/svg"
-                                                    class="w-full h-full scale-125" viewBox="0 0 24 24"
-                                                    fill="none" stroke="currentColor" stroke-width="1.5"
-                                                    stroke-linecap="round" stroke-linejoin="round">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full scale-125"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                                                     <path
                                                         d="M12.5 22H6.59087C5.04549 22 3.81631 21.248 2.71266 20.1966C0.453365 18.0441 4.1628 16.324 5.57757 15.4816C7.97679 14.053 10.8425 13.6575 13.5 14.2952">
                                                     </path>
@@ -206,17 +205,14 @@
                             <td class="p-2 text-center">
                                 @if (!$item->isAdmin())
                                     @if ($item->trashed())
-                                        <p class="text-center">
-                                            <x-span-text text="ELIMINADO" class="leading-3 !tracking-normal" />
-                                        </p>
                                         @can('admin.users.restore')
-                                            <x-button-toggle class="text-gray-400 hover:text-gray-200 focus:text-gray-200"
+                                            <x-button-toggle :checked="false" class=""
                                                 onclick="restoreUser({{ $item }})" wire:loading.attr="disabled"
-                                                wire:key="restoreuser{{ $item->id }}">DESACTIVAR</x-button-toggle>
+                                                wire:key="restoreuser{{ $item->id }}" />
                                         @endcan
                                     @else
-                                        <x-button-delete wire:loading.attr="disabled"
-                                            onclick="confirmDelete({{ $item }})"
+                                        <x-button-toggle class=""
+                                            onclick="confirmDelete({{ $item }})" wire:loading.attr="disabled"
                                             wire:key="deleteuser_{{ $item->id }}" />
                                     @endif
                                 @endif

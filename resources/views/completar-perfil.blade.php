@@ -15,14 +15,19 @@
             {{ __('Antes de continuar, complete los datos de su perfil.') }}
         </div>
 
-        <form id="form_complete_profile" action="{{ route('profile.complete.save') }}" method="post" class="w-full flex flex-col gap-5">
+        <form id="form_complete_profile" action="{{ route('profile.complete.save') }}" method="post"
+            class="w-full flex flex-col gap-5">
             @csrf
             <x-form-card :titulo="__('PROFILE INFORMATION')" :subtitulo="__('Update your account\'s profile information and email address.')" class="">
                 <div class="w-full grid grid-cols-1 gap-2">
                     <div class="w-full">
                         <x-label for="name" value="{{ __('Document') }}" />
-                        <x-input id="document" type="text" class="first-letter:block w-full" name="document"
-                            value="{{ old('document') ?? auth()->user()->document }}" autocomplete="document" />
+                        @if (empty(auth()->user()->document))
+                            <x-input id="document" type="text" class="first-letter:block w-full" name="document"
+                                value="{{ old('document') ?? auth()->user()->document }}" autocomplete="document" />
+                        @else
+                            <x-disabled-text :text="auth()->user()->document" />
+                        @endif
                         <x-jet-input-error for="document" />
                     </div>
 
@@ -38,27 +43,38 @@
                         <x-disabled-text :text="auth()->user()->email" />
                         <x-jet-input-error for="email" />
                     </div>
+
+                    @if (auth()->user()->password)
+                        <div class="w-full">
+                            <x-label for="current_password" value="{{ __('Current Password') }}" />
+                            <x-input id="current_password" type="password" class="block w-full" name="current_password"
+                                autocomplete="current-password" />
+                            <x-jet-input-error for="current_password" />
+                        </div>
+                    @endif
                 </div>
             </x-form-card>
 
-            <x-form-card :titulo="__('UPDATE PASSWORD')" :subtitulo="__('Ensure your account is using a long, random password to stay secure.')" class="">
-                <div class="w-full grid grid-cols-1 gap-2">
-                    <div class="w-full">
-                        <x-label for="password" value="{{ __('New Password') }}" />
-                        <x-input id="password" name="password" type="password" class="block w-full"
-                            autocomplete="new-password" />
-                        <x-jet-input-error for="password" />
-                    </div>
+            @if (empty(auth()->user()->password))
+                <x-form-card :titulo="__('UPDATE PASSWORD')" :subtitulo="__('Ensure your account is using a long, random password to stay secure.')" class="">
+                    <div class="w-full grid grid-cols-1 gap-2">
+                        <div class="w-full">
+                            <x-label for="password" value="{{ __('New Password') }}" />
+                            <x-input id="password" name="password" type="password" class="block w-full"
+                                autocomplete="new-password" />
+                            <x-jet-input-error for="password" />
+                        </div>
 
-                    <div class="w-full">
-                        <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
-                        <x-input id="password_confirmation" type="password" class="block w-full"
-                            name="password_confirmation" autocomplete="new-password" />
-                        <x-jet-input-error for="password_confirmation" />
+                        <div class="w-full">
+                            <x-label for="password_confirmation" value="{{ __('Confirm Password') }}" />
+                            <x-input id="password_confirmation" type="password" class="block w-full"
+                                name="password_confirmation" autocomplete="new-password" />
+                            <x-jet-input-error for="password_confirmation" />
+                        </div>
                     </div>
-                </div>
-                <x-jet-input-error for="g_recaptcha_response" />
-            </x-form-card>
+                    <x-jet-input-error for="g_recaptcha_response" />
+                </x-form-card>
+            @endif
 
             <div class="w-full flex justify-center items-center">
                 <x-button-web type="submit" :text="__('Save changes')" />

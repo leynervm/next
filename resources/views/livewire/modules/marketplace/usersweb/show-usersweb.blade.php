@@ -116,10 +116,6 @@
 
                                             <x-button-toggle onclick="confirmDelete({{ $item }})"
                                                 wire:loading.attr="disabled" wire:key="deleteuser_{{ $item->id }}" />
-
-                                            {{-- <x-button-delete wire:loading.attr="disabled"
-                                                onclick="confirmDelete({{ $item }})"
-                                                wire:key="deleteuser_{{ $item->id }}" /> --}}
                                         @endif
                                     @endif
                                 @endcan
