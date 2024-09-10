@@ -82,18 +82,17 @@ class AuthController extends Controller
             }
 
             // auth()->login($user, true);
-            // Auth::login($user, true);
+            Auth::login($user, true);
 
-            if (Auth::attempt(['email' => $email])) {
-                $request->session()->regenerate();
-
-                if (Module::isEnabled('Marketplace')) {
-                    if (empty($user->document) || empty($user->password)) {
-                        return redirect()->route('profile.complete');
-                    }
+            // if (Auth::attempt(['email' => $email])) {
+            $request->session()->regenerate();
+            if (Module::isEnabled('Marketplace')) {
+                if (empty($user->document) || empty($user->password)) {
+                    return redirect()->route('profile.complete');
                 }
-                return redirect()->intended('/');
             }
+            return redirect()->intended('/');
+            // }
 
             // DB::commit();
 
