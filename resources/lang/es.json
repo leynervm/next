@@ -264,5 +264,6 @@
     "PROFILE INFORMATION" : "INFORMACIÓN DEL PERFIL",
     "UPDATE PASSWORD" : "ACTUALIZAR CONTRASEÑA",
     "Save changes" : "Guardar cambios",
-    "users" : "usuarios"
+    "users" : "usuarios",
+    "The user is have down": "El usuario está inactivo"
 }

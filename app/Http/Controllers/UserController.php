@@ -96,9 +96,9 @@ class UserController extends Controller
             $user->password = bcrypt($validatedData['password']);
         }
         $user->save();
-        $intendedRoute = $request->session()->get('route.intended', 'admin');
-
-        return redirect()->route($intendedRoute);
+        // $intendedRoute = $request->session()->get('route.intended', 'admin');
+        return redirect()->intended('/');
+        // return redirect()->route($intendedRoute);
     }
 
     public function store(Request $request)
