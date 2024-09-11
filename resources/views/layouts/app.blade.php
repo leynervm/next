@@ -62,7 +62,7 @@
                 @endif
 
                 @if (isset($breadcrumb))
-                    <div class="w-full overflow-hidden pt-2">
+                    <div class="w-full overflow-hidden p-1.5 lg:p-2">
                         <x-breadcrumb-next home="/">
                             {{ $breadcrumb }}
                         </x-breadcrumb-next>
@@ -208,61 +208,6 @@
         //permitir hacer enter en input
         return charCode == 13 ? true : false;
     }
-
-
-    document.addEventListener('DOMContentLoaded', () => {
-        getTheme();
-        const buttonsTheme = document.querySelectorAll('.theme-switcher-button');
-        buttonsTheme.forEach((button) => {
-            button.addEventListener('click', () => {
-                setTheme(button);
-                getTheme();
-            });
-        })
-
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            getTheme(e);
-        });
-
-        function setActive(theme) {
-            const themeSwitcherButtons = document.querySelectorAll('.theme-switcher-button');
-            themeSwitcherButtons.forEach((button) => {
-                if (button.classList.contains('theme-active')) {
-                    button.classList.remove('theme-active');
-                }
-                if (button.getAttribute('theme') == theme) {
-                    button.classList.add('theme-active');
-                }
-            })
-            // let activeButton = document.querySelector(`.theme-switcher-${selectedButton}`);
-            // activeButton.classList.add('theme-active');
-        }
-
-        function getTheme() {
-            const localTheme = localStorage.theme;
-            if (localTheme != null || localTheme != undefined) {
-                let classes = document.body.className.split(' ');
-                let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
-                themeClasses.forEach(themeClass => {
-                    document.body.classList.remove(themeClass);
-                });
-                document.body.classList.add(localTheme);
-            } else {
-                if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
-                    document.body.classList.remove("{{ config('app.theme') }}");
-                    document.body.classList.add('theme-darknext');
-                } else {
-                    document.body.classList.remove('theme-darknext');
-                    document.body.classList.add("{{ config('app.theme') }}");
-                }
-            }
-            setActive(localTheme);
-        }
-
-        function setTheme(event) {
-            localStorage.theme = event.getAttribute('theme');
-        }
-    })
 </script>
 
 </html>

@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Modules\Marketplace\Sliders;
 use App\Helpers\FormatoPersonalizado;
 use App\Models\Slider;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -31,7 +32,11 @@ class CreateSlider extends Component
             'end' => ['nullable', 'date'],
             'orden' => ['required', 'integer', 'min:0'],
             'image' => [
-                'required', 'file', 'mimes:jpeg,png,gif', 'max:5120', 'dimensions:min_width=1920,min_height=560'
+                'required',
+                'file',
+                'mimes:jpeg,png,gif',
+                'max:5120',
+                'dimensions:min_width=1920,min_height=560'
             ]
         ];
     }
@@ -39,6 +44,7 @@ class CreateSlider extends Component
     public function mount()
     {
         $this->identificador = rand();
+        $this->start = now('America/Lima')->format('Y-m-d');
     }
 
     public function render()
@@ -55,46 +61,61 @@ class CreateSlider extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
 
         $this->authorize('admin.marketplace.sliders.create');
 
-        $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
-        $this->validate();
 
-        if (!Storage::directoryExists('images/slider/')) {
-            Storage::makeDirectory('images/slider/');
+        DB::beginTransaction();
+        try {
+            $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
+            $this->validate();
+
+            if (!Storage::directoryExists('images/slider/')) {
+                Storage::makeDirectory('images/slider/');
+            }
+
+            $compressedImage = ImageIntervention::make($this->image->getRealPath())
+                ->resize(1920, 560, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('jpg', 30);
+
+            $urlImage = uniqid('slider_') . '.' . $this->image->getClientOriginalExtension();
+            $compressedImage->save(public_path('storage/images/slider/' . $urlImage));
+
+            if ($compressedImage->filesize() > 2097152) { //2MB
+                $compressedImage->destroy();
+                $compressedImage->delete();
+                $this->addError('image', 'El campo imagen no debe ser mayor que 2MB.');
+                return false;
+            }
+
+            Slider::create([
+                'url' => $urlImage,
+                'link' => $this->link,
+                'orden' => $this->orden,
+                'start' => $this->start,
+                'end' => empty($this->end) ? null : $this->end,
+            ]);
+            DB::commit();
+            $this->dispatchBrowserEvent('created');
+            $this->emit('render');
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept('open');
+            }
+            $this->start = now('America/Lima')->format('Y-m-d');
+            $this->resetValidation();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $compressedImage = ImageIntervention::make($this->image->getRealPath())
-            ->resize(1920, 560, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })->orientate()->encode('jpg', 30);
-
-        $urlImage = uniqid('slider_') . '.' . $this->image->getClientOriginalExtension();
-        $compressedImage->save(public_path('storage/images/slider/' . $urlImage));
-
-        if ($compressedImage->filesize() > 2097152) { //2MB
-            $compressedImage->destroy();
-            $compressedImage->delete();
-            $this->addError('image', 'El campo imagen no debe ser mayor que 2MB.');
-            return false;
-        }
-
-        Slider::create([
-            'url' => $urlImage,
-            'link' => $this->link,
-            'orden' => $this->orden,
-            'start' => $this->start,
-            'end' => empty($this->end) ? null : $this->end,
-        ]);
-
-        $this->dispatchBrowserEvent('created');
-        $this->emit('render');
-        $this->reset();
-        $this->resetValidation();
     }
 
     public function updatedImage($file)

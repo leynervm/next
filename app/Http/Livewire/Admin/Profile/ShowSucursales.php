@@ -49,7 +49,7 @@ class ShowSucursales extends Component
                     auth()->user()->employer->save();
                 }
                 DB::commit();
-                return redirect()->route('profile.show');
+                return redirect()->route('admin.profile');
                 $this->dispatchBrowserEvent('updated');
             } catch (\Exception $e) {
                 DB::rollBack();

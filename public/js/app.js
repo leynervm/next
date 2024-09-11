@@ -7300,6 +7300,58 @@ alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].plugin(_alpinejs_focus__WEBPACK
 alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].plugin(_alpinejs_mask__WEBPACK_IMPORTED_MODULE_2__["default"]);
 window.Alpine = alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"];
 alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].start();
+document.addEventListener('DOMContentLoaded', function () {
+  getTheme();
+  var buttonsTheme = document.querySelectorAll('.theme-switcher-button');
+  buttonsTheme.forEach(function (button) {
+    button.addEventListener('click', function () {
+      setTheme(button);
+      getTheme();
+    });
+  });
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+    getTheme(e);
+  });
+  function setActive(theme) {
+    var themeSwitcherButtons = document.querySelectorAll('.theme-switcher-button');
+    themeSwitcherButtons.forEach(function (button) {
+      button.classList.remove('theme-active');
+      if (button.getAttribute('theme') == theme) {
+        button.classList.add('theme-active');
+      }
+    });
+  }
+  function getTheme() {
+    var localTheme = localStorage.theme;
+    if (localTheme == null || localTheme == undefined) {
+      if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
+        localTheme = 'theme-darknext';
+      } else {
+        localTheme = "{{ config('app.theme') }}";
+      }
+      localStorage.theme = localTheme;
+    }
+    setActive(localTheme);
+    var classes = document.body.className.split(' ');
+    var themeClasses = classes.filter(function (cls) {
+      return cls.startsWith('theme-');
+    });
+    var isEqualThem = false;
+    themeClasses.forEach(function (themeClass) {
+      if (localTheme == themeClass) {
+        isEqualThem = true;
+      } else {
+        document.body.classList.remove(themeClass);
+      }
+    });
+    if (!isEqualThem) {
+      document.body.classList.add(localTheme);
+    }
+  }
+  function setTheme(event) {
+    localStorage.theme = event.getAttribute('theme');
+  }
+});
 
 /***/ }),
 

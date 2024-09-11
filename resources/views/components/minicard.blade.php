@@ -12,7 +12,8 @@
             $dimensions = 'w-36 h-36';
             break;
         default:
-            $dimensions = 'w-24 h-24';
+            $dimensions = 'w-20 sm:w-24 h-20 sm:h-24';
+        // $classesIcon = 'w-6 sm:w-6 h-6 sm:h-6';
     }
 
 @endphp

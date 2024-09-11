@@ -31,8 +31,8 @@
                     </div>
                 </div>
                 @if ($empresa->image)
-                    <a href="/" class="hidden xs:block xl:hidden w-20 h-[68%] flex-shrink-0">
-                        <img class="h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
+                    <a href="/" class="hidden xs:block xl:hidden w-20 h-full flex-shrink-0">
+                        <img class="h-full w-auto m-auto object-center object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
                             alt="">
                         {{-- <x-isotipo-next class="text-white h-full mx-auto" /> --}}
                     </a>
@@ -71,7 +71,7 @@
                         @focus="backdrop=true,openSidebar=false" @input.debounce.300ms="fetchProducts"
                         @keydown.enter="redirectEnter"
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
-                        placeholder="Buscar en NEXT STORE" id="search">
+                        placeholder="Buscar en Next Store" id="search">
                 </div>
                 <button
                     class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">
@@ -159,35 +159,33 @@
         </script>
 
 
-        <div class="ml-auto w-auto flex">
-            <ul class="flex justify-end h-full m-0 p-0" x-data="{ login: false }">
+        <div class="w-full flex flex-1 sm:w-auto sm:flex-none sm:ml-auto">
+            <ul class="w-full sm:w-auto flex justify-end h-full m-0 p-0" x-data="{ login: false }">
                 <li @mouseover="login = true" @mouseover.outside="login = false"
                     class="group relative h-[68%] flex flex-col justify-center items-center cursor-pointer xl:whitespace-nowrap xl:min-w-[50px] w-auto flex-shrink-0 p-0 xl:border-r border-white self-center transition ease-out duration-150">
                     <div class="h-full">
                         <div class="h-full relative flex justify-center items-center cursor-pointer">
                             <div>
-                                <div class="flex h-full py-4">
-                                    <div class="pr-4 leading-4">
-                                        <div class="flex">
-                                            @auth
-                                                <p
-                                                    class="group-hover:opacity-80 min-w-[50px] max-w-[120px] whitespace-normal xl:truncate leading-4 font-semibold text-white text-xs xl:text-sm mt-1 transition ease-out duration-150">
-                                                    {{ Auth::user()->name }}
-                                                </p>
-                                                <svg class="flex-shrink-0 text-white block mt-1 ml-1 w-5 h-5"
-                                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" class="lucide lucide-chevron-down">
-                                                    <path d="m6 9 6 6 6-6" />
-                                                </svg>
-                                            @else
-                                                <a @click="localStorage.setItem('activeForm', 'login')"
-                                                    href="{{ route('login') }}"
-                                                    class="group-hover:opacity-80 max-w-[120px] whitespace-normal xl:truncate leading-4 font-semibold text-white text-lg xl:text-xl mt-1 transition ease-out duration-150">
-                                                    {{ __('Log in') }}
-                                                </a>
-                                            @endauth
-                                        </div>
+                                <div class="flex h-full py-4 pr-2 sm:pr-4">
+                                    <div class="flex min-w-[50px] max-w-[120px] xl:max-w-[220px]">
+                                        @auth
+                                            <p
+                                                class="group-hover:opacity-80 whitespace-normal xl:truncate leading-4 font-semibold text-white text-xs xl:text-sm mt-1 transition ease-out duration-150">
+                                                {{ Auth::user()->name }}
+                                            </p>
+                                            <svg class="flex-shrink-0 text-white block mt-1 ml-1 w-5 h-5"
+                                                xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round" class="lucide lucide-chevron-down">
+                                                <path d="m6 9 6 6 6-6" />
+                                            </svg>
+                                        @else
+                                            <a @click="localStorage.setItem('activeForm', 'login')"
+                                                href="{{ route('login') }}"
+                                                class="group-hover:opacity-80 whitespace-normal truncate leading-4 font-semibold text-white text-lg sm:text-xl mt-1 transition ease-out duration-150">
+                                                {{ __('Log in') }}
+                                            </a>
+                                        @endauth
                                     </div>
                                 </div>
                                 @auth
@@ -199,24 +197,6 @@
                                             {{ __('Manage Account') }}
                                         </div> --}}
                                             <div class="w-full p-3">
-
-                                                {{-- <button type="button"
-                                                    class="w-10 h-10 ml-auto bg-transparent text-[10px] relative block text-white cursor-pointer font-semibold rounded-full transition-all ease-in-out duration-150">
-                                                    @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                                        <img class="h-full w-full rounded-full object-cover"
-                                                            src="{{ Auth::user()->profile_photo_url }}"
-                                                            alt="{{ Auth::user()->name }}" />
-                                                    @else
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                            stroke="currentColor" stroke-width="2" fill="none"
-                                                            class="w-full h-full block">
-                                                            <circle cx="12" cy="12" r="10" />
-                                                            <path
-                                                                d="M7.5 17C9.8317 14.5578 14.1432 14.4428 16.5 17M14.4951 9.5C14.4951 10.8807 13.3742 12 11.9915 12C10.6089 12 9.48797 10.8807 9.48797 9.5C9.48797 8.11929 10.6089 7 11.9915 7C13.3742 7 14.4951 8.11929 14.4951 9.5Z" />
-                                                        </svg>
-                                                    @endif
-                                                </button> --}}
-
                                                 <div
                                                     class="flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
                                                     <button title="Light" theme="theme-next"
@@ -259,16 +239,9 @@
                                                     style="text-wrap:wrap;">
                                                     {{ Auth::user()->name }}</p>
 
-                                                @if (auth()->user()->sucursal)
+                                                @if (auth()->user()->isAdmin() || auth()->user()->sucursal)
                                                     <x-link-web href="{{ route('admin') }}" class="mx-auto"
                                                         :text="__('Dashboard')" />
-                                                @endif
-
-
-                                                @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
-                                                    <x-jet-dropdown-link href="{{ route('api-tokens.index') }}">
-                                                        {{ __('API Tokens') }}
-                                                    </x-jet-dropdown-link>
                                                 @endif
 
                                                 <div class="w-full mt-5 text-center">
@@ -286,10 +259,7 @@
                                                     <a href="{{ route('logout') }}" @click.prevent="$root.submit();"
                                                         class="custom-btn uppercase mx-auto block w-full align-middle text-center">{{ __('Log Out') }}<span></span>
                                                     </a>
-                                                    {{-- <x-link-web href="{{ route('logout') }}" class="mx-auto"
-                                                        @click.prevent="$root.submit();" :text="__('Log Out')" /> --}}
                                                 </form>
-
                                             </div>
                                         </div>
                                     </div>
@@ -299,12 +269,42 @@
                     </div>
                 </li>
                 <li
-                    class="group relative h-[68%] hidden xl:flex flex-col justify-center items-center cursor-pointer px-0 min-w-[50px] w-auto flex-shrink-0 p-0 xl:border-r border-white self-center transition ease-out duration-150">
-                    <a class="p-4 relative flex flex-col justify-center items-start h-full w-full text-center group-hover:opacity-80"
-                        href="{{ route('orders') }}">
-                        <span class="font-semibold text-white text-lg leading-4 ">Mis</span>
-                        <span class="font-semibold text-white text-lg leading-4 mt-0.5">compras</span>
-                    </a>
+                    class="group relative h-[68%] flex flex-col justify-center items-center cursor-pointer px-0 min-w-[50px] w-auto flex-shrink-0 p-0 xl:border-r border-white self-center transition ease-out duration-150">
+                    @auth
+                        <a class="p-4 font-semibold text-white text-lg leading-4 h-full w-full flex justify-center items-center group-hover:opacity-80"
+                            href="{{ route('orders') }}">
+                            Mis<br>compras
+                        </a>
+                    @else
+                        <div class="py-4 px-2 sm:p-4 h-ful flex gap-2 w-full theme-switcher justify-center items-center">
+                            <button title="Light" theme="theme-next"
+                                class="inline-block theme-switcher-button rounded-full bg-transparent text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" class="block w-8 h-8 p-1">
+                                    <path
+                                        d="M6.08938 14.9992C5.71097 14.1486 5.5 13.2023 5.5 12.2051C5.5 8.50154 8.41015 5.49921 12 5.49921C15.5899 5.49921 18.5 8.50154 18.5 12.2051C18.5 13.2023 18.289 14.1486 17.9106 14.9992" />
+                                    <path d="M12 1.99921V2.99921" />
+                                    <path d="M22 11.9992H21" />
+                                    <path d="M3 11.9992H2" />
+                                    <path d="M19.0704 4.92792L18.3633 5.63503" />
+                                    <path d="M5.6368 5.636L4.92969 4.92889" />
+                                    <path
+                                        d="M14.517 19.3056C15.5274 18.9788 15.9326 18.054 16.0466 17.1238C16.0806 16.8459 15.852 16.6154 15.572 16.6154L8.47685 16.6156C8.18725 16.6156 7.95467 16.8614 7.98925 17.1489C8.1009 18.0773 8.3827 18.7555 9.45345 19.3056M14.517 19.3056C14.517 19.3056 9.62971 19.3056 9.45345 19.3056M14.517 19.3056C14.3955 21.2506 13.8338 22.0209 12.0068 21.9993C10.0526 22.0354 9.60303 21.0833 9.45345 19.3056" />
+                                </svg>
+                            </button>
+
+                            <button title="Dark" theme="theme-darknext"
+                                class="inline-block theme-switcher-button rounded-full bg-transparent text-white">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" class="block w-8 h-8 p-1">
+                                    <path
+                                        d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    @endauth
                 </li>
                 <li
                     class="group relative h-[68%] flex flex-col justify-center items-center cursor-pointer px-0 whitespace-nowrap min-w-[50px] max-w-[120px] xs:max-w-full w-auto flex-shrink-0 p-0 xl:border-r border-white self-center transition ease-out duration-150">
@@ -343,10 +343,10 @@
                 :class="products.length ? 'rounded-b-none' : ''">
                 <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                     Barra de búsqueda</label>
-                <input type="text" autocomplete="off" x-model="search" @focus="backdrop=true"
+                <input type="text" name="search" autocomplete="off" x-model="search" @focus="backdrop=true"
                     @input.debounce.300ms="fetchProducts"
                     class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
-                    value="" placeholder="Buscar en NEXT">
+                    value="" placeholder="Buscar en Next Store">
             </div>
             <button
                 class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-10 w-10 flex justify-center items-center">

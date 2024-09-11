@@ -265,5 +265,6 @@
     "UPDATE PASSWORD" : "ACTUALIZAR CONTRASEÑA",
     "Save changes" : "Guardar cambios",
     "users" : "usuarios",
-    "The user is have down": "El usuario está inactivo"
+    "The user is have down": "El usuario está inactivo",
+    "Store" : "Tienda"
 }

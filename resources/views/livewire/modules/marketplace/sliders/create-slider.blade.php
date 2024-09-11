@@ -101,10 +101,12 @@
                     </div>
                 </div>
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex items-center gap-1 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('Save') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
+
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -115,6 +117,12 @@
                 image: null,
                 imageWidth: null,
                 imageHeight: null,
+                init() {
+                    window.addEventListener('created', event => {
+                        console.log(event);
+                        this.image = null;
+                    })
+                },
                 loadlogo() {
                     let file = document.getElementById('fileInput').files[0];
                     var reader = new FileReader();

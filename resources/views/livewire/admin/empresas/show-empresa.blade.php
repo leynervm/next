@@ -134,7 +134,7 @@
                                 <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
                                     src="{{ $empresa->image->getLogoEmpresa() }}" />
                             @else
-                                <x-icon-file-upload class="w-full h-full text-gray-300" />
+                                <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" />
                             @endif
                         @endif
                     </x-simple-card>
@@ -201,7 +201,7 @@
                                 <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
                                     src="{{ $empresa->getIconoURL() }}" />
                             @else
-                                <x-icon-file-upload class="w-full h-full text-gray-300" />
+                                <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" />
                             @endif
                         @endif
                     </x-simple-card>

@@ -1,5 +1,5 @@
-<nav class="h-full overflow-y-auto overflow-x-hidden bg-body/50 md:block md:flex-1 ease-in-out duration-300">
-    <div class="flex flex-col h-full py-1 justify-between">
+<nav class="fixed w-16 md:w-auto md:relative h-full overflow-y-auto overflow-x-hidden bg-body/50 md:block md:flex-1 ease-in-out duration-300">
+    <div class="pt-16 md:pt-0 flex flex-col h-full py-1 justify-between">
         <ul class="w-full text-center px-1 space-y-1">
 
             {{-- <li class="">

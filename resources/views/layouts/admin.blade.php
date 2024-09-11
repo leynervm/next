@@ -12,8 +12,7 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', '@NEXT TECHNOLOGIES') }}</title>
+    <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
 
     <!-- Fonts -->
@@ -53,14 +52,8 @@
                 {{-- QUIT md:w-64 --}}
                 <div class="bg-sidebar fixed z-10 -translate-x-full md:w-16 md:translate-x-0 md:relative w-16 h-screen flex flex-col border-r border-colorlinknav transition-width ease-in duration-100"
                     id="menu">
-                    <div class="md:flex w-full h-16 px-1 items-center justify-center bg-sidebar" id="sidebar-header">
-
-                        {{-- <h2 id="title-sidebar" class="text-lg font-semibold text-white"> --}}
-                        {{-- </h2> --}}
+                    <div class="md:flex w-full h-16 px-1 items-center justify-center" id="sidebar-header">
                         <div class="h-12 w-32 hidden ease-in-out duration-100" id="logo-sidebar">
-                            {{-- <img class="w-full h-full object-scale-down object-center"
-                            src="{{ asset('assets/settings/login.png') }}" alt=""> --}}
-
                             @if ($empresa)
                                 @if ($empresa->image)
                                     <img class="w-full h-full object-scale-down object-center"
@@ -103,7 +96,7 @@
                         </x-alert>
                     @endif
 
-                    <div class="relative flex gap-2 items-start justify-between pb-2">
+                    <div class="relative flex flex-col flex-col-reverse md:flex-row gap-2 items-start justify-between pb-2">
                         <div class="w-full flex-1 mt-auto">
                             <x-breadcrumb-next home="{{ route('admin') }}">
                                 @if (isset($breadcrumb))
@@ -178,7 +171,7 @@
                                 </div>
 
                                 <!-- Account Management -->
-                                <div class="block px-4 py-2 text-xs text-textspancardproduct">
+                                <div class="block px-4 py-2 text-xs text-colorsubtitleform text-center">
                                     {{ __('Manage Account') }}
                                 </div>
 
@@ -186,7 +179,26 @@
                                 {{ __('Profile') }}
                             </x-jet-dropdown-link> --}}
 
-                                <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full text-textspancardproduct"
+                                @if (Module::isEnabled('Marketplace'))
+                                    <x-nav-link
+                                        class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"
+                                        href="/">
+                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round"
+                                            stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <path
+                                                d="M3.06164 15.1933L3.42688 13.1219C3.85856 10.6736 4.0744 9.44952 4.92914 8.72476C5.78389 8 7.01171 8 9.46734 8H14.5327C16.9883 8 18.2161 8 19.0709 8.72476C19.9256 9.44952 20.1414 10.6736 20.5731 13.1219L20.9384 15.1933C21.5357 18.5811 21.8344 20.275 20.9147 21.3875C19.995 22.5 18.2959 22.5 14.8979 22.5H9.1021C5.70406 22.5 4.00504 22.5 3.08533 21.3875C2.16562 20.275 2.4643 18.5811 3.06164 15.1933Z" />
+                                            <path
+                                                d="M7.5 8L7.66782 5.98618C7.85558 3.73306 9.73907 2 12 2C14.2609 2 16.1444 3.73306 16.3322 5.98618L16.5 8" />
+                                            <path
+                                                d="M15 11C14.87 12.4131 13.5657 13.5 12 13.5C10.4343 13.5 9.13002 12.4131 9 11" />
+                                        </svg>
+                                        {{ __('Store') }}
+                                    </x-nav-link>
+                                @endif
+
+                                <x-nav-link
+                                    class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"
                                     href="{{ route('admin.profile') }}">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round" stroke="currentColor"
@@ -198,21 +210,22 @@
                                         <path
                                             d="M18.4332 13.8485C18.7685 13.4851 18.9362 13.3035 19.1143 13.1975C19.5442 12.9418 20.0736 12.9339 20.5107 13.1765C20.6918 13.2771 20.8646 13.4537 21.2103 13.8067C21.5559 14.1598 21.7287 14.3364 21.8272 14.5214C22.0647 14.9679 22.0569 15.5087 21.8066 15.9478C21.7029 16.1298 21.5251 16.3011 21.1694 16.6437L16.9378 20.7194C16.2638 21.3686 15.9268 21.6932 15.5056 21.8577C15.0845 22.0222 14.6214 22.0101 13.6954 21.9859L13.5694 21.9826C13.2875 21.9752 13.1466 21.9715 13.0646 21.8785C12.9827 21.7855 12.9939 21.6419 13.0162 21.3548L13.0284 21.1988C13.0914 20.3906 13.1228 19.9865 13.2807 19.6232C13.4385 19.2599 13.7107 18.965 14.2552 18.375L18.4332 13.8485Z" />
                                     </svg>
-                                    <span class="font-medium">{{ __('Profile') }}</span>
+                                    {{ __('Profile') }}
                                 </x-nav-link>
 
-                                @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
+                                {{-- @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                                     <x-jet-dropdown-link href="{{ route('api-tokens.index') }}">
                                         {{ __('API Tokens') }}
                                     </x-jet-dropdown-link>
-                                @endif
+                                @endif --}}
 
                                 {{-- <div class="border-t border-colorlinknav"></div> --}}
 
                                 <!-- Authentication -->
                                 <form method="POST" action="{{ route('logout') }}" x-data>
                                     @csrf
-                                    <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full text-textspancardproduct"
+                                    <x-nav-link
+                                        class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"
                                         href="{{ route('logout') }}" @click.prevent="$root.submit();">
                                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                             fill="currentColor" stroke="currentColor" stroke-width=".5"
@@ -222,7 +235,7 @@
                                             <path
                                                 d="M12 1.25C12.5523 1.25 13 1.69772 13 2.25V10.25C13 10.8023 12.5523 11.25 12 11.25C11.4477 11.25 11 10.8023 11 10.25V2.25C11 1.69772 11.4477 1.25 12 1.25Z" />
                                         </svg>
-                                        <span class="font-medium">{{ __('Log Out') }}</span>
+                                        {{ __('Log Out') }}
                                         {{-- <x-jet-dropdown-link href="{{ route('logout') }}"
                                         @click.prevent="$root.submit();">
                                         {{ __('Log Out') }}
@@ -442,36 +455,38 @@
         function setActive(theme) {
             const themeSwitcherButtons = document.querySelectorAll('.theme-switcher-button');
             themeSwitcherButtons.forEach((button) => {
-                if (button.classList.contains('theme-active')) {
-                    button.classList.remove('theme-active');
-                }
+                button.classList.remove('theme-active');
                 if (button.getAttribute('theme') == theme) {
                     button.classList.add('theme-active');
                 }
             })
-            // let activeButton = document.querySelector(`.theme-switcher-${selectedButton}`);
-            // activeButton.classList.add('theme-active');
         }
 
         function getTheme() {
-            const localTheme = localStorage.theme;
-            if (localTheme != null || localTheme != undefined) {
-                let classes = document.body.className.split(' ');
-                let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
-                themeClasses.forEach(themeClass => {
-                    document.body.classList.remove(themeClass);
-                });
-                document.body.classList.add(localTheme);
-            } else {
+            let localTheme = localStorage.theme;
+            if (localTheme == null || localTheme == undefined) {
                 if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
-                    document.body.classList.remove("{{ config('app.theme') }}");
-                    document.body.classList.add('theme-darknext');
+                    localTheme = 'theme-darknext';
                 } else {
-                    document.body.classList.remove('theme-darknext');
-                    document.body.classList.add("{{ config('app.theme') }}");
+                    localTheme = "{{ config('app.theme') }}";
                 }
+                localStorage.theme = localTheme;
             }
             setActive(localTheme);
+            let classes = document.body.className.split(' ');
+            let themeClasses = classes.filter(cls => cls.startsWith('theme-'));
+            let isEqualThem = false;
+            themeClasses.forEach(themeClass => {
+                if (localTheme == themeClass) {
+                    isEqualThem = true;
+                } else {
+                    document.body.classList.remove(themeClass);
+                }
+            });
+
+            if (!isEqualThem) {
+                document.body.classList.add(localTheme);
+            }
         }
 
         function setTheme(event) {

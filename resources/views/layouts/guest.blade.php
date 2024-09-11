@@ -11,12 +11,11 @@
         @if ($empresa->icono ?? null)
             <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
         @endif
+        <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
     @endif
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
-    <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
     <!-- Fonts -->
     <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
