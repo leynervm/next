@@ -15,31 +15,25 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full contenedor mx-auto p-0 sm:py-10 sm:px-8">
+    <div class="w-full contenedor flex flex-col gap-3 xl:gap-8 mx-auto p-1 sm:p-3">
         @if (Laravel\Fortify\Features::canUpdateProfileInformation())
             @livewire('profile.update-profile-information-form')
-
-            <x-jet-section-border />
         @endif
 
         @if (Laravel\Fortify\Features::enabled(Laravel\Fortify\Features::updatePasswords()))
-            <div class="w-full mt-10 sm:mt-0">
+            <div class="w-full">
                 @livewire('profile.update-password-form')
             </div>
-
-            <x-jet-section-border />
         @endif
 
-        <div class="w-full mt-10 sm:mt-0">
+        <div class="w-full">
             @livewire('profile.logout-other-browser-sessions-form')
         </div>
 
         @if (auth()->user())
             @if (!auth()->user()->isAdmin())
                 @if (Laravel\Jetstream\Jetstream::hasAccountDeletionFeatures())
-                    <x-jet-section-border />
-
-                    <div class="mt-10 sm:mt-0">
+                    <div class="">
                         @livewire('profile.delete-user-form')
                     </div>
                 @endif

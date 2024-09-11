@@ -34,6 +34,7 @@ use Nwidart\Modules\Facades\Module;
 //     'verified'
 // ])->prefix('admin/')->group(unction () {
 Route::get('/', [HomeController::class, 'dashboard'])->name('admin')->middleware('dashboard');
+Route::get('/perfil', [UserController::class, 'profile'])->name('admin.profile')->middleware(['verifycompany']);
 
 Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->group(function () {
     Route::get('/', [UserController::class, 'index']);

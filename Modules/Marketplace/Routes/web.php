@@ -29,7 +29,6 @@ Route::get('/completar-perfil', [UserController::class, 'profilecomplete'])->nam
     ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
 Route::post('/completar-perfil/store', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
 
-Route::get('/user/profile', [UserController::class, 'viewprofilesuserweb'])->name('profile.show');
 Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile')
     ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
 

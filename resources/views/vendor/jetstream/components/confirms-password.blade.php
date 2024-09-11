@@ -16,19 +16,15 @@
 
 @once
     <x-jet-dialog-modal wire:model="confirmingPassword">
-        <x-slot name="title">
-            {{ $title }}
-            <x-button-close-modal wire:click="stopConfirmingPassword" wire:loading.attr="disabled" />
-        </x-slot>
+        <x-slot name="title">{{ $title }}</x-slot>
 
         <x-slot name="content">
             {{ $content }}
 
             <div class="mt-4" x-data="{}"
                 x-on:confirming-password.window="setTimeout(() => $refs.confirmable_password.focus(), 250)">
-                <x-input type="password" class="mt-1 block w-3/4" placeholder="{{ __('Password') }}"
-                    x-ref="confirmable_password" wire:model.defer="confirmablePassword"
-                    wire:keydown.enter="confirmPassword" />
+                <x-input type="password" class="mt-1 block w-full" placeholder="{{ __('Password') }}" x-ref="confirmable_password"
+                    wire:model.defer="confirmablePassword" wire:keydown.enter="confirmPassword" />
 
                 <x-jet-input-error for="confirmable_password" class="mt-2" />
             </div>

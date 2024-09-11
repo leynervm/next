@@ -3,10 +3,12 @@
         <x-loading-next />
     </div>
 
+    {{-- 20201987297 --}}
+
     <x-form-card titulo="DATOS EMPRESA">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-8">
-            <div class="w-full grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
-                <div class="w-full">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                <div class="w-full xs:col-span-2 sm:col-span-1">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
                         @if (auth()->user()->isAdmin())
@@ -29,21 +31,20 @@
                     <x-jet-input-error for="empresa.document" />
                 </div>
 
-                <div class="w-full sm:col-span-2">
+                <div class="w-full xs:col-span-2 lg:col-span-3 xl:col-span-2">
                     <x-label value="Razón Social :" />
                     <x-input class="block w-full" wire:model.defer="empresa.name" />
                     <x-jet-input-error for="empresa.name" />
                 </div>
 
-                <div class="w-full sm:col-span-2 xl:col-span-1">
+                <div class="w-full xs:col-span-2 sm:col-span-3 lg:col-span-2">
                     <x-label value="Dirección :" />
                     <x-input class="block w-full" wire:model.defer="empresa.direccion" />
                     <x-jet-input-error for="empresa.direccion" />
                 </div>
 
-                <div class="w-full sm:col-span-2">
+                <div class="w-full xs:col-span-2">
                     <x-label value="Ubigeo :" />
-                    {{-- 20201987297 --}}
                     <div id="parentubigeoempresa_id" class="relative" x-init="SelectUbigeoEmp">
                         <x-select class="block w-full" x-ref="selectubigeo" id="ubigeoempresa_id"
                             data-minimum-results-for-search="3">
@@ -79,15 +80,39 @@
                 </div>
 
                 <div class="w-full">
-                    <x-label value="Web :" />
+                    <x-label value="Porcentaje IGV :" />
+                    <x-input class="block w-full" wire:model.defer="empresa.igv" type="number" placeholder="0.00" />
+                    <x-jet-input-error for="empresa.igv" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Pagina web :" />
                     <x-input class="block w-full" wire:model.defer="empresa.web" placeholder="www.misitioweb.com" />
                     <x-jet-input-error for="empresa.web" />
                 </div>
 
                 <div class="w-full">
-                    <x-label value="Porcentaje IGV :" />
-                    <x-input class="block w-full" wire:model.defer="empresa.igv" type="number" placeholder="0.00" />
-                    <x-jet-input-error for="empresa.igv" />
+                    <x-label value="Link whatsApp :" />
+                    <x-input class="block w-full" wire:model.defer="empresa.whatsapp" />
+                    <x-jet-input-error for="empresa.whatsapp" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Link Facebook :" />
+                    <x-input class="block w-full" wire:model.defer="empresa.facebook" />
+                    <x-jet-input-error for="empresa.facebook" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Link Instagram :" />
+                    <x-input class="block w-full" wire:model.defer="empresa.instagram" />
+                    <x-jet-input-error for="empresa.instagram" />
+                </div>
+
+                <div class="w-full">
+                    <x-label value="Link Tik Tok :" />
+                    <x-input class="block w-full" wire:model.defer="empresa.tiktok" />
+                    <x-jet-input-error for="empresa.tiktok" />
                 </div>
             </div>
             <div class="w-full flex justify-end">

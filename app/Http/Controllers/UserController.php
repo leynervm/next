@@ -30,10 +30,9 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
-    public function viewprofilesuserweb()
+    public function profile()
     {
-        return redirect()->route('profile');
-        // return view('profile-user-web');
+        return view('profile.show');
     }
 
     public function profilecomplete()

@@ -29,6 +29,10 @@ use Nwidart\Modules\Facades\Module;
 */
 
 Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
+Route::get('/user/profile', function () {
+    return redirect()->route('admin.profile');
+});
+
 if (Features::enabled(Features::registration())) {
     Route::get('/register', [AuthController::class, 'register'])->name('register');
 }

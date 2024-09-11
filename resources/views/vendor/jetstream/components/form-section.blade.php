@@ -1,6 +1,6 @@
 @props(['submit'])
 
-<x-form-card :titulo="$title" :subtitulo="$description">
+<x-form-card :titulo="$title" :subtitulo="$description" classtitulo="!text-lg">
     <form wire:submit.prevent="{{ $submit }}" class="w-full flex flex-col gap-2 rounded-md sm:rounded-xl">
 
         {{ $form }}

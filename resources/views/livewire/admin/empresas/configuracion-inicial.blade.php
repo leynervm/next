@@ -38,7 +38,8 @@
     </style>
 
     <div x-cloak class="grid w-full h-full overflow-y-auto lg:py-10" x-data="app()">
-        <div class="w-full lg:my-auto md:max-w-2xl mx-auto p-2 lg:p-4 shadow-md shadow-shadowminicard rounded-xl">
+        <div
+            class="w-full border border-borderminicard lg:my-auto md:max-w-2xl mx-auto p-2 lg:p-4 shadow-md shadow-shadowminicard rounded-xl">
             <div x-cloak x-show="step === 'complete'">
                 <div class="w-full bg-white rounded-lg p-10 flex items-center shadow justify-between">
                     <div class="w-full">
@@ -62,7 +63,7 @@
 
             <div x-show="step != 'complete'" x-cloak>
                 <!-- Top Navigation -->
-                <div class="w-full border-b py-4">
+                <div class="w-full border-b border-borderminicard py-4">
                     <div class="uppercase tracking-wide text-xs font-bold text-colorsubtitleform mb-1 leading-tight"
                         x-text="`Paso: ${step} de 5`" x-cloak x-show="step < 6"></div>
                     <div class="w-full flex flex-col md:flex-row md:items-center md:justify-between">
@@ -106,14 +107,15 @@
 
                 <!-- Step Content -->
                 <div class="py-10 w-full">
-                    <div x-show="step === 1" x-transition>
+                    <div style="display:none;" x-show="step === 1" x-cloak class="animate__animated animate__bounceIn">
                         <div class="bg-body grid grid-cols-1 gap-2">
                             <div class="w-full">
                                 <x-label value="RUC :" />
                                 <div class="w-full inline-flex gap-1">
-                                    <x-input class="block w-full flex-1" wire:keydown.enter="searchclient"
-                                        type="number" x-model="document" wire:model.defer="document"
-                                        onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
+                                    <x-input class="block w-full flex-1 input-number-none"
+                                        wire:keydown.enter.prevent="searchclient" type="number" x-model="document"
+                                        wire:model.defer="document" onkeypress="return validarNumero(event, 11)"
+                                        onkeydown="disabledEnter(event)" />
                                     <x-button-add class="px-2.5 " wire:click="searchclient"
                                         wire:loading.attr="disabled">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
@@ -141,7 +143,6 @@
 
                             <div class="w-full">
                                 <x-label value="Ubigeo :" />
-                                {{-- 20201987297 --}}
                                 <div id="parentubigeo_id" class="relative" x-init="selectUbigeo">
                                     <x-select class="block w-full" x-ref="selectubigeo" id="ubigeo_id"
                                         data-minimum-results-for-search="3">
@@ -172,14 +173,15 @@
 
                             <div class="w-full">
                                 <x-label value="IGV (%):" />
-                                <x-input class="block w-full" wire:model.defer="igv" type="number"
-                                    placeholder="0.00" />
+                                <x-input class="block w-full input-number-none" type="number" wire:model.defer="igv"
+                                    type="number" placeholder="0.00" onkeypress="return validarDecimal(event, 5)" />
                                 <x-jet-input-error for="igv" />
                             </div>
                         </div>
                     </div>
 
-                    <div x-show="step === 2" x-transition>
+                    <div style="display:none;" x-show="step === 2" x-cloak
+                        class="animate__animated animate__bounceIn">
                         @if (Module::isEnabled('Ventas'))
                             <div class="w-full items-start flex flex-col gap-2">
                                 <div class="w-full">
@@ -452,8 +454,51 @@
                         </div>
                     </div>
 
-                    <div x-show="step === 3" x-transition>
+                    <div style="display:none;" x-show="step === 3" x-cloak
+                        class="animate__animated animate__bounceIn">
                         <div class="w-full bg-body flex flex-col gap-10">
+
+                            <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div class="w-full">
+                                    <x-label value="Correo :" />
+                                    <x-input class="block w-full" wire:model.defer="email" type="email"
+                                        placeholder="@" />
+                                    <x-jet-input-error for="email" />
+                                </div>
+                                <div class="w-full">
+                                    <x-label value="Página web :" />
+                                    <x-input class="block w-full" wire:model.defer="web"
+                                        placeholder="www.misitioweb.com" />
+                                    <x-jet-input-error for="web" />
+                                </div>
+
+                                @if (module::isEnabled('Marketplace'))
+                                    <div class="w-full">
+                                        <x-label value="Link whatsApp :" />
+                                        <x-input class="block w-full" wire:model.defer="whatsapp" />
+                                        <x-jet-input-error for="whatsapp" />
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-label value="Link Facebook :" />
+                                        <x-input class="block w-full" wire:model.defer="facebook" />
+                                        <x-jet-input-error for="facebook" />
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-label value="Link Instagram :" />
+                                        <x-input class="block w-full" wire:model.defer="instagram" />
+                                        <x-jet-input-error for="instagram" />
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-label value="Link Tik Tok :" />
+                                        <x-input class="block w-full" wire:model.defer="tiktok" />
+                                        <x-jet-input-error for="tiktok" />
+                                    </div>
+                                @endif
+                            </div>
+
                             @if (module::isEnabled('Ventas') || module::isEnabled('Almacen'))
                                 <form wire:submit.prevent="addalmacen" class="w-full grid gap-2">
                                     <div class="w-full">
@@ -491,25 +536,10 @@
                             @endif
 
                             <form wire:submit.prevent="addphone" class="grid grid-cols-1 gap-2">
-                                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    <div class="w-full">
-                                        <x-label value="Correo :" />
-                                        <x-input class="block w-full" wire:model.defer="email" type="email"
-                                            placeholder="@" />
-                                        <x-jet-input-error for="email" />
-                                    </div>
-                                    <div class="w-full">
-                                        <x-label value="Web :" />
-                                        <x-input class="block w-full" wire:model.defer="web"
-                                            placeholder="www.misitioweb.com" />
-                                        <x-jet-input-error for="web" />
-                                    </div>
-                                </div>
-
                                 <div class="w-full">
                                     <x-label value="Teléfono /Celular :" />
-                                    <x-input class="block w-full" wire:model.defer="telefono" type="number"
-                                        onkeypress="return validarNumero(event, 9)" />
+                                    <x-input class="block w-full input-number-none" wire:model.defer="telefono"
+                                        type="number" onkeypress="return validarNumero(event, 9)" />
                                     <x-jet-input-error for="telefono" />
                                 </div>
 
@@ -524,7 +554,7 @@
                                         @foreach ($telephones as $index => $item)
                                             <x-simple-card
                                                 class="w-24 h-24 cursor-pointer flex flex-col justify-center items-center gap-1 p-1 rounded-xl">
-                                                <h1 class="text-xs text-colorlabel">{{ $item }}</h1>
+                                                <h1 class="text-xs text-colorlabel">{{ formatTelefono($item) }}</h1>
                                                 <x-button-delete wire:click="removephone({{ $index }})"
                                                     wire:loading.attr="disabled" />
                                             </x-simple-card>
@@ -537,7 +567,8 @@
                         </div>
                     </div>
 
-                    <div x-show="step === 4" x-transition>
+                    <div style="display:none;" x-show="step === 4" x-cloak
+                        class="animate__animated animate__bounceIn">
                         <div class="w-full flex justify-end">
                             <x-button class=" p-3" wire:click="$toggle('open')">
                                 {{ __('AGREGAR NUEVA SUCURSAL') }}</x-button>
@@ -549,7 +580,7 @@
                             <div class="w-full flex flex-col gap-2 mt-3">
                                 @foreach ($sucursals as $index => $item)
                                     <x-simple-card
-                                        class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-next-100 !border-next-600' : '' }}">
+                                        class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-fondominicard !border-next-600' : '' }}">
                                         @if ($item['default'] > 0)
                                             <h1 class="text-xs text-colortitleform align-middle">
                                                 <x-icon-default class="inline-block m-auto align-middle" />
@@ -573,11 +604,11 @@
 
                                         <div>
                                             <x-label value="DIRECCIÓN :" class="font-semibold" />
-                                            <p class="text-colorsubtitleform leading-3 uppercase">
-                                                {{ $item['direccion'] }}
-                                                <br>
+                                            <p class="text-colorsubtitleform uppercase">
                                                 {{ $item['distrito'] }}, {{ $item['provincia'] }},
                                                 {{ $item['departamento'] }}
+                                                <br>
+                                                {{ $item['direccion'] }}
                                             </p>
                                         </div>
 
@@ -615,7 +646,8 @@
                         @endif
                     </div>
 
-                    <div x-show="step === 5" x-transition>
+                    <div style="display:none;" x-show="step === 5" x-cloak
+                        class="animate__animated animate__bounceIn">
                         <form wire:submit.prevent="validatestep('5')" class="w-full flex flex-col gap-2">
                             @if (module::isEnabled('Facturacion'))
                                 <div class="w-full grid gap-2 grid-cols-1">
@@ -748,7 +780,8 @@
                         </form>
                     </div>
 
-                    <div x-show="step === 6" x-transition>
+                    <div style="display:none;" x-show="step === 6" x-cloak
+                        class="animate__animated animate__bounceIn">
                         @if (count($empresa))
                             <x-simple-card class="p-3 rounded-xl">
                                 <template x-if="image">
@@ -774,6 +807,25 @@
                                     <p class="text-colorsubtitleform text-xs text-center">
                                         {{ $empresa['web'] }}</p>
                                 @endif
+
+                                @if (!empty($empresa['whatsapp']))
+                                    <p class="text-colorsubtitleform text-xs text-center">
+                                        <b>WHATSAPP: </b>{{ $empresa['whatsapp'] }}</p>
+                                @endif
+                                @if (!empty($empresa['facebook']))
+                                    <p class="text-colorsubtitleform text-xs text-center">
+                                        <b>FACEBOOK: </b>{{ $empresa['facebook'] }}</p>
+                                @endif
+                                @if (!empty($empresa['instagram']))
+                                    <p class="text-colorsubtitleform text-xs text-center">
+                                        <b>INSTAGRAM: </b>{{ $empresa['instagram'] }}</p>
+                                @endif
+                                @if (!empty($empresa['tiktok']))
+                                    <p class="text-colorsubtitleform text-xs text-center">
+                                        <b>TIK TOK: </b>{{ $empresa['tiktok'] }}</p>
+                                @endif
+
+
 
                                 <p class="text-colorsubtitleform text-xs text-center">
                                     <b>IGV: </b>{{ $empresa['igv'] }}%
@@ -984,7 +1036,7 @@
                                 <div class="w-full flex flex-col gap-2 mt-3">
                                     @foreach ($filteredSucursals as $index => $item)
                                         <x-simple-card
-                                            class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-next-100 !border-next-600' : '' }}">
+                                            class="w-full cursor-default text-xs flex flex-col gap-2 p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-fondominicard !border-next-600' : '' }}">
                                             @if ($item['default'] > 0)
                                                 <h1 class="text-xs text-colortitleform align-middle">
                                                     <x-icon-default class="inline-block m-auto align-middle" />
@@ -1204,12 +1256,12 @@
 
                 <div class="w-full">
                     <x-label value="Código anexo :" />
-                    <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..."
-                        maxlength="4" />
+                    <x-input class="block w-full input-number-none" type="number" wire:model.defer="codeanexo"
+                        placeholder="Anexo de sucursal..." onkeypress="return validarNumero(event, 4)" />
                     <x-jet-input-error for="codeanexo" />
                 </div>
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex gap-2 pt-4 justify-end">
                     <x-button class="p-3" type="submit" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
                     <x-button class="p-3" wire:click="addsucursal(true)" wire:loading.attr="disabled">

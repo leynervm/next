@@ -1,4 +1,4 @@
-<x-form-card :titulo="__('Delete Account')" :subtitulo="__('Permanently delete your account.')">
+<x-form-card :titulo="__('Delete Account')" :subtitulo="__('Permanently delete your account.')" classtitulo="!text-lg">
     <div class="w-full">
         <div class="w-full text-xs sm:text-sm text-colorsubtitleform">
             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
@@ -12,10 +12,7 @@
 
         <!-- Delete User Confirmation Modal -->
         <x-jet-dialog-modal wire:model="confirmingUserDeletion">
-            <x-slot name="title">
-                {{ __('Delete Account') }}
-                <x-button-close-modal wire:click="$toggle('confirmingUserDeletion')" />
-            </x-slot>
+            <x-slot name="title">{{ __('Delete Account') }}</x-slot>
 
             <x-slot name="content">
                 {{ __('Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}

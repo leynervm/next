@@ -187,7 +187,7 @@
                             </x-jet-dropdown-link> --}}
 
                                 <x-nav-link class="px-5 gap-2 shadow-none rounded-none w-full text-textspancardproduct"
-                                    href="{{ route('profile.show') }}">
+                                    href="{{ route('admin.profile') }}">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round">

@@ -1,4 +1,4 @@
-<x-form-card :titulo="__('Browser Sessions')" :subtitulo="__('Manage and log out your active sessions on other browsers and devices.')">
+<x-form-card :titulo="__('Browser Sessions')" :subtitulo="__('Manage and log out your active sessions on other browsers and devices.')" classtitulo="!text-lg">
     <div class="w-full">
         <div class="w-full text-xs sm:text-sm text-colorsubtitleform">
             {{ __('If necessary, you may log out of all of your other browser sessions across all of your devices. Some of your recent sessions are listed below; however, this list may not be exhaustive. If you feel your account has been compromised, you should also update your password.') }}
@@ -63,10 +63,7 @@
 
         <!-- Log Out Other Devices Confirmation Modal -->
         <x-jet-dialog-modal wire:model="confirmingLogout">
-            <x-slot name="title">
-                {{ __('Log Out Other Browser Sessions') }}
-                <x-button-close-modal wire:click="$toggle('confirmingLogout')" />
-            </x-slot>
+            <x-slot name="title">{{ __('Log Out Other Browser Sessions') }}</x-slot>
 
             <x-slot name="content">
                 {{ __('Please enter your password to confirm you would like to log out of your other browser sessions across all of your devices.') }}
@@ -75,7 +72,6 @@
                     x-on:confirming-logout-other-browser-sessions.window="setTimeout(() => $refs.password.focus(), 250)">
                     <x-input type="password" class="mt-1 block w-3/4" placeholder="{{ __('Password') }}"
                         x-ref="password" wire:model.defer="password" wire:keydown.enter="logoutOtherBrowserSessions" />
-
                     <x-jet-input-error for="password" class="mt-2" />
                 </div>
             </x-slot>

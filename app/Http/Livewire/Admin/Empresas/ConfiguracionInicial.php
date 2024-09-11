@@ -34,6 +34,7 @@ class ConfiguracionInicial extends Component
 
     public $document, $name, $direccion, $departamento, $provincia, $distrito, $telefono, $ubigeo_id,
         $estado, $condicion, $email, $web, $sendnode, $montoadelanto;
+    public $whatsapp, $facebook, $instagram, $tiktok;
     public $usuariosol, $clavesol, $passwordcert, $sendmode, $afectacionigv, $clientid, $clientsecret;
 
     public $validatemail;
@@ -110,8 +111,26 @@ class ConfiguracionInicial extends Component
                 'ubigeo_id' => ['required', 'integer', 'min:0', 'exists:ubigeos,id'],
                 'estado' => ['nullable', 'string'],
                 'condicion' => ['nullable', 'string'],
-                'igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+                'igv' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
             ]);
+
+            if (count($this->sucursals) > 0) {
+                $establecimientos = collect($this->sucursals)->map(function ($item) {
+                    if ($item['default'] == Sucursal::DEFAULT) {
+
+                        $item['descripcion'] = $this->name;
+                        $item['direccion'] = $this->direccion;
+                        $item['ubigeo_id'] = $this->ubigeo_id;
+                        $ubigeo = Ubigeo::find($this->ubigeo_id);
+                        $item['departamento'] = $ubigeo->region;
+                        $item['provincia'] = $ubigeo->provincia;
+                        $item['distrito'] = $ubigeo->distrito;
+                    }
+                    return $item;
+                });
+
+                $this->sucursals = $establecimientos->sortBy('codigo')->values()->toArray();
+            }
         } elseif ($step == 2) {
 
             $this->validate(
@@ -127,20 +146,30 @@ class ConfiguracionInicial extends Component
                     'viewtextopromocion' => ['integer', 'min:0', 'max:2'],
                     'usemarkagua' => ['integer', 'min:0', 'max:1'],
                     'markagua' => [
-                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'file', 'mimes:png'
+                        'nullable',
+                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'file',
+                        'mimes:png'
                     ],
                     'alignmark' => [
-                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'string', 'max:25'
+                        'nullable',
+                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'string',
+                        'max:25'
                     ],
                     'widthmark' => [
-                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'integer', 'min:50', 'max:300'
+                        'nullable',
+                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'integer',
+                        'min:50',
+                        'max:300'
                     ],
                     'heightmark' => [
-                        'nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'integer', 'min:50', 'max:300'
+                        'nullable',
+                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                        'integer',
+                        'min:50',
+                        'max:300'
                     ],
                 ],
                 [
@@ -155,11 +184,16 @@ class ConfiguracionInicial extends Component
                 'almacens' => [
                     'nullable',
                     Rule::requiredIf(module::isEnabled('Ventas') || module::isEnabled('Almacen')),
-                    'array', 'min:1'
+                    'array',
+                    'min:1'
                 ],
                 'telephones' => ['array', 'min:1'],
                 'email' => ['nullable', 'email'],
                 'web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+                'whatsapp' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+                'facebook' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+                'instagram' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+                'tiktok' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             ]);
 
             if (module::isEnabled('Ventas') || module::isEnabled('Almacen')) {
@@ -190,35 +224,53 @@ class ConfiguracionInicial extends Component
         } else {
             $this->validate([
                 'afectacionigv' => [
-                    'required', 'integer', 'min:0', 'max:1'
+                    'required',
+                    'integer',
+                    'min:0',
+                    'max:1'
                 ],
                 'sendmode' => [
-                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'integer', 'min:0', 'max:1'
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'integer',
+                    'min:0',
+                    'max:1'
                 ],
                 'cert' => [
-                    'nullable', Rule::requiredIf(module::isEnabled('Facturacion') && $this->sendmode == Empresa::PRODUCCION),
-                    'file',  new ValidateFileKey("pfx")
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion') && $this->sendmode == Empresa::PRODUCCION),
+                    'file',
+                    new ValidateFileKey("pfx")
                 ],
                 'usuariosol' => [
-                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string', 'min:4'
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string',
+                    'min:4'
                 ],
                 'clavesol' => [
-                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string', 'min:4'
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string',
+                    'min:4'
                 ],
                 'passwordcert' => [
-                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string', 'min:6'
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string',
+                    'min:6'
                 ],
                 'clientid' => [
-                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string', 'min:6'
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string',
+                    'min:6'
                 ],
                 'clientsecret' => [
-                    'nullable',  Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string', 'min:6'
+                    'nullable',
+                    Rule::requiredIf(module::isEnabled('Facturacion')),
+                    'string',
+                    'min:6'
                 ],
 
             ]);
@@ -235,6 +287,10 @@ class ConfiguracionInicial extends Component
             'distrito' => $this->distrito,
             'email' => $this->email,
             'web' => $this->web,
+            'whatsapp' => $this->whatsapp,
+            'facebook' => $this->facebook,
+            'instagram' => $this->instagram,
+            'tiktok' => $this->tiktok,
             // 'icono' => $urlicono,
             'montoadelanto' => $this->montoadelanto,
             'uselistprice' => $this->uselistprice,
@@ -319,6 +375,10 @@ class ConfiguracionInicial extends Component
                 'direccion' => $this->direccion,
                 'email' => $this->email,
                 'web' => $this->web,
+                'whatsapp' => $this->whatsapp,
+                'facebook' => $this->facebook,
+                'instagram' => $this->instagram,
+                'tiktok' => $this->tiktok,
                 'icono' => $urlicono,
                 'montoadelanto' => $this->montoadelanto,
                 'uselistprice' => $this->uselistprice,
@@ -432,13 +492,25 @@ class ConfiguracionInicial extends Component
         ]);
 
         $this->reset([
-            'name', 'direccion', 'telefono', 'ubigeo_id',
-            'departamento', 'provincia', 'distrito',
-            'estado', 'condicion', 'selectedsucursals'
+            'name',
+            'direccion',
+            'telefono',
+            'ubigeo_id',
+            'departamento',
+            'provincia',
+            'distrito',
+            'estado',
+            'condicion',
+            'selectedsucursals'
         ]);
         $this->resetValidation([
-            'document', 'name', 'direccion',
-            'telefono', 'ubigeo_id', 'estado', 'condicion'
+            'document',
+            'name',
+            'direccion',
+            'telefono',
+            'ubigeo_id',
+            'estado',
+            'condicion'
         ]);
 
         $http = new GetClient();
@@ -554,8 +626,12 @@ class ConfiguracionInicial extends Component
         if (!$this->open) {
             $this->resetValidation();
             $this->reset([
-                'defaultsucursal', 'typesucursal_id', 'namesucursal',
-                'direccionsucursal', 'codeanexo', 'ubigeosucursal_id'
+                'defaultsucursal',
+                'typesucursal_id',
+                'namesucursal',
+                'direccionsucursal',
+                'codeanexo',
+                'ubigeosucursal_id'
             ]);
         }
     }
@@ -569,24 +645,41 @@ class ConfiguracionInicial extends Component
 
         $this->validate([
             'namesucursal' => [
-                'required', 'min:3', 'max:255',
+                'required',
+                'min:3',
+                'max:255',
                 new CampoUnique('sucursals', 'name', null, true),
             ],
             'direccionsucursal' => [
-                'required', 'string', 'min:3', 'max:255'
+                'required',
+                'string',
+                'min:3',
+                'max:255'
             ],
             'typesucursal_id' => [
-                'required', 'integer', 'min:1', 'exists:typesucursals,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:typesucursals,id',
             ],
             'ubigeosucursal_id' => [
-                'required', 'integer', 'min:1', 'exists:ubigeos,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:ubigeos,id',
             ],
             'codeanexo' => [
-                'required', 'string', 'min:4', 'max:4',
+                'required',
+                'string',
+                'min:4',
+                'max:4',
                 new CampoUnique('sucursals', 'codeanexo', null, true),
             ],
             'defaultsucursal' => [
-                'required', 'boolean', 'min:0', 'max:1',
+                'required',
+                'boolean',
+                'min:0',
+                'max:1',
                 new DefaultValue('sucursals', 'default', null, true)
             ]
         ]);

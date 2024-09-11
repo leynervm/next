@@ -183,7 +183,7 @@
                                             @else
                                                 <a @click="localStorage.setItem('activeForm', 'login')"
                                                     href="{{ route('login') }}"
-                                                    class="group-hover:opacity-80 max-w-[120px] whitespace-normal xl:truncate leading-4 font-semibold text-white text-xs xl:text-xl mt-1 transition ease-out duration-150">
+                                                    class="group-hover:opacity-80 max-w-[120px] whitespace-normal xl:truncate leading-4 font-semibold text-white text-lg xl:text-xl mt-1 transition ease-out duration-150">
                                                     {{ __('Log in') }}
                                                 </a>
                                             @endauth

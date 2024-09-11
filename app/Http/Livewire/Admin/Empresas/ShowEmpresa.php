@@ -35,13 +35,18 @@ class ShowEmpresa extends Component
             'empresa.condicion' => ['required', 'string'],
             'empresa.email' => ['nullable', 'email'],
             'empresa.web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
-            'empresa.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
+            'empresa.whatsapp' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'empresa.facebook' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'empresa.instagram' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'empresa.tiktok' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'empresa.igv' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
             'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
             'mark' => [
                 'nullable',
                 Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)),
-                'file', 'mimes:png'
+                'file',
+                'mimes:png'
             ],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
             'empresa.viewpriceantes' => ['integer', 'min:0', 'max:1'],
@@ -50,16 +55,24 @@ class ShowEmpresa extends Component
             'empresa.usemarkagua' => ['integer', 'min:0', 'max:1'],
             'empresa.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
             'empresa.alignmark' => [
-                'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
-                'string', 'max:25'
+                'nullable',
+                Rule::requiredIf($this->empresa->usarMarkagua()),
+                'string',
+                'max:25'
             ],
             'empresa.widthmark' => [
-                'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer', 'min:50', 'max:300'
+                'nullable',
+                Rule::requiredIf($this->empresa->usarMarkagua()),
+                'integer',
+                'min:50',
+                'max:300'
             ],
             'empresa.heightmark' => [
-                'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer', 'min:50', 'max:300'
+                'nullable',
+                Rule::requiredIf($this->empresa->usarMarkagua()),
+                'integer',
+                'min:50',
+                'max:300'
             ],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
             'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1', 'min:0'],
@@ -153,7 +166,8 @@ class ShowEmpresa extends Component
             'mark' => [
                 'nullable',
                 Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)),
-                'file', 'mimes:png'
+                'file',
+                'mimes:png'
             ],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
             'empresa.viewpriceantes' => ['integer', 'min:0', 'max:1'],
@@ -161,16 +175,24 @@ class ShowEmpresa extends Component
             'empresa.viewtextopromocion' => ['integer', 'min:0', 'max:2'],
             'empresa.usemarkagua' => ['integer', 'min:0', 'max:1'],
             'empresa.alignmark' => [
-                'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
-                'string', 'max:25'
+                'nullable',
+                Rule::requiredIf($this->empresa->usarMarkagua()),
+                'string',
+                'max:25'
             ],
             'empresa.widthmark' => [
-                'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer', 'min:50', 'max:300'
+                'nullable',
+                Rule::requiredIf($this->empresa->usarMarkagua()),
+                'integer',
+                'min:50',
+                'max:300'
             ],
             'empresa.heightmark' => [
-                'nullable', Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer', 'min:50', 'max:300'
+                'nullable',
+                Rule::requiredIf($this->empresa->usarMarkagua()),
+                'integer',
+                'min:50',
+                'max:300'
             ],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
             'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],

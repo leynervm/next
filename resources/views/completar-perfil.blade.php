@@ -18,7 +18,7 @@
         <form id="form_complete_profile" action="{{ route('profile.complete.save') }}" method="post"
             class="w-full flex flex-col gap-5">
             @csrf
-            <x-form-card :titulo="__('PROFILE INFORMATION')" :subtitulo="__('Update your account\'s profile information and email address.')" class="">
+            <x-form-card :titulo="__('Profile Information')" :subtitulo="__('Update your account\'s profile information and email address.')" classtitulo="!text-lg">
                 <div class="w-full grid grid-cols-1 gap-2">
                     <div class="w-full">
                         <x-label for="name" value="{{ __('Document') }}" />
