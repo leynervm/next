@@ -28,12 +28,14 @@ class ViewServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (Schema::hasTable('empresas') && Schema::hasTable('monedas') && Schema::hasTable('pricetype')) {
+
+        $empresa = null;
+        if (Schema::hasTable('empresas')) {
             $empresa = mi_empresa();
             $moneda = Moneda::default()->first();
             $pricetype = $empresa ? getPricetypeAuth($empresa) : null;
             // Compartir los datos de la empresa con todas las vistas
-            View::share('empresa', $empresa);
+
             View::share('moneda', $moneda);
             View::share('pricetype', $pricetype);
 
@@ -49,5 +51,7 @@ class ViewServiceProvider extends ServiceProvider
                 ]);
             });
         }
+
+        View::share('empresa', $empresa);
     }
 }
