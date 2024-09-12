@@ -86,11 +86,8 @@ Route::prefix('administracion')->name('admin.administracion')->group(function ()
     Route::get('/sucursales', [SucursalController::class, 'index'])->name('.sucursales')->middleware(['verifycompany']);
     Route::get('/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('.sucursales.edit')->middleware(['verifycompany']);
     Route::get('/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('.typecomprobantes')->middleware(['verifycompany']);
-    // Route::get('/personal', [HomeController::class, 'employers'])->name('.employers')->middleware(['verifycompany']);
-    // Route::get('/personal/{employer:document}/historial-pagos', [HomeController::class, 'payments'])->name('.employers.payments')->middleware(['verifycompany']);
-
     Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units')->middleware(['verifycompany']);
-    Route::get('/areas', [HomeController::class, 'areas'])->name('.areas')->middleware(['verifycompany']);
+    Route::get('/areas-trabajo', [HomeController::class, 'areaswork'])->name('.areaswork')->middleware(['verifycompany']);
 });
 
 

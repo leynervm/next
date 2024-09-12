@@ -69,20 +69,20 @@ class SeedRoleTableSeeder extends Seeder
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
-        Permission::firstOrCreate([
-            'name' => 'admin.marketplace.transacciones.create',
-            'descripcion' => 'Registrar transacciones web',
-            'table' => 'Transacciones web',
-            'module' => 'Tienda Virtual',
-            'orden' => '7'
-        ])->syncRoles([$desarrollador, $admin]);
-        Permission::firstOrCreate([
-            'name' => 'admin.marketplace.transacciones.edit',
-            'descripcion' => 'Editar transacciones web',
-            'table' => 'Transacciones web',
-            'module' => 'Tienda Virtual',
-            'orden' => '7'
-        ])->syncRoles([$desarrollador, $admin]);
+        // Permission::firstOrCreate([
+        //     'name' => 'admin.marketplace.transacciones.create',
+        //     'descripcion' => 'Registrar transacciones web',
+        //     'table' => 'Transacciones web',
+        //     'module' => 'Tienda Virtual',
+        //     'orden' => '7'
+        // ])->syncRoles([$desarrollador, $admin]);
+        // Permission::firstOrCreate([
+        //     'name' => 'admin.marketplace.transacciones.edit',
+        //     'descripcion' => 'Editar transacciones web',
+        //     'table' => 'Transacciones web',
+        //     'module' => 'Tienda Virtual',
+        //     'orden' => '7'
+        // ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
             'name' => 'admin.marketplace.transacciones.delete',
             'descripcion' => 'Eliminar transacciones web',
@@ -208,6 +208,22 @@ class SeedRoleTableSeeder extends Seeder
             'name' => 'admin.marketplace.sliders.delete',
             'descripcion' => 'Eliminar sliders web',
             'table' => 'Sliders',
+            'module' => 'Tienda Virtual',
+            'orden' => '7'
+        ])->syncRoles([$desarrollador, $admin]);
+
+
+        Permission::firstOrCreate([
+            'name' => 'admin.marketplace.claimbooks',
+            'descripcion' => 'Administrar libros de reclamaciones',
+            'table' => 'Libros reclamación',
+            'module' => 'Tienda Virtual',
+            'orden' => '7'
+        ])->syncRoles([$desarrollador, $admin]);
+        Permission::firstOrCreate([
+            'name' => 'admin.marketplace.claimbooks.show',
+            'descripcion' => 'Tramitar libros de reclamaciones',
+            'table' => 'Libros reclamación',
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);

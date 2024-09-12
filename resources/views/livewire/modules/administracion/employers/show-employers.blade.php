@@ -174,18 +174,8 @@
                         <td class="p-2 whitespace-nowrap align-middle text-center">
                             @if ($item->trashed())
                                 @can('admin.administracion.employers.restore')
-                                    <button onclick="confirmRestore({{ $item }})" wire:loading.attr="disabled"
-                                        type="button"
-                                        class="inline-block p-0.5 rounded-sm text-green-500 disabled:opacity-75">
-                                        <svg class="w-5 h-5 scale-125 rounded-sm text-neutral-300" viewBox="0 0 24 24"
-                                            fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"
-                                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path fill="currentColor"
-                                                d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                            <path
-                                                d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                        </svg>
-                                    </button>
+                                    <x-button-toggle :checked="false" onclick="confirmRestore({{ $item }})"
+                                        wire:loading.attr="disabled" />
                                 @endcan
                             @else
                                 @can('admin.administracion.employers.edit')
@@ -194,11 +184,10 @@
                                 @endcan
 
                                 @can('admin.administracion.employers.delete')
-                                    <x-button-delete onclick="confirmDelete({{ $item }})"
+                                    <x-button-toggle onclick="confirmDelete({{ $item }})"
                                         wire:loading.attr="disabled" />
                                 @endcan
                             @endif
-
                         </td>
                     </tr>
                 @endforeach
@@ -385,7 +374,6 @@
             </form>
         </x-slot>
     </x-jet-dialog-modal>
-
 
     <script>
         function desvincularuseremployer(user_id) {

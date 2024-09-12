@@ -19,10 +19,8 @@
     <link rel="stylesheet" href="{{ asset('assets/select2/select2.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" />
-    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11.1.1/swiper-bundle.min.css"> --}}
     <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    {{-- <script defer src="https://cdn.jsdelivr.net/npm/swiper@11.1.1/swiper-bundle.min.js"></script> --}}
 
     <!-- Scripts -->
 </head>
@@ -111,10 +109,31 @@
 
     @stack('scripts')
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
+
+
 </body>
 
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 
 <script>
+    document.addEventListener('submit', function(e) {
+        e.preventDefault();
+        grecaptcha.ready(function() {
+            grecaptcha.execute("{{ config('services.recaptcha_v3.key_web') }}", {
+                action: 'submit'
+            }).then(function(token) {
+                let form = e.target;
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'g_recaptcha_response';
+                input.value = token;
+                form.appendChild(input);
+                form.submit();
+            });
+        });
+    })
+
     // document.addEventListener('Livewire:load', function() {
 
     var toastMixin = Swal.mixin({

@@ -23,7 +23,9 @@ class ShowTurnos extends Component
     {
         return [
             'turno.name' => [
-                'required', 'string', 'min:3',
+                'required',
+                'string',
+                'min:3',
                 new CampoUnique('turnos', 'name', $this->turno->id)
             ],
             'turno.horaingreso' => ['required', 'date_format:H:i'],
@@ -76,8 +78,17 @@ class ShowTurnos extends Component
     public function delete(Turno $turno)
     {
         $this->authorize('admin.administracion.turnos.delete');
+        DB::beginTransaction();
         try {
-            DB::beginTransaction();
+            if (count($turno->employers) > 0) {
+                $mensaje = response()->json([
+                    'title' => 'TURNO SELECCIONADO CONTIENE PERSONAL DE TRABAJO VINCULADOS !',
+                    'text' => null,
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
             $turno->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');

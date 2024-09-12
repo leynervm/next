@@ -9,7 +9,6 @@ use Modules\Employer\Database\Seeders\EmployerDatabaseSeeder;
 use Modules\Facturacion\Database\Seeders\FacturacionDatabaseSeeder;
 use Modules\Marketplace\Database\Seeders\MarketplaceDatabaseSeeder;
 use Modules\Ventas\Database\Seeders\VentasDatabaseSeeder;
-use Nwidart\Modules\Facades\Module;
 
 class DatabaseSeeder extends Seeder
 {

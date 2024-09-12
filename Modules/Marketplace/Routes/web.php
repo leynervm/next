@@ -72,7 +72,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(fun
 
     Route::get('/admin/productos/caracteristicas-especificaciones', [MarketplaceController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
 
-    Route::middleware(['verifysucursal'])->name('admin.marketplace')->prefix('admin/marketplace')->group(function () {
+    Route::prefix('admin/marketplace')->middleware(['verifysucursal'])->name('admin.marketplace')->group(function () {
         Route::get('/', [MarketplaceController::class, 'index']);
         Route::get('/estados-seguimiento-pedido', [MarketplaceController::class, 'trackingstates'])->name('.trackingstates');
         Route::get('/transacciones-web', [MarketplaceController::class, 'transacciones'])->name('.transacciones');
@@ -82,9 +82,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(fun
 
         Route::get('/orders', [OrderController::class, 'index'])->name('.orders');
         Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('.orders.show');
-    });
-
-    Route::middleware(['verifysucursal'])->name('admin.administracion')->prefix('admin/administracion')->group(function () {
+        
         Route::get('/libro-reclamaciones', [ClaimbookController::class, 'claimbooks'])->name('.claimbooks');
+        Route::get('/libro-reclamaciones/{claimbook}/show', [ClaimbookController::class, 'show'])->name('.claimbooks.show');
     });
 });

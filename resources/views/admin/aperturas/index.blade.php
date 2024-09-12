@@ -68,9 +68,9 @@
                     <x-icon-config />
                 </x-link-next>
             @else
-                <x-link-next href="#" titulo="Aperturar caja mensual" class="text-orange-500 bg-transparent">
+                <x-button-next titulo="Aperturar caja mensual" class="text-orange-500 bg-transparent">
                     <x-icon-config />
-                </x-link-next>
+                </x-button-next>
             @endcan
         @endif
     </div>

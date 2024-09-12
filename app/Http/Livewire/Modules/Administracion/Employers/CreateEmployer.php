@@ -47,7 +47,7 @@ class CreateEmployer extends Component
             'telefono' => ['required', 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
             'sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])],
             'sueldo' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
-            'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
+            'areawork_id' => ['required', 'integer', 'min:1', 'exists:areaworks,id'],
             'turno_id' => ['required', 'integer', 'min:1', 'exists:turnos,id'],
             'sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
 

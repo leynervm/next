@@ -1,6 +1,7 @@
 <x-admin-layout>
     <x-slot name="breadcrumb">
-        @canany(['admin.cajas', 'admin.cajas.methodpayments', 'admin.cajas.movimientos', 'admin.cajas.mensuales.create', 'admin.cajas.aperturas', 'admin.administracion.employers.adelantos.create', 'admin.cajas.conceptos'])
+        @canany(['admin.cajas', 'admin.cajas.methodpayments', 'admin.cajas.movimientos', 'admin.cajas.mensuales.create',
+            'admin.cajas.aperturas', 'admin.administracion.employers.adelantos.create', 'admin.cajas.conceptos'])
             <x-link-breadcrumb text="CAJAS" route="admin.cajas">
                 <x-slot name="icon">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
@@ -42,9 +43,9 @@
                     <x-icon-config />
                 </x-link-next>
             @else
-                <x-link-next href="#" titulo="Aperturar caja mensual" class="text-orange-500 bg-transparent">
+                <x-button-next titulo="Aperturar caja mensual" class="text-orange-500 bg-transparent">
                     <x-icon-config />
-                </x-link-next>
+                </x-button-next>
             @endcan
         @endif
 

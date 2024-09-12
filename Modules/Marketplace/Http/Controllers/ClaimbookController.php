@@ -18,10 +18,14 @@ use Illuminate\Support\Facades\Mail;
 
 class ClaimbookController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
+
+    public function __construct()
+    {
+        $this->middleware('can:admin.marketplace.claimbooks')->only('claimbooks');
+        $this->middleware('can:admin.marketplace.claimbooks.show')->only('show');
+    }
+
+
     public function index()
     {
         return view('marketplace::index');
@@ -44,45 +48,41 @@ class ClaimbookController extends Controller
         }
 
         $request->validate([
-            'date' => [
-                'required', 'date', 'before_or_equal:today'
-            ],
-            'document' => [
-                'required', 'numeric', 'min:8',
-                new ValidateDocument, 'regex:/^\d{8}(?:\d{3})?$/',
-            ],
-            'name' => [
-                'required', 'string', 'min:6'
-            ],
-            'direccion' => [
-                'required', 'string', 'min:6'
-            ],
-            'telefono' => [
-                'required', 'numeric', 'min:9', 'digits:9', 'regex:/^\d{9}$/',
-            ],
-            'email' => [
-                'required', 'email',
-            ],
-            'menor_edad' => [
-                'nullable',
-            ],
+            'date' => ['required', 'date', 'before_or_equal:today'],
+            'document' => ['required', 'numeric', 'min:8', new ValidateDocument,                'regex:/^\d{8}(?:\d{3})?$/',],
+            'name' => ['required', 'string', 'min:6'],
+            'direccion' => ['required', 'string', 'min:6'],
+            'telefono' => ['required', 'numeric', 'min:9', 'digits:9',                'regex:/^\d{9}$/',],
+            'email' => ['required', 'email',],
+            'menor_edad' => ['nullable',],
             'document_apoderado' => [
-                'nullable', Rule::requiredIf($require_apoderado),
-                'numeric', 'min:8', new ValidateDocument,
-                'digits:8', 'regex:/^\d{8}$/'
+                'nullable',
+                Rule::requiredIf($require_apoderado),
+                'numeric',
+                'min:8',
+                new ValidateDocument,
+                'digits:8',
+                'regex:/^\d{8}$/'
             ],
             'name_apoderado' => [
                 'nullable',
-                Rule::requiredIf($require_apoderado), 'string', 'min:6'
+                Rule::requiredIf($require_apoderado),
+                'string',
+                'min:6'
             ],
             'direccion_apoderado' => [
                 'nullable',
-                Rule::requiredIf($require_apoderado), 'string', 'min:6'
+                Rule::requiredIf($require_apoderado),
+                'string',
+                'min:6'
             ],
             'telefono_apoderado' => [
                 'nullable',
                 Rule::requiredIf($require_apoderado),
-                'numeric', 'min:9', 'digits:9', 'regex:/^\d{9}$/',
+                'numeric',
+                'min:9',
+                'digits:9',
+                'regex:/^\d{9}$/',
             ],
             'channelsale' => [
                 'required',
@@ -91,26 +91,16 @@ class ClaimbookController extends Controller
             'tienda_compra' => [
                 'nullable',
                 Rule::requiredIf($request->channelsale == Claimbook::TIENDA_FISICA),
-                'integer', 'min:1', 'exists:sucursals,id',
+                'integer',
+                'min:1',
+                'exists:sucursals,id',
             ],
-            'biencontratado' => [
-                'required', 'string', 'min:3'
-            ],
-            'descripcion_producto_servicio' => [
-                'required', 'string', 'min:3'
-            ],
-            'tipo_reclamo' => [
-                'required', 'string', 'min:3'
-            ],
-            'detalle_reclamo' => [
-                'required', 'string',
-            ],
-            'pedido' => [
-                'nullable',
-            ],
-            'g_recaptcha_response' => [
-                'required', new Recaptcha()
-            ]
+            'biencontratado' => ['required', 'string', 'min:3'],
+            'descripcion_producto_servicio' => ['required', 'string',                'min:3'],
+            'tipo_reclamo' => ['required', 'string', 'min:3'],
+            'detalle_reclamo' => ['required', 'string',],
+            'pedido' => ['nullable',],
+            'g_recaptcha_response' => ['required', new Recaptcha()]
         ]);
 
 
@@ -175,9 +165,9 @@ class ClaimbookController extends Controller
     }
 
 
-    public function show($id)
+    public function show(Claimbook $claimbook)
     {
-        return view('marketplace::show');
+        return view('admin.claimbooks.show');
     }
 
 

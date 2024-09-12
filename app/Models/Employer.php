@@ -19,7 +19,15 @@ class Employer extends Model
     use CajamovimientoTrait;
 
     protected $fillable = [
-        'document', 'name', 'nacimiento', 'sexo', 'sueldo', 'turno_id', 'areawork_id', 'sucursal_id', 'user_id'
+        'document',
+        'name',
+        'nacimiento',
+        'sexo',
+        'sueldo',
+        'turno_id',
+        'areawork_id',
+        'sucursal_id',
+        'user_id'
     ];
     public $timestamps = false;
 
@@ -40,7 +48,7 @@ class Employer extends Model
 
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function turno(): BelongsTo
@@ -50,7 +58,7 @@ class Employer extends Model
 
     public function areawork(): BelongsTo
     {
-        return $this->belongsTo(Areawork::class);
+        return $this->belongsTo(Areawork::class)->withTrashed();
     }
 
     public function telephone(): MorphOne
@@ -60,7 +68,7 @@ class Employer extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function employerpayments(): HasMany

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Turno extends Model
 {
@@ -13,7 +14,9 @@ class Turno extends Model
 
     public $timestamps = false;
     protected $fillable = [
-        'name', 'horaingreso', 'horasalida'
+        'name',
+        'horaingreso',
+        'horasalida'
     ];
 
     public function getHoraingresoAttribute($value)
@@ -31,8 +34,8 @@ class Turno extends Model
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    // public function sucursal(): BelongsTo
-    // {
-    //     return $this->belongsTo(Sucursal::class);
-    // }
+    public function employers(): HasMany
+    {
+        return $this->hasMany(Employer::class)->withTrashed();
+    }
 }

@@ -545,28 +545,28 @@ class RoleSeeder extends Seeder
 
         // AREAS DE TRABAJO
         Permission::firstOrCreate([
-            'name' => 'admin.areas',
+            'name' => 'admin.administracion.areaswork',
             'descripcion' => 'Administrar areas de trabajo',
             'table' => 'Areas trabajo',
             'module' => 'Principal',
             'orden' => '1'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.areas.create',
+            'name' => 'admin.administracion.areaswork.create',
             'descripcion' => 'Registrar areas de trabajo',
             'table' => 'Areas trabajo',
             'module' => 'Principal',
             'orden' => '1'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.areas.edit',
+            'name' => 'admin.administracion.areaswork.edit',
             'descripcion' => 'Editar areas de trabajo',
             'table' => 'Areas trabajo',
             'module' => 'Principal',
             'orden' => '1'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.areas.delete',
+            'name' => 'admin.administracion.areaswork.delete',
             'descripcion' => 'Eliminar areas de trabajo',
             'table' => 'Areas trabajo',
             'module' => 'Principal',
@@ -574,12 +574,21 @@ class RoleSeeder extends Seeder
         ])->syncRoles([$desarrollador, $admin]);
 
 
+        // REPORTES
+        Permission::firstOrCreate([
+            'name' => 'admin.reportes',
+            'descripcion' => 'Generar reportes',
+            'table' => 'Reportes',
+            'module' => 'Principal',
+            'orden' => '1'
+        ])->syncRoles([$desarrollador, $admin]);
+
         // Permission::firstOrCreate([
         //     'name' => '',
         //     'descripcion' => '',
         //     'table' => ''
         // ])->syncRoles([$desarrollador]);
 
-        
+
     }
 }

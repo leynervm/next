@@ -23,11 +23,12 @@ class UserSeeder extends Seeder
 
         User::updateOrCreate([
             'document' => '20538954099',
-            'name' => 'DEVELOPER ROOT',
+        ], [
             'email' => 'admin@gmail.com',
+            'name' => 'DEVELOPER ROOT',
             'password' => bcrypt('12345678'),
             'email_verified_at' => now('America/Lima'),
-            'admin' => 1,
+            'admin' => User::SUPER_ADMIN,
         ]);
 
         // User::updateOrCreate([

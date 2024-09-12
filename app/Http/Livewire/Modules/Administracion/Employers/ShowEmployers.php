@@ -40,22 +40,30 @@ class ShowEmployers extends Component
     {
         return [
             'employer.document' => [
-                'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'digits_between:8,11',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 new CampoUnique('employers', 'document', $this->employer->id, true)
             ],
             'employer.name' => ['required', 'string', 'min:6'],
             'employer.nacimiento' => [
-                'required', 'date', 'before:today',
+                'required',
+                'date',
+                'before:today',
                 // new ValidateNacimiento(13)
             ],
             'employer.sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F'])],
             'telefono' => ['required', 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
             'employer.sueldo' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
             'employer.turno_id' => ['required', 'integer', 'min:1', 'exists:turnos,id'],
-            'employer.areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
+            'employer.areawork_id' => ['required', 'integer', 'min:1', 'exists:areaworks,id'],
             'employer.sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'employer.user_id' => [
-                'nullable', 'integer', 'min:1', 'exists:users,id',
+                'nullable',
+                'integer',
+                'min:1',
+                'exists:users,id',
                 new CampoUnique('employers', 'user_id', $this->employer->id, true)
             ],
         ];
@@ -73,7 +81,7 @@ class ShowEmployers extends Component
         $turnos = Turno::orderBy('horaingreso', 'asc')->get();
         $sucursalusers = Sucursal::whereHas('employers')->orderBy('name', 'asc')->get();
 
-        $employers = Employer::with(['areawork', 'sucursal', 'user']);
+        $employers = Employer::withTrashed()->with(['areawork', 'sucursal', 'user']);
         if (trim($this->search) != '') {
             $employers->where('document', 'ilike', '%' . $this->search . '%')
                 ->orWhere('name', 'ilike', '%' . $this->search . '%');
@@ -199,14 +207,13 @@ class ShowEmployers extends Component
                     return false;
                 }
 
-                if ($employer->user) {
-                    if (!$employer->user->isAdmin()) {
-                        $employer->user->roles()->detach();
-                        $employer->user->permissions()->detach();
-                        $employer->user->sucursal_id = null;
-                        $employer->user->save();
-                    }
+                if (!$employer->user->isAdmin()) {
+                    $employer->user->roles()->detach();
+                    $employer->user->permissions()->detach();
+                    $employer->user->sucursal_id = null;
+                    $employer->user->save();
                 }
+
                 $employer->user_id = null;
                 $employer->save();
             }
@@ -237,7 +244,10 @@ class ShowEmployers extends Component
         $this->employer->document = trim($this->employer->document);
         $this->validate([
             'employer.document' => [
-                'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'digits_between:8,11',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 new CampoUnique('employers', 'document', $this->employer->id, true)
             ],
         ]);

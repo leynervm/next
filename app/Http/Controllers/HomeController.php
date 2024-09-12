@@ -27,6 +27,12 @@ class HomeController extends Controller
         $this->middleware('can:admin.administracion.typecomprobantes')->only('typecomprobantes');
         $this->middleware('can:admin.almacen.marcas')->only('marcas');
         $this->middleware('can:admin.promociones')->only('promociones');
+        $this->middleware('can:admin.administracion.areaswork')->only('areaswork');
+        $this->middleware('can:admin.administracion.pricetypes,admin.administracion.rangos')->only('pricetypes');
+        $this->middleware('can:admin.administracion.empresa.create,admin.administracion.empresa.edit,admin.administracion.sucursales,
+        admin.administracion.employers,admin.users,admin.administracion.pricetypes,
+        admin.administracion.rangos,admin.administracion.typecomprobantes,
+        admin.administracion.units,admin.administracion.areas')->only('administracion');
     }
 
     public function welcome()
@@ -99,9 +105,9 @@ class HomeController extends Controller
         return view('admin.administracion');
     }
 
-    public function areas()
+    public function areaswork()
     {
-        return view('admin.areas.index');
+        return view('admin.areaswork.index');
     }
 
     public function clientes()

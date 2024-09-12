@@ -15,7 +15,7 @@ class InternetDatabaseSeeder extends Seeder
     public function run()
     {
         Model::unguard();
-
+        $this->call(RoleSeederTableSeeder::class);
         // $this->call("OthersTableSeeder");
     }
 }

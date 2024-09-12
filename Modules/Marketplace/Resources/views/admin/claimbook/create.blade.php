@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="breadcrumb">
-        <x-link-breadcrumb text="LIBRO DE RECLAMACIONES" active>
+        {{-- <x-link-breadcrumb text="LIBRO DE RECLAMACIONES" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -10,22 +10,34 @@
                         d="M12 7.80556C11.3131 7.08403 9.32175 5.3704 5.98056 4.76958C4.2879 4.4652 3.44157 4.31301 2.72078 4.89633C2 5.47965 2 6.42688 2 8.32133V15.1297C2 16.8619 2 17.728 2.4626 18.2687C2.9252 18.8095 3.94365 18.9926 5.98056 19.3589C7.79633 19.6854 9.21344 20.2057 10.2392 20.7285C11.2484 21.2428 11.753 21.5 12 21.5C12.247 21.5 12.7516 21.2428 13.7608 20.7285C14.7866 20.2057 16.2037 19.6854 18.0194 19.3589C20.0564 18.9926 21.0748 18.8095 21.5374 18.2687C22 17.728 22 16.8619 22 15.1297V8.32133C22 6.42688 22 5.47965 21.2792 4.89633C20.5584 4.31301 19 4.76958 18 5.5" />
                 </svg>
             </x-slot>
+        </x-link-breadcrumb> --}}
+        <x-link-breadcrumb text="REGISTRAR SOLICITUD DE RECLAMO" active>
+            <x-slot name="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" stroke-width="1"
+                    stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11.0215 6.78662V19.7866" />
+                    <path
+                        d="M11 19.5C10.7777 19.5 10.3235 19.2579 9.41526 18.7738C8.4921 18.2818 7.2167 17.7922 5.5825 17.4849C3.74929 17.1401 2.83268 16.9678 2.41634 16.4588C2 15.9499 2 15.1347 2 13.5044V7.09655C2 5.31353 2 4.42202 2.6487 3.87302C3.29741 3.32401 4.05911 3.46725 5.5825 3.75372C8.58958 4.3192 10.3818 5.50205 11 6.18114C11.6182 5.50205 13.4104 4.3192 16.4175 3.75372C17.9409 3.46725 18.7026 3.32401 19.3513 3.87302C20 4.42202 20 5.31353 20 7.09655V10" />
+                    <path
+                        d="M20.8638 12.9393L21.5589 13.6317C22.147 14.2174 22.147 15.1672 21.5589 15.7529L17.9171 19.4485C17.6306 19.7338 17.2642 19.9262 16.8659 20.0003L14.6088 20.4883C14.2524 20.5653 13.9351 20.2502 14.0114 19.895L14.4919 17.6598C14.5663 17.2631 14.7594 16.8981 15.0459 16.6128L18.734 12.9393C19.3222 12.3536 20.2757 12.3536 20.8638 12.9393Z" />
+                </svg>
+            </x-slot>
         </x-link-breadcrumb>
     </x-slot>
 
     <form class="contenedor w-full flex flex-col gap-5" method="POST" action="{{ route('claimbook.store') }}"
-        x-data="shipment">
+        x-data="shipment" id="form_claimbook">
         @csrf
         <h1 class="font-semibold text-3xl text-colortitleform py-3 text-center">
             Libro de Reclamaciones</h1>
 
-        <x-simple-card class="p-3">
-            <h1 class="font-semibold text-lg text-colorsubtitleform">
+        <x-simple-card class="p-1 md:p-3">
+            <h1 class="font-semibold text-lg text-colortitleform">
                 Datos de la persona que presenta el reclamo</h1>
 
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
                 <div class="">
-                    <x-label value="N° DNI :" />
+                    <x-label value="DNI / RUC :" />
                     <x-input class="block w-full prevent" name="document" onkeypress="return validarNumero(event, 11)"
                         value="{{ old('document') }}" required />
                     <x-jet-input-error for="document" />
@@ -66,7 +78,7 @@
 
             <div class="w-full mt-5">
                 <label for="menoredad"
-                    class="text-colorsubtitleform inline-flex items-center gap-2 text-lg font-semibold leading-3 cursor-pointer">
+                    class="text-colortitleform inline-flex items-center gap-2 text-lg font-semibold leading-3 cursor-pointer">
                     <input x-model="open" type="checkbox"
                         class="cursor-pointer !ring-next-500 focus:!ring-next-500 !rounded-none" type="checkbox"
                         id="menoredad" name="menor_edad" @if (old('menor_edad')) checked @endif />
@@ -76,8 +88,8 @@
             </div>
         </x-simple-card>
 
-        <x-simple-card class="p-3" style="display: none;" x-cloak x-show="open">
-            <h1 class="font-semibold text-lg text-colorsubtitleform">
+        <x-simple-card class="p-1 md:p-3" style="display: none;" x-cloak x-show="open">
+            <h1 class="font-semibold text-lg text-colortitleform">
                 Datos del apoderado</h1>
 
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
@@ -116,8 +128,8 @@
             </div>
         </x-simple-card>
 
-        <x-simple-card class="p-3" {{-- style="display: none;" x-cloak x-show="open" --}}>
-            <h1 class="font-semibold text-lg text-colorsubtitleform">
+        <x-simple-card class="p-1 md:p-3" {{-- style="display: none;" x-cloak x-show="open" --}}>
+            <h1 class="font-semibold text-lg text-colortitleform">
                 Canal de venta</h1>
 
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
@@ -133,12 +145,33 @@
             <x-jet-input-error for="channelsale" />
         </x-simple-card>
 
-        <x-simple-card class="p-3">
-            <h1 class="font-semibold text-lg text-colorsubtitleform">
+        <x-simple-card class="p-1 md:p-3">
+            <h1 class="font-semibold text-lg text-colortitleform">
                 Detalle del reclamo</h1>
 
-            <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 pt-3">
-                <div class="" style="display: none;" x-cloak x-show="channelsale=='TIENDA FISICA'">
+            <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 pt-3">
+                <div class="">
+                    <x-label value="N° ORDER / PEDIDO :" />
+                    <x-input class="block w-full" name="pedido" value="{{ old('pedido') }}" />
+                    <x-jet-input-error for="pedido" />
+                </div>
+
+                <div class="">
+                    <x-label value="BIEN CONTRATADO :" />
+                    <div class="relative" id="parentbiencontratado">
+                        <x-select class="block w-full" name="biencontratado" id="biencontratado"
+                            data-dropdown-parent="null" required>
+                            <x-slot name="options">
+                                <option value="PRODUCTO">PRODUCTO</option>
+                                <option value="SERVICIO">SERVICIO</option>
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
+                    </div>
+                    <x-jet-input-error for="biencontratado" />
+                </div>
+
+                <div class="sm:col-span-2" style="display: none;" x-cloak x-show="channelsale=='TIENDA FISICA'">
                     <x-label value="TIENDA DE COMPRA :" />
                     <div class="relative" id="parenttiendacompra">
                         <x-select class="block w-full" name="tienda_compra" id="tiendacompra"
@@ -158,30 +191,17 @@
                     </div>
                     <x-jet-input-error for="tienda_compra" />
                 </div>
+            </div>
 
-                <div class="">
-                    <x-label value="BIEN CONTRATADO :" />
-                    <div class="relative" id="parentbiencontratado">
-                        <x-select class="block w-full" name="biencontratado" id="biencontratado"
-                            data-dropdown-parent="null" required>
-                            <x-slot name="options">
-                                <option value="PRODUCTO">PRODUCTO</option>
-                                <option value="SERVICIO">SERVICIO</option>
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
-                    </div>
-                    <x-jet-input-error for="biencontratado" />
-                </div>
+            <div class="mt-2">
+                <x-label value="DESCRIPCIÓN DEL PRODUCTO / SERVICIO :" />
+                <x-text-area class="w-full" rows="6" name="descripcion_producto_servicio" required>
+                    {{ old('descripcion_producto_servicio') }}
+                </x-text-area>
+                <x-jet-input-error for="descripcion_producto_servicio" />
+            </div>
 
-                <div class="xs:col-span-2 md:col-span-3 lg:col-span-5">
-                    <x-label value="DESCRIPCIÓN DEL PRODUCTO / SERVICIO :" />
-                    <x-text-area class="w-full" rows="6" name="descripcion_producto_servicio" required>
-                        {{ old('descripcion_producto_servicio') }}
-                    </x-text-area>
-                    <x-jet-input-error for="descripcion_producto_servicio" />
-                </div>
-
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 pt-3">
                 <div class="">
                     <x-label value="TIPO DE RECLAMACIÓN :" />
                     <div class="relative" id="parenttiporeclamo">
@@ -205,11 +225,7 @@
                     <x-jet-input-error for="detalle_reclamo" />
                 </div>
 
-                <div class="">
-                    <x-label value="PEDIDO :" />
-                    <x-input class="block w-full" name="pedido" value="{{ old('pedido') }}" />
-                    <x-jet-input-error for="pedido" />
-                </div>
+                
 
                 {{-- <div class="">
                     <x-label value="COMPROBANTE PAGO :" />
