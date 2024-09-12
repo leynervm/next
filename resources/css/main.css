@@ -31,8 +31,9 @@
     --fondo-dropdown: theme("colors.white");
     --color-dropdown: theme("colors.next.500");
     --fondo-hover-dropdown: theme("colors.neutral.200");
-    --color-primary: theme("colors.next.600");
+    --texto-hover-dropdown: theme("colors.next.600");
 
+    --color-primary: theme("colors.next.600");
     --color-title: theme("colors.next.400");
 
     --color-button-close: theme("colors.white");
@@ -131,9 +132,10 @@
 
     --fondo-dropdown: theme("colors.neutral.600");
     --color-dropdown: theme("colors.white");
-    --fondo-hover-dropdown: theme("colors.neutral.700");
-    --color-primary: theme("colors.next.600");
+    --fondo-hover-dropdown: theme("colors.neutral.500");
+    --texto-hover-dropdown: theme("colors.white");
 
+    --color-primary: theme("colors.next.600");
     --color-title: theme("colors.next.400");
 
     --color-button-close: theme("colors.white");
@@ -171,7 +173,8 @@
     --fondo-select2: theme("colors.neutral.700");
     --color-select2: theme("colors.white");
     --fondo-hover-select2: theme("colors.neutral.500");
-    --color-hover-select2: theme("colors.white") --color-active-select2: theme("colors.white");
+    --color-hover-select2: theme("colors.white");
+    --color-active-select2: theme("colors.white");
     --fondo-active-select2: theme("colors.next.500");
     --shadow-select2: theme("colors.neutral.950");
     --color-subtitle-select2: theme("colors.neutral.400");

@@ -203,7 +203,7 @@
         <div class="w-full flex-1">
             <div class="w-full flex justify-end">
                 <button @click="sidebar = true, backdrop = true"
-                    class="lg:hidden p-2.5 mb-3 tracking-wide inline-flex items-center justify-center gap-1 rounded-lg text-xs bg-fondospancardproduct text-textspancardproduct">
+                    class="lg:hidden p-2.5 mb-3 tracking-wide inline-flex items-center justify-center gap-1 rounded-lg text-xs bg-fondospancardproduct text-colorsubtitleform">
                     FILTRAR
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">

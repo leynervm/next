@@ -1,6 +1,6 @@
-<div class="" x-data="{ opencounter: @entangle('opencounter') }">
+<div class="group" x-data="{ opencounter: @entangle('opencounter') }">
     <button wire:click="open"
-        class="hidden xl:flex w-full hover:text-neutral-200 h-full justify-start items-center text-white">
+        class="hidden xl:flex p-3 px-1 sm:px-3 w-full hover:text-neutral-200 h-full justify-start items-center text-white">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
             stroke-linecap="round" stroke-linejoin="round" class="block w-8 h-8">
             <circle cx="8" cy="21" r="1" />
@@ -9,7 +9,7 @@
         </svg>
     </button>
     <a href="{{ route('carshoop') }}"
-        class="flex xl:hidden w-full hover:text-neutral-200 h-full justify-start items-center text-white">
+        class="flex xl:hidden p-3 px-1 sm:px-3 w-full hover:text-neutral-200 h-full justify-start items-center text-white">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="block w-8 h-8">
             <circle cx="8" cy="21" r="1" />
@@ -18,7 +18,7 @@
         </svg>
     </a>
     <span id="countercart"
-        class="{{ Cart::instance('shopping')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0 right-1 xl:left-[40px] tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-white text-next-500 rounded-full">
+        class="{{ Cart::instance('shopping')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0 -right-1 xl:right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-white text-next-500 rounded-full">
         {{ Cart::instance('shopping')->count() }}
     </span>
 
@@ -36,7 +36,8 @@
                                     <img src="{{ $item->model->getImageURL() }}" alt=""
                                         class="w-full h-full object-cover" />
                                 @else
-                                    <x-icon-file-upload class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform" type="unknown" />
+                                    <x-icon-file-upload class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform"
+                                        type="unknown" />
                                 @endif
                             </div>
                             <div class="flex-1">

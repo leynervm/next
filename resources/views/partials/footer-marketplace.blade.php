@@ -1,7 +1,7 @@
 <footer class="w-full footer-marketplace">
     <div
-        class="contenedor grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 mx-auto py-3 md:py-10">
-        <div class="w-full max-w-sm h-16 mx-auto xs:col-span-2 md:col-span-1">
+        class="contenedor grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-3 mx-auto py-3 md:py-10">
+        <div class="w-full max-w-sm h-16 mx-auto col-span-2 md:col-span-1">
             @if ($empresa->image)
                 <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
             @else
@@ -48,7 +48,7 @@
                 </li>
             </ul>
         </div>
-        <div class="xs:col-span-2 md:col-span-3 lg:col-span-1 xl:col-span-2">
+        <div class="col-span-2 md:col-span-3 lg:col-span-1 xl:col-span-2">
             <div class="w-full h-48 xs:h-64 lg:h-48 xl:h-64 px-1">
                 <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1985.024222362466!2d-78.80980694270073!3d-5.706141436028993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91b4fbc87b6535f7%3A0x7b9aa3d2c1e84bd1!2sNEXT%20TECHNOLOGIES!5e0!3m2!1ses-419!2spe!4v1725493222836!5m2!1ses-419!2spe"

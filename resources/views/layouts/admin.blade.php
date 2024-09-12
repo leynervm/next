@@ -175,10 +175,6 @@
                                     {{ __('Manage Account') }}
                                 </div>
 
-                                {{-- <x-jet-dropdown-link href="{{ route('profile.show') }}">
-                                {{ __('Profile') }}
-                            </x-jet-dropdown-link> --}}
-
                                 @if (Module::isEnabled('Marketplace'))
                                     <x-nav-link
                                         class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"

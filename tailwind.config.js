@@ -31,8 +31,9 @@ module.exports = {
                 fondodropdown: "var(--fondo-dropdown)",
                 colordropdown: "var(--color-dropdown)",
                 fondohoverdropdown: "var(--fondo-hover-dropdown)",
-                primary: "var(--color-primary)",
+                textohoverdropdown: "var(--texto-hover-dropdown)",
 
+                primary: "var(--color-primary)",
                 colortitle: "var(--color-title)",
 
                 colorbuttonclose: "var(--color-button-close)",

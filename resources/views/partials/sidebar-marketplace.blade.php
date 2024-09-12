@@ -42,21 +42,24 @@
                         </div>
                     </a>
                 </div>
-                <div class="item-sidebar group xl:hidden">
-                    <a class="itemlink-sidebar-principal" href="{{ route('orders') }}" @click="openSidebar=false">
-                        <div
-                            class="title-category-sidebar font-medium text-colorlinknav group-hover:text-hovercolorlinknav">
-                            MIS COMPRAS
-                        </div>
-                        <div class="link-icon-down">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                class="block w-full h-full">
-                                <path d="m9 18 6-6-6-6" />
-                            </svg>
-                        </div>
-                    </a>
-                </div>
+
+                @auth
+                    <div class="item-sidebar group xl:hidden">
+                        <a class="itemlink-sidebar-principal" href="{{ route('orders') }}" @click="openSidebar=false">
+                            <div
+                                class="title-category-sidebar font-medium text-colorlinknav group-hover:text-hovercolorlinknav">
+                                MIS COMPRAS
+                            </div>
+                            <div class="link-icon-down">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                                    class="block w-full h-full">
+                                    <path d="m9 18 6-6-6-6" />
+                                </svg>
+                            </div>
+                        </a>
+                    </div>
+                @endauth
 
                 @if (count($categories))
                     @foreach ($categories as $item)

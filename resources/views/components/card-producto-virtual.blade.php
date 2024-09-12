@@ -14,7 +14,7 @@
     {{ $attributes->merge(['class' => 'w-full group bg-fondominicard flex flex-col justify-between text-xs relative cursor-pointer']) }}>
 
     @if ($type == 'link')
-        <a href="{{ $route }}" class="w-full flex flex-col gap-2">
+        <a href="{{ $route }}" class="w-full flex flex-col xl:gap-2">
         @else
             <div class="w-full flex flex-col gap-2">
     @endif
@@ -42,7 +42,7 @@
         </div>
 
         <p
-            class="text-colorlabel text-[9px] sm:text-[10px] tracking-wide mb-5 text-center block font-semibold leading-3 xs:text-center mt-1 group-hover:text-hoverlinktable transition ease-in-out duration-150">
+            class="text-colorlabel text-[9px] sm:text-[10px] tracking-wide xl:mt-2 xl:mb-5 text-center block font-semibold leading-3 xs:text-center group-hover:text-hoverlinktable transition ease-in-out duration-150">
             {{ $name }}</p>
 
         {{ $slot }}
