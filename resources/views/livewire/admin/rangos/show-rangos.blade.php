@@ -44,6 +44,7 @@
                         <th scope="col" class="p-2 font-medium text-center">
                             INCREMENTO P.C
                         </th>
+
                         {{-- <th class="" colspan="{{ count($pricetypes) }}">
                         </th> --}}
 

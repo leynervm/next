@@ -16,46 +16,51 @@ class PricetypeSeeder extends Seeder
      */
     public function run()
     {
-        $lista1 = Pricetype::create([
+        $lista1 = Pricetype::firstOrCreate([
+            'campo_table' => 'precio_1'
+        ], [
             'name' => 'LISTA 1',
             'rounded' => 1,
             'decimals' => 2,
             'default' => 1,
             'web' => 0,
             'defaultlogin' => 1,
-            'campo_table' => 'precio_1'
         ]);
 
-        $lista2 = Pricetype::create([
+        $lista2 = Pricetype::firstOrCreate([
+            'campo_table' => 'precio_2'
+        ], [
             'name' => 'LISTA 2',
             'rounded' => 1,
             'decimals' => 2,
             'web' => 1,
-            'campo_table' => 'precio_2'
         ]);
 
-        $lista3 = Pricetype::create([
+        $lista3 = Pricetype::firstOrCreate([
+            'campo_table' => 'precio_3'
+        ], [
             'name' => 'LISTA 3',
             'rounded' => 0,
             'decimals' => 2,
             'web' => 0,
-            'campo_table' => 'precio_3'
         ]);
 
-        $lista4 = Pricetype::create([
+        $lista4 = Pricetype::firstOrCreate([
+            'campo_table' => 'precio_4'
+        ], [
             'name' => 'LISTA 4',
             'rounded' => 0,
             'decimals' => 3,
             'web' => 0,
-            'campo_table' => 'precio_4'
         ]);
 
-        $lista5 = Pricetype::create([
+        $lista5 = Pricetype::firstOrCreate([
+            'campo_table' => 'precio_5'
+        ], [
             'name' => 'LISTA 5',
             'rounded' => 0,
             'decimals' => 4,
             'web' => 0,
-            'campo_table' => 'precio_5'
         ]);
 
         $rangos = Rango::all();

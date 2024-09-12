@@ -15,11 +15,26 @@ class Claimbook extends Model
 
     public $timestamps = false;
     protected $fillable = [
-        'date', 'serie', 'correlativo', 'document', 'name', 'direccion',
-        'email', 'is_menor_edad', 'document_apoderado', 'name_apoderado',
-        'direccion_apoderado', 'telefono_apoderado', 'channelsale',
-        'biencontratado', 'descripcion_producto_servicio', 'telefono',
-        'tipo_reclamo', 'detalle_reclamo', 'pedido', 'sucursal_id'
+        'date',
+        'serie',
+        'correlativo',
+        'document',
+        'name',
+        'direccion',
+        'email',
+        'is_menor_edad',
+        'document_apoderado',
+        'name_apoderado',
+        'direccion_apoderado',
+        'telefono_apoderado',
+        'channelsale',
+        'biencontratado',
+        'descripcion_producto_servicio',
+        'telefono',
+        'tipo_reclamo',
+        'detalle_reclamo',
+        'pedido',
+        'sucursal_id'
     ];
 
 
@@ -42,6 +57,16 @@ class Claimbook extends Model
     public function setDireccionAttribute($value)
     {
         $this->attributes['direccion'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function setDescripcionProductoServicioAttribute($value)
+    {
+        $this->attributes['descripcion_producto_servicio'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function setDetalleReclamoAttribute($value)
+    {
+        $this->attributes['detalle_reclamo'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function setDireccionApoderadoAttribute($value)
