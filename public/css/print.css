@@ -1,6 +1,6 @@
-* {
+/* * {
     font-family: 'Ubuntu';
-}
+} */
 
 @page {
     margin: 4cm 1cm 4.5cm 1cm;
@@ -166,31 +166,23 @@ p {
 
 
 .font-light {
-    font-family: 'Ubuntu';
     font-weight: 300;
     font-style: normal;
-    letter-spacing: 0px;
 }
 
 .font-normal {
-    font-family: 'Ubuntu';
     font-weight: 400;
     font-style: normal;
-    letter-spacing: 0px;
 }
 
 .font-medium {
-    font-family: 'Ubuntu';
     font-weight: 500;
     font-style: normal;
-    letter-spacing: 0px;
 }
 
 .font-bold {
-    font-family: 'Ubuntu';
     font-weight: 700;
     font-style: normal;
-    letter-spacing: normal;
 }
 
 .text-start {

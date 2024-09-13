@@ -161,15 +161,29 @@ class ClaimbookController extends Controller
     {
         if (Module::isEnabled('Marketplace')) {
             $empresa = mi_empresa();
+            // $options = new Options();
+            // $options->set('isHtml5ParserEnabled', true);
+            // $options->set('isFontSubsettingEnabled', true);
+            // $options->set('isRemoteEnabled', true);
+            // $options->set('logOutputFile', storage_path('logs/dompdf.log'));
+            // $options->set('defaultFont', 'Ubuntu');
+            // $pdf = new PDF($options);
+            // $view = View::make('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'));
+            // $pdf = PDF::loadHTML($view);
+            // return $pdf->stream();
+
+
+
             $options = new Options();
             $options->set('isHtml5ParserEnabled', true);
             $options->set('isFontSubsettingEnabled', true);
-            $options->set('isRemoteEnabled', true);
-            $options->set('logOutputFile', storage_path('logs/dompdf.log'));
-            $pdf = new PDF($options);
-            $view = View::make('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'));
-            $pdf = PDF::loadHTML($view);
-            return $pdf->stream();
+            $options->set('defaultFont', 'Ubuntu');
+
+            $dompdf = new PDF($options);
+            $html = view('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'))->render();
+            $dompdf = PDF::loadHTML($html);
+            $dompdf->render();
+            return $dompdf->stream();
         }
     }
 
