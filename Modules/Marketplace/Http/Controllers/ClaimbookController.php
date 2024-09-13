@@ -214,7 +214,7 @@ class ClaimbookController extends Controller
                 'fontCache' => $tmp,
                 'tempDir' => $tmp,
                 'chroot' => $tmp,
-                'defaultFont' => 'Ubuntu'
+                // 'defaultFont' => 'Ubuntu'
             ]);
 
             // $dompdf->loadHTML($html); //load an html
