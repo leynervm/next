@@ -438,3 +438,12 @@ function pathURLProductImage($filename = null)
         return asset('storage/productos/' . $filename);
     }
 }
+
+
+function pathURLLogoEmpresa($filename = null)
+{
+    if (!is_null($filename)) {
+        return asset('storage/images/company/' . $filename);
+    }
+    return null;
+}

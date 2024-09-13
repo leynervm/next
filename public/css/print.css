@@ -199,6 +199,7 @@ p {
 }
 
 .font-normal {
+    font-family: 'Ubuntu';
     font-weight: 400;
 }
 

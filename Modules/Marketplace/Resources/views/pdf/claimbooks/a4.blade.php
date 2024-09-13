@@ -22,7 +22,8 @@
                     <th style="text-align: left;">
                         @if ($empresa->image)
                             <div class="">
-                                <img src="{{ $empresa->image->getLogoEmpresa() }}" alt="" class="image" />
+                                <img src="{{ pathURLLogoEmpresa($empresa->image->url) }}" alt=""
+                                    class="image" />
                             </div>
                         @endif
                     </th>
@@ -80,7 +81,7 @@
                 </tr>
                 @if (!empty($empresa->web))
                     <tr>
-                        <td colspan="2" class="text-center text-12 leading-3">
+                        <td colspan="2" class="text-center text-12 leading-3 font-normal">
                             {{ $empresa->web }}</td>
                     </tr>
                 @endif
@@ -92,13 +93,13 @@
         <table class="table mt-3 text-10">
             <tbody>
                 <tr>
-                    <td class="p-1 font-medium" style="width: 100px">
+                    <td class="p-1 font-bold" style="width: 100px">
                         FECHA REGISTRO </td>
                     <td class="p-1 font-normal">
                         : {{ formatDate($claimbook->date, 'DD/MM/Y') }}</td>
                 </tr>
                 <tr>
-                    <td class="p-1 font-medium" style="width: 100px">
+                    <td class="p-1 font-bold" style="width: 100px">
                         CANAL DE VENTA </td>
                     <td class="p-1 font-normal">
                         : {{ $claimbook->channelsale }}
@@ -107,7 +108,7 @@
 
                 @if ($claimbook->sucursal)
                     <tr>
-                        <td class="p-1 font-medium align-baseline" style="width: 100px">
+                        <td class="p-1 font-bold align-baseline" style="width: 100px">
                             PUNTO VENTA </td>
                         <td class="p-1 font-normal">
                             : {{ $claimbook->sucursal->name }}
@@ -123,7 +124,7 @@
                 @endif
 
                 <tr>
-                    <td class="p-1 font-medium" style="width: 100px;">
+                    <td class="p-1 font-bold" style="width: 100px;">
                         PEDIDO </td>
                     <td class="p-1 font-normal">
                         : {{ $claimbook->pedido }}</td>
@@ -185,7 +186,8 @@
                     <tr>
                         <td class="p-1 font-bold align-baseline">
                             TELÉFONO
-                            <p style="padding: 0;" class="font-normal">{{ formatTelefono($claimbook->telefono_apoderado) }}</p>
+                            <p style="padding: 0;" class="font-normal">
+                                {{ formatTelefono($claimbook->telefono_apoderado) }}</p>
                         </td>
                         <td>
 
