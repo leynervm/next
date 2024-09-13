@@ -227,10 +227,10 @@
             </tbody>
         </table>
 
-        {{-- <span class="font-normal">NORMAL</span>
-        <span class="font-regular">REGULAR</span>
-        <span class="font-medium">MEDIUM</span>
-        <span class="font-bold">BOLD</span> --}}
+        <p class="font-light">LIGHT</p>
+        <p class="font-normal">NORMAL</p>
+        <p class="font-medium">MEDIUM</p>
+        <p class="font-bold">BOLD</p>
 
         {{-- @for ($i = 1; $i < 100; $i++)
             <div style="background:#7e7e7e; margin:2px; font-size: 11px">
