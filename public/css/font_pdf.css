@@ -1,27 +1,27 @@
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-L.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-Light.ttf') }}") format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-R.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-Regular.ttf') }}") format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-M.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-Medium.ttf') }}") format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-B.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-Bold.ttf') }}") format('truetype');
     font-weight: bold;
     font-style: normal;
 }
@@ -30,28 +30,28 @@
 
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-LI.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-LightItalic.ttf') }}") format('truetype');
     font-weight: normal;
     font-style: italic;
 }
 
-@font-face {
+/* @font-face {
     font-family: 'Ubuntu';
     src: url("{{ public_path('fonts/Ubuntu/Ubuntu-RI.ttf') }}") format('truetype');
     font-weight: normal;
     font-style: italic;
-}
+} */
 
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-MI.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-MediumItalic.ttf') }}") format('truetype');
     font-weight: normal;
     font-style: italic;
 }
 
 @font-face {
     font-family: 'Ubuntu';
-    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-BI.ttf') }}") format('truetype');
+    src: url("{{ public_path('fonts/Ubuntu/Ubuntu-BoldItalic.ttf') }}") format('truetype');
     font-weight: bold;
     font-style: italic;
 }

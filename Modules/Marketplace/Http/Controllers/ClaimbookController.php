@@ -13,7 +13,8 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Nwidart\Modules\Facades\Module;
-use Barryvdh\DomPDF\Facade\Pdf as PDF;
+// use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Dompdf\Dompdf as PDF;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
@@ -161,6 +162,39 @@ class ClaimbookController extends Controller
     {
         if (Module::isEnabled('Marketplace')) {
             $empresa = mi_empresa();
+
+
+            //             $html = <<<HTML
+            // <!DOCTYPE html>
+            // <html>
+            // <head>
+            // <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+            // <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet" />
+            // <link href="https://fonts.googleapis.com/css2?family=Tangerine&display=swap" rel="stylesheet" />
+            // <style>
+
+            // .m {
+            //     font-family: 'Montserrat';
+            // }
+
+            // .t {
+            //     font-family: 'Tangerine';
+            // }
+
+            // </style>
+            // </head>
+            // <body>
+            //     <p class="m">
+            //         Montserrat
+            //     </p>
+            //     <p class="t">
+            //         Tangerine
+            //     </p>
+            // </body>
+            // </html>
+            // HTML;
+
+
             // $options = new Options();
             // $options->set('isHtml5ParserEnabled', true);
             // $options->set('isFontSubsettingEnabled', true);
@@ -172,18 +206,37 @@ class ClaimbookController extends Controller
             // $pdf = PDF::loadHTML($view);
             // return $pdf->stream();
 
+            $tmp = sys_get_temp_dir();
+            $dompdf = new PDF([
+                'logOutputFile' => '',
+                'isRemoteEnabled' => true,
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ]);
 
+            // $dompdf->loadHTML($html); //load an html
+            // $dompdf->render();
+            // return $dompdf->stream('hello.pdf', [
+            //     'compress' => true,
+            //     'Attachment' => false,
+            // ]);
 
-            $options = new Options();
-            $options->set('isHtml5ParserEnabled', true);
-            $options->set('isFontSubsettingEnabled', true);
-            $options->set('defaultFont', 'Ubuntu');
+            // $options = new Options();
+            // $options->set('isHtml5ParserEnabled', true);
+            // $options->set('isFontSubsettingEnabled', true);
+            // $options->set('defaultFont', 'Ubuntu');
 
-            $dompdf = new PDF($options);
+            // $dompdf = new PDF($options);
             $html = view('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'))->render();
-            $dompdf = PDF::loadHTML($html);
+            $dompdf->loadHTML($html);
             $dompdf->render();
-            return $dompdf->stream();
+            return $dompdf->stream('hello.pdf', [
+                'compress' => true,
+                'Attachment' => false,
+            ]);
         }
     }
 

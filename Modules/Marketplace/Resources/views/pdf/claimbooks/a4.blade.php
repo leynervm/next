@@ -11,17 +11,17 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
         rel="stylesheet"> --}}
-    <link rel="stylesheet" href="{{ public_path('css/font_pdf.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ public_path('css/print.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('css/font_pdf.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ asset('css/print.css') }}" type="text/css">
     {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         LIBRO DE RECLAMACIÓN - {{ $claimbook->serie }}-{{ $claimbook->correlativo }}
     </title>
 </head>
 <style>
-    body {
-        font-family: 'Ubuntu', sans-serif;
-    }
+    /* body {
+        font-family: 'Ubuntu';
+    } */
 </style>
 
 <body>
@@ -32,7 +32,7 @@
                     <th style="text-align: left;">
                         @if ($empresa->image)
                             <div class="">
-                                <img src="{{ pathURLLogoEmpresa($empresa->image->url) }}" alt=""
+                                <img src="{{ asset('storage/images/company/' . $empresa->image->url) }}" alt=""
                                     class="image" />
                             </div>
                         @endif
