@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ asset('css/print.css') }}">
+    <link rel="stylesheet" href="{{ public_path('css/print.css') }}">
     {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         LIBRO DE RECLAMACIÓN - {{ $claimbook->serie }}-{{ $claimbook->correlativo }}
     </title>
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
+    <link rel="stylesheet" href="{{ public_path('css/ubuntu.css') }}">
 </head>
 
 
