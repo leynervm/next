@@ -16,6 +16,7 @@ use Nwidart\Modules\Facades\Module;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Dompdf\Options;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\View;
 
 class ClaimbookController extends Controller
 {
@@ -164,8 +165,10 @@ class ClaimbookController extends Controller
             $options->set('isHtml5ParserEnabled', true);
             $options->set('isFontSubsettingEnabled', true);
             $options->set('isRemoteEnabled', true);
+            $options->set('logOutputFile', storage_path('logs/dompdf.log'));
             $pdf = new PDF($options);
-            $pdf = PDF::loadView('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'));
+            $view = View::make('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'));
+            $pdf = PDF::loadHTML($view);
             return $pdf->stream();
         }
     }
