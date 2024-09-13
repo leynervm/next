@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Nwidart\Modules\Facades\Module;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
+use Dompdf\Options;
 use Illuminate\Support\Facades\Mail;
 
 class ClaimbookController extends Controller
@@ -159,6 +160,11 @@ class ClaimbookController extends Controller
     {
         if (Module::isEnabled('Marketplace')) {
             $empresa = mi_empresa();
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isFontSubsettingEnabled', true);
+            $options->set('isRemoteEnabled', true);
+            $pdf = new PDF($options);
             $pdf = PDF::loadView('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'));
             return $pdf->stream();
         }
