@@ -1,0 +1,12 @@
+{
+    "ubuntu": {
+        "300": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_300_630e305ecf74a8426694bd3cc7391a7b",
+        "300_italic": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_300_italic_7e65b1a264b0ca8f465af48c79cf699e",
+        "normal": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_normal_ab751254afea6386058f415797349070",
+        "italic": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_italic_a9b2b92d2b0905c39c81907776425968",
+        "500": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_500_8967e557b2d9756936b3394cf1ac21bd",
+        "500_italic": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_500_italic_19be0c0c873b4590e0f79c025a2925aa",
+        "bold": "C:\\xampp\\htdocs\\next\\public\\fonts\/\/ubuntu_bold_d3721cd6cfd61df8b592a06d9047a0cb",
+        "bold_italic": "ubuntu_bold_italic_d4d19765b52f5d205c274d37cbb4520c"
+    }
+}

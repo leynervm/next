@@ -41,8 +41,21 @@ class CompraController extends Controller
         $this->authorize('sucursal', $compra);
 
         if (Module::isEnabled('Almacen')) {
-            $pdf = PDF::loadView('almacen::pdf.compras.a4', compact('compra'));
-            return $pdf->stream();
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ];
+
+            $pdf = PDF::setOption($options)->loadView('almacen::pdf.compras.a4', compact('compra'));
+            return $pdf->stream('COMPRA-' . $compra->referencia . '.pdf');
         }
     }
 

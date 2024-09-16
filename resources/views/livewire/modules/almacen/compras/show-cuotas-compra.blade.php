@@ -35,7 +35,7 @@
                                         @foreach ($item->cajamovimientos as $payment)
                                             <x-card-payment-box :cajamovimiento="$payment" :moneda="$compra->moneda">
                                                 <x-slot name="footer">
-                                                    <x-button-print-payment class="mr-auto"
+                                                    <x-button-print class="mr-auto"
                                                         href="{{ route('admin.payments.print', $item) }}" />
 
                                                     <x-button-delete

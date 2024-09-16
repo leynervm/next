@@ -5,10 +5,10 @@ EncodingScheme FontSpecific
 Copyright Copyright 2011 Canonical Ltd.  Licensed under the Ubuntu Font Licence 1.0
 FontName Ubuntu
 FontSubfamily Regular
-UniqueID DaltonMaagLtd: Ubuntu Regular 0.80
-FullName Ubuntu
-Version Version 0.80
-PostScriptName Ubuntu
+UniqueID 0.83;DAMA;Ubuntu-Regular
+FullName Ubuntu Regular
+Version 0.83
+PostScriptName Ubuntu-Regular
 Trademark Ubuntu and Canonical are registered trademarks of Canonical Ltd.
 Manufacturer Dalton Maag Ltd
 Designer Dalton Maag Ltd

@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         {{ $venta->seriecomprobante->typecomprobante->descripcion }} - {{ $venta->seriecompleta }}
     </title>
@@ -13,31 +12,70 @@
 <style>
     @font-face {
         font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Light.ttf') }}') format('truetype');
-        font-weight: 100;
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Light.ttf') }}") format("truetype");
     }
 
     @font-face {
         font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Regular.ttf') }}') format('truetype');
-        font-weight: 200;
+        font-style: italic;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-LightItalic.ttf') }}") format("truetype");
     }
 
     @font-face {
         font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Medium.ttf') }}') format('truetype');
+        font-style: normal;
         font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Regular.ttf') }}") format("truetype");
     }
 
     @font-face {
         font-family: "Ubuntu";
-        src: url('{{ public_path('/assets/fonts/Ubuntu/Ubuntu-Bold.ttf') }}') format('truetype');
-        font-weight: 800;
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Italic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Medium.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-MediumItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Bold.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: Italic;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-BoldItalic.ttf') }}") format("truetype");
     }
 
     * {
         font-family: 'Ubuntu' !important;
-        font-weight: 200;
         font-size: 9px;
     }
 
@@ -101,20 +139,24 @@
         margin-top: 6px !important;
     }
 
-    .font-normal {
-        font-weight: 100 !important;
+    .font-light {
+        font-weight: 300;
+        font-style: normal;
     }
 
-    .font-regular {
-        font-weight: 200 !important;
+    .font-normal {
+        font-weight: 400;
+        font-style: normal;
     }
 
     .font-medium {
-        font-weight: 400 !important;
+        font-weight: 500;
+        font-style: normal;
     }
 
     .font-bold {
-        font-weight: 800 !important;
+        font-weight: 700;
+        font-style: normal;
     }
 
     .text-8 {
@@ -161,8 +203,7 @@
 <body class="">
     @if ($venta->sucursal->empresa->image)
         <div class="text-center">
-            <img src="{{ Storage::url('images/company/' . $venta->sucursal->empresa->image->url) }}" alt=""
-                class="image" />
+            <img src="{{ $venta->sucursal->empresa->image->getLogoEmpresa() }}" alt="" class="image" />
         </div>
     @endif
 
@@ -172,12 +213,12 @@
     <p class="text-center font-medium" style="line-height: 1rem;">
         {{ $venta->sucursal->empresa->document }}</p>
 
-    <p class="font-regular text-center leading-3 mt-2" style="font-size: 10px;">
+    <p class="font-normal text-center leading-3 mt-2" style="font-size: 10px;">
         {{ $venta->sucursal->direccion }}
     </p>
 
     @if ($venta->sucursal->ubigeo)
-        <p class="font-regular text-center leading-3 mt-2" style="font-size: 10px;">
+        <p class="font-normal text-center leading-3 mt-2" style="font-size: 10px;">
             {{ $venta->sucursal->ubigeo->region }}
             - {{ $venta->sucursal->ubigeo->provincia }}
             - {{ $venta->sucursal->ubigeo->distrito }}
@@ -185,7 +226,7 @@
     @endif
 
     @if (count($venta->sucursal->empresa->telephones) > 0)
-        <p class="font-regular text-center leading-4 mt-2" style="font-size: 10px;">
+        <p class="font-normal text-center leading-4 mt-2" style="font-size: 10px;">
             TELÉFONO:
             <span>{{ formatTelefono($venta->sucursal->empresa->telephones->first()->phone) }}</span>
         </p>
@@ -274,7 +315,7 @@
                         </td>
                     </tr>
 
-                    @if ($venta->igv > 0 || $venta->igvgratuito >0)
+                    @if ($venta->igv > 0 || $venta->igvgratuito > 0)
                         <tr>
                             <td class="font-bold p-1 text-end">
                                 IGV : </td>
@@ -313,10 +354,10 @@
         realizarse dentro de las 48 horas, previa presentacion del comprobante.
     </p>
 
-    <p class="text-center font-regular">***GRACIAS POR SU COMPRA***</p>
+    <p class="text-center font-normal">***GRACIAS POR SU COMPRA***</p>
 
     @if (!empty($venta->sucursal->empresa->web))
-        <p class="text-center">{{ $venta->sucursal->empresa->web }}</p>
+        <p class="text-center font-normal">{{ $venta->sucursal->empresa->web }}</p>
     @endif
 </body>
 

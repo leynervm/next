@@ -10,6 +10,74 @@
     <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Light.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-LightItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Regular.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Italic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Medium.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-MediumItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Bold.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: Italic;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-BoldItalic.ttf') }}") format("truetype");
+    }
+
+    * {
+        font-family: 'Ubuntu';
+    }
+
     @page {
         margin: 4cm 1cm 4.5cm 1cm;
     }
@@ -204,8 +272,8 @@
                     <th style="text-align: left;">
                         @if ($compra->sucursal->empresa->image)
                             <div class="">
-                                <img src="{{ Storage::url('images/company/' . $compra->sucursal->empresa->image->url) }}"
-                                    alt="" class="image" />
+                                <img src="{{ $compra->sucursal->empresa->image->getLogoEmpresa() }}" alt=""
+                                    class="image" />
                             </div>
                         @endif
                     </th>
@@ -255,7 +323,7 @@
             <thead>
                 @if (!empty($compra->sucursal->empresa->web))
                     <tr>
-                        <td colspan="2" class="text-center text-12 leading-3">
+                        <td colspan="2" class="text-center text-12 leading-3 font-normal">
                             {{ $compra->sucursal->empresa->web }}</td>
                     </tr>
                 @endif

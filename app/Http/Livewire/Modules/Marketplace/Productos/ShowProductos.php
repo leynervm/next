@@ -174,23 +174,32 @@ class ShowProductos extends Component
         $this->direction = $direction;
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function updatedSelectedcategorias()
     {
+        $this->resetPage();
         $this->searchcategorias = implode(',', $this->selectedcategorias);
     }
 
     public function updatedSelectedsubcategorias()
     {
+        $this->resetPage();
         $this->searchsubcategorias = implode(',', $this->selectedsubcategorias);
     }
 
     public function updatedSelectedmarcas()
     {
+        $this->resetPage();
         $this->searchmarcas = implode(',', $this->selectedmarcas);
     }
 
     public function updatedEspecificacions()
     {
+        $this->resetPage();
         $this->searchespecificaciones = implode(',', $this->especificacions);
     }
 
@@ -237,7 +246,7 @@ class ShowProductos extends Component
             if (auth()->check()) {
                 Cart::instance('shopping')->store(auth()->id());
             }
-            $this->dispatchBrowserEvent('toast', toastJSON('Agregado al carrito'));
+            $this->dispatchBrowserEvent('toast', toastJSON('AGREGADO CORRECTAMENTE'));
         } else {
             $mensaje = response()->json([
                 'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
@@ -283,7 +292,7 @@ class ShowProductos extends Component
             if (auth()->check()) {
                 Cart::instance('wishlist')->store(auth()->id());
             }
-            $this->dispatchBrowserEvent('toast', toastJSON('Agregado a lista de deseos'));
+            $this->dispatchBrowserEvent('toast', toastJSON('AGREGADO CORRECTAMENTE'));
         } else {
             $mensaje = response()->json([
                 'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',

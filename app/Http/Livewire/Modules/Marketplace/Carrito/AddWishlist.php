@@ -57,7 +57,7 @@ class AddWishlist extends Component
             if (auth()->check()) {
                 Cart::instance('wishlist')->store(auth()->id());
             }
-            $this->dispatchBrowserEvent('toast', toastJSON('Agregado a lista de deseos'));
+            $this->dispatchBrowserEvent('toast', toastJSON('AGREGADO CORRECTAMENTE'));
         } else {
             $mensaje = response()->json([
                 'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',

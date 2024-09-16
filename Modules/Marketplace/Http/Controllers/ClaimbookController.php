@@ -13,9 +13,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Nwidart\Modules\Facades\Module;
-// use Barryvdh\DomPDF\Facade\Pdf as PDF;
-use Dompdf\Dompdf as PDF;
-use Dompdf\Options;
+use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\View;
 
@@ -106,16 +104,16 @@ class ClaimbookController extends Controller
             'g_recaptcha_response' => ['required', new Recaptcha()]
         ]);
 
-
         DB::beginTransaction();
         try {
 
             $sucursal_id = $request->channelsale == Claimbook::TIENDA_FISICA ? $request->tienda_compra : null;
             $correlativo = Claimbook::where('sucursal_id', $sucursal_id)->count('id') ?? 0;
+            $serie = empty($sucursal_id) ? 'RRRR' : 'RRRR' . $sucursal_id;
 
             $datos = [
                 'date' => $request->date,
-                'serie' => 'LR01',
+                'serie' => 'L' . substr($serie, -3),
                 'correlativo' => 1 + $correlativo,
                 'document' => trim($request->document),
                 'name' => trim($request->name),
@@ -162,81 +160,21 @@ class ClaimbookController extends Controller
     {
         if (Module::isEnabled('Marketplace')) {
             $empresa = mi_empresa();
-
-
-            //             $html = <<<HTML
-            // <!DOCTYPE html>
-            // <html>
-            // <head>
-            // <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-            // <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet" />
-            // <link href="https://fonts.googleapis.com/css2?family=Tangerine&display=swap" rel="stylesheet" />
-            // <style>
-
-            // .m {
-            //     font-family: 'Montserrat';
-            // }
-
-            // .t {
-            //     font-family: 'Tangerine';
-            // }
-
-            // </style>
-            // </head>
-            // <body>
-            //     <p class="m">
-            //         Montserrat
-            //     </p>
-            //     <p class="t">
-            //         Tangerine
-            //     </p>
-            // </body>
-            // </html>
-            // HTML;
-
-
-            // $options = new Options();
-            // $options->set('isHtml5ParserEnabled', true);
-            // $options->set('isFontSubsettingEnabled', true);
-            // $options->set('isRemoteEnabled', true);
-            // $options->set('logOutputFile', storage_path('logs/dompdf.log'));
-            // $options->set('defaultFont', 'Ubuntu');
-            // $pdf = new PDF($options);
-            // $view = View::make('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'));
-            // $pdf = PDF::loadHTML($view);
-            // return $pdf->stream();
-
-            $tmp = sys_get_temp_dir();
-            $dompdf = new PDF([
-                'logOutputFile' => '',
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
                 'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
                 'fontDir' => $tmp,
                 'fontCache' => $tmp,
                 'tempDir' => $tmp,
                 'chroot' => $tmp,
-                // 'defaultFont' => 'Ubuntu'
-            ]);
+                'defaultFont' => 'Ubuntu'
+            ];
 
-            // $dompdf->loadHTML($html); //load an html
-            // $dompdf->render();
-            // return $dompdf->stream('hello.pdf', [
-            //     'compress' => true,
-            //     'Attachment' => false,
-            // ]);
-
-            // $options = new Options();
-            // $options->set('isHtml5ParserEnabled', true);
-            // $options->set('isFontSubsettingEnabled', true);
-            // $options->set('defaultFont', 'Ubuntu');
-
-            // $dompdf = new PDF($options);
-            $html = view('marketplace::pdf.claimbooks.a4', compact('empresa', 'claimbook'))->render();
-            $dompdf->loadHTML($html);
-            $dompdf->render();
-            return $dompdf->stream('hello.pdf', [
-                'compress' => true,
-                'Attachment' => false,
-            ]);
+            $pdf = PDF::setOption($options)->loadView('marketplace::pdf.claimbooks.a4', compact('claimbook', 'empresa'));
+            return $pdf->stream('LIBRO-RECLAMACION-' . $claimbook->serie . '-' . $claimbook->correlativo . '.pdf');
         }
     }
 

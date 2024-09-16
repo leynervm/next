@@ -114,7 +114,12 @@ module.exports = {
                 fondofooter: "var(--fondo-footer)",
                 colorlinkfooter: "var(--color-link-footer)",
                 hoverlinkfooter: "var(--hover-link-footer)",
-
+                
+                colorbuttonprint: "var(--color-button-print)",
+                fondobuttonprint: "var(--fondo-button-print)",
+                colorhoverbuttonprint: "var(--color-hover-button-print)",
+                fondohoverbuttonprint: "var(--fondo-hover-button-print)",
+                ringbuttonprint: "var(--ring-button-print)",
 
                 next: {
                     50: "#f0f9f9",

@@ -5,11 +5,73 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>VOUCHER PAGO - N°{{ $cajamovimiento->id }}</title>
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Light.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-LightItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Regular.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Italic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Medium.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-MediumItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Bold.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: Italic;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-BoldItalic.ttf') }}") format("truetype");
+    }
+
     * {
         font-family: 'Ubuntu';
         font-size: 9px;
@@ -82,20 +144,24 @@
         margin-top: 6px !important;
     }
 
-    .font-normal {
-        font-weight: 300 !important;
+    .font-light {
+        font-weight: 300;
+        font-style: normal;
     }
 
-    .font-regular {
-        font-weight: 400 !important;
+    .font-normal {
+        font-weight: 400;
+        font-style: normal;
     }
 
     .font-medium {
-        font-weight: 400 !important;
+        font-weight: 500;
+        font-style: normal;
     }
 
     .font-bold {
-        font-weight: 700 !important;
+        font-weight: 700;
+        font-style: normal;
     }
 
     .text-8 {
@@ -142,8 +208,7 @@
 <body class="">
     @if ($cajamovimiento->sucursal->empresa->image)
         <div class="text-center content-image">
-            <img src="{{ Storage::url('images/company/' . $cajamovimiento->sucursal->empresa->image->url) }}"
-                alt="" class="image" />
+            <img src="{{ $cajamovimiento->sucursal->empresa->image->getLogoEmpresa() }}" alt="" class="image" />
         </div>
     @endif
 
@@ -153,12 +218,12 @@
     <p class="text-center font-medium" style="line-height: 1rem;">
         {{ $cajamovimiento->sucursal->empresa->document }}</p>
 
-    <p class="font-regular text-center leading-3 mt-2" style="font-size: 10px;">
+    <p class="font-normal text-center leading-3 mt-2" style="font-size: 10px;">
         {{ $cajamovimiento->sucursal->direccion }}
     </p>
 
     @if ($cajamovimiento->sucursal->ubigeo)
-        <p class="font-regular text-center leading-3 mt-2" style="font-size: 10px;">
+        <p class="font-normal text-center leading-3 mt-2" style="font-size: 10px;">
             {{ $cajamovimiento->sucursal->ubigeo->region }}
             - {{ $cajamovimiento->sucursal->ubigeo->provincia }}
             - {{ $cajamovimiento->sucursal->ubigeo->distrito }}
@@ -166,7 +231,7 @@
     @endif
 
     @if (count($cajamovimiento->sucursal->empresa->telephones) > 0)
-        <p class="font-regular text-center leading-4 mt-2" style="font-size: 10px;">
+        <p class="font-normal text-center leading-4 mt-2" style="font-size: 10px;">
             TELÉFONO:
             <span>{{ formatTelefono($cajamovimiento->sucursal->empresa->telephones->first()->phone) }}</span>
         </p>
@@ -175,7 +240,7 @@
     <p class="text-center font-bold mt-3" style="font-size: 11px; line-height: 1rem;">
         VOUCHER DE PAGO
     </p>
-    <p class="text-center font-regular" style="font-size: 10px;">
+    <p class="text-center font-normal" style="font-size: 10px;">
         N° OPERACIÓN: {{ $cajamovimiento->id }}
     </p>
 
@@ -194,8 +259,8 @@
 
         <p class="text-center">
             {{ number_format($cajamovimiento->amount, 2, '.', ', ') }}
-            <small class="">
-                @if ($cajamovimiento->moneda->code == 'USD')
+            <small class="font-medium">
+                @if ($cajamovimiento->moneda->isDolar())
                     SOLES
                 @else
                     DÓLARES
@@ -248,10 +313,10 @@
         </table>
     </div>
 
-    <p class="text-center font-regular mt-3">***USUARIO : {{ substr($cajamovimiento->user->name, 0, 6) }} ***</p>
+    <p class="text-center font-normal mt-3">***USUARIO : {{ substr($cajamovimiento->user->name, 0, 6) }} ***</p>
 
     @if (!empty($cajamovimiento->sucursal->empresa->web))
-        <p class="text-center">{{ $cajamovimiento->sucursal->empresa->web }}</p>
+        <p class="text-center font-normal">{{ $cajamovimiento->sucursal->empresa->web }}</p>
     @endif
 </body>
 

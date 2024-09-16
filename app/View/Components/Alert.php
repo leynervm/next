@@ -14,11 +14,11 @@ class Alert extends Component
 
     public $titulo, $mensaje, $type;
 
-    public function __construct($titulo, $mensaje, $type = "info")
+    public function __construct()
     {
-        $this->titulo = $titulo;
-        $this->mensaje = $mensaje;
-        $this->type = $type;
+        // $this->titulo = $titulo;
+        // $this->mensaje = $mensaje;
+        // $this->type = $type;
     }
 
     /**

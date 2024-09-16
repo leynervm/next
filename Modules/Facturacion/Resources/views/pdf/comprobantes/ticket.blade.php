@@ -5,13 +5,75 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         {{ $comprobante->seriecomprobante->typecomprobante->descripcion }} - {{ $comprobante->seriecompleta }}
     </title>
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Light.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-LightItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Regular.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Italic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Medium.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-MediumItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Bold.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: Italic;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-BoldItalic.ttf') }}") format("truetype");
+    }
+
     * {
         font-family: 'Ubuntu' !important;
         font-size: 9px;
@@ -151,8 +213,7 @@
 <body class="">
     @if ($comprobante->sucursal->empresa->image)
         <div class="text-center">
-            <img src="{{ Storage::url('images/company/' . $comprobante->sucursal->empresa->image->url) }}"
-                alt="" class="image" />
+            <img src="{{ $comprobante->sucursal->empresa->image->getLogoEmpresa() }}" alt="" class="image" />
         </div>
     @endif
 

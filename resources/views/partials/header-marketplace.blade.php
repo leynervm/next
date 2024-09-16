@@ -261,7 +261,7 @@
                             </button>
 
                             <div x-show="login" x-cloak x-transition style="display: none"
-                                class="absolute w-40 top-12 right-0 bg-fondodropdown rounded-xl p-2 min-w-[200px] xs:min-w-[226px]"
+                                class="absolute w-48 top-12 right-0 bg-fondodropdown rounded-xl p-2"
                                 :class="backdrop ? 'z-[1]' : 'z-[1000]'">
                                 <div class="w-full">
                                     <div

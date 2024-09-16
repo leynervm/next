@@ -70,7 +70,7 @@ class AddCarrito extends Component
             if (auth()->check()) {
                 Cart::instance('shopping')->store(auth()->id());
             }
-            $this->dispatchBrowserEvent('toast', toastJSON('Agregado al carrito'));
+            $this->dispatchBrowserEvent('toast', toastJSON('AGREGADO CORRECTAMENTE'));
         } else {
             $mensaje = response()->json([
                 'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',

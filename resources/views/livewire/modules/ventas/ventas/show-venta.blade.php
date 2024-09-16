@@ -179,8 +179,7 @@
                     @foreach ($venta->cajamovimientos as $item)
                         <x-card-payment-box :cajamovimiento="$item" :moneda="$venta->moneda">
                             <x-slot name="footer">
-                                <x-button-print-payment class="mr-auto"
-                                    href="{{ route('admin.payments.print', $item) }}" />
+                                <x-button-print class="mr-auto" href="{{ route('admin.payments.print', $item) }}" />
 
                                 @can('admin.ventas.payments.edit')
                                     <x-button-delete onclick="confirmDeletePayment({{ $item->id }})"
@@ -232,7 +231,7 @@
                                                 <x-card-payment-box :cajamovimiento="$payment" :moneda="$venta->moneda">
                                                     @if (auth()->user()->sucursal_id == $venta->sucursal_id)
                                                         <x-slot name="footer">
-                                                            <x-button-print-payment class="mr-auto"
+                                                            <x-button-print class="mr-auto"
                                                                 href="{{ route('admin.payments.print', $payment) }}" />
 
                                                             @can('admin.ventas.payments.edit')

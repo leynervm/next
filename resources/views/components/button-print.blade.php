@@ -1,5 +1,5 @@
 <a
-    {{ $attributes->merge(['class' => 'inline-block group font-semibold text-sm bg-transparent text-neutral-800 p-1 rounded-md hover:bg-neutral-900 focus:bg-neutral-900 hover:ring-2 hover:ring-neutral-300 focus:ring-2 focus:ring-neutral-300 hover:text-white focus:text-white disabled:opacity-25 transition ease-in duration-150']) }}>
+    {{ $attributes->merge(['class' => 'inline-block group font-semibold text-sm bg-fondobuttonprint text-colorbuttonprint p-1 rounded-md hover:bg-fondohoverbuttonprint focus:bg-fondohoverbuttonprint hover:ring-2 hover:ring-ringbuttonprint focus:ring-2 focus:ring-ringbuttonprint hover:text-colorhoverbuttonprint focus:text-colorhoverbuttonprint disabled:opacity-25 transition ease-in-out duration-300']) }}>
     {{-- <svg class="w-4 h-4 block scale-110" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke-width="1.5" stroke="currentColor">
         <path

@@ -54,8 +54,21 @@ class GuiaController extends Controller
         $this->authorize('sucursal', $guia);
 
         if (Module::isEnabled('Facturacion')) {
-            $pdf = PDF::loadView('facturacion::pdf.guias.a4', compact('guia'));
-            return $pdf->stream();
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ];
+
+            $pdf = PDF::setOption($options)->loadView('facturacion::pdf.guias.a4', compact('guia'));
+            return $pdf->stream($guia->seriecompleta . '.pdf');
         }
     }
 
@@ -110,8 +123,22 @@ class GuiaController extends Controller
             if (!in_array($format, ['a4', 'a5'])) {
                 abort(404);
             }
-            $pdf = PDF::loadView('facturacion::pdf.guias.' . $format, compact('guia'));
-            return $pdf->stream();
+
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ];
+
+            $pdf = PDF::setOption($options)->loadView('facturacion::pdf.guias.' . $format, compact('guia'));
+            return $pdf->stream($guia->seriecompleta . '.pdf');
         }
     }
 }

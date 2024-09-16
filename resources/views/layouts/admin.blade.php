@@ -105,7 +105,7 @@
                             </x-breadcrumb-next>
                         </div>
 
-                        <x-jet-dropdown align="right" width="48" contentClasses="py-1 bg-fondodropdown">
+                        <x-jet-dropdown align="right" width="48" contentClasses="p-2 bg-fondodropdown">
                             <x-slot name="trigger">
                                 <button type="button"
                                     class="bg-fondodropdown shadow shadow-shadowminicard relative inline-flex p-1.5 justify-center items-center text-textspancardproduct cursor-pointer font-semibold rounded-lg hover:shadow-md hover:shadow-shadowminicard focus:shadow-md focus:shadow-shadowminicard transition-all ease-in-out duration-150">
@@ -139,7 +139,6 @@
                             </x-slot>
 
                             <x-slot name="content">
-
                                 <div
                                     class="px-4 py-2 flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
                                     <button title="Light" theme="theme-next"
@@ -177,7 +176,7 @@
 
                                 @if (Module::isEnabled('Marketplace'))
                                     <x-nav-link
-                                        class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"
+                                        class="px-5 gap-2 shadow-none !justify-start font-normal w-full !text-colordropdown hover:!bg-fondohoverdropdown"
                                         href="/">
                                         <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                                             xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round"
@@ -194,7 +193,7 @@
                                 @endif
 
                                 <x-nav-link
-                                    class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"
+                                    class="px-5 gap-2 shadow-none !justify-start font-normal w-full !text-colordropdown hover:!bg-fondohoverdropdown"
                                     href="{{ route('admin.profile') }}">
                                     <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                                         xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round" stroke="currentColor"
@@ -221,7 +220,7 @@
                                 <form method="POST" action="{{ route('logout') }}" x-data>
                                     @csrf
                                     <x-nav-link
-                                        class="px-5 gap-2 shadow-none !justify-start rounded-none font-medium w-full text-colorlabel"
+                                        class="px-5 gap-2 shadow-none !justify-start font-normal w-full !text-colordropdown hover:!bg-fondohoverdropdown"
                                         href="{{ route('logout') }}" @click.prevent="$root.submit();">
                                         <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                             fill="currentColor" stroke="currentColor" stroke-width=".5"

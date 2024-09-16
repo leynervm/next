@@ -51,11 +51,11 @@ class ContactController extends Controller
             DB::commit();
             Mail::to($to)->send(new EnviarFormContact($message));
             $mensaje = response()->json([
-                'title' => 'SE HA ENVIADO CORRECTAMNETE',
+                'title' => 'CORREO ENVIADO CORRECTAMNETE',
                 'text' => 'Su mensaje ha sido enviado correctamente, atenderemos su mensaje lo antes posible.',
                 'type' => 'success'
             ])->getData();
-            return redirect()->route('contactanos')->with('message', $mensaje);
+            return redirect()->to('/')->with('message', $mensaje);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

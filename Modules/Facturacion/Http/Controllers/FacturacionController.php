@@ -35,8 +35,22 @@ class FacturacionController extends Controller
     {
         $this->authorize('sucursal', $comprobante);
         if (Module::isEnabled('Facturacion')) {
-            $pdf = PDF::loadView('facturacion::pdf.comprobantes.a4', compact('comprobante'));
-            return $pdf->stream();
+            
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ];
+
+            $pdf = PDF::setOption($options)->loadView('facturacion::pdf.comprobantes.a4', compact('comprobante'));
+            return $pdf->stream($comprobante->seriecompleta . '.pdf');
         }
     }
 
@@ -49,8 +63,21 @@ class FacturacionController extends Controller
             $heightBody = (count($comprobante->facturableitems) * 3 * 12) * 2.8346;
             $heightFooter = 400; #Incl. Totales, QR, Leyenda, Info, Web
             $heightPage = number_format($heightHeader + $heightBody + $heightFooter, 2, '.', '');
-            $pdf = PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('facturacion::pdf.comprobantes.ticket', compact('comprobante'));
-            return $pdf->stream();
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ];
+
+            $pdf = PDF::setOption($options)->setPaper([0, 0, 226.77, $heightPage])->loadView('facturacion::pdf.comprobantes.ticket', compact('comprobante'));
+            return $pdf->stream($comprobante->seriecompleta . '.pdf');
         }
     }
 

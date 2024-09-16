@@ -113,7 +113,11 @@
     --color-link-footer: theme("colors.white");
     --hover-link-footer: theme("colors.neutral.200");
 
-
+    --color-button-print: theme("colors.neutral.800");
+    --fondo-button-print: theme("colors.transparent");
+    --color-hover-button-print: theme("colors.white");
+    --fondo-hover-button-print: theme("colors.neutral.900");
+    --ring-button-print: theme("colors.neutral.300");
 }
 
 .theme-darknext {
@@ -216,7 +220,11 @@
     --color-link-footer: theme("colors.white");
     --hover-link-footer: theme("colors.neutral.200");
 
-
+    --color-button-print: theme("colors.white");
+    --fondo-button-print: theme("colors.transparent");
+    --color-hover-button-print: theme("colors.white");
+    --fondo-hover-button-print: theme("colors.neutral.900");
+    --ring-button-print: theme("colors.neutral.500");
 }
 
 .theme-dark {

@@ -5,13 +5,79 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         {{ $comprobante->seriecomprobante->typecomprobante->descripcion }} - {{ $comprobante->seriecompleta }}
     </title>
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}">
 </head>
 <style>
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Light.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-LightItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Regular.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Italic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Medium.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-MediumItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Bold.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: Italic;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-BoldItalic.ttf') }}") format("truetype");
+    }
+
+    * {
+        font-family: 'Ubuntu';
+    }
+
     @page {
         margin: 4cm 1cm 4.5cm 1cm;
     }
@@ -162,20 +228,24 @@
         margin-top: 6px !important;
     }
 
-    .font-normal {
-        font-weight: 300 !important;
+    .font-light {
+        font-weight: 300;
+        font-style: normal;
     }
 
-    .font-regular {
-        font-weight: 400 !important;
+    .font-normal {
+        font-weight: 400;
+        font-style: normal;
     }
 
     .font-medium {
-        font-weight: 500 !important;
+        font-weight: 500;
+        font-style: normal;
     }
 
     .font-bold {
-        font-weight: 700 !important;
+        font-weight: 700;
+        font-style: normal;
     }
 
     .text-start {
@@ -199,7 +269,7 @@
                     <th style="text-align: left;">
                         @if ($comprobante->sucursal->empresa->image)
                             <div class="">
-                                <img src="{{ Storage::url('images/company/' . $comprobante->sucursal->empresa->image->url) }}"
+                                <img src="{{ $comprobante->sucursal->empresa->image->getLogoEmpresa() }}"
                                     alt="" class="image" />
                             </div>
                         @endif
@@ -208,12 +278,12 @@
                         <p class="font-bold text-14 leading-4" style="margin:0;">
                             {{ $comprobante->sucursal->empresa->name }}</p>
 
-                        <p class="font-regular text-10 leading-3">
+                        <p class="font-normal text-10 leading-3">
                             {{ $comprobante->sucursal->direccion }}
                         </p>
 
                         @if ($comprobante->sucursal->ubigeo)
-                            <p class="font-regular text-10 leading-3">
+                            <p class="font-normal text-10 leading-3">
                                 {{ $comprobante->sucursal->ubigeo->region }}
                                 - {{ $comprobante->sucursal->ubigeo->provincia }}
                                 - {{ $comprobante->sucursal->ubigeo->distrito }}
@@ -221,7 +291,7 @@
                         @endif
 
                         @if (count($comprobante->sucursal->empresa->telephones) > 0)
-                            <p class="font-regular" style="font-size: 10px; line-height: .7rem;">
+                            <p class="font-normal" style="font-size: 10px; line-height: .7rem;">
                                 TELÉFONO:
                                 <span>{{ formatTelefono($comprobante->sucursal->empresa->telephones->first()->phone) }}</span>
                             </p>
@@ -273,15 +343,15 @@
                         <img class="" style="padding:1mm;" src="data:image/svg;base64, {!! base64_encode(QrCode::format('svg')->size(100)->generate($hashcomprobante)) !!} ">
                     </td>
                     <td class="title border" style="">
-                        <p class="font-regular leading-3 text-12" style="text-align: justify">
+                        <p class="font-normal leading-3 text-12" style="text-align: justify">
                             Estimado cliente, no hay devolución de dinero. Todo cambio de mercadería solo podrá
                             realizarse dentro de las 48 horas, previa presentacion del comprobante.
                         </p>
-                        <p class="font-regular leading-3 text-12 mt-2">
+                        <p class="font-normal leading-3 text-12 mt-2">
                             Representación impresa del comprobante de venta electrónico, este puede ser consultado en
                             www.sunat.gob.pe.
                         </p>
-                        <p class="font-regular text-12 leading-3 mt-2">
+                        <p class="font-normal text-12 leading-3 mt-2">
                             Autorizado mediante resolución N° 155-2017/Sunat.</p>
 
                         <p class="text-center font-bold text-10 mt-3 leading-2">
@@ -292,7 +362,7 @@
                 </tr>
                 @if (!empty($comprobante->sucursal->empresa->web))
                     <tr>
-                        <td colspan="2" class="text-center text-12 leading-3">
+                        <td colspan="2" class="text-center text-12 leading-3 font-normal">
                             {{ $comprobante->sucursal->empresa->web }}</td>
                     </tr>
                 @endif
@@ -359,7 +429,7 @@
                 </thead>
                 <tbody>
                     @foreach ($comprobante->facturableitems as $item)
-                        <tr class="border-table font-regular">
+                        <tr class="border-table font-normal">
                             <td class="p-2 text-center align-middle" style="width: 30px;">
                                 {{ $item->item }}
                             </td>
@@ -446,7 +516,7 @@
                     <div class="" style="width: 100%; text-align: justify;">
                         <h1 class="text-10 font-bold">INFORMACIÓN DE CUOTAS</h1>
                         @foreach ($cuotas as $item)
-                            <div class="p-1 font-regular border mt-2" style="width:224px; display: inline-flex;">
+                            <div class="p-1 font-normal border mt-2" style="width:224px; display: inline-flex;">
                                 <p class="text-10 leading-4">
                                     N° CUOTA : <span class="font-bold">{{ $item->cuota }}</span>
                                 </p>

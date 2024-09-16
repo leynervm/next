@@ -5,22 +5,277 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    {{-- <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
-        rel="stylesheet"> --}}
-    <link rel="stylesheet" href="{{ asset('css/font_pdf.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('css/print.css') }}" type="text/css">
-    {{-- <meta http-equiv="X-UA-Compatible" content="ie=edge"> --}}
     <title>
         LIBRO DE RECLAMACIÓN - {{ $claimbook->serie }}-{{ $claimbook->correlativo }}
     </title>
 </head>
 <style>
-    body {
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Light.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 300;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-LightItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Regular.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 400;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Italic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Medium.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: italic;
+        font-weight: 500;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-MediumItalic.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-Bold.ttf') }}") format("truetype");
+    }
+
+    @font-face {
+        font-family: "Ubuntu";
+        font-style: Italic;
+        font-weight: 700;
+        font-display: swap;
+        src: url("{{ asset('/fonts/Ubuntu-BoldItalic.ttf') }}") format("truetype");
+    }
+
+    @page {
+        margin: 4cm 1cm 4.5cm 1cm;
+    }
+
+    * {
         font-family: 'Ubuntu';
+    }
+
+    #header {
+        position: fixed;
+        top: -3cm;
+        left: 0;
+        width: 100%;
+        height: 27.5cm;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #header .table {
+        padding: 10px;
+    }
+
+    #header .table thead,
+    #header .table thead td,
+    #header .table thead th {
+        vertical-align: baseline;
+        width: 100%;
+    }
+
+    .image {
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 2cm;
+    }
+
+    #footer {
+        position: fixed;
+        width: 100%;
+        /* bottom: -2.75cm; */
+        left: 0;
+    }
+
+    p {
+        margin: 0;
+        padding: 0 10px;
+    }
+
+    .leading-2 {
+        line-height: 0.5rem;
+    }
+
+    .leading-3 {
+        line-height: 0.6rem;
+    }
+
+    .leading-4 {
+        line-height: 0.7rem;
+    }
+
+    .leading-5 {
+        line-height: 0.8rem;
+    }
+
+    .leading-6 {
+        line-height: 1rem;
+    }
+
+    .align-middle-center {
+        vertical-align: center !important;
+    }
+
+    .align-baseline {
+        vertical-align: baseline !important;
+    }
+
+    .align-middle {
+        vertical-align: middle !important;
+    }
+
+    .text-10 {
+        font-size: 10px;
+    }
+
+    .text-11 {
+        font-size: 11px;
+    }
+
+    .text-12 {
+        font-size: 12px;
+    }
+
+    .text-13 {
+        font-size: 13px;
+    }
+
+    .text-14 {
+        font-size: 14px;
+    }
+
+    .body {
+        padding: 10px;
+        font-weight: 200;
+    }
+
+    .border-table {
+        border: 0.5px solid black !important;
+    }
+
+    .border-l-table {
+        border-left: 0.5px solid black;
+    }
+
+    .border-r-table {
+        border-right: 0.5px solid black;
+    }
+
+    .border {
+        border: 1px solid black !important;
+    }
+
+    .border-2 {
+        border: 2px solid black !important;
+    }
+
+    .p-1 {
+        padding: 2px;
+    }
+
+    .p-2 {
+        padding: 4px;
+    }
+
+    .p-3 {
+        padding: 6px;
+    }
+
+    .rounded {
+        border-radius: 2rem;
+    }
+
+    .mt-2 {
+        margin-top: 4px;
+    }
+
+    .mt-3 {
+        margin-top: 6px !important;
+    }
+
+    .mt-4 {
+        margin-top: 8px !important;
+    }
+
+    .mt-5 {
+        margin-top: 10px !important;
+    }
+
+    .mt-6 {
+        margin-top: 18px !important;
+    }
+
+    .font-light {
+        font-weight: 300;
+        font-style: normal;
+    }
+
+    .font-normal {
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    .font-medium {
+        font-weight: 500;
+        font-style: normal;
+    }
+
+    .font-bold {
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    .text-start {
+        text-align: left !important;
+    }
+
+    .text-center {
+        text-align: center !important;
+    }
+
+    .text-end {
+        text-align: right !important;
+    }
+
+    .block {
+        display: block;
+    }
+
+    .w-full {
+        width: 100%;
     }
 </style>
 
@@ -32,8 +287,7 @@
                     <th style="text-align: left;">
                         @if ($empresa->image)
                             <div class="">
-                                <img src="{{ asset('storage/images/company/' . $empresa->image->url) }}" alt=""
-                                    class="image" />
+                                <img src="{{ $empresa->image->getLogoEmpresa() }}" alt="" class="image" />
                             </div>
                         @endif
                     </th>
@@ -237,10 +491,10 @@
             </tbody>
         </table>
 
-        <p class="font-light">LIGHT</p>
+        {{-- <p class="font-light">LIGHT</p>
         <p class="font-normal">NORMAL</p>
         <p class="font-medium">MEDIUM</p>
-        <p class="font-bold">BOLD</p>
+        <p class="font-bold">BOLD</p> --}}
 
         {{-- @for ($i = 1; $i < 100; $i++)
             <div style="background:#7e7e7e; margin:2px; font-size: 11px">

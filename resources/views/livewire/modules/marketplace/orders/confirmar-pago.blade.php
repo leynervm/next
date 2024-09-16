@@ -55,7 +55,7 @@
             @foreach ($order->cajamovimientos as $item)
                 <x-card-payment-box class="w-full" :cajamovimiento="$item" :moneda="$order->moneda">
                     <x-slot name="footer">
-                        <x-button-print-payment class="mr-auto" href="{{ route('admin.payments.print', $item) }}" />
+                        <x-button-print class="mr-auto" href="{{ route('admin.payments.print', $item) }}" />
 
                         @can('admin.marketplace.orders.confirmpay')
                             <x-button-delete onclick="confirmDeletepay({{ $item->id }})"
