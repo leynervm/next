@@ -269,7 +269,7 @@
                     <th style="text-align: left;">
                         @if ($comprobante->sucursal->empresa->image)
                             <div class="">
-                                <img src="{{ $comprobante->sucursal->empresa->image->getLogoEmpresa() }}"
+                                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}"
                                     alt="" class="image" />
                             </div>
                         @endif

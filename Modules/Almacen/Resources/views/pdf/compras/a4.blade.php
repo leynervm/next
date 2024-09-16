@@ -272,8 +272,8 @@
                     <th style="text-align: left;">
                         @if ($compra->sucursal->empresa->image)
                             <div class="">
-                                <img src="{{ $compra->sucursal->empresa->image->getLogoEmpresa() }}" alt=""
-                                    class="image" />
+                                <img src="{{ getLogoEmpresa($compra->sucursal->empresa->image->url, false) }}"
+                                    alt="" class="image" />
                             </div>
                         @endif
                     </th>

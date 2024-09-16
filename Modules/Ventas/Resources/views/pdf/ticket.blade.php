@@ -203,7 +203,8 @@
 <body class="">
     @if ($venta->sucursal->empresa->image)
         <div class="text-center">
-            <img src="{{ $venta->sucursal->empresa->image->getLogoEmpresa() }}" alt="" class="image" />
+            <img src="{{ getLogoEmpresa($venta->sucursal->empresa->image->url, false) }}" alt=""
+                class="image" />
         </div>
     @endif
 

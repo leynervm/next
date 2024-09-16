@@ -285,7 +285,7 @@
                     <th style="text-align: left;">
                         @if ($guia->sucursal->empresa->image)
                             <div class="">
-                                <img src="{{ $guia->sucursal->empresa->image->getLogoEmpresa() }}" alt=""
+                                <img src="{{ getLogoEmpresa($guia->sucursal->empresa->image->url, false) }}" alt=""
                                     class="image" />
                             </div>
                         @endif

@@ -213,7 +213,8 @@
 <body class="">
     @if ($comprobante->sucursal->empresa->image)
         <div class="text-center">
-            <img src="{{ $comprobante->sucursal->empresa->image->getLogoEmpresa() }}" alt="" class="image" />
+            <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}" alt=""
+                class="image" />
         </div>
     @endif
 

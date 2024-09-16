@@ -440,10 +440,10 @@ function pathURLProductImage($filename = null)
 }
 
 
-function pathURLLogoEmpresa($filename = null)
+function getLogoEmpresa($filename = null, $forceHTTPS = true)
 {
     if (!is_null($filename)) {
-        return public_path('storage/images/company/' . $filename);
+        return asset('storage/images/company/' . $filename, $forceHTTPS);
     }
     return null;
 }

@@ -287,7 +287,7 @@
                     <th style="text-align: left;">
                         @if ($empresa->image)
                             <div class="">
-                                <img src="{{ $empresa->image->getLogoEmpresa() }}" alt="" class="image" />
+                                <img src="{{ getLogoEmpresa($empresa->image->url, false) }}" alt="" class="image" />
                             </div>
                         @endif
                     </th>

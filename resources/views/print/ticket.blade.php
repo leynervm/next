@@ -208,7 +208,8 @@
 <body class="">
     @if ($cajamovimiento->sucursal->empresa->image)
         <div class="text-center content-image">
-            <img src="{{ $cajamovimiento->sucursal->empresa->image->getLogoEmpresa() }}" alt="" class="image" />
+            <img src="{{ getLogoEmpresa($cajamovimiento->sucursal->empresa->image->url, false) }}" alt=""
+                class="image" />
         </div>
     @endif
 
