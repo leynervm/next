@@ -11,6 +11,7 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Config;
 
 class EnviarXMLGuiaMailable extends Mailable implements ShouldQueue
 {
@@ -37,7 +38,7 @@ class EnviarXMLGuiaMailable extends Mailable implements ShouldQueue
     public function envelope()
     {
         return new Envelope(
-            from: new Address('nexttechnologies@next.net.pe', 'NEXT TECHNOLOGIES'),
+            from: new Address(Config::get('mail.mailers.smtp.username'), $this->guia->sucursal->empresa->name),
             subject: 'RESUMEN GUÍA DE REMISIÓN ELECTRÓNICA ' . $this->guia->seriecompleta,
         );
     }

@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Config;
 
 class EnviarFormContact extends Mailable implements ShouldQueue
 {
@@ -37,7 +38,7 @@ class EnviarFormContact extends Mailable implements ShouldQueue
     public function envelope()
     {
         return new Envelope(
-            from: new Address($this->message->email, $this->message->name),
+            from: new Address(Config::get('mail.mailers.smtp.username'), $this->empresa->name),
             subject: 'Notificación de contáctanos - ' . $this->message->name,
         );
     }

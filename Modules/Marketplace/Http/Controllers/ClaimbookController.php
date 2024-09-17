@@ -136,12 +136,22 @@ class ClaimbookController extends Controller
 
             $claimbook = Claimbook::create($datos);
             DB::commit();
-            Mail::to($claimbook->email)->send(new EnviarClaimbook($claimbook));
-            // $mensaje = response()->json([
-            //     'title' => 'Enviando correo a: ' . $comprobante->client->email,
-            //     'icon' => 'success',
-            // ])->getData();
-            return redirect()->route('claimbook.resumen', $claimbook);
+            $config_email = validarConfiguracionEmail();
+            if ($config_email->getData()->success) {
+                $mensaje = response()->json([
+                    'title' => 'REGISTRADO Y ENVIADO CORRECTAMENTE',
+                    'text' => null,
+                    'type' => 'success'
+                ])->getData();
+                Mail::to($claimbook->email)->send(new EnviarClaimbook($claimbook));
+            } else {
+                $mensaje = response()->json([
+                    'title' => 'REGISTRADO CORRECTAMENTE', //$config_email->getData()->error,
+                    'text' => null,
+                    'type' => 'success'
+                ])->getData();
+            }
+            return redirect()->route('claimbook.resumen', $claimbook)->with('message', $mensaje);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

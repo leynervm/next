@@ -163,19 +163,30 @@ class ShowComprobantes extends Component
 
     public function enviarxml($id)
     {
+        $config_email = validarConfiguracionEmail();
+
+        if (!$config_email->getData()->success) {
+            $mensaje = response()->json([
+                'title' => $config_email->getData()->error,
+                'text' => null,
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
         $comprobante =  Comprobante::find($id)->with(['sucursal', 'client'])->find($id);
         if ($comprobante->client) {
             if ($comprobante->client->email) {
                 Mail::to($comprobante->client->email)->send(new EnviarXMLMailable($comprobante));
                 $mensaje = response()->json([
-                    'title' => 'Enviando correo a: ' . $comprobante->client->email,
+                    'title' => 'ENVIANDO CORREO',
                     'icon' => 'success',
                 ])->getData();
                 $this->dispatchBrowserEvent('toast', $mensaje);
             } else {
                 $mensaje = response()->json([
-                    'title' => 'Correo no enviado !',
-                    'text' => 'No se pudo enviar el mensaje, no se encontró el correo del cliente seleccionado.',
+                    'title' => 'NO SE HA ENCONTRADO CORREO DEL CLIENTE',
+                    'text' => null,
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;

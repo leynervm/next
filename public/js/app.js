@@ -4652,6 +4652,7 @@ alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].plugin(_alpinejs_mask__WEBPACK_
 window.Alpine = alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"];
 alpinejs__WEBPACK_IMPORTED_MODULE_1__["default"].start();
 document.addEventListener('DOMContentLoaded', function () {
+  var themeDefault = document.querySelector('meta[name="default-theme"]').getAttribute('content');
   getTheme();
   var buttonsTheme = document.querySelectorAll('.theme-switcher-button');
   buttonsTheme.forEach(function (button) {
@@ -4678,7 +4679,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
         localTheme = 'theme-darknext';
       } else {
-        localTheme = "{{ config('app.theme') }}";
+        localTheme = themeDefault;
       }
       localStorage.theme = localTheme;
     }

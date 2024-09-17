@@ -4,8 +4,7 @@ use App\Enums\DefaultConceptsEnum;
 use App\Models\Empresa;
 use App\Models\Guia;
 use App\Models\Pricetype;
-use App\Models\Producto;
-use App\Models\Promocion;
+use Illuminate\Support\Facades\Config;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
@@ -446,4 +445,29 @@ function getLogoEmpresa($filename = null, $forceHTTPS = true)
         return asset('storage/images/company/' . $filename, $forceHTTPS);
     }
     return null;
+}
+
+function validarConfiguracionEmail()
+{
+    $emailSettings = [
+        'MAIL_MAILER'    => Config::get('mail.default'),
+        'MAIL_HOST'      => Config::get('mail.mailers.smtp.host'),
+        'MAIL_PORT'      => Config::get('mail.mailers.smtp.port'),
+        'MAIL_USERNAME'  => Config::get('mail.mailers.smtp.username'),
+        'MAIL_PASSWORD'  => Config::get('mail.mailers.smtp.password'),
+        'MAIL_ENCRYPTION' => Config::get('mail.mailers.smtp.encryption'),
+        'MAIL_FROM_ADDRESS' => Config::get('mail.from.address')
+    ];
+
+    foreach ($emailSettings as $key => $value) {
+        if (empty($value)) {
+            return response()->json([
+                'success' => false,
+                'error' => "NO SE PUDO ENVIAR EL CORREO, CONFIGURACIÓN FALTANTE: {$key}"
+            ]);
+        }
+    }
+    return response()->json([
+        'success' => true
+    ]);
 }

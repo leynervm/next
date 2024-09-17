@@ -12,8 +12,9 @@ window.Alpine = Alpine;
 Alpine.start();
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
+
+    var themeDefault = document.querySelector('meta[name="default-theme"]').getAttribute('content');
     getTheme();
     const buttonsTheme = document.querySelectorAll('.theme-switcher-button');
     buttonsTheme.forEach((button) => {
@@ -43,10 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (window.matchMedia('(prefers-color-scheme:dark)').matches) {
                 localTheme = 'theme-darknext';
             } else {
-                localTheme = "{{ config('app.theme') }}";
+                localTheme = themeDefault;
             }
             localStorage.theme = localTheme;
         }
+
         setActive(localTheme);
         let classes = document.body.className.split(' ');
         let themeClasses = classes.filter(cls => cls.startsWith('theme-'));

@@ -224,14 +224,6 @@
                     </x-text-area>
                     <x-jet-input-error for="detalle_reclamo" />
                 </div>
-
-                
-
-                {{-- <div class="">
-                    <x-label value="COMPROBANTE PAGO :" />
-                    <x-input class="block w-full" name="comprobante" />
-                    <x-jet-input-error for="comprobante" />
-                </div> --}}
             </div>
         </x-simple-card>
 

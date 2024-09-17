@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Config;
 
 class EnviarClaimbook extends Mailable implements ShouldQueue
 {
@@ -38,7 +39,7 @@ class EnviarClaimbook extends Mailable implements ShouldQueue
     public function envelope()
     {
         return new Envelope(
-            from: new Address('nexttechnologies@next.net.pe', 'NEXT TECHNOLOGIES'),
+            from: new Address(Config::get('mail.mailers.smtp.username'), $this->empresa->name),
             subject: 'Confirmación de Registro de Reclamo ' . $this->claimbook->serie . '-' . $this->claimbook->correlativo,
         );
     }

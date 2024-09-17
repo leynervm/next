@@ -22,11 +22,11 @@ class ContactController extends Controller
     public function store(Request $request)
     {
 
-        $to = mi_empresa()->email;
-        if (empty($to)) {
+        $config_email = validarConfiguracionEmail();
+        if (!$config_email->getData()->success) {
             $mensaje = response()->json([
-                'title' => 'NO SE PUDO ENVIAR EL CORREO',
-                'text' => 'No se ha encontrado el correo de destino de la empresa.',
+                'title' => $config_email->getData()->error,
+                'text' => null,
                 'type' => 'error'
             ])->getData();
             return back()->with('message', $mensaje);
@@ -44,12 +44,12 @@ class ContactController extends Controller
                 'date' => now('America/Lima'),
                 'name' => trim($request->name),
                 'email' => trim($request->email),
-                'to' => trim($to),
+                'to' => trim($request->email),
                 'descripcion' => trim($request->descripcion)
             ]);
 
             DB::commit();
-            Mail::to($to)->send(new EnviarFormContact($message));
+            Mail::to($validateData['email'])->send(new EnviarFormContact($message));
             $mensaje = response()->json([
                 'title' => 'CORREO ENVIADO CORRECTAMNETE',
                 'text' => 'Su mensaje ha sido enviado correctamente, atenderemos su mensaje lo antes posible.',
