@@ -198,38 +198,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    function getSubcategories() {
-        // return {
-        //     subcategories: [],
-        //     error: '',
-        //     fetchSubcategories(category_id) {
-        //         this.error = '',
-        //             fetch(`{{ route('api.producto.subcategories') }}`, {
-        //                 method: 'POST',
-        //                 headers: {
-        //                     'Content-Type': 'application/json',
-        //                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //                 },
-        //                 body: JSON.stringify({
-        //                     category_id: category_id
-        //                 })
-        //             })
-        //             .then(response => response.json())
-        //             .then(data => {
-        //                 // console.log(data);
-        //                 if (data.error) {
-        //                     this.error = data.error;
-        //                 } else {
-        //                     this.subcategories = data;
-        //                 }
-        //             })
-        //             .catch(() => {
-        //                 this.error = 'There was an error processing your request.';
-        //                 console.log(this.error);
-        //             });
-        //     }
-        // }
-    }
-</script>

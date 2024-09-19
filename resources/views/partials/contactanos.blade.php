@@ -581,22 +581,4 @@
 
         </div>
     </div>
-
-
-    <script>
-        document.getElementById('form_contact').addEventListener("submit", function(event) {
-            event.preventDefault();
-            grecaptcha.execute('{{ config('services.recaptcha_v3.key_web') }}', {
-                action: 'submit'
-            }).then(function(token) {
-                let form = event.target;
-                let input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'g_recaptcha_response';
-                input.value = token;
-                form.appendChild(input);
-                document.getElementById('form_contact').submit();
-            });
-        });
-    </script>
 </x-app-layout>

@@ -23,10 +23,10 @@ class ShowUnits extends Component
     {
         return [
             'unit.name' => [
-                'required', 'min:2', 'max:100', new CampoUnique('units', 'name', $this->unit->id, true),
+                'required', 'string', 'min:2', 'max:100', new CampoUnique('units', 'name', $this->unit->id, true),
             ],
             'unit.code' => [
-                'required', 'min:1', 'max:4', new CampoUnique('units', 'code', $this->unit->id, true)
+                'required', 'string', 'min:1', 'max:4', new CampoUnique('units', 'code', $this->unit->id, true)
             ]
         ];
     }

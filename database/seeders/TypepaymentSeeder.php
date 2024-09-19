@@ -18,12 +18,14 @@ class TypepaymentSeeder extends Seeder
         Typepayment::firstOrCreate([
             'name' => 'Contado',
             'paycuotas' => 0,
-            'default' => 1,
+            'status' => Typepayment::ACTIVO,
+            'default' => Typepayment::DEFAULT,
         ]);
 
         Typepayment::firstOrCreate([
             'name' => 'Credito',
-            'paycuotas' => 1,
+            'paycuotas' => Typepayment::CREDITO,
+            'status' => Typepayment::ACTIVO,
             'default' => 0,
         ]);
     }

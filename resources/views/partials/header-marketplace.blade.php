@@ -74,7 +74,7 @@
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                         placeholder="Buscar en Next Store" id="search">
                 </div>
-                <button
+                <button type="submit"
                     class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -341,8 +341,9 @@
         </div>
     </div>
 
-    <div class="xl:hidden w-full bg-next-800 p-3 py-1 pb-2 flex" x-data="productSearch()" @click.away="products= []">
-        <div class="w-full self-center flex cursor-pointer relative" :class="openSidebar ? '' : 'z-[999]'">
+    <div class="xl:hidden w-full bg-next-800 p-1 py-1 pb-2 flex" x-data="productSearch()" @click.away="products= []">
+        <form @submit.prevent="fetchProducts" autocomplete="off"
+            class="w-full self-center flex cursor-pointer relative" :class="openSidebar ? '' : 'z-[999]'">
             <div class="w-full flex h-10 m-0 bg-white justify-center items-center rounded-3xl border-0.5 border-white"
                 :class="products.length ? 'rounded-b-none' : ''">
                 <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
@@ -352,7 +353,7 @@
                     class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                     value="" placeholder="Buscar en Next Store">
             </div>
-            <button
+            <button type="submit"
                 class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-10 w-10 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -367,11 +368,11 @@
                 <template x-for="product in products" :key="product.id">
                     <li>
                         <a x-html="highlight(product.name, search)"
-                            class="block w-full text-colorsubtitleform p-2 text-xs leading-3 hover:bg-neutral-100"
+                            class="block w-full text-colorsubtitleform p-2 py-2.5 text-xs leading-3 hover:bg-fondohoverselect2"
                             :href="route('productos.show', product.slug)"></a>
                     </li>
                 </template>
             </ul>
-        </div>
+        </form>
     </div>
 </div>

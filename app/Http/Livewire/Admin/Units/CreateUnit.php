@@ -19,11 +19,17 @@ class CreateUnit extends Component
     {
         return [
             'name' => [
-                'required', 'min:2', 'max:100',
+                'required',
+                'string',
+                'min:2',
+                'max:100',
                 new CampoUnique('units', 'name', null, true),
             ],
             'code' => [
-                'required', 'min:1', 'max:4',
+                'required',
+                'string',
+                'min:1',
+                'max:4',
                 new CampoUnique('units', 'code', null, true)
             ]
         ];
@@ -47,12 +53,10 @@ class CreateUnit extends Component
     {
 
         $this->authorize('admin.administracion.units.create');
-        $this->name = trim($this->name);
-        $this->code = trim($this->code);
+        $this->name = mb_strtoupper(trim($this->name), "UTF-8");
+        $this->code = mb_strtoupper(trim($this->code), "UTF-8");
         $this->validate();
-
-        $unit = Unit::withTrashed()
-            ->whereRaw('UPPER(name) = ?', [mb_strtoupper($this->name, "UTF-8")])->first();
+        $unit = Unit::onlyTrashed()->where('name', $this->name)->first();
 
         if ($unit) {
             $unit->code = $this->code;

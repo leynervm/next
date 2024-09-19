@@ -12,6 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="default-theme" content="{{ config('app.theme') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="title" content="{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}">
     <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
     <!-- Styles -->
@@ -78,14 +79,12 @@
                 <x-link-web @click="localStorage.setItem('activeForm', 'login')" :text="__('Log in')"
                     href="{{ route('login') }}" class="btn-next" />
             @endauth
-
         </div>
     @endif
 
-    @stack('modals')
+    <x-cookies class="" />
 
-    @livewireScripts
-
+    @stack('modals') @livewireScripts
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
@@ -99,13 +98,35 @@
     @stack('scripts')
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 
-
 </body>
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 
 <script>
+    const audio = new Audio("{{ asset('assets/mp3/porque-te-vas.mp3') }}");
+
+    
+
+
+    let boxCookies = document.getElementById('cookies');
+    cookies();
+
+    async function cookies() {
+        let cookies_accept = await localStorage.acceptCookies;
+        if (cookies_accept) {
+            boxCookies.style.display = 'none';
+        } else {
+            boxCookies.style.display = 'flex';
+        }
+    }
+
+    function aceptar() {
+        boxCookies.style.display = 'none';
+        localStorage.acceptCookies = true;
+    }
+
+
     document.addEventListener('submit', function(e) {
         e.preventDefault();
         grecaptcha.ready(function() {
@@ -171,7 +192,6 @@
         } else {
             counter.style.display = 'flex';
             counter.innerHTML = data.detail;
-
         }
     })
 

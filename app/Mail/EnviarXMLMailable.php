@@ -2,16 +2,15 @@
 
 namespace App\Mail;
 
+use Modules\Facturacion\Entities\Comprobante;
 use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Address;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
-use Modules\Facturacion\Entities\Comprobante;
 
 class EnviarXMLMailable extends Mailable implements ShouldQueue
 {

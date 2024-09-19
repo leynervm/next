@@ -366,6 +366,8 @@ return [
         'ubigeosucursal_id'         =>  'ubigeo',
         'telephones'                =>  'teléfonos',
         'areawork_id'               =>  'area de trabajo',
-        'nacimiento'                =>  'fecha de nacimiento'
+        'nacimiento'                =>  'fecha de nacimiento',
+        'document_apoderado'        =>  'documento apoderado',
+        'name_apoderado'            =>  'nombre apoderado'
     ],
 ];

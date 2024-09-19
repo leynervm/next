@@ -33,6 +33,9 @@ use Nwidart\Modules\Facades\Module;
 //     config('jetstream.auth_session'),
 //     'verified'
 // ])->prefix('admin/')->group(unction () {
+Route::get('/perfil/user', function () {
+    return redirect()->route('admin.profile');
+})->name('profile.show');
 Route::get('/', [HomeController::class, 'dashboard'])->name('admin')->middleware('dashboard');
 Route::get('/perfil', [UserController::class, 'profile'])->name('admin.profile')->middleware(['verifycompany']);
 

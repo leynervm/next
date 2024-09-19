@@ -16,8 +16,9 @@ class CreateTypepaymentsTable extends Migration
         Schema::create('typepayments', function (Blueprint $table) {
             $table->tinyIncrements('id')->unsigned();
             $table->string('name', 50);
-            $table->integer('paycuotas')->default(0);
-            $table->integer('default')->default(0);
+            $table->char('paycuotas', 1)->default(0);
+            $table->char('status', 1)->default(0);
+            $table->char('default', 1)->default(0);
             $table->softDeletes();
         });
     }

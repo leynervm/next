@@ -13,6 +13,7 @@ use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
 use App\Rules\ValidateFileKey;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -66,6 +67,11 @@ class ConfiguracionInicial extends Component
             $this->clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
             $this->clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
             $this->passwordcert = Empresa::PASSWORD_CERT_PRUEBA;
+        }
+
+        $email = Config::get('mail.mailers.smtp.username');
+        if (!empty($email)) {
+            $this->email = $email;
         }
     }
 

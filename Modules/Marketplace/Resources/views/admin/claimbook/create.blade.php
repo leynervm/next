@@ -256,6 +256,13 @@
                     if (state) {
                         this.open = true;
                     }
+
+                    this.$watch("open", (value) => {
+                        if (tienda_compra) {
+                            $('#tiendacompra').val(tienda_compra).select2().change();
+                        }
+                    });
+
                     if (tienda_compra) {
                         $('#tiendacompra').val(tienda_compra).select2().change();
                     }

@@ -16,11 +16,12 @@ class Typepayment extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'paycuotas', 'default'];
+    protected $fillable = ['name', 'paycuotas', 'default', 'status'];
 
     const DEFAULT = '1';
     const CREDITO = '1';
     const CONTADO = '0';
+    const ACTIVO = '0';
 
     public function getNameAttribute($value)
     {
@@ -55,6 +56,16 @@ class Typepayment extends Model
     public function isCredito()
     {
         return $this->paycuotas == self::CREDITO;
+    }
+
+    public function isActivo()
+    {
+        return $this->status == self::ACTIVO;
+    }
+
+    public function scopeActivos($query)
+    {
+        return $query->where('status', self::ACTIVO);
     }
 
     public function scopeDefault($query)

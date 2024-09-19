@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ContactController extends Controller
@@ -40,21 +41,30 @@ class ContactController extends Controller
 
         DB::beginTransaction();
         try {
-            $message = Message::create([
+            $messageContact = Message::create([
                 'date' => now('America/Lima'),
                 'name' => trim($request->name),
                 'email' => trim($request->email),
                 'to' => trim($request->email),
                 'descripcion' => trim($request->descripcion)
             ]);
-
             DB::commit();
-            Mail::to($validateData['email'])->send(new EnviarFormContact($message));
-            $mensaje = response()->json([
-                'title' => 'CORREO ENVIADO CORRECTAMNETE',
-                'text' => 'Su mensaje ha sido enviado correctamente, atenderemos su mensaje lo antes posible.',
-                'type' => 'success'
-            ])->getData();
+            $config_email = validarConfiguracionEmail();
+            if ($config_email->getData()->success) {
+                $mensaje = response()->json([
+                    'title' => 'REGISTRADO Y ENVIADO CORRECTAMENTE',
+                    'text' => null,
+                    'type' => 'success'
+                ])->getData();
+                // Log::info('Disparando evento de EnviarFormContact que');
+                Mail::to($messageContact->email)->send(new EnviarFormContact($messageContact));
+            } else {
+                $mensaje = response()->json([
+                    'title' => 'REGISTRADO CORRECTAMENTE', //$config_email->getData()->error,
+                    'text' => null,
+                    'type' => 'success'
+                ])->getData();
+            }
             return redirect()->to('/')->with('message', $mensaje);
         } catch (\Exception $e) {
             DB::rollBack();

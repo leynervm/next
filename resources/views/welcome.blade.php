@@ -1,31 +1,4 @@
 <x-app-layout>
-
-    @section('moneda', $moneda)
-
-    {{-- <div class="relative flex items-top justify-center py-4 sm:pt-0">
-            @if (Route::has('login'))
-                <div class="hidden fixed top-0 right-0 px-6 py-4 sm:block">
-                    @auth
-                        <x-link-button class="inline-block uppercase" href="{{ url('/admin') }}">Dashboard</x-link-button>
-    
-                        <!-- Authentication -->
-                        <form method="POST" class="inline-block" action="{{ route('logout') }}" x-data>
-                            @csrf
-                            <x-button class="inline-block uppercase" type="submit" @click.prevent="$root.submit();">
-                                {{ __('Log Out') }}
-                            </x-button>
-                        </form>
-                    @else
-                        <x-link-button class="inline-block uppercase" href="{{ route('login') }}">Log in</x-link-button>
-    
-                        @if (Route::has('register'))
-                            <x-link-button class="inline-block uppercase"
-                                href="{{ route('register') }}">Register</x-link-button>
-                        @endif
-                    @endauth
-                </div>
-            @endif --}}
-
     @if (count($sliders) > 0)
         <x-slot name="slider">
             <div class="w-full max-w-full p-0 mt-8 xl:mt-0">
@@ -174,9 +147,7 @@
     @endif
 
     <div class="contenedor w-full py-5">
-        {{-- <h3 class="tracking-wide font-bold text-next-500 text-xs mb-3">NOSOTROS</h3> --}}
-
-        <section class="w-full flex flex-col justify-center items-center mx-auto py-12">
+        {{-- <section class="w-full flex flex-col justify-center items-center mx-auto py-12">
             <h2 class="tracking-wide text-center text-2xl xl:text-5xl mb-3 font-semibold text-next-500">
                 NEXT TECHNOLOGIES<br> TU ALIADO TECNOLÓGICO</h2>
 
@@ -189,8 +160,342 @@
                 Formamos alianzas con empresas importadoras y puntos de
                 venta directa para brindar una mejor experiencia a nuestros
                 clientes.
-                {{-- <strong></strong> --}}
             </p>
+        </section> --}}
+
+        <section class="w-full">
+            <div class="w-full h-48 sm:h-64 rounded-lg overflow-hidden bg-cover bg-center"
+                style="background-image: url('https://images.unsplash.com/photo-1558980394-34764db076b4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1200&h=300&dpi=2&fit=crop&crop=entropy')">
+                <div class="w-full bg-neutral-900 bg-opacity-50 flex items-center h-full">
+                    <div
+                        class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10 sm:max-w-xl">
+                        <h2 class="text-2xl text-white font-semibold">Next Store</h2>
+                        <p class="mt-2 text-white leading-4 my-3 text-center sm:text-start text-xs sm:text-sm">Lorem
+                            ipsum dolor, sit amet consectetur
+                            adipisicing elit.
+                            Tempore facere provident molestias ipsam sint voluptatum pariatur.</p>
+                        <x-button class="inline-flex">
+                            <span>Shop Now</span>
+                            <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </x-button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-5 mt-2 sm:mt-5">
+            <div class="w-full h-48 sm:h-64 rounded-lg overflow-hidden bg-cover bg-center"
+                style="background-image: url('https://images.unsplash.com/photo-1563400822182-80b43becb728?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=800&h=400&dpi=2&fit=crop&crop=entropy')">
+                <div class="w-full bg-neutral-900 bg-opacity-50 flex items-center h-full">
+                    <div
+                        class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10 sm:max-w-xl">
+                        <h2 class="text-2xl text-white font-semibold">Back Pack</h2>
+                        <p class="mt-2 text-white text-center sm:text-start text-xs sm:text-sm">Lorem ipsum dolor, sit
+                            amet consectetur adipisicing
+                            elit. Tempore facere provident molestias ipsam sint voluptatum pariatur.</p>
+                        <x-button class="inline-flex">
+                            <span>Shop Now</span>
+                            <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </x-button>
+                    </div>
+                </div>
+            </div>
+            <div class="w-full h-48 sm:h-64 rounded-lg overflow-hidden bg-cover bg-center"
+                style="background-image: url('https://images.unsplash.com/photo-1486401899868-0e435ed85128?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=800&h=400&dpi=2&fit=crop&&crop=entropy&q=80')">
+                <div class="w-full bg-neutral-900 bg-opacity-50 flex items-center h-full">
+                    <div
+                        class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10 sm:max-w-xl">
+                        <h2 class="text-2xl text-white font-semibold">Games</h2>
+                        <p class="mt-2 text-white text-center sm:text-start text-xs sm:text-sm">Lorem ipsum dolor, sit
+                            amet consectetur adipisicing
+                            elit. Tempore facere provident molestias ipsam sint voluptatum pariatur.</p>
+                        <x-button class="inline-flex">
+                            <span>Shop Now</span>
+                            <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
+                        </x-button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="w-full mt-2 sm:mt-5">
+            <div class="w-full flex flex-col gap-2">
+                <div class="w-full grid grid-cols-2 gap-2 sm:gap-5">
+                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
+                        <img alt="gallery" class="w-full object-cover h-full object-center block"
+                            src="https://dummyimage.com/800x400">
+                    </div>
+                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
+                        <img alt="gallery" class="w-full object-cover h-full object-center block"
+                            src="https://dummyimage.com/800x400">
+                    </div>
+                    <div class="w-full col-span-2 rounded-lg h-40 sm:h-48 overflow-hidden">
+                        <img alt="gallery" class="w-full h-full object-cover object-center block"
+                            src="https://dummyimage.com/1200x200">
+                    </div>
+                    <div class="w-full col-span-2 rounded-lg h-40 sm:h-48 overflow-hidden">
+                        <img alt="gallery" class="w-full h-full object-cover object-center block"
+                            src="https://dummyimage.com/1200x200">
+                    </div>
+                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
+                        <img alt="gallery" class="w-full object-cover h-full object-center block"
+                            src="https://dummyimage.com/800x400">
+                    </div>
+                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
+                        <img alt="gallery" class="w-full object-cover h-full object-center block"
+                            src="https://dummyimage.com/800x400">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="w-full mt-2 sm:mt-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-5">
+                <div>
+                    <img class="relative z-0 object-cover w-full rounded-t-lg lg:rounded-lg h-48 lg:h-72"
+                        src="https://images.unsplash.com/photo-1644018335954-ab54c83e007f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                        alt="">
+
+                    <div
+                        class="relative z-1 w-full lg:max-w-md p-4 mx-auto mt-0 lg:-mt-20 bg-fondominicard rounded-b-lg lg:rounded-lg shadow shadow-shadowminicard">
+                        <h1 class="font-semibold text-colortitleform text-lg leading-none lg:text-xl">
+                            All the features you want to know</h1>
+
+                        <p class="mt-3 text-xs lg:text-sm text-colorsubtitleform md:text-sm">
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure veritatis sint autem
+                            nesciunt, laudantium quia tempore delect
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                    <img class="relative z-0 object-cover w-full rounded-t-lg lg:rounded-lg h-48 lg:h-72"
+                        src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
+                        alt="">
+
+                    <div
+                        class="relative z-1 w-full lg:max-w-md p-4 mx-auto mt-0 lg:-mt-20 bg-fondominicard rounded-b-lg lg:rounded-lg shadow shadow-shadowminicard">
+                        <h1 class="font-semibold text-colortitleform text-lg leading-none lg:text-xl">
+                            How to use sticky note for problem solving</h1>
+
+                        <p class="mt-3 text-xs lg:text-sm text-colorsubtitleform md:text-sm">
+                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure veritatis sint autem
+                            nesciunt, laudantium quia tempore delect
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <div x-data="{ cartOpen: false, isOpen: false }" class="w-full">
+            <div class="w-full mx-auto  py-3">
+                <div class="flex items-center justify-end">
+                    <button @click="cartOpen = !cartOpen" class="text-gray-600 focus:outline-none mx-4 sm:mx-0">
+                        <svg class="h-8 w-8" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path
+                                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div :class="cartOpen ? 'translate-x-0 ease-out' : 'translate-x-full ease-in'"
+                class="fixed right-0 top-28 lg:top-20 max-w-xs w-full h-full px-6 py-4 transition duration-300 transform overflow-y-auto bg-white border-l-2 border-gray-300">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-2xl font-medium text-gray-700">Your cart</h3>
+                    <button @click="cartOpen = !cartOpen" class="text-gray-600 focus:outline-none">
+                        <svg class="h-5 w-5" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                            <path d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <hr class="my-3">
+                <div class="flex justify-between mt-6">
+                    <div class="flex">
+                        <img class="h-20 w-20 object-cover rounded"
+                            src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1189&q=80"
+                            alt="">
+                        <div class="mx-3">
+                            <h3 class="text-sm text-gray-600">Mac Book Pro</h3>
+                            <div class="flex items-center mt-2">
+                                <button class="text-gray-500 focus:outline-none focus:text-gray-600">
+                                    <svg class="h-5 w-5" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                                <span class="text-gray-700 mx-2">2</span>
+                                <button class="text-gray-500 focus:outline-none focus:text-gray-600">
+                                    <svg class="h-5 w-5" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-gray-600">20$</span>
+                </div>
+                <div class="flex justify-between mt-6">
+                    <div class="flex">
+                        <img class="h-20 w-20 object-cover rounded"
+                            src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1189&q=80"
+                            alt="">
+                        <div class="mx-3">
+                            <h3 class="text-sm text-gray-600">Mac Book Pro</h3>
+                            <div class="flex items-center mt-2">
+                                <button class="text-gray-500 focus:outline-none focus:text-gray-600">
+                                    <svg class="h-5 w-5" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                                <span class="text-gray-700 mx-2">2</span>
+                                <button class="text-gray-500 focus:outline-none focus:text-gray-600">
+                                    <svg class="h-5 w-5" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-gray-600">20$</span>
+                </div>
+                <div class="flex justify-between mt-6">
+                    <div class="flex">
+                        <img class="h-20 w-20 object-cover rounded"
+                            src="https://images.unsplash.com/photo-1593642632823-8f785ba67e45?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1189&q=80"
+                            alt="">
+                        <div class="mx-3">
+                            <h3 class="text-sm text-gray-600">Mac Book Pro</h3>
+                            <div class="flex items-center mt-2">
+                                <button class="text-gray-500 focus:outline-none focus:text-gray-600">
+                                    <svg class="h-5 w-5" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                                <span class="text-gray-700 mx-2">2</span>
+                                <button class="text-gray-500 focus:outline-none focus:text-gray-600">
+                                    <svg class="h-5 w-5" fill="none" stroke-linecap="round"
+                                        stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <span class="text-gray-600">20$</span>
+                </div>
+                <div class="mt-8">
+                    <form class="flex items-center justify-center">
+                        <input class="form-input w-48" type="text" placeholder="Add promocode">
+                        <button
+                            class="ml-3 flex items-center px-3 py-2 bg-blue-600 text-white text-sm uppercase font-medium rounded hover:bg-blue-500 focus:outline-none focus:bg-blue-500">
+                            <span>Apply</span>
+                        </button>
+                    </form>
+                </div>
+                <a
+                    class="flex items-center justify-center mt-4 px-3 py-2 bg-blue-600 text-white text-sm uppercase font-medium rounded hover:bg-blue-500 focus:outline-none focus:bg-blue-500">
+                    <span>Chechout</span>
+                    <svg class="h-5 w-5 mx-2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                        <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </a>
+            </div>
+        </div>
+
+
+        <section class="my-8">
+            <h3 class="text-primary text-2xl font-medium">Marcas</h3>
+            <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
+                <div class="w-full max-w-sm mx-auto rounded-md shadow-md overflow-hidden">
+                    <div class="flex items-end justify-end h-56 w-full bg-cover"
+                        style="background-image: url('https://images.unsplash.com/photo-1563170351-be82bc888aa4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=376&q=80')">
+                        <x-button class="p-2 !rounded-full mx-5 -mb-4">
+                            <svg class="h-5 w-5" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M20.0001 11.9998L4.00012 11.9998" />
+                                <path
+                                    d="M15.0003 17C15.0003 17 20.0002 13.3176 20.0002 12C20.0002 10.6824 15.0002 7 15.0002 7" />
+                            </svg>
+                        </x-button>
+                    </div>
+                    <div class="px-5 py-3">
+                        <h3 class="text-gray-700 uppercase">Chanel</h3>
+                    </div>
+                </div>
+                <div class="w-full max-w-sm mx-auto rounded-md shadow-md overflow-hidden">
+                    <div class="flex items-end justify-end h-56 w-full bg-cover"
+                        style="background-image: url('https://images.unsplash.com/photo-1544441893-675973e31985?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1500&q=80')">
+                        <x-button class="p-2 !rounded-full mx-5 -mb-4">
+                            <svg class="h-5 w-5" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M20.0001 11.9998L4.00012 11.9998" />
+                                <path
+                                    d="M15.0003 17C15.0003 17 20.0002 13.3176 20.0002 12C20.0002 10.6824 15.0002 7 15.0002 7" />
+                            </svg>
+                        </x-button>
+                    </div>
+                    <div class="px-5 py-3">
+                        <h3 class="text-gray-700 uppercase">Man Mix</h3>
+                    </div>
+                </div>
+                <div class="w-full max-w-sm mx-auto rounded-md shadow-md overflow-hidden">
+                    <div class="flex items-end justify-end h-56 w-full bg-cover"
+                        style="background-image: url('https://images.unsplash.com/photo-1532667449560-72a95c8d381b?ixlib=rb-1.2.1&auto=format&fit=crop&w=750&q=80')">
+                        <x-button class="p-2 !rounded-full mx-5 -mb-4">
+                            <svg class="h-5 w-5" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M20.0001 11.9998L4.00012 11.9998" />
+                                <path
+                                    d="M15.0003 17C15.0003 17 20.0002 13.3176 20.0002 12C20.0002 10.6824 15.0002 7 15.0002 7" />
+                            </svg>
+                        </x-button>
+                    </div>
+                    <div class="px-5 py-3">
+                        <h3 class="text-gray-700 uppercase">Classic watch</h3>
+                    </div>
+                </div>
+                <div class="w-full max-w-sm mx-auto rounded-md shadow-md overflow-hidden">
+                    <div class="flex items-end justify-end h-56 w-full bg-cover"
+                        style="background-image: url('https://images.unsplash.com/photo-1590664863685-a99ef05e9f61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=345&q=80')">
+                        <x-button class="p-2 !rounded-full mx-5 -mb-4">
+                            <svg class="h-5 w-5" fill="none" stroke-linecap="round" stroke-linejoin="round"
+                                stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                                <path d="M20.0001 11.9998L4.00012 11.9998" />
+                                <path
+                                    d="M15.0003 17C15.0003 17 20.0002 13.3176 20.0002 12C20.0002 10.6824 15.0002 7 15.0002 7" />
+                            </svg>
+                        </x-button>
+                    </div>
+                    <div class="px-5 py-3">
+                        <h3 class="text-gray-700 uppercase">woman mix</h3>
+                    </div>
+                </div>
+            </div>
         </section>
 
 
@@ -198,7 +503,8 @@
             <div class="flip3D">
                 <div class="card front">
                     <p class="fondo">
-                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        <span class="fondo-img"
+                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
                         </span>
                     </p>
                     <div class="card-depth">
@@ -207,7 +513,8 @@
                 </div>
                 <div class="card back">
                     <p class="fondo">
-                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        <span class="fondo-img"
+                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
                         </span>
                     </p>
                     <div class="card-depth">
@@ -224,7 +531,8 @@
             <div class="flip3D">
                 <div class="card front">
                     <p class="fondo">
-                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        <span class="fondo-img"
+                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
                         </span>
                     </p>
                     <div class="card-depth">
@@ -233,7 +541,8 @@
                 </div>
                 <div class="card back">
                     <p class="fondo">
-                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        <span class="fondo-img"
+                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
                         </span>
                     </p>
                     <div class="card-depth">
@@ -251,7 +560,8 @@
             <div class="flip3D">
                 <div class="card front">
                     <p class="fondo">
-                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        <span class="fondo-img"
+                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
                         </span>
                     </p>
                     <div class="card-depth">
@@ -260,7 +570,8 @@
                 </div>
                 <div class="card back">
                     <p class="fondo">
-                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        <span class="fondo-img"
+                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
                         </span>
                     </p>
                     <div class="card-depth">
