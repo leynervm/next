@@ -5,11 +5,9 @@
             <div id="parentmnd" class="relative" x-init="selectMoneda">
                 <x-select class="block w-full" x-ref="selectmoneda" id="mnd">
                     <x-slot name="options">
-                        @if (count($monedas))
-                            @foreach ($monedas as $item)
-                                <option value="{{ $item->id }}">{{ $item->currency }}</option>
-                            @endforeach
-                        @endif
+                        @foreach ($monedas as $item)
+                            <option value="{{ $item->id }}">{{ $item->currency }}</option>
+                        @endforeach
                     </x-slot>
                 </x-select>
                 <x-icon-select />

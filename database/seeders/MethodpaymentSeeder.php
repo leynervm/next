@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Cuenta;
 use App\Models\Methodpayment;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,14 +15,14 @@ class MethodpaymentSeeder extends Seeder
      */
     public function run()
     {
-        $efectivo = Methodpayment::create([
+        $efectivo = Methodpayment::firstOrCreate([
             'name' => 'EFECTIVO',
             'type' => Methodpayment::EFECTIVO,
             'default' => Methodpayment::DEFAULT,
             'definido' => Methodpayment::DEFAULT,
         ]);
 
-        $transferencia = Methodpayment::create([
+        $transferencia = Methodpayment::firstOrCreate([
             'name' => 'TRANSFERENCIA',
             'type' => Methodpayment::TRANSFERENCIA,
             'definido' => Methodpayment::DEFAULT,

@@ -93,43 +93,25 @@
                 @foreach ($users as $item)
                     <tr>
                         <td class="p-2">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden">
-                                    @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                        <img class="h-full w-full object-cover block"
-                                            src="{{ $item->profile_photo_url }}" alt="{{ $item->name }}" />
-                                    @endif
-                                </div>
+                            @can('admin.users.edit')
+                                @if ($item->trashed())
+                                    <p class="w-full block text-linktable">{{ $item->document }}</p>
+                                    <p class="w-full block text-linktable">{{ $item->name }}</p>
+                                @else
+                                    <a class="w-full inline-block text-linktable hover:text-hoverlinktable"
+                                        href="{{ route('admin.users.edit', $item) }}">
+                                        {{ $item->document }} <br>
+                                        {{ $item->name }}
+                                    </a>
+                                @endif
+                            @endcan
 
-                                @can('admin.users.edit')
-                                    @if ($item->trashed())
-                                        <div>
-                                            <p class="w-full block text-linktable">{{ $item->document }}</p>
-                                            <p class="w-full block text-linktable">{{ $item->name }}</p>
-                                        </div>
-                                    @else
-                                        <a class="w-full inline-block text-linktable hover:text-hoverlinktable"
-                                            href="{{ route('admin.users.edit', $item) }}">
-                                            {{ $item->document }}
-                                            <p>{{ $item->name }}</p>
-                                            @if (Module::isEnabled('Employer'))
-                                                @if ($item->employer)
-                                                    @if ($item->employer->areawork)
-                                                        <p>AREA : {{ $item->employer->areawork->name }}</p>
-                                                    @endif
-                                                @endif
-                                            @endif
-                                        </a>
-                                    @endif
-                                @endcan
-
-                                @cannot('admin.users.edit')
-                                    <h1 class="w-full inline-block text-linktable">
-                                        {{ $item->document }}
-                                        <p>{{ $item->name }}</p>
-                                    </h1>
-                                @endcannot
-                            </div>
+                            @cannot('admin.users.edit')
+                                <h1 class="w-full inline-block text-linktable">
+                                    {{ $item->document }}
+                                    <p>{{ $item->name }}</p>
+                                </h1>
+                            @endcannot
                         </td>
 
                         <td class="p-2">
@@ -190,6 +172,14 @@
                                     <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                                 @endif
                             @endif
+                            @if (Module::isEnabled('Employer'))
+                                @if ($item->employer)
+                                    @if ($item->employer->areawork)
+                                        <p class="w-full block text-colorsubtitleform text-[10px]">
+                                            AREA : {{ $item->employer->areawork->name }}</p>
+                                    @endif
+                                @endif
+                            @endif
                         </td>
                         <td class="p-2">
                             {{ $item->theme_id }}
@@ -211,9 +201,8 @@
                                                 wire:key="restoreuser{{ $item->id }}" />
                                         @endcan
                                     @else
-                                        <x-button-toggle class=""
-                                            onclick="confirmDelete({{ $item }})" wire:loading.attr="disabled"
-                                            wire:key="deleteuser_{{ $item->id }}" />
+                                        <x-button-toggle class="" onclick="confirmDelete({{ $item }})"
+                                            wire:loading.attr="disabled" wire:key="deleteuser_{{ $item->id }}" />
                                     @endif
                                 @endif
                             </td>

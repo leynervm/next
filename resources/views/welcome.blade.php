@@ -1,149 +1,8 @@
 <x-app-layout>
     @if (count($sliders) > 0)
         <x-slot name="slider">
-            <div class="w-full max-w-full p-0 mt-8 xl:mt-0">
-                <div class="relative mb-8">
-                    <ol class="absolute z-10 flex justify-center items-center -bottom-9 m-0 pl-0 left-0 right-0"
-                        id="indice-slider">
-                        @foreach ($sliders as $item)
-                            <li class="indicador-slider {{ $loop->first ? 'activo' : '' }}"></li>
-                        @endforeach
-                    </ol>
-                    <div class="relative w-full overflow-hidden h-0 pt-[28%] min-h-[446px] md:min-h-[220px]"
-                        id="slider">
-                        @foreach ($sliders as $item)
-                            <div class="carousel-item {{ $loop->first ? 'activo' : '' }}">
-                                <div class="h-full flex relative efecto-slider">
-                                    <div class="lazyload-wrapper ">
-                                        <img src="{{ $item->getImageURL() }}" alt="home"
-                                            class="absolute w-full h-full object-cover">
-                                    </div>
-                                    <div class="carousel-item-link">
-                                        @if ($item->link)
-                                            <a href="{{ $item->link }}"></a>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    @if (count($sliders) > 1)
-                        <button type="button" id="previusslider"
-                            class="absolute w-auto h-12 rounded-r m-auto top-0 left-0 bottom-0 z-[5] text-next-700 text-center opacity-40 flex justify-center items-center hover:opacity-60 transition-opacity ease-in-out duration-150">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 349 512"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-linecap="round"
-                                stroke-linejoin="round" class="w-full h-full block p-1">
-                                <path
-                                    d="M1.843 262.032 170.39 509.5c1.088 1.605 2.564 2.5 4.11 2.5h168.548c2.348 0 4.476-2.081 5.37-5.264.902-3.191.402-6.861-1.26-9.301L182.718 256l164.44-241.434c1.661-2.44 2.161-6.11 1.26-9.3-.894-3.183-3.021-5.265-5.37-5.265H174.5c-1.546 0-3.022.896-4.11 2.5L1.842 249.968c-2.272 3.336-2.272 8.729 0 12.065z" />
-                            </svg>
-                            <span class="sr-only">Previous</span>
-                        </button>
-                        <button type="button" id="nextslider"
-                            class="absolute w-auto h-12 rounded-l m-auto top-0 right-0 bottom-0 z-[5] text-next-700 text-center opacity-40 flex justify-center items-center hover:opacity-60 transition-opacity ease-in-out duration-150">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 349 512"
-                                xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke-linecap="round"
-                                stroke-linejoin="round" class="w-full h-full block p-1">
-                                <path
-                                    d="m347.01895,249.967l-168.54792,-247.467c-1.08703,-1.604 -2.56296,-2.5 -4.10905,-2.5l-168.5486,0c-2.34774,0 -4.47548,2.082 -5.37044,5.265c-0.90109,3.191 -0.40117,6.861 1.26139,9.301l164.43955,241.434l-164.43955,241.433c-1.66187,2.441 -2.1618,6.11 -1.26139,9.301c0.89496,3.183 3.02202,5.265 5.37044,5.265l168.5486,0c1.54609,0 3.02202,-0.896 4.10905,-2.5l168.5486,-247.467c2.27213,-3.336 2.27213,-8.729 -0.00068,-12.065z" />
-                            </svg>
-                            <span class="sr-only">Next</span>
-                        </button>
-                    @endif
-                </div>
-            </div>
+            @include('partials.slider')
         </x-slot>
-
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const slider = document.getElementById('slider');
-                const indice_slider = document.getElementById('indice-slider');
-                const idicador_items = indice_slider.querySelectorAll('.indicador-slider');
-                const items = slider.querySelectorAll('.carousel-item');
-                const nextButton = document.getElementById('nextslider');
-                const prevButton = document.getElementById('previusslider');
-                let currentIndex = 0;
-                let autoSlideInterval;
-
-                const showSlide = (index, direction) => {
-                    if (direction === 'next') {
-                        // items[index].classList.add('entrante');
-                        // items[currentIndex].classList.remove('saliente');
-                    } else if (direction === 'prev') {
-                        // items[currentIndex].classList.add('entrante');
-                        // items[index].classList.add('saliente');
-                    }
-
-                    changeImageSlider(index);
-                };
-
-                const nextSlide = () => {
-                    currentIndex = (currentIndex + 1) % items.length;
-                    showSlide(currentIndex, 'next');
-                    resetAutoSlide();
-                };
-
-                const prevSlide = () => {
-                    currentIndex = (currentIndex - 1 + items.length) % items.length;
-                    showSlide(currentIndex, 'prev');
-                    resetAutoSlide();
-                };
-
-                const changeImageSlider = (index) => {
-                    items.forEach((item, i) => {
-                        if (i === index) {
-                            item.classList.add('activo');
-                        } else {
-                            item.classList.remove('activo');
-                        }
-                    });
-
-                    idicador_items.forEach((item, i) => {
-                        if (i === index) {
-                            item.classList.add('activo');
-                        } else {
-                            item.classList.remove('activo');
-                        }
-                    });
-
-                    currentIndex = index;
-                }
-
-                const startAutoSlide = () => {
-                    autoSlideInterval = setInterval(nextSlide, 5000);
-                };
-
-                const stopAutoSlide = () => {
-                    clearInterval(autoSlideInterval);
-                };
-
-                const resetAutoSlide = () => {
-                    stopAutoSlide();
-                    startAutoSlide();
-                };
-
-                idicador_items.forEach((button, e) => {
-                    button.addEventListener('click', function(e) {
-                        changeImageSlider($(this).index());
-                        resetAutoSlide();
-                    })
-                })
-
-                if (nextButton) {
-                    nextButton.addEventListener('click', nextSlide);
-                }
-
-                if (prevButton) {
-                    prevButton.addEventListener('click', prevSlide);
-                }
-                slider.addEventListener('mouseover', stopAutoSlide);
-                slider.addEventListener('mouseout', startAutoSlide);
-
-                showSlide(currentIndex);
-                startAutoSlide();
-
-            });
-        </script>
     @endif
 
     <div class="contenedor w-full py-5">
@@ -164,39 +23,42 @@
         </section> --}}
 
         <section class="w-full">
-            <div class="w-full h-48 sm:h-64 rounded-lg overflow-hidden bg-cover bg-center"
-                style="background-image: url('https://images.unsplash.com/photo-1558980394-34764db076b4?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1200&h=300&dpi=2&fit=crop&crop=entropy')">
-                <div class="w-full bg-neutral-900 bg-opacity-50 flex items-center h-full">
-                    <div
-                        class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10 sm:max-w-xl">
-                        <h2 class="text-2xl text-white font-semibold">Next Store</h2>
-                        <p class="mt-2 text-white leading-4 my-3 text-center sm:text-start text-xs sm:text-sm">Lorem
-                            ipsum dolor, sit amet consectetur
-                            adipisicing elit.
-                            Tempore facere provident molestias ipsam sint voluptatum pariatur.</p>
-                        <x-button class="inline-flex">
+            <div class="w-full h-48 sm:h-72 rounded-lg overflow-hidden bg-cover bg-center"
+                style="background-image: url({{ asset('images/1280x250_1.jpg') }})">
+                <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 py-5">
+                    <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10">
+                        <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Desarrollo de
+                            Software</h2>
+                        <p
+                            class="text-white font-medium italic leading-none mb-5 text-center sm:text-start text-sm sm:text-lg">
+                            Desarrollo de sistemas web completos, para agilizar y automatizar los procesos de su
+                            negocio,
+                            realizamos sistemas a la medida de su negocio, no dude en contactarnos a traves de nuestros
+                            canales de venta (redes, tienda, web, correo).
+                        </p>
+                        {{-- <x-button class="inline-flex ml-auto">
                             <span>Shop Now</span>
                             <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
                                 stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
                                 <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                             </svg>
-                        </x-button>
+                        </x-button> --}}
                     </div>
                 </div>
             </div>
         </section>
 
         <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-5 mt-2 sm:mt-5">
-            <div class="w-full h-48 sm:h-64 rounded-lg overflow-hidden bg-cover bg-center"
-                style="background-image: url('https://images.unsplash.com/photo-1563400822182-80b43becb728?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=800&h=400&dpi=2&fit=crop&crop=entropy')">
-                <div class="w-full bg-neutral-900 bg-opacity-50 flex items-center h-full">
-                    <div
-                        class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10 sm:max-w-xl">
-                        <h2 class="text-2xl text-white font-semibold">Back Pack</h2>
-                        <p class="mt-2 text-white text-center sm:text-start text-xs sm:text-sm">Lorem ipsum dolor, sit
-                            amet consectetur adipisicing
-                            elit. Tempore facere provident molestias ipsam sint voluptatum pariatur.</p>
-                        <x-button class="inline-flex">
+            <div class="w-full h-48 sm:h-auto xl:h-[220px] rounded-lg overflow-hidden bg-cover bg-center"
+                style="background-image: url('{{ asset('images/630x220_1.jpg') }}')">
+                <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 md:py-5">
+                    <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 md:px-10">
+                        <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Servicio técnico
+                        </h2>
+                        <p
+                            class="text-white italic font-medium text-center mb-3 sm:text-start text-sm md:text-lg !leading-none">
+                            Lorem ipsum dolor, sit amet consectetur adipisicing elit.</p>
+                        <x-button class="inline-flex ml-auto">
                             <span>Shop Now</span>
                             <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
                                 stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -206,16 +68,16 @@
                     </div>
                 </div>
             </div>
-            <div class="w-full h-48 sm:h-64 rounded-lg overflow-hidden bg-cover bg-center"
-                style="background-image: url('https://images.unsplash.com/photo-1486401899868-0e435ed85128?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=800&h=400&dpi=2&fit=crop&&crop=entropy&q=80')">
-                <div class="w-full bg-neutral-900 bg-opacity-50 flex items-center h-full">
-                    <div
-                        class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10 sm:max-w-xl">
-                        <h2 class="text-2xl text-white font-semibold">Games</h2>
-                        <p class="mt-2 text-white text-center sm:text-start text-xs sm:text-sm">Lorem ipsum dolor, sit
-                            amet consectetur adipisicing
-                            elit. Tempore facere provident molestias ipsam sint voluptatum pariatur.</p>
-                        <x-button class="inline-flex">
+            <div class="w-full h-48 sm:h-auto xl:h-[220px] rounded-lg overflow-hidden bg-cover bg-center"
+                style="background-image: url('{{ asset('images/630x220_2.jpg') }}')">
+                <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 md:py-5">
+                    <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 md:px-10">
+                        <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Seguridad
+                            electrónica</h2>
+                        <p
+                            class="text-white italic font-medium text-center mb-3 sm:text-start text-sm md:text-lg !leading-none">
+                            Lorem ipsum dolor, sit amet consectetur adipisicing elit. </p>
+                        <x-button class="inline-flex ml-auto">
                             <span>Shop Now</span>
                             <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
                                 stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,72 +92,33 @@
         <section class="w-full mt-2 sm:mt-5">
             <div class="w-full flex flex-col gap-2">
                 <div class="w-full grid grid-cols-2 gap-2 sm:gap-5">
-                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
-                        <img alt="gallery" class="w-full object-cover h-full object-center block"
-                            src="https://dummyimage.com/800x400">
+                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
+                        <img alt="gallery" class="w-full object-cover sm:object-scale-down h-full object-center block"
+                            src="{{ asset('images/630x240_1.jpg') }}">
                     </div>
-                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
-                        <img alt="gallery" class="w-full object-cover h-full object-center block"
-                            src="https://dummyimage.com/800x400">
+                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
+                        <img alt="gallery" class="w-full object-cover sm:object-scale-down h-full object-center block"
+                            src="{{ asset('images/630x240_2.jpg') }}">
                     </div>
-                    <div class="w-full col-span-2 rounded-lg h-40 sm:h-48 overflow-hidden">
+                    <div class="w-full col-span-2 rounded-lg h-28 sm:h-auto overflow-hidden">
                         <img alt="gallery" class="w-full h-full object-cover object-center block"
-                            src="https://dummyimage.com/1200x200">
+                            src="{{ asset('images/1280x220_1.jpg') }}">
                     </div>
-                    <div class="w-full col-span-2 rounded-lg h-40 sm:h-48 overflow-hidden">
+                    <div class="w-full col-span-2 rounded-lg h-28 sm:h-auto overflow-hidden">
                         <img alt="gallery" class="w-full h-full object-cover object-center block"
-                            src="https://dummyimage.com/1200x200">
+                            src="{{ asset('images/1280x220_2.jpg') }}">
                     </div>
-                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
+                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
                         <img alt="gallery" class="w-full object-cover h-full object-center block"
-                            src="https://dummyimage.com/800x400">
+                            src="{{ asset('images/630x240_3.jpg') }}">
                     </div>
-                    <div class="w-full rounded-lg overflow-hidden h-40 sm:h-60">
+                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
                         <img alt="gallery" class="w-full object-cover h-full object-center block"
-                            src="https://dummyimage.com/800x400">
+                            src="{{ asset('images/630x240_4.jpg') }}">
                     </div>
                 </div>
             </div>
         </section>
-
-        <section class="w-full mt-2 sm:mt-5">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-5">
-                <div>
-                    <img class="relative z-0 object-cover w-full rounded-t-lg lg:rounded-lg h-48 lg:h-72"
-                        src="https://images.unsplash.com/photo-1644018335954-ab54c83e007f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-                        alt="">
-
-                    <div
-                        class="relative z-1 w-full lg:max-w-md p-4 mx-auto mt-0 lg:-mt-20 bg-fondominicard rounded-b-lg lg:rounded-lg shadow shadow-shadowminicard">
-                        <h1 class="font-semibold text-colortitleform text-lg leading-none lg:text-xl">
-                            All the features you want to know</h1>
-
-                        <p class="mt-3 text-xs lg:text-sm text-colorsubtitleform md:text-sm">
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure veritatis sint autem
-                            nesciunt, laudantium quia tempore delect
-                        </p>
-                    </div>
-                </div>
-
-                <div>
-                    <img class="relative z-0 object-cover w-full rounded-t-lg lg:rounded-lg h-48 lg:h-72"
-                        src="https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80"
-                        alt="">
-
-                    <div
-                        class="relative z-1 w-full lg:max-w-md p-4 mx-auto mt-0 lg:-mt-20 bg-fondominicard rounded-b-lg lg:rounded-lg shadow shadow-shadowminicard">
-                        <h1 class="font-semibold text-colortitleform text-lg leading-none lg:text-xl">
-                            How to use sticky note for problem solving</h1>
-
-                        <p class="mt-3 text-xs lg:text-sm text-colorsubtitleform md:text-sm">
-                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure veritatis sint autem
-                            nesciunt, laudantium quia tempore delect
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
 
         <div x-data="{ cartOpen: false, isOpen: false }" class="w-full">
             <div class="w-full mx-auto  py-3">
@@ -428,7 +251,7 @@
         </div>
 
 
-        <section class="my-8">
+        {{-- <section class="my-8">
             <h3 class="text-primary text-2xl font-medium">Marcas</h3>
             <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-6">
                 <div class="w-full max-w-sm mx-auto rounded-md shadow-md overflow-hidden">
@@ -496,167 +319,75 @@
                     </div>
                 </div>
             </div>
-        </section>
-
-
-        <section class="w-full overflow-hidden flex flex-wrap justify-around gap-5 py-12 relative">
-            <div class="flip3D">
-                <div class="card front">
-                    <p class="fondo">
-                        <span class="fondo-img"
-                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
-                        </span>
-                    </p>
-                    <div class="card-depth">
-                        <div class="title-card-front"><span>MISIÓN</span></div>
-                    </div>
-                </div>
-                <div class="card back">
-                    <p class="fondo">
-                        <span class="fondo-img"
-                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
-                        </span>
-                    </p>
-                    <div class="card-depth">
-                        <h1 class="title-card-back">MISIÓN</h1>
-                        <p class="texto-card-back">
-                            Nuestra Misión es consolidar más empresas e influir en su crecimiento,
-                            formando alianzas con
-                            empresas importadoras y puntos de venta directa para brindar una mejor
-                            experiencia a nuestros clientes.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="flip3D">
-                <div class="card front">
-                    <p class="fondo">
-                        <span class="fondo-img"
-                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
-                        </span>
-                    </p>
-                    <div class="card-depth">
-                        <h1 class="title-card-front">VISIÓN</h1>
-                    </div>
-                </div>
-                <div class="card back">
-                    <p class="fondo">
-                        <span class="fondo-img"
-                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
-                        </span>
-                    </p>
-                    <div class="card-depth">
-                        <h1 class="title-card-back">VISIÓN</h1>
-                        <p class="texto-card-back">
-                            Nuestra visión es seguir expandiendonos en el mercado,
-                            forjando una fuerza e impacto positivo a nuestros clientes,
-                            aportando desde la humildad, lo mejor de nuetra empresa, formando alianzas y haciendo crecer
-                            la
-                            economía de nuestro Perú.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="flip3D">
-                <div class="card front">
-                    <p class="fondo">
-                        <span class="fondo-img"
-                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
-                        </span>
-                    </p>
-                    <div class="card-depth">
-                        <h1 class="title-card-front">VALORES</h1>
-                    </div>
-                </div>
-                <div class="card back">
-                    <p class="fondo">
-                        <span class="fondo-img"
-                            style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
-                        </span>
-                    </p>
-                    <div class="card-depth">
-                        <h1 class="title-card-back">VALORES</h1>
-                        <p class="texto-card-back">
-                            Nuestro valor principal es confianza, compromiso y disciplina.
-                            Formamos cada vez más un equipo fuerte en habilidades y actitudes que benefician nuestra
-                            empresa, nos apoyamos mutuamente y transmitimos confianza a nuestros clientes.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </section> --}}
 
 
         <section class="py-12 max-w-full">
             <div class="w-full relative">
-                <div class="text-next-500 font-medium text-2xl text-center">Servicios</div>
-                <div class="font-normal text-lg text-center text-colorsubtitleform">
-                    Mantenimiento Predictivo, Preventivo y Correctivo</div>
+
                 <div class="relative mt-7 xl:mt-10 xl:px-12">
                     <div class="w-full block relative">
-                        <div class="w-full grid xs:grid-cols-2 lg:grid-cols-3 gap-3 relative overflow-hidden">
-                            <div class="owl-item">
-                                <div class="item wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
-                                    <div class="icono">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="0.8" stroke-linecap="round"
-                                            fill="none" class="block w-20 h-20 mx-auto">
-                                            <path
-                                                d="M10.014 2C6.23617 2 4.34725 2 3.17362 3.17157C2 4.34315 2 6.22876 2 10C2 13.7712 2 15.6569 3.17362 16.8284C4.34725 18 6.23617 18 10.014 18H14.021C17.7989 18 19.6878 18 20.8614 16.8284C21.671 16.0203 21.9221 14.8723 22 13" />
-                                            <path d="M12 18V22" />
-                                            <path d="M8 22H16" />
-                                            <path d="M11 15H13" />
-                                            <path
-                                                d="M18 4H16C15.0572 4 14.5858 4 14.2929 4.29289C14 4.58579 14 5.05719 14 6V8C14 8.94281 14 9.41421 14.2929 9.70711C14.5858 10 15.0572 10 16 10H18C18.9428 10 19.4142 10 19.7071 9.70711C20 9.41421 20 8.94281 20 8V6C20 5.05719 20 4.58579 19.7071 4.29289C19.4142 4 18.9428 4 18 4Z" />
-                                            <path
-                                                d="M15.5 10V12M18.5 10V12M15.5 2V4M18.5 2V4M14 5.5H12M14 8.5H12M22 5.5H20M22 8.5H20" />
-                                        </svg>
-                                    </div>
-                                    <div class="titulo">
-                                        <strong>Prevención de incendios y reducción de riesgos</strong>
-                                    </div>
-                                    <div class="texto">
-                                        Eliminar el riesgo eléctrico, causa N° 1 de los incendios.
-                                    </div>
+                        <div
+                            class="w-auto mx-auto grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 relative">
+                            <div class="next-wow fadeInUp">
+                                <div class="icono">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" fill="none"
+                                        class="block w-20 h-20 mx-auto">
+                                        <path
+                                            d="M10.014 2C6.23617 2 4.34725 2 3.17362 3.17157C2 4.34315 2 6.22876 2 10C2 13.7712 2 15.6569 3.17362 16.8284C4.34725 18 6.23617 18 10.014 18H14.021C17.7989 18 19.6878 18 20.8614 16.8284C21.671 16.0203 21.9221 14.8723 22 13" />
+                                        <path d="M12 18V22" />
+                                        <path d="M8 22H16" />
+                                        <path d="M11 15H13" />
+                                        <path
+                                            d="M18 4H16C15.0572 4 14.5858 4 14.2929 4.29289C14 4.58579 14 5.05719 14 6V8C14 8.94281 14 9.41421 14.2929 9.70711C14.5858 10 15.0572 10 16 10H18C18.9428 10 19.4142 10 19.7071 9.70711C20 9.41421 20 8.94281 20 8V6C20 5.05719 20 4.58579 19.7071 4.29289C19.4142 4 18.9428 4 18 4Z" />
+                                        <path
+                                            d="M15.5 10V12M18.5 10V12M15.5 2V4M18.5 2V4M14 5.5H12M14 8.5H12M22 5.5H20M22 8.5H20" />
+                                    </svg>
+                                </div>
+                                <h1 class="titulo">
+                                    Mantenimiento Preventivo y Correctivo
+                                </h1>
+                                <div class="texto !leading-none">
+                                    Protege tus equipos electrónicos y así evitar gastos indevidos en el futuro.
                                 </div>
                             </div>
-                            <div class="owl-item">
-                                <div class="item wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
-                                    <div class="icono">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="0.8" stroke-linecap="round"
-                                            color="currentColor" fill="none" class="block w-20 h-20 mx-auto">
-                                            <path
-                                                d="M2.25562 15.6322C2.28958 15.309 2.52379 15.0485 2.99222 14.5276L4.02329 13.3749C4.27532 13.0558 4.45417 12.5 4.45417 11.9998C4.45417 11.5 4.27526 10.944 4.02326 10.625L2.99222 9.47231C2.52379 8.95137 2.28957 8.6909 2.25562 8.36768C2.22166 8.04446 2.39662 7.74083 2.74653 7.13358L3.24011 6.27698C3.61341 5.62915 3.80005 5.30523 4.11763 5.17607C4.43521 5.0469 4.79437 5.14883 5.51271 5.35267L6.73294 5.69637C7.19155 5.80212 7.6727 5.74213 8.09145 5.52698L8.42833 5.33261C8.78741 5.10262 9.06361 4.76352 9.21649 4.36493L9.55045 3.36754C9.77002 2.70753 9.87981 2.37752 10.1412 2.18876C10.4026 2 10.7498 2 11.4441 2H12.5589C13.2533 2 13.6005 2 13.8618 2.18876C14.1232 2.37752 14.233 2.70753 14.4526 3.36754L14.7865 4.36493C14.9394 4.76352 15.2156 5.10262 15.5747 5.33261L15.9116 5.52698C16.3303 5.74213 16.8115 5.80212 17.2701 5.69637L18.4903 5.35267C19.2086 5.14883 19.5678 5.0469 19.8854 5.17607C20.203 5.30523 20.3896 5.62915 20.7629 6.27698L21.2565 7.13358C21.6064 7.74083 21.7813 8.04446 21.7474 8.36768C21.7134 8.6909 21.4792 8.95137 21.0108 9.47231L19.9797 10.625C19.7278 10.944 19.5488 11.5 19.5488 11.9998C19.5488 12.5 19.7277 13.0558 19.9797 13.3749L21.0108 14.5276C21.4792 15.0485 21.7134 15.309 21.7474 15.6322C21.7813 15.9555 21.6064 16.2591 21.2565 16.8663L20.7629 17.7229C20.3896 18.3707 20.203 18.6947 19.8854 18.8238C19.5678 18.953 19.2086 18.8511 18.4903 18.6472L17.2701 18.3035C16.8114 18.1977 16.3302 18.2578 15.9114 18.473L15.5746 18.6674C15.2155 18.8974 14.9394 19.2364 14.7866 19.635L14.4526 20.6325C14.233 21.2925 14.1232 21.6225 13.8618 21.8112C13.6005 22 13.2533 22 12.5589 22H11.4441C10.7498 22 10.4026 22 10.1412 21.8112C9.87981 21.6225 9.77002 21.2925 9.55045 20.6325" />
-                                            <path
-                                                d="M2.73744 18.7798C3.81744 17.6998 7.48945 14.0638 7.84945 13.6438C8.23002 13.1998 7.92145 12.5998 8.10505 10.7398C8.19388 9.8398 8.38748 9.16555 8.94145 8.6638C9.60145 8.0398 10.1414 8.0398 12.0014 7.99781C13.6214 8.0398 13.8134 7.8598 13.9814 8.27981C14.1014 8.57981 13.7414 8.7598 13.3094 9.23981C12.3494 10.1998 11.7854 10.6798 11.7314 10.9798C11.3414 12.2998 12.8774 13.0798 13.7174 12.2398C14.0351 11.9221 15.5054 10.4398 15.6494 10.3198C15.7574 10.2238 16.016 10.2284 16.1414 10.3798C16.2494 10.4859 16.2614 10.4998 16.2494 10.9798C16.2383 11.4241 16.2433 12.062 16.2446 12.7198C16.2464 13.5721 16.2014 14.5198 15.8414 14.9998C15.1214 16.0798 13.9214 16.1398 12.8414 16.1878C11.8214 16.2478 10.9814 16.1398 10.7174 16.3318C10.5014 16.4398 9.36145 17.6398 7.98145 19.0198L5.52145 21.4798C3.48145 23.0998 1.23745 20.5798 2.73744 18.7798Z" />
-                                        </svg>
-                                    </div>
-                                    <div class="titulo"><strong>Mayor eficiencia energética</strong></div>
-                                    <div class="texto">Ahorro de energía, reduciendo los costos de operación.</div>
+                            <div class="next-wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
+                                <div class="icono">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" color="currentColor" fill="none"
+                                        class="block w-20 h-20 mx-auto">
+                                        <path
+                                            d="M2.25562 15.6322C2.28958 15.309 2.52379 15.0485 2.99222 14.5276L4.02329 13.3749C4.27532 13.0558 4.45417 12.5 4.45417 11.9998C4.45417 11.5 4.27526 10.944 4.02326 10.625L2.99222 9.47231C2.52379 8.95137 2.28957 8.6909 2.25562 8.36768C2.22166 8.04446 2.39662 7.74083 2.74653 7.13358L3.24011 6.27698C3.61341 5.62915 3.80005 5.30523 4.11763 5.17607C4.43521 5.0469 4.79437 5.14883 5.51271 5.35267L6.73294 5.69637C7.19155 5.80212 7.6727 5.74213 8.09145 5.52698L8.42833 5.33261C8.78741 5.10262 9.06361 4.76352 9.21649 4.36493L9.55045 3.36754C9.77002 2.70753 9.87981 2.37752 10.1412 2.18876C10.4026 2 10.7498 2 11.4441 2H12.5589C13.2533 2 13.6005 2 13.8618 2.18876C14.1232 2.37752 14.233 2.70753 14.4526 3.36754L14.7865 4.36493C14.9394 4.76352 15.2156 5.10262 15.5747 5.33261L15.9116 5.52698C16.3303 5.74213 16.8115 5.80212 17.2701 5.69637L18.4903 5.35267C19.2086 5.14883 19.5678 5.0469 19.8854 5.17607C20.203 5.30523 20.3896 5.62915 20.7629 6.27698L21.2565 7.13358C21.6064 7.74083 21.7813 8.04446 21.7474 8.36768C21.7134 8.6909 21.4792 8.95137 21.0108 9.47231L19.9797 10.625C19.7278 10.944 19.5488 11.5 19.5488 11.9998C19.5488 12.5 19.7277 13.0558 19.9797 13.3749L21.0108 14.5276C21.4792 15.0485 21.7134 15.309 21.7474 15.6322C21.7813 15.9555 21.6064 16.2591 21.2565 16.8663L20.7629 17.7229C20.3896 18.3707 20.203 18.6947 19.8854 18.8238C19.5678 18.953 19.2086 18.8511 18.4903 18.6472L17.2701 18.3035C16.8114 18.1977 16.3302 18.2578 15.9114 18.473L15.5746 18.6674C15.2155 18.8974 14.9394 19.2364 14.7866 19.635L14.4526 20.6325C14.233 21.2925 14.1232 21.6225 13.8618 21.8112C13.6005 22 13.2533 22 12.5589 22H11.4441C10.7498 22 10.4026 22 10.1412 21.8112C9.87981 21.6225 9.77002 21.2925 9.55045 20.6325" />
+                                        <path
+                                            d="M2.73744 18.7798C3.81744 17.6998 7.48945 14.0638 7.84945 13.6438C8.23002 13.1998 7.92145 12.5998 8.10505 10.7398C8.19388 9.8398 8.38748 9.16555 8.94145 8.6638C9.60145 8.0398 10.1414 8.0398 12.0014 7.99781C13.6214 8.0398 13.8134 7.8598 13.9814 8.27981C14.1014 8.57981 13.7414 8.7598 13.3094 9.23981C12.3494 10.1998 11.7854 10.6798 11.7314 10.9798C11.3414 12.2998 12.8774 13.0798 13.7174 12.2398C14.0351 11.9221 15.5054 10.4398 15.6494 10.3198C15.7574 10.2238 16.016 10.2284 16.1414 10.3798C16.2494 10.4859 16.2614 10.4998 16.2494 10.9798C16.2383 11.4241 16.2433 12.062 16.2446 12.7198C16.2464 13.5721 16.2014 14.5198 15.8414 14.9998C15.1214 16.0798 13.9214 16.1398 12.8414 16.1878C11.8214 16.2478 10.9814 16.1398 10.7174 16.3318C10.5014 16.4398 9.36145 17.6398 7.98145 19.0198L5.52145 21.4798C3.48145 23.0998 1.23745 20.5798 2.73744 18.7798Z" />
+                                    </svg>
                                 </div>
+                                <h1 class="titulo">
+                                    Atención a domicilio</h1>
+                                <div class="texto">
+                                    Llegamos al lugar donde te encuentres</div>
                             </div>
-                            <div class="owl-item">
-                                <div class="item wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
-                                    <div class="icono">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="0.8" stroke-linecap="round"
-                                            color="currentColor" fill="none" class="block w-20 h-20 mx-auto">
-                                            <path
-                                                d="M14 8C14 9.10457 13.1046 10 12 10C10.8954 10 10 9.10457 10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8Z" />
-                                            <path
-                                                d="M16.9588 5C17.6186 5.86961 18 6.89801 18 8C18 9.10199 17.6186 10.1304 16.9588 11M7.04117 5C6.38143 5.86961 6 6.89801 6 8C6 9.10199 6.38143 10.1304 7.04117 11" />
-                                            <path
-                                                d="M20.3159 3C21.3796 4.43008 22 6.14984 22 8C22 9.85016 21.3796 11.5699 20.3159 13M3.68409 3C2.62036 4.43008 2 6.14984 2 8C2 9.85016 2.62036 11.5699 3.68409 13" />
-                                            <path d="M11 10L7 21" />
-                                            <path d="M17 21L13 10" />
-                                            <path d="M8.5 17H15.5" />
-                                        </svg>
-                                    </div>
-                                    <div class="titulo"><strong>Riesgos mínimos a la vida del personal y su
-                                            seguridad</strong></div>
-                                    <div class="texto">Proteger debidamente al personal contra los choques eléctricos
-                                        que pueden ser mortales.</div>
+                            <div class="next-wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
+                                <div class="icono">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
+                                        stroke-width="2" stroke-linecap="round" color="currentColor" fill="none"
+                                        class="block w-20 h-20 mx-auto">
+                                        <path
+                                            d="M14 8C14 9.10457 13.1046 10 12 10C10.8954 10 10 9.10457 10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8Z" />
+                                        <path
+                                            d="M16.9588 5C17.6186 5.86961 18 6.89801 18 8C18 9.10199 17.6186 10.1304 16.9588 11M7.04117 5C6.38143 5.86961 6 6.89801 6 8C6 9.10199 6.38143 10.1304 7.04117 11" />
+                                        <path
+                                            d="M20.3159 3C21.3796 4.43008 22 6.14984 22 8C22 9.85016 21.3796 11.5699 20.3159 13M3.68409 3C2.62036 4.43008 2 6.14984 2 8C2 9.85016 2.62036 11.5699 3.68409 13" />
+                                        <path d="M11 10L7 21" />
+                                        <path d="M17 21L13 10" />
+                                        <path d="M8.5 17H15.5" />
+                                    </svg>
+                                </div>
+                                <h1 class="titulo">
+                                    Garantías</h1>
+                                <div class="texto">
+                                    Contamos con la atención de garántias de marcas reconocidas por el mercado.
                                 </div>
                             </div>
                         </div>

@@ -24,7 +24,7 @@ class VerifyConcept
                 'title' => 'REGISTRAR CONCEPTOS DE PAGO',
                 'text' => 'Registrar conceptos de pago a utilizar.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.cajas.methodpayments');
         }
@@ -35,7 +35,7 @@ class VerifyConcept
                 'title' => 'SELECCIONAR FORMA DE PAGO PREDETERMINADA PARA VENTAS',
                 'text' => 'Seleccione una forma de pago predeterminada a utilizar en el modulo ventas.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.cajas.methodpayments');
         }

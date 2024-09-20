@@ -136,7 +136,7 @@
 
             @if (count($itemcompras) > 0)
                 <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-4">
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-4">
                     @foreach ($itemcompras as $key => $item)
                         <x-card-producto :image="$item['image'] ?? null" :name="$item['name']" x-data="{ showForm: false }">
                             <div
@@ -411,7 +411,7 @@
                 <x-jet-input-error for="producto_id" />
             </div>
 
-            <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 <div class="w-full">
                     <x-label value="Precio unitario sin IGV :" />
                     <x-input class="block w-full" x-mask:dynamic="$money($input, '.', '', 2)" x-model="priceunitario"

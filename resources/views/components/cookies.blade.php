@@ -1,8 +1,8 @@
-<div id="cookies" class="fixed bottom-0 p-2 inset-x-0 z-[199] w-full overflow-hidden" style="display: none;">
-    <div class="w-full bg-neutral-800 bg-opacity-90 p-3 rounded-lg">
-        <div class="w-full contenedor flex gap-2 items-center">
+<div id="cookies" class="fixed bottom-0 p-1 inset-x-0 z-[199] w-full overflow-hidden" style="display: none;">
+    <div class="w-full bg-neutral-800 bg-opacity-90 p-1 md:p-3 rounded-lg">
+        <div class="w-full contenedor flex flex-col md:flex-row gap-2 items-center">
             <div class="w-full flex-1">
-                <p class="text-neutral-300 leading-normal text-xs">
+                <p class="text-neutral-200 text-justify leading-normal text-[10px] sm:text-xs">
                     Al hacer clic en “Aceptar todas las cookies”, usted acepta que las cookies se guarden en su
                     dispositivo para mejorar la navegación del sitio, analizar el uso del mismo, y colaborar con
                     nuestros estudios para marketing.</p>

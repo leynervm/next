@@ -17,7 +17,7 @@ class VerifySerieventas
      */
     public function handle(Request $request, Closure $next)
     {
-        
+
         $serieventas = auth()->user()->sucursal->seriecomprobantes()->whereHas('typecomprobante', function ($query) {
             if (Module::isDisabled('Facturacion')) {
                 $query->default();
@@ -30,7 +30,7 @@ class VerifySerieventas
                 'title' => 'ASIGNAR SERIES DE COMPROBANTES A SUCURSAL',
                 'text' => 'Asignar series para generar comprobantes de venta en sucursal asignada.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
 

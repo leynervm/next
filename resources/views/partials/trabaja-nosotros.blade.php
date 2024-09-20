@@ -122,19 +122,19 @@
 
     <script>
         document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                audio.pause();
-                audio.currentTime = 12.5;
-                audio.play();
-                document.title = 'Xq te vas prra, regresa ptmr😢😭!';
-            } else {
-                if (!audio.paused) {
-                    audio.pause();
-                    audio.currentTime = 0;
-                }
-                var titleDocument = document.querySelector('meta[name="title"]').getAttribute('content');
-                document.title = titleDocument;
-            }
+            // if (document.hidden) {
+            //     audio.pause();
+            //     audio.currentTime = 12.5;
+            //     audio.play();
+            //     document.title = 'Xq te vas prra, regresa ptmr😢😭!';
+            // } else {
+            //     if (!audio.paused) {
+            //         audio.pause();
+            //         audio.currentTime = 0;
+            //     }
+            //     var titleDocument = document.querySelector('meta[name="title"]').getAttribute('content');
+            //     document.title = titleDocument;
+            // }
         });
     </script>
 </x-app-layout>

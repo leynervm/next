@@ -45,9 +45,7 @@
             @endif
 
             <div class="{{-- contenedor --}} bg-body min-h-screen">
-                @if (session('message'))
-                    <x-alert />
-                @endif
+                <x-alert />
 
                 @if (isset($breadcrumb))
                     <div class="w-full overflow-hidden p-1.5 lg:p-2">
@@ -106,7 +104,7 @@
 <script>
     const audio = new Audio("{{ asset('assets/mp3/porque-te-vas.mp3') }}");
 
-    
+
 
 
     let boxCookies = document.getElementById('cookies');

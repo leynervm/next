@@ -273,7 +273,7 @@
             @canany(['admin.administracion.empresa.create', 'admin.administracion.empresa.edit',
                 'admin.administracion.sucursales', 'admin.administracion.employers', 'admin.users',
                 'admin.administracion.pricetypes', 'admin.administracion.rangos', 'admin.administracion.typecomprobantes',
-                'admin.administracion.units', 'admin.administracion.areas'])
+                'admin.administracion.units', 'admin.administracion.areas', 'admin.administracion.typepayments'])
                 <li>
                     <x-nav-link href="{{ route('admin.administracion') }}" class="" :active="request()->routeIs('admin.administracion*')">
                         <x-slot name="titulo">Administración</x-slot>

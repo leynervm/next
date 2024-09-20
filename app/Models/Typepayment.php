@@ -22,6 +22,7 @@ class Typepayment extends Model
     const CREDITO = '1';
     const CONTADO = '0';
     const ACTIVO = '0';
+    const DISABLED = '1';
 
     public function getNameAttribute($value)
     {

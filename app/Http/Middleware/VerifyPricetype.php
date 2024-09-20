@@ -29,7 +29,7 @@ class VerifyPricetype
                     'title' => 'REGISTRAR LISTA DE PRECIOS',
                     'text' => 'Registrar lista de precios a utilizar, cuando la opción de usar lista de precios está activa.',
                     'type' => 'warning'
-                ]);
+                ])->getData();
                 return redirect()->back()->with('message', $mensaje);
                 // return redirect()->route('admin.cajas.methodpayments');
             }

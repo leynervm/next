@@ -326,36 +326,27 @@
 
 
 /* START SLIDER SERVICIOS */
-.owl-item {
-    @apply touch-pan-y min-h-[1px] float-left relative w-full transition-all ease-in-out duration-500;
-    -webkit-backface-visibility: hidden;
-    -webkit-touch-callout: none;
-    visibility: hidden;
-    -webkit-touch-callout: none;
-    -webkit-transform: translate3d(0, 0, 0);
-    touch-action: pan-y;
 
+
+.next-wow {
+    @apply p-3 sm:p-5 text-center rounded-lg sm:rounded-3xl border;
+
+    box-shadow: 8px 5px 0px 0px #ccc;
 }
 
-.owl-item .item {
-    @apply p-5 xl:px-10 text-center;
-    visibility: visible;
-    animation-name: fadeInUp;
-}
-
-.owl-item .item .icono {
+.next-wow .icono {
     @apply text-center mb-5 text-next-700;
 }
 
-.owl-item .item .icono img {
+.next-wow .icono img {
     @apply m-auto block w-auto align-middle;
 }
 
-.owl-item .item .titulo {
+.next-wow .titulo {
     @apply font-semibold text-lg leading-5 text-center text-next-500 pb-5 min-h-[70px];
 }
 
-.owl-item .item .texto {
+.next-wow .texto {
     @apply font-normal text-sm leading-6 text-center text-colorsubtitleform;
 }
 

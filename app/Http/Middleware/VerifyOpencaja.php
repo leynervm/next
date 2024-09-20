@@ -22,10 +22,10 @@ class VerifyOpencaja
 
         if (Monthbox::usando(auth()->user()->sucursal_id)->where('sucursal_id', auth()->user()->sucursal_id)->exists() == false) {
             $mensaje = response()->json([
-                'title' => 'NO EXISTEN CAJAS MENSUALES REGISTRADAS !',
+                'title' => 'SUCURSAL NO DISPONE DE CAJAS MENSUALES ACTIVAS !',
                 'text' => 'No existen cajas mensuales registradas, contáctese con su administrador.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
 
@@ -34,10 +34,10 @@ class VerifyOpencaja
         if ($openbox) {
             if ($openbox->isExpired()) {
                 $mensaje = response()->json([
-                    'title' => 'CAJA DIARIA DE MOVIMIENTOS HA EXPIRADO !',
+                    'title' => 'CAJA APERTURADA DEL DÍA HA EXPIRADO !',
                     'text' => 'Cerrar caja y aperturar nueva, para registrar movimientos diarios.',
                     'type' => 'warning'
-                ]);
+                ])->getData();
                 return redirect()->back()->with('message', $mensaje);
             }
         } else {
@@ -45,7 +45,7 @@ class VerifyOpencaja
                 'title' => 'APERTURAR CAJA DIARIA PARA GENERAR MOVIMIENTOS !',
                 'text' => 'Aperturtar nueva caja del usuario logueado para registrar movimientos.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
 

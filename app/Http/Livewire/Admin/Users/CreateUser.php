@@ -10,6 +10,7 @@ use App\Models\Turno;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -19,6 +20,9 @@ use Spatie\Permission\Models\Role;
 
 class CreateUser extends Component
 {
+
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $addemployer = false;
@@ -36,7 +40,9 @@ class CreateUser extends Component
     {
         return [
             'document' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 new CampoUnique('users', 'document', null, true)
             ],
             'name' => ['required', 'string', 'min:3', 'string'],
@@ -45,21 +51,35 @@ class CreateUser extends Component
             'selectedRoles' => ['nullable', 'array', 'min:0', 'exists:roles,id'],
 
             'nacimiento' => [
-                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
-                'date', 'date_format:Y-m-d', 'before:today',
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'date',
+                'date_format:Y-m-d',
+                'before:today',
                 // new ValidateNacimiento(13)
             ],
             'telefono' => [
-                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
-                'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'numeric',
+                'digits_between:7,9',
+                'regex:/^\d{7}(?:\d{2})?$/'
             ],
             'sexo' => [
-                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
-                'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'string',
+                'min:1',
+                'max:1',
+                Rule::in(['M', 'F', 'E'])
             ],
             'sueldo' => [
-                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
-                'numeric', 'min:0', 'gt:0', 'decimal:0,2'
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,2'
             ],
             // 'horaingreso' => [
             //     'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
@@ -70,13 +90,25 @@ class CreateUser extends Component
             //     'date_format:H:i'
             // ],
             'turno_id' => [
-                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
-                'integer', 'min:1', 'exists:turnos,id'
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'integer',
+                'min:1',
+                'exists:turnos,id'
             ],
-            'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
+            'areawork_id' => [
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'integer',
+                'min:1',
+                'exists:areaworks,id'
+            ],
             'sucursal_id' => [
-                'nullable', Rule::requiredIf($this->addemployer && $this->employer == null),
-                'integer', 'min:1', 'exists:sucursals,id'
+                'nullable',
+                Rule::requiredIf($this->addemployer && $this->employer == null),
+                'integer',
+                'min:1',
+                'exists:sucursals,id'
             ],
             'almacen_id' => ['nullable', 'integer', 'min:1', 'exists:almacens,id'],
 
@@ -96,6 +128,7 @@ class CreateUser extends Component
 
     public function save()
     {
+        $this->authorize('admin.users.create');
         $this->document = trim($this->document);
         $this->name = trim($this->name);
         $this->email = trim($this->email);
@@ -188,12 +221,15 @@ class CreateUser extends Component
 
     public function searchclient()
     {
+        $this->authorize('admin.users.create');
         $this->resetValidation(['document', 'name']);
         $this->reset(['name', 'employer']);
         $this->document = trim($this->document);
         $this->validate([
             'document' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 new ValidateDocument,
                 new CampoUnique('users', 'document', null, true)
             ]
@@ -231,6 +267,7 @@ class CreateUser extends Component
 
     public function deleteemployer()
     {
+        $this->authorize('admin.users.create');
         if (Module::isEnabled('Employer')) {
             $this->reset(['employer']);
         }

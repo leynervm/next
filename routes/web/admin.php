@@ -36,6 +36,8 @@ use Nwidart\Modules\Facades\Module;
 Route::get('/perfil/user', function () {
     return redirect()->route('admin.profile');
 })->name('profile.show');
+
+
 Route::get('/', [HomeController::class, 'dashboard'])->name('admin')->middleware('dashboard');
 Route::get('/perfil', [UserController::class, 'profile'])->name('admin.profile')->middleware(['verifycompany']);
 
@@ -49,10 +51,32 @@ Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->grou
     // Route::post('/users/update/{user}', [UserController::class, 'update'])->name('admin.users.update');
 });
 
-Route::get('/administracion/roles', [RoleController::class, 'index'])->name('admin.roles');
-Route::get('/administracion/roles/create', [RoleController::class, 'create'])->name('admin.roles.create');
-Route::get('/administracion/roles/{role}/edit', [RoleController::class, 'edit'])->name('admin.roles.edit');
-Route::get('/administracion/roles/permisos', [RoleController::class, 'permisos'])->name('admin.roles.permisos');
+
+Route::prefix('administracion')->name('admin.administracion')->group(function () {
+
+    Route::get('/roles', [RoleController::class, 'index'])->name('.roles');
+    Route::get('/roles/create', [RoleController::class, 'create'])->name('.roles.create');
+    Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('.roles.edit');
+    Route::get('/roles/permisos', [RoleController::class, 'permisos'])->name('.roles.permisos');
+
+
+    Route::get('/', [HomeController::class, 'administracion']);
+    Route::get('/empresa/create', [EmpresaController::class, 'create'])->name('.empresa.create')->middleware(['registercompany']);
+
+    Route::middleware(['verifycompany'])->group(function () {
+        Route::get('/empresa/edit/', [EmpresaController::class, 'edit'])->name('.empresa');
+        Route::get('/sucursales', [SucursalController::class, 'index'])->name('.sucursales');
+        Route::get('/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('.sucursales.edit');
+        Route::get('/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('.typecomprobantes');
+        Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units');
+        Route::get('/areas-trabajo', [HomeController::class, 'areaswork'])->name('.areaswork');
+
+        if (Module::isEnabled('Ventas') || Module::isEnabled('Facturacion')) {
+            Route::get('/tipos-pago', [HomeController::class, 'typepayments'])->name('.typepayments');
+        }
+    });
+});
+
 
 
 Route::prefix('clientes')->name('admin.clientes')->group(function () {
@@ -82,19 +106,6 @@ Route::prefix('cajas')->name('admin.cajas')->group(function () {
     Route::get('/mensuales', [CajaController::class, 'mensuales'])->name('.mensuales')->middleware(['verifysucursal']);
 });
 
-Route::prefix('administracion')->name('admin.administracion')->group(function () {
-    Route::get('/', [HomeController::class, 'administracion']);
-    Route::get('/empresa/create', [EmpresaController::class, 'create'])->name('.empresa.create')->middleware(['registercompany']);
-    Route::get('/empresa/edit/', [EmpresaController::class, 'edit'])->name('.empresa')->middleware(['verifycompany']);
-    Route::get('/sucursales', [SucursalController::class, 'index'])->name('.sucursales')->middleware(['verifycompany']);
-    Route::get('/sucursales/{sucursal:id}/edit/', [SucursalController::class, 'edit'])->name('.sucursales.edit')->middleware(['verifycompany']);
-    Route::get('/tipo-comprobantes', [HomeController::class, 'typecomprobantes'])->name('.typecomprobantes')->middleware(['verifycompany']);
-    Route::get('/unidades-medida', [AlmacenController::class, 'units'])->name('.units')->middleware(['verifycompany']);
-    Route::get('/areas-trabajo', [HomeController::class, 'areaswork'])->name('.areaswork')->middleware(['verifycompany']);
-});
-
-
-
 Route::get('/marcas', [HomeController::class, 'marcas'])->name('admin.almacen.marcas');
 Route::get('/categorias', [AlmacenController::class, 'categorias'])->name('admin.almacen.categorias');
 Route::get('/subcategorias', [AlmacenController::class, 'subcategorias'])->name('admin.almacen.subcategorias');
@@ -106,29 +117,11 @@ if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
     Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.edit')->middleware(['verifysucursal']);
 }
 
-Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class, 'imprimirticket'])->name('admin.payments.print');
-
-
-
-
 Route::post('admin/carshoops/{carshoop}/delete', [CarshoopController::class, 'delete'])->name('admin.carshoop.delete');
 Route::post('admin/carshoops/delete/all', [CarshoopController::class, 'deleteall'])->name('admin.carshoop.delete.all');
 Route::post('admin/carshoops/moneda/{moneda_id}/update', [CarshoopController::class, 'updatemoneda'])->name('admin.carshoop.updatemoneda');
 
-
-
-// Route::get('/email/{comprobante:seriecompleta}/enviar-xml', [EmailController::class, 'enviarxml'])->name('admin.email.enviarxml');
-// });
-
-
-// Route::middleware([
-//     'auth:sanctum',
-//     config('jetstream.auth_session'),
-//     'verified'
-// ])->group(function () {
-// });
-
-
+Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class, 'imprimirticket'])->name('admin.payments.print');
 // Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 //     Route::get('/dashboard', function () {
 //         return view('dashboard');

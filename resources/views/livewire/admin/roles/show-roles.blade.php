@@ -33,7 +33,7 @@
                         @endcannot
                         @can('admin.roles.edit')
                             <a class="inline-block text-center text-[10px] text-linktable p-1 rounded hover:text-hoverlinktable duration-150"
-                                href="{{ route('admin.roles.edit', $item->id) }}">
+                                href="{{ route('admin.administracion.roles.edit', $item->id) }}">
 
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     class="mx-auto w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.5"
@@ -63,7 +63,7 @@
     <script>
         function confirmDelete(role) {
             swal.fire({
-                title: 'Eliminar rol ' + role.name,
+                title: 'ELIMINAR ROL ' + role.name,
                 text: "Se eliminará el rol de los usuarios vinculados y de la base de datos.",
                 icon: 'question',
                 showCancelButton: true,

@@ -65,19 +65,9 @@
             <x-slot name="body">
                 @foreach ($users as $item)
                     <tr>
-                        <td class="p-2">
-                            <div class="flex items-center gap-2">
-                                <div class="w-10 h-10 flex-shrink-0 rounded-full overflow-hidden">
-                                    @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                        <img class="h-full w-full object-cover block"
-                                            src="{{ $item->profile_photo_url }}" alt="{{ $item->name }}" />
-                                    @endif
-                                </div>
-                                <h1 class="w-full uppercase">
-                                    {{ $item->document }}
-                                    <p>{{ $item->name }}</p>
-                                </h1>
-                            </div>
+                        <td class="p-2 uppercase">
+                            <h1 class="w-full">{{ $item->document }}</h1>
+                            <p>{{ $item->name }}</p>
                         </td>
 
                         <td class="p-2">

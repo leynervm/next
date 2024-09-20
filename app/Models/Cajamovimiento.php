@@ -53,7 +53,7 @@ class Cajamovimiento extends Model
 
     public function methodpayment(): BelongsTo
     {
-        return $this->belongsTo(methodpayment::class)->withTrashed();
+        return $this->belongsTo(Methodpayment::class)->withTrashed();
     }
 
     public function sucursal(): BelongsTo

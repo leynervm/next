@@ -1,7 +1,7 @@
 <x-admin-layout>
     <x-slot name="breadcrumb">
-        @can('admin.almacen')
-            @if (Module::isEnabled('Almacen'))
+        @if (Module::isEnabled('Almacen'))
+            @can('admin.almacen')
                 <x-link-breadcrumb text="ALMACÉN" route="admin.almacen">
                     <x-slot name="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
@@ -17,8 +17,8 @@
                         </svg>
                     </x-slot>
                 </x-link-breadcrumb>
-            @endif
-        @endcan
+            @endcan
+        @endif
 
         @if (Module::isEnabled('Ventas') || Module::isEnabled('Almacen'))
             @can('admin.almacen.productos')

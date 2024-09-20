@@ -25,7 +25,7 @@ class Carshoop
                 'title' => 'NO EXISTEN PRODUCTOS AGREGADOS EN EL CARRITO DE COMPRAS',
                 'text' => 'No se puede registrtar pedido sin items en el carrito.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
     }

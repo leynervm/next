@@ -4,11 +4,14 @@ namespace App\Http\Livewire\Admin\Roles;
 
 use App\Models\Permission;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 
 class ShowRol extends Component
 {
+
+    use AuthorizesRequests;
 
     public $role;
     public $selectedPermisos = [];
@@ -37,12 +40,12 @@ class ShowRol extends Component
 
     public function update()
     {
-        // dd($this->selectedPermisos);
+        $this->authorize('admin.roles.edit');
         $this->role->name = trim(mb_strtoupper($this->role->name, "UTF-8"));
         $this->validate();
         $this->role->save();
         $this->role->permissions()->sync($this->selectedPermisos);
         $this->dispatchBrowserEvent('updated');
-        // return redirect()->route('admin.roles');
+        // return redirect()->route('admin.administracion.roles');
     }
 }

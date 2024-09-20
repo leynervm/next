@@ -181,7 +181,7 @@ class ApiController extends Controller
 
     public function typepayments()
     {
-        $typepayments = Typepayment::orderBy('name', 'asc')->get();
+        $typepayments = Typepayment::activos()->orderBy('default', 'desc')->get();
         $typepayments = $typepayments->map(function ($item) {
             return [
                 'id' => $item->id,

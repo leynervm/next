@@ -1,7 +1,137 @@
 <x-app-layout>
 
     <div class="contenedor w-full py-5">
-        
+
+        <section class="py-16">
+            <div class="text-center">
+                <h1 class="text-primary mb-3 text-2xl md:text-3xl italic font-semibold leading-none lg:text-4xl xl:text-5xl">
+                    Nosotros</h1>
+                <p class="text-xs mx-auto md:text-xl md:max-w-3xl text-colorsubtitleform text-justify !leading-normal">
+                    Somos una empresa creada en 2012, dedicada a la venta de productos y servicios. Distribuimos
+                    equipos, piezas, partes, accesorios, suministros de la industria tecnológica, ubicada en la zona
+                    nor
+                    oriente de Perú. Seguimos expandiendo nuestro mercado a través del trabajo y compromiso de
+                    nuestros
+                    colaboradores. Nuestra prioridad es llegar más rapido, con precios competitivos buscando nuevas
+                    alternativas que contribuyan al crecimiento y conocimiento de las nuevas tecnologías que ofrece
+                    el mercado internacional.
+                </p>
+                {{-- <div class="flex flex-col gap-2 sm:gap-5 lg:col-span-3">
+                    <div class="rounded-lg shadow shadow-shadowminicard bg-fondominicard p-1 sm:p-3">
+                        <h1 class="text-primary mb-3 text-xl font-medium leading-none lg:text-2xl">
+                            Misión </h1>
+                        <p class="text-xs text-colorsubtitleform leading-none md:text-sm">
+                            Nuestra Misión es consolidar más empresas e influir en su crecimiento, formando alianzas con
+                            empresas importadoras y puntos de venta directa para brindar una mejor experiencia a
+                            nuestros clientes.
+                        </p>
+                    </div>
+                    <div class="rounded-lg shadow shadow-shadowminicard bg-fondominicard p-1 sm:p-3">
+                        <h1 class="text-primary mb-3 text-xl font-medium leading-none lg:text-2xl">
+                            Visión </h1>
+                        <p class="text-xs text-colorsubtitleform leading-none md:text-sm">
+                            Nuestra visión es seguir expandiendonos en el mercado, forjando una fuerza e impacto
+                            positivo a nuestros clientes, aportando desde la humildad, lo mejor de nuetra empresa,
+                            formando
+                            alianzas y haciendo crecer la economía de nuestro Perú.
+                        </p>
+                    </div>
+                    <div class="rounded-lg shadow shadow-shadowminicard bg-fondominicard p-1 sm:p-3">
+                        <h1 class="text-primary mb-3 text-xl font-medium leading-none lg:text-2xl">
+                            Valores </h1>
+                        <p class="text-xs text-colorsubtitleform leading-none md:text-sm">
+                            Nuestro valor principal es confianza, compromiso y disciplina. Formamos cada vez más un
+                            equipo
+                            fuerte en habilidades y actitudes que benefician nuestra empresa, nos apoyamos mutuamente y
+                            transmitimos confianza a nuestros clientes.
+                        </p>
+                    </div>
+                </div> --}}
+            </div>
+        </section>
+
+        <section class="w-full overflow-hidden flex flex-wrap justify-around gap-5 py-12 relative">
+            <div class="flip3D">
+                <div class="card front">
+                    <p class="fondo">
+                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        </span>
+                    </p>
+                    <div class="card-depth">
+                        <div class="title-card-front"><span>MISIÓN</span></div>
+                    </div>
+                </div>
+                <div class="card back">
+                    <p class="fondo">
+                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        </span>
+                    </p>
+                    <div class="card-depth">
+                        <h1 class="title-card-back">MISIÓN</h1>
+                        <p class="texto-card-back">
+                            Nuestra Misión es consolidar más empresas e influir en su crecimiento,
+                            formando alianzas con
+                            empresas importadoras y puntos de venta directa para brindar una mejor
+                            experiencia a nuestros clientes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip3D">
+                <div class="card front">
+                    <p class="fondo">
+                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        </span>
+                    </p>
+                    <div class="card-depth">
+                        <h1 class="title-card-front">VISIÓN</h1>
+                    </div>
+                </div>
+                <div class="card back">
+                    <p class="fondo">
+                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        </span>
+                    </p>
+                    <div class="card-depth">
+                        <h1 class="title-card-back">VISIÓN</h1>
+                        <p class="texto-card-back">
+                            Nuestra visión es seguir expandiendonos en el mercado,
+                            forjando una fuerza e impacto positivo a nuestros clientes,
+                            aportando desde la humildad, lo mejor de nuetra empresa, formando alianzas y haciendo crecer
+                            la
+                            economía de nuestro Perú.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="flip3D">
+                <div class="card front">
+                    <p class="fondo">
+                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        </span>
+                    </p>
+                    <div class="card-depth">
+                        <h1 class="title-card-front">VALORES</h1>
+                    </div>
+                </div>
+                <div class="card back">
+                    <p class="fondo">
+                        <span class="fondo-img" style="background-image:url(https://next.net.pe/img/quienes_somos.jpg)">
+                        </span>
+                    </p>
+                    <div class="card-depth">
+                        <h1 class="title-card-back">VALORES</h1>
+                        <p class="texto-card-back">
+                            Nuestro valor principal es confianza, compromiso y disciplina.
+                            Formamos cada vez más un equipo fuerte en habilidades y actitudes que benefician nuestra
+                            empresa, nos apoyamos mutuamente y transmitimos confianza a nuestros clientes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
         <section x-data="{
             openFaq1: false,
             openFaq2: false,
@@ -11,8 +141,8 @@
             openFaq6: false
         }" class="relative z-10 overflow-hidden pt-20 pb-12 lg:pt-24 lg:pb-24">
             <div class="w-full mx-auto mb-16 max-w-lg text-center lg:mb-20">
-                <h2 class="text-primary mb-4 text-3xl font-bold sm:text-[40px]/[48px]">
-                    Any Questions? Look Here</h2>
+                <h2 class="text-primary mb-4 text-2xl md:text-3xl italic font-bold sm:text-[40px]/[48px]">
+                   PREGUNTAS FRECUENTES</h2>
                 <p class="text-base text-colorsubtitleform">
                     There are many variations of passages of Lorem Ipsum available
                     but the majority have suffered alteration in some form.
@@ -191,58 +321,6 @@
                         </linearGradient>
                     </defs>
                 </svg>
-            </div>
-        </section>
-
-
-        <section class="py-16">
-            <div class="grid gap-2 sm:gap-5 lg:grid-cols-5">
-                <div class="lg:col-span-2 p-1 shadow rounded-lg shadow-shadowminicard lg:shadow-none">
-                    <h1 class="text-primary mb-3 text-xl font-semibold leading-none lg:text-4xl xl:text-5xl">
-                        Nosotros</h1>
-                    <p
-                        class="text-xs md:text-sm text-colorsubtitleform text-justify lg:shadow lg:p-3 lg:rounded-lg lg:shadow-shadowminicard">
-                        Somos una empresa creada en 2012, dedicada a la venta de productos y servicios. Distribuimos
-                        equipos, piezas, partes, accesorios, suministros de la industria tecnológica, ubicada en la zona
-                        nor
-                        oriente de Perú. Seguimos expandiendo nuestro mercado a través del trabajo y compromiso de
-                        nuestros
-                        colaboradores. Nuestra prioridad es llegar más rapido, con precios competitivos buscando nuevas
-                        alternativas que contribuyan al crecimiento y conocimiento de las nuevas tecnologías que ofrece
-                        el mercado internacional.
-                    </p>
-                </div>
-                <div class="flex flex-col gap-2 sm:gap-5 lg:col-span-3">
-                    <div class="rounded-lg shadow shadow-shadowminicard bg-fondominicard p-1 sm:p-3">
-                        <h1 class="text-primary mb-3 text-xl font-medium leading-none lg:text-2xl">
-                            Misión </h1>
-                        <p class="text-xs text-colorsubtitleform leading-none md:text-sm">
-                            Nuestra Misión es consolidar más empresas e influir en su crecimiento, formando alianzas con
-                            empresas importadoras y puntos de venta directa para brindar una mejor experiencia a
-                            nuestros clientes.
-                        </p>
-                    </div>
-                    <div class="rounded-lg shadow shadow-shadowminicard bg-fondominicard p-1 sm:p-3">
-                        <h1 class="text-primary mb-3 text-xl font-medium leading-none lg:text-2xl">
-                            Visión </h1>
-                        <p class="text-xs text-colorsubtitleform leading-none md:text-sm">
-                            Nuestra visión es seguir expandiendonos en el mercado, forjando una fuerza e impacto
-                            positivo a nuestros clientes, aportando desde la humildad, lo mejor de nuetra empresa,
-                            formando
-                            alianzas y haciendo crecer la economía de nuestro Perú.
-                        </p>
-                    </div>
-                    <div class="rounded-lg shadow shadow-shadowminicard bg-fondominicard p-1 sm:p-3">
-                        <h1 class="text-primary mb-3 text-xl font-medium leading-none lg:text-2xl">
-                            Valores </h1>
-                        <p class="text-xs text-colorsubtitleform leading-none md:text-sm">
-                            Nuestro valor principal es confianza, compromiso y disciplina. Formamos cada vez más un
-                            equipo
-                            fuerte en habilidades y actitudes que benefician nuestra empresa, nos apoyamos mutuamente y
-                            transmitimos confianza a nuestros clientes.
-                        </p>
-                    </div>
-                </div>
             </div>
         </section>
 

@@ -32,33 +32,23 @@
                 <div class="w-full flex-1 flex gap-3 flex-wrap justify-start">
                     @foreach ($sucursal->boxes as $item)
                         <x-minicard :title="null" size="lg" class="">
-                            @can('admin.administracion.sucursales.boxes.edit')
-                                <h1 class="text-center text-xs font-semibold">{{ $item->name }}</h1>
-                                <p class="text-center text-xl font-semibold leading-4 text-colorsubtitleform">
-                                    <small class="text-[10px] font-medium">APERTURA <br> S/.</small>
-                                    {{ $item->apertura }}
-                                </p>
+                            <h1 class="text-center text-xs font-semibold">{{ $item->name }}</h1>
+                            <p class="text-center text-xl font-semibold leading-4 text-colorsubtitleform">
+                                <small class="text-[10px] font-medium">APERTURA <br> S/.</small>
+                                {{ $item->apertura }}
+                            </p>
 
+                            @can('admin.administracion.sucursales.boxes.edit')
                                 <x-slot name="buttons">
                                     @if ($item->trashed())
                                         <x-button-toggle onclick="confirmRestorecaja({{ $item }})"
-                                            wire:loading.attr="disabled" type="button"
-                                            wire:key="restorebox_{{ $item->id }}" :checked="false">
-                                            <svg class="w-5 h-5 scale-125 rounded-sm text-neutral-300" viewBox="0 0 24 24"
-                                                fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"
-                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path fill="currentColor"
-                                                    d="M11 12C11 13.6569 9.65685 15 8 15C6.34315 15 5 13.6569 5 12C5 10.3431 6.34315 9 8 9C9.65685 9 11 10.3431 11 12Z" />
-                                                <path
-                                                    d="M16 6H8C4.68629 6 2 8.68629 2 12C2 15.3137 4.68629 18 8 18H16C19.3137 18 22 15.3137 22 12C22 8.68629 19.3137 6 16 6Z" />
-                                            </svg>
-                                        </x-button-toggle>
+                                            wire:loading.attr="disabled" wire:key="restorebox_{{ $item->id }}"
+                                            :checked="false" />
                                     @else
                                         <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
                                             wire:key="editbox_{{ $item->id }}" />
-                                        <x-button-delete wire:loading.attr="disabled"
-                                            onclick="confirmDeleteCaja({{ $item }})"
-                                            wire:key="deletebox_{{ $item->id }}" />
+                                        <x-button-toggle onclick="confirmDeleteCaja({{ $item }})"
+                                            wire:loading.attr="disabled" wire:key="deletebox_{{ $item->id }}" />
                                     @endif
                                 </x-slot>
                             @endcan
@@ -100,8 +90,8 @@
     <script>
         function confirmRestorecaja(box) {
             swal.fire({
-                title: 'Habilitar registro, ' + box.name,
-                text: "Actualizar registro de la base de datos, se habilitará una nueva caja.",
+                title: 'ACTIVAR CAJA CON NOMBRE ' + box.name,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',
@@ -117,8 +107,8 @@
 
         function confirmDeleteCaja(box) {
             swal.fire({
-                title: 'Eliminar registro, ' + box.name,
-                text: "Se deshabilitará un registro de la base de datos, pero seguirá mostrando sus movimientos registrados.",
+                title: 'DESACTIVAR CAJA CON NOMBRE ' + box.name,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

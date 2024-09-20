@@ -42,8 +42,8 @@ class CreateUnit extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.units.create');
         if ($this->open == false) {
-            $this->authorize('admin.administracion.units.create');
             $this->resetValidation();
             $this->reset('name', 'abreviatura', 'code');
         }

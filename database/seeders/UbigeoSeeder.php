@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Ubigeo;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class UbigeoSeeder extends Seeder
 {

@@ -24,6 +24,22 @@ class SeedRoleTableSeeder extends Seeder
         $support = Role::firstOrCreate(['name' => 'SOPORTE TÉCNICO']);
         $cotizador = Role::firstOrCreate(['name' => 'COTIZADOR']);
 
+        // TIPOS DE PAGO VENTAS
+        Permission::firstOrCreate([
+            'name' => 'admin.administracion.typepayments',
+            'descripcion' => 'Administrar tipos de pago',
+            'table' => 'Tipos pago',
+            'module' => 'Principal',
+            'orden' => '1'
+        ])->syncRoles([$desarrollador, $admin]);
+        Permission::firstOrCreate([
+            'name' => 'admin.administracion.typepayments.edit',
+            'descripcion' => 'Editar tipos de pago',
+            'table' => 'Tipos pago',
+            'module' => 'Principal',
+            'orden' => '1'
+        ])->syncRoles([$desarrollador, $admin]);
+
         // FACTURACION
         Permission::firstOrCreate([
             'name' => 'admin.facturacion',

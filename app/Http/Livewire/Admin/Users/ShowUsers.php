@@ -53,7 +53,7 @@ class ShowUsers extends Component
 
     public function delete(User $user)
     {
-
+        $this->authorize('admin.users.delete');
         DB::beginTransaction();
         try {
             if ($user->openboxes()->open()->exists()) {
@@ -89,7 +89,6 @@ class ShowUsers extends Component
 
     public function restoreuser($user_id)
     {
-
         $this->authorize('admin.users.restore');
         DB::beginTransaction();
         try {

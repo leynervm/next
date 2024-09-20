@@ -26,7 +26,7 @@ class VerifySucursal
                 'title' => 'CONFIGURAR PERFIL DE LA EMPRESA',
                 'text' => 'Configurar los datos de la empresa, requeridos por el sistema, contáctese con su administrador.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.administracion.empresa.create')->with('message', 'Configurar datos de la empresa !');
         }
@@ -37,13 +37,13 @@ class VerifySucursal
                     'title' => 'SELECCIONAR SUCURSAL A USAR DE MANERA PREDETERMINADA',
                     'text' => 'Usuario administrador logueado, seleccionar una sucursal para administrar los datos.',
                     'type' => 'warning'
-                ]);
+                ])->getData();
             } else {
                 $mensaje = response()->json([
                     'title' => 'PERFIL DE USUARIO NO TIENE ACCESO',
                     'text' => 'Vincular usuario a un personal de trabajo para realizar acciones en el sistema, contáctese con su administrador.',
                     'type' => 'warning'
-                ]);
+                ])->getData();
             }
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.ventas')->with('message', $mensaje);

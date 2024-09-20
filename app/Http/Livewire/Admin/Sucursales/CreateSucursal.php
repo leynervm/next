@@ -66,8 +66,8 @@ class CreateSucursal extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.sucursales.create');
         if ($this->open == false) {
-            $this->authorize('admin.administracion.sucursales.create');
             $this->resetValidation();
             $this->resetExcept(['empresa']);
         }

@@ -24,11 +24,11 @@
 
         <div class="w-full">
             <x-label value="Motivo traslado :" />
-            <div class="relative" id="parentmtvtr" x-init="selectMotivo">
-                <x-select class="block w-full uppercase" x-ref="selectmotivo" id="mtvtr" data-placeholder="null"
+            <div class="relative" id="parentmtvtraslado_id" x-init="selectMotivo">
+                <x-select class="block w-full uppercase" x-ref="selectmotivo" id="mtvtraslado_id" data-placeholder="null"
                     @change="getCodeMotivo($event.target)">
                     <x-slot name="options">
-                        @if (count($motivotraslados))
+                        @if (count($motivotraslados) > 0)
                             @foreach ($motivotraslados as $item)
                                 <option value="{{ $item->id }}" data-code="{{ $item->code }}">
                                     {{ $item->name }} </option>
@@ -306,9 +306,9 @@
         }
 
         function selectMotivo() {
-            this.selectM = $(this.$refs.selectmotivo).select2();
-            this.selectM.val(this.motivotraslado_id).trigger("change");
-            this.selectM.on("select2:select", (event) => {
+            this.selectMTR = $(this.$refs.selectmotivo).select2();
+            this.selectMTR.val(this.motivotraslado_id).trigger("change");
+            this.selectMTR.on("select2:select", (event) => {
                 this.motivotraslado_id = event.target.value;
                 const selectedOption = event.target.selectedOptions[0];
                 this.codemotivotraslado = selectedOption.getAttribute('data-code');
@@ -319,11 +319,11 @@
                 $(window).off(evt);
             });
             this.$watch("motivotraslado_id", (value) => {
-                this.selectM.val(value).trigger("change");
+                this.selectMTR.val(value).trigger("change");
             });
 
             Livewire.hook('message.processed', () => {
-                this.selectM.select2().val(this.motivotraslado_id).trigger('change');
+                this.selectMTR.select2().val(this.motivotraslado_id).trigger('change');
             });
         }
 

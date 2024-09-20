@@ -4,11 +4,14 @@ namespace App\Http\Livewire\Admin\Roles;
 
 use App\Models\Permission;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
 
 class CreateRol extends Component
 {
+
+    use AuthorizesRequests;
 
     public $open = false;
     public $name;
@@ -31,6 +34,7 @@ class CreateRol extends Component
 
     public function save()
     {
+        $this->authorize('admin.roles.create');
         $this->name = trim(mb_strtoupper($this->name, "UTF-8"));
         $this->validate();
         $rol = Role::create([
@@ -38,6 +42,6 @@ class CreateRol extends Component
         ]);
         $rol->permissions()->sync($this->selectedPermisos);
         $this->dispatchBrowserEvent('created');
-        return redirect()->route('admin.roles');
+        return redirect()->route('admin.administracion.roles');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Roles;
 
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\Permission\Models\Role;
@@ -10,7 +11,7 @@ use Spatie\Permission\Models\Role;
 class ShowRoles extends Component
 {
 
-    use WithPagination;
+    use WithPagination, AuthorizesRequests;
 
     public function render()
     {
@@ -20,6 +21,7 @@ class ShowRoles extends Component
 
     public function delete(Role $role)
     {
+        $this->authorize('admin.roles.delete');
         $role->delete();
         $this->dispatchBrowserEvent('deleted');
     }

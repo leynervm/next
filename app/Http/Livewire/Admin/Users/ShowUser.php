@@ -9,6 +9,7 @@ use App\Models\Sucursal;
 use App\Models\Turno;
 use App\Models\User;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -18,6 +19,8 @@ use Spatie\Permission\Models\Role;
 
 class ShowUser extends Component
 {
+
+    use AuthorizesRequests;
 
     public $user, $client;
     public $sexo, $nacimiento, $telefono, $sueldo, $turno_id,
@@ -31,30 +34,47 @@ class ShowUser extends Component
         return [
             'user.name' => ['required', 'string', 'min:3', 'string'],
             'user.email' => [
-                'required', 'email',
+                'required',
+                'email',
                 new CampoUnique('users', 'email', $this->user->id, true)
             ],
             'user.sucursal_id' => [
                 'nullable',
                 Rule::requiredIf(Module::isEnabled('employer') && $this->addemployer || Module::isEnabled('employer') && $this->user->employer()->exists()),
-                'integer', 'min:1', 'exists:sucursals,id'
+                'integer',
+                'min:1',
+                'exists:sucursals,id'
             ],
             'nacimiento' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'date', 'date_format:Y-m-d', 'before:today',
+                'nullable',
+                Rule::requiredIf($this->addemployer),
+                'date',
+                'date_format:Y-m-d',
+                'before:today',
                 // new ValidateNacimiento(13)
             ],
             'telefono' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'
+                'nullable',
+                Rule::requiredIf($this->addemployer),
+                'numeric',
+                'digits_between:7,9',
+                'regex:/^\d{7}(?:\d{2})?$/'
             ],
             'sexo' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])
+                'nullable',
+                Rule::requiredIf($this->addemployer),
+                'string',
+                'min:1',
+                'max:1',
+                Rule::in(['M', 'F', 'E'])
             ],
             'sueldo' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'numeric', 'min:0', 'gt:0', 'decimal:0,2'
+                'nullable',
+                Rule::requiredIf($this->addemployer),
+                'numeric',
+                'min:0',
+                'gt:0',
+                'decimal:0,2'
             ],
             // 'horaingreso' => [
             //     'nullable', Rule::requiredIf($this->addemployer),
@@ -65,8 +85,11 @@ class ShowUser extends Component
             //     'date_format:H:i'
             // ],
             'turno_id' => [
-                'nullable', Rule::requiredIf($this->addemployer),
-                'integer', 'min:1', 'exists:turnos,id'
+                'nullable',
+                Rule::requiredIf($this->addemployer),
+                'integer',
+                'min:1',
+                'exists:turnos,id'
             ],
             'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
         ];
@@ -97,7 +120,7 @@ class ShowUser extends Component
 
     public function update()
     {
-
+        $this->authorize('admin.users.edit');
         $this->user->name = trim($this->user->name);
         $this->user->email = trim($this->user->email);
         $this->user->sucursal_id = empty($this->user->sucursal_id) ? null : $this->user->sucursal_id;
@@ -179,7 +202,7 @@ class ShowUser extends Component
 
     public function deleteemployer()
     {
-
+        $this->authorize('admin.users.edit');
         if (Module::isEnabled('Employer')) {
             $existsopenboxes = $this->user->openboxes()->open()->exists();
             if ($existsopenboxes) {
@@ -205,6 +228,7 @@ class ShowUser extends Component
 
     public function searchemployer()
     {
+        $this->authorize('admin.users.edit');
         if (Module::isEnabled('Employer')) {
             $this->resetValidation(['document', 'name']);
             $this->user->document = trim($this->user->document);
@@ -245,6 +269,7 @@ class ShowUser extends Component
 
     public function sincronizeclient()
     {
+        $this->authorize('admin.users.edit');
         if (!$this->user->client) {
             if (Module::isEnabled('Marketplace')) {
                 $client = Client::where('document', $this->user->document)->first();

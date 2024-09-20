@@ -30,7 +30,7 @@ class VerifySerieguias
                 'title' => 'ASIGNAR SERIES DE GUIAS A SUCURSAL',
                 'text' => 'Asignar series para generar guías de remisión en sucursal asignada.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
         return $next($request);

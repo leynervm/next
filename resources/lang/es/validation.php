@@ -368,6 +368,8 @@ return [
         'areawork_id'               =>  'area de trabajo',
         'nacimiento'                =>  'fecha de nacimiento',
         'document_apoderado'        =>  'documento apoderado',
-        'name_apoderado'            =>  'nombre apoderado'
+        'name_apoderado'            =>  'nombre apoderado',
+        'selected_permisos'         =>  'permisos seleccionados',
+        'selectedPermisos'          =>  'permisos seleccionados',
     ],
 ];

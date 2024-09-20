@@ -24,7 +24,7 @@ class VerifyAlmacen
                 'title' => 'ASIGNAR ALMACÉN A SUCURSAL',
                 'text' => 'Registrar al menos un almacén en sucursal para continuar.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
 

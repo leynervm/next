@@ -4,13 +4,13 @@ namespace App\Http\Livewire\Admin\Permisos;
 
 use App\Models\Permission;
 use App\Rules\CampoUnique;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
-use Nwidart\Modules\Facades\Module;
-use Spatie\Permission\Models\Role;
 
 class ShowPermisos extends Component
 {
 
+    use AuthorizesRequests;
     public $permission;
     public $open = false;
 
@@ -35,6 +35,7 @@ class ShowPermisos extends Component
 
     public function edit(Permission $permission)
     {
+        $this->authorize('admin.roles.permisos.edit');
         $this->permission = $permission;
         $this->resetValidation();
         $this->open = true;
@@ -42,6 +43,7 @@ class ShowPermisos extends Component
 
     public function update()
     {
+        $this->authorize('admin.roles.permisos.edit');
         $this->permission->descripcion = trim($this->permission->descripcion);
         $this->validate();
         $this->permission->save();

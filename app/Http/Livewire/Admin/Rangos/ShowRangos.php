@@ -74,6 +74,7 @@ class ShowRangos extends Component
 
     public function edit(Rango $rango)
     {
+        $this->authorize('admin.administracion.rangos.edit');
         $this->resetValidation();
         $this->rango = $rango;
         $this->minHasta = $this->rango->desde == 0 ? 1 : $this->rango->desde + 0.1;

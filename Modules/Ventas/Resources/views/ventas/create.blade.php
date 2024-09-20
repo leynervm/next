@@ -29,16 +29,9 @@
         @endcan
     </x-slot>
 
-
     <livewire:modules.ventas.ventas.create-venta :seriecomprobante="$seriecomprobante" :pricetype="$pricetype" :empresa="$empresa" :moneda="$moneda"
         :concept="$concept" />
 
-    {{-- <div class="w-full flex flex-wrap xl:flex-nowrap gap-8 xl:h-[calc(100vh_-_4rem)]">
-        <div class="w-full xl:flex-shrink-0 xl:w-96 xl:overflow-y-auto soft-scrollbar h-full">
-            <livewire:modules.ventas.ventas.show-resumen-venta :seriecomprobante="$seriecomprobante" :moneda="$moneda" :concept="$concept" />
-        </div>
-        <div class="w-full xl:flex-1 xl:overflow-y-auto soft-scrollbar h-full">
-            <livewire:modules.ventas.ventas.create-venta :pricetype="$pricetype" :empresa="$empresa" :moneda="$moneda" />
-        </div>
-    </div> --}}
+    <x-happy-birthday />
+
 </x-admin-layout>

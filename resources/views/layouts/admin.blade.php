@@ -80,22 +80,8 @@
             @endif
 
             <div class="flex-1 w-full p-1 lg:px-3 overflow-y-auto bg-body h-screen">
-                <main class="w-full shadow relative ">
-                    @if (session('message'))
-                        <x-alert :titulo="session('message')->getData()->title" :mensaje="session('message')->getData()->text" :type="session('message')->getData()->type">
-                            <x-slot name="icono">
-                                <svg class="w-6 h-6 p-0.5 animate-bounce" viewBox="0 0 24 24" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M5.32171 9.68293C7.73539 5.41199 8.94222 3.27651 10.5983 2.72681C11.5093 2.4244 12.4907 2.4244 13.4017 2.72681C15.0578 3.27651 16.2646 5.41199 18.6783 9.68293C21.092 13.9539 22.2988 16.0893 21.9368 17.8293C21.7376 18.7866 21.2469 19.6549 20.535 20.3097C19.241 21.5 16.8274 21.5 12 21.5C7.17265 21.5 4.75897 21.5 3.46496 20.3097C2.75308 19.6549 2.26239 18.7866 2.06322 17.8293C1.70119 16.0893 2.90803 13.9539 5.32171 9.68293Z" />
-                                    <path
-                                        d="M12.2422 17V13C12.2422 12.5286 12.2422 12.2929 12.0957 12.1464C11.9493 12 11.7136 12 11.2422 12" />
-                                    <path d="M11.992 9H12.001" />
-                                </svg>
-                            </x-slot>
-                        </x-alert>
-                    @endif
+                <main class="w-full relative ">
+                    <x-alert />
 
                     <div class="relative flex flex-col flex-col-reverse md:flex-row gap-2 items-start justify-between pb-2">
                         <div class="w-full flex-1 mt-auto">
@@ -125,8 +111,7 @@
 
                                     @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
                                         <img class="h-8 w-8 rounded-full object-cover"
-                                            src="{{ Auth::user()->profile_photo_url }}"
-                                            alt="{{ Auth::user()->name }}" />
+                                            src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
                                     @else
                                         <svg class="h-8 w-8 p-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                             fill="currentColor">
@@ -247,7 +232,7 @@
             </div>
         @endauth
     </div>
-
+    
     @stack('modals')
 
     @livewireScripts
@@ -267,6 +252,7 @@
 </body>
 <script>
     // document.addEventListener('Livewire:load', function() {
+   
 
     var toastMixin = Swal.mixin({
         toast: true,
@@ -293,33 +279,31 @@
 
     window.addEventListener('created', event => {
         toastMixin.fire({
-            title: 'Registrado correctamente'
+            title: 'REGISTRADO CORRECTAMENTE'
         });
     })
 
     window.addEventListener('updated', event => {
         toastMixin.fire({
-            title: 'Actualizado correctamente'
+            title: 'ACTUALIZADO CORRECTAMENTE'
         });
     })
 
     window.addEventListener('deleted', event => {
         toastMixin.fire({
-            title: 'Eliminado correctamente'
+            title: 'ELIMINADO CORRECTAMENTE'
         });
     })
 
-    window.addEventListener('birthday', data => {
-        console.log(data);
-        swal.fire({
-            title: 'FELÍZ CUMPLEAÑOS, ' + data.detail,
-            // text: data.detail.text,
-            // html: data.detail.text,
-            icon: 'success',
-            confirmButtonColor: '#0FB9B9',
-            confirmButtonText: 'Gracias',
-        })
-    });
+    // window.addEventListener('birthday', data => {
+    //     console.log(data);
+    //     swal.fire({
+    //         title: 'FELÍZ CUMPLEAÑOS, ' + data.detail,
+    //         icon: 'success',
+    //         confirmButtonColor: '#0FB9B9',
+    //         confirmButtonText: 'Gracias',
+    //     })
+    // });
 
     window.addEventListener('validation', data => {
         // console.log(data.detail);

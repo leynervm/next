@@ -23,7 +23,7 @@ class VerifyMethodpayment
                 'title' => 'REGISTRAR FORMAS DE PAGO',
                 'text' => 'Registrar formas de pago a utilizar.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
             // return redirect()->route('admin.cajas.methodpayments');
         }

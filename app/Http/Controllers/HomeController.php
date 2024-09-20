@@ -33,6 +33,7 @@ class HomeController extends Controller
         admin.administracion.employers,admin.users,admin.administracion.pricetypes,
         admin.administracion.rangos,admin.administracion.typecomprobantes,
         admin.administracion.units,admin.administracion.areas')->only('administracion');
+        $this->middleware('can:admin.administracion.typepayments')->only('typepayments');
     }
 
     public function welcome()
@@ -123,6 +124,11 @@ class HomeController extends Controller
     public function typecomprobantes()
     {
         return view('admin.typecomprobantes.index');
+    }
+
+    public function typepayments()
+    {
+        return view('admin.typepayments.index');
     }
 
     public function marcas()

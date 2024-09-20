@@ -20,10 +20,10 @@ class RegisterBoxes
 
         if (Box::where('sucursal_id', auth()->user()->sucursal_id)->exists() == false) {
             $mensaje = response()->json([
-                'title' => 'NO EXISTEN CAJAS DE PAGO REGISTRADAS !',
+                'title' => 'SUCURSAL NO DISPONE DE CAJAS ACTIVAS !',
                 'text' => 'No existen cajas registradas, contáctese con su administrador.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
 

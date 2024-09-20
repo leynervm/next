@@ -23,7 +23,7 @@ class VerifyCompany
                 'title' => 'CONFIGURAR PERFIL DE LA EMPRESA',
                 'text' => 'Configurar los datos de la empresa, requeridos por el sistema, contáctese con su administrador.',
                 'type' => 'warning'
-            ]);
+            ])->getData();
             return redirect()->back()->with('message', $mensaje);
         }
 
