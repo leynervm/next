@@ -6,6 +6,7 @@ use App\Enums\StatusPayWebEnum;
 use App\Helpers\GetClient;
 use App\Models\Empresa;
 use App\Models\Moneda;
+use App\Models\Producto;
 use App\Models\Slider;
 use App\Models\Ubigeo;
 use Exception;
@@ -97,8 +98,14 @@ class HomeController extends Controller
             // ]
         ];
         $chart1 = new LaravelChart($chart_options1);
+        $productos = Producto::with(['almacens'])
+            ->whereHas('almacens', function ($query) {
+                $query->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
+                    ->groupBy('almacen_producto.producto_id')
+                    ->havingRaw('SUM(almacen_producto.cantidad) <= productos.minstock');
+            })->get();
 
-        return view('dashboard', compact('empresa', 'chart', 'chart1'));
+        return view('dashboard', compact('empresa', 'chart', 'chart1', 'productos'));
     }
 
     public function administracion()

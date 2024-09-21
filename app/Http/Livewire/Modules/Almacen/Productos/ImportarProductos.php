@@ -59,6 +59,7 @@ class ImportarProductos extends Component
             $this->reset(['open', 'file', 'failures']);
         } catch (ValidationException $e) {
             $failures = $e->failures() ?? [];
+            $this->failures = [];
             foreach ($failures as $failure) {
                 $this->failures[] = [
                     'attribute' => $failure->attribute() ?? '',

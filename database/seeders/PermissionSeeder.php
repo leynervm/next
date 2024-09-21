@@ -22,7 +22,7 @@ class PermissionSeeder extends Seeder
         if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
             $desarrollador = Role::firstOrCreate(['name' => 'DESARROLLADOR']);
             $admin = Role::firstOrCreate(['name' => 'ADMINISTRADOR']);
-           
+
             $nameModule = Module::isEnabled('Almacen') ? 'Almacén' : 'Ventas';
 
             Permission::updateOrCreate([
@@ -108,6 +108,14 @@ class PermissionSeeder extends Seeder
             Permission::updateOrCreate([
                 'name' => 'admin.almacen.productos.images',
                 'descripcion' => 'Editar imágenes de productos',
+                'table' => 'Productos',
+                'orden' => '3'
+            ], [
+                'module' => $nameModule
+            ])->syncRoles([$desarrollador, $admin]);
+            Permission::updateOrCreate([
+                'name' => 'admin.almacen.productos.agotados',
+                'descripcion' => 'Mostrar productos agotados en menu de inicio',
                 'table' => 'Productos',
                 'orden' => '3'
             ], [

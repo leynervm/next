@@ -335,15 +335,11 @@
 }
 
 .next-wow .icono {
-    @apply text-center mb-5 text-next-700;
-}
-
-.next-wow .icono img {
-    @apply m-auto block w-auto align-middle;
+    @apply text-center text-primary;
 }
 
 .next-wow .titulo {
-    @apply font-semibold text-lg leading-5 text-center text-next-500 pb-5 min-h-[70px];
+    @apply font-semibold text-lg text-center text-next-500 pb-3;
 }
 
 .next-wow .texto {
@@ -659,3 +655,141 @@
 }
 
 /* END BUTTTON PERSONALIZADO */
+
+
+
+/* MARQUEE */
+.marquee-container {
+    width: 200px;
+    /* Adjust as needed */
+    height: 700px;
+    /* Adjust as needed */
+    overflow: hidden;
+    margin-right: 20px;
+    margin-left: 10px;
+}
+
+.marquee-content {
+    display: flex;
+    flex-direction: column;
+    animation: marquee 10s linear infinite;
+}
+
+.marquee-content img {
+    margin-bottom: 20px;
+    /* Adjust as needed */
+    border-radius: 20px;
+    width: 200px;
+    height: 300px;
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-100%);
+    }
+}
+
+
+
+
+
+
+.marquee-container2 {
+    width: 200px;
+    /* Adjust as needed */
+    height: 700px;
+    /* Adjust as needed */
+    overflow: hidden;
+    margin-right: 20px;
+}
+
+.marquee-content2 {
+    display: flex;
+    flex-direction: column-reverse;
+    animation: marquee2 10s linear infinite;
+}
+
+.marquee-content2 img {
+    margin-bottom: 20px;
+    /* Adjust as needed */
+    border-radius: 20px;
+    width: 200px;
+    height: 300px;
+}
+
+@keyframes marquee2 {
+    0% {
+        transform: translateY(-50%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+
+.marquee-container3 {
+    width: 100%;
+    height: 150px;
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.marquee-content3 {
+    display: inline-flex;
+    white-space: nowrap;
+    animation: marquee3 20s infinite linear;
+}
+
+.marquee-content3 img {
+    border-radius: 20px;
+    width: 150px;
+    height: 150px;
+    padding: 5px;
+}
+
+@keyframes marquee3 {
+    /* 0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    } */
+}
+
+
+
+
+
+
+/* .animate-marquee {
+    animation: marquee 28320ms linear infinite;
+}
+
+.animate-fade-in {
+    animation: fade-in .5s linear forwards;
+}
+
+@keyframes marquee {
+    100% {
+        transform: translateY(-50%);
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+} */
+
+/* EBD MARQUEE */

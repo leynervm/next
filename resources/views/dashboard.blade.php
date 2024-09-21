@@ -1,76 +1,109 @@
 <x-admin-layout>
     @if (mi_empresa())
 
-        <div class="w-full max-w-md">
-            <h1>{{ $chart->options['chart_title'] }}</h1>
-            {!! $chart->renderHtml() !!}
-        </div>
+        @can('admin.almacen.productos.agotados')
+            @if (count($productos) > 0)
+                <div class="w-full ml-auto max-w-lg md:max-h-[calc(100vh-4rem)] overflow-y-auto">
+                    <div class="text-xs font-medium text-primary py-1">
+                        PRODUCTOS AGOTADOS & PRÓXIMOS AGOTAR
+                    </div>
+                    @foreach ($productos as $item)
+                        <div class="w-full flex p-1 text-[10px] border border-borderminicard gap-2">
+                            @php
+                                $image = $item->getImageURL();
+                            @endphp
+                            <div class="w-20 h-20 flex-shrink-0 overflow-hidden">
+                                @if ($image)
+                                    <img class="w-full h-full object-scale-down object-center" src="{{ $image }}" />
+                                @else
+                                    <x-icon-file-upload class="!w-full !h-full !m-0" type="unknown" />
+                                @endif
+                            </div>
+                            <div class="w-full flex-1">
+                                @can('admin.almacen.productos.edit')
+                                    <a href="{{ route('admin.almacen.productos.edit', $item) }}"
+                                        class="font-medium inline-block !leading-none text-linktable hover:text-hoverlinktable">
+                                        {{ $item->name }}</a>
+                                @endcan
+                                @cannot('admin.almacen.productos.edit')
+                                    <p class="font-medium text-colorlabel !leading-none">{{ $item->name }}</p>
+                                @endcannot
 
-        {{-- <div class="w-full">
-            <h1>{{ $chart1->options['chart_title'] }}</h1>
-            {!! $chart1->renderHtml() !!}
-        </div> --}}
-        <div x-data="chartData()">
+                                <p class="font-semibold text-colorlabel">MIN. STOCK:
+                                    {{ formatDecimalOrInteger($item->minstock) }}</p>
+                                <div class="w-full flex flex-wrap gap-1 mt-1 text-colorsubtitleform">
+                                    @foreach ($item->almacens as $almacen)
+                                        <div class="p-1 rounded ring-1 ring-colorerror">
+                                            <h1 class="text-xs text-colorerror font-medium text-center">
+                                                {{ formatDecimalOrInteger($almacen->pivot->cantidad) }}
+                                                {{ $item->unit->name }}
+                                            </h1>
+                                            <p class="text-[9px]">{{ $almacen->name }}</p>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        @endcan
+
+
+        {{-- <div x-data="chartData()">
             <div class="w-full max-w-3xl">
                 <canvas id="bar-chart-grouped" class="w-full h-auto"></canvas>
             </div>
 
             <script>
-                function chartData() {
-                    return {
-                        labels: [],
-                        datasets: [],
-                        chart: null,
+                // function chartData() {
+                //     return {
+                //         labels: [],
+                //         datasets: [],
+                //         chart: null,
 
-                        init() {
-                            this.initChart();
-                        },
-                        initChart() {
-                            this.chart = new Chart(document.getElementById("bar-chart-grouped"), {
-                                type: 'bar',
-                                data: {
-                                    labels: this.labels,
-                                    datasets: this.datasets
-                                },
-                                options: {
-                                    title: {
-                                        display: true,
-                                        text: 'RESUMEN DIARIO MOVIMIENTOS CAJA'
-                                    }
-                                }
-                            });
+                //         init() {
+                //             this.initChart();
+                //         },
+                //         initChart() {
+                //             this.chart = new Chart(document.getElementById("bar-chart-grouped"), {
+                //                 type: 'bar',
+                //                 data: {
+                //                     labels: this.labels,
+                //                     datasets: this.datasets
+                //                 },
+                //                 options: {
+                //                     title: {
+                //                         display: true,
+                //                         text: 'RESUMEN DIARIO MOVIMIENTOS CAJA'
+                //                     }
+                //                 }
+                //             });
 
-                            this.loadChartData();
-                        },
+                //             this.loadChartData();
+                //         },
 
-                        loadChartData() {
-                            fetch('/charts/resumen-movimientos')
-                                .then(response => response.json())
-                                .then(data => {
-                                    // Asignar los datos al gráfico
-                                    this.labels = data.labels;
-                                    this.datasets = data.datasets;
+                //         loadChartData() {
+                //             fetch('/charts/resumen-movimientos')
+                //                 .then(response => response.json())
+                //                 .then(data => {
+                //                     // Asignar los datos al gráfico
+                //                     this.labels = data.labels;
+                //                     this.datasets = data.datasets;
 
-                                    // Actualizar el gráfico con los nuevos datos
-                                    this.chart.data.labels = this.labels;
-                                    this.chart.data.datasets = this.datasets;
-                                    this.chart.update();
-                                })
-                                .catch(error => console.error('Error al cargar los datos del gráfico:', error));
-                        }
-                    }
-                }
-            </script>
+                //                     // Actualizar el gráfico con los nuevos datos
+                //                     this.chart.data.labels = this.labels;
+                //                     this.chart.data.datasets = this.datasets;
+                //                     this.chart.update();
+                //                 })
+                //                 .catch(error => console.error('Error al cargar los datos del gráfico:', error));
+                //         }
+                //     }
+                // }
+            </script> --}}
         </div>
 
         @section('scripts')
-            {!! $chart->renderChartJsLibrary() !!}
-            {!! $chart->renderJs() !!}
-
-            {!! $chart1->renderChartJsLibrary() !!}
-            {!! $chart1->renderJs() !!}
-
-
             <script>
                 // new Chart(document.getElementById("bar-chart-grouped"), {
                 //     type: 'bar',

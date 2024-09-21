@@ -61,10 +61,9 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
      */
     public function model(array $row)
     {
-
+        
         DB::beginTransaction();
         try {
-
             if (!empty($row['nombre'])) {
 
                 $category = Category::firstOrCreate([
@@ -192,14 +191,14 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
             'precio_compra' => [
                 'required',
                 'numeric',
-                'decimal:0,4',
+                'decimal:0,3',
                 $this->empresa->usarLista() ? 'gt:*.0' : ''
             ],
             'precio_venta' => [
                 'nullable',
                 Rule::requiredIf(!$this->empresa->usarLista()),
                 'numeric',
-                'decimal:0,4',
+                'decimal:0,3',
                 $this->empresa->usarLista() ? '' : 'gt:*.0'
             ],
             'stock_minimo' => ['required', 'integer', 'min:0'],
@@ -211,6 +210,29 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
             'subcategoria' => ['required', 'string', 'min:2',],
             'area_almacen' => ['nullable', 'string', 'min:1'],
             'estante_almacen' => ['nullable', 'string', 'min:1',],
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            'precio_compra.gt' => "El campo :attribute debe ser mayor que 0.",
+            'precio_venta.gt' => "El campo :attribute debe ser mayor que 0.",
+        ];
+    }
+
+    public function customValidationAttributes()
+    {
+        return [
+            'precio_compra' => 'precio compra',
+            'precio_venta' => 'precio venta',
+            'stock_minimo' => 'stock mínimo',
+            'publicado_web' => 'publicado web',
+            'unidad_medida' => 'unidad medida',
+            'codigo_unidad_medida' => 'codigo unidad medida',
+            'numero_parte' => 'numero parte',
+            'area_almacen' => 'area almacen',
+            'estante_almacen' => 'estante almacen'
         ];
     }
 

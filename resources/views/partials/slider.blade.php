@@ -9,7 +9,7 @@
             </ol>
         @endif
 
-        <div class="relative w-full overflow-hidden h-0 pt-[28%] min-h-[446px] md:min-h-[220px]" id="slider">
+        <div class="relative w-full overflow-hidden h-0 pt-[28%] min-h-[280px]" id="slider">
             @foreach ($sliders as $item)
                 <div class="carousel-item {{ $loop->first ? 'activo' : '' }}">
                     <div class="h-full flex relative efecto-slider">
