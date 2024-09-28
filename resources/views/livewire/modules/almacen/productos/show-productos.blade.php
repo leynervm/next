@@ -1,13 +1,7 @@
-<div x-data="loadproductos">
+<div class="pb-12 md:pb-20" x-data="loadproductos">
     <div wire:loading.flex class="loading-overlay rounded hidden fixed">
         <x-loading-next />
     </div>
-
-    @if ($productos->hasPages())
-        <div class="w-full pb-2">
-            {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
 
     <div class="flex flex-wrap items-center gap-2 mt-4 ">
         <div class="w-full xs:max-w-sm">
@@ -119,7 +113,7 @@
     </div>
     {{-- @endcan --}}
 
-    <div class="w-full pt-2" x-cloak x-show="selectedproductos.length>0">
+    <div class="w-full pt-2" x-cloak x-show="selectedproductos.length>0" style="display: none;">
         <x-button-secondary @click="confirmDeleteAllProductos()" wire:loading.attr="disabled">
             {{ __('ELIMINAR SELECCIONADOS') }}
             <span x-text="selectedproductos.length" :class="selectedproductos.length < 10 ? 'px-1' : ''"
@@ -131,7 +125,8 @@
         <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium text-center">
-                    <label for="checkall" class="text-xs flex flex-col justify-center leading-3 items-center gap-1 leading-3">
+                    <label for="checkall"
+                        class="text-xs flex flex-col justify-center leading-3 items-center gap-1 leading-3">
                         TODO
                         @if (count($productos) > 0)
                             <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none"
@@ -178,7 +173,7 @@
 
                 @if (Module::isEnabled('Almacen'))
                     <th scope="col" class="p-2 font-medium leading-3">
-                       PROVEEDOR <br> ÚLT. INGRESO</th>
+                        PROVEEDOR <br> ÚLT. INGRESO</th>
                     <th scope="col" class="p-2 font-medium">
                         AREA</th>
                     <th scope="col"class="p-2 font-medium">
@@ -199,7 +194,7 @@
                                 name="productos" class="p-2 !rounded-0 !rounded-none cursor-pointer"
                                 id="{{ $item->id }}" />
                         </td>
-                        <td class="p-2">
+                        <td class="p-2 min-w-96">
                             <div class="inline-flex gap-2 items-start justify-start">
                                 @php
                                     $image = $item->getImageURL();
@@ -295,7 +290,8 @@
                                     <p class="">
                                         {{ formatDate($item->compraitems->first()->compra->date, 'DD MMMM Y') }}
                                     </p>
-                                    <p class="leading-3">{{ $item->compraitems->first()->compra->proveedor->name }}</p>
+                                    <p class="leading-3">{{ $item->compraitems->first()->compra->proveedor->name }}
+                                    </p>
                                 @endif
                             </td>
 
@@ -318,8 +314,14 @@
                 @endforeach
             </x-slot>
         @endif
-
     </x-table>
+
+    @if ($productos->hasPages())
+        <div class="w-full md:pl-64 flex justify-center items-center sm:justify-end p-1 sm:pr-6 fixed bottom-0 right-0 bg-body">
+            {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
     <script>
         function confirmHiddenProducto(producto) {
             swal.fire({

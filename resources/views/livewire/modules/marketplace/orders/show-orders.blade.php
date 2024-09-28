@@ -81,15 +81,11 @@
                             </svg>
                         </button>
                     </th>
-                    <th scope="col" class="p-2 font-medium">USUARIO / CLIENTE</th>
-                    <th scope="col" class="p-2 font-medium">RECIBE</th>
-                    <th scope="col" class="p-2 font-medium">EXONERADO</th>
-                    <th scope="col" class="p-2 font-medium">GRAVADO</th>
-                    <th scope="col" class="p-2 font-medium">IGV</th>
+                    <th scope="col" class="p-2 font-medium">COMPRADOR</th>
+                    <th scope="col" class="p-2 font-medium">CONTACTO ENTREGA</th>
                     <th scope="col" class="p-2 font-medium">TOTAL</th>
                     <th scope="col" class="p-2 font-medium text-center">TIPO ENVÍO</th>
                     <th scope="col" class="p-2 font-medium">FORMA PAGO</th>
-                    <th scope="col" class="p-2 font-medium">PAGO</th>
                     <th scope="col" class="p-2 font-medium text-center">TRACKING</th>
                 </tr>
             </x-slot>
@@ -100,7 +96,7 @@
                         <td class="p-2 text-[10px] uppercase">
                             @if ($item->trashed())
                                 <p class="block w-full leading-3 text-colorsubtitleform mb-1">
-                                    {{ $item->seriecompleta }}
+                                    #{{ $item->purchase_number }}
                                     <br>
                                     {{ formatDate($item->date()) }}
                                 </p>
@@ -109,102 +105,66 @@
                                 @can('admin.marketplace.orders')
                                     <a href="{{ route('admin.marketplace.orders.show', $item) }}"
                                         class="text-linktable hover:text-hoverlinktable whitespace-nowrap inline-block transition-colors ease-out duration-150">
-                                        {{ $item->seriecompleta }}
+                                        #{{ $item->purchase_number }}
                                         <br>
-                                        {{ formatDate($item->date) }}
+                                        {{ formatDate($item->date, 'DD MMM Y hh::mm A') }}
                                     </a>
                                 @endcan
 
                                 @cannot('admin.marketplace.orders')
                                     <p class="text-linktable">
-                                        {{ $item->seriecompleta }}
+                                        #{{ $item->purchase_number }}
                                         <br>
-                                        {{ formatDate($item->date) }}
+                                        {{ formatDate($item->date, 'DD MMM Y hh::mm A') }}
                                     </p>
                                 @endcannot
                             @endif
                         </td>
                         <td class="p-2">
                             <p class=""> {{ $item->user->name }}</p>
-                            <p class="text-neutral-500">{{ $item->user->document }}</p>
-                            <p class="text-neutral-500">{{ $item->user->email }}</p>
+                            <p class="text-colorsubtitleform">{{ $item->user->document }}</p>
+                            <p class="text-colorsubtitleform">{{ $item->user->email }}</p>
                         </td>
                         <td class="p-2 ">
-                            <p class="text-neutral-500">{{ $item->receiverinfo['document'] }}</p>
+                            <p class="text-colorsubtitleform">{{ $item->receiverinfo['document'] }}</p>
                             <p class="uppercase">{{ $item->receiverinfo['name'] }}</p>
                             <p class="">TELÉFONO: {{ formatTelefono($item->receiverinfo['telefono']) }}</p>
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
-                            {{ number_format($item->exonerado, 3, '.', ', ') }}
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ $item->moneda->simbolo }}
-                            {{ number_format($item->gravado, 3, '.', ', ') }}
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ $item->moneda->simbolo }}
-                            {{ number_format($item->igv, 3, '.', ', ') }}
-                        </td>
-                        <td class="p-2 text-center">
-                            {{ $item->moneda->simbolo }}
-                            {{ number_format($item->total, 3, '.', ', ') }}
+                            {{ number_format($item->total, 2, '.', ', ') }}
                         </td>
                         <td class="p-2 text-left">
                             {{ $item->shipmenttype->name }}
                             @if ($item->shipmenttype->isEnviodomicilio())
-                                <p class="text-neutral-500 text-[10px]">
+                                <p class="text-colorsubtitleform text-[10px]">
                                     LUGAR : {{ $item->direccion->ubigeo->distrito }},
                                     {{ $item->direccion->ubigeo->provincia }},
                                     {{ $item->direccion->ubigeo->region }}</p>
 
-                                <p class="text-neutral-500 text-[10px]">
+                                <p class="text-colorsubtitleform text-[10px]">
                                     DIRECCIÓN: {{ $item->direccion->name }}</p>
 
-                                <p class="text-neutral-500 text-[10px]">
+                                <p class="text-colorsubtitleform text-[10px]">
                                     REFERENCIA: {{ $item->direccion->referencia }}</p>
                             @else
                                 @if ($item->entrega)
-                                    <p class="text-neutral-500 text-[10px]">
+                                    <p class="text-colorsubtitleform text-[10px]">
                                         TIENDA : {{ $item->entrega->sucursal->name }}</p>
-                                    <p class="text-neutral-500 text-[10px] leading-3">
+                                    <p class="text-colorsubtitleform text-[10px] leading-3">
                                         DIRECCIÓN :
                                         {{ $item->entrega->sucursal->direccion }} <br>
                                         {{ $item->entrega->sucursal->ubigeo->distrito }},
                                         {{ $item->entrega->sucursal->ubigeo->provincia }},
                                         {{ $item->entrega->sucursal->ubigeo->region }}</p>
-                                    <p class="text-neutral-500 text-[10px]">
+                                    <p class="text-colorsubtitleform text-[10px]">
                                         FECHA RECOJO : {{ formatDate($item->entrega->date, 'DD MMMM Y') }}</p>
                                 @endif
                             @endif
                         </td>
-                        <td class="p-2 text-center leading-3 text-[10px]">
-                            <span class="block mx-auto w-4 h-4 text-neutral-500">
-                                @if ($item->isDeposito())
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                                        fill="none" class="w-full h-full block">
-                                        <path
-                                            d="M19 9H6.65856C5.65277 9 5.14987 9 5.02472 8.69134C4.89957 8.38268 5.25517 8.01942 5.96637 7.29289L8.21091 5" />
-                                        <path
-                                            d="M5 15H17.3414C18.3472 15 18.8501 15 18.9753 15.3087C19.1004 15.6173 18.7448 15.9806 18.0336 16.7071L15.7891 19" />
-                                    </svg>
-                                @endif
-                            </span>
-
-                            @if ($item->methodpay)
-                                {{ str_ireplace('_', ' ', $item->methodpay->name) }}
-                            @endif
-                        </td>
-                        <td class="p-2 text-center text-[10px]">
-                            @if ($item->isPagoconfirmado())
-                                <x-span-text class="!tracking-normal !p-0.5" text="PAGO CONFIRMADO" type="green" />
-                            @elseif ($item->isPagado())
-                                <p class="text-green-600">PAGADO</p>
-                                {{-- <p class="text-orange-600 leading-3">EN ESPERA DE CONFIRMACIÓN</p> --}}
-                                <x-span-text class="!tracking-normal !p-0.5" text="CONFIRMAR PAGO" type="orange" />
-                            @else
-                                <x-span-text class="!tracking-normal !p-0.5" text="PENDIENTE" type="red" />
+                        <td class="p-2 text-center leading-3 text-xs uppercase">
+                            @if ($item->transaccion)
+                                {{ $item->transaccion->brand }}
                             @endif
                         </td>
                         <td class="p-2 text-center text-[10px]">

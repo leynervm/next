@@ -74,7 +74,6 @@ class CreateEquipo extends Component
 
             if ($compressedImage->filesize() > 1048576) { //1MB
                 $compressedImage->destroy();
-                $compressedImage->delete();
                 $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
             }
             $logoURL = $filename;

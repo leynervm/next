@@ -3,6 +3,11 @@
         <x-loading-next />
     </div>
 
+    <div class="w-full bg-fondominicard rounded-xl border border-borderminicard">
+        <h1 class="text-xl font-semibold text-colorlabel p-3">
+            MIS COMPRAS</h1>
+    </div>
+
     <div class="flex flex-wrap gap-2 py-3">
         <div class="w-full xs:max-w-xs">
             <x-label value="Estado pago :" />
@@ -38,47 +43,37 @@
     @endif
 
     @if (count($orders) > 0)
-        <div class="shadow-md rounded-xl">
+        <div class="border border-borderminicard rounded-xl">
             <table class="w-full min-w-full text-[10px]">
-                <tbody class="divide-y text-neutral-700">
+                <tbody class="divide-y text-textbodytable">
                     @foreach ($orders as $item)
                         <tr class="border-b border-dividetable">
-                            <td class="flex gap-2 text-left p-3">
-                                <span class="flex-shrink block w-6 h-6 text-neutral-500">
-                                    @if ($item->isDeposito())
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                            stroke-linejoin="round" fill="none" class="w-full h-full block">
-                                            <path
-                                                d="M19 9H6.65856C5.65277 9 5.14987 9 5.02472 8.69134C4.89957 8.38268 5.25517 8.01942 5.96637 7.29289L8.21091 5" />
-                                            <path
-                                                d="M5 15H17.3414C18.3472 15 18.8501 15 18.9753 15.3087C19.1004 15.6173 18.7448 15.9806 18.0336 16.7071L15.7891 19" />
-                                        </svg>
-                                    @endif
-                                </span>
+                            <td class="align-middle text-left p-3 xl:py-5">
                                 <a href="{{ route('orders.payment', $item) }}"
                                     class="inline-block leading-3 text-[10px] uppercase text-linktable">
-                                    {{ $item->seriecompleta }}
+                                    #{{ $item->purchase_number }}
                                     <br>
-                                    {{ formatDate($item->date) }}
+                                    {{ formatDate($item->date, "DD MMM Y hh:mm A") }}
                                 </a>
                             </td>
-                            <td class="text-center p-3 text-xs">
+                            <td class="text-center p-3 xl:py-5 text-xs">
                                 {{ number_format($item->total, 2, '.', ', ') }}
                                 <p class="font-semibold text-[10px]">{{ $item->moneda->currency }}</p>
                             </td>
-                            <td class="text-center p-3">
+                            <td class="text-center p-3 xl:py-5">
                                 @if ($item->isPagoconfirmado())
-                                    <span class="text-green-600 inline-block">
-                                        PAGO CONFIRMADO CON ÉXITO
-                                    </span>
+                                    <x-span-text text="PAGO CONFIRMADO CON ÉXITO" type="green" />
                                 @elseif ($item->isPagado())
-                                    <span class="text-green-600 inline-block">PAGADO</span>
-                                    <p class="text-orange-600">EN ESPERA DE CONFIRMACIÓN</p>
+                                    <x-span-text text="EN ESPERA DE CONFIRMACIÓN" type="orange" />
                                 @else
-                                    <span class="text-red-600 inline-block font-semibold">PENDIENTE PAGO</span>
+                                    <x-span-text text="PENDIENTE PAGO" type="red" />
                                 @endif
                             </td>
+                            @if ($item->transaccion)
+                                <td class="text-center p-3 xl:py-5 uppercase">
+                                    {{ $item->transaccion->brand }}
+                                </td>
+                            @endif
                         </tr>
                     @endforeach
                 </tbody>
@@ -88,7 +83,7 @@
             {{ $orders->onEachSide(0)->links('vendor.pagination.pagination-default') }}
         </div>
     @else
-        <h1 class="text-[10px] p-5">NO TIENES ORDENES REGISTRADAS...</h1>
+        <h1 class="text-[10px] p-5 text-colorsubtitleform">NO TIENES ORDENES REGISTRADAS...</h1>
     @endif
 
 

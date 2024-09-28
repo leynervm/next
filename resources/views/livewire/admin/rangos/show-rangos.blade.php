@@ -42,7 +42,7 @@
                             </button>
                         </th>
                         <th scope="col" class="p-2 font-medium text-center">
-                            INCREMENTO P.C
+                            % GANANCIA
                         </th>
 
                         {{-- <th class="" colspan="{{ count($pricetypes) }}">
@@ -150,13 +150,13 @@
             <form wire:submit.prevent="update">
                 <div class="w-full flex flex-wrap sm:flex-nowrap gap-2">
                     <div class="w-full sm:w-1/2">
-                        <x-label value="Precio desde :" />
+                        <x-label value="Rango inicio :" />
                         <x-input class="block w-full" wire:model.defer="rango.desde" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="rango.desde" />
                     </div>
                     <div class="w-full sm:w-1/2">
-                        <x-label value="Precio hasta :" />
+                        <x-label value="Rango final :" />
                         <x-input class="block w-full" wire:model.defer="rango.hasta" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="rango.hasta" />
@@ -164,7 +164,7 @@
                 </div>
 
                 <div class="md:w-1/2 mt-2">
-                    <x-label value="Incremento precio :" />
+                    <x-label value="Porcentaje ganancia (%) :" />
                     <x-input class="block w-full" wire:model.defer="rango.incremento" type="number" step="0.01"
                         min="0" onkeypress="return validarDecimal(event, 9)" />
                     <x-jet-input-error for="rango.incremento" />

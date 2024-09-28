@@ -57,20 +57,20 @@ class ShowProductos extends Component
         $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems', 'images']);
 
         if (trim($this->search) !== '') {
-            $searchTerms = explode(' ', $this->search);
-            $productos->where(function ($query) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $query->orWhere('name', 'ilike', '%' . $term . '%')
-                        ->orWhereHas('marca', function ($q) use ($term) {
-                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        })
-                        ->orWhereHas('category', function ($q) use ($term) {
-                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        })
-                        ->orWhereHas('especificacions', function ($q) use ($term) {
-                            $q->where('especificacions.name', 'ilike', '%' . $term . '%');
-                        });
-                }
+            // $searchTerms = explode(' ', $this->search);
+            $productos->where(function ($query) {
+                // foreach ($searchTerms as $term) {
+                $query->orWhere('name', 'ilike', '%' . $this->search . '%')
+                    ->orWhereHas('marca', function ($q) {
+                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
+                    })
+                    ->orWhereHas('category', function ($q) {
+                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
+                    })
+                    ->orWhereHas('especificacions', function ($q) {
+                        $q->where('especificacions.name', 'ilike', '%' . $this->search . '%');
+                    });
+                // }
             });
         }
 
@@ -98,8 +98,7 @@ class ShowProductos extends Component
 
         if ($this->ocultos) {
             $productos->ocultos();
-        }
-        else {
+        } else {
             $productos->visibles();
         }
 
@@ -133,7 +132,7 @@ class ShowProductos extends Component
     public function updatedSearchcategory($value)
     {
         $this->resetPage();
-        $this->reset(['subcategories']);
+        $this->reset(['subcategories', 'searchsubcategory']);
         if (trim($value) !== "") {
             $this->subcategories = Category::with('subcategories')->find($value)->subcategories;
         }

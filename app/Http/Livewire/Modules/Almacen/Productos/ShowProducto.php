@@ -57,6 +57,7 @@ class ShowProducto extends Component
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
             'producto.requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'producto.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
+            'producto.viewdetalle' => ['integer', 'min:0', 'max:1'],
         ];
     }
 

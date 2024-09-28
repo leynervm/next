@@ -100,7 +100,7 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
                             @foreach ($marcas as $item)
                                 <label for="marca_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -126,7 +126,7 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
                             @foreach ($categories as $item)
                                 <label for="category_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -152,7 +152,7 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
                             @foreach ($subcategories as $item)
                                 <label for="subcategory_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -181,7 +181,7 @@
                                     <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                 </svg>
                             </button>
-                            <div class="w-full flex flex-col" x-cloak x-show="openfilter" x-transition>
+                            <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
                                 @foreach ($item->especificacions as $espec)
                                     <label for="especificacion_{{ $item->id }}{{ $espec->id }}"
                                         class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">

@@ -17,6 +17,7 @@ use App\Models\Almacenarea;
 use App\Models\Estante;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Intervention\Image\ImageManagerStatic as Image;
+use Nwidart\Modules\Facades\Module;
 
 class CreateProducto extends Component
 {
@@ -31,6 +32,8 @@ class CreateProducto extends Component
     public $pricesale = 0;
     public $igv = 0;
     public $publicado = 0;
+    public $viewdetalle = 0;
+    public $viewespecificaciones = 0;
     public $requireserie = 0;
     public $minstock = 0;
     public $name, $marca_id, $modelo, $partnumber, $sku, $unit_id, $category_id,
@@ -67,6 +70,8 @@ class CreateProducto extends Component
             'almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'viewdetalle' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'viewespecificaciones' => ['nullable', 'integer', 'min:0', 'max:1'],
             'requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'dimensions:min_width=600,min_height=600'],
             'descripcionproducto' => ['nullable', 'string']
@@ -77,6 +82,10 @@ class CreateProducto extends Component
     {
         $this->identificador = rand();
         $this->selectedAlmacens = Almacen::orderBy('default', 'desc')->pluck('id');
+        if (Module::isEnabled('Marketplace')) {
+            $this->viewdetalle = Producto::VER_DETALLES;
+            $this->viewespecificaciones = Producto::VER_DETALLES;
+        }
     }
 
     public function render()
@@ -109,6 +118,8 @@ class CreateProducto extends Component
         // dd($this->descripcionproducto);
         $this->authorize('admin.almacen.productos.create');
         $this->publicado = trim($this->publicado) == 1 ? 1 : 0;
+        $this->viewdetalle = trim($this->viewdetalle) == 1 ? 1 : 0;
+        $this->viewespecificaciones = trim($this->viewespecificaciones) == 1 ? 1 : 0;
         $this->requireserie = trim($this->requireserie) == 1 ? 1 : 0;
         $this->name = trim($this->name);
         $this->modelo = trim($this->modelo);
@@ -137,6 +148,8 @@ class CreateProducto extends Component
                 'igv' => $this->igv,
                 'minstock' => $this->minstock,
                 'publicado' => $this->publicado,
+                'viewdetalle' => $this->viewdetalle,
+                'viewespecificaciones' => $this->viewespecificaciones,
                 'requireserie' => $this->requireserie,
                 'code' => Str::random(9),
                 'almacenarea_id' => $this->almacenarea_id,
@@ -153,12 +166,12 @@ class CreateProducto extends Component
             ]);
 
             if ($this->imagen) {
-                if (!Storage::exists('productos')) {
-                    Storage::makeDirectory('productos');
+                if (!Storage::exists('images/productos')) {
+                    Storage::makeDirectory('images/productos');
                 }
 
                 $compressedImage = Image::make($this->imagen->getRealPath())
-                    ->resize(1200, 1200, function ($constraint) {
+                    ->resize(800, 800, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
                     })->orientate()->encode('jpg', 30);
@@ -178,11 +191,10 @@ class CreateProducto extends Component
                 }
 
                 $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
-                $compressedImage->save(public_path('storage/productos/' . $filename));
+                $compressedImage->save(public_path('storage/images/productos/' . $filename));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     $this->addError('imagen', 'La imagen excede el tamaño máximo permitido.');
                     return false;
                 }
@@ -193,7 +205,7 @@ class CreateProducto extends Component
                 ]);
             }
 
-            if (!empty($this->descripcionproducto)) {
+            if (Module::isEnabled('Marketplace') && !empty($this->descripcionproducto)) {
                 $producto->detalleproducto()->create([
                     'descripcion' => $this->descripcionproducto
                 ]);

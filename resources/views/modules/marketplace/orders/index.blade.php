@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="breadcrumb">
-        <x-link-breadcrumb text="MIS PEDIDOS" active>
+        <x-link-breadcrumb text="MIS COMPRAS" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -14,12 +14,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="contenedor w-full flex flex-col gap-5 mt-3">
-        <div class="w-full bg-fondominicard shadow-md shadow-shadowminicard rounded-xl border border-borderminicard">
-            <h1 class="text-xl font-semibold text-colorlabel p-5">
-                PEDIDOS RECIENTES</h1>
-        </div>
-
+    <div class="contenedor w-full mt-3">
         <livewire:modules.marketplace.usersweb.show-orders />
     </div>
 </x-app-layout>

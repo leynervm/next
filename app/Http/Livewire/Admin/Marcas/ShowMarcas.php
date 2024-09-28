@@ -30,11 +30,16 @@ class ShowMarcas extends Component
     {
         return [
             'marca.name' => [
-                'required', 'min:2', 'max:100',
+                'required',
+                'min:2',
+                'max:100',
                 new CampoUnique('marcas', 'name', $this->marca->id, true),
             ],
             'logo' => [
-                'nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120'
+                'nullable',
+                'file',
+                'mimes:jpeg,png,gif',
+                'max:5120'
             ]
         ];
     }
@@ -63,14 +68,16 @@ class ShowMarcas extends Component
         try {
             if ($this->logo) {
                 $compressedImage = Image::make($this->logo->getRealPath())
-                    ->orientate()->encode('jpg', 30);
+                    ->resize(400, 400, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate()->encode('jpg', 30);
 
                 $logoURL = uniqid('marca_') . '.' . $this->logo->getClientOriginalExtension();
                 $compressedImage->save(public_path('storage/images/marcas/' . $logoURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
                     return false;
                 }

@@ -5,16 +5,17 @@
         </div>
     @endif
 
-    <div class="flex flex-wrap gap-5" id="caracteristicas">
+    <div class="w-full grid grid-cols-1 relative p-2 xl:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5"
+        id="caracteristicas">
         @if (count($caracteristicas) > 0)
             @foreach ($caracteristicas as $item)
-                <x-simple-card class="w-full flex flex-col gap-2 relative justify-between p-2 xl:max-w-md"
+                <x-simple-card class="w-full flex flex-col gap-2 relative justify-between p-2"
                     data-id="{{ $item->id }}">
                     <div class="w-full">
                         <div class="w-full flex gap-2 items-center">
                             @can('admin.almacen.caracteristicas.edit')
                                 <button type="button"
-                                    class="text-next-500 inline-block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
+                                    class="text-colortitleform inline-block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                         stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
                                         class="w-6 h-6 xs:w-8 xs:h-8 block">
@@ -34,7 +35,7 @@
                         </div>
 
                         @if (count($item->especificacions) > 0)
-                            <div class="w-full mt-2 flex gap-1 flex-wrap items-start">
+                            <div class="w-full mt-2 flex gap-1 flex-wrap items-start xl:max-h-96 xl:overflow-y-auto">
                                 @foreach ($item->especificacions as $itemespecif)
                                     <div
                                         class="inline-flex gap-1 items-center text-[10px] p-1 rounded-md bg-fondospancardproduct text-textspancardproduct">

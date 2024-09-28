@@ -20,30 +20,7 @@
                 <p class="text-next-500 text-xs font-semibold">
                     {{ str_replace('_', ' ', $order->methodpay->name) }}</p>
 
-                @foreach ($order->transaccions as $item)
-                    <p class="text-green-600 text-xs">
-                        <small class="text-colorsubtitleform">ESTADO :</small>
-                        <b>{{ $item->action_description }}</b>
-                    </p>
-
-                    <p class="text-green-600 text-xs">
-                        <small class="text-colorsubtitleform">DESCRIPCION :</small>
-                        <b>{{ $item->eci_description }}</b>
-                    </p>
-
-                    <p class="text-green-600 text-xs">
-                        <small class="text-colorsubtitleform">ID TRANSACCIÓN :</small>
-                        <b>{{ $item->transaction_id }}</b>
-                    </p>
-                    <p class="text-green-600 text-xs">
-                        <small class="text-colorsubtitleform">FECHA Y HORA PAGO :</small>
-                        <b>{{ formatDate($item->date) }}</b>
-                    </p>
-                    <p class="text-green-600 text-xl">
-                        <small class="text-colorsubtitleform text-xs">IMPORTE :</small>
-                        <b>{{ number_format($item->amount, 2, '.', ', ') }} {{ $item->currency }}</b>
-                    </p>
-                @endforeach
+               
             @else
             @endif
         </div>

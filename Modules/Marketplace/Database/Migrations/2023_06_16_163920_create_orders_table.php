@@ -18,6 +18,7 @@ class CreateOrdersTable extends Migration
             $table->id();
             $table->dateTime('date');
             $table->string('seriecompleta', 13);
+            $table->string('purchase_number', 255);
             $table->decimal('exonerado', 18, 4);
             $table->decimal('gravado', 18, 4);
             $table->decimal('igv', 18, 4)->default(0);
@@ -26,7 +27,7 @@ class CreateOrdersTable extends Migration
             $table->decimal('tipocambio', 7, 4)->nullable();
             $table->json('receiverinfo');
             $table->char('status', 1)->default(StatusPayWebEnum::PENDIENTE->value);
-            $table->char('methodpay', 1)->nullable();
+            $table->string('pasarela', 100);
             $table->unsignedBigInteger('direccion_id')->nullable();
             $table->unsignedBigInteger('moneda_id');
             $table->unsignedBigInteger('client_id');

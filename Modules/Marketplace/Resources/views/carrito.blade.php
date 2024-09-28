@@ -14,14 +14,11 @@
 
 
     <div class="contenedor w-full">
-        <div class="w-full">
-            <livewire:modules.marketplace.carrito.show-carrito :moneda="$moneda" wire:key="carshoop" />
-        </div>
-
-        @if (Cart::instance('wishlist')->count() > 0)
+        <livewire:modules.marketplace.carrito.show-carrito :moneda="$moneda" wire:key="carshoop" />
+        {{-- @if (Cart::instance('wishlist')->count() > 0)
             <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
                 <livewire:modules.marketplace.wishlist.show-wishlists :moneda="$moneda" wire:key="wishlist" />
             </div>
-        @endif
+        @endif --}}
     </div>
 </x-app-layout>

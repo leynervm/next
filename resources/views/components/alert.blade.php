@@ -30,6 +30,12 @@
                     sweet.timerProgressBar = true;
                     sweet.timer = 3000;
                 } else {
+                    if (message != undefined || message != null) {
+                        if (message.timer != undefined || message.timer != null) {
+                            sweet.timerProgressBar = true;
+                            sweet.timer = message.timer;
+                        }
+                    }
                     // sweet.timer = 7000;
                     // sweet.showConfirmButton = true;
                 }

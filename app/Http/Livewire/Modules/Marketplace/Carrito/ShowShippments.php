@@ -3,9 +3,11 @@
 namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
 use App\Models\Almacen;
+use App\Models\Client;
 use App\Models\Direccion;
 use App\Models\Moneda;
 use App\Models\Pricetype;
+use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Rules\Recaptcha;
 use Gloudemans\Shoppingcart\Facades\Cart;
@@ -26,6 +28,7 @@ class ShowShippments extends Component
 
     public $showaddadress = false;
     public $receiver = Order::EQUAL_RECEIVER;
+    public $order = [];
     public $receiver_info = [
         'document' => null,
         'name' => null,
@@ -46,30 +49,39 @@ class ShowShippments extends Component
             'local_id' => [
                 'nullable',
                 Rule::requiredIf($this->shipmenttype->isRecojotienda()),
-                'integer', 'min:1', 'exists:sucursals,id'
+                'integer',
+                'min:1',
+                'exists:sucursals,id'
             ],
             'daterecojo' => [
                 'nullable',
                 Rule::requiredIf($this->shipmenttype->isRecojotienda()),
-                'date', 'after_or_equal:today'
+                'date',
+                'after_or_equal:today'
             ],
             'direccionenvio_id' => [
                 'nullable',
                 Rule::requiredIf($this->shipmenttype->isEnviodomicilio()),
-                'integer', 'min:1', 'exists:direccions,id'
+                'integer',
+                'min:1',
+                'exists:direccions,id'
             ],
             'receiver' => [
-                'required', 'integer',
+                'required',
+                'integer',
                 Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])
             ],
             'receiver_info.document' => [
-                'required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'
+                'required',
+                'string',
+                'numeric',
+                'digits_between:8,11',
+                'regex:/^\d{8}(?:\d{3})?$/'
             ],
             'receiver_info.name' => ['required', 'string', 'min:8',],
             'receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
             'cart' => ['required', 'array', 'min:1'],
-            'terms' => ['required', 'boolean', 'min:0', 'max:1'],
-            'g_recaptcha_response' => ['required', new Recaptcha()],
+            // 'g_recaptcha_response' => ['required', new Recaptcha()],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ];
     }
@@ -78,13 +90,21 @@ class ShowShippments extends Component
     {
 
         $this->shipmenttype = new Shipmenttype();
-        $this->phoneuser = auth()->user()->telephones()
-            ->orderBy('default', 'desc')->orderBy('id', 'desc')->first();
+        // $this->phoneuser = auth()->user()->telephones()
+        //     ->orderBy('default', 'desc')->orderBy('id', 'desc')->first();
+        $client = Client::with(['telephones' => function ($query) {
+            $query->orderBy('default', 'desc');
+        }])->where('document', auth()->user()->document)->first();
+
+        $phone = null;
+        if ($client && count($client->telephones) > 0) {
+            $phone = $client->telephones->first()->phone;
+        }
 
         $this->receiver_info = [
             'document' => auth()->user()->document,
             'name' => auth()->user()->name,
-            'telefono' => $this->phoneuser ? $this->phoneuser->phone : null
+            'telefono' => $phone
         ];
     }
 
@@ -97,7 +117,7 @@ class ShowShippments extends Component
         return view('livewire.modules.marketplace.carrito.show-shippments', compact('shipmenttypes', 'direccions', 'ubigeos', 'locals'));
     }
 
-    public function save($recaptcha)
+    public function validateorder($recaptcha = null)
     {
 
         $this->g_recaptcha_response = $recaptcha;
@@ -115,7 +135,7 @@ class ShowShippments extends Component
             }
             if ($count > 0) {
                 $mensaje = response()->json([
-                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO.",
+                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO, INTENTE NUEVAMENTE.",
                     'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
                     'type' => 'warning'
                 ])->getData();
@@ -142,85 +162,20 @@ class ShowShippments extends Component
             $this->shipmenttype = Shipmenttype::find($this->shipmenttype_id);
         }
         $validateData = $this->validate();
+        $direccion_envio = $this->shipmenttype->isEnviodomicilio() ? Direccion::with('ubigeo')->find($this->direccionenvio_id) : null;
+        $local_entrega = $this->shipmenttype->isRecojotienda() ? Sucursal::with('ubigeo')->find($this->local_id) : null;
 
-        DB::beginTransaction();
-        try {
-
-            $client = auth()->user()->client()->updateOrCreate(
-                ['document' => auth()->user()->document],
-                [
-                    'name' => auth()->user()->name,
-                    'email' => auth()->user()->email,
-                    'pricetype_id' => mi_empresa()->usarLista() ? Pricetype::default()->first()->id ?? null : null,
-                ]
-            );
-
-            $order = Order::create([
-                'date' => now('America/Lima'),
-                'seriecompleta' => 'order-',
-                'exonerado' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
-                'gravado' => 0,
-                'igv' => 0,
-                'subtotal' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
-                'total' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
-                'tipocambio' => number_format(mi_empresa()->tipocambio ?? 0, 3, '.', ''),
-                'receiverinfo' => $this->receiver_info,
-                'direccion_id' => $this->shipmenttype->isEnviodomicilio() ? $this->direccionenvio_id : null,
-                'moneda_id' => $this->moneda->id,
-                'client_id' => $client->id,
-                'shipmenttype_id' => $this->shipmenttype_id,
-                'user_id' => auth()->user()->id,
-            ]);
-
-            $order->seriecompleta = $order->seriecompleta . $order->id;
-            $order->save();
-
-            if (Trackingstate::default()->exists()) {
-                $order->trackings()->create([
-                    'date' => now(),
-                    'descripcion' => 'PEDIDO REGISTRADO CORRECTAMENTE',
-                    'trackingstate_id' => Trackingstate::default()->first()->id,
-                    'user_id' => auth()->user()->id
-                ]);
-            }
-
-            if ($this->shipmenttype->isRecojotienda()) {
-                $order->entrega()->create([
-                    'date' => $this->daterecojo,
-                    'sucursal_id' => $this->local_id
-                ]);
-            }
-
-            $counter = 1;
-            foreach (Cart::instance('shopping')->content() as $item) {
-                $order->tvitems()->create([
-                    'date' => now('America/Lima'),
-                    'cantidad' => formatDecimalOrInteger($item->qty),
-                    'pricebuy' => number_format($item->options->pricebuy, 2, '.', ''),
-                    'price' => number_format($item->price, 2, '.', ''),
-                    'igv' => number_format($item->options->igv, 2, '.', ''),
-                    'subtotaligv' => number_format($item->options->subtotaligv, 2, '.', ''),
-                    'subtotal' => number_format($item->subtotal, 2, '.', ''),
-                    'total' => number_format($item->subtotal, 2, '.', ''),
-                    'status' => 0,
-                    'alterstock' => Almacen::NO_ALTERAR_STOCK,
-                    'gratuito' => 0,
-                    'almacen_id' => null,
-                    'producto_id' => $item->id,
-                    'user_id' => auth()->user()->id
-                ]);
-            }
-            DB::commit();
-            Cart::instance('shopping')->destroy();
-            $this->resetExcept(['moneda', 'shipmenttype', 'phoneuser']);
-            return redirect()->route('orders.payment', $order);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        $this->order = [
+            'moneda_id' => $this->moneda->id,
+            'shipmenttype' => $this->shipmenttype,
+            'local_entrega' => $local_entrega,
+            'daterecojo' => $this->daterecojo,
+            'direccion_envio' => $direccion_envio,
+            'receiver' => $this->receiver,
+            'receiver_info' => $this->receiver_info,
+            'terms' => $this->terms,
+        ];
+        return $this->order;
     }
 
     public function savedireccion()

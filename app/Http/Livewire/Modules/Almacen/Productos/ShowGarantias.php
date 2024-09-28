@@ -10,6 +10,7 @@ use App\Models\Typegarantia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use Nwidart\Modules\Facades\Module;
 
 class ShowGarantias extends Component
 {
@@ -23,7 +24,7 @@ class ShowGarantias extends Component
     public $descripcion = '';
 
     public $precio_1, $precio_2, $precio_3, $precio_4, $precio_5;
-    public $showespecificaciones = 0;
+    public $viewdetalle = false;
 
     protected $listeners = ['delete'];
 
@@ -32,11 +33,13 @@ class ShowGarantias extends Component
         $this->producto = $producto;
         $this->typegarantia = new Typegarantia();
         $this->pricetype = new Pricetype();
-        if ($producto->detalleproducto) {
-            $this->descripcion =  $producto->detalleproducto->descripcion;
-        }
 
-        $this->showespecificaciones = $producto->verEspecificaciones();
+        if (Module::isEnabled('Marketplace')) {
+            $this->viewdetalle = $producto->verDetalles();
+            if ($producto->detalleproducto) {
+                $this->descripcion =  $producto->detalleproducto->descripcion;
+            }
+        }
         $this->precio_1 = formatDecimalOrInteger($producto->precio_1, 2,);
         $this->precio_2 = formatDecimalOrInteger($producto->precio_2, 2);
         $this->precio_3 = formatDecimalOrInteger($producto->precio_3, 2);
@@ -59,7 +62,10 @@ class ShowGarantias extends Component
         $validatedata = $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'typegarantia_id' => [
-                'required', 'integer', 'min:1', 'exists:typegarantias,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:typegarantias,id',
                 Rule::unique('garantiaproductos', 'typegarantia_id')
                     ->where('producto_id', $this->producto->id)
             ],
@@ -133,21 +139,25 @@ class ShowGarantias extends Component
     public function savedetalle()
     {
         $this->authorize('admin.almacen.productos.especificaciones');
-        $validateData = $this->validate([
-            'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'descripcion' => ['required', 'string']
-        ]);
+        if (Module::isEnabled('Marketplace')) {
+            $validateData = $this->validate([
+                'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
+                'descripcion' => ['required', 'string']
+            ]);
 
-        $this->producto->detalleproducto()->updateOrCreate(
-            ['id' => $this->producto->detalleproducto->id ?? null],
-            ['descripcion' => $this->descripcion]
-        );
-        // $this->producto->viewespecificaciones = $this->showespecificaciones ? 1 : 0;
-        // $this->reset(['descripcion']);
-        $this->resetValidation();
-        // $this->emit("resetCKEditor");
-        $this->producto->refresh();
-        $this->dispatchBrowserEvent('updated');
+            $this->producto->detalleproducto()->updateOrCreate(
+                ['id' => $this->producto->detalleproducto->id ?? null],
+                ['descripcion' => $this->descripcion]
+            );
+            // $this->producto->viewespecificaciones = $this->showespecificaciones ? 1 : 0;
+            // $this->reset(['descripcion']);
+            $this->producto->viewdetalle = Producto::VER_DETALLES;
+            $this->producto->save();
+            $this->resetValidation();
+            // $this->emit("resetCKEditor");
+            $this->producto->refresh();
+            $this->dispatchBrowserEvent('updated');
+        }
     }
 
     // public function deletedescripcion(Detalleproducto $detalleproducto)
@@ -166,27 +176,37 @@ class ShowGarantias extends Component
             'precio_1' => [
                 'nullable',
                 Rule::requiredIf(in_array('precio_1', $pricetypes)),
-                'numeric', 'min:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'decimal:0,3'
             ],
             'precio_2' => [
                 'nullable',
                 Rule::requiredIf(in_array('precio_2', $pricetypes)),
-                'numeric', 'min:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'decimal:0,3'
             ],
             'precio_3' => [
                 'nullable',
                 Rule::requiredIf(in_array('precio_3', $pricetypes)),
-                'numeric', 'min:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'decimal:0,3'
             ],
             'precio_4' => [
                 'nullable',
                 Rule::requiredIf(in_array('precio_4', $pricetypes)),
-                'numeric', 'min:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'decimal:0,3'
             ],
             'precio_5' => [
                 'nullable',
                 Rule::requiredIf(in_array('precio_5', $pricetypes)),
-                'numeric', 'min:0', 'decimal:0,3'
+                'numeric',
+                'min:0',
+                'decimal:0,3'
             ],
         ]);
 

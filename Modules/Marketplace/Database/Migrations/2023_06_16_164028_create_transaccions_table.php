@@ -26,6 +26,7 @@ class CreateTransaccionsTable extends Migration
             $table->string("status")->nullable();
             $table->string("action_code")->nullable();
             $table->string("brand")->nullable();
+            $table->string("signature", 255)->nullable();
             $table->string("email", 255)->nullable();
             $table->unsignedBigInteger("order_id");
             $table->unsignedBigInteger("user_id");

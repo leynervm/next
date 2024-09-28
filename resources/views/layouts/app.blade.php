@@ -102,10 +102,6 @@
 <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 
 <script>
-    const audio = new Audio("{{ asset('assets/mp3/porque-te-vas.mp3') }}");
-
-
-
 
     let boxCookies = document.getElementById('cookies');
     cookies();

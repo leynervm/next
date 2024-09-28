@@ -79,12 +79,28 @@ class RangoImport implements ToModel, WithEvents, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            'desde' => ['required', 'numeric', 'decimal:0,2', 'gt:0'],
+            'desde' => ['required', 'numeric', 'decimal:0,2', 'gt:*.0'],
             'hasta' => ['required', 'numeric', 'decimal:0,2', 'gt:*.desde'],
-
             // '*.desde' => ['required', 'numeric', 'decimal:0,2', 'gt:*.0'],
             // '*.hasta' => ['required', 'numeric', 'decimal:0,2', 'gt:*.desde'],
             'incremento' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
+        ];
+    }
+
+    public function customValidationMessages()
+    {
+        return [
+            'desde.gt' => "El campo :attribute debe ser mayor que 0.",
+            // 'hasta.gt' => "El campo :attribute debe ser mayor que desde.",
+        ];
+    }
+
+    public function customValidationAttributes()
+    {
+        return [
+            'desde' => 'rango inicio',
+            'hasta' => 'rango final',
+            'incremento' => 'porcentaje ganancia',
         ];
     }
 

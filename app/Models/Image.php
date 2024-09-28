@@ -33,12 +33,12 @@ class Image extends Model
 
     public function getImageURL()
     {
-        return Storage::url('productos/' . $this->url);
+        return pathURLProductImage($this->url);
     }
 
     public function getLogoURL()
     {
-        return Storage::url('productos/' . $this->url);
+        return Storage::url('images/marcas/' . $this->url);
     }
 
     public function getMarcaURL()

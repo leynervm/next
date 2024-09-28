@@ -103,7 +103,7 @@ class HomeController extends Controller
                 $query->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
                     ->groupBy('almacen_producto.producto_id')
                     ->havingRaw('SUM(almacen_producto.cantidad) <= productos.minstock');
-            })->get();
+            })->paginate();
 
         return view('dashboard', compact('empresa', 'chart', 'chart1', 'productos'));
     }

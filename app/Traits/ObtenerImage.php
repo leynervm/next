@@ -17,7 +17,7 @@ trait ObtenerImage
         if ($this->images()->default()->exists()) {
             return pathURLProductImage($this->images()->default()->first()->url);
         } else {
-            return  pathURLProductImage($this->images->first()->url);
+            return pathURLProductImage($this->images->first()->url);
         }
     }
 

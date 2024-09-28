@@ -2,15 +2,24 @@
 
 namespace Modules\Marketplace\Http\Controllers;
 
-use App\Enums\MethodPaymentOnlineEnum;
 use App\Enums\StatusPayWebEnum;
-use Illuminate\Contracts\Support\Renderable;
+use App\Models\Almacen;
+use App\Models\Pricetype;
+use App\Rules\Recaptcha;
+use Illuminate\Support\Str;
+use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+// use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
+use Laravel\Jetstream\Jetstream;
 use Modules\Marketplace\Entities\Order;
-use Modules\Marketplace\Entities\Transaccion;
+use Modules\Marketplace\Entities\Shipmenttype;
+use Modules\Marketplace\Entities\Trackingstate;
+use Nwidart\Modules\Routing\Controller;
 
 class NiubizController extends Controller
 {
@@ -33,73 +42,323 @@ class NiubizController extends Controller
             'order' => [
                 'tokenId' => $request->transactionToken,
                 'purchaseNumber' => $request->purchaseNumber,
-                'amount' => $request->amount,
+                'amount' => formatDecimalOrInteger(Cart::instance('shopping')->subtotal(), 2),
                 'currency' => config('services.niubiz.currency'),
             ],
             'yape' => [
-                'phoneNumber' => '928393901',
-                'otp' => '654321'
+                'phoneNumber' => '969929157',
+                'otp' => '557454'
             ]
         ])->json();
 
 
-        DB::beginTransaction();
-        try {
+        if (isset($response)) {
+            if (isset($response['dataMap']) && $response['dataMap']['ACTION_CODE'] == '000') {
+                Log::info('Response del pago: ', $response);
+                DB::beginTransaction();
+                try {
 
-            if (isset($response)) {
-                if (isset($response['dataMap']) && $response['dataMap']['ACTION_CODE'] == '000') {
-                    $transaccion = Transaccion::create([
+                    $client = auth()->user()->client()->firstOrCreate(
+                        ['document' => auth()->user()->document],
+                        [
+                            'name' => auth()->user()->name,
+                            'email' => auth()->user()->email,
+                            'pricetype_id' => mi_empresa()->usarLista() ? Pricetype::default()->first()->id ?? null : null,
+                        ]
+                    );
+
+                    $default = 0;
+                    if ($client->telephones()->count() == 0) {
+                        $default = 1;
+                    }
+
+                    $client->telephones()->updateOrCreate([
+                        'phone' => $request->input('receiver_telefono'),
+                    ], [
+                        'default' => $default
+                    ]);
+
+                    $order = Order::create([
+                        'date' => now('America/Lima'),
+                        'seriecompleta' => 'ORDER-',
+                        'purchase_number' => $request->input('purchaseNumber'),
+                        'exonerado' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
+                        'gravado' => 0,
+                        'igv' => 0,
+                        'subtotal' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
+                        'total' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
+                        'tipocambio' => number_format(mi_empresa()->tipocambio ?? 0, 3, '.', ''),
+                        'receiverinfo' => [
+                            'document' => $request->input('receiver_document'),
+                            'name' => $request->input('receiver_name'),
+                            'telefono' => $request->input('receiver_telefono'),
+                        ],
+                        'direccion_id' => $request->has('direccion_envio') ? $request->input('direccion_envio') : null,
+                        'moneda_id' => $request->input('moneda_id'),
+                        'client_id' => $client->id,
+                        'shipmenttype_id' => $request->input('shipmenttype_id'),
+                        'status' => StatusPayWebEnum::PAGO_CONFIRMADO->value,
+                        'pasarela' => 'NIUBIZ',
+                        'user_id' => auth()->user()->id,
+                    ]);
+
+                    $eci_description = "";
+                    if (isset($response['dataMap']['ECI_DESCRIPTION']) && !empty($response['dataMap']['ECI_DESCRIPTION'])) {
+                        $eci_description = $response['dataMap']['ECI_DESCRIPTION'];
+                    }
+                    if (isset($response['dataMap']['DEPOSIT_STATUS']) && !empty($response['dataMap']['DEPOSIT_STATUS'])) {
+                        $eci_description = $response['dataMap']['DEPOSIT_STATUS'];
+                    }
+
+                    $order->transaccion()->create([
                         'date' => now()->createFromFormat('ymdHis', $response['dataMap']['TRANSACTION_DATE'])->format('d/m/Y H:i:s'),
                         'amount' => isset($response['dataMap']['AMOUNT']) ? $response['dataMap']['AMOUNT'] : null,
                         'currency' => isset($response['order']['currency']) ? $response['order']['currency'] : null,
-                        'eci_description' => $response['dataMap']['ECI_DESCRIPTION'],
+                        'eci_description' => $eci_description,
                         'action_description' => $response['dataMap']['ACTION_DESCRIPTION'],
                         'transaction_id' => $response['dataMap']['TRANSACTION_ID'],
                         'card' => $response['dataMap']['CARD'],
-                        'card_type' => $response['dataMap']['CARD_TYPE'],
+                        'card_type' => isset($response['dataMap']['CARD_TYPE']) && !empty($response['dataMap']['CARD_TYPE']) ? $response['dataMap']['CARD_TYPE'] : null,
                         'status' => $response['dataMap']['STATUS'],
                         'action_code' => $response['dataMap']['ACTION_CODE'],
                         'brand' => $response['dataMap']['BRAND'],
+                        'signature' => $response['dataMap']['SIGNATURE'],
                         'email' => isset($response['dataMap']['VAULT_BLOCK']) ?  $response['dataMap']['VAULT_BLOCK'] : null,
-                        'order_id' => $request->orderId,
                         'user_id' => auth()->user()->id
                     ]);
 
-                    $order = Order::find($request->orderId);
-                    if ($order) {
-                        $order->status = StatusPayWebEnum::PAGO_CONFIRMADO->value;
-                        $methodpay = strtoupper($response['dataMap']['CARD_TYPE']) == "C" ? MethodPaymentOnlineEnum::TARJETA_CREDITO->value : MethodPaymentOnlineEnum::TARJETA_DEBITO->value;
-                        $methodpay = (isset($response['dataMap']['YAPE_ID']) && !empty($response['dataMap']['YAPE_ID'])) ? MethodPaymentOnlineEnum::YAPE->value : $methodpay;
-                        $order->methodpay = $methodpay;
-                        $order->save();
+                    $order->seriecompleta = $order->seriecompleta . $order->id;
+                    $order->save();
+
+                    if (Trackingstate::default()->exists()) {
+                        $order->trackings()->create([
+                            'date' => now(),
+                            'descripcion' => 'PEDIDO REGISTRADO CORRECTAMENTE',
+                            'trackingstate_id' => Trackingstate::default()->first()->id,
+                            'user_id' => auth()->user()->id
+                        ]);
                     }
-                } else {
-                    $transaccion = Transaccion::create([
-                        'date' => isset($response) && $response['data']['TRANSACTION_DATE'] ? now()->createFromFormat('ymdHis', $response['data']['TRANSACTION_DATE'])->format('d/m/Y H:i:s') : now('America/Lima'),
-                        'amount' => isset($response) && $response['data']['AMOUNT'] ?  $response['data']['AMOUNT'] : null,
-                        'currency' => config('services.niubiz.currency'),
-                        'eci_description' => isset($response) && $response['data']['ECI_DESCRIPTION'] ?  $response['data']['ECI_DESCRIPTION'] : null,
-                        'action_description' => isset($response) && $response['data']['ACTION_DESCRIPTION'] ?  $response['data']['ACTION_DESCRIPTION'] : null,
-                        'transaction_id' => isset($response) && $response['data']['TRANSACTION_ID'] ?  $response['data']['TRANSACTION_ID'] : null,
-                        'card' => isset($response) && $response['data']['CARD'] ?  $response['data']['CARD'] : null,
-                        'card_type' => isset($response) && $response['data']['CARD_TYPE'] ?  $response['data']['CARD_TYPE'] : null,
-                        'status' => isset($response) && $response['data']['STATUS'] ?  $response['data']['STATUS'] : null,
-                        'action_code' => isset($response) && $response['data']['ACTION_CODE'] ?  $response['data']['ACTION_CODE'] : null,
-                        'brand' => isset($response) && $response['data']['BRAND'] ?  $response['data']['BRAND'] : null,
-                        'email' => isset($response['data']['VAULT_BLOCK']) ?  $response['data']['VAULT_BLOCK'] : null,
-                        'order_id' => $request->orderId,
-                        'user_id' => auth()->user()->id
-                    ]);
+
+                    if ($request->has('local_entrega')) {
+                        $order->entrega()->create([
+                            'date' => $request->input('daterecojo'),
+                            'sucursal_id' => $request->input('local_entrega')
+                        ]);
+                    }
+
+                    foreach (Cart::instance('shopping')->content() as $item) {
+                        $order->tvitems()->create([
+                            'date' => now('America/Lima'),
+                            'cantidad' => formatDecimalOrInteger($item->qty),
+                            'pricebuy' => number_format($item->options->pricebuy, 2, '.', ''),
+                            'price' => number_format($item->price, 2, '.', ''),
+                            'igv' => number_format($item->options->igv, 2, '.', ''),
+                            'subtotaligv' => number_format($item->options->subtotaligv, 2, '.', ''),
+                            'subtotal' => number_format($item->subtotal, 2, '.', ''),
+                            'total' => number_format($item->subtotal, 2, '.', ''),
+                            'status' => 0,
+                            'alterstock' => Almacen::NO_ALTERAR_STOCK,
+                            'gratuito' => 0,
+                            'almacen_id' => null,
+                            'producto_id' => $item->id,
+                            'user_id' => auth()->user()->id
+                        ]);
+                    }
+
+                    DB::commit();
+                    Cart::instance('shopping')->destroy();
+                    $mensaje = [
+                        'title' => $response['dataMap']['ACTION_DESCRIPTION'],
+                        'text' => null,
+                        'type' => 'success',
+                    ];
+                    Log::info('Respuesta del pago: ', $mensaje);
+                    return redirect()->route('orders.payment', $order)->with('message', response()->json($mensaje)->getData());
+                } catch (\ErrorException $e) {
+                    $mensaje = [
+                        'title' => 'ERROR AL OBTENER DATOS DEL PAGO, ' . $e->getMessage(),
+                        'text' => null,
+                        'type' => 'error',
+                    ];
+                    Log::info('Error de excepcion del pago: ', $mensaje);
+                    DB::rollBack();
+                    // throw $e;
+                    return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+                } catch (\Exception  $e) {
+                    $mensaje = [
+                        'title' => $e->getMessage(),
+                        'text' => null,
+                        'type' => 'error',
+                    ];
+                    Log::info('Error de excepcion del pago: ', $mensaje);
+                    DB::rollBack();
+                    // throw $e;
+                    return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
                 }
-                DB::commit();
+            } else {
+                $mensaje = [
+                    'title' => isset($response) && $response['data']['ACTION_DESCRIPTION'] ?  $response['data']['ACTION_DESCRIPTION'] : 'NO SE PUDO PROCESAR EL PAGO',
+                    'text' => null,
+                    'type' => 'warning',
+                    'timer' => 3000,
+                ];
+                Log::info('Respuesta del pago: ', $mensaje);
+                return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
             }
-            return redirect()->route('orders.payment', $request->orderId);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
+        } else {
+            $mensaje = [
+                'title' => 'NO SE PUDO PROCESAR EL PAGO',
+                'text' => null,
+                'type' => 'error',
+                'timer' => 3000,
+            ];
+            Log::info('Respuesta del pago: ', $mensaje);
+            return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
         }
+    }
+
+    public function token()
+    {
+        $auth = base64_encode(config('services.niubiz.user') . ':' . config('services.niubiz.password'));
+        $accessToken = Http::withHeaders([
+            'Authorization' => "Basic $auth",
+            'Content-Type' => "application/json",
+        ])->get(config('services.niubiz.url_api') . 'api.security/v1/security')->body();
+
+
+        $sessionToken = Http::withHeaders([
+            'Authorization' => $accessToken,
+            'Content-Type' => "application/json",
+        ])->post(config('services.niubiz.url_api') . 'api.ecommerce/v2/ecommerce/token/session/' . config('services.niubiz.merchant_id'), [
+            'channel' => 'web',
+            'amount' => formatDecimalOrInteger(Cart::instance('shopping')->subtotal()),
+            'antifraud' => [
+                'clientIp' => request()->ip(),
+                'merchantDefineData' => [
+                    'MDD4' => auth()->user()->email,
+                    'MDD21' => 0,
+                    'MDD32' => auth()->id(),
+                    'MDD75' => 'Registrado',
+                    'MDD77' => now('America/Lima')->diffInDays(auth()->user()->created_at) + 1,
+                ],
+            ],
+            // 'dataMap' => [
+            //     'cardholderCity' => ,
+            // 'cardholderCountry' => ,
+            // 'cardholderAddress' => ,
+            // 'cardholderPostalCode' => ,
+            // 'cardholderState' => ,
+            // 'cardholderPhoneNumber' => ,
+            // ],
+        ])->json();
+
+        return $sessionToken['sessionKey'];
+    }
+
+    public function config_checkout(Request $request)
+    {
+
+        $shipmenttype = Shipmenttype::find($request->input('datos.shipmenttype.id'));
+
+        if (empty($shipmenttype)) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => [
+                    'shipmenttype' => ['El campo tipo de envío es obligatorio.'],
+                ],
+            ]);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'datos.shipmenttype.id' => ['required', 'integer', 'min:1', 'exists:shipmenttypes,id'],
+            'datos.local_entrega.id' => [
+                'nullable',
+                Rule::requiredIf($shipmenttype->isRecojotienda()),
+                'integer',
+                'min:1',
+                'exists:sucursals,id'
+            ],
+            'datos.daterecojo' => [
+                'nullable',
+                Rule::requiredIf($shipmenttype->isRecojotienda()),
+                'date',
+                'after_or_equal:today'
+            ],
+            'datos.direccion_envio.id' => [
+                'nullable',
+                Rule::requiredIf($shipmenttype->isEnviodomicilio()),
+                'integer',
+                'min:1',
+                'exists:direccions,id'
+            ],
+            'datos.receiver' => ['required', 'integer', Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])],
+            'datos.receiver_info.document' => ['required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'],
+            'datos.receiver_info.name' => ['required', 'string', 'min:8',],
+            'datos.receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
+            'datos.g_recaptcha_response' => ['required', new Recaptcha()],
+            'datos.terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+        ]);
+
+        // ->stopOnFirstFailure()
+        if ($validator->stopOnFirstFailure()->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ]); // 422 Unprocessable Entity
+        }
+
+        $datos_url_get = "shipmenttype_id=" . $shipmenttype->id . "&receiver=" . $request->input('datos.receiver');
+        $datos_url_get .= "&receiver_document=" . $request->input('datos.receiver_info.document') . "&receiver_name=" . $request->input('datos.receiver_info.name');
+        $datos_url_get .= "&receiver_telefono=" . $request->input('datos.receiver_info.telefono');
+        $datos_url_get .= "&moneda_id=" . $request->input('datos.moneda_id');
+
+        if ($shipmenttype->isRecojotienda()) {
+            $datos_url_get .= "&local_entrega=" . $request->input('datos.local_entrega.id');
+            $datos_url_get .= "&daterecojo=" . $request->input('datos.daterecojo');
+        } else {
+            $datos_url_get .= "&direccion_envio=" . $request->input('datos.direccion_envio.id');
+        }
+
+        do {
+            $purchasenumber = mt_rand(100000000, 999999999);
+        } while (DB::table('orders')->where('purchase_number', $purchasenumber)->exists());
+
+        $config = [
+            'sessiontoken' => $this->token(),
+            'channel' => 'web',
+            'merchantid' => config('services.niubiz.merchant_id'),
+            'purchasenumber' => $purchasenumber,
+            'amount' => formatDecimalOrInteger(Cart::instance('shopping')->subtotal()),
+            'expirationminutes' => 5,
+            'timeouturl' =>  route('carshoop.create'),
+            'merchantlogo' => mi_empresa()->image->getLogoEmpresa(),
+            'merchantname' => mi_empresa()->name,
+            'buttoncolor' => '#ffffff',
+            'formbuttoncolor' => '#0e7e7e',
+            'usertoken' =>  Str::uuid(),
+            'hidexbutton' =>  true,
+            'action' => route('orders.niubiz.checkout') . "?purchaseNumber=$purchasenumber&$datos_url_get",
+        ];
+
+        // 'complete': function(params) {
+        //         console.log(params.status);
+        //         alert(JSON.stringify(params));
+        //     }
+
+        return response()->json($config);
+    }
+
+    function generatePurchaseNumber($length = 10)
+    {
+        do {
+            $purchasenumber = '';
+            for ($i = 0; $i < $length; $i++) {
+                $purchasenumber .= random_int(0, 9);
+            }
+
+            $exists = Order::where('purchase_number', $purchasenumber)->exists();
+        } while ($exists);
+
+        return $purchasenumber;
     }
 }

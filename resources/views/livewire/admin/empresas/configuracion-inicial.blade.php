@@ -237,14 +237,14 @@
                                     <x-jet-input-error for="viewpriceantes" />
                                 </div>
 
-                                <div class="block">
+                                {{-- <div class="block">
                                     <x-label-check for="viewespecificaciones">
                                         <x-input x-model="viewespecificaciones" name="viewespecificaciones"
                                             type="checkbox" id="viewespecificaciones" />
                                         MOSTRAR ESPECFICACIONES DEL PRODUCTO
                                     </x-label-check>
                                     <x-jet-input-error for="viewespecificaciones" />
-                                </div>
+                                </div> --}}
 
                                 <div class="block">
                                     <x-label-check for="viewlogomarca">

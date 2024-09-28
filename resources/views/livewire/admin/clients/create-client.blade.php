@@ -13,7 +13,7 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="save" class="relative" x-data="data">
-                <div class="w-full sm:grid grid-cols-3 gap-2">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div class="w-full">
                         <x-label value="DNI / RUC :" />
                         @if ($exists)
@@ -24,10 +24,10 @@
                             </div>
                         @else
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block flex-1 w-full prevent" x-model="document"
+                                <x-input class="block flex-1 w-full inpunt-number-none" x-model="document"
                                     @keyup="togglecontact($event.target.value)" wire:model.defer="document"
-                                    wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
-                                    onkeydown="disabledEnter(event)" />
+                                    wire:keydown.enter.prevent="searchclient"
+                                    onkeypress="return validarNumero(event, 11)" />
                                 <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -40,21 +40,20 @@
                         @endif
                         <x-jet-input-error for="document" />
                     </div>
-                    <div class="w-full sm:col-span-2 mt-2 sm:mt-0">
+                    <div class="w-full sm:col-span-2">
                         <x-label value="Cliente (Razón Social) :" />
-                        <x-input class="block w-full" wire:model.defer="name"
-                            placeholder="Nombres / razón social del cliente" />
+                        <x-input class="block w-full" wire:model.defer="name" />
                         <x-jet-input-error for="name" />
                     </div>
 
-                    <div class="w-full sm:col-span-3 mt-2 sm:mt-0">
+                    <div class="w-full sm:col-span-3">
                         <x-label value="Dirección, calle, avenida :" />
                         <x-input class="block w-full" wire:model.defer="direccion"
                             placeholder="Dirección del cliente..." />
                         <x-jet-input-error for="direccion" />
                     </div>
 
-                    <div class="w-full sm:col-span-2 mt-2 sm:mt-0 relative">
+                    <div class="w-full sm:col-span-2 relative">
                         <x-label value="Ubigeo :" />
                         <div class="relative" x-init="select2Ubigeo" wire:ignore>
                             <x-select class="block w-full" x-ref="select" wire:model.defer="ubigeo_id"
@@ -74,12 +73,13 @@
                         <x-jet-input-error for="ubigeo_id" />
                     </div>
 
-                    <div class="w-full mt-2 sm:mt-0">
+                    <div class="w-full">
                         <x-label value="Correo :" />
-                        <x-input class="block w-full" wire:model.defer="email" placeholder="Correo del cliente..." />
+                        <x-input class="block w-full" wire:model.defer="email" type="email" />
                         <x-jet-input-error for="email" />
                     </div>
-                    <div class="w-full mt-2 sm:mt-0">
+
+                    <div class="w-full">
                         <x-label value="Género :" />
                         <div class="relative" id="parentsexo_id" x-init="select2Sexo" wire:ignore>
                             <x-select class="block w-full" id="sexo_id" x-ref="selectsexo"
@@ -95,7 +95,7 @@
                         <x-jet-input-error for="sexo" />
                     </div>
 
-                    <div class="w-full mt-2 sm:mt-0">
+                    <div class="w-full">
                         <x-label value="Fecha nacimiento :" />
                         <x-input type="date" class="block w-full" wire:model.defer="nacimiento" />
                         <x-jet-input-error for="nacimiento" />
@@ -103,7 +103,7 @@
 
                     @if (Module::isEnabled('Ventas'))
                         @if (mi_empresa()->usarlista())
-                            <div class="w-full mt-2 sm:mt-0">
+                            <div class="w-full">
                                 <x-label value="Lista precio :" />
                                 <div class="w-full relative" x-data="{ pricetype_id: @entangle('pricetype_id').defer }" x-init="pricetype"
                                     wire:ignore>
@@ -124,24 +124,29 @@
                         @endif
                     @endif
 
-                    <div class="w-full mt-2 sm:mt-0">
+                    <div class="w-full">
                         <x-label value="Teléfono :" />
-                        <x-input class="block w-full" wire:model.defer="telefono" placeholder="+51 999 999 999"
-                            maxlength="9" onkeypress="return validarNumero(event, 9)" />
+                        <x-input class="block w-full input-number-none" type="number" wire:model.defer="telefono"
+                            onkeypress="return validarNumero(event, 9)" />
                         <x-jet-input-error for="telefono" />
+                    </div>
+
+                    <div class="w-full" x-show="contact" x-cloak style="display: none;">
+                        <x-label-check for="addcontacto">
+                            <x-input x-model="addcontacto" type="checkbox" id="addcontacto" />
+                            AGREGAR CONTACTO
+                        </x-label-check>
                     </div>
                 </div>
 
-                <div class="animate__animated animate__fadeInDown" x-show="contact">
-                    <x-title-next titulo="Contacto" class="my-3" />
-
+                <x-form-card x-show="addcontacto" titulo="AGREGAR CONTACTO">
                     <div class="w-full sm:grid grid-cols-3 gap-2">
                         <div class="w-full">
                             <x-label value="DNI :" />
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full flex-1" wire:model.defer="documentContact"
-                                    wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
-                                    type="number" onkeydown="disabledEnter(event)" />
+                                <x-input class="block w-full flex-1 input-number-none"
+                                    wire:model.defer="documentContact" wire:keydown.enter.prevent="searchcontacto"
+                                    onkeypress="return validarNumero(event, 8)" type="number" />
                                 <x-button-add class="px-2" wire:click="searchcontacto"
                                     wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -156,18 +161,17 @@
                         </div>
                         <div class="w-full sm:col-span-2 mt-2 sm:mt-0">
                             <x-label value="Nombres contacto :" />
-                            <x-input class="block w-full" wire:model.defer="nameContact"
-                                placeholder="Nombres del contacto..." />
+                            <x-input class="block w-full" wire:model.defer="nameContact" />
                             <x-jet-input-error for="nameContact" />
                         </div>
                         <div class="w-full mt-2 sm:mt-0">
                             <x-label value="Teléfono :" />
-                            <x-input class="block w-full" wire:model.defer="telefonoContact" type="number"
-                                onkeypress="return validarNumero(event, 9)" />
+                            <x-input class="block w-full input-number-none" type="number"
+                                wire:model.defer="telefonoContact" onkeypress="return validarNumero(event, 9)" />
                             <x-jet-input-error for="telefonoContact" />
                         </div>
                     </div>
-                </div>
+                </x-form-card>
 
                 @if (module::isEnabled('Marketplace'))
                     @if ($user)
@@ -177,9 +181,7 @@
                             <h1 class="font-semibold text-sm leading-4 text-primary text-center">
                                 {{ $user->name }}</h1>
 
-                            <x-label class="font-semibold text-center" textSize="[10px]">
-                                EMAIL
-                            </x-label>
+                            <x-label class="font-semibold text-center" value="EMAIL" />
                             <p class="text-xs text-center">{{ $user->email }}</p>
                         </x-simple-card>
                     @endif
@@ -203,6 +205,25 @@
 
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('data', () => ({
+                contact: false,
+                document: @entangle('document').defer,
+                ubigeo_id: @entangle('ubigeo_id').defer,
+                sexo: @entangle('sexo').defer,
+                addcontacto: @entangle('addcontacto').defer,
+
+                togglecontact(value) {
+                    if (value.trim().length == 11) {
+                        this.contact = true;
+                    } else {
+                        this.contact = false;
+                        this.addcontacto = false;
+                    }
+                }
+            }))
+        });
+
         function select2Ubigeo() {
             this.select = $(this.$refs.select).select2();
             this.select.val(this.ubigeo_id).trigger("change");
@@ -247,23 +268,5 @@
                 this.selectP.val(value).trigger("change");
             });
         }
-
-
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('data', () => ({
-                contact: false,
-                document: @entangle('document').defer,
-                ubigeo_id: @entangle('ubigeo_id').defer,
-                sexo: @entangle('sexo').defer,
-
-                togglecontact(value) {
-                    if (value.trim().length == 11) {
-                        this.contact = true;
-                    } else {
-                        this.contact = false;
-                    }
-                }
-            }))
-        });
     </script>
 </div>

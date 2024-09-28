@@ -127,7 +127,6 @@ class CreateEmpresa extends Component
                 Storage::putFileAs('images/company', $this->icono, $urlicono);
                 if ($this->icono->getSize() > 1048576) { //1MB
                     // $compressedImage->destroy();
-                    // $compressedImage->delete();
                     $this->addError('icono', 'La imagen excede el tamaño máximo permitido.');
                 }
             }
@@ -192,7 +191,6 @@ class CreateEmpresa extends Component
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
                 }
 

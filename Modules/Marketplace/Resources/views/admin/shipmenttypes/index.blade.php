@@ -1,6 +1,6 @@
 <x-admin-layout>
     <x-slot name="breadcrumb">
-        <x-link-breadcrumb text="VENTAS EN LÍNEA" active>
+        <x-link-breadcrumb text="VENTAS EN LÍNEA" route="admin.marketplace">
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -12,7 +12,7 @@
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
-        <x-link-breadcrumb text="TIPOS DE ENVÍO" active>
+        <x-link-breadcrumb text="TIPOS DE ENTREGA" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">

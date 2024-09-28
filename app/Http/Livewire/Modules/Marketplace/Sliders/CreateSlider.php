@@ -87,7 +87,6 @@ class CreateSlider extends Component
 
             if ($compressedImage->filesize() > 2097152) { //2MB
                 $compressedImage->destroy();
-                $compressedImage->delete();
                 $this->addError('image', 'El campo imagen no debe ser mayor que 2MB.');
                 return false;
             }

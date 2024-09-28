@@ -30,6 +30,7 @@ class Order extends Model
 
     protected $fillable = [
         'date',
+        'purchase_number',
         'seriecompleta',
         'exonerado',
         'gravado',
@@ -38,7 +39,7 @@ class Order extends Model
         'total',
         'tipocambio',
         'receiverinfo',
-        'methodpay',
+        'pasarela',
         'direccion_id',
         'status',
         'shipmenttype_id',
@@ -52,7 +53,6 @@ class Order extends Model
 
     protected $casts = [
         'receiverinfo' => 'array',
-        'methodpay' => MethodPaymentOnlineEnum::class,
         'status' => StatusPayWebEnum::class
     ];
 
@@ -74,12 +74,12 @@ class Order extends Model
 
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class)->withTrashed();;
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class)->withTrashed();;
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function entrega(): HasOne
@@ -89,7 +89,7 @@ class Order extends Model
 
     public function direccion(): BelongsTo
     {
-        return $this->belongsTo(Direccion::class)->withTrashed();;
+        return $this->belongsTo(Direccion::class)->withTrashed();
     }
 
     public function cajamovimientos(): MorphMany
@@ -97,9 +97,9 @@ class Order extends Model
         return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
     }
 
-    public function transaccions(): HasMany
+    public function transaccion(): HasOne
     {
-        return $this->hasMany(Transaccion::class);
+        return $this->hasOne(Transaccion::class);
     }
 
     public function trackings(): HasMany

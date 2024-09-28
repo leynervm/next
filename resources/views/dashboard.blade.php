@@ -3,7 +3,7 @@
 
         @can('admin.almacen.productos.agotados')
             @if (count($productos) > 0)
-                <div class="w-full ml-auto max-w-lg md:max-h-[calc(100vh-4rem)] overflow-y-auto">
+                <div class="w-full pb-20 ml-auto max-w-lg md:max-h-[calc(100vh-4rem)] overflow-y-auto">
                     <div class="text-xs font-medium text-primary py-1">
                         PRODUCTOS AGOTADOS & PRÓXIMOS AGOTAR
                     </div>
@@ -16,7 +16,7 @@
                                 @if ($image)
                                     <img class="w-full h-full object-scale-down object-center" src="{{ $image }}" />
                                 @else
-                                    <x-icon-file-upload class="!w-full !h-full !m-0" type="unknown" />
+                                    <x-icon-file-upload class="!w-full !h-full !m-0 !border-0" type="unknown" />
                                 @endif
                             </div>
                             <div class="w-full flex-1">
@@ -45,6 +45,11 @@
                             </div>
                         </div>
                     @endforeach
+                </div>
+
+                <div
+                    class="w-full md:pl-64 flex justify-center items-center sm:justify-end p-1 sm:pr-6 fixed bottom-0 right-0 bg-body">
+                    {{ $productos->onEachSide(0)->links('pagination::pagination-default') }}
                 </div>
             @endif
         @endcan

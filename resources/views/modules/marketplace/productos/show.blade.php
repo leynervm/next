@@ -1,12 +1,28 @@
 <x-app-layout>
     <x-slot name="breadcrumb">
-        <x-link-breadcrumb text="TIENDA WEB" active>
+        <x-link-breadcrumb text="TIENDA WEB" route="productos">
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="8" cy="21" r="1" />
-                    <circle cx="19" cy="21" r="1" />
-                    <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+                    <path
+                        d="M3.06164 15.1933L3.42688 13.1219C3.85856 10.6736 4.0744 9.44952 4.92914 8.72476C5.78389 8 7.01171 8 9.46734 8H14.5327C16.9883 8 18.2161 8 19.0709 8.72476C19.9256 9.44952 20.1414 10.6736 20.5731 13.1219L20.9384 15.1933C21.5357 18.5811 21.8344 20.275 20.9147 21.3875C19.995 22.5 18.2959 22.5 14.8979 22.5H9.1021C5.70406 22.5 4.00504 22.5 3.08533 21.3875C2.16562 20.275 2.4643 18.5811 3.06164 15.1933Z" />
+                    <path
+                        d="M7.5 8L7.66782 5.98618C7.85558 3.73306 9.73907 2 12 2C14.2609 2 16.1444 3.73306 16.3322 5.98618L16.5 8" />
+                    <path d="M15 11C14.87 12.4131 13.5657 13.5 12 13.5C10.4343 13.5 9.13002 12.4131 9 11" />
+                </svg>
+            </x-slot>
+        </x-link-breadcrumb>
+        <x-link-breadcrumb text="ESPECIFICACIÓN DEL PRODUCTO" active>
+            <x-slot name="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M13 22C12.1818 22 11.4002 21.6588 9.83691 20.9764C8.01233 20.18 6.61554 19.5703 5.64648 19H2M13 22C13.8182 22 14.5998 21.6588 16.1631 20.9764C20.0544 19.2779 22 18.4286 22 17V6.5M13 22L13 11M4 6.5L4 9.5" />
+                    <path
+                        d="M9.32592 9.69138L6.40472 8.27785C4.80157 7.5021 4 7.11423 4 6.5C4 5.88577 4.80157 5.4979 6.40472 4.72215L9.32592 3.30862C11.1288 2.43621 12.0303 2 13 2C13.9697 2 14.8712 2.4362 16.6741 3.30862L19.5953 4.72215C21.1984 5.4979 22 5.88577 22 6.5C22 7.11423 21.1984 7.5021 19.5953 8.27785L16.6741 9.69138C14.8712 10.5638 13.9697 11 13 11C12.0303 11 11.1288 10.5638 9.32592 9.69138Z" />
+                    <path d="M18.1366 4.01563L7.86719 8.98485" />
+                    <path d="M2 13H5" />
+                    <path d="M2 16H5" />
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
@@ -34,7 +50,8 @@
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex bg-fondominicard">
                 <div class="w-full md:flex-shrink-0 md:w-[42%] md:px-3 py-2">
-                    <div class="w-full max-w-full h-64 xs:h-96 rounded overflow-hidden relative">
+                    <div class="w-full max-w-full h-64 xs:h-96 rounded overflow-hidden relative"
+                        @mouseover="showesp = false" @mouseleave="showesp = true">
                         @if ($image)
                             <template x-if="currentImage">
                                 <figure id="imageproducto" x-ref="figure"
@@ -61,17 +78,19 @@
                                 </div>
                             @endif
                         @endif
-                        @if (count($producto->especificacions) > 0)
-                            <ul class="text-white py-3 text-[10px] absolute left-0 top-20 hidden md:flex flex-col gap-1 justify-start items-start"
-                                x-cloak x-show="showesp" @mousemove="showesp=false">
-                                @foreach ($producto->especificacions()->take(5)->get() as $item)
-                                    <li class="p-1 px-1.5 bg-next-500 rounded-xl tracking-[0.0625em] text-[10px]">
-                                        <span class="font-medium">
-                                            {{ $item->caracteristica->name }} : </span>
-                                        {{ $item->name }}
-                                    </li>
-                                @endforeach
-                            </ul>
+                        @if ($producto->verEspecificaciones())
+                            @if (count($producto->especificacions) > 0)
+                                <ul class="text-white py-3 text-[10px] absolute left-0 top-20 hidden md:flex flex-col gap-1 justify-start items-start"
+                                    x-cloak x-show="showesp">
+                                    @foreach ($producto->especificacions()->take(5)->get() as $item)
+                                        <li class="p-1 bg-next-500 rounded-xl text-[9px] max-w-36">
+                                            <span class="font-medium inline-block">
+                                                {{ $item->caracteristica->name }} : </span>
+                                            {{ $item->name }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         @endif
                     </div>
 
@@ -112,7 +131,7 @@
                     @endif
                 </div>
 
-                <div class="w-full flex-1 sm:py-2 sm:px-8">
+                <div class="w-full flex-1 sm:py-2 px-1 md:px-8">
                     <div class="w-full border-b border-b-borderminicard pb-5">
                         <div class="w-full flex gap-2 justify-between items-center flex-wrap">
                             <div>
@@ -129,36 +148,40 @@
                                 @endif
                             </div>
                         </div>
-                        <p class="text-colorsubtitleform text-[10px] leading-3 xs:text-sm xs:leading-5">{{ $producto->name }}</p>
+                        <p class="text-colorsubtitleform text-[10px] leading-3 xs:text-sm xs:leading-5">
+                            {{ $producto->name }}</p>
                     </div>
 
-                    <div class="w-full grid xl:grid-cols-2 gap-5 mt-5">
+                    <div class="w-full grid {{ $producto->verEspecificaciones() ? 'xl:grid-cols-2' : '' }} gap-5 mt-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-1 gap-2">
-                            <div class="w-full p-5 bg-body text-xs">
+                            @if ($producto->verEspecificaciones())
                                 @if (count($producto->especificacions) > 0)
-                                    <h1 class="text-colortitleform font-semibold">Especificaciones principales</h1>
-                                    <ul class="text-colorsubtitleform py-3 text-[10px]">
-                                        @foreach ($producto->especificacions()->take(2)->get() as $item)
-                                            <li class="py-1">
-                                                <span class="font-semibold">{{ $item->caracteristica->name }} :
-                                                </span>{{ $item->name }}
-                                            </li>
-                                        @endforeach
-                                    </ul>
+                                    <div class="w-full p-5 bg-body text-xs">
+                                        <h1 class="text-colortitleform font-mediu text-xs uppercase">Especificaciones
+                                            principales</h1>
+                                        <ul class="text-colorsubtitleform py-3 text-[10px]">
+                                            @foreach ($producto->especificacions()->take(2)->get() as $item)
+                                                <li class="py-1">
+                                                    <span class="font-semibold">{{ $item->caracteristica->name }} :
+                                                    </span>{{ $item->name }}
+                                                </li>
+                                            @endforeach
+                                        </ul>
 
-                                    <a href="#especificacions" class="underline py-5 text-colorsubtitleform text-xs">Ver
-                                        más especificaciones</a>
-                                @else
-                                    <p class="text-[10px] text-colorsubtitleform">PRODUCTO SIN ESPECIFICACIONES</p>
+                                        <a href="#especificacions"
+                                            class="underline py-5 text-colorsubtitleform text-xs">Ver
+                                            más especificaciones</a>
+
+                                    </div>
                                 @endif
-                            </div>
-
+                            @endif
 
                             @if (count($shipmenttypes) > 0)
-                                <div class="w-full flex flex-wrap gap-2 lg:pt-5 lg:border-t border-t-borderminicard">
+                                <div
+                                    class="w-full flex flex-wrap gap-2 {{ $producto->verEspecificaciones() ? 'lg:pt-5 lg:border-t border-t-borderminicard' : '' }}">
                                     @foreach ($shipmenttypes as $item)
                                         <div
-                                            class="w-full border border-borderminicard inline-flex max-w-full lg:max-w-[220px] xl:max-w-full gap-3 text-colorlabel p-2 bg-fondominicard shadow">
+                                            class="w-full border border-borderminicard rounded-lg xl:rounded-xl inline-flex max-w-full lg:max-w-[220px] xl:max-w-full gap-3 text-colorlabel p-2 bg-fondominicard">
                                             <div class="w-8 h-8 flex-shrink-0">
                                                 @if ($item->isEnviodomicilio())
                                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 33"
@@ -237,15 +260,16 @@
 
                         <div class="text-colorlabel">
                             <div class="w-full flex items-center justify-between gap-2">
-                                <div class="w-full flex-1">
-                                    @if ($pricesale > 0)
+                                @if ($pricesale > 0)
+                                    <div class="w-full flex-1">
                                         <h1 class="font-semibold text-3xl text-center md:text-start">
                                             {{ $moneda->simbolo }}
                                             {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                         </h1>
 
                                         @if ($descuento > 0 && $empresa->verOldprice())
-                                            <span class="text-colorsubtitleform text-xs line-through text-red-600 text-center md:text-start">
+                                            <span
+                                                class="text-colorsubtitleform text-xs line-through text-red-600 text-center md:text-start">
                                                 {{ $moneda->simbolo }}
                                                 {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                             </span>
@@ -257,14 +281,16 @@
                                                 <small class="text-[10px]">USD</small>
                                             </h1>
                                         @endif
-
+                                    </div>
+                                    <div class="flex-shrink-0">
                                         <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto"
                                             :empresa="$empresa" :moneda="$moneda" :pricetype="$pricetype" />
-                                    @else
-                                        <p class="text-colorerror text-[10px] font-semibold text-center">
-                                            PRECIO DE VENTA NO ENCONTRADO</p>
-                                    @endif
-                                </div>
+                                    </div>
+                                @else
+                                    <p class="w-full flex-1 text-colorerror text-[10px] font-semibold text-center">
+                                        PRECIO DE VENTA NO ENCONTRADO</p>
+                                @endif
+
                             </div>
 
                             @if ($combo)
@@ -381,50 +407,55 @@
                             @endif
                         </div>
                     </div>
+
+                    <div class="w-full max-w-full py-3 mt-auto">
+                        <img class="w-full h-auto object-scale-down object-center"
+                            src="{{ asset('images/niubiz_header.png') }}" alt="">
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="w-full flex flex-col gap-2 lg:gap-0 lg:flex-row bg-fondominicard overflow-x-hidden">
-            @php
-                $class = '';
-                if ($producto->detalleproducto) {
-                    if (!empty($producto->detalleproducto->descripcion)) {
-                        if (
-                            $producto->verEspecificaciones() ||
-                            ($producto->verEspecificaciones() == false && $empresa->verEspecificaciones())
-                        ) {
+
+            @if ($producto->verEspecificaciones())
+                @php
+                    $class = '';
+                    if ($producto->detalleproducto) {
+                        if (!empty($producto->detalleproducto->descripcion)) {
                             $class = 'lg:w-[42%]';
                         }
                     }
-                }
-            @endphp
-            @if (count($producto->especificacions) > 0)
-                <div class="w-full {{ $class }} lg:px-3 lg:flex-shrink-0" id="especificacions">
-                    <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">Especificaciones</h1>
-                    <table class="w-full text-[10px] mt-5">
-                        <tbody>
-                            @foreach ($producto->especificacions as $item)
-                                <tr
-                                    class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
-                                    <th class="p-2 py-5 text-left max-w-xs w-60">{{ $item->caracteristica->name }}
-                                    </th>
-                                    <td class="p-2 py-5 text-left">{{ $item->name }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+
+                @endphp
+                @if (count($producto->especificacions) > 0)
+                    <div class="w-full {{ $class }} lg:px-3 lg:flex-shrink-0" id="especificacions">
+                        <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">Especificaciones
+                        </h1>
+                        <table class="w-full text-[10px] mt-5">
+                            <tbody>
+                                @foreach ($producto->especificacions as $item)
+                                    <tr
+                                        class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
+                                        <th class="p-2 py-3 text-left max-w-xs w-60">{{ $item->caracteristica->name }}
+                                        </th>
+                                        <td class="p-2 py-3 text-left">{{ $item->name }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
             @endif
 
-            @if ($producto->detalleproducto)
-                @if (!empty($producto->detalleproducto->descripcion))
-                    @if ($producto->verEspecificaciones() || ($producto->verEspecificaciones() == false && $empresa->verEspecificaciones()))
+            @if ($producto->verDetalles())
+                @if ($producto->detalleproducto)
+                    @if (!empty($producto->detalleproducto->descripcion))
                         <div class="w-full lg:flex-1 overflow-x-hidden">
                             <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">
                                 Descripcion del producto</h1>
 
-                            <div class="w-full block mt-5 overflow-x-hidden">
+                            <div class="w-full block overflow-x-auto">
                                 {!! $producto->detalleproducto->descripcion !!}
                             </div>
                         </div>
@@ -503,7 +534,7 @@
 
         @if (count($recents) > 0)
             <div class="w-full bg-fondominicard mt-10">
-                <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
+                <h1 class="font-medium uppercase text-xs p-3 text-colorsubtitleform border-b border-b-borderminicard">
                     Clientes que vieron este producto también vieron</h1>
 
                 <div class="w-full relative xl:p-10">
@@ -572,7 +603,7 @@
 
         @if (count($sugerencias) > 0)
             <div class="w-full bg-fondominicard mt-10">
-                <h1 class="font-medium text-colorsubtitleform p-3 border-b border-b-borderminicard">
+                <h1 class="font-medium uppercase text-xs text-colorsubtitleform p-3 border-b border-b-borderminicard">
                     Tenemos más productos similares para ti</h1>
 
                 <div class="w-full relative xl:p-10">
@@ -640,7 +671,7 @@
 
         @if (count($similares) > 0)
             <div class="w-full bg-fondominicard mt-10">
-                <h1 class="font-medium p-3 text-colorsubtitleform border-b border-b-borderminicard">
+                <h1 class="font-medium uppercase text-xs p-3 text-colorsubtitleform border-b border-b-borderminicard">
                     También podría interesarte</h1>
 
                 <div class="w-full relative xl:p-10">
@@ -841,12 +872,14 @@
             });
         })
 
-        function zoom(e) {
+        function zoom(e, zoomLevel = 180) {
             var zoomer = e.currentTarget;
             e.offsetX ? offsetX = e.offsetX : offsetX = e.touches ? e.touches[0].pageX : 0
             e.offsetY ? offsetY = e.offsetY : offsetX = e.touches ? e.touches[0].pageX : 0
             x = offsetX / zoomer.offsetWidth * 100
             y = offsetY / zoomer.offsetHeight * 100
+            // zoomer.style.backgroundPosition = x + '% ' + y + '%';
+            zoomer.style.backgroundSize = zoomLevel + "%";
             zoomer.style.backgroundPosition = x + '% ' + y + '%';
             // console.log(e.offsetX);
             // console.log(e.touches);

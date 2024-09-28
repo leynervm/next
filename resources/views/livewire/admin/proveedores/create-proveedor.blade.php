@@ -5,13 +5,12 @@
 
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8" x-data="{ addcontacto: @entangle('addcontacto').defer }">
         <x-form-card titulo="REGISTRAR PROVEEDOR">
-            <div class="w-full sm:grid sm:grid-cols-3 gap-2 rounded">
-                <div class="w-full">
+            <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                <div class="w-full xs:col-span-2 sm:col-span-1 lg:col-span-2">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1" type="number" wire:model.defer="document"
-                            wire:keydown.enter="searchclient" onkeypress="return validarNumero(event, 11)"
-                            onkeydown="disabledEnter(event)" />
+                        <x-input class="block w-full flex-1 input-number-none" type="number" wire:model.defer="document"
+                            wire:keydown.enter.prevent="searchclient" onkeypress="return validarNumero(event, 11)" />
                         <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient" wire:loading.attr="disabled"
                             wire:target="searchclient">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -25,19 +24,19 @@
                     <x-jet-input-error for="document" />
                 </div>
 
-                <div class="w-full sm:col-span-2">
+                <div class="w-full xs:col-span-2 sm:col-span-2">
                     <x-label value="Razón Social :" />
-                    <x-input class="block w-full" wire:model.defer="name" placeholder="Razón social del proveedor" />
+                    <x-input class="block w-full" wire:model.defer="name" />
                     <x-jet-input-error for="name" />
                 </div>
 
-                <div class="w-full sm:col-span-3">
+                <div class="w-full xs:col-span-2 sm:col-span-3 lg:col-span-2">
                     <x-label value="Dirección, calle, avenida :" />
-                    <x-input class="block w-full" wire:model.defer="direccion" placeholder="Dirección del cliente..." />
+                    <x-input class="block w-full" wire:model.defer="direccion" />
                     <x-jet-input-error for="direccion" />
                 </div>
 
-                <div class="w-full sm:col-span-2">
+                <div class="w-full xs:col-span-2 sm:col-span-2">
                     <x-label value="Ubigeo :" />
                     <div id="parentubigeoproveedor_id" class="relative" x-data="{ ubigeo_id: @entangle('ubigeo_id').defer }" x-init="select2UbigeoAlpine"
                         wire:ignore>
@@ -80,7 +79,7 @@
 
                 <div class="w-full">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono" type="number"
+                    <x-input class="block w-full input-number-none" wire:model.defer="telefono" type="number"
                         onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono" />
                 </div>
@@ -92,7 +91,7 @@
                     <x-jet-input-error for="email" />
                 </div>
 
-                <div class="w-full sm:col-span-2">
+                <div class="w-full xs:col-span-2 sm:col-span-2">
                     <x-label-check for="addcontacto">
                         <x-input x-model="addcontacto" type="checkbox" id="addcontacto" />
                         AGREGAR CONTACTO
@@ -106,9 +105,9 @@
                 <div class="w-full">
                     <x-label value="DNI :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 prevent" wire:model.defer="document2" type="number"
-                            wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
-                            onkeydown="disabledEnter(event)" />
+                        <x-input class="block w-full flex-1 input-number-none" wire:model.defer="document2"
+                            type="number" wire:keydown.enter.prevent="searchcontacto"
+                            onkeypress="return validarNumero(event, 8)" />
                         <x-button-add class="px-2 flex-shrink-0" wire:click="searchcontacto"
                             wire:loading.attr="disabled" wire:target="searchcontacto">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -124,14 +123,13 @@
 
                 <div class="w-full sm:col-span-2 mt-2 sm:mt-0">
                     <x-label value="Nombres representante :" />
-                    <x-input class="block w-full" wire:model.defer="name2"
-                        placeholder="Nombres del representante..." />
+                    <x-input class="block w-full" wire:model.defer="name2" />
                     <x-jet-input-error for="name2" />
                 </div>
 
                 <div class="w-full mt-2 sm:mt-0">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono2" type="number"
+                    <x-input class="block w-full input-number-none" wire:model.defer="telefono2" type="number"
                         onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="telefono2" />
                 </div>

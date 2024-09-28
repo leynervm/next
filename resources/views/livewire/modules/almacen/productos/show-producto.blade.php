@@ -170,25 +170,37 @@
 
                 <div class="w-full flex flex-col gap-2 justify-start items-start">
                     @if (Module::isEnabled('Marketplace'))
-                        <x-label-check for="publicado_dit">
-                            <x-input wire:model.defer="producto.publicado" name="publicado" value="1"
-                                type="checkbox" id="publicado_dit" />
-                            DISPONIBLE TIENDA WEB
-                        </x-label-check>
-                        <x-jet-input-error for="producto.publicado" />
-
-                        <x-label-check for="viewespecificaciones_dit">
-                            <x-input wire:model.defer="producto.viewespecificaciones" name="viewespecificaciones"
-                                value="1" type="checkbox" id="viewespecificaciones_dit" />
-                            MOSTRAR ESPECIFICACIONES EN TIENDA WEB
-                        </x-label-check>
+                        <div>
+                            <x-label-check for="publicado_dit">
+                                <x-input wire:model.defer="producto.publicado" name="publicado" value="1"
+                                    type="checkbox" id="publicado_dit" />
+                                DISPONIBLE TIENDA WEB
+                            </x-label-check>
+                            <x-jet-input-error for="producto.publicado" />
+                        </div>
+                        <div>
+                            <x-label-check for="viewespecificaciones_dit">
+                                <x-input wire:model.defer="producto.viewespecificaciones" name="viewespecificaciones"
+                                    value="1" type="checkbox" id="viewespecificaciones_dit" />
+                                MOSTRAR ESPECIFICACIONES EN TIENDA WEB
+                            </x-label-check>
+                        </div>
+                        <div>
+                            <x-label-check for="viewdetalle_edit">
+                                <x-input wire:model.defer="producto.viewdetalle" name="viewdetalle" value="1"
+                                    type="checkbox" id="viewdetalle_edit" />
+                                MOSTRAR DETALLES EN TIENDA WEB
+                            </x-label-check>
+                        </div>
                     @endif
 
-                    <x-label-check for="requireserie">
-                        <x-input wire:model.defer="producto.requireserie" name="requireserie" value="1"
-                            type="checkbox" id="requireserie" />REQUIERE AGREGAR SERIES
-                    </x-label-check>
-                    <x-jet-input-error for="producto.requireserie" />
+                    <div>
+                        <x-label-check for="requireserie">
+                            <x-input wire:model.defer="producto.requireserie" name="requireserie" value="1"
+                                type="checkbox" id="requireserie" />REQUIERE AGREGAR SERIES
+                        </x-label-check>
+                        <x-jet-input-error for="producto.requireserie" />
+                    </div>
                 </div>
 
                 @can('admin.almacen.productos.edit')
@@ -283,8 +295,8 @@
 
                 <div class="w-full mt-2">
                     <x-label value="Cantidad (Stock) :" />
-                    <x-input class="block w-full input-number-none" wire:model.defer="newcantidad" type="number" step="0.01"
-                        min="0" />
+                    <x-input class="block w-full input-number-none" wire:model.defer="newcantidad" type="number"
+                        step="0.01" min="0" />
                     <x-jet-input-error for="newcantidad" />
                 </div>
 

@@ -141,7 +141,7 @@
     @endcan
 
     @if (Module::isEnabled('Marketplace'))
-        <x-form-card titulo="DETALLE PRODUCTO" style="display: none;" x-cloak x-show="showespecificaciones">
+        <x-form-card titulo="DETALLE PRODUCTO" style="display: none;" x-cloak x-show="viewdetalle">
             <div class="w-full overflow-hidden">
                 <form wire:submit.prevent="savedetalle" class="w-full">
 
@@ -211,13 +211,13 @@
             Alpine.data('datagarantia', () => ({
                 typegarantia_id: @entangle('typegarantia_id').defer,
                 time: @entangle('time').defer,
-                showespecificaciones: @entangle('showespecificaciones').defer,
+                viewdetalle: @entangle('viewdetalle').defer,
 
                 init() {
-                    let checkbox = document.getElementById('viewespecificaciones_dit');
+                    let checkbox = document.getElementById('viewdetalle_edit');
                     if (checkbox) {
                         checkbox.addEventListener('change', event => {
-                            this.showespecificaciones = event.target.checked;
+                            this.viewdetalle = event.target.checked;
                         })
                     }
                 },

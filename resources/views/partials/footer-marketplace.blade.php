@@ -1,6 +1,6 @@
 <footer class="w-full footer-marketplace">
     <div
-        class="contenedor grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 sm:gap-3 mx-auto py-3 md:py-10">
+        class="contenedor grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-3 mx-auto py-3 md:py-8">
         <div class="w-full max-w-sm h-16 mx-auto col-span-2 md:col-span-1">
             @if ($empresa->image)
                 <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
@@ -12,7 +12,7 @@
         <div>
             <ul class="">
                 <li>
-                    <a class="item-footer !flex flex-col gap-1 items-center justify-center"
+                    <a class="item-footer text-[10px] !flex flex-col gap-1 items-center justify-center"
                         href="{{ route('claimbook.create') }}">
                         <div class="inline-block w-10 h-8 bg-white p-0.5 rounded">
                             <img class="w-full h-full object-scale-down overflow-hidden"
@@ -22,63 +22,75 @@
                     </a>
                 </li>
                 <li>
-                    <a class="item-footer" href="{{ route('nosotros') }}">NOSOTROS</a>
+                    <a class="item-footer text-[10px]" href="{{ route('nosotros') }}">NOSOTROS</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="{{ route('centroautorizado') }}">CENTRO AUTORIZADO</a>
+                    <a class="item-footer text-[10px]" href="{{ route('centroautorizado') }}">CENTRO AUTORIZADO</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="{{ route('contactanos') }}">CONTÁCTANOS</a>
+                    <a class="item-footer text-[10px]" href="{{ route('contactanos') }}">CONTÁCTANOS</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="{{ route('ubicanos') }}">UBÍCANOS</a>
+                    <a class="item-footer text-[10px]" href="{{ route('ubicanos') }}">UBÍCANOS</a>
                 </li>
             </ul>
         </div>
         <div>
             <ul>
                 <li>
-                    <a class="item-footer" href="{{ route('trabaja') }}">TRABAJA CON NOSOTROS</a>
+                    <a class="item-footer text-[10px]" href="{{ route('trabaja') }}">TRABAJA CON NOSOTROS</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="{{ route('terms.show') }}">TÉRMINOS Y CONDICIONES</a>
+                    <a class="item-footer text-[10px]" href="{{ route('terms.show') }}">TÉRMINOS Y CONDICIONES</a>
                 </li>
                 <li>
-                    <a class="item-footer" href="{{ route('policy.show') }}">POLÍTICAS DE PRIVACIDAD</a>
+                    <a class="item-footer text-[10px]" href="{{ route('policy.show') }}">POLÍTICAS DE PRIVACIDAD</a>
                 </li>
             </ul>
         </div>
-        <div class="col-span-2 md:col-span-3 lg:col-span-1 xl:col-span-2">
-            <div class="w-full h-48 xs:h-64 lg:h-48 xl:h-64 px-1">
+        <div class="col-span-2 md:col-span-3 lg:col-span-2">
+            <div class="w-full h-48 xs:h-64 lg:h-52 px-1">
                 <iframe
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1985.024222362466!2d-78.80980694270073!3d-5.706141436028993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91b4fbc87b6535f7%3A0x7b9aa3d2c1e84bd1!2sNEXT%20TECHNOLOGIES!5e0!3m2!1ses-419!2spe!4v1725493222836!5m2!1ses-419!2spe"
-                    class="w-full h-full" style="border:0;" allowfullscreen="" loading="lazy"
+                    class="w-full h-full rounded-sm" style="border:0;" allowfullscreen="" loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
 
-            <ul>
-                @if ($empresa->email)
-                    <li>
-                        <a href="">{{ $empresa->email }}</a>
-                    </li>
-                @endif
-                @if ($empresa->direccion)
-                    <li>
-                        <p class="leading-3 text-xs text-center">{{ $empresa->direccion }}</p>
-                    </li>
-                @endif
-                @if (count($empresa->telephones) > 0)
-                    <li>
-                        <div class="w-full mt-2 flex flex-wrap gap-2 justify-around">
-                            @foreach ($empresa->telephones as $item)
-                                <small class="tracking-wide leading-3 text-xs">
-                                    {{ formatTelefono($item->phone) }}
-                                </small>
-                            @endforeach
-                        </div>
-                    </li>
-                @endif
-            </ul>
+            <div class="w-full flex gap-2 mt-2">
+                <ul class="flex-1 !p-0 !flex flex-col gap-1">
+                    @if ($empresa->email)
+                        <li>
+                            <p class="text-left">{{ $empresa->email }}</p>
+                        </li>
+                    @endif
+                    @if ($empresa->direccion)
+                        <li>
+                            <p class="leading-3 text-xs text-left">{{ $empresa->direccion }}</p>
+                        </li>
+                    @endif
+                    @if (count($empresa->telephones) > 0)
+                        <li>
+                            <div class="w-full text-left mt-2 flex flex-wrap gap-2 justify-start">
+                                @foreach ($empresa->telephones as $item)
+                                    <small class="tracking-wide leading-3 text-xs">
+                                        @if ($loop->first)
+                                        @else
+                                            -
+                                        @endif
+                                        {{ formatTelefono($item->phone) }}
+                                    </small>
+                                @endforeach
+                            </div>
+                        </li>
+                    @endif
+                </ul>
+                <div class="flex-shrink-0 w-auto max-w-full h-20 mx-auto">
+                    <img class="w-full h-full object-scale-down object-center"
+                        src="{{ asset('images/niubiz_footer.png') }}" alt="paga-con-niubiz" title="paga-con-niubiz">
+                </div>
+            </div>
+
+
             <div class="footer-social w-full flex flex-wrap justify-center items-center gap-3">
                 @if ($empresa->whatsapp)
                     <a class="social-footer whatsapp" target="_blank" href="https://wa.link/0fnbp6">

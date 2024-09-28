@@ -1,86 +1,62 @@
-<div>
+<div class="w-full overflow-x-auto {{-- rounded-xl border border-borderminicard --}}">
     <div wire:loading.flex wire:target="reload,save" class="fixed loading-overlay hidden z-[99999]">
         <x-loading-next />
     </div>
 
-    <h1 class="text-md font-semibold text-colorsubtitleform px-5 pt-5">
-        RESUMEN</h1>
+    <table class="w-full min-w-full text-[10px] md:text-xs">
+        <tbody class="divide-y">
+            @foreach ($order->tvitems as $item)
+                @php
+                    $image = $item->producto->getImageURL();
+                @endphp
 
-    <div class="w-full overflow-x-auto md:rounded-lg">
-        @if (count($order->tvitems) > 0)
-            <table class="w-full min-w-full text-[10px]">
-                <thead>
-                    <tr class="text-[10px] text-colorsubtitleform">
-                        <th></th>
-                        <th>PRECIO</th>
-                        <th>CANT.</th>
-                        <th>TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y">
-                    @foreach ($order->tvitems as $item)
-                        @php
-                            $image = $item->producto->getImageURL();
-                        @endphp
-
-                        <tr class="text-colorsubtitleform">
-                            <td class="flex gap-2 text-left p-2">
-                                <div class="flex-shrink w-14 h-14 rounded-xl overflow-hidden">
-                                    @if ($image)
-                                        <img src="{{ $image }}" alt=""
-                                            class="w-full h-full object-cover rounded-xl aspect-square overflow-hidden">
-                                    @else
-                                        <x-icon-file-upload class="!w-full !h-full !m-0 text-neutral-500 !border-0"
-                                            type="unknown" />
-                                    @endif
-                                </div>
-                                <div class="w-full flex-1">
+                <tr class="text-colorlabel">
+                    <td class="text-left py-2 align-middle">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-shrink-0 w-16 h-16 xl:w-24 xl:h-24 rounded overflow-hidden">
+                                @if ($image)
+                                    <img src="{{ $image }}" alt=""
+                                        class="w-full h-full object-scale-down rounded aspect-square overflow-hidden">
+                                @else
+                                    <x-icon-file-upload class="!w-full !h-full !m-0 text-colorsubtitleform !border-0"
+                                        type="unknown" />
+                                @endif
+                            </div>
+                            <div
+                                class="w-full flex-1 sm:flex justify-between gap-3 items-center text-colorsubtitleform">
+                                <div class="w-full sm:flex-1">
                                     <a href="{{ route('productos.show', $item->producto) }}"
-                                        class="w-full  leading-3 text-[10px] text-linktable">
-                                        {{ $item->producto->name }}</a>
-
-                                    @if ($order->isPagoconfirmado())
-                                        @if ($item->kardex)
-                                            <div>
-                                                <x-span-text type="green" text="STOCK ACTUALIZADO" />
-                                            </div>
-                                        @else
-                                            @can('admin.marketplace.orders.confirmstock')
-                                                <x-button wire:click="descontarstock({{ $item->id }})"
-                                                    wire:loading.attr="disabled">DESCONTAR STOCK</x-button>
-                                            @endcan
-                                        @endif
+                                        class="w-full text-xs">{{ $item->producto->name }}</a>
+                                    @if ($item->kardex)
+                                        <div>
+                                            <x-span-text type="green" text="STOCK ACTUALIZADO" />
+                                        </div>
                                     @else
-                                        <p class="text-colorerror text-[10px] leading-3">
-                                            CONFIRMAR PAGO PARA DESCONTAR STOCK</p>
+                                        @can('admin.marketplace.orders.confirmstock')
+                                            <x-button wire:click="descontarstock({{ $item->id }})"
+                                                wire:loading.attr="disabled">DESCONTAR STOCK</x-button>
+                                        @endcan
                                     @endif
                                 </div>
-                            </td>
-                            <td class="text-center p-2">
-                                {{ number_format($item->price, 2, '.', ', ') }}
-                                {{ $order->moneda->currency }}
-                                </h1>
-                            </td>
-                            <td class="text-center p-2">
-                                {{ formatDecimalOrInteger($item->cantidad) }}
-                                {{ $item->producto->unit->name }}
-                            </td>
-                            <td class="text-center p-2">
-                                {{-- {{ $order->moneda->simbolo }} --}}
-                                {{ number_format($item->total, 2, '.', ', ') }}
-                                {{ $order->moneda->currency }}
-                                </h1>
 
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        @else
-            <h1 class="text-xs p-3 font-medium text-neutral-500">
-                NO EXISTEN PRODUCTOS AGREGADOS EN LA ORDEN...</h1>
-        @endif
-    </div>
+                                <div class="flex items-end sm:items-center sm:w-60 sm:flex-shrink-0 ">
+                                    <span class="text-left p-2 text-xs sm:text-end font-semibold whitespace-nowrap">
+                                        x{{ formatDecimalOrInteger($item->cantidad) }}
+                                        {{ $item->producto->unit->name }}
+                                    </span>
+                                    <span
+                                        class="p-2 font-semibold text-lg flex-1 text-end text-colorlabel whitespace-nowrap">
+                                        {{ $order->moneda->simbolo }}
+                                        {{ number_format($item->total, 2, '.', ', ') }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -116,7 +92,6 @@
             </form>
         </x-slot>
     </x-jet-dialog-modal>
-
 
     <script>
         function selectAlmacen() {

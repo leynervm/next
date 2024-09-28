@@ -40,6 +40,7 @@ class Producto extends Model
     use CalcularPrecioVenta;
     use ObtenerImage;
 
+    const VER_DETALLES = '1';
     const PUBLICADO = '1';
     const MOSTRAR = '0';
     const OCULTAR = '1';
@@ -60,6 +61,8 @@ class Producto extends Model
         'visivility' => 'integer',
         'pricebuy' => 'decimal:2',
         'pricesale' => 'decimal:2',
+        'minstock' => 'integer',
+        'viewdetalle' => 'integer',
     ];
 
     public function sluggable(): array
@@ -254,6 +257,11 @@ class Producto extends Model
     public function pricetypes(): BelongsToMany
     {
         return $this->belongsToMany(Pricetype::class)->withPivot('price');
+    }
+
+    public function verDetalles()
+    {
+        return $this->viewdetalle == Self::VER_DETALLES;
     }
 
     public function verEspecificaciones()

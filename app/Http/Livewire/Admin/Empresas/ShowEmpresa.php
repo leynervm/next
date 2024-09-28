@@ -211,14 +211,13 @@ class ShowEmpresa extends Component
                 }
 
                 $compressedImage = Image::make($this->mark->getRealPath())
-                    ->orientate()->encode('jpg', 70);
+                    ->orientate()->encode('jpg', 50);
 
                 $markURL = uniqid('markagua_') . '.' . $this->mark->getClientOriginalExtension();
                 $compressedImage->save(public_path('storage/images/company/' . $markURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     $this->addError('mark', 'La imagen excede el tamaño máximo permitido.');
                     return false;
                 }
@@ -359,14 +358,13 @@ class ShowEmpresa extends Component
 
         if ($this->logo) {
             $compressedImage = Image::make($this->logo->getRealPath())
-                ->orientate()->encode('jpg', 70);
+                ->orientate()->encode('jpg', 50);
 
             $urlLogo = 'logo_' . uniqid() . '.' . $this->logo->getClientOriginalExtension();
             $compressedImage->save(public_path('storage/images/company/' . $urlLogo));
 
             if ($compressedImage->filesize() > 1048576) { //1MB
                 $compressedImage->destroy();
-                $compressedImage->delete();
                 $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
                 return false;
             }

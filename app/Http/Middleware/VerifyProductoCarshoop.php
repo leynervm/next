@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 class VerifyProductoCarshoop
 {
@@ -17,6 +18,7 @@ class VerifyProductoCarshoop
      */
     public function handle(Request $request, Closure $next)
     {
+
         $count = 0;
         if (Cart::instance('shopping')->count() > 0) {
             foreach (Cart::instance('shopping')->content() as $item) {
@@ -51,6 +53,16 @@ class VerifyProductoCarshoop
                 'type' => 'warning'
             ])->getData();
             session()->now('message', $mensaje);
+        }
+
+        if (Cart::instance('shopping')->count() == 0 && Route::currentRouteName() == 'carshoop.create') {
+            $mensaje = response()->json([
+                'title' => "NO EXISTEN PRODUCTOS AGREGADOS AL CARRITO",
+                'text' => 'Carrito de compras actualizado.',
+                'type' => 'warning',
+                'timer' => 3000,
+            ])->getData();
+            return redirect()->to('/')->with('message', $mensaje);
         }
 
         return $next($request);

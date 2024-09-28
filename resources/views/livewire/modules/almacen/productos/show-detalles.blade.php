@@ -46,7 +46,7 @@
                     </ul>
 
 
-                    <div class="w-full pt-4 flex items-end gap-1 justify-end mt-auto">
+                    <div class="w-full pt-4 flex flex-wrap sm:flex-nowrap items-end gap-1 justify-end mt-auto">
                         @if (count($caracteristicas) > 0)
                             @can('admin.almacen.productos.especificaciones')
                                 <x-button wire:click="openmodal" wire:loading.attr="disabled">
@@ -70,7 +70,7 @@
                             <div
                                 class="w-48 group shadow border border-borderminicard shadow-shadowminicard rounded-md relative overflow-hidden hover:shadow-md hover:shadow-shadowminicard">
                                 <div class="w-full h-24 block">
-                                    <img src="{{ asset('storage/productos/' . $item->url) }}" alt=""
+                                    <img src="{{ $item->getImageURL() }}" alt=""
                                         class="w-full h-full object-cover">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">

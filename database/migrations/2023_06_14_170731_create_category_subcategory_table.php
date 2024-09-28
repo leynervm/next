@@ -15,8 +15,8 @@ class CreateCategorySubcategoryTable extends Migration
     {
         Schema::create('category_subcategory', function (Blueprint $table) {
             $table->smallIncrements('id')->unsigned();
-            $table->unsignedTinyInteger('category_id')->nullable();
-            $table->unsignedSmallInteger('subcategory_id')->nullable();
+            $table->unsignedInteger('category_id')->nullable();
+            $table->unsignedInteger('subcategory_id')->nullable();
             $table->foreign('category_id')->on('categories')->references('id');
             $table->foreign('subcategory_id')->on('subcategories')->references('id');
         });

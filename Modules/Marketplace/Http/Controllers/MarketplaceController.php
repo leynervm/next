@@ -25,7 +25,6 @@ class MarketplaceController extends Controller
     {
         $this->middleware('verifyproductocarshoop')->only(['create', 'productos', 'showproducto', 'carshoop', 'wishlist']);
         $this->middleware('can:admin.almacen.caracteristicas')->only('caracteristicas');
-
         $this->middleware('permission:admin.marketplace.orders|admin.marketplace.transacciones|admin.marketplace.userweb|admin.marketplace.trackingstates|admin.marketplace.shipmenttypes|admin.marketplace.sliders')->only('index');
         $this->middleware('can:admin.marketplace.sliders')->only('sliders');
         $this->middleware('can:admin.marketplace.shipmenttypes')->only('shipmenttypes');
@@ -54,7 +53,7 @@ class MarketplaceController extends Controller
 
         $ofertas = Producto::whereHas('promocions', function ($query) {
             $query->disponibles();
-        })->paginate();
+        })->visibles()->publicados()->paginate();
         return view('marketplace::ofertas', compact('ofertas', 'empresa', 'moneda', 'pricetype'));
     }
 
@@ -107,16 +106,13 @@ class MarketplaceController extends Controller
             // ],
         ])->json();
 
-
         return $sessionToken['sessionKey'];
     }
 
     public function payment(Order $order)
     {
         $this->authorize('user', $order);
-        $order = Order::with(['transaccions' => function ($query) {
-            $query->autorizados();
-        }])->find($order->id);
+        $order = Order::with('transaccion')->find($order->id);
         $session_token = $this->generateSessionToken($order);
         return view('modules.marketplace.orders.payment', compact('order', 'session_token'));
     }
@@ -143,7 +139,6 @@ class MarketplaceController extends Controller
 
                 if ($compressedImage->filesize() > 1048576) { //10MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     return redirect()->back()->withErrors([
                         'file' => 'La imagen excede el tamaño máximo permitido.'
                     ])->withInput();
@@ -209,14 +204,14 @@ class MarketplaceController extends Controller
         $producto->views = $producto->views + 1;
         $producto->save();
 
-        $recents = Producto::whereNot('id', $producto->id)->orderBy('views', 'desc')
-            ->orderBy('name', 'asc')->take(18)->get();
+        $recents = Producto::whereNot('id', $producto->id)->publicados()->visibles()
+            ->orderBy('views', 'desc')->orderBy('name', 'asc')->take(18)->get();
         $sugerencias = Producto::where('marca_id', $producto->marca_id)
-            ->whereNot('id', $producto->id)->orderBy('views', 'desc')
-            ->orderBy('name', 'asc')->take(18)->get();
+            ->whereNot('id', $producto->id)->publicados()->visibles()
+            ->orderBy('views', 'desc')->orderBy('name', 'asc')->take(18)->get();
         $similares = Producto::where('subcategory_id', $producto->subcategory_id)
-            ->whereNot('id', $producto->id)->orderBy('views', 'desc')
-            ->orderBy('name', 'asc')->take(18)->get();
+            ->whereNot('id', $producto->id)->publicados()->visibles()
+            ->orderBy('views', 'desc')->orderBy('name', 'asc')->take(18)->get();
 
         return view('modules.marketplace.productos.show', compact('producto', 'stocksucursals', 'empresa', 'moneda', 'shipmenttypes', 'pricetype', 'recents', 'sugerencias', 'similares'));
     }

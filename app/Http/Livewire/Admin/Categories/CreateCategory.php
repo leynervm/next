@@ -23,11 +23,17 @@ class CreateCategory extends Component
     {
         return [
             'name' => [
-                'required', 'string', 'min:3', 'max:100',
+                'required',
+                'string',
+                'min:3',
+                'max:100',
                 new CampoUnique('categories', 'name', null, true),
             ],
             'logo' => [
-                'nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120'
+                'nullable',
+                'file',
+                'mimes:jpeg,png,gif',
+                'max:5120'
             ]
         ];
     }
@@ -73,14 +79,16 @@ class CreateCategory extends Component
                 }
 
                 $compressedImage = Image::make($this->logo->getRealPath())
-                    ->orientate()->encode('jpg', 30);
+                    ->resize(400, 400, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate()->encode('jpg', 30);
 
                 $logoURL = uniqid('category_') . '.' . $this->logo->getClientOriginalExtension();
                 $compressedImage->save(public_path('storage/images/categories/' . $logoURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
                     return false;
                 }

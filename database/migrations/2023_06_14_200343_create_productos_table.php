@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Producto;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,7 +17,7 @@ class CreateProductosTable extends Migration
         Schema::create('productos', function (Blueprint $table) {
             $table->id();
             $table->text('name');
-            $table->string('slug')->unique();
+            $table->text('slug')->unique();
             $table->string('modelo', 255)->nullable();
             $table->decimal('pricebuy', 12, 3);
             $table->decimal('pricesale', 12, 3)->nullable()->default(0);
@@ -29,6 +30,7 @@ class CreateProductosTable extends Migration
             $table->char('requireserie', 1)->default(0);
             $table->char('publicado', 1)->default(0);
             $table->char('viewespecificaciones', 1)->default(0);
+            $table->char('viewdetalle', 1)->default(Producto::VER_DETALLES);
             $table->char('visivility', 1)->default(0);
             $table->decimal('precio_1', 12, 4)->nullable();
             $table->decimal('precio_2', 12, 4)->nullable();
@@ -38,9 +40,9 @@ class CreateProductosTable extends Migration
             $table->unsignedSmallInteger('almacenarea_id')->nullable();
             $table->unsignedSmallInteger('estante_id')->nullable();
             $table->bigInteger('marca_id')->nullable();
-            $table->unsignedTinyInteger('category_id')->nullable();
-            $table->unsignedSmallInteger('subcategory_id')->nullable();
-            $table->unsignedTinyInteger('unit_id')->nullable();
+            $table->unsignedInteger('category_id')->nullable();
+            $table->unsignedInteger('subcategory_id')->nullable();
+            $table->unsignedInteger('unit_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('almacenarea_id')->on('almacenareas')->references('id');
             $table->foreign('estante_id')->on('estantes')->references('id');

@@ -1,21 +1,12 @@
 <?php
 
 use App\Enums\MovimientosEnum;
-use App\Enums\StatusPayWebEnum;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\UserController;
 use App\Models\Cajamovimiento;
-use App\Models\Category;
-use App\Models\Moneda;
-use App\Models\Openbox;
-use App\Models\Slider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Laravel\Fortify\Features;
-use Laravel\Jetstream\Http\Controllers\Livewire\UserProfileController;
-use Modules\Marketplace\Entities\Order;
-use Nwidart\Modules\Facades\Module;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +23,9 @@ Route::get('/', [HomeController::class, 'welcome'])->name('welcome');
 Route::get('/user/profile', function () {
     return redirect()->route('admin.profile');
 });
+Route::get('/perfil/user', function () {
+    return redirect()->route('admin.profile');
+})->name('profile.show');
 
 if (Features::enabled(Features::registration())) {
     Route::get('/register', [AuthController::class, 'register'])->name('register');

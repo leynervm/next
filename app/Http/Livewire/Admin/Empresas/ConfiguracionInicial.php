@@ -7,6 +7,7 @@ use App\Helpers\GetClient;
 use App\Models\Acceso;
 use App\Models\Almacen;
 use App\Models\Empresa;
+use App\Models\Producto;
 use App\Models\Sucursal;
 use App\Models\Typesucursal;
 use App\Models\Ubigeo;
@@ -67,6 +68,10 @@ class ConfiguracionInicial extends Component
             $this->clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
             $this->clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
             $this->passwordcert = Empresa::PASSWORD_CERT_PRUEBA;
+        }
+
+        if (module::isEnabled('Marketplace')) {
+            $this->viewespecificaciones = Producto::VER_DETALLES;
         }
 
         $email = Config::get('mail.mailers.smtp.username');
@@ -365,7 +370,6 @@ class ConfiguracionInicial extends Component
 
             if ($compressedImage->filesize() > 1048576) { //1MB
                 $compressedImage->destroy();
-                $compressedImage->delete();
                 $this->addError('markagua', 'La imagen excede el tamaño máximo permitido.');
                 return false;
             }
@@ -434,7 +438,6 @@ class ConfiguracionInicial extends Component
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $compressedImage->delete();
                     $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
                 }
 

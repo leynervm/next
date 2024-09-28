@@ -57,17 +57,21 @@ Route::middleware('verifyproductocarshoop')->group(function () {
 });
 
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(function () {
 
-    Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.create')->middleware(['verifyproductocarshoop', 'carshoop', 'verified', 'verifydatauser']);
+
+
+Route::middleware(['web', 'auth'])->group(function () {
+
+    Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.create')
+        ->middleware(['verifyproductocarshoop', 'verified', 'verifydatauser']);
 
     Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
-    Route::get('/orders/{order}/payment', [MarketplaceController::class, 'payment'])->name('orders.payment');
+    Route::get('/orders/{order:purchase_number}/resumen', [MarketplaceController::class, 'payment'])->name('orders.payment');
     // Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');
+
+
+    Route::post('/orders/niubiz/config', [NiubizController::class, 'config_checkout'])->name('orders.niubiz.config')->middleware(['verified']);
     Route::post('/orders/niubiz/checkout', [NiubizController::class, 'checkout'])->name('orders.niubiz.checkout')->middleware(['verified']);
-
-
-
 
 
     Route::get('/admin/productos/caracteristicas-especificaciones', [MarketplaceController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
@@ -82,7 +86,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session')])->group(fun
 
         Route::get('/orders', [OrderController::class, 'index'])->name('.orders');
         Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('.orders.show');
-        
+
         Route::get('/libro-reclamaciones', [ClaimbookController::class, 'claimbooks'])->name('.claimbooks');
         Route::get('/libro-reclamaciones/{claimbook}/show', [ClaimbookController::class, 'show'])->name('.claimbooks.show');
     });

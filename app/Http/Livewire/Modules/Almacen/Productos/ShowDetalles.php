@@ -125,12 +125,12 @@ class ShowDetalles extends Component
         //     return false;
         // }
 
-        if (!Storage::exists('productos')) {
-            Storage::makeDirectory('productos');
+        if (!Storage::exists('images/productos')) {
+            Storage::makeDirectory('images/productos');
         }
 
         $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
-            ->resize(1200, 1200, function ($constraint) {
+            ->resize(800, 800, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             })->orientate()->encode('jpg', 30);
@@ -151,12 +151,11 @@ class ShowDetalles extends Component
         }
 
         $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
-        $compressedImage->save(public_path('storage/productos/' . $filename));
+        $compressedImage->save(public_path('storage/images/productos/' . $filename));
 
         if ($compressedImage->filesize() > 1048576) { //1MB
             $compressedImage->destroy();
-            $compressedImage->delete();
-            $this->addError('imagen', 'El campo imagen no debe ser mayor que 1 MB.');
+            $this->addError('imagen', "El campo imagen no debe ser mayor que 1 MB. -" . $compressedImage->filesize());
             return false;
         }
 
@@ -187,8 +186,8 @@ class ShowDetalles extends Component
         }
         $image->delete();
 
-        if (Storage::exists('productos/' . $image->url)) {
-            Storage::delete('productos/' . $image->url);
+        if (Storage::exists('images/productos/' . $image->url)) {
+            Storage::delete('images/productos/' . $image->url);
         }
         $this->producto->refresh();
         $this->dispatchBrowserEvent('deleted');

@@ -48,7 +48,7 @@ class ShowEspecificaciones extends Component
 
     public function render()
     {
-        $caracteristicas = Caracteristica::orderBy('orden', 'asc')->paginate();
+        $caracteristicas = Caracteristica::with('especificacions')->orderBy('orden', 'asc')->paginate();
         return view('livewire.admin.especificaciones.show-especificaciones', compact('caracteristicas'));
     }
 

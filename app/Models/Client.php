@@ -35,7 +35,7 @@ class Client extends Model
         return $this->morphMany(Direccion::class, 'direccionable')
             ->orderBy('default', 'desc')->orderBy('id', 'desc');
     }
-    
+
     public function ventas(): HasMany
     {
         return $this->hasMany(Venta::class);
@@ -43,7 +43,7 @@ class Client extends Model
 
     public function telephones(): MorphMany
     {
-        return $this->morphMany(Telephone::class, 'telephoneable');
+        return $this->morphMany(Telephone::class, 'telephoneable')->orderBy('default', 'desc');
     }
 
     public function contacts(): MorphMany

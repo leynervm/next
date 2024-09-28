@@ -62,7 +62,7 @@
         @endcan
 
         @can('admin.marketplace.shipmenttypes')
-            <x-link-next href="{{ route('admin.marketplace.shipmenttypes') }}" titulo="Tipos de envío">
+            <x-link-next href="{{ route('admin.marketplace.shipmenttypes') }}" titulo="Tipos de entrega">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M7 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />

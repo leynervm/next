@@ -1,99 +1,74 @@
-<div>
-    <h1 class="text-xl font-semibold text-colorsubtitleform">
-        SEGUIMIENTO DEL PEDIDO</h1>
-
-    {{-- <div class="w-full py-12 flex items-center">
-        <div class="flex items-center relative p-3">
-            <div class="rounded-full h-12 w-12 bg-next-500 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 block text-white">
-                    <path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" />
-                </svg>
-            </div>
-            <h1 class="absolute w-full text-[10px] leading-3 text-center top-[100%] left-1/2 -translate-x-1/2 mt-0.5">
-                REGISTRADO
-                <br>
-                <span class="text-neutral-500">23 NOV. 2024</span>
-            </h1>
-        </div>
-
-        <div class="h-0.5 flex-1 bg-next-500"></div>
-        <div class="flex items-center relative p-3">
-            <div class="rounded-full h-12 w-12 bg-next-500 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-8 h-8 block text-white">
-                    <path d="M5 14.5C5 14.5 6.5 14.5 8.5 18C8.5 18 14.0588 8.83333 19 7" />
-                </svg>
-            </div>
-        </div>
-    </div> --}}
-
-    @if ($order->isPagoconfirmado())
-        @can('admin.marketplace.trackings.create')
+<div class="w-full  {{-- p-3 rounded-lg border border-borderminicard --}}">
+    <h3 class="text-xl font-semibold text-colorsubtitleform">Tracking</h3>
+    @can('admin.marketplace.trackings.create')
+        @if ($order->isPagoconfirmado())
             @if (count($trackingstates) > 0)
                 @if (!$order->trackings()->finalizados()->exists())
-                    <div class="w-full py-5 sm:max-w-md shadow-xl rounded-xl p-3">
-                        <form wire:submit.prevent="save" class="flex flex-col gap-2">
-                            <div class="w-full">
-                                <x-label for="trackingstate_id" value="Seleccionar estado :" />
-                                <div class="relative" id="parenttrackingstate_id" x-data="{ trackingstate_id: @entangle('trackingstate_id').defer }"
-                                    x-init="select2Tracking">
-                                    <x-select class="block w-full" id="trackingstate_id" x-ref="select"
-                                        x-model="trackingstate_id">
-                                        <x-slot name="options">
-                                            @foreach ($trackingstates as $item)
-                                                <option value="{{ $item->id }}">{{ $item->name }}</option>
-                                            @endforeach
-                                        </x-slot>
-                                    </x-select>
-                                    <x-icon-select />
-                                </div>
-                                <x-jet-input-error for="trackingstate_id" />
+                    <form wire:submit.prevent="save" class="flex flex-col gap-2 py-5">
+                        <div class="w-full">
+                            <x-label for="trackingstate_id" value="Seleccionar estado :" />
+                            <div class="relative" id="parenttrackingstate_id" x-data="{ trackingstate_id: @entangle('trackingstate_id').defer }" x-init="select2Tracking">
+                                <x-select class="block w-full" id="trackingstate_id" x-ref="select"
+                                    x-model="trackingstate_id">
+                                    <x-slot name="options">
+                                        @foreach ($trackingstates as $item)
+                                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                        @endforeach
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
                             </div>
+                            <x-jet-input-error for="trackingstate_id" />
+                        </div>
 
-                            <div class="w-full flex pt-4 justify-end">
-                                <x-button type="submit" wire:loading.attr="disabled">
-                                    {{ __('Save') }}
-                                </x-button>
-                            </div>
-                        </form>
-                    </div>
+                        <div class="w-full flex justify-end">
+                            <x-button type="submit" wire:loading.attr="disabled">
+                                {{ __('Save') }}</x-button>
+                        </div>
+                    </form>
                 @endif
             @endif
-        @endcan
-    @endif
+        @endif
+    @endcan
 
 
     @if (count($order->trackings) > 0)
-        <div class="w-full sm:overflow-x-auto pt-6 pb-16 flex flex-col sm:flex-row divide-y sm:divide-y-0">
-            @foreach ($order->trackings()->orderBy('id', 'asc')->get() as $item)
-                <div class="relative sm:min-w-[130px] w-full sm:max-w-[200px] flex flex-col sm:flex-row items-center">
-                    @if (!$loop->first)
-                        <div
-                            class="absolute h-full w-[1px] left-1.5 bottom-1/2  sm:w-full sm:-left-1/2 sm:right-1/2 sm:h-0.5 bg-next-500">
-                        </div>
-                    @endif
-                    <div class="w-full flex gap-2 justify-center items-center relative py-3 sm:p-3">
-                        <div class="flex-shrink rounded-full h-3 w-3 bg-next-500"></div>
-                        <div
-                            class="{{ $loop->first ? 'sm:mt-6' : '' }} flex-1 sm:absolute w-full flex flex-col justify-center sm:items-center text-[10px] sm:top-[90%] sm:left-1/2 sm:-translate-x-1/2">
-                            @can('admin.marketplace.trackings.delete')
-                                @if (!$item->trackingstate->isDefault())
-                                    <x-button-delete
-                                        class="absolute top-1/2 -translate-y-1/2 right-0 sm:relative sm:translate-y-0"
-                                        wire:click="delete({{ $item->id }})" wire:loading.attr="disabled" />
-                                @endif
-                            @endcan
-
-                            <p class="leading-3 sm:text-center">{{ $item->trackingstate->name }}</p>
-
-                            <small
-                                class="text-neutral-500 sm:text-center sm:text-[10px]">{{ formatDate($item->date, 'DD MMM Y') }}</small>
-                        </div>
-                    </div>
-                </div>
+        <ol class="relative ms-3 border-s border-borderminicard">
+            @foreach ($order->trackings()->orderBy('date', 'desc')->get() as $item)
+                <li class="mb-10 ms-6 text-colorlabel">
+                    <span
+                        class="absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full bg-next-500 ring-8 ring-body">
+                        @if ($item->trackingstate->isFinalizado())
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24"
+                                class="h-4 w-4 text-white" fill="none" stroke="currentColor" stroke-width="1.5"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M21 7V12M3 7C3 10.0645 3 16.7742 3 17.1613C3 18.5438 4.94564 19.3657 8.83693 21.0095C10.4002 21.6698 11.1818 22 12 22L12 11.3548" />
+                                <path d="M15 19C15 19 15.875 19 16.75 21C16.75 21 19.5294 16 22 15" />
+                                <path
+                                    d="M8.32592 9.69138L5.40472 8.27785C3.80157 7.5021 3 7.11423 3 6.5C3 5.88577 3.80157 5.4979 5.40472 4.72215L8.32592 3.30862C10.1288 2.43621 11.0303 2 12 2C12.9697 2 13.8712 2.4362 15.6741 3.30862L18.5953 4.72215C20.1984 5.4979 21 5.88577 21 6.5C21 7.11423 20.1984 7.5021 18.5953 8.27785L15.6741 9.69138C13.8712 10.5638 12.9697 11 12 11C11.0303 11 10.1288 10.5638 8.32592 9.69138Z" />
+                                <path d="M6 12L8 13" />
+                                <path d="M17 4L7 9" />
+                            </svg>
+                        @else
+                            <svg class="h-4 w-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                    stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5" />
+                            </svg>
+                        @endif
+                    </span>
+                    <h4 class="mb-0.5 font-semibold text-sm text-primary">
+                        {{ formatDate($item->date, 'DD MMM Y, hh:mm A') }}</h4>
+                    <p class="text-xs text-colorsubtitleform">{{ $item->trackingstate->name }}</p>
+                    @can('admin.marketplace.trackings.delete')
+                        @if (!$item->trackingstate->isDefault())
+                            <x-button-delete wire:click="delete({{ $item->id }})" wire:loading.attr="disabled" />
+                        @endif
+                    @endcan
+                </li>
             @endforeach
-        </div>
+        </ol>
     @endif
 
 

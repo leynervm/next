@@ -61,7 +61,7 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
      */
     public function model(array $row)
     {
-        
+
         DB::beginTransaction();
         try {
             if (!empty($row['nombre'])) {
@@ -118,6 +118,8 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
                         'pricesale' => $row['precio_venta'],
                         'minstock' => !empty($row['stock_minimo']) ? $row['stock_minimo'] : 0,
                         'publicado' => in_array($row['publicado_web'], ['0', '1']) ? $row['publicado_web'] : 0,
+                        'viewdetalle' => Module::isEnabled('Marketplace') ? Producto::VER_DETALLES : 0,
+                        'viewespecificaciones' => Module::isEnabled('Marketplace') ? Producto::VER_DETALLES : 0,
                         'marca_id' => $marca->id,
                         'unit_id' => $unit->id,
                         'category_id' => $category->id,
@@ -188,18 +190,18 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
             'modelo' => ['nullable', 'string', 'min:1'],
             'sku' => ['nullable', 'string', 'min:4'],
             'numero_parte' => ['nullable', 'string', 'min:4'],
-            'precio_compra' => [
+            '*.precio_compra' => [
                 'required',
                 'numeric',
                 'decimal:0,3',
-                $this->empresa->usarLista() ? 'gt:*.0' : ''
+                $this->empresa->usarLista() ? 'gt:0' : ''
             ],
-            'precio_venta' => [
+            '*.precio_venta' => [
                 'nullable',
                 Rule::requiredIf(!$this->empresa->usarLista()),
                 'numeric',
                 'decimal:0,3',
-                $this->empresa->usarLista() ? '' : 'gt:*.0'
+                $this->empresa->usarLista() ? '' : 'gt:0'
             ],
             'stock_minimo' => ['required', 'integer', 'min:0'],
             'publicado_web' => ['nullable', 'integer', 'min:0', 'max:1'],
@@ -270,7 +272,9 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
         $headers_especificaciones = [];
         foreach ($headers as $header) {
             if (!in_array($header, self::HEADERS_IMPORT_PRODUCT)) {
-                $headers_especificaciones[] = $header;
+                if ($header !== "item") {
+                    $headers_especificaciones[] = $header;
+                }
             }
         }
 

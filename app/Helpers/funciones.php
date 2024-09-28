@@ -432,9 +432,9 @@ function sanitizeWord($word)
 function pathURLProductImage($filename = null)
 {
     if (is_null($filename)) {
-        return asset('storage/productos/');
+        return asset('storage/images/productos/');
     } else {
-        return asset('storage/productos/' . $filename);
+        return asset('storage/images/productos/' . $filename);
     }
 }
 

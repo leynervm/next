@@ -107,16 +107,10 @@
                     <div class="w-full">
                         <x-label value="Precio venta :" />
                         <x-input class="block w-full" wire:model.defer="pricesale" type="number" min="0"
-                            step="0.0001" />
+                            step="0.001" />
                         <x-jet-input-error for="pricesale" />
                     </div>
                 @endif
-
-                {{-- <div class="w-full">
-                    <x-label value="IGV compra :" />
-                    <x-input class="block w-full" wire:model.defer="igv" type="number" step="0.01" />
-                    <x-jet-input-error for="igv" />
-                </div> --}}
 
                 <div class="w-full">
                     <x-label value="Stock Mínimo :" />
@@ -166,18 +160,35 @@
 
             <div class="w-full flex flex-col gap-2 justify-start items-start mt-2">
                 @if (Module::isEnabled('Marketplace'))
-                    <x-label-check for="publicado">
-                        <x-input wire:model.defer="publicado" name="publicado" value="1" type="checkbox"
-                            id="publicado" />DISPONIBLE TIENDA WEB
-                    </x-label-check>
-                    <x-jet-input-error for="publicado" />
+                    <div>
+                        <x-label-check for="publicado">
+                            <x-input wire:model.defer="publicado" name="publicado" value="1" type="checkbox"
+                                id="publicado" />DISPONIBLE TIENDA WEB
+                        </x-label-check>
+                        <x-jet-input-error for="publicado" />
+                    </div>
+                    <div>
+                        <x-label-check for="viewespecificaciones">
+                            <x-input wire:model.defer="viewespecificaciones" name="viewespecificaciones"
+                                value="1" type="checkbox" id="viewespecificaciones" />
+                            MOSTRAR ESPECIFICACIONES EN TIENDA WEB
+                        </x-label-check>
+                    </div>
+                    <div>
+                        <x-label-check for="viewdetalle">
+                            <x-input wire:model.defer="viewdetalle" x-model="viewdetalle" name="viewdetalle"
+                                value="1" type="checkbox" id="viewdetalle" />
+                            MOSTRAR DETALLES EN TIENDA WEB
+                        </x-label-check>
+                    </div>
                 @endif
-
-                <x-label-check for="requireserie">
-                    <x-input wire:model.defer="requireserie" name="requireserie" value="1" type="checkbox"
-                        id="requireserie" />REQUIERE AGREGAR SERIES
-                </x-label-check>
-                <x-jet-input-error for="requireserie" />
+                <div>
+                    <x-label-check for="requireserie">
+                        <x-input wire:model.defer="requireserie" name="requireserie" value="1" type="checkbox"
+                            id="requireserie" />REQUIERE AGREGAR SERIES
+                    </x-label-check>
+                    <x-jet-input-error for="requireserie" />
+                </div>
             </div>
 
             <x-simple-card class="mt-2 !border-0 hover:!shadow-none">
@@ -241,9 +252,11 @@
             </div>
         </x-form-card>
 
-        <div class="w-full block" wire:ignore>
-            <x-ckeditor-5 id="myckeditor" wire:model.defer="descripcionproducto" />
-        </div>
+        @if (Module::isEnabled('Marketplace'))
+            <div class="w-full block" x-cloack x-show="viewdetalle" wire:ignore style="display: none;">
+                <x-ckeditor-5 id="myckeditor" wire:model.defer="descripcionproducto" />
+            </div>
+        @endif
 
         {{-- <x-form-card titulo="DETALLE PRODUCTO">
             <div wire:ignore>
@@ -448,6 +461,7 @@
                 subcategory_id: @entangle('subcategory_id').defer,
                 almacenarea_id: @entangle('almacenarea_id').defer,
                 estante_id: @entangle('estante_id').defer,
+                viewdetalle: @entangle('viewdetalle').defer,
                 // descripcionproducto: @entangle('descripcionproducto').defer,
 
                 init() {
