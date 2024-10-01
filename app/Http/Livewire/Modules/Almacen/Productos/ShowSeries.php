@@ -15,14 +15,14 @@ class ShowSeries extends Component
     use WithPagination, AuthorizesRequests;
     public $producto;
 
-    public $searchseriealmacen = [];
+    public $searchseriealmacen = '';
     public $disponibles = "0";
     public $almacen_id, $serie;
 
     protected $queryString = [
         'searchseriealmacen' => [
-            'except' => [],
-            'as' => 'filtrar-almacen'
+            'except' => '',
+            'as' => 'series-almacen'
         ],
         'disponibles' => [
             'except' => '0',
@@ -36,13 +36,22 @@ class ShowSeries extends Component
     {
         return [
             'producto.id' => [
-                'required', 'integer', 'min:1', 'exists:productos,id'
+                'required',
+                'integer',
+                'min:1',
+                'exists:productos,id'
             ],
             'almacen_id' => [
-                'required', 'integer', 'min:1', 'exists:almacens,id'
+                'required',
+                'integer',
+                'min:1',
+                'exists:almacens,id'
             ],
             'serie' => [
-                'required', 'string', 'min:3', new CampoUnique('series', 'serie', null, true)
+                'required',
+                'string',
+                'min:3',
+                new CampoUnique('series', 'serie', null, true)
             ]
         ];
     }
@@ -61,8 +70,8 @@ class ShowSeries extends Component
             $seriesalmacen->where('status', $this->disponibles);
         }
 
-        if (count($this->searchseriealmacen)) {
-            $seriesalmacen->whereIn('almacen_id', $this->searchseriealmacen);
+        if (trim($this->searchseriealmacen) !== '') {
+            $seriesalmacen->where('almacen_id', $this->searchseriealmacen);
         }
         $seriesalmacen = $seriesalmacen->paginate(30);
 
@@ -134,5 +143,10 @@ class ShowSeries extends Component
                 $this->dispatchBrowserEvent('deleted');
             }
         }
+    }
+
+    public function updatedSearchseriealmacen()
+    {
+        $this->resetPage();
     }
 }

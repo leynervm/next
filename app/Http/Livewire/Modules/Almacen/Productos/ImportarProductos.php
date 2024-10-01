@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Modules\Almacen\Productos;
 
 use App\Imports\ProductoImport;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Maatwebsite\Excel\Facades\Excel;
@@ -11,7 +12,7 @@ use Maatwebsite\Excel\Validators\ValidationException;
 class ImportarProductos extends Component
 {
 
-    use WithFileUploads;
+    use WithFileUploads, AuthorizesRequests;
 
     public $open = false;
     public $file;
@@ -39,6 +40,7 @@ class ImportarProductos extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.almacen.productos.import');
         if (!$this->open) {
             $this->resetValidation();
             $this->reset(['file', 'failures']);
@@ -47,6 +49,7 @@ class ImportarProductos extends Component
 
     public function import()
     {
+        $this->authorize('admin.almacen.productos.import');
         // $this->reset(['failures']);
         $this->validate();
 
@@ -81,6 +84,7 @@ class ImportarProductos extends Component
 
     public function resetFile()
     {
+        $this->authorize('admin.almacen.productos.import');
         $this->reset(['file', 'failures']);
     }
 

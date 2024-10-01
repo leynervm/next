@@ -92,7 +92,7 @@
             </x-link-next>
         @endcan
 
-        <x-link-next href="#" titulo="Listado partes">
+        {{-- <x-link-next href="#" titulo="Listado partes">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m3 17 2 2 4-4" />
@@ -101,9 +101,9 @@
                 <path d="M13 12h8" />
                 <path d="M13 18h8" />
             </svg>
-        </x-link-next>
+        </x-link-next> --}}
 
-        <x-link-next href="#" titulo="Inventario herramientas">
+        {{-- <x-link-next href="#" titulo="Inventario herramientas">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
@@ -113,7 +113,7 @@
                 <path d="M8 11h.01" />
                 <path d="M8 16h.01" />
             </svg>
-        </x-link-next>
+        </x-link-next> --}}
 
         @can('admin.almacen.kardex')
             <x-link-next href="{{ route('admin.almacen.kardex') }}" titulo="Kardex">
@@ -170,7 +170,7 @@
             @endcan
         @endif
 
-        <x-link-next href="#" titulo="Historial precios">
+        {{-- <x-link-next href="#" titulo="Historial precios">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                 stroke-linejoin="round" class="lucide lucide-candlestick-chart">
@@ -182,7 +182,7 @@
                 <path d="M17 13v3" />
                 <path d="M3 3v18h18" />
             </svg>
-        </x-link-next>
+        </x-link-next> --}}
 
         {{-- <x-link-next href="#" titulo="Estantes almmacén">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"

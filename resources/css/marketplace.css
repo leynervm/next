@@ -113,7 +113,7 @@
 .card-recents::before,
 .card-similares::before,
 .card-sugerencias::before {
-    @apply content-[''] block absolute top-[50%] left-0 w-[0.25px] bg-neutral-200 h-[70%] z-10 -translate-y-[50%];
+    @apply content-[''] block absolute top-[50%] left-0 w-[0.25px] bg-borderminicard h-[70%] z-10 -translate-y-[50%];
 }
 
 .card-not-unknown::before:first-child,

@@ -40,22 +40,29 @@ class SeedRoleTableSeeder extends Seeder
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
-            'name' => 'admin.marketplace.orders.confirmstock',
+            'name' => 'admin.marketplace.orders.discountstock',
             'descripcion' => 'Desconcontar stock de pedidos',
             'table' => 'Pedidos web',
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
+            'name' => 'admin.marketplace.orders.deletestock',
+            'descripcion' => 'Eliminar stock de pedidos',
+            'table' => 'Pedidos web',
+            'module' => 'Tienda Virtual',
+            'orden' => '7'
+        ])->syncRoles([$desarrollador, $admin]);
+        Permission::firstOrCreate([
             'name' => 'admin.marketplace.trackings.create',
-            'descripcion' => 'Registrar tracking de pedidos',
+            'descripcion' => 'Registrar seguimientos de pedidos',
             'table' => 'Pedidos web',
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
             'name' => 'admin.marketplace.trackings.delete',
-            'descripcion' => 'Eliminar tracking de pedidos',
+            'descripcion' => 'Eliminar seguimientos de pedidos',
             'table' => 'Pedidos web',
             'module' => 'Tienda Virtual',
             'orden' => '7'
@@ -124,28 +131,28 @@ class SeedRoleTableSeeder extends Seeder
 
         Permission::firstOrCreate([
             'name' => 'admin.marketplace.trackingstates',
-            'descripcion' => 'Administrar estados de tracking',
+            'descripcion' => 'Administrar nombres de seguimiento de tracking',
             'table' => 'Estados tracking',
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
             'name' => 'admin.marketplace.trackingstates.create',
-            'descripcion' => 'Registrar estados de tracking',
+            'descripcion' => 'Registrar nombres de seguimiento de tracking',
             'table' => 'Estados tracking',
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
             'name' => 'admin.marketplace.trackingstates.edit',
-            'descripcion' => 'Editar estados de tracking',
+            'descripcion' => 'Editar nombres de seguimiento de tracking',
             'table' => 'Estados tracking',
             'module' => 'Tienda Virtual',
             'orden' => '7'
         ])->syncRoles([$desarrollador, $admin]);
         Permission::firstOrCreate([
             'name' => 'admin.marketplace.trackingstates.delete',
-            'descripcion' => 'Eliminar estados de tracking',
+            'descripcion' => 'Eliminar nombres de seguimiento de tracking',
             'table' => 'Estados tracking',
             'module' => 'Tienda Virtual',
             'orden' => '7'

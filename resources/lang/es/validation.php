@@ -383,5 +383,7 @@ return [
         'datos.receiver_info.name'      =>  'nombre',
         'datos.receiver_info.telefono'  =>  'teléfono',
         'datos.moneda_id'               =>  'moneda',
+        'trackingstate_id'          =>  'estado tracking',
+        'almacens.*.cantidad'       =>  'cantidad',
     ],
 ];

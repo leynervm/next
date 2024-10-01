@@ -50,7 +50,7 @@
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex bg-fondominicard">
                 <div class="w-full md:flex-shrink-0 md:w-[42%] md:px-3 py-2">
-                    <div class="w-full max-w-full h-64 xs:h-96 rounded overflow-hidden relative"
+                    <div class="w-full max-w-full h-64 xs:h-96 rounded overflow-hidden relative {{ !empty($image) ? 'bg-white' : '' }}"
                         @mouseover="showesp = false" @mouseleave="showesp = true">
                         @if ($image)
                             <template x-if="currentImage">
@@ -106,11 +106,11 @@
                             </button>
                             <div class="w-full flex gap-1 overflow-hidden p-1" id="imagethumbs">
                                 @foreach ($producto->images as $item)
-                                    <div class="w-20 h-20 flex-shrink-0 border-2 border-white thumbnail cursor-pointer"
+                                    <div class="w-20 h-20 flex-shrink-0 border-2 thumbnail cursor-pointer bg-white rounded-sm"
                                         :class="{
-                                            'ring-1 ring-next-500 active': currentImage ==
+                                            'ring-1 border-primary ring-primary active': currentImage ==
                                                 '{{ $item->getImageURL() }}',
-                                            'hover:ring-1 ring-borderminicard opacity-70': currentImage !=
+                                            'hover:ring-1 border-borderminicard ring-borderminicard opacity-70': currentImage !=
                                                 '{{ $item->getImageURL() }}'
                                         }">
                                         <img class="w-full h-full object-cover object-center"
@@ -135,7 +135,7 @@
                     <div class="w-full border-b border-b-borderminicard pb-5">
                         <div class="w-full flex gap-2 justify-between items-center flex-wrap">
                             <div>
-                                <p href="#" class="text-colorlabel font-semibold">
+                                <p class="text-colorlabel font-semibold">
                                     {{ $producto->marca->name }}</p>
                             </div>
                             <div class="text-[10px] text-colorsubtitleform flex gap-3">
@@ -152,33 +152,29 @@
                             {{ $producto->name }}</p>
                     </div>
 
-                    <div class="w-full grid {{ $producto->verEspecificaciones() ? 'xl:grid-cols-2' : '' }} gap-5 mt-5">
+                    <div class="w-full grid xl:grid-cols-2 gap-5 mt-5">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-1 gap-2">
-                            @if ($producto->verEspecificaciones())
-                                @if (count($producto->especificacions) > 0)
-                                    <div class="w-full p-5 bg-body text-xs">
-                                        <h1 class="text-colortitleform font-mediu text-xs uppercase">Especificaciones
-                                            principales</h1>
-                                        <ul class="text-colorsubtitleform py-3 text-[10px]">
-                                            @foreach ($producto->especificacions()->take(2)->get() as $item)
-                                                <li class="py-1">
-                                                    <span class="font-semibold">{{ $item->caracteristica->name }} :
-                                                    </span>{{ $item->name }}
-                                                </li>
-                                            @endforeach
-                                        </ul>
+                            @if (count($producto->especificacions) > 0)
+                                <div class="w-full p-5 bg-body text-xs">
+                                    <h1 class="text-colortitleform font-mediu text-xs uppercase">Especificaciones
+                                        principales</h1>
+                                    <ul class="text-colorsubtitleform py-3 text-[10px]">
+                                        @foreach ($producto->especificacions()->take(2)->get() as $item)
+                                            <li class="py-1">
+                                                <span class="font-semibold">{{ $item->caracteristica->name }} :
+                                                </span>{{ $item->name }}
+                                            </li>
+                                        @endforeach
+                                    </ul>
 
-                                        <a href="#especificacions"
-                                            class="underline py-5 text-colorsubtitleform text-xs">Ver
-                                            más especificaciones</a>
+                                    <a href="#especificacions" class="underline py-5 text-colorsubtitleform text-xs">Ver
+                                        más especificaciones</a>
 
-                                    </div>
-                                @endif
+                                </div>
                             @endif
 
                             @if (count($shipmenttypes) > 0)
-                                <div
-                                    class="w-full flex flex-wrap gap-2 {{ $producto->verEspecificaciones() ? 'lg:pt-5 lg:border-t border-t-borderminicard' : '' }}">
+                                <div class="w-full flex flex-wrap gap-2 lg:pt-5 lg:border-t border-t-borderminicard">
                                     @foreach ($shipmenttypes as $item)
                                         <div
                                             class="w-full border border-borderminicard rounded-lg xl:rounded-xl inline-flex max-w-full lg:max-w-[220px] xl:max-w-full gap-3 text-colorlabel p-2 bg-fondominicard">
@@ -417,35 +413,32 @@
         </div>
 
         <div class="w-full flex flex-col gap-2 lg:gap-0 lg:flex-row bg-fondominicard overflow-x-hidden">
-
-            @if ($producto->verEspecificaciones())
-                @php
-                    $class = '';
-                    if ($producto->detalleproducto) {
-                        if (!empty($producto->detalleproducto->descripcion)) {
-                            $class = 'lg:w-[42%]';
-                        }
+            @php
+                $class = '';
+                if ($producto->detalleproducto) {
+                    if (!empty($producto->detalleproducto->descripcion)) {
+                        $class = 'lg:w-[42%]';
                     }
+                }
 
-                @endphp
-                @if (count($producto->especificacions) > 0)
-                    <div class="w-full {{ $class }} lg:px-3 lg:flex-shrink-0" id="especificacions">
-                        <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">Especificaciones
-                        </h1>
-                        <table class="w-full text-[10px] mt-5">
-                            <tbody>
-                                @foreach ($producto->especificacions as $item)
-                                    <tr
-                                        class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
-                                        <th class="p-2 py-3 text-left max-w-xs w-60">{{ $item->caracteristica->name }}
-                                        </th>
-                                        <td class="p-2 py-3 text-left">{{ $item->name }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @endif
+            @endphp
+            @if (count($producto->especificacions) > 0)
+                <div class="w-full {{ $class }} lg:px-3 lg:flex-shrink-0" id="especificacions">
+                    <h1 class="font-bold py-3 border-b-2 border-b-borderminicard text-colorlabel">Especificaciones
+                    </h1>
+                    <table class="w-full text-[10px] mt-5">
+                        <tbody>
+                            @foreach ($producto->especificacions as $item)
+                                <tr
+                                    class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
+                                    <th class="p-2 py-3 text-left max-w-xs w-60">{{ $item->caracteristica->name }}
+                                    </th>
+                                    <td class="p-2 py-3 text-left">{{ $item->name }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
 
             @if ($producto->verDetalles())
@@ -481,12 +474,12 @@
                             @click="closeModal()">✕</span>
                     </div>
 
-                    <div class="w-full flex flex-col gap-2 text-left mt-5 p-5">
+                    <div class="w-full flex flex-col gap-2 text-left mt-5 md:p-5">
                         @if (count($stocksucursals) > 0)
                             @foreach ($stocksucursals as $item)
-                                <x-simple-card class="w-full p-3 rounded-xl flex justify-between items-center">
-                                    <div class="text-xs">
-                                        <p class="w-full flex gap-1 items-center font-medium text-colorlabel">
+                                <x-simple-card class="w-full p-3 rounded-xl flex justify-between items-end">
+                                    <div class="w-full flex-1 text-xs">
+                                        <p class="w-full font-semibold text-colorlabel">
                                             <span class="inline-block w-4 h-4">
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -504,19 +497,33 @@
                                             {{ $item->name }}
                                         </p>
                                         <p class="text-[10px] text-colorsubtitleform">
-                                            DIRECCIÓN: {{ $item->direccion }}</p>
-                                        <p class="text-[10px] text-colorsubtitleform">
-                                            LUGAR: {{ $item->lugar }}</p>
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" class="w-4 h-4 text-colorlabel inline-block">
+                                                <path
+                                                    d="M14.5 10C14.0697 8.55426 12.5855 7.5 11 7.5C9.067 7.5 7.5 9.067 7.5 11C7.5 12.7632 8.80385 14.2574 10.5 14.5" />
+                                                <path
+                                                    d="M19.9504 10C19.4697 5.53446 15.5596 2 11 2C6.12944 2 2 6.03298 2 10.9258C2 15.9137 6.2039 19.3616 10.073 21.7567C10.3555 21.9162 10.675 22 11 22C11.325 22 11.6445 21.9162 11.927 21.7567C12.1816 21.6009 12.4376 21.4403 12.6937 21.2748" />
+                                                <path
+                                                    d="M17.5 12C19.9353 12 22 14.0165 22 16.4629C22 18.9482 19.9017 20.6924 17.9635 21.8783C17.8223 21.9581 17.6625 22 17.5 22C17.3375 22 17.1777 21.9581 17.0365 21.8783C15.1019 20.6808 13 18.9568 13 16.4629C13 14.0165 15.0647 12 17.5 12Z" />
+                                                <path d="M17.5 16.5H17.509" />
+                                            </svg>
+
+                                            {{ $item->direccion }}
+                                            <br>
+                                            {{ $item->lugar }}
+                                        </p>
                                     </div>
 
                                     <x-span-text :text="formatDecimalOrInteger($item->total) . ' UND'"
-                                        class="!text-colorsubtitleform text-xs rounded-xl font-medium" />
+                                        class="!text-colorsubtitleform text-xs rounded-lg font-medium" />
                                 </x-simple-card>
                             @endforeach
 
                             <div class="w-full rounded-xl bg-next-50 p-2 border border-next-300">
-                                <p class="text-next-500 text-sm">
-                                    <span class="font-semibold">Importante:</span> Los puntos de recojo disponibles
+                                <p class="text-primary text-xs">
+                                    <b>Importante:</b> 
+                                    Los puntos de recojo disponibles
                                     podrían variar en función
                                     del número de unidades adquiridas.
                                 </p>
@@ -556,7 +563,7 @@
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())
-                                        <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
+                                        <h1 class="text-blue-700 font-medium text-xs text-center">
                                             <small class="text-[10px]">$. </small>
                                             {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                             <small class="text-[10px]">USD</small>

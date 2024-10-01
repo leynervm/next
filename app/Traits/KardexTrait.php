@@ -8,6 +8,7 @@ use App\Models\Producto;
 use App\Models\Tvitem;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Modules\Almacen\Entities\Compraitem;
 use Nwidart\Modules\Facades\Module;
@@ -17,9 +18,8 @@ trait KardexTrait
 
     public function saveKardex($producto_id, $almacen_id, $oldstock, $newstock, $cantidad, $simbolo, $detalle, $reference, $promocion_id = null)
     {
-
         if (Module::isEnabled('Almacen')) {
-            Kardex::create([
+            return Kardex::create([
                 'date' => now('America/Lima'),
                 'cantidad' => $cantidad,
                 'oldstock' => $oldstock,
@@ -109,6 +109,11 @@ trait KardexTrait
     public function kardex(): MorphOne
     {
         return $this->morphOne(Kardex::class, 'kardeable');
+    }
+
+    public function kardexes(): MorphMany
+    {
+        return $this->morphMany(Kardex::class, 'kardeable');
     }
 
     public function getGratuitoAttribute($value)

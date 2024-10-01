@@ -3,17 +3,15 @@
 namespace App\Http\Livewire\Admin\Rangos;
 
 use App\Imports\RangoImport;
-use App\Models\Pricetype;
-use App\Models\Rango;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
 class ImportarRangos extends Component
 {
 
-    use WithFileUploads;
+    use WithFileUploads, AuthorizesRequests;
 
 
     public $open = false;
@@ -40,6 +38,7 @@ class ImportarRangos extends Component
 
     public function updatingOpen()
     {
+        $this->authorize('admin.administracion.rangos.import');
         if (!$this->open) {
             $this->resetValidation();
             $this->reset(['file', 'failures']);
@@ -48,6 +47,7 @@ class ImportarRangos extends Component
 
     public function import()
     {
+        $this->authorize('admin.administracion.rangos.import');
         $this->reset(['failures']);
         $this->validate();
 
@@ -83,6 +83,7 @@ class ImportarRangos extends Component
 
     public function resetFile()
     {
+        $this->authorize('admin.administracion.rangos.import');
         $this->reset(['file', 'failures']);
     }
 

@@ -19,7 +19,7 @@
             <div class="w-full flex flex-col gap-2">
     @endif
 
-    <div class="w-full h-24 sm:h-40 rounded overflow-hidden relative">
+    <div class="w-full h-32 sm:h-40 overflow-hidden rounded md:rounded-xl relative {{ isset($image) ? 'bg-white' : '' }}">
         @if (isset($image))
             <img src="{{ $image }}" alt=""
                 class="w-full h-full object-scale-down group-hover:scale-105 {{ $secondimage ? 'group-hover:opacity-0 duration-700' : 'scale-90 duration-1000' }} transition-all ease-in">
@@ -86,9 +86,9 @@
     </p>
     <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
         <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
-           @php
-               $empresa = mi_empresa()
-           @endphp
+            @php
+                $empresa = mi_empresa();
+            @endphp
             @if ($empresa->isTitlePromocion())
                 PROMOCIÓN
             @elseif($empresa->isTitleLiquidacion())

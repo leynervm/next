@@ -228,7 +228,7 @@
                         :image="$image" :secondimage="$secondimage" :promocion="$promocion"
                         wire:key="cardproduct{{ $item->id }}" x-data="{ addcart: isXL ? false : true }"
                         @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
-                        class="w-full pt-0 pb-5 rounded-xl border border-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
+                        class="w-full pt-0 pb-5 rounded md:rounded-xl border border-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
                         @if ($combo)
                             @if (count($combo->products) > 0)

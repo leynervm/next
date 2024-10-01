@@ -81,4 +81,11 @@ class Kernel extends HttpKernel
         'verifyproductocarshoop' => \App\Http\Middleware\VerifyProductoCarshoop::class,
         'verifydatauser' => \App\Http\Middleware\VerifyDataUser::class,
     ];
+
+    protected $middlewareAliases = [
+        // ...
+        'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
+        'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+        'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+    ];
 }

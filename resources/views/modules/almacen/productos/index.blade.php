@@ -45,9 +45,9 @@
             </x-link-next>
         @endcan
 
-        {{-- @can('admin.almacen.productos.create') --}}
-        <livewire:modules.almacen.productos.importar-productos />
-        {{-- @endcan --}}
+        @can('admin.almacen.productos.import')
+            <livewire:modules.almacen.productos.importar-productos />
+        @endcan
 
         @can('admin.almacen.marcas')
             <x-link-next href="{{ route('admin.almacen.marcas') }}" titulo="Marcas">
@@ -62,7 +62,7 @@
         @endcan
 
         @if (Module::isEnabled('Almacen'))
-            <x-link-next href="#" titulo="Historial precios">
+            {{-- <x-link-next href="#" titulo="Historial precios">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     class="lucide lucide-candlestick-chart">
@@ -74,7 +74,7 @@
                     <path d="M17 13v3" />
                     <path d="M3 3v18h18" />
                 </svg>
-            </x-link-next>
+            </x-link-next> --}}
         @endif
 
         @can('admin.almacen.categorias')

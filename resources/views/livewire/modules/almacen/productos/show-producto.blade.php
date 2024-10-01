@@ -168,7 +168,7 @@
                 </div>
 
 
-                <div class="w-full flex flex-col gap-2 justify-start items-start">
+                <div class="w-full flex flex-col gap-1 justify-start items-start">
                     @if (Module::isEnabled('Marketplace'))
                         <div>
                             <x-label-check for="publicado_dit">
@@ -182,7 +182,7 @@
                             <x-label-check for="viewespecificaciones_dit">
                                 <x-input wire:model.defer="producto.viewespecificaciones" name="viewespecificaciones"
                                     value="1" type="checkbox" id="viewespecificaciones_dit" />
-                                MOSTRAR ESPECIFICACIONES EN TIENDA WEB
+                                MOSTRAR ESPECIFICACIONES SOBRE IMAGEN EN TIENDA WEB
                             </x-label-check>
                         </div>
                         <div>

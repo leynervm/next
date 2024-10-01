@@ -121,6 +121,14 @@ class PermissionSeeder extends Seeder
             ], [
                 'module' => $nameModule
             ])->syncRoles([$desarrollador, $admin]);
+            Permission::updateOrCreate([
+                'name' => 'admin.almacen.productos.import',
+                'descripcion' => 'Importar productos de Excel',
+                'table' => 'Productos',
+                'orden' => '3'
+            ], [
+                'module' => $nameModule
+            ])->syncRoles([$desarrollador, $admin]);
         }
     }
 }

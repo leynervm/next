@@ -30,10 +30,7 @@ class HomeController extends Controller
         $this->middleware('can:admin.promociones')->only('promociones');
         $this->middleware('can:admin.administracion.areaswork')->only('areaswork');
         $this->middleware('can:admin.administracion.pricetypes,admin.administracion.rangos')->only('pricetypes');
-        $this->middleware('can:admin.administracion.empresa.create,admin.administracion.empresa.edit,admin.administracion.sucursales,
-        admin.administracion.employers,admin.users,admin.administracion.pricetypes,
-        admin.administracion.rangos,admin.administracion.typecomprobantes,
-        admin.administracion.units,admin.administracion.areas')->only('administracion');
+        $this->middleware(['permission:admin.administracion.empresa.create|admin.administracion.empresa.edit|admin.administracion.sucursales|admin.administracion.employers|admin.users|admin.administracion.pricetypes|admin.administracion.rangos|admin.administracion.typecomprobantes|admin.administracion.units|admin.administracion.areas'])->only('administracion');
         $this->middleware('can:admin.administracion.typepayments')->only('typepayments');
     }
 

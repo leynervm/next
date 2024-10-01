@@ -26,7 +26,7 @@ class ShowOrders extends Component
     public function render()
     {
 
-        $orders = Order::with(['direccion', 'shipmenttype', 'moneda', 'client'])
+        $orders = Order::with(['direccion', 'shipmenttype', 'moneda', 'client', 'transaccion'])
             ->with(['trackings' => function ($query) {
                 $query->orderBy('id', 'desc')->orderBy('date', 'desc');
             }]);
@@ -36,7 +36,7 @@ class ShowOrders extends Component
                 $query->where('document', 'ilike', '%' . $this->search . '%')
                     ->orWhere('name', 'ilike', '%' . $this->search . '%')
                     ->orWhere('email', 'ilike', '%' . $this->search . '%');
-            })->orWhere('seriecompleta', 'ilike', ['%' . $this->search . '%']);
+            })->orWhere('purchase_number', 'ilike', ['%' . $this->search . '%']);
         }
 
         if (trim($this->date) !== '') {

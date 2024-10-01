@@ -36,7 +36,7 @@
                     </path>
                 </svg>
                 <p class="text-sm text-colorsubtitleform font-semibold">
-                    #{{ $order->seriecompleta }}</p>
+                    #{{ $order->purchase_number }}</p>
 
                 <p class="text-xs font-medium text-colorsubtitleform">
                     {{ formatDate($order->transaccion->date, 'DD MMM Y') }}</p>
@@ -188,9 +188,7 @@
                             </tr>
                             <tr>
                                 <td class="w-full text-end align-middle" colspan="2">
-                                    <div class="w-full flex items-center justify-end">
-                                        <x-span-text :text="$order->transaccion->action_description" class="text-xs" type="green" />
-                                    </div>
+                                    <x-span-text :text="$order->transaccion->action_description" class="text-xs inline-block" type="green" />
                                 </td>
                             </tr>
                             <tr>
@@ -219,15 +217,8 @@
             @endif
         </div>
 
-
-        <div class="mt-5 w-full grid grid-cols-1 lg:grid-cols-7 gap-3 xl:gap-5">
-
-            <div class="lg:col-span-4 xl:col-span-5 w-full">
-                <livewire:modules.marketplace.orders.show-resumen-order :order="$order" />
-            </div>
-            <div class="lg:col-span-3 xl:col-span-2 w-full pb-5">
-                <livewire:modules.marketplace.orders.show-trackings :order="$order" />
-            </div>
+        <div class="mt-5 w-full">
+            <livewire:modules.marketplace.orders.show-resumen-order :order="$order" />
         </div>
     </div>
 </x-admin-layout>
