@@ -1,15 +1,6 @@
-<div class="w-full max-w-full p-0 mt-8 xl:mt-0">
-    <div class="relative {{ count($sliders) > 1 ? 'mb-8' : '' }}">
-        @if (count($sliders) > 1)
-            <ol class="absolute z-10 flex justify-center items-center -bottom-9 m-0 pl-0 left-0 right-0"
-                id="indice-slider">
-                @foreach ($sliders as $item)
-                    <li class="indicador-slider {{ $loop->first ? 'activo' : '' }}"></li>
-                @endforeach
-            </ol>
-        @endif
-
-        <div class="relative w-full overflow-hidden h-0 pt-[28%] min-h-[280px]" id="slider">
+<div class="w-full max-w-full p-0">
+    <div class="relative {{ count($sliders) > 1 ? '' : '' }}">
+        <div class="relative w-full overflow-hidden h-0 pt-[29%] min-h-[290px] mt-[108px] xl:mt-20" id="slider">
             @foreach ($sliders as $item)
                 <div class="carousel-item {{ $loop->first ? 'activo' : '' }}">
                     <div class="h-full flex relative efecto-slider">
@@ -26,6 +17,13 @@
                 </div>
             @endforeach
         </div>
+        @if (count($sliders) > 1)
+            <ol class="flex justify-center items-center gap-3 mt-3" id="indice-slider">
+                @foreach ($sliders as $item)
+                    <li class="indicador-slider {{ $loop->first ? 'activo' : '' }}"></li>
+                @endforeach
+            </ol>
+        @endif
 
         @if (count($sliders) > 1)
             <button type="button" id="previusslider"

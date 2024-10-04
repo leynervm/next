@@ -9,11 +9,10 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nueva garantía producto') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+            <form wire:submit.prevent="save(true)" class="w-full flex flex-col gap-2">
                 <div>
                     <x-label value="Descripción :" />
                     <x-input class="block w-full" wire:model.defer="name"
@@ -21,10 +20,6 @@
                     <x-jet-input-error for="name" />
                 </div>
 
-                {{-- <x-label class="mt-2" value="Tiempo predeterminado (Letras):" />
-                <x-input class="block w-full" wire:model.defer="timestring"
-                    placeholder="Ingrese tiempo garantía en letras..." />
-                <x-jet-input-error for="timestring" /> --}}
                 <div>
                     <x-label value="Medida garantía :" />
                     <div class="w-full flex flex-wrap gap-2">
@@ -42,15 +37,16 @@
 
                 <div>
                     <x-label value="Tiempo :" />
-                    <x-input type="number" class="block w-full" wire:model.defer="time" step="1"
-                        min="1" />
+                    <x-input type="number" class="block w-full input-number-none" wire:model.defer="time" step="1" min="1"
+                        onkeypress="return validarNumero(event)" />
                     <x-jet-input-error for="time" />
                 </div>
 
-                <div class="w-full flex pt-4 justify-end">
+                <div class="w-full flex gap-2 flex-wrap pt-4 justify-end">
+                    <x-button type="button" wire:click="save" wire:loading.attr="disabled">
+                        {{ __('Save') }}</x-button>
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('REGISTRAR') }}
-                    </x-button>
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

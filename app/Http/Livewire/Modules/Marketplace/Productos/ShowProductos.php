@@ -50,14 +50,14 @@ class ShowProductos extends Component
             'except' => '',
             'as' => 'coincidencias'
         ],
-        // 'sort' => [
-        //     'except' => 'name',
-        //     'as' => 'orderBy'
-        // ],
-        // 'direction' => [
-        //     'except' => 'asc',
-        //     'as' => 'direccion'
-        // ]
+        'sort' => [
+            'except' => 'name',
+            'as' => 'order'
+        ],
+        'direction' => [
+            'except' => 'asc',
+            'as' => 'by'
+        ]
     ];
 
     public Empresa $empresa;
@@ -78,6 +78,13 @@ class ShowProductos extends Component
     public $matches = [];
     public $producto;
 
+    public $readyToLoad = false;
+
+    public function loadProductos()
+    {
+        $this->readyToLoad = true;
+    }
+
     public function mount($pricetype = null)
     {
         $this->pricetype = $pricetype;
@@ -96,6 +103,12 @@ class ShowProductos extends Component
         }
         if (!empty(request('coincidencias'))) {
             $this->search = request('coincidencias');
+        }
+        if (!empty(request('order'))) {
+            $this->sort = request('order');
+        }
+        if (!empty(request('by'))) {
+            $this->direction = request('by');
         }
     }
 
@@ -153,8 +166,10 @@ class ShowProductos extends Component
             $query->disponibles();
         });
 
-        $productos = $productos->visibles()->publicados()
-            ->orderBy($this->sort, $this->direction)->paginate(30);
+        $productos =  $this->readyToLoad ?
+            $productos->visibles()->publicados()
+            ->orderBy($this->sort, $this->direction)->paginate(30)
+            : [];
 
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'subcategories', 'marcas', 'caracteristicas'));

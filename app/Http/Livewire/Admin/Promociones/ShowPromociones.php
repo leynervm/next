@@ -16,7 +16,7 @@ class ShowPromociones extends Component
     use AuthorizesRequests;
 
     protected $queryString = [
-        'estado' => ['except' => '',],
+        'estado' => ['except' => Promocion::ACTIVO],
     ];
     protected $listeners = ['render'];
     public $pricetype_id, $pricetype;

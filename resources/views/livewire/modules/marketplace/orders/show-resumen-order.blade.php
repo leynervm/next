@@ -285,7 +285,6 @@
                     @endif
                 @endif
 
-                {{ print_r($errors->all()) }}
                 @if ($tvitem->producto && !$tvitem->producto->isRequiredserie())
                     <div class="w-full flex pt-4 gap-2 justify-end">
                         <x-button type="submit" wire:loading.attr="disabled">

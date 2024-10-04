@@ -1,8 +1,8 @@
-<div class="fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto h-[70px] bg-next-900">
-    <div class="w-full mx-auto flex relative">
+<div class="fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto xl:h-20 bg-next-900">
+    <div class="w-full mx-auto flex items-center relative">
         @if ($empresa->image)
-            <div class="flex items-center bg-next-800">
-                <a href="/" class="hidden xl:block xl:flex-1 w-40 px-5 h-[68%]">
+            <div class="hidden xl:flex w-72 items-center h-full bg-white">
+                <a href="/" class="w-full px-1 h-[90%]">
                     <img class="mx-auto h-full w-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
                         alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
@@ -10,56 +10,30 @@
             </div>
         @endif
 
-        <div class="flex-shrink-0 pl-1 xl:pl-0">
-            <button class="hidden h-full xl:flex items-center button-sidebar" type="button">
-                <div @mouseover.debounce.50ms="openSidebar=true, backdrop=true"
-                    class="menu-hover flex rounded-sm h-8 w-8 z-10 transition ease-linear duration-150">
-                    <div class="scale-[.5] xl:ml-2 relative">
-                        <span class="icon-button-menu"></span>
-                    </div>
+        <div class="flex-shrink-0 xl:pr-5">
+            <button class="button-sidebar hidden xl:flex items-center" type="button"
+                @click="openSidebar=!openSidebar, backdrop= openSidebar ? true : false"
+                :class="openSidebar ? 'open' : ''">
+                <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
+                    <span class="icon-button-menu"></span>
                 </div>
-                <div class="">
-                    <span class="mt-1 ml-2 font-semibold text-xl text-white">
-                        Menú</span>
-                </div>
+                <span class="pl-2 text-start flex-1 font-semibold text-xl">
+                    Menú</span>
             </button>
-            <button class="flex h-full xl:hidden button-sidebar" type="button">
-                <div @click="openSidebar=true, backdrop=true"
-                    class="menu-hover bg-next-800 text-center flex rounded-sm h-full w-8 z-10 transition ease-linear duration-150">
-                    <div class="scale-[.5] relative w-full">
-                        <span class="icon-button-menu"></span>
-                    </div>
+            <button class="button-sidebar xl:hidden px-2" type="button"
+                @click="openSidebar=!openSidebar,backdrop= openSidebar ? true : false">
+                <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
+                    <span class="icon-button-menu"></span>
                 </div>
                 @if ($empresa->image)
-                    <a href="/" class="hidden xs:block xl:hidden w-20 h-full flex-shrink-0">
+                    <div class="w-full flex-1 xl:hidden h-full">
                         <img class="h-full w-auto m-auto object-center object-scale-down"
                             src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
-                        {{-- <x-isotipo-next class="text-white h-full mx-auto" /> --}}
-                    </a>
+                    </div>
                 @endif
             </button>
         </div>
 
-        {{-- <div data-wrapper="MS-MenuSis_Linio" class="h-full flex justify-center items-center p-0"
-            data-testid="SiSNavigationMenuId">
-            <div class="flex flex-col w-full h-full" data-testid="SiSNavigationMenuDesktop">
-                <div class="h-full flex items-center" data-testid="CategoryButton">
-                    <div class="CategoryButton-module_top-menu__1HTfC">
-                        <div
-                            class="flex h-[46px] w-32 py-1 pl-4 pr-3 items-center justify-between rounded-2xl gap-1 border border-white cursor-pointer text-white my-0 ml-14 mr-4 font-semibold">
-                            Categorías
-                            <div class="flex justify-center items-center">
-                                <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="lucide lucide-chevron-down">
-                                    <path d="m6 9 6 6 6-6" />
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
         <div class="mr-6 relative flex-1 hidden xl:flex" x-data="productSearch()" @click.away="products= []">
             <form @submit.prevent="handleEnter" autocomplete="off"
                 class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[999]'">
@@ -75,7 +49,7 @@
                         placeholder="Buscar en Next Store" id="search">
                 </div>
                 <button type="submit"
-                    class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">
+                    class="bg-next-900 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="block w-full h-full p-2 text-white">
@@ -181,13 +155,12 @@
             }
         </script>
 
-
         <div class="w-full flex flex-1 sm:w-auto sm:flex-none sm:ml-auto">
             <ul class="w-full sm:w-auto flex justify-end h-full m-0 p-0" x-data="{ login: false }">
                 <li
                     class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 xl:border-r border-white transition ease-out duration-150">
                     @auth
-                        <a class="hidden h-full lg:flex items-center p-3 px-1 sm:px-3 font-semibold text-white text-lg leading-4 cursor-pointer group-hover:opacity-80"
+                        <a class="hidden h-full md:flex items-center p-3 px-1 sm:px-3 font-semibold text-white text-lg leading-4 cursor-pointer group-hover:opacity-80"
                             href="{{ route('orders') }}">
                             Mis<br>compras
                         </a>
@@ -261,7 +234,7 @@
                             </button>
 
                             <div x-show="login" x-cloak x-transition style="display: none"
-                                class="absolute w-48 top-12 right-0 bg-fondodropdown rounded-xl p-2"
+                                class="absolute shadow shadow-shadowminicard w-48 top-12 right-0 bg-fondodropdown rounded-xl p-2"
                                 :class="backdrop ? 'z-[1]' : 'z-[1000]'">
                                 <div class="w-full">
                                     <div
@@ -341,8 +314,8 @@
         </div>
     </div>
 
-    <div class="xl:hidden w-full bg-next-800 p-1 py-1 pb-2 flex" x-data="productSearch()" @click.away="products= []">
-        <form @submit.prevent="fetchProducts" autocomplete="off"
+    <div class="xl:hidden w-full px-1 xs:px-3 py-1 pb-2 flex" x-data="productSearch()" @click.away="products= []">
+        <form @submit.prevent="handleEnter" autocomplete="off"
             class="w-full self-center flex cursor-pointer relative" :class="openSidebar ? '' : 'z-[999]'">
             <div class="w-full flex h-10 m-0 bg-white justify-center items-center rounded-3xl border-0.5 border-white"
                 :class="products.length ? 'rounded-b-none' : ''">
@@ -354,7 +327,7 @@
                     value="" placeholder="Buscar en Next Store">
             </div>
             <button type="submit"
-                class="bg-next-700 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-10 w-10 flex justify-center items-center">
+                class="bg-next-900 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-0 h-10 w-10 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                     class="block w-full h-full p-2 text-white">

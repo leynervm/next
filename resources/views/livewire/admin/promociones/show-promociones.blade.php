@@ -33,7 +33,7 @@
         <div class="w-full max-w-xs">
             <x-label value="Filtrar estado :" />
             <div class="relative" id="parentselectestado" x-init="selectEstado">
-                <x-select class="block w-full" id="selectestado" x-ref="selectestado" data-placeholder="null">
+                <x-select class="block w-full" id="selectestado" x-ref="selectestado">
                     <x-slot name="options">
                         <option value="{{ \App\Models\Promocion::ACTIVO }}">PROMOCIONES ACTIVAS</option>
                         <option value="{{ \App\Models\Promocion::FINALIZADO }}">PROMOCIONES FINALIZADAS</option>

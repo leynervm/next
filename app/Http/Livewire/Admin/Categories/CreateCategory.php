@@ -17,7 +17,7 @@ class CreateCategory extends Component
     use AuthorizesRequests, WithFileUploads;
 
     public $open = false;
-    public $name, $logo;
+    public $name, $icon;
 
     protected function rules()
     {
@@ -25,15 +25,13 @@ class CreateCategory extends Component
             'name' => [
                 'required',
                 'string',
-                'min:3',
+                'min:1',
                 'max:100',
                 new CampoUnique('categories', 'name', null, true),
             ],
-            'logo' => [
+            'icon' => [
                 'nullable',
-                'file',
-                'mimes:jpeg,png,gif',
-                'max:5120'
+                'string',
             ]
         ];
     }
@@ -48,56 +46,33 @@ class CreateCategory extends Component
         if ($this->open == false) {
             $this->authorize('admin.almacen.categorias.create');
             $this->resetValidation();
-            $this->reset('name', 'open', 'logo');
+            $this->reset('name', 'open', 'icon');
         }
     }
 
     public function save($closemodal = false)
     {
         $this->authorize('admin.almacen.categorias.create');
-        $this->name = trim($this->name);
+        $this->name = mb_strtoupper(trim($this->name), "UTF-8");
         $this->validate();
         DB::beginTransaction();
         try {
             $orden = Category::max('orden') ?? 0;
             $category = Category::withTrashed()
-                ->where('name', mb_strtoupper($this->name, "UTF-8"))->first();
+                ->where('name', $this->name)->first();
 
             if ($category) {
                 $category->orden = $orden + 1;
+                $category->icon = $this->icon;
                 $category->restore();
             } else {
                 $category = Category::create([
                     'name' => $this->name,
+                    'icon' => $this->icon,
                     'orden' => $orden + 1
                 ]);
             }
 
-            if ($this->logo) {
-                if (!Storage::directoryExists('images/categories/')) {
-                    Storage::makeDirectory('images/categories/');
-                }
-
-                $compressedImage = Image::make($this->logo->getRealPath())
-                    ->resize(400, 400, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->orientate()->encode('jpg', 30);
-
-                $logoURL = uniqid('category_') . '.' . $this->logo->getClientOriginalExtension();
-                $compressedImage->save(public_path('storage/images/categories/' . $logoURL));
-
-                if ($compressedImage->filesize() > 1048576) { //1MB
-                    $compressedImage->destroy();
-                    $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
-                    return false;
-                }
-
-                $category->image()->create([
-                    'url' => $logoURL,
-                    'default' => 1
-                ]);
-            }
             DB::commit();
             $this->emitTo('admin.categories.show-categories', 'render');
             $this->resetValidation();
@@ -114,11 +89,5 @@ class CreateCategory extends Component
             DB::rollBack();
             throw $e;
         }
-    }
-
-    public function clearImage()
-    {
-        $this->reset(['logo']);
-        $this->resetValidation();
     }
 }

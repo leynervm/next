@@ -40,7 +40,7 @@
                     <img src="{{ $image }}" alt="product-case-iphone-11-transparente-image"
                         title="{{ $producto->slug }}" class="align-middle w-full h-full object-scale-down">
                 @else
-                    <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+                    <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
                 @endif
             </div>
 

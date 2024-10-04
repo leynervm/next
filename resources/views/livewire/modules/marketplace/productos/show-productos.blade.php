@@ -1,22 +1,23 @@
-<div x-data="carshoop">
+<div wire:init="loadProductos" x-data="carshoop">
     <div wire:loading.flex class="fixed loading-overlay rounded hidden overflow-hidden z-[99999]">
         <x-loading-next />
     </div>
 
     <div class="w-full flex items-start gap-3 bg-body">
         <aside
-            class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-52 flex-shrink-0 absolute z-[199] lg:z-[90] top-0 mt-[108px] lg:mt-0 left-0 lg:top-0 h-[calc(100vh-110px)] lg:h-auto lg:relative lg:block rounded-r-xl transition-all duration-300"
-            :class="sidebar ? 'translate-x-0 bg-inherit lg:bg-inherit' : '-translate-x-full bg-inherit lg:translate-x-0',
+            class="w-full max-w-[80%] xs:w-60 xs:max-w-full lg:w-60 flex-shrink-0 absolute z-[199] lg:z-[90] top-0 mt-[108px] lg:mt-0 left-0 lg:top-0 h-[calc(100vh-110px)] lg:h-auto lg:relative lg:block rounded-r-xl transition-all duration-300"
+            x-bind:class="sidebar ? 'translate-x-0 block bg-inherit lg:bg-inherit' :
+                '-translate-x-full hidden bg-inherit lg:translate-x-0',
                 openSidebar ? '' : 'z-[199]'">
             <div class="w-full p-2 pt-10 lg:p-0 relative overflow-y-auto overflow-x-hidden h-full">
                 <button x-cloak
-                    class="absolute flex font-semibold items-center justify-center leading-3 top-1 right-1 lg:hidden cursor-pointer rounded-lg text-lg text-textspancardproduct p-2"
+                    class="absolute flex font-semibold items-center justify-center leading-3 top-1 right-1 lg:hidden cursor-pointer rounded-lg text-lg text-primary p-2"
                     :class="sidebar ? '' : ''" @click="sidebar=false,backdrop = false">✕</button>
 
                 {{-- <h1 class="text-colorsubtitleform text-[10px] py-2">FILTRAR</h1> --}}
 
                 @if (count($productos) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" class="w-full text-colorsubtitleform">
+                    <x-simple-card x-data="{ openfilter: true }" class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
@@ -27,10 +28,10 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col text-xs" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col text-xs" x-cloak  x-transition>
                             <button @click="sidebar=false,backdrop = false" wire:click="order('precio', 'asc')"
                                 wire:loading.attr="disabled"
-                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" class="w-4 h-4 inline-block">
@@ -44,7 +45,7 @@
                             </button>
                             <button @click="sidebar=false,backdrop = false" wire:click="order('precio', 'desc')"
                                 wire:loading.attr="disabled"
-                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" class="w-4 h-4 inline-block">
@@ -58,7 +59,7 @@
                             </button>
                             <button @click="sidebar=false,backdrop = false" wire:click="order('name', 'asc')"
                                 wire:loading.attr="disabled"
-                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" class="w-4 h-4 inline-block">
@@ -72,7 +73,7 @@
                             </button>
                             <button @click="sidebar=false,backdrop = false" wire:click="order('name', 'desc')"
                                 wire:loading.attr="disabled"
-                                class="w-full p-2 rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round" class="w-4 h-4 inline-block">
@@ -100,7 +101,8 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter"
+                            x-transition>
                             @foreach ($marcas as $item)
                                 <label for="marca_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -126,7 +128,8 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter"
+                            x-transition>
                             @foreach ($categories as $item)
                                 <label for="category_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -152,7 +155,8 @@
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
-                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
+                        <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter"
+                            x-transition>
                             @foreach ($subcategories as $item)
                                 <label for="subcategory_id_{{ $item->id }}"
                                     class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -181,7 +185,8 @@
                                     <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                 </svg>
                             </button>
-                            <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter" x-transition>
+                            <div class="w-full flex flex-col max-h-60 overflow-y-auto" x-cloak x-show="openfilter"
+                                x-transition>
                                 @foreach ($item->especificacions as $espec)
                                     <label for="especificacion_{{ $item->id }}{{ $espec->id }}"
                                         class="text-xs font-medium hover:bg-shadowminicard hover:text-textspancardproduct rounded p-2 cursor-pointer inline-flex items-center gap-1 transition-colors ease-in-out duration-150">
@@ -258,19 +263,19 @@
                         @if ($pricesale > 0)
                             @if ($empresa->verDolar())
                                 <h1 class="text-blue-700 font-medium text-[1rem] text-center">
-                                    <small class="text-[10px]">$. </small>
+                                    <small class="text-xs">$. </small>
                                     {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                    <small class="text-[10px]">USD</small>
+                                    {{-- <small class="text-[10px]">USD</small> --}}
                                 </h1>
                             @endif
                             <h1 class="text-colorlabel font-semibold text-sm sm:text-2xl text-center">
-                                <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                <small class="text-sm">{{ $moneda->simbolo }}</small>
                                 {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
-                                <small class="text-[10px]">{{ $moneda->currency }}</small>
+                                {{-- <small class="text-[10px]">{{ $moneda->currency }}</small> --}}
                             </h1>
                             @if ($descuento > 0 && $empresa->verOldprice())
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">
-                                    {{ $moneda->simbolo }}
+                                    <small class="text-xs">{{ $moneda->simbolo }}</small>
                                     {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
                                 </small>
                             @endif
@@ -312,10 +317,12 @@
                 @endforeach
             </div>
 
-            @if ($productos->hasPages())
-                <div class="w-full py-2">
-                    {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
-                </div>
+            @if (count($productos) > 0)
+                @if ($productos->hasPages())
+                    <div class="w-full py-2">
+                        {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
+                    </div>
+                @endif
             @endif
 
             @if (count($productos) == 0)
@@ -327,6 +334,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('carshoop', () => ({
+                ordenfilter: false,
                 qty: 1,
 
                 add_to_cart(producto_id) {

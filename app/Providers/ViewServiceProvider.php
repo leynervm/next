@@ -42,7 +42,7 @@ class ViewServiceProvider extends ServiceProvider
             View::composer('layouts.app', function ($view) {
                 $categories = [];
                 if (Module::isEnabled('Marketplace')) {
-                    $categories = Category::with(['image', 'subcategories'])
+                    $categories = Category::with(['subcategories'])
                         ->orderBy('orden', 'asc')->get();
                 }
 

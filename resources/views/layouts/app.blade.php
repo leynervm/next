@@ -27,10 +27,27 @@
     <!-- Scripts -->
 </head>
 
-<body class="bg-body mt-[108px] xl:mt-[70px] animate__animated animate__fadeIn animate__faster"
-    :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, isXL: window.innerWidth >= 1280, isSM: window.innerWidth >= 640, subcategories: [], category: '' }"
-    @resize.window="isXL = window.innerWidth >= 1280, isSM = window.innerWidth >= 640">
+<style>
+    body {
+        overflow: hidden;
+    }
+</style>
+
+<body class="bg-body animate__animated animate__fadeIn animate__faster"
+    :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, isXL: window.innerWidth >= 1280, isSM: window.innerWidth <= 640, subcategories: [], category: '' }"
+    @resize.window="isXL = window.innerWidth >= 1280, isSM = window.innerWidth <= 640" x-init="$watch('openSidebar', (value) => {
+        if (value) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    })">
     <x-jet-banner />
+
+    <div style="z-index: 999999; background-color: rgba(255,255,255,1);position: fixed;top: 0;left: 0; width: 100%;height: 100vh;display: flex;flex-direction:column;justify-content: center;align-items: center;"
+        id="loading-next">
+        <x-loading-next />
+    </div>
 
     @if ($empresa)
         @if (Module::isEnabled('Marketplace'))
@@ -44,7 +61,7 @@
                 {{ $slider }}
             @endif
 
-            <div class="{{-- contenedor --}} bg-body min-h-screen">
+            <div class="block w-full min-h-screen mt-[108px] xl:mt-20">
                 <x-alert />
 
                 @if (isset($breadcrumb))
@@ -102,6 +119,12 @@
 <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 
 <script>
+    // document.body.style.overflow = 'hidden';
+
+    window.addEventListener('load', () => {
+        document.body.style.overflow = 'auto';
+        $('#loading-next').fadeOut();
+    })
 
     let boxCookies = document.getElementById('cookies');
     cookies();

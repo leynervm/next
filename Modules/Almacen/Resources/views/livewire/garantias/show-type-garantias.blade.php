@@ -36,7 +36,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar garantía producto') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">
@@ -67,8 +66,8 @@
 
                 <div>
                     <x-label value="Tiempo predeterminado (Meses):" />
-                    <x-input type="number" class="block w-full" wire:model.defer="typegarantia.time" step="1"
-                        min="1" />
+                    <x-input type="number" class="block w-full input-number-none" wire:model.defer="typegarantia.time" step="1"
+                        min="1" onkeypress="return validarNumero(event)" />
                     <x-jet-input-error for="typegarantia.time" />
                 </div>
 

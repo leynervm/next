@@ -18,6 +18,7 @@ class CreateCategoriesTable extends Migration
             $table->string('name', 255);
             $table->text('slug')->unique();
             $table->unsignedInteger('orden');
+            $table->text('icon')->nullable();
             $table->softDeletes();
         });
     }

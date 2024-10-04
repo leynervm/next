@@ -19,7 +19,7 @@ class Category extends Model
     use Sluggable;
 
     public $timestamps = false;
-    protected $fillable = ['name', 'orden', 'slug'];
+    protected $fillable = ['name', 'orden', 'slug', 'icon'];
 
     public function sluggable(): array
     {
@@ -39,11 +39,6 @@ class Category extends Model
     public function subcategories(): BelongsToMany
     {
         return $this->BelongsToMany(Subcategory::class);
-    }
-
-    public function image(): MorphOne
-    {
-        return $this->morphOne(Image::class, "imageable");
     }
 
     public function productos(): HasMany

@@ -1,4 +1,4 @@
-<div class="relative" x-data="loadeditimage()">
+<div class="relative">
 
     @if ($categories->hasPages())
         <div class="w-full pb-2">
@@ -44,11 +44,10 @@
                                 @endif
                             </div>
                         </div>
-                        @if ($item->image)
+                        @if ($item->icon)
                             <div
-                                class="w-20 h-20 flex-shrink-0 rounded-full overflow-hidden border border-borderminicard">
-                                <img src="{{ $item->image->getCategoryURL() }}" class="w-full h-full object-cover block"
-                                    alt="">
+                                class="w-12 h-12 p-1 text-colorsubtitleform flex-shrink-0 rounded-xl overflow-hidden shadow shadow-shadowminicard">
+                                {!! $item->icon !!}
                             </div>
                         @endif
                     </div>
@@ -56,7 +55,7 @@
                     <div class="w-full flex gap-1 pt-2 justify-end">
                         @can('admin.almacen.categorias.edit')
                             <x-button-edit wire:click="edit({{ $item->id }})" wire:loading.attr="disabled"
-                                wire:key="editcat_{{ $item->id }}" @click="editimage=null" />
+                                wire:key="editcat_{{ $item->id }}" />
                         @endcan
 
                         @can('admin.almacen.categorias.delete')
@@ -73,77 +72,38 @@
         <x-loading-next />
     </div>
 
-    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar categoría') }}
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
+            <form wire:submit.prevent="update(true)" class="w-full flex flex-col gap-2">
                 <div>
                     <x-label value="Nombre :" />
                     <x-input class="block w-full" wire:model.defer="category.name"
                         placeholder="Ingrese nombre categoría..." />
                     <x-jet-input-error for="category.name" />
                 </div>
-
-                <div class="w-full h-60 relative mb-2 shadow-md shadow-shadowminicard rounded-xl overflow-hidden">
-                    <template x-if="editimage">
-                        <img id="editimage" class="object-scale-down block w-full h-full" :src="editimage" />
-                    </template>
-                    <template x-if="!editimage">
-                        @if ($category->image)
-                            <img id="editimage" class="object-scale-down block w-full h-full"
-                                src="{{ $category->image->getCategoryURL() }}" />
-                        @else
-                            <x-icon-file-upload class="w-full h-full !my-0" />
-                        @endif
-                    </template>
+                <div>
+                    <x-label value="Contenido icono SVG :" />
+                    <x-text-area class="w-full block" wire:model.defer="category.icon" rows="10">
+                    </x-text-area>
+                    <x-jet-input-error for="category.icon" />
                 </div>
 
-                <div class="w-full flex flex-wrap gap-2 justify-center">
-                    <template x-if="editimage">
-                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" @click="reset">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 6h18" />
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                <line x1="10" x2="10" y1="11" y2="17" />
-                                <line x1="14" x2="14" y1="11" y2="17" />
-                            </svg>
-                            LIMPIAR
-                        </x-button>
-                    </template>
+                @if ($category->icon)
+                    <div
+                        class="w-48 h-48 p-2 rounded-xl mx-auto text-colorsubtitleform relative mb-2 border border-borderminicard">
+                        {!! $category->icon !!}
+                    </div>
+                @endif
 
-                    @if ($category->image)
-                        <x-button x-cloak x-show="editimage == null" class="inline-flex !rounded-lg"
-                            wire:loading.attr="disabled" wire:click="deletelogo" wire:key="buttondeletelogo">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 6h18" />
-                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                <line x1="10" x2="10" y1="11" y2="17" />
-                                <line x1="14" x2="14" y1="11" y2="17" />
-                            </svg>
-                            ELIMINAR LOGO
-                        </x-button>
-                    @endif
-
-                    <x-input-file for="editFileInput" titulo="SELECCIONAR LOGO"
-                        wire:loading.class="disabled:opacity-25" class="!rounded-lg">
-                        <input type="file" class="hidden" wire:model="logo" id="editFileInput"
-                            accept="image/jpg,image/jpeg,image/png" @change="loadlogo" />
-                    </x-input-file>
-                </div>
-                <x-jet-input-error for="logo" class="text-center" />
-
-                <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled">
+                <div class="w-full flex gap-2 flex-row pt-4 justify-end">
+                    <x-button type="button" wire:click="update" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -167,22 +127,6 @@
                 },
             })
         })
-
-        function loadeditimage() {
-            return {
-                editimage: null,
-                loadlogo() {
-                    let file = document.getElementById('editFileInput').files[0];
-                    var reader = new FileReader();
-                    reader.onload = (e) => this.editimage = e.target.result;
-                    reader.readAsDataURL(file);
-                },
-                reset() {
-                    this.editimage = null;
-                    @this.clearImage();
-                },
-            }
-        }
 
         function confirmDelete(category) {
             swal.fire({

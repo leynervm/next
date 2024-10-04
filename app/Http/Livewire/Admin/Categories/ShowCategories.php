@@ -16,10 +16,10 @@ use Livewire\WithPagination;
 class ShowCategories extends Component
 {
 
-    use AuthorizesRequests, WithPagination, WithFileUploads;
+    use AuthorizesRequests, WithPagination;
 
     public $open = false;
-    public $category, $logo;
+    public $category;
 
     protected $listeners = ['render'];
 
@@ -29,16 +29,14 @@ class ShowCategories extends Component
             'category.name' => [
                 'required',
                 'string',
-                'min:3',
+                'min:2',
                 'max:100',
                 new CampoUnique('categories', 'name', $this->category->id, true),
             ],
-            'logo' => [
+            'category.icon' => [
                 'nullable',
-                'file',
-                'mimes:jpeg,png,gif',
-                'max:5120'
-            ]
+                'string',
+            ],
         ];
     }
 
@@ -49,7 +47,6 @@ class ShowCategories extends Component
 
     public function render()
     {
-
         $categories = Category::with('subcategories')->orderBy('orden', 'asc')->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.categories.show-categories', compact('categories'));
     }
@@ -57,44 +54,23 @@ class ShowCategories extends Component
     public function edit(Category $category)
     {
         $this->authorize('admin.almacen.categorias.edit');
-        $this->reset(['logo']);
         $this->category = $category;
         $this->open = true;
     }
 
-    public function update()
+    public function update($closemodal = false)
     {
+
         $this->authorize('admin.almacen.categorias.edit');
         $this->category->name = trim($this->category->name);
         $this->validate();
         $this->category->save();
-        if ($this->logo) {
-            $compressedImage = Image::make($this->logo->getRealPath())
-                ->resize(400, 400, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->orientate()->encode('jpg', 30);
-
-            $logoURL = uniqid('category_') . '.' . $this->logo->getClientOriginalExtension();
-            $compressedImage->save(public_path('storage/images/categories/' . $logoURL));
-
-            if ($compressedImage->filesize() > 1048576) { //1MB
-                $compressedImage->destroy();
-                $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
-                return false;
-            }
-
-            if ($this->category->image) {
-                Storage::delete('images/categories/' . $this->category->image->url);
-                $this->category->image()->delete();
-            }
-
-            $this->category->image()->create([
-                'url' => $logoURL,
-                'default' => 1
-            ]);
+        $this->resetValidation();
+        if ($closemodal) {
+            $this->reset(['open']);
+        } else {
+            $this->category->refresh();
         }
-        $this->reset(['open', 'logo']);
     }
 
 
@@ -105,11 +81,6 @@ class ShowCategories extends Component
         DB::beginTransaction();
         try {
             $category->subcategories()->detach();
-            if ($category->image) {
-                Storage::delete($category->image->getCategoryURL());
-                $category->image()->delete();
-            }
-
             $category->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');
@@ -119,34 +90,6 @@ class ShowCategories extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
-        }
-        // }
-    }
-
-    public function clearImage()
-    {
-        $this->reset(['logo']);
-        $this->resetValidation();
-    }
-
-    public function updatedLogo($file)
-    {
-        try {
-            $url = $file->temporaryUrl();
-        } catch (\Exception $e) {
-            $this->reset(['logo']);
-            $this->addError('logo', $e->getMessage());
-            return;
-        }
-    }
-
-    public function deletelogo()
-    {
-        $this->authorize('admin.almacen.categorias.delete');
-        if ($this->category->image) {
-            Storage::delete($this->category->image->getCategoryURL());
-            $this->category->image()->delete();
-            $this->category->refresh();
         }
     }
 }
