@@ -8,26 +8,30 @@
 }
 
 .header-marketplace {
-    /* @apply bg-gradient-to-r from-next-400 to-next-900; */
+    @apply  xl:h-24 bg-fondoheadermarketplace text-colorheadermarketplace fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto;
     /* background-color: transparent;
     background-image: linear-gradient(220deg, #0ecfcf 0%, #0ecfcf 100%); */
-
+    /* bg-gradient-to-r from-next-400 to-next-900 */
 }
 
+#slider {
+    @apply mt-[108px] xl:mt-24;
+}
+.content {
+    @apply mt-[108px] xl:mt-24;
+}
+.content-home {
+    @apply -mt-[108px] xl:-mt-24;
+}
+.sidebar-content-marketplace {
+    @apply h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)];
+}
+.sidebar-productos {
+    @apply w-full absolute left-0 top-[108px] xl:top-24 h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-body max-w-[80%] xs:max-w-72 flex-shrink-0 ;
+}
 
 .nav-marketplace {
     @apply w-full flex flex-wrap justify-center divide-x-2 divide-colorlinkfooter px-5 text-colorlinkfooter font-semibold;
-}
-
-
-.image-marketplace {
-    /* position: relative; */
-}
-
-.image-marketplace img {}
-
-.nav-marketplace>li {
-    /* @apply divide-x-2; */
 }
 
 .nav-marketplace>li>a {
@@ -107,13 +111,16 @@
 
 
 
-
+.card-similares,
+.card-sugerencias {
+    @apply rounded-xl xs:rounded-none;
+}
 
 .card-not-unknown::before,
 .card-recents::before,
 .card-similares::before,
 .card-sugerencias::before {
-    @apply content-[''] block absolute top-[50%] left-0 w-[0.25px] bg-borderminicard h-[70%] z-10 -translate-y-[50%];
+    @apply content-[''] block absolute top-[50%] left-0 xs:w-[0.25px] xs:bg-borderminicard h-[70%] z-10 -translate-y-[50%];
 }
 
 .card-not-unknown::before:first-child,
@@ -125,19 +132,19 @@
 
 
 .icon-button-menu {
-    @apply content-[''] absolute top-[50%] left-[50%] -translate-x-[50%] h-[5px] w-10 bg-white transition-transform ease-out duration-200;
+    @apply content-[''] absolute top-[50%] left-[50%] -translate-x-[50%] h-[5px] w-10 bg-colorheadermarketplace transition-transform ease-out duration-200;
 }
 
 .icon-button-menu::after {
-    @apply content-[''] absolute -bottom-4 left-0 block bg-white w-10 h-[5px] transition-transform ease-out duration-200;
+    @apply content-[''] absolute -bottom-4 left-0 block bg-colorheadermarketplace w-10 h-[5px] transition-transform ease-out duration-200;
 }
 
 .icon-button-menu::before {
-    @apply content-[''] absolute -top-[17px] left-0 block bg-white w-10 h-[5px] transition-transform ease-out duration-200;
+    @apply content-[''] absolute -top-[17px] left-0 block bg-colorheadermarketplace w-10 h-[5px] transition-transform ease-out duration-200;
 }
 
 .button-sidebar {
-    @apply bg-next-900 rounded-sm text-white flex relative justify-start items-center w-auto max-w-40 h-12;
+    @apply rounded-sm text-colorheadermarketplace flex relative justify-start items-center w-auto max-w-40 h-12 hover:opacity-80 transition ease-in-out duration-150;
 }
 
 .button-sidebar.open {
@@ -416,10 +423,6 @@
 }
 
 
-
-
-
-
 .slider.desvanecer .carrusel-contenedor .carrusel-contenido ul.carrusel-lista .carousel-item {
     height: 100%;
     transition: 1s;
@@ -432,16 +435,6 @@
     position: relative;
     z-index: 1;
 }
-
-
-
-
-
-
-
-
-
-
 
 
 .dropdown-login::before {
@@ -459,59 +452,27 @@
 
 
 
-
-
-
-
-
-
 /* SIDEBAR MARKETPLACE */
 
 .boxes-sidebar {
-    @apply w-full flex-1 relative py-0 px-0;
-}
-
-.boxes-sidebar::before {
-    @apply content-[''] absolute bottom-0 w-full left-[50%] -translate-x-[50%] h-0.5 bg-neutral-200;
-}
-
-.itembox-sidebar {
-    @apply px-4 py-0;
+    @apply w-full flex-1 relative ;
 }
 
 .item-sidebar {
     @apply relative;
 }
 
-.item-sidebar .submenu-categories {
-    @apply w-full hidden relative z-[999] sm:rounded-r-xl flex-col xl:min-w-[320px] xl:max-w-[460px] sm:p-1 sm:pl-3 sm:pr-5 bg-fondominicard box-border;
-}
-
-/* .item-sidebar .submenu-categories {
-} */
-
-@media (min-width: 640px) { 
-    .item-sidebar:hover > .submenu-categories {
-        @apply flex absolute top-0 left-full;
-    }
-}
-
 .itemlink-sidebar-principal {
-    @apply flex justify-between items-center p-3 text-colorsubtitleform box-border h-14 cursor-pointer transition-colors ease-in-out duration-150;
+    @apply flex justify-between items-center p-3 text-colorsubtitleform box-border h-14 cursor-pointer transition ease-in-out duration-150;
 }
 
 .title-category-sidebar {
-    @apply flex-1 w-full text-xs leading-4 text-inherit flex items-center gap-2;
+    @apply flex-1 w-full font-medium text-xs leading-4 text-inherit flex items-center gap-2;
 }
 
 .item-sidebar:hover .itemlink-sidebar-principal,
 .itemlink-sidebar-principal:hover {
     @apply bg-hoverlinknav rounded-md text-hovercolorlinknav relative;
-}
-
-.item-sidebar:hover .itemlink-sidebar-principal::before,
-.itemlink-sidebar-principal:hover.itemlink-sidebar-principal::before {
-    @apply content-[''] absolute left-0 h-[102%] w-1 bg-next-700;
 }
 
 .sale {
@@ -526,47 +487,23 @@
     @apply text-white;
 }
 
-
 .link-sidebar {
     @apply relative flex items-center justify-between px-3 py-4 text-colorsubtitleform cursor-pointer overflow-hidden;
 }
 
-.link-sidebar .NextAccesses-module_categories__BPCVU.NextAccesses-module_hasIcon__6qZif {
-    @apply p-3;
+.item-sidebar .menu-subcategories {
+    @apply w-full hidden relative duration-300;
 }
 
-.link-sidebar-iconbox {
-    @apply text-sm leading-5 text-inherit flex items-center;
+.item-sidebar .menu-subcategories .item-subcategory {
+    @apply text-textselect2 whitespace-nowrap rounded-md p-3 py-3.5 pl-5 w-full block hover:bg-fondohoverselect2 hover:text-texthoverselect2 text-xs transition ease-in-out duration-150;
 }
 
-.link-sidebar-iconbox .link-sidebar-icon {
-    @apply w-8 h-8 mr-2 flex justify-center items-center;
-}
-
-.link-sidebar-iconbox .link-sidebar-icon .link-sidebar-img {
-    @apply w-full max-w-[32px];
-}
-
-
-.box-subcategories {
-    @apply break-inside-avoid-column block w-44 p-2;
-}
-
-.link-subcategory {
-    @apply text-sm leading-4 font-medium text-colorsubtitleform mb-3;
-}
-
-.link-subcategory.link-subcategory-all {
-    @apply font-medium text-neutral-800;
-}
-
-.title-subcategory {
-    @apply text-lg font-semibold leading-5 text-next-500 mb-2;
-}
-
-.link-subcategory a {
-    @apply text-inherit;
-}
+/* @media (min-width: 640px) { 
+    .item-sidebar:hover > .menu-subcategories {
+        @apply flex relative top-0 left-0;
+    }
+} */
 
 /* END SIDEBAR */
 
@@ -653,6 +590,10 @@
 
 /* END BUTTTON PERSONALIZADO */
 
+
+.badge-especificacion {
+    box-shadow: 0px 1px 3px 3px  #AAA;
+}
 
 
 /* MARQUEE */

@@ -47,6 +47,7 @@
     @endphp
 
     <div class="contenedor w-full" x-data="showproducto">
+        {{-- {{ $producto }} --}}
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex">
                 <div class="w-full md:flex-shrink-0 md:w-[50%] lg:w-[60%] md:px-3 py-2">
@@ -80,10 +81,10 @@
                         @endif
                         @if ($producto->verEspecificaciones())
                             @if (count($producto->especificacions) > 0)
-                                <ul class="text-white py-3 text-[10px] absolute left-0 top-20 hidden md:flex flex-col gap-1 justify-start items-start"
+                                <ul class="text-white py-3 text-[10px] absolute left-1 top-20 hidden md:flex flex-col gap-2 justify-start items-start"
                                     x-cloak x-show="showesp">
                                     @foreach ($producto->especificacions()->take(5)->get() as $item)
-                                        <li class="p-1 bg-next-500 rounded-xl text-[9px] max-w-36">
+                                        <li class="badge-especificacion p-1 bg-gray-500 rounded-xl text-[9px] max-w-36">
                                             <span class="font-medium inline-block">
                                                 {{ $item->caracteristica->name }} : </span>
                                             {{ $item->name }}
@@ -133,6 +134,8 @@
 
                 <div class="w-full flex-1 sm:py-2 px-1 md:pl-8">
                     <div class="w-full border-b border-b-borderminicard pb-5">
+                        <p class="text-[10px] text-colorsubtitleform font-medium">
+                            {{ $producto->category->name }} | {{ $producto->subcategory->name }}</p>
                         <div class="w-full flex gap-2 justify-between items-center flex-wrap">
                             <div>
                                 <p class="text-colorsubtitleform font-semibold">
@@ -155,7 +158,7 @@
                     <div class="w-full pt-3 flex items-center justify-between gap-2">
                         @if ($pricesale > 0)
                             <div class="w-full flex-1">
-                                <h1 class="font-semibold text-3xl text-center md:text-start">
+                                <h1 class="font-semibold text-3xl text-center md:text-start text-colorlabel">
                                     <small class="text-lg"> {{ $moneda->simbolo }}</small>
                                     {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
                                 </h1>
@@ -391,7 +394,7 @@
                         @foreach ($producto->especificacions as $item)
                             <tr
                                 class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
-                                <th class="py-3 text-left max-w-xs w-80">{{ $item->caracteristica->name }}
+                                <th class="py-3 px-2 text-left max-w-xs md:w-80">{{ $item->caracteristica->name }}
                                 </th>
                                 <td class="p-2 py-3 text-left">{{ $item->name }}</td>
                             </tr>
@@ -499,27 +502,11 @@
         </div>
 
         @if (count($relacionados) > 0)
-            <div class="w-full bg-fondominicard mt-10">
-                <h1 class="font-medium uppercase text-xs text-colorsubtitleform p-3 border-b border-b-borderminicard">
+            <div class="w-full mt-10">
+                <h1 class="font-medium uppercase text-xs py-3 text-colorsubtitleform">
                     Productos relacionados</h1>
 
-                <div class="w-full relative xl:p-10">
-                    <button id="leftrelacionados"
-                        class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="w-6 h-6 block">
-                            <path d="M15 7L10 12L15 17" />
-                        </svg>
-                    </button>
-                    <button id="rightrelacionados"
-                        class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="w-6 h-6 block">
-                            <path d="M10 7L15 12L10 17" />
-                        </svg>
-                    </button>
+                <div class="w-full relative px-6 md:px-0">
                     <div class="w-full flex overflow-x-hidden" id="relacionados">
                         @foreach ($relacionados as $item)
                             @php
@@ -544,7 +531,7 @@
                                         </h1>
                                     @endif
                                     <h1 class="text-colorlabel text-center">
-                                        <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                        <small class="text-sm">{{ $moneda->simbolo }}</small>
                                         <span
                                             class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
                                         {{-- <small class="text-[10px]">{{ $moneda->currency }}</small> --}}
@@ -562,32 +549,32 @@
                             </x-card-producto-virtual>
                         @endforeach
                     </div>
+                    <button id="leftrelacionados"
+                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M15 7L10 12L15 17" />
+                        </svg>
+                    </button>
+                    <button id="rightrelacionados"
+                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M10 7L15 12L10 17" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         @endif
 
         @if (count($interesantes) > 0)
-            <div class="w-full bg-fondominicard mt-10">
-                <h1 class="font-medium uppercase text-xs p-3 text-colorsubtitleform border-b border-b-borderminicard">
+            <div class="w-full mt-10">
+                <h1 class="font-medium uppercase text-xs py-3 text-colorsubtitleform">
                     También podría interesarte</h1>
 
-                <div class="w-full relative xl:p-10">
-                    <button id="leftinteresantes"
-                        class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="w-6 h-6 block">
-                            <path d="M15 7L10 12L15 17" />
-                        </svg>
-                    </button>
-                    <button id="rightinteresantes"
-                        class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-16 w-8 shadow flex items-center justify-center disabled:opacity-25">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="w-6 h-6 block">
-                            <path d="M10 7L15 12L10 17" />
-                        </svg>
-                    </button>
+                <div class="w-full relative px-6 md:px-0">
                     <div class="w-full flex overflow-x-hidden" id="interesantes">
                         @foreach ($interesantes as $item)
                             @php
@@ -612,7 +599,7 @@
                                         </h1>
                                     @endif
                                     <h1 class="text-colorlabel text-center">
-                                        <small class="text-[10px]">{{ $moneda->simbolo }}</small>
+                                        <small class="text-sm">{{ $moneda->simbolo }}</small>
                                         <span
                                             class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
                                         {{-- <small class="text-[10px]">{{ $moneda->currency }}</small> --}}
@@ -630,7 +617,22 @@
                             </x-card-producto-virtual>
                         @endforeach
                     </div>
-
+                    <button id="leftinteresantes"
+                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M15 7L10 12L15 17" />
+                        </svg>
+                    </button>
+                    <button id="rightinteresantes"
+                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                            class="w-6 h-6 block">
+                            <path d="M10 7L15 12L10 17" />
+                        </svg>
+                    </button>
                 </div>
             </div>
         @endif

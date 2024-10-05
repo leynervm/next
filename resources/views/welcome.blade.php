@@ -5,7 +5,7 @@
         </x-slot>
     @endif
 
-    <div class="contenedor w-full py-5">
+    <div class="contenedor content-home w-full py-5">
         {{-- <section class="w-full flex flex-col justify-center items-center mx-auto py-12">
             <h2 class="tracking-wide text-center text-2xl xl:text-5xl mb-3 font-semibold text-next-500">
                 NEXT TECHNOLOGIES<br> TU ALIADO TECNOLÓGICO</h2>
@@ -22,10 +22,40 @@
             </p>
         </section> --}}
 
+        @if (count($categories))
+            <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">Categorías</h1>
+            <section
+                class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-3 md:gap-5 justify-center items-center self-center">
+                @foreach ($categories as $item)
+                    <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
+                        class="w-full aspect-square max-w-24 md:max-w-32 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2 md:p-5 border-2 border-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:border-primary transition ease-in-out duration-300">
+                        <div
+                            class="w-full h-5 md:h-10 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                            @if ($item->icon)
+                                {!! $item->icon !!}
+                            @else
+                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                    viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-width="2" class="w-full h-full">
+                                    <path d="M4 6h16M4 12h16M4 18h7" />
+                                </svg>
+                            @endif
+                        </div>
+                        <h1
+                            class="text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                            {{ $item->name }}</h1>
+                    </a>
+                @endforeach
+            </section>
+        @endif
+
         <section class="w-full">
-            <div class="w-full h-48 sm:h-72 rounded-lg overflow-hidden bg-cover bg-center"
-                style="background-image: url({{ asset('images/1280x250_1.jpg') }})">
-                <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 py-5">
+            <div class="w-full block rounded-lg overflow-hidden bg-cover bg-center" {{-- style="background-image: url({{ asset('images/section_1.jpg') }})" --}}>
+
+                <img class="block w-full h-full min-h-48 object-cover object-[15%bottom] sm:object-center md:object-scale-down"
+                    src="{{ asset('images/section_1.jpg') }}" alt="">
+
+                {{-- <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 py-5">
                     <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10">
                         <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Desarrollo de
                             Software</h2>
@@ -36,15 +66,15 @@
                             realizamos sistemas a la medida de su negocio, no dude en contactarnos a traves de nuestros
                             canales de venta (redes, tienda, web, correo).
                         </p>
-                        {{-- <x-button class="inline-flex ml-auto">
+                        <x-button class="inline-flex ml-auto">
                             <span>Shop Now</span>
                             <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
                                 stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
                                 <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
                             </svg>
-                        </x-button> --}}
+                        </x-button>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </section>
 
@@ -100,7 +130,7 @@
                         <img alt="gallery" class="w-full object-cover sm:object-scale-down h-full object-center block"
                             src="{{ asset('images/630x240_2.jpg') }}">
                     </div>
-                    
+
                     {{-- <div class="w-full col-span-2 rounded-lg h-28 sm:h-auto overflow-hidden">
                         <img alt="gallery" class="w-full h-full object-cover object-center block"
                             src="{{ asset('images/1280x220_2.jpg') }}">
@@ -121,7 +151,7 @@
             </div>
         </section>
 
-        
+
 
 
         {{-- <section class="my-8">
@@ -200,8 +230,7 @@
 
                 <div class="relative mt-7 xl:mt-10 xl:px-12">
                     <div class="w-full block relative">
-                        <div
-                            class="w-auto mx-auto grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 relative">
+                        <div class="w-auto mx-auto grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-5 relative">
                             <div class="next-wow fadeInUp">
                                 <div class="icono">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"

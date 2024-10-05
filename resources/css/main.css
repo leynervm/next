@@ -118,6 +118,21 @@
     --color-hover-button-print: theme("colors.white");
     --fondo-hover-button-print: theme("colors.neutral.900");
     --ring-button-print: theme("colors.neutral.300");
+
+
+
+    --fondo-header-marketplace:theme("colors.white");
+    --color-header-marketplace:theme("colors.neutral.500");
+
+    --fondo-search-marketplace:theme("colors.neutral.100");
+    --color-search-marketplace:theme("colors.neutral.700");
+    --fondo-button-search-marketplace:theme("colors.neutral.500");
+    --color-button-search-marketplace:theme("colors.white");
+    --ring-button-search-marketplace:theme("colors.neutral.300");
+
+    --fondo-badge-marketplace:theme("colors.neutral.500");
+    --color-badge-marketplace:theme("colors.white");
+
 }
 
 .theme-darknext {
@@ -225,6 +240,19 @@
     --color-hover-button-print: theme("colors.white");
     --fondo-hover-button-print: theme("colors.neutral.900");
     --ring-button-print: theme("colors.neutral.500");
+
+
+    --fondo-header-marketplace:theme("colors.neutral.700");
+    --color-header-marketplace:theme("colors.neutral.300");
+
+    --fondo-search-marketplace:theme("colors.neutral.100");
+    --color-search-marketplace:theme("colors.neutral.700");
+    --fondo-button-search-marketplace:theme("colors.next.900");
+    --color-button-search-marketplace:theme("colors.neutral.100");
+    --ring-button-search-marketplace:theme("colors.neutral.500");
+
+    --fondo-badge-marketplace:theme("colors.gray.200");
+    --color-badge-marketplace:theme("colors.neutral.700");
 }
 
 .theme-dark {

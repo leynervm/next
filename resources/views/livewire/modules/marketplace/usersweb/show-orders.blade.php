@@ -3,12 +3,10 @@
         <x-loading-next />
     </div>
 
-    <div class="w-full bg-fondominicard rounded-xl border border-borderminicard">
-        <h1 class="text-xl font-semibold text-colorlabel p-3">
-            MIS COMPRAS</h1>
-    </div>
+    <h1 class="text-xl font-semibold text-colorsubtitleform pb-3">
+        MIS COMPRAS</h1>
 
-    <div class="flex flex-wrap gap-2 py-3">
+    <div class="flex flex-wrap gap-2 pb-3">
         <div class="w-full xs:max-w-xs">
             <x-label value="Estado pago :" />
             <div class="relative" x-data="{ pago: @entangle('pago') }" x-init="select2Pago" id="parentpago">
@@ -53,7 +51,7 @@
                                     class="inline-block leading-3 text-[10px] uppercase text-linktable">
                                     #{{ $item->purchase_number }}
                                     <br>
-                                    {{ formatDate($item->date, "DD MMM Y hh:mm A") }}
+                                    {{ formatDate($item->date, 'DD MMM Y hh:mm A') }}
                                 </a>
                             </td>
                             <td class="text-center p-3 xl:py-5 text-xs">

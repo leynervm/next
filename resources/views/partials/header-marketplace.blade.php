@@ -1,8 +1,8 @@
-<div class="fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto xl:h-20 bg-next-900">
+<div class="header-marketplace">
     <div class="w-full mx-auto flex items-center relative">
         @if ($empresa->image)
-            <div class="hidden xl:flex w-72 items-center h-full bg-white">
-                <a href="/" class="w-full px-1 h-[90%]">
+            <div class="hidden xl:flex w-72 items-center h-full">
+                <a href="/" class="w-full p-1 h-[90%]">
                     <img class="mx-auto h-full w-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
                         alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
@@ -12,21 +12,21 @@
 
         <div class="flex-shrink-0 xl:pr-5">
             <button class="button-sidebar hidden xl:flex items-center" type="button"
-                @click="openSidebar=!openSidebar, backdrop= openSidebar ? true : false"
+                @click="openSidebar=!openSidebar,sidebar=false, backdrop= openSidebar ? true : false"
                 :class="openSidebar ? 'open' : ''">
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
                 </div>
-                <span class="pl-2 text-start flex-1 font-semibold text-xl">
+                <span class="pl-2 text-inherit text-start flex-1 font-semibold text-xl">
                     Menú</span>
             </button>
             <button class="button-sidebar xl:hidden px-2" type="button"
-                @click="openSidebar=!openSidebar,backdrop= openSidebar ? true : false">
+                @click="openSidebar=!openSidebar,sidebar=false,backdrop= openSidebar ? true : false">
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
                 </div>
                 @if ($empresa->image)
-                    <div class="w-full flex-1 xl:hidden h-full">
+                    <div class="w-full flex-1 hidden xs:block xl:hidden h-full">
                         <img class="h-full w-auto m-auto object-center object-scale-down"
                             src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
                     </div>
@@ -34,41 +34,44 @@
             </button>
         </div>
 
-        <div class="mr-6 relative flex-1 hidden xl:flex" x-data="productSearch()" @click.away="products= []">
+        <div class="mr-6 relative flex-1 hidden xl:flex" x-data="productSearch()"
+            @click.away="products= [],selectedIndex=-1">
             <form @submit.prevent="handleEnter" autocomplete="off"
                 class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[999]'">
-                <div class="w-full flex h-[46px] m-0 bg-white justify-center items-center pl-6 rounded-3xl border-0.5 border-white"
+                <div class="w-full flex h-[46px] m-0 bg-fondosearchmarketplace justify-center items-center pl-6 rounded-3xl border-0.5 border-fondobuttonsearchmarketplace"
                     :class="products.length ? 'rounded-b-none' : ''">
                     <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                         Barra de búsqueda</label>
                     <input type="search" name="search" autocomplete="off" x-ref="search" x-model="search"
-                        @focus="backdrop=true,openSidebar=false" @input.debounce.300ms="fetchProducts"
+                        @focus="backdrop=true,openSidebar=false,sidebar=false" @input.debounce.300ms="fetchProducts"
                         @keydown.enter.prevent="handleEnter" @keydown.arrow-down.prevent="navigate(1)"
                         @keydown.arrow-up.prevent="navigate(-1)"
-                        class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
+                        class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                         placeholder="Buscar en Next Store" id="search">
                 </div>
-                <button type="submit"
-                    class="bg-next-900 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-10 h-[46px] w-[46px] flex justify-center items-center">
+                <button type="submit" @click="fetchProducts,handleEnter"
+                    class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                        class="block w-full h-full p-2 text-white">
+                        class="block w-full h-full p-2 text-colorbuttonsearchmarketplace">
                         <circle cx="11" cy="11" r="8" />
                         <path d="m21 21-4.3-4.3" />
                     </svg>
                 </button>
             </form>
 
-            <ul class="w-full block absolute overflow-hidden left-0 top-[58px] p-1 rounded-b-3xl bg-fondominicard z-[999]"
+            <ul class="w-full block absolute py-2 left-0 top-[100%] rounded-b-3xl bg-fondominicard z-[999]"
                 x-show="products.length">
-                <template x-for="(product, index) in products" :key="product.id">
-                    <li>
-                        <a x-html="highlight(product.name, search)"
-                            :class="{ 'bg-fondohoverselect2': index === selectedIndex }"
-                            class="block w-full text-colorsubtitleform p-2 py-2.5 text-xs leading-3 hover:bg-fondohoverselect2"
-                            :href="route('productos.show', product.slug)" @mouseenter="setSelected(index)"></a>
-                    </li>
-                </template>
+                <div class="rounded p-1 overflow-hidden xl:overflow-y-auto xl:max-h-[360px]">
+                    <template x-for="(product, index) in products" :key="product.id">
+                        <li>
+                            <a x-html="highlight(product.name, search)"
+                                :class="{ 'bg-fondohoverselect2': index === selectedIndex }"
+                                class="block w-full rounded text-colorsubtitleform p-2.5 text-xs leading-3 hover:bg-fondohoverselect2"
+                                :href="route('productos.show', product.slug)" @mouseenter="setSelected(index)"></a>
+                        </li>
+                    </template>
+                </div>
             </ul>
         </div>
 
@@ -79,6 +82,12 @@
                     products: [],
                     error: '',
                     selectedIndex: -1,
+                    init() {
+                        const coincidencias = "{{ request()->input('coincidencias') }}";
+                        if (coincidencias != '') {
+                            this.search = coincidencias;
+                        }
+                    },
                     fetchProducts() {
                         this.openSidebar = false;
                         this.error = '',
@@ -121,7 +130,10 @@
                     },
                     redirectEnter() {
                         if (this.search.trim().length > 0) {
+                            console.log('Hacer enter', this.search);
+                            console.log('Length products', this.products.length);
                             if (this.products.length > 1) {
+
                                 window.location.href =
                                     `{{ route('productos') }}?coincidencias=${encodeURIComponent(this.search)}`;
                             } else {
@@ -158,16 +170,16 @@
         <div class="w-full flex flex-1 sm:w-auto sm:flex-none sm:ml-auto">
             <ul class="w-full sm:w-auto flex justify-end h-full m-0 p-0" x-data="{ login: false }">
                 <li
-                    class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 xl:border-r border-white transition ease-out duration-150">
+                    class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
                     @auth
-                        <a class="hidden h-full md:flex items-center p-3 px-1 sm:px-3 font-semibold text-white text-lg leading-4 cursor-pointer group-hover:opacity-80"
+                        <a class="hidden h-full md:flex items-center p-3 px-1 sm:px-3 font-semibold text-inherit text-lg leading-4 cursor-pointer group-hover:opacity-80"
                             href="{{ route('orders') }}">
                             Mis<br>compras
                         </a>
                     @else
                         <div class="p-3 px-1 sm:px-3 h-ful flex gap-2 w-full theme-switcher justify-center items-center">
                             <button title="Light" theme="theme-next" type="button"
-                                class="block theme-switcher-button rounded-full bg-transparent text-white">
+                                class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                     class="block w-8 h-8 p-1">
@@ -184,7 +196,7 @@
                             </button>
 
                             <button title="Dark" theme="theme-darknext" type="button"
-                                class="block theme-switcher-button rounded-full bg-transparent text-white">
+                                class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                     class="block w-8 h-8 p-1">
@@ -195,8 +207,8 @@
                         </div>
                     @endauth
                 </li>
-                <li class="group relative h-[68%] flex self-center xl:border-r border-white">
-                    <a class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-white cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
+                <li class="group relative h-[68%] self-center">
+                    <a class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-inherit cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
                         href="{{ route('wishlist') }}">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
@@ -207,7 +219,7 @@
                                 d="M17.8 20.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" />
                         </svg>
                         <span id="counterwishlist"
-                            class="{{ Cart::instance('wishlist')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0 right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-white text-next-500 rounded-full">
+                            class="{{ Cart::instance('wishlist')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0.5 right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-fondobadgemarketplace text-colorbadgemarketplace rounded-full">
                             {{ Cart::instance('wishlist')->count() }}
                         </span>
                     </a>
@@ -216,11 +228,11 @@
                     <livewire:modules.marketplace.carrito.counter-carrito :empresa="$empresa" :moneda="$moneda"
                         :pricetype="$pricetype" />
                 </li>
-                <li class="relative h-[68%] flex items-center self-center xl:border-l border-white ">
+                <li class="relative h-[68%] flex items-center self-center xl:border-l ">
                     @auth
                         <div @mouseover="login = true" @mouseover.outside="login = false">
                             <button
-                                class="h-full flex justify-center items-center p-3 px-1 sm:px-3 cursor-pointer text-white group-hover:opacity-80 transition ease-out duration-150">
+                                class="h-full flex justify-center items-center p-3 px-1 sm:px-3 cursor-pointer text-inherit group-hover:opacity-80 transition ease-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     class="block w-8 h-8" stroke="currentColor" stroke-width="1.5"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -235,7 +247,7 @@
 
                             <div x-show="login" x-cloak x-transition style="display: none"
                                 class="absolute shadow shadow-shadowminicard w-48 top-12 right-0 bg-fondodropdown rounded-xl p-2"
-                                :class="backdrop ? 'z-[1]' : 'z-[1000]'">
+                                :class="backdrop ? 'z-[9]' : 'z-[299]'">
                                 <div class="w-full">
                                     <div
                                         class="flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
@@ -305,7 +317,7 @@
                         </div>
                     @else
                         <a @click="localStorage.setItem('activeForm', 'login')" href="{{ route('login') }}"
-                            class="hover:opacity-801 p-3 px- cursor-pointer whitespace-normal truncate leading-3 font-semibold text-white text-lg sm:text-xl transition ease-out duration-150">
+                            class="hover:opacity-80 p-3 cursor-pointer truncate text-wrap max-w-24 sm:max-w-full text-lg sm:text-xl !leading-4 font-semibold transition ease-out duration-150">
                             {{ __('Log in') }}
                         </a>
                     @endauth
@@ -314,37 +326,40 @@
         </div>
     </div>
 
-    <div class="xl:hidden w-full px-1 xs:px-3 py-1 pb-2 flex" x-data="productSearch()" @click.away="products= []">
+    <div class="xl:hidden w-full px-1 xs:px-3 py-1 pb-2 flex z-[8]" x-data="productSearch()"
+        @click.away="products= [],selectedIndex=-1">
         <form @submit.prevent="handleEnter" autocomplete="off"
-            class="w-full self-center flex cursor-pointer relative" :class="openSidebar ? '' : 'z-[999]'">
-            <div class="w-full flex h-10 m-0 bg-white justify-center items-center rounded-3xl border-0.5 border-white"
+            class="w-full self-center flex cursor-pointer relative" :class="openSidebar ? '' : 'z-[9]'">
+            <div class="w-full flex h-10 m-0 bg-fondosearchmarketplace justify-center items-center rounded-3xl border-0.5 border-fondobuttonsearchmarketplace"
                 :class="products.length ? 'rounded-b-none' : ''">
                 <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                     Barra de búsqueda</label>
-                <input type="text" name="search" autocomplete="off" x-model="search" @focus="backdrop=true"
-                    @input.debounce.300ms="fetchProducts"
-                    class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-neutral-700 tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
+                <input type="text" name="search" autocomplete="off" x-model="search"
+                    @focus="backdrop=true,sidebar=false" @input.debounce.300ms="fetchProducts"
+                    class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                     value="" placeholder="Buscar en Next Store">
             </div>
-            <button type="submit"
-                class="bg-next-900 rounded-3xl focus:ring focus:ring-next-500 absolute right-0 box-border border border-white z-0 h-10 w-10 flex justify-center items-center">
+            <button type="submit" @click="fetchProducts,handleEnter"
+                class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-0 h-10 w-10 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="block w-full h-full p-2 text-white">
+                    class="block w-full h-full p-2 text-colorbuttonsearchmarketplace">
                     <circle cx="11" cy="11" r="8" />
                     <path d="m21 21-4.3-4.3" />
                 </svg>
             </button>
 
-            <ul class="w-full block absolute overflow-hidden left-0 top-10 p-1 rounded-b-3xl bg-fondominicard z-[999]"
+            <ul class="w-full block absolute left-0 top-[100%] py-2 rounded-b-3xl bg-fondominicard z-[999]"
                 x-show="products.length">
-                <template x-for="product in products" :key="product.id">
-                    <li>
-                        <a x-html="highlight(product.name, search)"
-                            class="block w-full text-colorsubtitleform p-2 py-2.5 text-xs leading-3 hover:bg-fondohoverselect2"
-                            :href="route('productos.show', product.slug)"></a>
-                    </li>
-                </template>
+                <div class="rounded p-1 overflow-y-auto max-h-[calc(100vh-125px)]">
+                    <template x-for="product in products" :key="product.id">
+                        <li>
+                            <a x-html="highlight(product.name, search)"
+                                class="block w-full rounded text-colorsubtitleform p-2.5 px-1 text-xs leading-3 hover:bg-fondohoverselect2"
+                                :href="route('productos.show', product.slug)"></a>
+                        </li>
+                    </template>
+                </div>
             </ul>
         </form>
     </div>

@@ -42,8 +42,9 @@ class ViewServiceProvider extends ServiceProvider
             View::composer('layouts.app', function ($view) {
                 $categories = [];
                 if (Module::isEnabled('Marketplace')) {
-                    $categories = Category::with(['subcategories'])
-                        ->orderBy('orden', 'asc')->get();
+                    $categories = Category::with(['subcategories'])->wherehas('productos', function ($query) {
+                        $query->visibles()->publicados();
+                    })->orderBy('orden', 'asc')->get();
                 }
 
                 $view->with([

@@ -41,6 +41,13 @@
         } else {
             document.body.style.overflow = 'auto';
         }
+    });
+    $watch('sidebar', (value) => {
+        if (value) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
     })">
     <x-jet-banner />
 
@@ -61,7 +68,7 @@
                 {{ $slider }}
             @endif
 
-            <div class="block w-full min-h-screen mt-[108px] xl:mt-20">
+            <div class="content block w-full min-h-screen">
                 <x-alert />
 
                 @if (isset($breadcrumb))

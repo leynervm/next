@@ -11,7 +11,7 @@
     'classFooter' => 'absolute',
 ])
 <div
-    {{ $attributes->merge(['class' => 'w-full group bg-fondominicard flex flex-col justify-between text-xs relative cursor-pointer']) }}>
+    {{ $attributes->merge(['class' => 'w-full group flex flex-col justify-between text-xs relative cursor-pointer']) }}>
 
     @if ($type == 'link')
         <a href="{{ $route }}" class="w-full flex flex-col xl:gap-2">
@@ -42,7 +42,7 @@
         </div>
 
         <p
-            class="text-colorlabel text-[9px] sm:text-[10px] tracking-wide xl:mt-2 xl:mb-5 text-center block font-semibold leading-3 xs:text-center group-hover:text-hoverlinktable transition ease-in-out duration-150">
+            class="text-colorlabel text-[9px] sm:text-[10px] tracking-wide xl:mt-2 xl:pb-2 text-center block font-semibold leading-3 xs:text-center group-hover:text-hoverlinktable transition ease-in-out duration-150">
             {{ $name }}</p>
 
         {{ $slot }}
@@ -56,7 +56,7 @@
 @endif
 
 @if (isset($footer))
-    <div class="w-full mt-6 lg:mt-4">
+    <div class="w-full md:mt-6 lg:mt-4">
         {{ $footer }}
     </div>
 @endif

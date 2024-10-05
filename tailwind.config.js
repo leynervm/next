@@ -121,6 +121,20 @@ module.exports = {
                 fondohoverbuttonprint: "var(--fondo-hover-button-print)",
                 ringbuttonprint: "var(--ring-button-print)",
 
+
+                fondoheadermarketplace: "var(--fondo-header-marketplace)",
+                colorheadermarketplace: "var(--color-header-marketplace)",
+                
+                fondosearchmarketplace: "var(--fondo-search-marketplace)",
+                colorsearchmarketplace: "var(--color-search-marketplace)",
+                fondobuttonsearchmarketplace: "var(--fondo-button-search-marketplace)",
+                colorbuttonsearchmarketplace: "var(--color-button-search-marketplace)",
+                ringbuttonsearchmarketplace: "var(--ring-button-search-marketplace)",
+                
+                fondobadgemarketplace: "var(--fondo-badge-marketplace)",
+                colorbadgemarketplace: "var(--color-badge-marketplace)",
+
+
                 next: {
                     50: "#f0f9f9",
                     100: "#ebf5f5",

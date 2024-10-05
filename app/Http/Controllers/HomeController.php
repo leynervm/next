@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusPayWebEnum;
 use App\Helpers\GetClient;
+use App\Models\Category;
 use App\Models\Empresa;
 use App\Models\Moneda;
 use App\Models\Producto;
@@ -40,6 +41,9 @@ class HomeController extends Controller
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
         $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
+        $categories = Category::with(['subcategories'])->wherehas('productos', function ($query) {
+            $query->visibles()->publicados();
+        })->orderBy('orden', 'asc')->get();
 
         if (auth()->user() && Module::isEnabled('Marketplace')) {
             $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
@@ -50,7 +54,7 @@ class HomeController extends Controller
             }
         }
 
-        return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
+        return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype', 'categories'));
     }
 
     public function dashboard()
