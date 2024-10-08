@@ -114,14 +114,22 @@ class ShowProductos extends Component
 
     public function render()
     {
-        $categories = Category::whereHas('productos')->get();
+        $categories = Category::whereHas('productos', function ($query) {
+            $query->visibles()->publicados();
+        })->get();
         $subcategories = Subcategory::whereHas('productos')->get();
         $marcas = Marca::whereHas('productos')->get();
         $caracteristicas = Caracteristica::filterweb()->withWhereHas('especificacions', function ($query) {
-            $query->whereHas('productos');
+            $query->whereHas('productos', function ($q) {
+                $q->visibles()->publicados();
+            });
         })->get();
 
-        $productos = Producto::with(['almacens' => function ($query) {
+        $productos = Producto::with(['images' => function ($query) {
+            $query->default()->orWhere(function ($q) {
+                $q->where('default', 0)->orderBy('id');
+            })->take(2);
+        }])->with(['almacens' => function ($query) {
             // $query->select('id, almacens.sucursal_id')->groupBy('id');
             // $query->wherePivot('cantidad', '>', 0);
         }]);
@@ -136,10 +144,10 @@ class ShowProductos extends Component
                         })
                         ->orWhereHas('category', function ($q) use ($term) {
                             $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        })
-                        ->orWhereHas('especificacions', function ($q) use ($term) {
-                            $q->where('especificacions.name', 'ilike', '%' . $term . '%');
                         });
+                    // ->orWhereHas('especificacions', function ($q) use ($term) {
+                    //     $q->where('especificacions.name', 'ilike', '%' . $term . '%');
+                    // });
                 }
             });
         }
@@ -158,13 +166,15 @@ class ShowProductos extends Component
             if (count($this->selectedmarcas) > 0) {
                 $query->whereIn('slug', $this->selectedmarcas);
             }
-        })->with('especificacions', function ($query) {
-            if (count($this->especificacions) > 0) {
-                $query->whereIn('especificacions.slug', $this->especificacions);
-            }
-        })->with('promocions', function ($query) {
-            $query->disponibles();
-        });
+        })
+            // ->with('especificacions', function ($query) {
+            //     if (count($this->especificacions) > 0) {
+            //         $query->whereIn('especificacions.slug', $this->especificacions);
+            //     }
+            // })
+            ->with(['promocions'  => function ($query) {
+                $query->disponibles();
+            }]);
 
         $productos =  $this->readyToLoad ?
             $productos->visibles()->publicados()

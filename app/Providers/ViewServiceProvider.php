@@ -34,25 +34,19 @@ class ViewServiceProvider extends ServiceProvider
             $empresa = mi_empresa();
             $moneda = Moneda::default()->first();
             $pricetype = $empresa ? getPricetypeAuth($empresa) : null;
+            $categories = [];
+            if (Module::isEnabled('Marketplace')) {
+                $categories = Category::with(['subcategories'])->wherehas('productos', function ($query) {
+                    $query->visibles()->publicados();
+                })->orderBy('orden', 'asc')->get();
+            }
             // Compartir los datos de la empresa con todas las vistas
 
             View::share('moneda', $moneda);
             View::share('pricetype', $pricetype);
-
-            View::composer('layouts.app', function ($view) {
-                $categories = [];
-                if (Module::isEnabled('Marketplace')) {
-                    $categories = Category::with(['subcategories'])->wherehas('productos', function ($query) {
-                        $query->visibles()->publicados();
-                    })->orderBy('orden', 'asc')->get();
-                }
-
-                $view->with([
-                    'categories' => $categories
-                ]);
-            });
+            View::share('categories', $categories);
+            View::share('empresa', $empresa);
         }
 
-        View::share('empresa', $empresa);
     }
 }

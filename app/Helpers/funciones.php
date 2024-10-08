@@ -121,7 +121,31 @@ function verifyOpencaja($openbox)
 
 function mi_empresa()
 {
-    return Empresa::first();
+    // $empresa = Empresa::query()->with(['image', 'telephones'])->select(
+    //     'id',
+    //     'document',
+    //     'name',
+    //     'direccion',
+    //     'email',
+    //     'web',
+    //     'whatsapp',
+    //     'facebook',
+    //     'instagram',
+    //     'tiktok',
+    //     'icono',
+    //     'uselistprice',
+    //     'viewpriceantes',
+    //     'viewlogomarca',
+    //     'viewtextopromocion',
+    //     'markagua',
+    //     'viewpricedolar',
+    //     'tipocambio',
+    //     'sendmode',
+    //     'afectacionigv',
+    //     'limitsucursals'
+    // )->first();
+    $empresa = Empresa::first();
+    return $empresa;
 }
 
 

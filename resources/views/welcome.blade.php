@@ -25,12 +25,12 @@
         @if (count($categories))
             <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">Categorías</h1>
             <section
-                class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-3 md:gap-5 justify-center items-center self-center">
+                class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
                 @foreach ($categories as $item)
                     <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
-                        class="w-full aspect-square max-w-24 md:max-w-32 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2 md:p-5 border-2 border-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:border-primary transition ease-in-out duration-300">
+                        class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                         <div
-                            class="w-full h-5 md:h-10 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                            class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                             @if ($item->icon)
                                 {!! $item->icon !!}
                             @else
@@ -42,7 +42,7 @@
                             @endif
                         </div>
                         <h1
-                            class="text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                            class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                             {{ $item->name }}</h1>
                     </a>
                 @endforeach
@@ -50,105 +50,63 @@
         @endif
 
         <section class="w-full">
-            <div class="w-full block rounded-lg overflow-hidden bg-cover bg-center" {{-- style="background-image: url({{ asset('images/section_1.jpg') }})" --}}>
+            <a href="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}"
+                class="w-full block rounded-lg overflow-hidden">
+                <img class="block sm:hidden w-full h-full max-h-full object-center object-cover"
+                    src="{{ asset('images/home/mobile/section_1.jpg') }}" alt="">
 
-                <img class="block w-full h-full min-h-48 object-cover object-[15%bottom] sm:object-center md:object-scale-down"
-                    src="{{ asset('images/section_1.jpg') }}" alt="">
-
-                {{-- <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 py-5">
-                    <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 sm:px-10">
-                        <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Desarrollo de
-                            Software</h2>
-                        <p
-                            class="text-white font-medium italic leading-none mb-5 text-center sm:text-start text-sm sm:text-lg">
-                            Desarrollo de sistemas web completos, para agilizar y automatizar los procesos de su
-                            negocio,
-                            realizamos sistemas a la medida de su negocio, no dude en contactarnos a traves de nuestros
-                            canales de venta (redes, tienda, web, correo).
-                        </p>
-                        <x-button class="inline-flex ml-auto">
-                            <span>Shop Now</span>
-                            <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
-                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </x-button>
-                    </div>
-                </div> --}}
-            </div>
+                <img class="hidden sm:block w-full h-full min-h-40 object-cover object-center lg:object-scale-down"
+                    src="{{ asset('images/home/desk/section_1.jpg') }}" alt="">
+            </a>
         </section>
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-5 mt-2 sm:mt-5">
-            <div class="w-full h-48 sm:h-auto xl:h-[220px] rounded-lg overflow-hidden bg-cover bg-center"
-                style="background-image: url('{{ asset('images/630x220_1.jpg') }}')">
-                <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 md:py-5">
-                    <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 md:px-10">
-                        <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Servicio técnico
-                        </h2>
-                        <p
-                            class="text-white italic font-medium text-center mb-3 sm:text-start text-sm md:text-lg !leading-none">
-                            Lorem ipsum dolor, sit amet consectetur adipisicing elit.</p>
-                        <x-button class="inline-flex ml-auto">
-                            <span>Shop Now</span>
-                            <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
-                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </x-button>
-                    </div>
-                </div>
-            </div>
-            <div class="w-full h-48 sm:h-auto xl:h-[220px] rounded-lg overflow-hidden bg-cover bg-center"
-                style="background-image: url('{{ asset('images/630x220_2.jpg') }}')">
-                <div class="w-full bg-neutral-900 bg-opacity-75 flex items-center h-full p-3 md:py-5">
-                    <div class="w-full flex flex-col gap-2 justify-center items-center sm:items-start px-3 md:px-10">
-                        <h2 class="text-xl md:text-3xl text-colortitle font-semibold !leading-none">Seguridad
-                            electrónica</h2>
-                        <p
-                            class="text-white italic font-medium text-center mb-3 sm:text-start text-sm md:text-lg !leading-none">
-                            Lorem ipsum dolor, sit amet consectetur adipisicing elit. </p>
-                        <x-button class="inline-flex ml-auto">
-                            <span>Shop Now</span>
-                            <svg class="h-5 w-5 mx-2 inline-block" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
-                                <path d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                            </svg>
-                        </x-button>
-                    </div>
-                </div>
-            </div>
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
+            <a class="w-full rounded-lg overflow-hidden"
+                href="{{ route('productos') . '/case-gamemax-contact-coc-turbo-rojo-gamer' }}">
+                <img class="block w-full h-min-h-40 h-full max-h-full object-center object-cover"
+                    src="{{ asset('images/home/desk/case_gamer_3.jpg') }}" alt="">
+            </a>
+            <a class="w-full rounded-lg overflow-hidden"
+                href="{{ route('productos') . '/audifono-halion-s2-monkey-negro-verde' }}">
+                <img class="block w-full h-min-h-40 h-full max-h-full object-scale-down object-center"
+                    src="{{ asset('images/home/desk/audifono_gamer_1.jpg') }}" alt="">
+            </a>
         </section>
 
-        <section class="w-full mt-2 sm:mt-5">
-            <div class="w-full flex flex-col gap-2">
-                <div class="w-full grid grid-cols-2 gap-2 sm:gap-5">
-                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
-                        <img alt="gallery" class="w-full object-cover sm:object-scale-down h-full object-center block"
-                            src="{{ asset('images/630x240_1.jpg') }}">
-                    </div>
-                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
-                        <img alt="gallery" class="w-full object-cover sm:object-scale-down h-full object-center block"
-                            src="{{ asset('images/630x240_2.jpg') }}">
-                    </div>
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
+            <a class="w-full rounded-lg overflow-hidden"
+                href="{{ route('productos') . '/laptop-gamer-lenovo-legion-pro-5-16arx8-amd-ryzen-7-7745hx-3-6ghz-ram-ddr5-32gb-ssd-1tb-t-video-rtx-8gb-16-s-o-windows-11' }}">
+                <img class="block w-full h-min-h-40 h-full max-h-full object-scale-down object-center"
+                    src="{{ asset('images/home/desk/laptop_5.jpg') }}" alt="">
+            </a>
+            <a class="w-full rounded-lg overflow-hidden" href="{{ route('productos') . '?subcategorias=camaras' }}">
+                <img class="block w-full h-min-h-40 h-full max-h-full object-scale-down object-center"
+                    src="{{ asset('images/home/desk/camaras_2.jpg') }}" alt="">
+            </a>
+        </section>
 
-                    {{-- <div class="w-full col-span-2 rounded-lg h-28 sm:h-auto overflow-hidden">
-                        <img alt="gallery" class="w-full h-full object-cover object-center block"
-                            src="{{ asset('images/1280x220_2.jpg') }}">
-                    </div> --}}
-                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
-                        <img alt="gallery" class="w-full object-cover h-full object-center block"
-                            src="{{ asset('images/630x240_3.jpg') }}">
-                    </div>
-                    <div class="w-full rounded-lg overflow-hidden h-32 sm:h-auto">
-                        <img alt="gallery" class="w-full object-cover h-full object-center block"
-                            src="{{ asset('images/630x240_4.jpg') }}">
-                    </div>
-                    <div class="w-full col-span-2 rounded-lg h-28 sm:h-auto overflow-hidden">
-                        <img alt="gallery" class="w-full h-full object-cover object-center block"
-                            src="{{ asset('images/1280x220_1.jpg') }}">
-                    </div>
-                </div>
-            </div>
+        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
+            <a class="w-full rounded-lg overflow-hidden"
+                href="{{ route('productos') . '/parlante-maxtron-hertz-mx-334v-bateria-recargable-rgb' }}">
+                <img class="block w-full h-min-h-40 h-full max-h-full object-cover sm:object-scale-down object-center"
+                    src="{{ asset('images/home/desk/parlante_6.jpg') }}" alt="">
+            </a>
+            <a class="w-full rounded-lg overflow-hidden"
+                href="{{ route('productos') . '/control-de-asistencia-hikvision-hk-ds-k1t320mfwx-b-wi-fi-reconocimiento-facial-huellas-tarjeta' }}">
+                <img class="block w-full h-min-h-40 h-full max-h-full object-cover sm:object-scale-down object-center"
+                    src="{{ asset('images/home/desk/control_acceso_4.jpg') }}" alt="">
+            </a>
+        </section>
+
+        <section class="w-full">
+            <a href="{{ route('productos') . '?subcategorias=teclados' }}"
+                class="w-full block rounded-lg overflow-hidden">
+                <img class="block sm:hidden w-full h-full max-h-full object-center object-cover"
+                    src="{{ asset('images/ofertas/mobile/ofertas_1.jpg') }}" alt="">
+
+                <img class="hidden sm:block w-full h-full min-h-40 object-cover object-center lg:object-scale-down"
+                    src="{{ asset('images/ofertas/desk/ofertas_1.jpg') }}" alt="">
+            </a>
         </section>
 
 
@@ -234,8 +192,8 @@
                             <div class="next-wow fadeInUp">
                                 <div class="icono">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" fill="none"
-                                        class="block w-20 h-20 mx-auto">
+                                        stroke-width="1.5" stroke-linecap="round" fill="none"
+                                        class="block w-16 h-16 mx-auto">
                                         <path
                                             d="M10.014 2C6.23617 2 4.34725 2 3.17362 3.17157C2 4.34315 2 6.22876 2 10C2 13.7712 2 15.6569 3.17362 16.8284C4.34725 18 6.23617 18 10.014 18H14.021C17.7989 18 19.6878 18 20.8614 16.8284C21.671 16.0203 21.9221 14.8723 22 13" />
                                         <path d="M12 18V22" />
@@ -257,8 +215,8 @@
                             <div class="next-wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
                                 <div class="icono">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" color="currentColor" fill="none"
-                                        class="block w-20 h-20 mx-auto">
+                                        stroke-width="1.5" stroke-linecap="round" color="currentColor" fill="none"
+                                        class="block w-16 h-16 mx-auto">
                                         <path
                                             d="M2.25562 15.6322C2.28958 15.309 2.52379 15.0485 2.99222 14.5276L4.02329 13.3749C4.27532 13.0558 4.45417 12.5 4.45417 11.9998C4.45417 11.5 4.27526 10.944 4.02326 10.625L2.99222 9.47231C2.52379 8.95137 2.28957 8.6909 2.25562 8.36768C2.22166 8.04446 2.39662 7.74083 2.74653 7.13358L3.24011 6.27698C3.61341 5.62915 3.80005 5.30523 4.11763 5.17607C4.43521 5.0469 4.79437 5.14883 5.51271 5.35267L6.73294 5.69637C7.19155 5.80212 7.6727 5.74213 8.09145 5.52698L8.42833 5.33261C8.78741 5.10262 9.06361 4.76352 9.21649 4.36493L9.55045 3.36754C9.77002 2.70753 9.87981 2.37752 10.1412 2.18876C10.4026 2 10.7498 2 11.4441 2H12.5589C13.2533 2 13.6005 2 13.8618 2.18876C14.1232 2.37752 14.233 2.70753 14.4526 3.36754L14.7865 4.36493C14.9394 4.76352 15.2156 5.10262 15.5747 5.33261L15.9116 5.52698C16.3303 5.74213 16.8115 5.80212 17.2701 5.69637L18.4903 5.35267C19.2086 5.14883 19.5678 5.0469 19.8854 5.17607C20.203 5.30523 20.3896 5.62915 20.7629 6.27698L21.2565 7.13358C21.6064 7.74083 21.7813 8.04446 21.7474 8.36768C21.7134 8.6909 21.4792 8.95137 21.0108 9.47231L19.9797 10.625C19.7278 10.944 19.5488 11.5 19.5488 11.9998C19.5488 12.5 19.7277 13.0558 19.9797 13.3749L21.0108 14.5276C21.4792 15.0485 21.7134 15.309 21.7474 15.6322C21.7813 15.9555 21.6064 16.2591 21.2565 16.8663L20.7629 17.7229C20.3896 18.3707 20.203 18.6947 19.8854 18.8238C19.5678 18.953 19.2086 18.8511 18.4903 18.6472L17.2701 18.3035C16.8114 18.1977 16.3302 18.2578 15.9114 18.473L15.5746 18.6674C15.2155 18.8974 14.9394 19.2364 14.7866 19.635L14.4526 20.6325C14.233 21.2925 14.1232 21.6225 13.8618 21.8112C13.6005 22 13.2533 22 12.5589 22H11.4441C10.7498 22 10.4026 22 10.1412 21.8112C9.87981 21.6225 9.77002 21.2925 9.55045 20.6325" />
                                         <path
@@ -273,8 +231,8 @@
                             <div class="next-wow fadeInUp" style="visibility: visible; animation-name: fadeInUp;">
                                 <div class="icono">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                        stroke-width="2" stroke-linecap="round" color="currentColor" fill="none"
-                                        class="block w-20 h-20 mx-auto">
+                                        stroke-width="1.5" stroke-linecap="round" color="currentColor"
+                                        fill="none" class="block w-16 h-16 mx-auto">
                                         <path
                                             d="M14 8C14 9.10457 13.1046 10 12 10C10.8954 10 10 9.10457 10 8C10 6.89543 10.8954 6 12 6C13.1046 6 14 6.89543 14 8Z" />
                                         <path
@@ -286,8 +244,7 @@
                                         <path d="M8.5 17H15.5" />
                                     </svg>
                                 </div>
-                                <h1 class="titulo">
-                                    Garantías</h1>
+                                <h1 class="titulo">Garantías</h1>
                                 <div class="texto !leading-none">
                                     Contamos con la atención de garántias de marcas reconocidas por el mercado.
                                 </div>

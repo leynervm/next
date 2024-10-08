@@ -39,7 +39,7 @@
     </style>
 
     @php
-        $image = $producto->getImageURL();
+        $image = count($producto->images) ? pathURLProductImage($producto->images->first()->url) : null;
         $promocion = $producto->getPromocionDisponible();
         $descuento = $producto->getPorcentajeDescuento($promocion);
         $combo = $producto->getAmountCombo($promocion, $pricetype ?? null);
@@ -47,7 +47,7 @@
     @endphp
 
     <div class="contenedor w-full" x-data="showproducto">
-        {{-- {{ $producto }} --}}
+        {{-- {{ $producto->image }} --}}
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex">
                 <div class="w-full md:flex-shrink-0 md:w-[50%] lg:w-[60%] md:px-3 py-2">
@@ -83,7 +83,7 @@
                             @if (count($producto->especificacions) > 0)
                                 <ul class="text-white py-3 text-[10px] absolute left-1 top-20 hidden md:flex flex-col gap-2 justify-start items-start"
                                     x-cloak x-show="showesp">
-                                    @foreach ($producto->especificacions()->take(5)->get() as $item)
+                                    @foreach ($producto->especificacions->take(5) as $item)
                                         <li class="badge-especificacion p-1 bg-gray-500 rounded-xl text-[9px] max-w-36">
                                             <span class="font-medium inline-block">
                                                 {{ $item->caracteristica->name }} : </span>
@@ -110,13 +110,13 @@
                                     <div class="w-20 h-20 flex-shrink-0 border-2 thumbnail cursor-pointer bg-white rounded-md"
                                         :class="{
                                             'ring-1 border-primary ring-primary active': currentImage ==
-                                                '{{ $item->getImageURL() }}',
+                                                '{{ pathURLProductImage($item->url) }}',
                                             'hover:ring-1 border-borderminicard ring-borderminicard opacity-70': currentImage !=
-                                                '{{ $item->getImageURL() }}'
+                                                '{{ pathURLProductImage($item->url) }}'
                                         }">
                                         <img class="w-full h-full object-scale-down object-center"
-                                            src="{{ $item->getImageURL() }}"
-                                            @click="currentImage = '{{ $item->getImageURL() }}'">
+                                            src="{{ pathURLProductImage($item->url) }}"
+                                            @click="currentImage = '{{ pathURLProductImage($item->url) }}'">
                                     </div>
                                 @endforeach
                             </div>
@@ -248,7 +248,7 @@
 
                     @if (count($producto->especificacions) > 0)
                         <ul class="w-full pt-3 text-colorsubtitleform py-3 text-[10px]">
-                            @foreach ($producto->especificacions()->take(3)->get() as $item)
+                            @foreach ($producto->especificacions->take(3) as $item)
                                 <li class="py-1">
                                     <span class="font-semibold">{{ $item->caracteristica->name }} :
                                     </span>{{ $item->name }}
@@ -510,7 +510,7 @@
                     <div class="w-full flex overflow-x-hidden" id="relacionados">
                         @foreach ($relacionados as $item)
                             @php
-                                $image = $item->getImageURL();
+                                // $image = $item->getImageURL();
                                 $promocion = $item->getPromocionDisponible();
                                 $descuento = $item->getPorcentajeDescuento($promocion);
                                 $combo = $item->getAmountCombo($promocion, $pricetype);
@@ -518,13 +518,13 @@
                             @endphp
 
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                                :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
+                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image->url) : null" :promocion="$promocion"
                                 wire:key="cardproduct{{ $item->id }}"
                                 class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())
-                                        <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
+                                        <h1 class="text-blue-700 font-medium text-xs text-center">
                                             <small class="text-[10px]">$. </small>
                                             {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                             {{-- <small class="text-[10px]">USD</small> --}}
@@ -578,7 +578,7 @@
                     <div class="w-full flex overflow-x-hidden" id="interesantes">
                         @foreach ($interesantes as $item)
                             @php
-                                $image = $item->getImageURL();
+                                // $image = $item->getImageURL();
                                 $promocion = $item->getPromocionDisponible();
                                 $descuento = $item->getPorcentajeDescuento($promocion);
                                 $combo = $item->getAmountCombo($promocion, $pricetype);
@@ -586,13 +586,13 @@
                             @endphp
 
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                                :partnumber="$item->partnumber" :image="$image" :promocion="$promocion"
+                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image->url) : null" :promocion="$promocion"
                                 wire:key="cardproduct{{ $item->id }}"
                                 class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())
-                                        <h1 class="text-blue-700 font-medium text-xs text-center text-xs">
+                                        <h1 class="text-blue-700 font-medium text-xs text-center">
                                             <small class="text-[10px]">$. </small>
                                             {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                             {{-- <small class="text-[10px]">USD</small> --}}

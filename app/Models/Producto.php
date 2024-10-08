@@ -74,19 +74,6 @@ class Producto extends Model
         ];
     }
 
-    protected function getAmountEfectivo()
-    {
-        $rango = Rango::where('desde', '<=', $this->pricebuy)
-            ->where('hasta', '>=', $this->pricebuy)->first();
-
-        if (!$rango) {
-            return null;
-        }
-
-        $precioRealCompra = $this->pricebuy + ($this->pricebuy * ($rango->incremento / 100));
-        return number_format($precioRealCompra, 3, '.', '');
-    }
-
     // public function precioVenta($pricetype_id, $descuento = 0)
     // {
     //     return $this->calcularPrecioVentaLista($pricetype_id, $descuento);

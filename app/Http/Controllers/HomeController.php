@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\StatusPayWebEnum;
 use App\Helpers\GetClient;
-use App\Models\Category;
 use App\Models\Empresa;
 use App\Models\Moneda;
 use App\Models\Producto;
@@ -17,7 +16,6 @@ use jossmp\sunat\ruc;
 use jossmp\sunat\tipo_cambio;
 use LaravelDaily\LaravelCharts\Classes\LaravelChart;
 use Modules\Marketplace\Entities\Order;
-use Nwidart\Modules\Facades\Module;
 
 class HomeController extends Controller
 {
@@ -37,24 +35,24 @@ class HomeController extends Controller
 
     public function welcome()
     {
+
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
         $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
-        $categories = Category::with(['subcategories'])->wherehas('productos', function ($query) {
-            $query->visibles()->publicados();
-        })->orderBy('orden', 'asc')->get();
 
-        if (auth()->user() && Module::isEnabled('Marketplace')) {
-            $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
-            $orderspending = auth()->user()->orders()->pendientepago()->count();
-            if ($orderspending) {
-                $mensaje = "Usted tiene $orderspending ordenes pendientes. <a class='font-semibold' href='" . route('orders') . "?estado-pago=$status_pendiente' >Ir a pagar</a>";
+        $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
+
+        if (auth()->user()) {
+            $user_id = auth()->user()->id;
+            $query = Order::toBase()->selectRaw("COUNT(*) FILTER (WHERE status = '$status_pendiente' AND user_id = $user_id) as pendientes")->first();
+            if ($query->pendientes) {
+                $mensaje = "Usted tiene $query->pendientes ordenes pendientes. <a class='font-semibold' href='" . route('orders') . "?estado-pago=$status_pendiente' >Ir a pagar</a>";
                 session()->flash('flash.banner', $mensaje);
             }
         }
 
-        return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype', 'categories'));
+        return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
     }
 
     public function dashboard()

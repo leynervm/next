@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Moneda;
 use App\Models\Producto;
 use App\Models\Sucursal;
+use Gloudemans\Shoppingcart\Facades\Cart;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -197,44 +198,86 @@ class MarketplaceController extends Controller
             ->get();
 
         $empresa = mi_empresa();
-        $moneda = Moneda::default()->first();
         $pricetype = getPricetypeAuth($empresa);
         $shipmenttypes = Shipmenttype::get();
 
         $producto->views = $producto->views + 1;
         $producto->save();
 
-        $relacionados = Producto::with(['images', 'marca'])->where('subcategory_id', $producto->subcategory_id)
-            ->whereNot('id', $producto->id)->publicados()->visibles()->take(28)
-            ->orderBy('views', 'desc')->orderBy('name', 'asc')->get();
-        $interesantes = Producto::with(['images', 'marca'])->whereNot('id', $producto->id)->publicados()->visibles()
-            ->inRandomOrder()->take(28)->orderBy('views', 'desc')->orderBy('name', 'asc')->get();
+        $relacionados = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+            ->with('marca')->whereNot('id', $producto->id)
+            ->with(['images' => function ($query) {
+                $query->default()
+                    ->orWhere(function ($q) {
+                        $q->where('default', 0)->orderBy('id');
+                    })->take(1);
+            }])->where('subcategory_id', $producto->subcategory_id)->publicados()->visibles()
+            ->take(28)->orderBy('views', 'desc')->orderBy('name', 'asc')
+            ->get()->map(function ($producto) {
+                $producto->image = $producto->images->first();
+                return $producto;
+            });
 
-        $producto = $producto->with([
+        $interesantes = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+            ->whereNot('id', $producto->id)->with('marca')
+            ->with(['images' => function ($query) {
+                $query->default()
+                    ->orWhere(function ($q) {
+                        $q->where('default', 0)->orderBy('id');
+                    })->take(1);
+            }])->publicados()->visibles()
+            ->inRandomOrder()->take(28)->orderBy('views', 'desc')->orderBy('name', 'asc')
+            ->get()->map(function ($producto) {
+                $producto->image = $producto->images->first();
+                return $producto;
+            });
+
+        $producto->load(
             'marca',
             'category',
             'subcategory',
             'especificacions.caracteristica',
             'detalleproducto',
-            'images',
             'garantiaproductos.typegarantia',
-        ])->find($producto->id);
-        return view('modules.marketplace.productos.show', compact('producto', 'stocksucursals', 'empresa', 'moneda', 'shipmenttypes', 'pricetype', 'relacionados', 'interesantes'));
+        );
+        $producto->load(['images' => function ($query) {
+            $query->orderBy('default', 'desc');
+        }]);
+
+        return view('modules.marketplace.productos.show', compact('producto', 'stocksucursals', 'empresa', 'shipmenttypes', 'pricetype', 'relacionados', 'interesantes'));
     }
 
-    public function carshoop(Request $request)
+    public function carshoop()
     {
-
-        $mensaje = $request->attributes->get('message');
-        $moneda = Moneda::default()->first();
-
-        return view('marketplace::carrito', compact('moneda'));
+        return view('marketplace::carrito');
     }
 
     public function wishlist()
     {
-        $moneda = Moneda::default()->first();
-        return view('marketplace::wishlist', compact('moneda'));
+        $countwish = 0;
+        if (Cart::instance('wishlist')->count() > 0) {
+            foreach (Cart::instance('wishlist')->content() as $item) {
+                if (is_null($item->model)) {
+                    Cart::instance('wishlist')->get($item->rowId);
+                    Cart::instance('wishlist')->remove($item->rowId);
+                    $countwish++;
+                }
+            }
+
+            if ($countwish > 0) {
+                if (auth()->check()) {
+                    Cart::instance('wishlist')->store(auth()->id());
+                }
+
+                $mensaje = response()->json([
+                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO.",
+                    'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
+                    'type' => 'warning'
+                ])->getData();
+                session()->now('message', $mensaje);
+            }
+        }
+        return view('marketplace::wishlist');
     }
 
     public function profile()

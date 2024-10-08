@@ -281,7 +281,8 @@
                                     @foreach ($item->subcategories as $subcategory)
                                         <li class="w-full block">
                                             <a class="item-subcategory"
-                                                href="{{ route('productos') . '?subcategorias=' . $subcategory->slug }}">
+                                                href="{{ route('productos') . '?subcategorias=' . $subcategory->slug }}"
+                                                @click="sidebar=false,openSidebar=false,backdrop=false">
                                                 {{ $subcategory->name }}</a>
                                         </li>
                                     @endforeach

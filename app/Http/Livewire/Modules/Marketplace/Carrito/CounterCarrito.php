@@ -17,7 +17,7 @@ class CounterCarrito extends Component
 
     public function mount($pricetype = null)
     {
-        $this->verifyProductoCarshoop();
+        // $this->verifyProductoCarshoop();
         $this->pricetype = $pricetype;
     }
 
