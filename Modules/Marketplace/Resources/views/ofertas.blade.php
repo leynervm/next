@@ -13,30 +13,24 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="contenedor w-full">
-        <div class="relative w-full m-0 mb-10">
-            @if (count($ofertas) > 0)
-                <h1 class="text-colorsubtitleform flex items-start text-xl leading-normal px-0 py-4 gap-2.5">
-                    Descubre nuestras ofertas que tenemos para tí</h1>
-                <div class="w-full m-0 relative">
-                    <div class="w-full relative overflow-hidden border-t border-borderminicard mb-9">
-                        <div
-                            class="flex max-h-full bg-fondominicard active w-full float-left -mr-[100%] transition-transform ease-in-out duration-700">
-                            @foreach ($ofertas as $item)
-                                <x-card-producto-oferta :producto="$item" :empresa="$empresa" :moneda="$moneda"
-                                    :pricetype="$pricetype" />
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            @else
-                <div class="w-full p-3 flex flex-col gap-2">
-                    <p class="text-xs text-center text-colorsubtitleform">
-                        ACTUALMENTE NO TENEMOS OFERTAS DISPONIBLES...</p>
+    <div class="w-full p-1">
+        @if (count($ofertas) > 0)
+            <h1 class="font-medium uppercase text-xs py-3 text-colorsubtitleform">
+                Descubre nuestras ofertas que tenemos para tí</h1>
+            <div class="w-full flex justify-end py-2">
+                {{ $ofertas->onEachSide(0)->links('pagination::pagination-default') }}
+            </div>
 
-                    <x-link-web text="VER TODOS LOS PRODUCTOS" class="mx-auto" href="{{ route('productos') }}" />
-                </div>
-            @endif
-        </div>
+            <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-1 xs:gap-0">
+                @foreach ($ofertas as $item)
+                    <x-card-producto-oferta :producto="$item" />
+                @endforeach
+            </div>
+        @else
+            <p class="text-xs text-center text-colorsubtitleform">
+                ACTUALMENTE NO TENEMOS OFERTAS DISPONIBLES...</p>
+
+            <x-link-web text="VER TODOS LOS PRODUCTOS" class="mx-auto" href="{{ route('productos') }}" />
+        @endif
     </div>
 </x-app-layout>

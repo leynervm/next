@@ -29,7 +29,15 @@ class AddCarrito extends Component
     public function add_to_cart(Producto $producto, $cantidad)
     {
 
-        $promocion = $producto->getPromocionDisponible();
+        $producto->load([
+            'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit');
+                }])->disponibles()->take(1);
+            }
+        ]);
+
+        $promocion = verifyPromocion($producto->promocions->first());
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
         $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
@@ -59,7 +67,7 @@ class AddCarrito extends Component
                     'simbolo' => $this->moneda->simbolo,
                     'modo_precios' => $this->empresa->usarLista() ? $this->pricetype->name : 'DEFAUL PRICESALE',
                     'carshoopitems' => $carshoopitems,
-                    'promocion_id' => $promocion ?  $promocion->id : null,
+                    'promocion_id' => !empty($promocion) ?  $promocion->id : null,
                     'igv' => 0,
                     'subtotaligv' => 0
                 ]

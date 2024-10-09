@@ -47,15 +47,30 @@ class MarketplaceController extends Controller
 
     public function ofertas()
     {
+        $ofertas = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+            ->with('marca')->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->whereHas('promocions', function ($query) {
+                $query->disponibles();
+            })->with(['promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($itemQuery) {
+                    $itemQuery->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->disponibles();
+            }])->publicados()->visibles()->orderBy('views', 'desc')
+            ->orderBy('name', 'asc')->paginate(30)->through(function ($producto) {
+                $producto->promocion = $producto->promocions->first();
+                return $producto;
+            });
 
-        $empresa = mi_empresa();
-        $moneda = Moneda::default()->first();
-        $pricetype = getPricetypeAuth($empresa);
-
-        $ofertas = Producto::whereHas('promocions', function ($query) {
-            $query->disponibles();
-        })->visibles()->publicados()->paginate();
-        return view('marketplace::ofertas', compact('ofertas', 'empresa', 'moneda', 'pricetype'));
+        return view('marketplace::ofertas', compact('ofertas'));
     }
 
     public function orders()
@@ -65,12 +80,8 @@ class MarketplaceController extends Controller
 
     public function create()
     {
-        $empresa = mi_empresa();
-        $moneda = Moneda::default()->first();
-        $pricetype = getPricetypeAuth($empresa);
-        return view('modules.marketplace.orders.create',  compact('empresa', 'moneda', 'pricetype'));
+        return view('modules.marketplace.orders.create');
     }
-
 
     public function generateSessionToken($order)
     {
@@ -165,12 +176,7 @@ class MarketplaceController extends Controller
 
     public function productos(Request $request)
     {
-
-        $empresa = mi_empresa();
-        $moneda = Moneda::default()->first();
-        $pricetype = getPricetypeAuth($empresa);
-
-        return view('modules.marketplace.productos.index', compact('empresa', 'moneda', 'pricetype'));
+        return view('modules.marketplace.productos.index');
     }
 
     public function showproducto(Producto $producto)
@@ -205,44 +211,72 @@ class MarketplaceController extends Controller
         $producto->save();
 
         $relacionados = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->with('marca')->whereNot('id', $producto->id)
-            ->with(['images' => function ($query) {
-                $query->default()
-                    ->orWhere(function ($q) {
-                        $q->where('default', 0)->orderBy('id');
-                    })->take(1);
-            }])->where('subcategory_id', $producto->subcategory_id)->publicados()->visibles()
-            ->take(28)->orderBy('views', 'desc')->orderBy('name', 'asc')
-            ->get()->map(function ($producto) {
-                $producto->image = $producto->images->first();
+            ->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->with(['marca', 'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->disponibles()->take(1);
+            }])
+            ->whereNot('id', $producto->id)->where('subcategory_id', $producto->subcategory_id)
+            ->publicados()->visibles()->take(28)->orderBy('views', 'desc')
+            ->orderBy('name', 'asc')->get()->map(function ($producto) {
+                $producto->promocion = $producto->promocions->first();
                 return $producto;
             });
-
+        // dd($relacionados);
         $interesantes = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->whereNot('id', $producto->id)->with('marca')
-            ->with(['images' => function ($query) {
-                $query->default()
-                    ->orWhere(function ($q) {
-                        $q->where('default', 0)->orderBy('id');
-                    })->take(1);
-            }])->publicados()->visibles()
-            ->inRandomOrder()->take(28)->orderBy('views', 'desc')->orderBy('name', 'asc')
-            ->get()->map(function ($producto) {
-                $producto->image = $producto->images->first();
+            ->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->with(['marca', 'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->disponibles()->take(1);
+            }])
+            ->whereNot('id', $producto->id)->publicados()->visibles()
+            ->inRandomOrder()->take(28)->orderBy('views', 'desc')
+            ->orderBy('name', 'asc')->get()->map(function ($producto) {
+                $producto->promocion = $producto->promocions->first();
                 return $producto;
             });
 
-        $producto->load(
+        $producto->load([
             'marca',
             'category',
             'subcategory',
             'especificacions.caracteristica',
             'detalleproducto',
             'garantiaproductos.typegarantia',
-        );
-        $producto->load(['images' => function ($query) {
-            $query->orderBy('default', 'desc');
-        }]);
+            'images' => function ($query) {
+                $query->orderBy('default', 'desc');
+            },
+            'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->disponibles()->take(1);
+            }
+        ]);
 
         return view('modules.marketplace.productos.show', compact('producto', 'stocksucursals', 'empresa', 'shipmenttypes', 'pricetype', 'relacionados', 'interesantes'));
     }

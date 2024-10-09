@@ -77,6 +77,8 @@ class ShowProductos extends Component
     public $stock_locals = [];
     public $matches = [];
     public $producto;
+    public $subcategories = [];
+    public $marcas = [];
 
     public $readyToLoad = false;
 
@@ -91,6 +93,13 @@ class ShowProductos extends Component
         $this->producto = new Producto();
         if (!empty(request('categorias'))) {
             $this->selectedcategorias = explode(',', request('categorias'));
+            $this->subcategories = Subcategory::whereHas('categories', function ($query) {
+                $query->whereIn('categories.slug', $this->selectedcategorias);
+            })->get();
+        } else {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->visibles()->publicados();
+            })->get();
         }
         if (!empty(request('subcategorias'))) {
             $this->selectedsubcategorias = explode(',', request('subcategorias'));
@@ -110,6 +119,20 @@ class ShowProductos extends Component
         if (!empty(request('by'))) {
             $this->direction = request('by');
         }
+
+        if (count($this->selectedsubcategorias) > 0) {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->whereHas('subcategory', function ($subcategoryQuery) {
+                    $subcategoryQuery->whereIn('slug', $this->selectedsubcategorias);
+                })->visibles()->publicados();
+            })->get();
+        } else {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->whereHas('category', function ($categoryQuery) {
+                    $categoryQuery->whereIn('slug', $this->selectedcategorias);
+                })->visibles()->publicados();
+            })->get();
+        }
     }
 
     public function render()
@@ -117,22 +140,62 @@ class ShowProductos extends Component
         $categories = Category::whereHas('productos', function ($query) {
             $query->visibles()->publicados();
         })->get();
-        $subcategories = Subcategory::whereHas('productos')->get();
-        $marcas = Marca::whereHas('productos')->get();
+        // $subcategories = Subcategory::whereHas('productos')->get();
+        // $marcas = Marca::whereHas('productos', function ($query) {
+        //     $query->visibles()->publicados();
+        // })->get();
         $caracteristicas = Caracteristica::filterweb()->withWhereHas('especificacions', function ($query) {
             $query->whereHas('productos', function ($q) {
                 $q->visibles()->publicados();
             });
         })->get();
 
-        $productos = Producto::with(['images' => function ($query) {
-            $query->default()->orWhere(function ($q) {
-                $q->where('default', 0)->orderBy('id');
-            })->take(2);
-        }])->with(['almacens' => function ($query) {
-            // $query->select('id, almacens.sucursal_id')->groupBy('id');
-            // $query->wherePivot('cantidad', '>', 0);
-        }]);
+        $productos = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+            ->with(['almacens' => function ($query) {
+                // $query->select('id, almacens.sucursal_id')->groupBy('id');
+                // $query->wherePivot('cantidad', '>', 0);
+            }])->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->addSelect(['image_2' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')
+                    ->offset(1)->limit(1);
+            }])
+            ->withWherehas('category', function ($query) {
+                $query->whereNull('deleted_at');
+                if (count($this->selectedcategorias) > 0) {
+                    $query->whereIn('slug', $this->selectedcategorias);
+                }
+            })->withWherehas('subcategory', function ($query) {
+                if (count($this->selectedsubcategorias) > 0) {
+                    $query->whereIn('slug', $this->selectedsubcategorias);
+                }
+            })->withWhereHas('marca', function ($query) {
+                $query->whereNull('deleted_at');
+                if (count($this->selectedmarcas) > 0) {
+                    $query->whereIn('slug', $this->selectedmarcas);
+                }
+            })
+            // ->with('especificacions', function ($query) {
+            //     if (count($this->especificacions) > 0) {
+            //         $query->whereIn('especificacions.slug', $this->especificacions);
+            //     }
+            // })
+            ->with(['promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->disponibles()->take(1);
+            }]);
 
         if (trim($this->search) !== '') {
             $searchTerms = explode(' ', $this->search);
@@ -152,37 +215,16 @@ class ShowProductos extends Component
             });
         }
 
-        $productos->withWherehas('category', function ($query) {
-            $query->whereNull('deleted_at');
-            if (count($this->selectedcategorias) > 0) {
-                $query->whereIn('slug', $this->selectedcategorias);
-            }
-        })->withWherehas('subcategory', function ($query) {
-            if (count($this->selectedsubcategorias) > 0) {
-                $query->whereIn('slug', $this->selectedsubcategorias);
-            }
-        })->withWhereHas('marca', function ($query) {
-            $query->whereNull('deleted_at');
-            if (count($this->selectedmarcas) > 0) {
-                $query->whereIn('slug', $this->selectedmarcas);
-            }
-        })
-            // ->with('especificacions', function ($query) {
-            //     if (count($this->especificacions) > 0) {
-            //         $query->whereIn('especificacions.slug', $this->especificacions);
-            //     }
-            // })
-            ->with(['promocions'  => function ($query) {
-                $query->disponibles();
-            }]);
-
         $productos =  $this->readyToLoad ?
-            $productos->visibles()->publicados()
-            ->orderBy($this->sort, $this->direction)->paginate(30)
+            $productos->visibles()->publicados()->orderBy($this->sort, $this->direction)
+            ->paginate(30)->through(function ($producto) {
+                $producto->promocion = $producto->promocions->first();
+                return $producto;
+            })
             : [];
 
         // dd($productos);
-        return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'subcategories', 'marcas', 'caracteristicas'));
+        return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'caracteristicas'));
     }
 
     public function order($sort, $direction)
@@ -207,13 +249,57 @@ class ShowProductos extends Component
     public function updatedSelectedcategorias()
     {
         $this->resetPage();
+        $this->subcategories = Subcategory::whereHas('categories', function ($query) {
+            $query->whereIn('categories.slug', $this->selectedcategorias);
+        })->get();
+        $this->selectedsubcategorias = array_filter($this->selectedsubcategorias, function ($selected) {
+            return collect($this->subcategories)->contains('slug', $selected);
+        });
+        $this->searchsubcategorias = implode(',', $this->selectedsubcategorias);
+
         $this->searchcategorias = implode(',', $this->selectedcategorias);
+
+        if (count($this->selectedcategorias) > 0) {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->whereHas('category', function ($categoryQuery) {
+                    $categoryQuery->whereIn('slug', $this->selectedcategorias);
+                })->visibles()->publicados();
+            })->get();
+        } else {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->visibles()->publicados();
+            })->get();
+        }
+
+        $this->selectedmarcas = array_filter($this->selectedmarcas, function ($selected) {
+            return collect($this->marcas)->contains('slug', $selected);
+        });
+        $this->searchmarcas = implode(',', $this->selectedmarcas);
     }
 
     public function updatedSelectedsubcategorias()
     {
         $this->resetPage();
         $this->searchsubcategorias = implode(',', $this->selectedsubcategorias);
+
+        if (count($this->selectedsubcategorias) > 0) {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->whereHas('subcategory', function ($subcategoryQuery) {
+                    $subcategoryQuery->whereIn('slug', $this->selectedsubcategorias);
+                })->visibles()->publicados();
+            })->get();
+        } else {
+            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                $query->whereHas('category', function ($categoryQuery) {
+                    $categoryQuery->whereIn('slug', $this->selectedcategorias);
+                })->visibles()->publicados();
+            })->get();
+        }
+
+        $this->selectedmarcas = array_filter($this->selectedmarcas, function ($selected) {
+            return collect($this->marcas)->contains('slug', $selected);
+        });
+        $this->searchmarcas = implode(',', $this->selectedmarcas);
     }
 
     public function updatedSelectedmarcas()

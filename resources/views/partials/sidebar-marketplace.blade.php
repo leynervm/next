@@ -20,7 +20,8 @@
             </div> --}}
 
             <div class="item-sidebar group">
-                <a class="itemlink-sidebar-principal" href="{{ route('ofertas') }}" @click="openSidebar=false">
+                <a class="itemlink-sidebar-principal" href="{{ route('ofertas') }}"
+                    @click="sidebar=false,openSidebar=false,backdrop=false">
                     <div class="title-category-sidebar font-semibold group-hover:text-hovercolorlinknav">
                         OFERTAS
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 47.99" stroke="currentColor"
@@ -188,7 +189,8 @@
             </div>
 
             <div class="item-sidebar group">
-                <a class="itemlink-sidebar-principal" href="{{ route('productos') }}" @click="openSidebar=false">
+                <a class="itemlink-sidebar-principal" href="{{ route('productos') }}"
+                    @click="sidebar=false,openSidebar=false,backdrop=false">
                     <div class="title-category-sidebar group-hover:text-hovercolorlinknav">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 48 48"
                             stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.3"
@@ -207,7 +209,8 @@
 
             @auth
                 <div class="item-sidebar group md:hidden">
-                    <a @click="openSidebar=false" class="itemlink-sidebar-principal" href="{{ route('orders') }}">
+                    <a class="itemlink-sidebar-principal" href="{{ route('orders') }}"
+                        @click="sidebar=false,openSidebar=false,backdrop=false">
                         <div class="title-category-sidebar group-hover:text-hovercolorlinknav">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -267,7 +270,8 @@
                                 <ul class="w-full flex flex-col">
                                     <li class="w-full block">
                                         <a class="item-subcategory !flex justify-between font-medium gap-1 items-center"
-                                            href="{{ route('productos') . '?categorias=' . $item->slug }}">
+                                            href="{{ route('productos') . '?categorias=' . $item->slug }}"
+                                            @click="sidebar=false,openSidebar=false,backdrop=false">
                                             VER TODO
                                             <svg xmlns="http://www.w3.org/2000/svg"
                                                 class="w-4 h-4 p-0.5 block flex-shrink-0" viewBox="0 0 24 24"

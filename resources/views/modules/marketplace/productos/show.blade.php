@@ -40,14 +40,13 @@
 
     @php
         $image = count($producto->images) ? pathURLProductImage($producto->images->first()->url) : null;
-        $promocion = $producto->getPromocionDisponible();
-        $descuento = $producto->getPorcentajeDescuento($promocion);
+        $promocion = verifyPromocion($producto->promocions->first());
+        $descuento = getDscto($promocion);
         $combo = $producto->getAmountCombo($promocion, $pricetype ?? null);
         $pricesale = $producto->obtenerPrecioVenta($pricetype ?? null);
     @endphp
 
     <div class="contenedor w-full" x-data="showproducto">
-        {{-- {{ $producto->image }} --}}
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex">
                 <div class="w-full md:flex-shrink-0 md:w-[50%] lg:w-[60%] md:px-3 py-2">
@@ -164,11 +163,12 @@
                                 </h1>
 
                                 @if ($descuento > 0 && $empresa->verOldprice())
-                                    <span
-                                        class="text-colorsubtitleform text-xs line-through text-red-600 text-center md:text-start">
-                                        <small class="text-[10px]"> {{ $moneda->simbolo }}</small>
-                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}
-                                    </span>
+                                    <h1
+                                        class="text-colorsubtitleform text-xs text-red-600 text-center md:text-start">
+                                        {{ $moneda->simbolo }}
+                                        <small class="text-lg inline-block line-through">
+                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
+                                    </h1>
                                 @endif
                                 @if ($empresa->verDolar())
                                     <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
@@ -197,21 +197,20 @@
                         @if (count($combo->products) > 0)
                             <div class="w-full flex flex-wrap gap-2 my-2">
                                 @foreach ($combo->products as $itemcombo)
-                                    <div class="block w-28 cursor-pointer">
-                                        <div class="block rounded w-full h-28 overflow-hidden shadow relative">
+                                    <div class="block w-32 cursor-pointer">
+                                        <div class="block rounded-lg w-full h-28 overflow-hidden relative">
                                             @if ($itemcombo->image)
                                                 <img src="{{ $itemcombo->image }}" alt=""
                                                     class="w-full h-full object-scale-down rounded">
                                             @else
-                                                <x-icon-image-unknown class="w-full h-full text-neutral-500" />
+                                                <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
                                             @endif
                                             <x-span-text text="GRATIS"
-                                                class="absolute bottom-1 right-1 leading-3 !tracking-normal !text-[9px] !py-0.5"
+                                                class="absolute bottom-1 right-1 leading-3 !text-[9px] !py-0.5"
                                                 type="green" />
                                         </div>
-                                        <h1 class="text-[10px] leading-3 font-medium mt-2">
-                                            {{ $itemcombo->name }}
-                                        </h1>
+                                        <h1 class="text-[10px] leading-3 font-medium mt-2 text-colorsubtitleform">
+                                            {{ $itemcombo->name }}</h1>
                                     </div>
                                 @endforeach
                             </div>
@@ -511,14 +510,14 @@
                         @foreach ($relacionados as $item)
                             @php
                                 // $image = $item->getImageURL();
-                                $promocion = $item->getPromocionDisponible();
-                                $descuento = $item->getPorcentajeDescuento($promocion);
+                                $promocion = verifyPromocion($item->promocion);
+                                $descuento = getDscto($promocion);
                                 $combo = $item->getAmountCombo($promocion, $pricetype);
                                 $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
                             @endphp
 
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image->url) : null" :promocion="$promocion"
+                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image) : null" :promocion="$promocion"
                                 wire:key="cardproduct{{ $item->id }}"
                                 class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 
@@ -579,14 +578,14 @@
                         @foreach ($interesantes as $item)
                             @php
                                 // $image = $item->getImageURL();
-                                $promocion = $item->getPromocionDisponible();
-                                $descuento = $item->getPorcentajeDescuento($promocion);
+                                $promocion = verifyPromocion($item->promocion);
+                                $descuento = getDscto($promocion);
                                 $combo = $item->getAmountCombo($promocion, $pricetype);
                                 $pricesale = $item->obtenerPrecioVenta($pricetype ?? null);
                             @endphp
 
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image->url) : null" :promocion="$promocion"
+                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image) : null" :promocion="$promocion"
                                 wire:key="cardproduct{{ $item->id }}"
                                 class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
 

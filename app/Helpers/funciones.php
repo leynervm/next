@@ -495,3 +495,37 @@ function validarConfiguracionEmail()
         'success' => true
     ]);
 }
+
+function getDscto($promocion)
+{
+    if (empty($promocion) || is_null($promocion)) {
+        return null;
+    }
+    return ($promocion->isDescuento()) ? $promocion->descuento : null;
+}
+
+function verifyPromocion($promocion)
+{
+    if (empty($promocion) || is_null($promocion)) {
+        return null;
+    }
+    return ($promocion->isDisponible() && $promocion->isAvailable()) ? $promocion : null;
+}
+
+/**
+ * @getPriceDscto Obtener precio del producto aplicando descuento.
+ * @param float $precioVenta Precio de venta sin aplicar descuentos
+ * @param float $descuento El código del tipo de moneda al que desea convertir
+ * @param integer $modo Modo de aplicar el descuento, Opcion:0 => Aplica sobre la diferencia del precio de venta - preciocompra, Otra opcion => aplica descuento directamente al precio de venta
+ * @param $pricetype Instancia del modelo Pricetype cuando se usa en modo lista de precios
+ * @return string valor convertido a la moneda enviada
+ */
+function getPriceDscto($amount, $dsct, $pricetype = null, $modo = 0,)
+{
+    $precio = number_format($amount - ($amount * ($dsct / 100)), 3, '.', '');
+    if (!empty($pricetype) && $pricetype->rounded > 0) {
+        return $precio = round_decimal($precio, $pricetype->rounded);
+    }
+
+    return number_format($precio, 3, '.', '');
+}
