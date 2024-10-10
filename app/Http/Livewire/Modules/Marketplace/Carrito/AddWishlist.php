@@ -28,11 +28,31 @@ class AddWishlist extends Component
 
     public function add_to_wishlist($cantidad = 1)
     {
+        $this->producto->load([
+            'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit');
+                }])->disponibles()->take(1);
+            }
+        ]);
 
-        $promocion = $this->producto->getPromocionDisponible();
+
+        $promocion = verifyPromocion($this->producto->promocions->first());
         $combo = $this->producto->getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
         $pricesale = $this->producto->obtenerPrecioVenta($this->pricetype ?? null);
+
+        if ($promocion) {
+            if ($promocion->limit > 0 && ($promocion->outs + $cantidad > $promocion->limit)) {
+                $mensaje = response()->json([
+                    'title' => 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN',
+                    'text' => 'Ingrese un monto menor o igual al stock de unidades disponibles.',
+                    'type' => 'warning'
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+        }
 
         if ($pricesale > 0) {
             Cart::instance('wishlist')->add([

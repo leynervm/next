@@ -27,8 +27,11 @@
     @apply h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)];
 }
 .sidebar-productos {
-    @apply w-full absolute left-0 top-[108px] xl:top-24 h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-body max-w-[80%] xs:max-w-72 flex-shrink-0 ;
+    @apply w-full absolute z-[101] left-0 top-[108px] xl:top-0 h-[calc(100vh-108px)] xl:relative  xl:z-0 bg-body max-w-[80%] xs:max-w-72 xl:max-w-72 flex-shrink-0 ;
 }
+/* .sidebar-productos {
+    @apply w-full fixed left-0 top-[108px] xl:top-24 h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-body max-w-[80%] xs:max-w-72 flex-shrink-0 ;
+} */
 
 .nav-marketplace {
     @apply w-full flex flex-wrap justify-center divide-x-2 divide-colorlinkfooter px-5 text-colorlinkfooter font-semibold;

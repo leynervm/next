@@ -12,7 +12,7 @@
 
         <div class="flex-shrink-0 xl:pr-5">
             <button class="button-sidebar hidden xl:flex items-center" type="button"
-                @click="openSidebar=!openSidebar,sidebar=false, backdrop= openSidebar ? true : false"
+                @click="openSidebar=!openSidebar;backdrop=openSidebar;if(!openSidebar) {document.body.style.overflow = 'auto';}"
                 :class="openSidebar ? 'open' : ''">
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
@@ -21,13 +21,13 @@
                     Menú</span>
             </button>
             <button class="button-sidebar xl:hidden px-2" type="button"
-                @click="openSidebar=!openSidebar,sidebar=false,backdrop= openSidebar ? true : false">
+                @click="openSidebar=!openSidebar;backdrop=openSidebar;if(!openSidebar) {document.body.style.overflow = 'auto';}">
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
                 </div>
                 @if ($empresa->image)
-                    <div class="w-full flex-1 hidden xs:block xl:hidden h-full">
-                        <img class="h-full w-auto m-auto object-center object-scale-down"
+                    <div class="w-full flex-1 p-1 xl:hidden h-full">
+                        <img class="h-full max-w-24 xs:w-auto xs:max-w-28 sm:max-w-32 m-auto object-center object-scale-down"
                             src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
                     </div>
                 @endif
@@ -43,13 +43,12 @@
                     <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                         Barra de búsqueda</label>
                     <input type="search" name="search" autocomplete="off" x-ref="search" x-model="search"
-                        @focus="backdrop=true,openSidebar=false,sidebar=false" @input.debounce.300ms="fetchProducts"
-                        @keydown.enter.prevent="handleEnter" @keydown.arrow-down.prevent="navigate(1)"
-                        @keydown.arrow-up.prevent="navigate(-1)"
+                        @input.debounce.300ms="fetchProducts" @keydown.enter.prevent="handleEnter"
+                        @keydown.arrow-down.prevent="navigate(1)" @keydown.arrow-up.prevent="navigate(-1)"
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
-                        placeholder="Buscar en Next Store" id="search">
+                        placeholder="Buscar en Next" id="search">
                 </div>
-                <button type="submit" @click="fetchProducts,handleEnter"
+                <button type="submit" @click.prevent="fetchProducts;handleEnter;"
                     class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -107,8 +106,15 @@
                                 if (data.error) {
                                     this.error = data.error;
                                 } else {
+                                    console.log(data.length);
                                     this.products = data;
                                     this.selectedIndex = -1;
+                                    if (data.length > 0) {
+                                        this.backdrop = true;
+                                        this.openSidebar = false;
+                                        this.sidebar = this.isXL ? true : false;
+                                        document.body.style.overflow = 'hidden';
+                                    }
                                 }
                             })
                             .catch(() => {
@@ -130,10 +136,7 @@
                     },
                     redirectEnter() {
                         if (this.search.trim().length > 0) {
-                            console.log('Hacer enter', this.search);
-                            console.log('Length products', this.products.length);
                             if (this.products.length > 1) {
-
                                 window.location.href =
                                     `{{ route('productos') }}?coincidencias=${encodeURIComponent(this.search)}`;
                             } else {
@@ -169,15 +172,19 @@
 
         <div class="w-full flex flex-1 sm:w-auto sm:flex-none sm:ml-auto">
             <ul class="w-full sm:w-auto flex justify-end h-full m-0 p-0" x-data="{ login: false }">
-                <li
-                    class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
-                    @auth
-                        <a class="hidden h-full md:flex items-center p-3 px-1 sm:px-3 font-semibold text-inherit text-lg leading-4 cursor-pointer group-hover:opacity-80"
+                @auth
+                    <li
+                        class="group hidden relative h-[68%] md:flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
+                        <a class="h-full flex items-center p-3 px-1 sm:px-3 font-semibold text-inherit text-lg leading-4 cursor-pointer group-hover:opacity-80"
                             href="{{ route('orders') }}">
                             Mis<br>compras
                         </a>
-                    @else
-                        <div class="p-3 px-1 sm:px-3 h-ful flex gap-2 w-full theme-switcher justify-center items-center">
+                    </li>
+                @else
+                    <li
+                        class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
+                        <div
+                            class="p-3 px-1 sm:px-3 h-ful flex gap-1 xs:gap-2 sm:gap-3 w-full theme-switcher justify-center items-center">
                             <button title="Light" theme="theme-next" type="button"
                                 class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -205,34 +212,37 @@
                                 </svg>
                             </button>
                         </div>
-                    @endauth
-                </li>
-                <li class="group relative h-[68%] self-center">
-                    <a class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-inherit cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
-                        href="{{ route('wishlist') }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                            class="block w-8 h-8">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M9.73 17.753l-5.23 -5.181a5 5 0 1 1 7.5 -6.566a5 5 0 0 1 8.563 5.041" />
-                            <path
-                                d="M17.8 20.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" />
-                        </svg>
-                        <span id="counterwishlist"
-                            class="{{ Cart::instance('wishlist')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0.5 right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-fondobadgemarketplace text-colorbadgemarketplace rounded-full">
-                            {{ Cart::instance('wishlist')->count() }}
-                        </span>
-                    </a>
-                </li>
+                    </li>
+                @endauth
+
+                @auth
+                    <li class="group relative h-[68%] self-center hidden xs:block">
+                        <a class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-inherit cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
+                            href="{{ route('wishlist') }}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                class="block w-8 h-8">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M9.73 17.753l-5.23 -5.181a5 5 0 1 1 7.5 -6.566a5 5 0 0 1 8.563 5.041" />
+                                <path
+                                    d="M17.8 20.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" />
+                            </svg>
+                            <span id="counterwishlist"
+                                class="{{ Cart::instance('wishlist')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0.5 right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-fondobadgemarketplace text-colorbadgemarketplace rounded-full">
+                                {{ Cart::instance('wishlist')->count() }}
+                            </span>
+                        </a>
+                    </li>
+                @endauth
                 <li class="group relative h-[68%] flex self-center transition ease-out duration-150">
                     <livewire:modules.marketplace.carrito.counter-carrito :empresa="$empresa" :moneda="$moneda"
                         :pricetype="$pricetype" />
                 </li>
-                <li class="relative h-[68%] flex items-center self-center xl:border-l ">
+                <li class="relative h-[68%] flex items-center self-center">
                     @auth
                         <div @mouseover="login = true" @mouseover.outside="login = false">
                             <button
-                                class="h-full flex justify-center items-center p-3 px-1 sm:px-3 cursor-pointer text-inherit group-hover:opacity-80 transition ease-out duration-150">
+                                class="h-full flex justify-center items-center px-1 py-3 sm:px-3 cursor-pointer text-inherit group-hover:opacity-80 transition ease-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     class="block w-8 h-8" stroke="currentColor" stroke-width="1.5"
                                     stroke-linecap="round" stroke-linejoin="round">
@@ -317,7 +327,7 @@
                         </div>
                     @else
                         <a @click="localStorage.setItem('activeForm', 'login')" href="{{ route('login') }}"
-                            class="hover:opacity-80 p-3 cursor-pointer truncate text-wrap max-w-24 sm:max-w-full text-lg sm:text-xl !leading-4 font-semibold transition ease-out duration-150">
+                            class="hover:opacity-80 p-1 xs:p-3 cursor-pointer truncate text-wrap max-w-20 sm:max-w-24 text-lg sm:text-xl !leading-4 xl:!leading-none font-semibold text-center transition ease-out duration-150">
                             {{ __('Log in') }}
                         </a>
                     @endauth
@@ -335,11 +345,11 @@
                 <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                     Barra de búsqueda</label>
                 <input type="text" name="search" autocomplete="off" x-model="search"
-                    @focus="backdrop=true,sidebar=false" @input.debounce.300ms="fetchProducts"
+                    @input.debounce.300ms="fetchProducts"
                     class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
-                    value="" placeholder="Buscar en Next Store">
+                    placeholder="Buscar en Next">
             </div>
-            <button type="submit" @click="fetchProducts,handleEnter"
+            <button type="submit" @click.prevent="fetchProducts;handleEnter"
                 class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-0 h-10 w-10 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

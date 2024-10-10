@@ -70,7 +70,7 @@ class MarketplaceController extends Controller
                 return $producto;
             });
 
-        return view('marketplace::ofertas', compact('ofertas'));
+        return view('modules.marketplace.productos.ofertas', compact('ofertas'));
     }
 
     public function orders()

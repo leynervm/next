@@ -57,6 +57,10 @@ class ShowProductos extends Component
         'direction' => [
             'except' => 'asc',
             'as' => 'by'
+        ],
+        'filterselected' => [
+            'except' => 'name_asc',
+            'as' => 'order-by'
         ]
     ];
 
@@ -73,6 +77,7 @@ class ShowProductos extends Component
     public $selectedcategorias = [];
     public $selectedsubcategorias = [];
     public $selectedmarcas = [];
+    public $selectedespecificacions = [];
     public $especificacions = [];
     public $stock_locals = [];
     public $matches = [];
@@ -81,6 +86,9 @@ class ShowProductos extends Component
     public $marcas = [];
 
     public $readyToLoad = false;
+
+    public $orderfilters = [];
+    public $filterselected = '';
 
     public function loadProductos()
     {
@@ -108,7 +116,7 @@ class ShowProductos extends Component
             $this->selectedmarcas = explode(',', request('marcas'));
         }
         if (!empty(request('especificaciones'))) {
-            $this->especificacions = explode(',', request('especificaciones'));
+            $this->selectedespecificacions = explode(',', request('especificaciones'));
         }
         if (!empty(request('coincidencias'))) {
             $this->search = request('coincidencias');
@@ -119,6 +127,9 @@ class ShowProductos extends Component
         if (!empty(request('by'))) {
             $this->direction = request('by');
         }
+        if (empty(request('order-by'))) {
+            $this->filterselected = 'name_asc';
+        }
 
         if (count($this->selectedsubcategorias) > 0) {
             $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
@@ -126,28 +137,66 @@ class ShowProductos extends Component
                     $subcategoryQuery->whereIn('slug', $this->selectedsubcategorias);
                 })->visibles()->publicados();
             })->get();
-        } else {
-            $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
-                $query->whereHas('category', function ($categoryQuery) {
-                    $categoryQuery->whereIn('slug', $this->selectedcategorias);
+
+            $this->especificacions = Especificacion::withWhereHas('caracteristica', function ($query) {
+                $query->filterweb()->orderBy('orden', 'asc');
+            })->whereHas('productos', function ($query) {
+                $query->whereHas('subcategory', function ($subQuery) {
+                    $subQuery->whereIn('slug', $this->selectedsubcategorias);
                 })->visibles()->publicados();
-            })->get();
+            })->get()->groupBy('caracteristica.name')->map(function ($especificaciones) {
+                return $especificaciones->mapWithKeys(function ($especificacion) {
+                    return [
+                        $especificacion->slug => [
+                            'slug' => $especificacion->slug,
+                            'name'  => $especificacion->name
+                        ]
+                    ];
+                });
+            })->toArray();
+        } else {
+            if (count($this->selectedcategorias) > 0) {
+                $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                    $query->whereHas('category', function ($categoryQuery) {
+                        $categoryQuery->whereIn('slug', $this->selectedcategorias);
+                    })->visibles()->publicados();
+                })->get();
+            } else {
+                $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
+                    $query->visibles()->publicados();
+                })->get();
+            }
         }
+
+        $column_price = $this->empresa->usarLista() ? $this->pricetype->campo_table ?? 'pricesale' : 'pricesale';
+        $this->orderfilters = [
+            'precio_asc' => [
+                'column' => $column_price,
+                'order' => 'asc',
+                'text' => 'DE MENOR A MAYOR PRECIO',
+            ],
+            'precio_desc' => [
+                'column' => $column_price,
+                'order' => 'desc',
+                'text' => 'DE MAYOR A MENOR PRECIO',
+            ],
+            'name_asc' => [
+                'column' => 'name',
+                'order' => 'asc',
+                'text' => 'POR NOMBRE ASCENDENTE',
+            ],
+            'name_desc' => [
+                'column' => 'name',
+                'order' => 'desc',
+                'text' => 'POR NOMBRE DESCENDENTE',
+            ],
+        ];
     }
 
     public function render()
     {
-        $categories = Category::whereHas('productos', function ($query) {
+        $categories = Category::query()->select('id', 'slug', 'name')->whereHas('productos', function ($query) {
             $query->visibles()->publicados();
-        })->get();
-        // $subcategories = Subcategory::whereHas('productos')->get();
-        // $marcas = Marca::whereHas('productos', function ($query) {
-        //     $query->visibles()->publicados();
-        // })->get();
-        $caracteristicas = Caracteristica::filterweb()->withWhereHas('especificacions', function ($query) {
-            $query->whereHas('productos', function ($q) {
-                $q->visibles()->publicados();
-            });
         })->get();
 
         $productos = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
@@ -180,22 +229,24 @@ class ShowProductos extends Component
                 if (count($this->selectedmarcas) > 0) {
                     $query->whereIn('slug', $this->selectedmarcas);
                 }
-            })
-            // ->with('especificacions', function ($query) {
-            //     if (count($this->especificacions) > 0) {
-            //         $query->whereIn('especificacions.slug', $this->especificacions);
-            //     }
-            // })
-            ->with(['promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
-                }])->disponibles()->take(1);
-            }]);
+            });
+
+        if (count($this->selectedespecificacions) > 0) {
+            $productos->whereHas('especificacions', function ($query) {
+                $query->whereIn('especificacions.slug', $this->selectedespecificacions);
+            });
+        }
+
+        $productos->with(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($query) {
+                $query->with('unit')->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }]);
+            }])->disponibles()->take(1);
+        }]);
 
         if (trim($this->search) !== '') {
             $searchTerms = explode(' ', $this->search);
@@ -215,8 +266,15 @@ class ShowProductos extends Component
             });
         }
 
+        if (!isset($this->orderfilters[$this->filterselected])) {
+            $this->filterselected = 'name_asc';
+        }
+        $column = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['column'] : 'name';
+        $order = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['order'] : 'asc';
+        
         $productos =  $this->readyToLoad ?
-            $productos->visibles()->publicados()->orderBy($this->sort, $this->direction)
+            $productos->visibles()->publicados()
+            ->orderBy($column, $order)
             ->paginate(30)->through(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
                 return $producto;
@@ -224,22 +282,22 @@ class ShowProductos extends Component
             : [];
 
         // dd($productos);
-        return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories', 'caracteristicas'));
+        return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories',));
     }
 
-    public function order($sort, $direction)
-    {
-        if ($sort == 'precio') {
-            if ($this->pricetype) {
-                $this->sort = $this->pricetype->campo_table;
-            } else {
-                $this->sort = 'pricesale';
-            }
-        } else {
-            $this->sort = $sort;
-        }
-        $this->direction = $direction;
-    }
+    // public function order($sort, $direction)
+    // {
+    //     if ($sort == 'precio') {
+    //         if ($this->pricetype) {
+    //             $this->sort = $this->pricetype->campo_table;
+    //         } else {
+    //             $this->sort = 'pricesale';
+    //         }
+    //     } else {
+    //         $this->sort = $sort;
+    //     }
+    //     $this->direction = $direction;
+    // }
 
     public function updatedSearch()
     {
@@ -300,6 +358,41 @@ class ShowProductos extends Component
             return collect($this->marcas)->contains('slug', $selected);
         });
         $this->searchmarcas = implode(',', $this->selectedmarcas);
+
+        if (count($this->selectedsubcategorias) > 0) {
+            $this->especificacions = Especificacion::withWhereHas('caracteristica', function ($query) {
+                $query->filterweb()->orderBy('orden', 'asc');
+            })->whereHas('productos', function ($query) {
+                $query->whereHas('subcategory', function ($subQuery) {
+                    $subQuery->whereIn('slug', $this->selectedsubcategorias);
+                })->visibles()->publicados();
+            })->get()->groupBy('caracteristica.name')->map(function ($especificaciones) {
+                return $especificaciones->mapWithKeys(function ($especificacion) {
+                    return [
+                        $especificacion->slug => [
+                            'slug' => $especificacion->slug,
+                            'name'  => $especificacion->name
+                        ]
+                    ];
+                });
+            })->toArray();
+
+            $this->selectedespecificacions = array_filter($this->selectedespecificacions, function ($selected) {
+                foreach ($this->especificacions as $caracteristica) {
+                    foreach ($caracteristica as $slug => $especificacion) {
+                        if ($slug === $selected) {
+                            return true; // Si encontramos el slug, lo mantenemos
+                        }
+                    }
+                }
+                return false;
+            });
+        } else {
+            $this->selectedespecificacions = [];
+            $this->especificacions = [];
+        }
+
+        $this->searchespecificaciones = implode(',', $this->selectedespecificacions);
     }
 
     public function updatedSelectedmarcas()
@@ -308,15 +401,14 @@ class ShowProductos extends Component
         $this->searchmarcas = implode(',', $this->selectedmarcas);
     }
 
-    public function updatedEspecificacions()
+    public function updatedSelectedespecificacions()
     {
         $this->resetPage();
-        $this->searchespecificaciones = implode(',', $this->especificacions);
+        $this->searchespecificaciones = implode(',', $this->selectedespecificacions);
     }
 
     public function add_to_cart(Producto $producto, $cantidad)
     {
-
         $promocion = $producto->getPromocionDisponible();
         $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null);
         $carshoopitems = !is_null($combo) ? $combo->products : [];
@@ -371,7 +463,6 @@ class ShowProductos extends Component
 
     public function add_to_wishlist(Producto $producto, $cantidad)
     {
-
         if (!auth()->user()) {
             return redirect()->route('login')->with('activeForm', 'login');
         }

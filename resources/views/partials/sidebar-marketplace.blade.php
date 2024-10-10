@@ -1,5 +1,5 @@
 <div x-cloak x-show="openSidebar" style="display: none"
-    class="fixed left-0 bottom-0 w-full xs:max-w-[80%] sm:w-64 xl:w-72 sm:max-w-full flex z-[101] transition-transform ease-in-out duration-300"
+    class="fixed left-0 top-[108px] xl:top-24 w-full xs:max-w-[80%] sm:w-64 xl:w-72 sm:max-w-full flex z-[101] transition-transform ease-in-out duration-300"
     x-transition:enter="opacity-0 transition ease-in-out duration-300"
     x-transition:enter-start="opacity-0 -translate-x-full" x-transition:enter-end="opacity-100 translate-x-0"
     x-transition:leave="opacity-100 transition ease-in-out duration-300"
@@ -222,6 +222,26 @@
                         </div>
                     </a>
                 </div>
+                <div class="item-sidebar group xs:hidden">
+                    <a class="itemlink-sidebar-principal" href="{{ route('wishlist') }}"
+                        @click="sidebar=false,openSidebar=false,backdrop=false">
+                        <div class="title-category-sidebar group-hover:text-hovercolorlinknav">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                                class="block w-9 h-9 p-1">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M9.73 17.753l-5.23 -5.181a5 5 0 1 1 7.5 -6.566a5 5 0 0 1 8.563 5.041" />
+                                <path
+                                    d="M17.8 20.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" />
+                            </svg>
+                            MIS FAVORITOS
+                            <span id="counterwishlist"
+                                class="{{ Cart::instance('wishlist')->count() == 0 ? 'hidden' : 'flex' }} w-4 h-4 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-fondobadgemarketplace text-colorbadgemarketplace rounded-full">
+                                {{ Cart::instance('wishlist')->count() }}
+                            </span>
+                        </div>
+                    </a>
+                </div>
             @endauth
 
             @if (count($categories))
@@ -256,17 +276,6 @@
                         @if (count($item->subcategories))
                             <div style="display: none" :style="(submenu ? 'display:flex' : 'display:none')"
                                 class="menu-subcategories" x-transition>
-                                {{-- <div
-                                    class="w-full hidden sm:flex justify-start gap-3 items-center p-2.5  font-semibold text-sm mb-2">
-                                    <a class="truncate text-next-500"
-                                        href="{{ route('productos') . '?categorias=' . $item->slug }}">{{ $item->name }}</a>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor"
-                                        stroke-width="2" stroke="currentColor"
-                                        class="w-5 h-5 text-next-500 p-0.5 block flex-shrink-0">
-                                        <polygon points="28.89 0 18.32 0 37.42 24 18.31 48 28.89 48 48 24 28.89 0" />
-                                        <polygon points="10.58 0 0 0 19.11 24 0 48 10.58 48 29.69 24 10.58 0" />
-                                    </svg>
-                                </div> --}}
                                 <ul class="w-full flex flex-col">
                                     <li class="w-full block">
                                         <a class="item-subcategory !flex justify-between font-medium gap-1 items-center"
@@ -285,7 +294,7 @@
                                     @foreach ($item->subcategories as $subcategory)
                                         <li class="w-full block">
                                             <a class="item-subcategory"
-                                                href="{{ route('productos') . '?subcategorias=' . $subcategory->slug }}"
+                                                href="{{ route('productos') . '?categorias=' . $item->slug . '&subcategorias=' . $subcategory->slug }}"
                                                 @click="sidebar=false,openSidebar=false,backdrop=false">
                                                 {{ $subcategory->name }}</a>
                                         </li>
