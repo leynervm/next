@@ -809,7 +809,7 @@ class CreateVenta extends Component
             }
         } else {
             $mensaje =  response()->json([
-                'title' => 'STOCK DEL PRODUCTO AGOTADO EN ALMACÉN !',
+                'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO !',
                 'text' => "La cantidad el producto " . $producto->name . ", en combo está agotado para almacén " . $this->almacendefault->name
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);

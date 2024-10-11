@@ -197,7 +197,6 @@ class Producto extends Model
             ->withPivot('orden')->orderByPivot('orden', 'asc');
     }
 
-
     public function detalleproducto(): HasOne
     {
         return $this->hasOne(Detalleproducto::class);

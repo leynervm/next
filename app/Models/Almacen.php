@@ -77,6 +77,11 @@ class Almacen extends Model
     //     return $this->hasMany(User::class);
     // }
 
+    public function scopeDisponibles($query)
+    {
+        return $query->wherePivot('cantidad', '>', 0);
+    }
+
     public function isDefault()
     {
         return $this->where('default', $this::DEFAULT);

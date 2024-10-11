@@ -2,13 +2,11 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Productos;
 
-use App\Models\Caracteristica;
 use App\Models\Category;
 use App\Models\Empresa;
 use App\Models\Especificacion;
 use App\Models\Marca;
 use App\Models\Moneda;
-use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Subcategory;
 use Gloudemans\Shoppingcart\Facades\Cart;
@@ -34,14 +32,6 @@ class ShowProductos extends Component
             'except' => '',
             'as' => 'marcas'
         ],
-        // 'selectedcategorias' => [
-        //     'except' => '',
-        //     'as' => 'categoria'
-        // ],
-        // 'selectedmarcas' => [
-        //     'except' => [],
-        //     'as' => 'marca'
-        // ],
         'searchespecificaciones' => [
             'except' => '',
             'as' => 'especificaciones'
@@ -49,14 +39,6 @@ class ShowProductos extends Component
         'search' => [
             'except' => '',
             'as' => 'coincidencias'
-        ],
-        'sort' => [
-            'except' => 'name',
-            'as' => 'order'
-        ],
-        'direction' => [
-            'except' => 'asc',
-            'as' => 'by'
         ],
         'filterselected' => [
             'except' => 'name_asc',
@@ -72,8 +54,7 @@ class ShowProductos extends Component
     public $qty = 1;
 
     public $search = '', $searchcategorias = '', $searchsubcategorias = '',
-        $searchmarcas = '', $searchespecificaciones = '', $orderBy = '',
-        $sort = 'name', $direction = 'asc';
+        $searchmarcas = '', $searchespecificaciones = '';
     public $selectedcategorias = [];
     public $selectedsubcategorias = [];
     public $selectedmarcas = [];
@@ -203,7 +184,11 @@ class ShowProductos extends Component
             ->with(['almacens' => function ($query) {
                 // $query->select('id, almacens.sucursal_id')->groupBy('id');
                 // $query->wherePivot('cantidad', '>', 0);
-            }])->addSelect(['image' => function ($query) {
+            }])->withCount([
+                'almacens as stock' => function ($query) {
+                    $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+                }
+            ])->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
@@ -214,8 +199,7 @@ class ShowProductos extends Component
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('default', 'desc')
                     ->offset(1)->limit(1);
-            }])
-            ->withWherehas('category', function ($query) {
+            }])->withWherehas('category', function ($query) {
                 $query->whereNull('deleted_at');
                 if (count($this->selectedcategorias) > 0) {
                     $query->whereIn('slug', $this->selectedcategorias);
@@ -271,7 +255,7 @@ class ShowProductos extends Component
         }
         $column = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['column'] : 'name';
         $order = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['order'] : 'asc';
-        
+
         $productos =  $this->readyToLoad ?
             $productos->visibles()->publicados()
             ->orderBy($column, $order)
@@ -284,20 +268,6 @@ class ShowProductos extends Component
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories',));
     }
-
-    // public function order($sort, $direction)
-    // {
-    //     if ($sort == 'precio') {
-    //         if ($this->pricetype) {
-    //             $this->sort = $this->pricetype->campo_table;
-    //         } else {
-    //             $this->sort = 'pricesale';
-    //         }
-    //     } else {
-    //         $this->sort = $sort;
-    //     }
-    //     $this->direction = $direction;
-    // }
 
     public function updatedSearch()
     {
@@ -409,7 +379,26 @@ class ShowProductos extends Component
 
     public function add_to_cart(Producto $producto, $cantidad)
     {
-        $promocion = $producto->getPromocionDisponible();
+        $producto->load([
+            'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit');
+                }])->disponibles()->take(1);
+            },
+        ])->loadCount(['almacens as stock' => function ($query) {
+            $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+        }]);
+
+        if ($producto->stock <= 0) {
+            $mensaje = response()->json([
+                'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO ! !',
+                'text' => null,
+                'icon' => 'warning'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+        $promocion = verifyPromocion($producto->promocions->first());
         $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null);
         $carshoopitems = !is_null($combo) ? $combo->products : [];
         $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
@@ -466,7 +455,15 @@ class ShowProductos extends Component
         if (!auth()->user()) {
             return redirect()->route('login')->with('activeForm', 'login');
         }
-        $promocion = $producto->getPromocionDisponible();
+        $producto->load([
+            'promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit');
+                }])->disponibles()->take(1);
+            }
+        ]);
+
+        $promocion = verifyPromocion($producto->promocions->first());
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = !is_null($combo) ? $combo->products : [];
         $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);

@@ -48,14 +48,16 @@ class MarketplaceController extends Controller
     public function ofertas()
     {
         $ofertas = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->with('marca')->addSelect(['image' => function ($query) {
+            ->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('default', 'desc')->limit(1);
+            }])->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
             }])->whereHas('promocions', function ($query) {
                 $query->disponibles();
-            })->with(['promocions' => function ($query) {
+            })->with(['marca', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($itemQuery) {
                     $itemQuery->with('unit')->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
@@ -189,24 +191,23 @@ class MarketplaceController extends Controller
         // INNER JOIN UBIGEOS ON SUCURSALS.ubigeo_id = UBIGEOS.id
         // WHERE PRODUCTO_ID = ? GROUP BY name,direccion,lugar", [$producto->id]) ?? [];
         $this->authorize('publicado', $producto);
-        $stocksucursals = DB::table('almacen_sucursal')
-            ->join('almacen_producto', 'almacen_producto.almacen_id', '=', 'almacen_sucursal.almacen_id')
-            ->join('sucursals', 'sucursals.id', '=', 'almacen_sucursal.sucursal_id')
-            ->join('ubigeos', 'sucursals.ubigeo_id', '=', 'ubigeos.id')
-            ->select(
-                'sucursals.name',
-                'sucursals.direccion',
-                DB::raw("CONCAT(ubigeos.region , ', ',ubigeos.provincia, ', ', ubigeos.distrito ) as lugar"),
-                DB::raw('SUM(cantidad) as total')
-            )
-            ->where('almacen_producto.producto_id', $producto->id)
-            ->groupBy('sucursals.name', 'sucursals.direccion', 'lugar')
-            ->get();
+        // $stocksucursals = DB::table('almacen_sucursal')
+        //     ->join('almacen_producto', 'almacen_producto.almacen_id', '=', 'almacen_sucursal.almacen_id')
+        //     ->join('sucursals', 'sucursals.id', '=', 'almacen_sucursal.sucursal_id')
+        //     ->join('ubigeos', 'sucursals.ubigeo_id', '=', 'ubigeos.id')
+        //     ->select(
+        //         'sucursals.name',
+        //         'sucursals.direccion',
+        //         DB::raw("CONCAT(ubigeos.region , ', ',ubigeos.provincia, ', ', ubigeos.distrito ) as lugar"),
+        //         DB::raw('SUM(cantidad) as total')
+        //     )
+        //     ->where('almacen_producto.producto_id', $producto->id)
+        //     ->groupBy('sucursals.name', 'sucursals.direccion', 'lugar')
+        //     ->get();
 
-        $empresa = mi_empresa();
-        $pricetype = getPricetypeAuth($empresa);
+        // $empresa = mi_empresa();
+        // $pricetype = getPricetypeAuth($empresa);
         $shipmenttypes = Shipmenttype::get();
-
         $producto->views = $producto->views + 1;
         $producto->save();
 
@@ -258,7 +259,9 @@ class MarketplaceController extends Controller
 
         $producto->load([
             'marca',
-            'category',
+            'category' => function ($query) {
+                $query->select('id', 'name', 'slug');
+            },
             'subcategory',
             'especificacions.caracteristica',
             'detalleproducto',
@@ -275,10 +278,15 @@ class MarketplaceController extends Controller
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
                 }])->disponibles()->take(1);
+            },
+            'almacens' => function ($query) {
+                $query->wherePivot('cantidad', '>', 0);
             }
-        ]);
+        ])->loadCount(['almacens as stock' => function ($query) {
+            $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+        }]);
 
-        return view('modules.marketplace.productos.show', compact('producto', 'stocksucursals', 'empresa', 'shipmenttypes', 'pricetype', 'relacionados', 'interesantes'));
+        return view('modules.marketplace.productos.show', compact('producto', 'shipmenttypes', 'relacionados', 'interesantes'));
     }
 
     public function carshoop()

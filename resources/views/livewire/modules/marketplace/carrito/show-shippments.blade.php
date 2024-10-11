@@ -1,7 +1,6 @@
 <div x-data="shipment">
-    <div x-show="loading" class="fixed loading-overlay z-10">
-        <x-loading-next />
-    </div>
+
+    <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
 
     <form @submit.prevent="save" class="w-full " id="register_order">
         <div class="w-full grid grid-cols-2 gap-3 items-end border-b border-borderminicard mb-5">
@@ -359,29 +358,26 @@
                 <div x-show="processpay == false" wire:key="form_buttons"
                     class="my-2 w-full grid grid-cols-2 lg:grid-cols-1 gap-2">
                     @if (count($order) > 0)
-                        {{-- <button wire:key="buttonedit" type="button" @click="edit"
-                            class="block w-full p-2 lg:p-3 lg:py-4 text-xs font-semibol tracking-widest text-white bg-orange-500 rounded-xl hover:ring-2 hover:ring-orange-300 hover:bg-orange-700 transition-all ease-in-out duration-300">
-                            EDITAR
-                        </button> --}}
+                        <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
+                            x-bind:disabled="!terms" wire:loading.attr="disabled"
+                            class="block w-full p-3 text-sm">
+                            PAGAR</x-button>
                         <button wire:key="buttoncancel" type="button" @click="edit"
-                            class="block w-full p-2 lg:p-3 lg:py-4 text-xs font-semibol tracking-widest text-white bg-red-500 rounded-xl hover:ring-2 hover:ring-red-300 hover:bg-red-700 transition-all ease-in-out duration-300">
-                            CANCELAR PAGO
-                        </button>
+                            class="block w-full p-2 lg:p-3 lg:py-4 text-xs font-semibol tracking-widest text-white bg-orange-500 rounded-xl hover:ring-2 hover:ring-orange-300 hover:bg-orange-700 transition-all ease-in-out duration-300">
+                            EDITAR</button>
                     @else
-                        <button x-show="processpay== false" wire:key="buttonpay" type="submit"
-                            :disabled="!terms" wire:loading.attr="disabled"
-                            class="block w-full p-2 lg:p-3 rounded-xl text-xs bg-[#03a9f4] text-white hover:ring-2 hover:ring-neutral-200 focus:ring-2 focus:ring-neutral-200 disabled:opacity-50">
-                            <img src="{{ asset('images/niubiz.png') }}" alt=""
-                                class="mx-auto w-auto h-8 object-scale-down block overflow-hidden">
-                        </button>
+                        <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
+                            x-bind:disabled="!terms" wire:loading.attr="disabled"
+                            class="block w-full p-3 text-sm">
+                            PAGAR</x-button>
                     @endif
                 </div>
                 {{-- </template> --}}
 
                 <div class="p-5 opacity-80 w-full flex justify-center items-center" x-show="processpay" x-cloak
                     style="display: none;">
-                    <span class="text-xs font-medium tracking-widest text-primary">
-                        PROCESANDO PAGO ...</span>
+                    <span class="text-[10px] font-medium tracking-widest text-colorsubtitleform">
+                        CARGANDO VENTANA CHECKOUT DE PAGO ...</span>
                 </div>
             </div>
         @endif

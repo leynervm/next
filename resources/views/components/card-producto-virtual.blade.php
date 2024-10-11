@@ -9,6 +9,7 @@
     'secondimage' => null,
     'promocion' => null,
     'classFooter' => 'xl:absolute',
+    'id' => rand(),
 ])
 <div
     {{ $attributes->merge(['class' => 'w-full group flex flex-col justify-between text-xs relative cursor-pointer']) }}>
@@ -18,14 +19,21 @@
         @else
             <div class="w-full flex flex-col gap-2">
     @endif
-
-    <div
+    {{-- img.src = img.dataset.src;
+    observer.unobserve(img);  ; --}}
+    <div x-data="{ imageLoaded: false }" x-init="const img = document.getElementById('{{ $id }}');
+    if (img) {
+        img.src = img.dataset.src;
+    }"
         class="w-full h-32 sm:h-40 overflow-hidden rounded md:rounded-xl relative {{ isset($image) ? 'bg-white' : '' }}">
         @if (isset($image))
-            <img src="{{ $image }}" alt=""
+            <x-loading-lazy-image x-show="imageLoaded == false" x-cloak />
+
+            <img id="{{ $id }}" data-src="{{ $image }}" alt="{{ $image }}"
+                x-on:load="imageLoaded = true" x-show="imageLoaded" style="display: none;"
                 class="w-full h-full object-scale-down group-hover:scale-105 {{ $secondimage ? 'group-hover:opacity-0 duration-700' : 'scale-90 duration-1000' }} transition-all ease-in">
             @if ($secondimage)
-                <img src="{{ $secondimage }}" alt=""
+                <img src="{{ $secondimage }}" alt="{{ $secondimage }}"
                     class="absolute opacity-0 top-0 object-scale-down w-full h-full group-hover:scale-105 group-hover:opacity-100 transition-all ease-in duration-700">
             @endif
         @else

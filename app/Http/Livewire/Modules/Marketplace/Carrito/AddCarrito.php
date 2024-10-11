@@ -6,6 +6,7 @@ use App\Models\Empresa;
 use App\Models\Moneda;
 use App\Models\Producto;
 use Gloudemans\Shoppingcart\Facades\Cart;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class AddCarrito extends Component
@@ -35,7 +36,19 @@ class AddCarrito extends Component
                     $query->with('unit');
                 }])->disponibles()->take(1);
             }
-        ]);
+        ])->loadCount(['almacens as stock' => function ($query) {
+            $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+        }]);
+
+        if ($producto->stock <= 0) {
+            $mensaje = response()->json([
+                'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO ! !',
+                'text' => null,
+                'icon' => 'warning'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
 
         $promocion = verifyPromocion($producto->promocions->first());
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);

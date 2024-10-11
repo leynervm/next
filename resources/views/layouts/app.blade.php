@@ -31,73 +31,6 @@
     body {
         overflow: hidden;
     }
-
-    @keyframes spin3D {
-        from {
-            transform: rotate3d(.5, .5, .5, 360deg);
-        }
-
-        to {
-            transform: rotate3d(0deg);
-        }
-    }
-
-    .spinner-box {
-        width: 300px;
-        height: 300px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: transparent;
-    }
-
-    .leo {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        border-radius: 50%;
-    }
-
-    .blue-orbit {
-        width: 165px;
-        height: 165px;
-        border: 1px solid #91daffcc;
-        -webkit-animation: spin3D 3s linear .2s infinite;
-    }
-
-    .green-orbit {
-        width: 120px;
-        height: 120px;
-        border: 1px solid #0fb9b9b3;
-        -webkit-animation: spin3D 2s linear 0s infinite;
-    }
-
-    .red-orbit {
-        width: 90px;
-        height: 90px;
-        border: 1px solid #ffca91a5;
-        -webkit-animation: spin3D 1s linear 0s infinite;
-    }
-
-    .white-orbit {
-        width: 60px;
-        height: 60px;
-        border: 2px solid #e9e9e980;
-        -webkit-animation: spin3D 10s linear 0s infinite;
-    }
-
-    .w1 {
-        transform: rotate3D(1, 1, 1, 90deg);
-    }
-
-    .w2 {
-        transform: rotate3D(1, 2, .5, 90deg);
-    }
-
-    .w3 {
-        transform: rotate3D(.5, 1, 2, 90deg);
-    }
 </style>
 
 <body class="bg-body animate__animated animate__fadeIn animate__faster"
@@ -121,24 +54,7 @@
     })">
     <x-jet-banner />
 
-    <div style="z-index: 999999; background-color: rgba(255,255,255,1);position: fixed;top: 0;left: 0; width: 100%;height: 100vh;display: flex;flex-direction:column;justify-content: center;align-items: center;"
-        id="loading-next">
-        <div class="spinner-box">
-            <div class="blue-orbit leo">
-            </div>
-            <div class="green-orbit leo">
-            </div>
-            <div class="red-orbit leo">
-            </div>
-            <div class="white-orbit w1 leo">
-            </div>
-            <div class="white-orbit w2 leo">
-            </div>
-            <div class="white-orbit w3 leo">
-            </div>
-        </div>
-        {{-- <x-loading-next class="spinner-home" /> --}}
-    </div>
+    <x-loading-web-next id="loading-next" />
 
     @if ($empresa)
         @if (Module::isEnabled('Marketplace'))
@@ -213,7 +129,11 @@
 <script>
     // document.body.style.overflow = 'hidden';
 
-    window.addEventListener('load', () => {
+    // else {
+    //     console.log('Am not');
+    // }
+
+    document.addEventListener("DOMContentLoaded", () => {
         document.body.style.overflow = 'auto';
         $('#loading-next').fadeOut();
     })
@@ -283,14 +203,13 @@
     window.addEventListener('validation', data => {
         // console.log(data.detail);
         var icon = data.detail.icon ? data.detail.icon : 'info';
-        console.log(icon);
         swal.fire({
             title: data.detail.title,
             text: data.detail.text,
             html: data.detail.text,
             icon: icon,
             confirmButtonColor: '#0FB9B9',
-            confirmButtonText: 'Cerrar',
+            confirmButtonText: 'Aceptar',
         })
     })
 
