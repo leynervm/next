@@ -31,8 +31,14 @@
                                         class="w-full flex-1 lg:flex justify-between gap-3 items-center text-colorsubtitleform">
                                         <div class="w-full lg:flex-1">
                                             <a href="{{ route('productos.show', $item->producto) }}"
-                                                class="block w-full text-xs text-center xs:text-start">{{ $item->producto->name }}</a>
+                                                class="block w-full text-xs text-center xs:text-start">
+                                                {{ $item->producto->name }}</a>
 
+                                            @if (!empty($item->promocion_id))
+                                                <span
+                                                    class="p-1 font-semibold inline-block ring-1 rounded-lg text-[10px] ring-green-600 text-end text-green-600 whitespace-nowrap">
+                                                    PROMOCIÓN</span>
+                                            @endif
 
                                             @if (count($item->itemseries) > 0)
                                                 <div class="w-full flex flex-wrap gap-2 mb-2">

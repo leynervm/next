@@ -57,9 +57,12 @@
                     $combo = $item->producto->getAmountCombo($item, $pricetype);
                     // $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
                     $pricesale = $item->producto->obtenerPrecioByPricebuy($item->pricebuy, $item, $pricetype, false);
-                    $pricesale = !empty($combo) ? $pricesale + $combo->total : $pricesale;
+                    // $pricesale = !empty($combo) ? $pricesale + $combo->total : $pricesale;
+                    if (!empty($combo)) {
+                        $pricesale = $pricesale + $combo->total;
+                    }
                 @endphp
-                
+
                 <x-simple-card
                     class="w-full relative flex flex-col gap-2 justify-between overflow-hidden {{ $item->isFinalizado() ? 'saturate-0' : '' }}">
                     <div class="w-full">
@@ -142,11 +145,7 @@
                         @if ($pricesale > 0)
                             <h1 class="text-colorsubtitleform font-semibold text-2xl text-center">
                                 <small class="text-[10px]">S/. </small>
-                                @if ($item->isDisponible() && $item->isAvailable())
-                                    {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
-                                @else
-                                    {{ formatDecimalOrInteger(count($item->itempromos) > 0 ? $combo->total : $pricesale, $pricetype->decimals ?? 2, ', ') }}
-                                @endif
+                                {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                             </h1>
                             @if ($descuento > 0)
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">

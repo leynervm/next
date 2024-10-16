@@ -77,9 +77,7 @@
                     <path d="M6 11l6-6 6 6M6 19l6-6 6 6" />
                 </svg>
                 <p class="text-[8px] text-center leading-3">
-                    {{ formatDecimalOrInteger($increment) }}
-                    %
-                </p>
+                    {{ formatDecimalOrInteger($increment) }} %</p>
             </h1>
         @endif
     @endif

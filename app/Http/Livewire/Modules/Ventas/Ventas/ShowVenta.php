@@ -510,7 +510,6 @@ class ShowVenta extends Component
             $itemserie->serie->status = 0;
             $itemserie->serie->dateout = null;
             $itemserie->serie->save();
-            $itemserie->tvitem->requireserie = Tvitem::PENDING_SERIE;
             $itemserie->tvitem->save();
             $itemserie->delete();
             DB::commit();
@@ -597,11 +596,6 @@ class ShowVenta extends Component
             $serieProducto->status = 2;
             $serieProducto->dateout = now('America/Lima');
             $serieProducto->save();
-
-            if (formatDecimalOrInteger($tvitem->cantidad) == $tvitem->itemseries->count()) {
-                $tvitem->requireserie = 0;
-                $tvitem->save();
-            }
             DB::commit();
             $this->venta->refresh();
             $this->reset(['tvitem']);

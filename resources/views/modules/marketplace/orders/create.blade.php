@@ -93,6 +93,10 @@
                                                             <span
                                                                 class="text-red-600 inline-block ring-1 ring-red-600 text-[10px] p-0.5 px-1 rounded-lg mt-1">
                                                                 PROMOCIÓN AGOTADO</span>
+                                                        @else
+                                                            <span
+                                                                class="text-green-600 inline-block ring-1 ring-green-600 text-[10px] p-0.5 px-1 rounded-lg mt-1">
+                                                                PROMOCIÓN</span>
                                                         @endif
                                                     @endif
                                                 </div>

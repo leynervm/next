@@ -255,7 +255,14 @@
                                     </div>
                                     <div
                                         class="w-full flex-1 sm:flex justify-between gap-3 items-center text-colorsubtitleform">
-                                        <p class="w-full text-xs sm:flex-1">{{ $item->producto->name }}</p>
+                                        <div class="w-full text-xs sm:flex-1">
+                                            <p class="w-full">{{ $item->producto->name }}</p>
+                                            @if (!empty($item->promocion_id))
+                                                <span
+                                                    class="p-1 font-semibold inline-block ring-1 rounded-lg text-[10px] ring-green-600 text-end text-green-600 whitespace-nowrap">
+                                                    PROMOCIÓN</span>
+                                            @endif
+                                        </div>
 
                                         <div class="flex items-end sm:items-center sm:w-60 sm:flex-shrink-0 ">
                                             <span

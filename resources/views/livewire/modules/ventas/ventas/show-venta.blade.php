@@ -355,9 +355,16 @@
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
                     @foreach ($venta->tvitems as $item)
                         @php
-                            $image = !empty($item->producto->image) ? pathURLProductImage($item->producto->image) : null;
+                            $image = !empty($item->producto->image)
+                                ? pathURLProductImage($item->producto->image)
+                                : null;
+                            $textcategory = null;
+                            if ($item->isGratuito()) {
+                                $textcategory = !empty($item->promocion_id) ? 'GRATUITO' : 'GRATUITO';
+                            }
                         @endphp
-                        <x-card-producto :image="$image" :name="$item->producto->name" :category="$item->gratuito == 1 ? 'GRATUITO' : null" :increment="$item->increment ?? null">
+                        <x-card-producto :image="$image" :name="$item->producto->name" :category="$textcategory" :increment="$item->increment"
+                            :promocion="$item->promocion_id" class="overflow-hidden">
                             <h1 class="text-xl text-center font-semibold text-colortitleform">
                                 <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
                                 {{ formatDecimalOrInteger($item->subtotal + $item->subtotaligv, 2, ', ') }}
@@ -387,13 +394,12 @@
                             @endif
 
 
-                            @if ($item->isPendingSerie())
+                            @if ($item->producto->isRequiredserie() && count($item->itemseries) < $item->cantidad)
                                 <div class="w-full mt-2" x-data="{ addserie: false }">
                                     <form class="w-full inline-flex"
                                         wire:submit.prevent="saveserie({{ $item->id }})">
-                                        <x-input class="block w-full"
-                                            wire:model.defer="tvitem.{{ $item->id }}.serie" minlength="1"
-                                            maxlength="255" />
+                                        <x-input class="block w-full" minlength="1" maxlength="255"
+                                            wire:model.defer="tvitem.{{ $item->id }}.serie" />
                                         <x-button-add class="px-2" wire:loading.attr="disabled" type="submit">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                                 viewBox="0 0 24 24" fill="none" stroke="currentColor"

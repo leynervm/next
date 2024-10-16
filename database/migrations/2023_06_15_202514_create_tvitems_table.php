@@ -28,12 +28,13 @@ class CreateTvitemsTable extends Migration
             $table->decimal('increment', 5, 2)->default(0);
             $table->char('alterstock', 1)->default(0);
             $table->char('gratuito', 1)->default(0);
-            $table->char('requireserie', 1)->default(0);
+            $table->bigInteger('promocion_id')->nullable();
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('user_id')->nullable();
             $table->integer('tvitemable_id');
             $table->string('tvitemable_type', 255);
+            $table->foreign('promocion_id')->on('promocions')->references('id');
             $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->foreign('producto_id')->on('productos')->references('id');
             $table->foreign('user_id')->on('users')->references('id');

@@ -88,13 +88,13 @@
                                             <button type="button" @click="dropdownOpen = false"
                                                 wire:click="move_to_wishlist('{{ $item->rowId }}')"
                                                 wire:loading.attr="disabled"
-                                                class="w-full p-2 leading-3 hover:bg-fondohoverdropdown flex gap-1 items-center justify-between disabled:opacity-25">
+                                                class="w-full p-2.5 leading-3 hover:bg-fondohoverdropdown flex gap-1 items-center justify-between disabled:opacity-25">
                                                 Mover a mi lista de deseos
                                             </button>
                                             <button type="button" @click="dropdownOpen = false"
                                                 wire:click="deleteitem('{{ $item->rowId }}')"
                                                 wire:loading.attr="disabled"
-                                                class="w-full p-2 leading-3 hover:bg-fondohoverdropdown flex gap-1 items-center justify-between disabled:opacity-25">
+                                                class="w-full p-2.5 leading-3 hover:bg-fondohoverdropdown flex gap-1 items-center justify-between disabled:opacity-25">
                                                 Eliminar de mi carrito
                                             </button>
                                         </div>
@@ -110,6 +110,10 @@
                                         <span
                                             class="text-red-600 mr-auto inline-block ring-1 ring-red-600 text-[10px] p-0.5 px-1 rounded-lg mt-1">
                                             PROMOCIÓN AGOTADO</span>
+                                    @else
+                                        <span
+                                            class="text-green-600 inline-block ring-1 ring-green-600 text-[10px] p-0.5 px-1 rounded-lg mt-1 mr-auto">
+                                            PROMOCIÓN</span>
                                     @endif
                                 @endif
                             </div>

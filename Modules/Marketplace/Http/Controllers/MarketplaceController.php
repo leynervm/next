@@ -269,8 +269,8 @@ class MarketplaceController extends Controller
                 $query->orderBy('default', 'desc');
             },
             'promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit')->addSelect(['image' => function ($q) {
+                $query->with(['itempromos.producto' => function ($subQuery) {
+                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)

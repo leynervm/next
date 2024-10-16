@@ -5,6 +5,7 @@ namespace Modules\Marketplace\Http\Controllers;
 use App\Enums\StatusPayWebEnum;
 use App\Models\Almacen;
 use App\Models\Pricetype;
+use App\Models\Producto;
 use App\Models\Promocion;
 use App\Models\Tvitem;
 use App\Rules\Recaptcha;
@@ -188,12 +189,31 @@ class NiubizController extends Controller
                             'status' => 0,
                             'alterstock' => Almacen::NO_ALTERAR_STOCK,
                             'gratuito' => 0,
+                            'promocion_id' => $item->options->promocion_id,
                             'almacen_id' => null,
                             'producto_id' => $item->id,
                             'user_id' => auth()->user()->id
                         ]);
 
                         if (!is_null($item->options->promocion_id)) {
+
+                            $promocion = Promocion::find($item->options->promocion_id);
+                            $promocion->outs = $promocion->outs + $item->qty;
+                            $promocion->save();
+                            if ($promocion->limit == $promocion->outs) {
+                                $producto = Producto::with(['promocions' => function ($query) {
+                                    $query->with(['itempromos.producto' => function ($subQuery) {
+                                        $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                                            $q->select('url')->from('images')
+                                                ->whereColumn('images.imageable_id', 'productos.id')
+                                                ->where('images.imageable_type', Producto::class)
+                                                ->orderBy('default', 'desc')->limit(1);
+                                        }]);
+                                    }])->availables()->disponibles()->take(1);
+                                }])->find($item->id,);
+                                $producto->assignPrice($promocion);
+                            }
+
                             if (count($item->options->carshoopitems) > 0) {
                                 foreach ($item->options->carshoopitems as $carshoopitem) {
                                     $itemcombo = [
@@ -214,6 +234,7 @@ class NiubizController extends Controller
                                         'alterstock' => Almacen::DISMINUIR_STOCK,
                                         'gratuito' => Tvitem::GRATUITO,
                                         'increment' => 0,
+                                        'promocion_id' => $item->options->promocion_id,
                                         'almacen_id' => null,
                                         'producto_id' => $carshoopitem->producto_id,
                                         'user_id' => auth()->user()->id

@@ -1483,6 +1483,7 @@ class CreateVenta extends Component
                     'alterstock' => $item->alterstock,
                     'gratuito' => $item->gratuito,
                     'increment' => $percentItem,
+                    'promocion_id' => $item->promocion_id,
                     'almacen_id' => $item->almacen_id,
                     'producto_id' => $item->producto_id,
                     'user_id' => auth()->user()->id
@@ -1584,6 +1585,7 @@ class CreateVenta extends Component
                             'alterstock' => Almacen::DISMINUIR_STOCK,
                             'gratuito' => Tvitem::GRATUITO,
                             'increment' => 0,
+                            'promocion_id' => $item->promocion_id,
                             'almacen_id' => $item->almacen_id,
                             'producto_id' => $carshoopitem->producto_id,
                             'user_id' => auth()->user()->id
