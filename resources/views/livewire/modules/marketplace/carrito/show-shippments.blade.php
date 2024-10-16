@@ -380,7 +380,7 @@
                         CARGANDO VENTANA CHECKOUT DE PAGO ...</span>
                 </div> --}}
 
-                <div {{-- x-show="processpay" x-cloak style="display: none;" --}}
+                <div x-show="processpay" x-cloak style="display: none;"
                     class="w-full z-[199] h-screen fixed top-0 left-0 flex justify-center items-center bg-neutral-800 bg-opacity-85">
                     <div
                         class="w-full py-2 sm:py-5 max-w-xs flex flex-col gap-3 bg-fondominicard rounded-xl shadow shadow-shadowminicard">
@@ -398,21 +398,24 @@
 
                         <div class="skeleton-box w-ful grid grid-cols-1 gap-3 px-3 sm:px-5 py-0 sm:py-3">
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
                                 </div>
                             </div>
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
                                 </div>
                             </div>
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
@@ -422,28 +425,32 @@
 
                         <div class="skeleton-box w-ful grid grid-cols-2 gap-3 px-3 sm:px-5 py-3">
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
                                 </div>
                             </div>
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
                                 </div>
                             </div>
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
                                 </div>
                             </div>
                             <div class="w-full flex flex-col gap-2">
-                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <span
+                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                                 <div
                                     class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
                                     <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
@@ -452,24 +459,28 @@
                         </div>
 
                         <div class="skeleton-box w-full flex flex-col gap-2 px-5 pb-3">
-                            <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                            <span
+                                class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
                             <div class="w-full grid grid-cols-3 gap-3">
                                 <div class="w-full flex flex-col gap-2">
                                     <div
                                         class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                        <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                                        <span
+                                            class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col gap-2">
                                     <div
                                         class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                        <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                                        <span
+                                            class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
                                     </div>
                                 </div>
                                 <div class="w-full flex flex-col gap-2">
                                     <div
                                         class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                        <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                                        <span
+                                            class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
                                     </div>
                                 </div>
                             </div>
@@ -604,7 +615,7 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        datos : datos
+                        datos: datos
                     })
                 });
 
