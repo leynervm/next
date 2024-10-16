@@ -385,5 +385,6 @@ return [
         'datos.moneda_id'               =>  'moneda',
         'trackingstate_id'          =>  'estado tracking',
         'almacens.*.cantidad'       =>  'cantidad',
+        'searchserie'               =>  'serie',
     ],
 ];

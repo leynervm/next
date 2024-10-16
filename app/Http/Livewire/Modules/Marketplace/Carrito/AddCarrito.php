@@ -34,7 +34,7 @@ class AddCarrito extends Component
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
                     $query->with('unit');
-                }])->disponibles()->take(1);
+                }])->availables()->disponibles()->take(1);
             }
         ])->loadCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));

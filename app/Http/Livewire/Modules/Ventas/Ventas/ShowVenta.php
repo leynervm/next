@@ -81,7 +81,7 @@ class ShowVenta extends Component
 
     public function render()
     {
-        $monedas = mi_empresa()->usarDolar() ? Moneda::orderBy('id', 'asc')->get() : Moneda::default()->get();
+        $monedas = $this->venta->sucursal->empresa->usarDolar() ? Moneda::orderBy('id', 'asc')->get() : Moneda::default()->get();
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
         if ($this->monthbox && $this->openbox) {
             $diferencias = Cajamovimiento::with('moneda')->withWhereHas('sucursal', function ($query) {
@@ -102,7 +102,7 @@ class ShowVenta extends Component
         $this->cuota = $cuota;
         $this->amountpendiente = $cuota->amount - $cuota->cajamovimientos()->sum('amount');
         $this->paymentactual = (float) $this->amountpendiente;
-        $this->tipocambio = mi_empresa()->tipocambio ?? 0;
+        $this->tipocambio = $this->venta->sucursal->empresa->tipocambio ?? 0;
         $this->moneda_id = $cuota->moneda_id;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->open = true;
@@ -639,7 +639,7 @@ class ShowVenta extends Component
     {
         // $this->authorize('admin.almacen.compras.pagos');
         $this->resetValidation();
-        $this->tipocambio = mi_empresa()->tipocambio ?? 0;
+        $this->tipocambio = $this->venta->sucursal->empresa->tipocambio ?? 0;
         $this->pendiente = $this->venta->total - $this->venta->cajamovimientos()->sum('amount');
         $this->paymentactual = (float) $this->pendiente;
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;

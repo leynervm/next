@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Carshoop;
 use App\Models\Moneda;
+use App\Models\Producto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -25,11 +26,36 @@ class CarshoopController extends Controller
             }
 
             if ($carshoop->promocion) {
+                //CUANDO PROMOCION ESTA VACIA = (NO DISPONIBLE) => AHI ACTUALIZAR
+                //XQUE SINO ESTA VALIDA SEGUIR CON MISMO PRECIO TDAVIA
+                //PRIMERO VERIFICO SI PRM ESTA DISPONIBLE
+                $is_disponible_antes_update = !empty(verifyPromocion($carshoop->promocion)) ? true : false;
                 $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
                 $carshoop->promocion->save();
-                if ($carshoop->promocion->limit ==  $carshoop->cantidad + $carshoop->promocion->outs) {
-                    $carshoop->producto->assignPriceProduct();
+
+                //LUEGO DESPUES ACTUALIZAR SALIDAS VUELVO VERIFICAR
+                // SI PRM VUELVE ESTAR DISPONIBLE
+                //SOLAMNETE ACTUALIZAR CUANDO PRM ANTES NO ESTUBO DISPONIBLE Y
+                //LUEGO DE RETORNAR SALIDAS VOLVIO ACTIVARSE
+                if ($carshoop->promocion->outs < $carshoop->promocion->limit && !empty(verifyPromocion($carshoop->promocion))) {
+                    if (!$is_disponible_antes_update) {
+                        $carshoop->producto->load(['promocions' => function ($query) {
+                            $query->with(['itempromos.producto' => function ($query) {
+                                $query->with('unit')->addSelect(['image' => function ($q) {
+                                    $q->select('url')->from('images')
+                                        ->whereColumn('images.imageable_id', 'productos.id')
+                                        ->where('images.imageable_type', Producto::class)
+                                        ->orderBy('default', 'desc')->limit(1);
+                                }]);
+                            }])->availables()->disponibles()->take(1);
+                        }]);
+                        $carshoop->producto->assignPrice($carshoop->promocion);
+                    }
                 }
+
+                // if ($promocion->limit == $promocion->outs) {
+                //     $producto->assignPrice($promocion);
+                // }
             }
 
             if (count($carshoop->carshoopseries) > 0) {

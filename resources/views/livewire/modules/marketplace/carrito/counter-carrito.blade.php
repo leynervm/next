@@ -43,6 +43,18 @@
                             <div class="flex-1">
                                 <p class="leading-3 text-xs text-colorlabel">
                                     {{ $item->model->name }}</p>
+
+                                @if (count($item->options->carshoopitems) > 0)
+                                    <div class="w-full mb-2 mt-1">
+                                        @foreach ($item->options->carshoopitems as $itemcarshop)
+                                            <h1 class="text-primary text-[10px] leading-3 text-left">
+                                                <span class="w-1.5 h-1.5 bg-primary inline-block rounded-full"></span>
+                                                {{ $itemcarshop->name }}
+                                            </h1>
+                                        @endforeach
+                                    </div>
+                                @endif
+
                                 <div class="w-full flex justify-between items-end gap-2">
                                     <h1 class="text-xs text-colorsubtitleform">
                                         <small class="text-[10px]">P. UNIT : </small>

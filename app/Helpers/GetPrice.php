@@ -50,7 +50,7 @@ class GetPrice
             // if (count($producto->ofertasdisponibles)) {
             //     $descuento = $producto->ofertasdisponibles()->first()->descuento;
             // }
-            $descuentos = $producto->promocions()->descuentos()->disponibles();
+            $descuentos = $producto->promocions()->descuentos()->availables()->disponibles();
             if ($descuentos->count() > 0) {
                 $descuento = $descuentos->first()->descuento;
             }
@@ -164,7 +164,7 @@ class GetPrice
                     $amountDescuento = number_format(($producto->pricesale * $descuento) / 100, $decimal, '.', '');
                     $precioVenta = number_format($producto->pricesale, $decimal, '.', '');
                     $precioDescuento = number_format($producto->pricesale - $amountDescuento, $decimal, '.', '');
-                    
+
                     if ($tipocambio > 0) {
                         $amountDescuentoDolar = number_format((($producto->pricesale / $tipocambio) * $descuento) / 100, $decimal, '.', '');
                         $precioVentaDolar = number_format($precioVenta / $tipocambio, $decimal, '.', '');
@@ -227,7 +227,7 @@ class GetPrice
 
     public static function getPriceCombos($producto, $priceSelected = null)
     {
-        $combos = $producto->promocions()->combos()->disponibles()->get();
+        $combos = $producto->promocions()->combos()->availables()->disponibles()->get();
         return $combos;
     }
 }

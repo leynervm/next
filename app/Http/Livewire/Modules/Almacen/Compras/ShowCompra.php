@@ -420,10 +420,8 @@ class ShowCompra extends Component
                     }
                 }
 
-                $almacenDB = $this->compraitem->almacencompras()
-                    ->where('almacen_id', $almacen_id)->first();
+                $almacenDB = $this->compraitem->almacencompras()->where('almacen_id', $almacen_id)->first();
                 $cantidadSaved = $almacenDB->cantidad;
-
 
                 if ($cantidadSaved > $almacen['cantidad']) {
                     // dd($productoAlmacen->pivot->cantidad - ($cantidadSaved - $almacen['cantidad']));
@@ -505,7 +503,17 @@ class ShowCompra extends Component
             }
 
             $this->compraitem->producto->save();
-            $this->compraitem->producto->assignPriceProduct();
+            $this->compraitem->producto->load(['promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($subQuery) {
+                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->availables()->disponibles()->take(1);
+            }]);
+            $this->compraitem->producto->assignPrice();
             $this->setTotal();
             DB::commit();
             $this->compraitem->refresh();
@@ -677,7 +685,7 @@ class ShowCompra extends Component
             $compraitem->producto->pricebuy = $compraitem->oldprice;
             $compraitem->producto->pricesale = $compraitem->oldpricesale;
             $compraitem->producto->save();
-            $compraitem->producto->assignPriceProduct();
+            $compraitem->producto->assignPrice();
             $compraitem->forceDelete();
             $this->setTotal();
             DB::commit();
@@ -872,7 +880,7 @@ class ShowCompra extends Component
             }
 
             $producto->save();
-            $producto->assignPriceProduct();
+            $producto->assignPrice();
             DB::commit();
             $this->compra->refresh();
             $this->setTotal(false);

@@ -162,7 +162,17 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
                     }
                 }
 
-                $producto->assignPriceProduct();
+                $producto->load(['promocions' => function ($query) {
+                    $query->with(['itempromos.producto' => function ($subQuery) {
+                        $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                            $q->select('url')->from('images')
+                                ->whereColumn('images.imageable_id', 'productos.id')
+                                ->where('images.imageable_type', Producto::class)
+                                ->orderBy('default', 'desc')->limit(1);
+                        }]);
+                    }])->availables()->disponibles()->take(1);
+                }]);
+                $producto->assignPrice();
                 $almacensDB = Almacen::get()->pluck('id')->toArray();
                 $newalmacens = array_fill_keys($almacensDB, ['cantidad' => 0]);
 

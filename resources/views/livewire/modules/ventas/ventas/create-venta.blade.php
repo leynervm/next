@@ -1,9 +1,11 @@
 <div class="w-full flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh_-_4rem)]" x-data="loader">
-    <div wire:loading.flex
+    {{-- <div wire:loading.flex
         wire:target="page,typepayment_id,pricetype_id,almacen_id,save,addtocar,disponibles,gratuito,searchcategory,searchsubcategory,searchmarca,setTotal"
         class="fixed loading-overlay hidden">
         <x-loading-next />
-    </div>
+    </div> --}}
+
+    <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
 
     <div class="w-full flex flex-col gap-5 lg:flex-shrink-0 lg:w-80 lg:overflow-y-auto soft-scrollbar h-full">
         <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
@@ -173,6 +175,12 @@
                             <x-simple-card
                                 class="w-full flex flex-col border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
 
+                                @if ($item->promocion)
+                                    <span
+                                        class="bg-red-600 mr-auto inline-block rounded-md text-white text-[9px] font-medium p-1 leading-3">
+                                        PROMOCIÓN</span>
+                                @endif
+
                                 <h1 class="text-colorlabel w-full text-[10px] leading-3 text-left z-[1]">
                                     <span class="font-semibold text-sm">
                                         {{ formatDecimalOrInteger($item->cantidad) }}
@@ -183,13 +191,6 @@
                                         - SN: {{ $item->carshoopseries()->first()->serie->serie }}
                                     @endif
                                 </h1>
-
-                                @if ($item->promocion)
-                                    <div class="w-auto h-auto bg-red-600 absolute left-1 top-1  rounded-sm">
-                                        <p class=" text-white text-[9px] inline-block font-medium p-1 leading-3">
-                                            PROMOCIÓN</p>
-                                    </div>
-                                @endif
 
                                 @if (count($item->carshoopitems) > 0)
                                     @if (count($item->carshoopitems) > 0)
@@ -259,16 +260,19 @@
                                 @endif
 
 
-                                <div class="w-full flex items-end gap-2 justify-between mt-2">
-                                    @can('admin.ventas.create.gratuito')
-                                        <div>
-                                            <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
-                                                <x-input wire:change="updategratis({{ $item->id }})" value="1"
-                                                    type="checkbox" id="gratuito_{{ $item->id }}"
-                                                    :checked="$item->isGratuito()" />
-                                                GRATUITO</x-label-check>
-                                        </div>
-                                    @endcan
+                                <div
+                                    class="w-full flex items-end gap-2 {{ is_null($item->promocion_id) ? 'justify-between' : 'justify-end' }} mt-2">
+                                    @if (is_null($item->promocion_id))
+                                        @can('admin.ventas.create.gratuito')
+                                            <div>
+                                                <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
+                                                    <x-input wire:change="updategratis({{ $item->id }})"
+                                                        value="1" type="checkbox" id="gratuito_{{ $item->id }}"
+                                                        :checked="$item->isGratuito()" />
+                                                    GRATUITO</x-label-check>
+                                            </div>
+                                        @endcan
+                                    @endif
                                     <x-button-delete wire:loading.attr="disabled"
                                         @click="confirmDeleteCarshoop('{{ $item->id }}')" />
                                 </div>
@@ -292,7 +296,7 @@
 
                 @if (count($productos) > 0)
                     @if ($productos->hasPages())
-                        <div class="w-full py-2">
+                        <div class="w-full flex justify-end py-2">
                             {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
                         </div>
                     @endif
@@ -575,9 +579,20 @@
                         })
 
                         if (response.status === 200) {
-                            this.$wire.call('setTotal').then(() => {
-                                console.log('setTotal ejecutado correctamente');
-                            });
+                            if (response.data.success) {
+                                this.$wire.call('setTotal').then(() => {
+                                    console.log('setTotal ejecutado correctamente');
+                                });
+                            } else {
+                                console.log('Error al eliminar item del carrito de ventas.');
+                                // window.dispatchEvent(new CustomEvent('validation', {
+                                //     detail: {
+                                //         title: response.data.mensaje,
+                                //         text: 
+
+                                //     }
+                                // }));
+                            }
                         } else {
                             throw new Error('Error al vaciar el carrito');
                         }

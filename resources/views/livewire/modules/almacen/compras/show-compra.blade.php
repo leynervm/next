@@ -199,13 +199,16 @@
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                     @foreach ($compra->compraitems as $item)
                         @php
-                            $image = $item->producto->getImageURL();
-                            $promocion = $item->producto->getPromocionDisponible();
-                            $descuento = $item->producto->getPorcentajeDescuento($promocion);
+                            $image = !empty($item->producto->image)
+                                ? pathURLProductImage($item->producto->image)
+                                : null;
+                            $promocion = verifyPromocion($item->producto->promocions->first());
+                            $descuento = getDscto($promocion);
+                            $combo = $item->producto->getAmountCombo($promocion, $pricetype);
                             $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
                         @endphp
 
-                        <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" x-data="{ showForm: false }">
+                        <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" class="overflow-hidden" x-data="{ showForm: false }">
                             <div
                                 class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
                                 @foreach ($item->almacencompras as $almac)

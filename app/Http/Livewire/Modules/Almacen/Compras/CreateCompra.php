@@ -172,17 +172,22 @@ class CreateCompra extends Component
                     ]);
                 }
 
-                $producto->pricebuy =  $this->moneda->isDolar() ?
-                    number_format(($item['pricebuy']) * $this->tipocambio, 2, '.', '') :
-                    number_format($item['pricebuy'], 2, '.', '');
                 if (!mi_empresa()->usarLista()) {
                     $producto->pricesale = $item['priceventa'];
                 }
-
+                $producto->pricebuy =  $this->moneda->isDolar() ?
+                    number_format(($item['pricebuy']) * $this->tipocambio, 2, '.', '') :
+                    number_format($item['pricebuy'], 2, '.', '');
                 $producto->save();
-                $producto->assignPriceProduct();
+                $producto->load([
+                    'promocions' => function ($query) {
+                        $query->with(['itempromos.producto' => function ($query) {
+                            $query->with('unit');
+                        }])->availables()->disponibles()->take(1);
+                    }
+                ]);
+                $producto->assignPrice();
             }
-
             DB::commit();
             $this->dispatchBrowserEvent('created');
             $this->resetValidation();

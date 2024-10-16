@@ -25,6 +25,11 @@ class Promocion extends Model
     const DESACTIVADO = '1';
     const FINALIZADO = '2';
 
+    protected $casts = [
+        'outs' => 'decimal:2',
+        'limit' => 'decimal:2',
+    ];
+
     protected $fillable = ['pricebuy', 'status', 'type', 'descuento', 'limit', 'outs', 'startdate', 'expiredate', 'producto_id'];
 
     public function producto(): BelongsTo
@@ -57,19 +62,17 @@ class Promocion extends Model
         return $query->where('type', self::REMATE);
     }
 
-    // public function scopeActivos($query)
-    // {
-    //     return $query->where('status', self::ACTIVO)
-    //         ->orWhere('expiredate', '>=', Carbon::now('America/Lima')->format('Y-m-d'));
-    // }
+    public function scopeAvailables($query)
+    {
+        return $query->where('status', self::ACTIVO)->whereColumn('limit', '>', 'outs');
+    }
 
     public function scopeDisponibles($query)
     {
-        return
-            $query->where('status', self::ACTIVO)->whereNull('startdate')->whereNull('expiredate')
-            ->orWhere('status', self::ACTIVO)->whereNull('startdate')->whereDate('expiredate', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
-            ->orWhere('status', self::ACTIVO)->whereDate('startdate', '<=', Carbon::now('America/Lima')->format('Y-m-d'))->whereNull('expiredate')
-            ->orWhere('status', self::ACTIVO)->whereDate('startdate', '<=', Carbon::now('America/Lima')->format('Y-m-d'))->whereDate('expiredate', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
+        return $query->whereNull('startdate')->whereNull('expiredate')
+            ->orWhereNull('startdate')->whereDate('expiredate', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
+            ->orWhereDate('startdate', '<=', Carbon::now('America/Lima')->format('Y-m-d'))->whereNull('expiredate')
+            ->orWhereDate('startdate', '<=', Carbon::now('America/Lima')->format('Y-m-d'))->whereDate('expiredate', '>=', Carbon::now('America/Lima')->format('Y-m-d'))
             ->orderBy('startdate', 'desc');
     }
 
@@ -84,7 +87,7 @@ class Promocion extends Model
 
     public function isAvailable()
     {
-        return $this->limit == null || $this->limit > 0 && $this->outs < $this->limit;
+        return $this->limit > 0 && $this->limit > $this->outs;
     }
 
     public function isAgotado()

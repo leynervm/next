@@ -139,7 +139,7 @@ class ShowProducto extends Component
         $this->producto->save();
 
         if ($this->producto->isDirty('pricebuy')) {
-            $this->producto->assignPriceProduct();
+            $this->producto->assignPrice();
         }
         $this->dispatchBrowserEvent('updated');
         return redirect()->route('admin.almacen.productos.edit', $this->producto);
@@ -256,7 +256,7 @@ class ShowProducto extends Component
     public function delete()
     {
         $this->authorize('admin.almacen.productos.delete');
-        // $ofertasdisponibles = $this->producto->promocions()->disponibles()->count();
+        // $ofertasdisponibles = $this->producto->promocions()->availables()->disponibles()->count();
         $tvitems = $this->producto->tvitems()->count();
         $compraitems = $this->producto->compraitems()->count();
         $cadena = extraerMensaje([

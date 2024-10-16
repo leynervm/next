@@ -32,7 +32,7 @@
     <!-- Scripts -->
 </head>
 
-<body class="{{ config('app.theme') }} animate__animated animate__fadeIn animate__faster">
+<body class="{{ config('app.theme') }}">
     <div class="relative flex h-screen min-h-screen overflow-hidden">
         @auth
             @if ($empresa)
@@ -232,9 +232,8 @@
             </div>
         @endauth
     </div>
-    
-    @stack('modals')
 
+    @stack('modals')
     @livewireScripts
 
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
@@ -251,8 +250,6 @@
 
 </body>
 <script>
-    // document.addEventListener('Livewire:load', function() {
-   
 
     var toastMixin = Swal.mixin({
         toast: true,
@@ -294,16 +291,6 @@
             title: 'ELIMINADO CORRECTAMENTE'
         });
     })
-
-    // window.addEventListener('birthday', data => {
-    //     console.log(data);
-    //     swal.fire({
-    //         title: 'FELÍZ CUMPLEAÑOS, ' + data.detail,
-    //         icon: 'success',
-    //         confirmButtonColor: '#0FB9B9',
-    //         confirmButtonText: 'Gracias',
-    //     })
-    // });
 
     window.addEventListener('validation', data => {
         // console.log(data.detail);

@@ -2,6 +2,7 @@
 
 namespace Modules\Almacen\Http\Controllers;
 
+use App\Models\Producto;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Modules\Almacen\Entities\Compra;
@@ -32,7 +33,27 @@ class CompraController extends Controller
 
     public function show(Compra $compra)
     {
+
         $this->authorize('sucursal', $compra);
+        $compra->load(['compraitems' => function ($query) {
+            $query->with(['producto' => function ($subQuery) {
+                $subQuery->with(['unit', 'promocions' => function ($queryPrm) {
+                    $queryPrm->with(['itempromos.producto' => function ($queryItemprm) {
+                        $queryItemprm->with('unit')->addSelect(['image' => function ($q) {
+                            $q->select('url')->from('images')
+                                ->whereColumn('images.imageable_id', 'productos.id')
+                                ->where('images.imageable_type', Producto::class)
+                                ->orderBy('default', 'desc')->limit(1);
+                        }]);
+                    }])->availables()->disponibles()->take(1);
+                }])->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }]);
+            }]);
+        }]);
         return view('almacen::compras.show', compact('compra'));
     }
 

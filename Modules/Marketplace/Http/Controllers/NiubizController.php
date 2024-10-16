@@ -5,6 +5,8 @@ namespace Modules\Marketplace\Http\Controllers;
 use App\Enums\StatusPayWebEnum;
 use App\Models\Almacen;
 use App\Models\Pricetype;
+use App\Models\Promocion;
+use App\Models\Tvitem;
 use App\Rules\Recaptcha;
 use Illuminate\Support\Str;
 use Gloudemans\Shoppingcart\Facades\Cart;
@@ -25,6 +27,34 @@ class NiubizController extends Controller
 {
     public function checkout(Request $request)
     {
+
+        $isPrmdisponible = true;
+        $msjPrm = '';
+        foreach (Cart::instance('shopping')->content() as $item) {
+            // dd(is_null($item->options->promocion_id));
+            if (!is_null($item->options->promocion_id)) {
+                $promocion = Promocion::find($item->options->promocion_id);
+                $isPrmdisponible = !empty(verifyPromocion($promocion)) ? true : false;
+
+                if ($isPrmdisponible) {
+                    if ($promocion->limit > 0 && (($promocion->outs + $item->qty) > $promocion->limit)) {
+                        $isPrmdisponible = false;
+                        $msjPrm = 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN';
+                    }
+                }
+            }
+        }
+
+        if (!$isPrmdisponible) {
+            $mensaje = [
+                'title' => !empty($msjPrm) ? $msjPrm : 'STOCK DE PRODUCTOS AGREGADOS EN PROMOCIÓN AGOTADOS, LOS PRECIOS SE HAN ACTUALIZADO.',
+                'text' => null,
+                'type' => 'error',
+            ];
+            Log::info('Productos en promocion no disponible: ', $mensaje);
+            return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+        }
+
 
         $auth = base64_encode(config('services.niubiz.user') . ':' . config('services.niubiz.password'));
         $accessToken = Http::withHeaders([
@@ -50,7 +80,6 @@ class NiubizController extends Controller
                 'otp' => '557454'
             ]
         ])->json();
-
 
         if (isset($response)) {
             if (isset($response['dataMap']) && $response['dataMap']['ACTION_CODE'] == '000') {
@@ -163,8 +192,37 @@ class NiubizController extends Controller
                             'producto_id' => $item->id,
                             'user_id' => auth()->user()->id
                         ]);
-                    }
 
+                        if (!is_null($item->options->promocion_id)) {
+                            if (count($item->options->carshoopitems) > 0) {
+                                foreach ($item->options->carshoopitems as $carshoopitem) {
+                                    $itemcombo = [
+                                        'date' => now('America/Lima'),
+                                        'cantidad' => $item->qty,
+                                        'pricebuy' => $carshoopitem->pricebuy,
+                                        // 'price' => number_format($carshoopitem->price, 3, '.', ''),
+                                        // 'igv' => number_format($carshoopitem->igv, 3, '.', ''),
+                                        // 'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
+                                        // 'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
+                                        // 'total' => number_format($totalItemCombo, 3, '.', ''),
+                                        'price' => 0,
+                                        'igv' => 0,
+                                        'subtotaligv' => 0,
+                                        'subtotal' => 0,
+                                        'total' => 0,
+                                        'status' => 0,
+                                        'alterstock' => Almacen::DISMINUIR_STOCK,
+                                        'gratuito' => Tvitem::GRATUITO,
+                                        'increment' => 0,
+                                        'almacen_id' => null,
+                                        'producto_id' => $carshoopitem->producto_id,
+                                        'user_id' => auth()->user()->id
+                                    ];
+                                    $order->tvitems()->create($itemcombo);
+                                }
+                            }
+                        }
+                    }
                     DB::commit();
                     Cart::instance('shopping')->destroy();
                     $mensaje = [

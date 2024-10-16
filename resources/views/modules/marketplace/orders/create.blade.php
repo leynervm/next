@@ -64,7 +64,39 @@
                                             </div>
                                             <div
                                                 class="w-full flex-1 sm:flex justify-between gap-3 items-center text-colorsubtitleform">
-                                                <p class="w-full text-xs sm:flex-1">{{ $item->model->name }}</p>
+                                                <div class="w-full text-xs sm:flex-1">
+                                                    <p class="w-full">
+                                                        {{ $item->model->name }}</p>
+
+                                                    @if (count($item->options->carshoopitems) > 0)
+                                                        <div class="w-full mb-2 mt-1">
+                                                            @foreach ($item->options->carshoopitems as $itemcarshop)
+                                                                <h1
+                                                                    class="text-primary text-[10px] leading-3 text-left">
+                                                                    <span
+                                                                        class="w-1.5 h-1.5 bg-primary inline-block rounded-full"></span>
+                                                                    {{ $itemcarshop->name }}
+                                                                </h1>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+
+
+                                                    @if (!is_null($item->options->promocion_id))
+                                                        @php
+                                                            $prm = \App\Models\Promocion::find(
+                                                                $item->options->promocion_id,
+                                                            );
+                                                            $prm = verifyPromocion($prm);
+                                                        @endphp
+                                                        @if (is_null($prm))
+                                                            <span
+                                                                class="text-red-600 inline-block ring-1 ring-red-600 text-[10px] p-0.5 px-1 rounded-lg mt-1">
+                                                                PROMOCIÓN AGOTADO</span>
+                                                        @endif
+                                                    @endif
+                                                </div>
+
 
                                                 <div class="flex items-end sm:items-center sm:w-60 sm:flex-shrink-0 ">
                                                     <span
@@ -75,7 +107,7 @@
                                                     <span
                                                         class="p-2 font-semibold text-lg flex-1 text-end text-colorlabel whitespace-nowrap">
                                                         {{ $item->options->simbolo }}
-                                                        {{ number_format($item->price * $item->qty, 2, '.', ',') }}
+                                                        {{ number_format($item->price * $item->qty, 2, '.', ', ') }}
                                                     </span>
                                                 </div>
                                             </div>

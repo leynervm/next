@@ -28,11 +28,15 @@ class AddWishlist extends Component
 
     public function add_to_wishlist($cantidad = 1)
     {
+        if (!auth()->user()) {
+            return redirect()->route('login')->with('activeForm', 'login');
+        }
+
         $this->producto->load([
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
                     $query->with('unit');
-                }])->disponibles()->take(1);
+                }])->availables()->disponibles()->take(1);
             }
         ]);
 

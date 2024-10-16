@@ -47,26 +47,21 @@
     </div>
 
     @if (count($promociones) > 0)
-        <div class="w-full flex flex-wrap gap-3 relative">
+        <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1 self-start relative">
             @foreach ($promociones as $item)
                 @php
-                    $image = $item->producto->getImageURL();
+                    $image = !empty($item->producto->image) ? pathURLProductImage($item->producto->image) : null;
                     $empresa = mi_empresa();
                     $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
                     $descuento = $item->descuento;
-                    $combo = $item->producto->getAmountCombo($item, $pricetype ?? null);
-                    if ($item->isDisponible() && $item->isAvailable()) {
-                        $pricesale = $item->producto->obtenerPrecioVenta($pricetype ?? null);
-                    } else {
-                        $pricesale = $item->producto->obtenerPrecioByPricebuy(
-                            $item->pricebuy,
-                            $item,
-                            $pricetype ?? null,
-                        );
-                    }
+                    $combo = $item->producto->getAmountCombo($item, $pricetype);
+                    // $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
+                    $pricesale = $item->producto->obtenerPrecioByPricebuy($item->pricebuy, $item, $pricetype, false);
+                    $pricesale = !empty($combo) ? $pricesale + $combo->total : $pricesale;
                 @endphp
+                
                 <x-simple-card
-                    class="w-72 relative flex flex-col gap-2 justify-between overflow-hidden {{ $item->isFinalizado() ? 'saturate-0' : '' }}">
+                    class="w-full relative flex flex-col gap-2 justify-between overflow-hidden {{ $item->isFinalizado() ? 'saturate-0' : '' }}">
                     <div class="w-full">
                         <div class="block rounded overflow-hidden w-full h-48 relative cursor-pointer">
                             @if ($image)
@@ -77,12 +72,12 @@
                         </div>
 
                         <div class="p-1 pt-3">
-                            <h1 class="text-colorlabel font-semibold text-xs text-center leading-3 mb-2">
+                            <h1 class="text-colorlabel font-medium text-xs text-center leading-3 mb-2">
                                 {{ $item->producto->name }}</h1>
 
-                            <x-label-price>
+                            {{-- <x-label-price>
                                 S/.
-                                @if ($combo)
+                                @if (count($item->itempromos) > 0)
                                     @if ($item->isDisponible() && $item->isAvailable())
                                         {{ formatDecimalOrInteger($pricesale - $combo->total, $pricetype->decimals ?? 2, ', ') }}
                                     @else
@@ -91,8 +86,7 @@
                                 @else
                                     {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                 @endif
-                                <small>SOLES</small>
-                            </x-label-price>
+                            </x-label-price> --}}
 
                             <div class="w-full">
                                 <x-span-text :text="formatDecimalOrInteger($item->outs) . ' SALIDAS'" class="leading-3 !tracking-normal" />
@@ -114,53 +108,56 @@
                             </div>
                         </div>
 
+
                         {{-- ITEMS SECUNDARIOS --}}
-                        @if ($combo)
-                            @if (count($combo->products) > 0)
-                                <div class="w-full my-2 p-1">
-                                    @foreach ($combo->products as $itemcombo)
-                                        <div class="w-full flex gap-2 bg-body rounded relative">
-                                            <div
-                                                class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 shadow relative hover:shadow-lg cursor-pointer">
-                                                @if ($itemcombo->image)
-                                                    <img src="{{ $itemcombo->image }}" alt=""
-                                                        class="w-full h-full object-scale-down">
-                                                @else
-                                                    <x-icon-image-unknown class="w-full h-full text-neutral-500" />
-                                                @endif
-                                            </div>
-                                            <div class="p-1 w-full flex-1">
-                                                <h1 class="text-[10px] leading-3 text-left">
-                                                    {{ $itemcombo->name }}</h1>
-                                                <h1 class="text-xs font-semibold text-next-500 mt-1 leading-3">
-                                                    S/.
-                                                    {{ formatDecimalOrInteger($itemcombo->price, $pricetype->decimals ?? 2, ', ') }}
-                                                    <small>SOLES</small>
-                                                </h1>
-                                                @if ($itemcombo->type)
-                                                    <x-span-text :text="$itemcombo->type" type="green" class="leading-3" />
-                                                @endif
-                                            </div>
+                        @if (count($item->itempromos) > 0)
+                            <div class="w-full my-2 p-1">
+                                @foreach ($combo->products as $itemcombo)
+                                    <div class="w-full flex gap-2 bg-body rounded relative">
+                                        <div
+                                            class="block rounded overflow-hidden flex-shrink-0 w-16 h-16 relative hover:shadow-lg cursor-pointer">
+                                            @if ($itemcombo->image)
+                                                <img src="{{ $itemcombo->image }}" alt=""
+                                                    class="w-full h-full object-scale-down">
+                                            @else
+                                                <x-icon-image-unknown class="!w-full !h-full text-colorsubtitleform" />
+                                            @endif
                                         </div>
-                                    @endforeach
-                                </div>
-                            @endif
+                                        <div class="p-1 w-full flex-1">
+                                            <h1 class="text-[10px] leading-3 text-left">
+                                                {{ $itemcombo->name }}</h1>
+                                            <h1 class="text-xs font-semibold text-next-500 mt-1 leading-3">
+                                                S/.
+                                                {{ formatDecimalOrInteger($itemcombo->price, $pricetype->decimals ?? 2, ', ') }}
+                                            </h1>
+                                            @if ($itemcombo->type)
+                                                <x-span-text :text="$itemcombo->type" type="green" class="leading-3" />
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         @endif
 
                         @if ($pricesale > 0)
-                            <h1 class="text-neutral-700 font-semibold text-2xl text-center">
+                            <h1 class="text-colorsubtitleform font-semibold text-2xl text-center">
                                 <small class="text-[10px]">S/. </small>
                                 @if ($item->isDisponible() && $item->isAvailable())
                                     {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                 @else
-                                    {{ formatDecimalOrInteger($combo ? $combo->total + $pricesale : $pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                    {{ formatDecimalOrInteger(count($item->itempromos) > 0 ? $combo->total : $pricesale, $pricetype->decimals ?? 2, ', ') }}
                                 @endif
-                                <small class="text-[10px]">SOLES</small>
                             </h1>
                             @if ($descuento > 0)
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">
                                     S/.
                                     {{ getPriceAntes($pricesale, $descuento, $pricetype ?? null, ', ') }}
+                                </small>
+                            @endif
+                            @if ($item->isRemate())
+                                <small class="block text-[1rem] w-full line-through text-red-600 text-center">
+                                    S/.
+                                    {{ formatDecimalOrInteger($item->pricebuy, 2, ', ') }}
                                 </small>
                             @endif
                         @endif
@@ -214,7 +211,8 @@
                         <p class="text-white text-[8px] block w-full leading-3 font-semibold p-1  px-10">
                             LIQUIDACIÓN</p>
                     </div> --}}
-                    <div class="w-auto h-auto bg-red-600 absolute -left-8 top-3 -rotate-[35deg] leading-3">
+                    <div
+                        class="w-auto h-auto {{ !empty(verifyPromocion($item)) ? 'bg-red-600' : 'bg-neutral-500' }}  absolute -left-8 top-3 -rotate-[35deg] leading-3">
                         <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
                             @if ($item->isDescuento())
                                 - {{ formatDecimalOrInteger($item->descuento) }}% DSCT

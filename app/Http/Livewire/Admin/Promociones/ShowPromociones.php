@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Admin\Promociones;
 
 use App\Models\Pricetype;
+use App\Models\Producto;
 use App\Models\Promocion;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -39,7 +40,27 @@ class ShowPromociones extends Component
     public function render()
     {
         $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
-        $promociones = Promocion::with(['producto.images', 'itempromos']);
+        $promociones = Promocion::query()->with([
+            'producto' => function ($query) {
+                $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'unit_id')
+                    ->with(['unit'])->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+            },
+            'itempromos' => function ($query) {
+                $query->with(['producto' => function ($subQuery) {
+                    $subQuery->with(['unit'])->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }]);
+            }
+        ]);
         if (trim($this->estado) != '') {
             $promociones->where('status', $this->estado);
         }
@@ -73,7 +94,7 @@ class ShowPromociones extends Component
         $this->authorize('admin.promociones.edit');
         $promocion->status = Promocion::FINALIZADO;
         $promocion->save();
-        $promocion->producto->assignPriceProduct($promocion);
+        $promocion->producto->assignPrice($promocion);
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción finalizado correctamente'));
     }
 
@@ -119,7 +140,7 @@ class ShowPromociones extends Component
             }
         }
         $promocion->save();
-        $promocion->producto->assignPriceProduct($promocion);
+        $promocion->producto->assignPrice($promocion);
         $this->dispatchBrowserEvent('updated');
     }
 

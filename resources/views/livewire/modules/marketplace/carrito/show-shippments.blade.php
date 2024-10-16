@@ -1,8 +1,8 @@
 <div x-data="shipment">
 
-    <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
+    {{-- <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" /> --}}
 
-    <form @submit.prevent="save" class="w-full " id="register_order">
+    <form @submit.prevent="save" class="w-full " id="register_order" autocomplete="off">
         <div class="w-full grid grid-cols-2 gap-3 items-end border-b border-borderminicard mb-5">
             <p class="text-sm font-medium text-colorsubtitleform">TOTAL</p>
             <p class="text-3xl text-right font-semibold text-colorlabel">
@@ -305,8 +305,8 @@
                     <div class="w-full mt-2">
                         <x-jet-label for="terms">
                             <div class="flex justify-start items-center">
-                                <x-input x-model="terms" type="checkbox" name="terms" id="terms"
-                                    class="!rounded-none" wire:model.defer="terms" />
+                                <x-input x-model="terms" x-init="$el.checked = terms" type="checkbox" name="terms"
+                                    id="terms" class="!rounded-none" wire:model.defer="terms" />
 
                                 <div class="flex-1 w-full ml-2 text-colorsubtitleform leading-3">
                                     {!! __('I agree to the :terms_of_service and :privacy_policy', [
@@ -356,7 +356,7 @@
 
                 {{-- <template x-if="processpay == false"> --}}
                 <div x-show="processpay == false" wire:key="form_buttons"
-                    class="my-2 w-full grid grid-cols-2 lg:grid-cols-1 gap-2">
+                    class="my-2 w-full grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-1 gap-2">
                     @if (count($order) > 0)
                         <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
                             x-bind:disabled="!terms" wire:loading.attr="disabled"
@@ -374,10 +374,113 @@
                 </div>
                 {{-- </template> --}}
 
-                <div class="p-5 opacity-80 w-full flex justify-center items-center" x-show="processpay" x-cloak
+                {{-- <div class="p-5 opacity-80 w-full flex justify-center items-center" x-show="processpay" x-cloak
                     style="display: none;">
                     <span class="text-[10px] font-medium tracking-widest text-colorsubtitleform">
                         CARGANDO VENTANA CHECKOUT DE PAGO ...</span>
+                </div> --}}
+
+                <div {{-- x-show="processpay" x-cloak style="display: none;" --}}
+                    class="w-full z-[199] h-screen fixed top-0 left-0 flex justify-center items-center bg-neutral-800 bg-opacity-85">
+                    <div
+                        class="w-full py-2 sm:py-5 max-w-xs flex flex-col gap-3 bg-fondominicard rounded-xl shadow shadow-shadowminicard">
+
+                        <div class="skeleton-box w-full px-3 sm:px-5 pb-3">
+                            <div
+                                class="w-full flex flex-col gap-1 justify-center items-center bg-fondospancardproduct bg-opacity-80 h-12 sm:h-16 p-2 sm:p-4 rounded-lg border border-borderminicard">
+                                <span class="bg-neutral-300 block h-1.5 w-full max-w-[30%] rounded-lg"></span>
+                                <span
+                                    class="bg-neutral-400 block h-1 w-full max-w-[35%] bg-opacity-70 rounded-lg"></span>
+                                <span
+                                    class="bg-neutral-400 block h-1 w-full max-w-[40%] bg-opacity-70 rounded-lg"></span>
+                            </div>
+                        </div>
+
+                        <div class="skeleton-box w-ful grid grid-cols-1 gap-3 px-3 sm:px-5 py-0 sm:py-3">
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="skeleton-box w-ful grid grid-cols-2 gap-3 px-3 sm:px-5 py-3">
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                            <div class="w-full flex flex-col gap-2">
+                                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                                <div
+                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="skeleton-box w-full flex flex-col gap-2 px-5 pb-3">
+                            <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                            <div class="w-full grid grid-cols-3 gap-3">
+                                <div class="w-full flex flex-col gap-2">
+                                    <div
+                                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                        <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                                    </div>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <div
+                                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                        <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                                    </div>
+                                </div>
+                                <div class="w-full flex flex-col gap-2">
+                                    <div
+                                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                                        <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="skeleton-box w-full px-3 sm:px-5 pt-3 sm:pt-5">
+                            <div class="w-full bg-next-900 rounded-lg py-5">
+                                <div class="w-full mx-auto max-w-[30%] bg-white h-1 sm:h-1.5 rounded-lg"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         @endif
@@ -432,6 +535,14 @@
                         this.daterecojo = null;
                         // }
                     });
+
+                    console.log(this.terms);
+                    // window.addEventListener('popstate', () => {
+                    //     isChecked = false;
+                    // })
+                    this.$watch('terms', (value) => {
+                        console.log(value);
+                    })
                 },
                 save() {
                     this.loading = true;
@@ -443,11 +554,10 @@
                             const config = {
                                 ...await getConfigCheckout(result),
                                 complete: function(params) {
-                                    console.log(params.status);
+                                    console.log(params);
                                     alert(JSON.stringify(params));
                                 }
                             }
-                            // console.log(config);
                             VisanetCheckout.configure(config);
                             VisanetCheckout.open();
                             this.processpay = false;
@@ -472,7 +582,7 @@
                 grecaptcha.ready(async () => {
                     try {
                         const token = await grecaptcha.execute(
-                            '{{ config('services.recaptcha_v3.key_web') }}', {
+                            `{{ config('services.recaptcha_v3.key_web') }}`, {
                                 action: 'submit'
                             }
                         );
@@ -485,7 +595,6 @@
         }
 
         async function getConfigCheckout(datos) {
-            // console.log(datos);
             try {
                 const response = await fetch(`{{ route('orders.niubiz.config') }}`, {
                     method: 'POST',
@@ -495,12 +604,11 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
                     body: JSON.stringify({
-                        datos: datos
+                        datos : datos
                     })
                 });
 
                 const data = await response.json();
-
                 if (data.errors) {
                     Object.values(data.errors).forEach(error => {
                         swal.fire({

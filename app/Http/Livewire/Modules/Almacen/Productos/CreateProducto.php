@@ -212,7 +212,7 @@ class CreateProducto extends Component
             }
 
             if (mi_empresa()->usarlista()) {
-                $producto->assignPriceProduct();
+                $producto->assignPrice();
             }
             // dd('FIN DEL PROCESO');
             DB::commit();

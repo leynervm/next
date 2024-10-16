@@ -222,14 +222,14 @@ class ShowProductos extends Component
         }
 
         $productos->with(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($query) {
-                $query->with('unit')->addSelect(['image' => function ($q) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with('unit')->addSelect(['image' => function ($q) {
                     $q->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
                         ->orderBy('default', 'desc')->limit(1);
                 }]);
-            }])->disponibles()->take(1);
+            }])->availables()->disponibles();
         }]);
 
         if (trim($this->search) !== '') {
@@ -257,8 +257,7 @@ class ShowProductos extends Component
         $order = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['order'] : 'asc';
 
         $productos =  $this->readyToLoad ?
-            $productos->visibles()->publicados()
-            ->orderBy($column, $order)
+            $productos->visibles()->publicados()->orderBy($column, $order)
             ->paginate(30)->through(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
                 return $producto;
@@ -383,7 +382,7 @@ class ShowProductos extends Component
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
                     $query->with('unit');
-                }])->disponibles()->take(1);
+                }])->availables()->disponibles()->take(1);
             },
         ])->loadCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
@@ -459,7 +458,7 @@ class ShowProductos extends Component
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
                     $query->with('unit');
-                }])->disponibles()->take(1);
+                }])->availables()->disponibles()->take(1);
             }
         ]);
 

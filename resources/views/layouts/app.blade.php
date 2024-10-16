@@ -106,12 +106,13 @@
 
     <x-cookies class="" />
 
-    @stack('modals') @livewireScripts
+    @stack('modals')
+    @livewireScripts
+
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
     <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
-
 
     <div x-cloak x-show="backdrop"
         @click="openSidebar= false;subMenu=false;backdrop=false; if (!isXL) {sidebar=false}; document.body.style.overflow = 'auto';"
@@ -128,11 +129,6 @@
 
 <script>
     // document.body.style.overflow = 'hidden';
-
-    // else {
-    //     console.log('Am not');
-    // }
-
     document.addEventListener("DOMContentLoaded", () => {
         document.body.style.overflow = 'auto';
         $('#loading-next').fadeOut();
@@ -222,8 +218,6 @@
             counter.innerHTML = data.detail;
         }
     })
-
-
 
     // SI FUNCIONA PROVADO EN ONKEYPRERSS DEL INPUT
     //onkeypress="return validarNumeroDecimal(event)"

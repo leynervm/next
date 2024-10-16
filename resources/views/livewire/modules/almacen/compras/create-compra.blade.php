@@ -138,7 +138,8 @@
                 <div
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-4">
                     @foreach ($itemcompras as $key => $item)
-                        <x-card-producto :image="$item['image'] ?? null" :name="$item['name']" x-data="{ showForm: false }">
+                        <x-card-producto :image="$item['image'] ?? null" :name="$item['name']" id="cardprodbuy_{{ $key }}"
+                            x-data="{ showForm: false }">
                             <div
                                 class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
                                 @foreach ($item['almacens'] as $key => $value)
@@ -308,7 +309,8 @@
                     </tr>
                     <tr>
                         <td colspan="2" class="text-sm text-colorlabel lg:text-3xl font-semibold text-end w-24">
-                            <span x-text="simbolo + ' '+ (total).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                            <span
+                                x-text="simbolo + ' '+ (total).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
                         </td>
                     </tr>
                 </table>
@@ -843,6 +845,12 @@
                         this.$refs.search.focus()
                     }
                 },
+                loadimagen(id) {
+                    const img = document.getElementById(id);
+                    if (img) {
+                        img.src = img.dataset.src;
+                    }
+                }
             }))
         })
 

@@ -355,7 +355,7 @@
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
                     @foreach ($venta->tvitems as $item)
                         @php
-                            $image = $item->producto->getImageURL();
+                            $image = !empty($item->producto->image) ? pathURLProductImage($item->producto->image) : null;
                         @endphp
                         <x-card-producto :image="$image" :name="$item->producto->name" :category="$item->gratuito == 1 ? 'GRATUITO' : null" :increment="$item->increment ?? null">
                             <h1 class="text-xl text-center font-semibold text-colortitleform">

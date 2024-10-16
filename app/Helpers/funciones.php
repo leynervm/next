@@ -529,3 +529,97 @@ function getPriceDscto($amount, $dsct, $pricetype = null, $modo = 0,)
 
     return number_format($precio, 3, '.', '');
 }
+
+
+/**
+ * @getPriceDinamic Obtener precio de venta dinamicamnete en base al precio de compra.
+ * @param float $pricebuy Precio de compra
+ * @param float $incremento Porcentaje de incremento al precio de compra (por ejemplo, gastos adicionales).
+ * @param float $ganancia Porcentaje de ganancia, se aplica al precio ya incrementado.
+ * @param float $rounded Número de decimales para formatear el precio
+ * @param float $decimals Número de decimales para redondear el precio final.
+ * @param Promocion|null $promocion Instancia del modelo Promocion, si aplica alguna promoción.
+ * @return float Valor de venta final como número decimal.
+ */
+function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $decimals = 2, $promocion = null)
+{
+
+    if ($pricebuy > 0) {
+        $precio_real_compra = $incremento > 0 ? number_format($pricebuy + ($pricebuy * ($incremento / 100)), 3, '.', '') : $pricebuy;
+        $precio_venta = $ganancia > 0 ? $precio_real_compra + ($precio_real_compra * ($ganancia / 100)) : $precio_real_compra;
+
+        if ($rounded > 0) {
+            $precio_venta = round_decimal($precio_venta, $rounded);
+        }
+
+        if ($promocion) {
+
+            if ($promocion->isDescuento()) {
+                $precio_venta = number_format($precio_venta - ($precio_venta * $promocion->descuento / 100), $decimals, '.', '');
+            }
+            if ($promocion->isRemate()) {
+                $precio_venta = number_format($precio_real_compra, $decimals, '.', '');
+            }
+
+            // if ($promocion->isDescuento() || $promocion->isRemate()) {
+            //     if ($rounded > 0) {
+            //         $precio_venta = round_decimal($precio_venta, $rounded);
+            //     }
+            // }
+        }
+
+        return number_format($precio_venta, $decimals, '.', '');
+    }
+
+    return 0;
+}
+
+function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
+{
+    if (!empty($promocion) && $promocion->isCombo()) {
+        $total = 0;
+        $products = [];
+        $type = null;
+        foreach ($promocion->itempromos as $itempromo) {
+            if ($almacen_id) {
+                $stockCombo = formatDecimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
+            } else {
+                $stockCombo = null;
+            }
+
+            $price = $pricetype ? $itempromo->producto->obtenerPrecioVenta($pricetype) : $itempromo->producto->pricesale;
+            $pricenormal = $price;
+
+            if ($itempromo->isDescuento()) {
+                $price = getPriceDscto($price, $itempromo->descuento, $pricetype);
+                $type = formatDecimalOrInteger($itempromo->descuento) . '% DSCT';
+            }
+            if ($itempromo->isGratuito()) {
+                $price = $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy;
+                $type = 'GRATIS';
+            }
+
+            if ($pricetype) {
+                if ($pricetype->rounded > 0) {
+                    $price = round_decimal($price, $pricetype->rounded);
+                }
+            }
+
+            $total = $total + number_format($price, $pricetype ? $pricetype->decimals : 3, '.', '');
+            $products[] = [
+                'producto_id' => $itempromo->producto_id,
+                'name' => $itempromo->producto->name,
+                'image' => $itempromo->producto->image ? pathURLProductImage($itempromo->producto->image) : null,
+                'price' => $price,
+                'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,
+                'pricenormal' => $pricenormal,
+                'stock' => $stockCombo,
+                'unit' => $itempromo->producto->unit->name,
+                'type' => $type
+            ];
+        }
+        return response()->json(['total' => $total, 'products' => $products])->getData();
+    } else {
+        return null;
+    }
+}

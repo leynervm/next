@@ -56,7 +56,7 @@ class MarketplaceController extends Controller
             }])->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
             }])->whereHas('promocions', function ($query) {
-                $query->disponibles();
+                $query->availables()->disponibles();
             })->with(['marca', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($itemQuery) {
                     $itemQuery->with('unit')->addSelect(['image' => function ($q) {
@@ -65,7 +65,7 @@ class MarketplaceController extends Controller
                             ->where('images.imageable_type', Producto::class)
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
-                }])->disponibles();
+                }])->availables()->disponibles();
             }])->publicados()->visibles()->orderBy('views', 'desc')
             ->orderBy('name', 'asc')->paginate(30)->through(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
@@ -225,9 +225,8 @@ class MarketplaceController extends Controller
                             ->where('images.imageable_type', Producto::class)
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
-                }])->disponibles()->take(1);
-            }])
-            ->whereNot('id', $producto->id)->where('subcategory_id', $producto->subcategory_id)
+                }])->availables()->disponibles();
+            }])->whereNot('id', $producto->id)->where('subcategory_id', $producto->subcategory_id)
             ->publicados()->visibles()->take(28)->orderBy('views', 'desc')
             ->orderBy('name', 'asc')->get()->map(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
@@ -248,7 +247,7 @@ class MarketplaceController extends Controller
                             ->where('images.imageable_type', Producto::class)
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
-                }])->disponibles()->take(1);
+                }])->availables()->disponibles();
             }])
             ->whereNot('id', $producto->id)->publicados()->visibles()
             ->inRandomOrder()->take(28)->orderBy('views', 'desc')
@@ -277,7 +276,7 @@ class MarketplaceController extends Controller
                             ->where('images.imageable_type', Producto::class)
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
-                }])->disponibles()->take(1);
+                }])->availables()->disponibles()->take(1);
             },
             'almacens' => function ($query) {
                 $query->wherePivot('cantidad', '>', 0);

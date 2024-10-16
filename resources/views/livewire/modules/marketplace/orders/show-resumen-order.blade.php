@@ -109,11 +109,20 @@
                                                 x{{ formatDecimalOrInteger($item->cantidad) }}
                                                 {{ $item->producto->unit->name }}
                                             </span>
-                                            <span
-                                                class="p-2 font-semibold text-lg flex-1 text-end text-colorlabel whitespace-nowrap">
-                                                {{ $order->moneda->simbolo }}
-                                                {{ number_format($item->total, 2, '.', ', ') }}
-                                            </span>
+
+                                            @if ($item->isGratuito())
+                                                <div class="flex-1 flex justify-end items-center">
+                                                    <span
+                                                        class="p-2 font-semibold inline-block ring-1 rounded-lg text-xs ring-green-600 text-end text-green-600 whitespace-nowrap">
+                                                        GRATUITO</span>
+                                                </div>
+                                            @else
+                                                <span
+                                                    class="p-2 font-semibold text-lg flex-1 text-end text-colorlabel whitespace-nowrap">
+                                                    {{ $order->moneda->simbolo }}
+                                                    {{ number_format($item->total, 2, '.', ', ') }}
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>

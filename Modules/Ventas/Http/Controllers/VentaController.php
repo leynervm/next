@@ -7,6 +7,7 @@ use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Models\Pricetype;
+use App\Models\Producto;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
 use Modules\Ventas\Entities\Venta;
@@ -65,6 +66,27 @@ class VentaController extends Controller
     public function show(Venta $venta)
     {
         $this->authorize('sucursal', $venta);
+        $venta->load([
+            'client',
+            'seriecomprobante.typecomprobante',
+            'moneda',
+            'sucursal.empresa',
+            'typepayment',
+            'cuotas',
+            'cajamovimientos' => function ($query) {
+                $query->with(['openbox.box', 'moneda', 'methodpayment', 'monthbox']);
+            },
+            'tvitems' => function ($query) {
+                $query->with(['itemseries.serie', 'almacen', 'producto' => function ($subQuery) {
+                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }]);
+            }
+        ]);
         return view('ventas::ventas.show', compact('venta'));
     }
 
@@ -89,5 +111,4 @@ class VentaController extends Controller
         $pdf =  PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('ventas::pdf.ticket', compact('venta'));
         return $pdf->stream();
     }
-
 }

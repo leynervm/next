@@ -37,18 +37,28 @@ class CreatePromocion extends Component
     {
         return [
             'producto_id' => [
-                'required', 'integer', 'min:1', 'exists:productos,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:productos,id',
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
             ],
             'pricebuy' => [
-                'required', 'numeric', 'decimal:0,4',
+                'required',
+                'numeric',
+                'decimal:0,4',
             ],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1',  'max:' . $this->limitstock, 'decimal:0,2',],
             'startdate' => [
-                'nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')
+                'nullable',
+                'date',
+                'after_or_equal:' . now('America/Lima')->format('Y-m-d')
             ],
             'expiredate' => [
-                'nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
+                'nullable',
+                Rule::requiredIf(!empty($this->startdate)),
+                'date',
+                'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
                 'after_or_equal:startdate'
             ],
             'type' => ['required', 'integer', 'min:0', 'max:2'],
@@ -58,15 +68,12 @@ class CreatePromocion extends Component
 
     public function mount()
     {
-        $this->producto = new Producto();
-        $this->productosec = new Producto();
+        // $this->productosec = new Producto();
     }
 
     public function render()
     {
-        $productos = Producto::with(['almacens', 'images'])->whereHas('almacens', function ($query) {
-            // $query->where('id', );
-        })->orderBy('name', 'asc')->get();
+        $productos = Producto::query()->select('id', 'name', 'slug')->whereHas('almacens')->orderBy('name', 'asc')->get();
         return view('livewire.admin.promociones.create-promocion', compact('productos'));
     }
 
@@ -107,9 +114,18 @@ class CreatePromocion extends Component
     {
         $this->reset(['producto', 'pricebuy']);
         if (trim($value) !== '') {
-            $this->producto = Producto::with(['almacens', 'images', 'unit'])->find($value);
-            $this->limitstock = formatDecimalOrInteger($this->producto->almacens()->sum('cantidad'));
-            $this->pricebuy = number_format(mi_empresa()->usarlista() ? $this->producto->pricebuy : $this->producto->pricesale, 3, '.', '');
+            $this->producto = Producto::query()->select('id', 'name', 'pricesale', 'unit_id', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+                ->with(['almacens', 'unit'])->addSelect(['image' => function ($query) {
+                    $query->select('url')->from('images')->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }])->withCount([
+                    'almacens as stock' => function ($query) {
+                        $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                    }
+                ])->find($value)->toArray();
+            $this->limitstock = $this->producto['stock'];
+            $this->pricebuy = number_format(mi_empresa()->usarlista() ? $this->producto['pricebuy'] : $this->producto['pricesale'], 3, '.', '');
         } else {
             $this->reset(['limit', 'limitstock', 'pricebuy']);
         }
@@ -119,7 +135,16 @@ class CreatePromocion extends Component
     {
         $this->reset(['productosec']);
         if (trim($value) !== '') {
-            $this->productosec = Producto::with(['almacens'])->find($value);
+            $this->productosec = Producto::query()->select('id', 'name', 'pricesale', 'unit_id', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+                ->with(['almacens', 'unit'])->addSelect(['image' => function ($query) {
+                    $query->select('url')->from('images')->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }])->withCount([
+                    'almacens as stock' => function ($query) {
+                        $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                    }
+                ])->find($value)->toArray();
         }
     }
 
@@ -128,41 +153,51 @@ class CreatePromocion extends Component
 
         $this->authorize('admin.promociones.create');
 
-        if (!empty($this->producto_id) && $this->agotarstock == false) {
-            $this->limitstock =  formatDecimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));;
+        if (!empty($this->producto_id)) {
+            $this->limitstock =  formatDecimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));
+            $this->limit = $this->agotarstock ? $this->limitstock : $this->limit;
         }
-        $this->limit = $this->agotarstock ? null : $this->limit;
 
         $this->validate([
             'producto_id' => [
-                'required', 'integer', 'min:1', 'exists:productos,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:productos,id',
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
             ],
             'pricebuy' => ['required', 'numeric', 'decimal:0,4'],
             'limit' => [
                 'nullable',
-                Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'
+                Rule::requiredIf(!$this->agotarstock),
+                'numeric',
+                'min:1',
+                'max:' . $this->limitstock,
+                'decimal:0,2'
             ],
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],
             'startdate' => [
-                'nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')
+                'nullable',
+                'date',
+                'after_or_equal:' . now('America/Lima')->format('Y-m-d')
             ],
             'expiredate' => [
                 'nullable',
-                Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
+                Rule::requiredIf(!empty($this->startdate)),
+                'date',
+                'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
                 'after_or_equal:startdate'
             ],
             'type' => ['required', 'integer', 'min:0', 'max:2'],
-            'descuento' => ['nullable', 'required_if:type,0', 'numeric', 'min:0', 'gt:0', 'max:100', 'decimal:0,2'],
-        ]);
+            'descuento' => ['nullable', 'required_if:type,' . Promocion::DESCUENTO, 'numeric', 'min:0', 'gt:0', 'max:100', 'decimal:0,2'],
+        ], ['descuento.required_if' => 'El campo :attribute es obligatorio cuando la promoción es un descuento.'],);
 
-        // $comboCollect = getCombo();
         $promocion = [
             'producto_id' => $this->producto_id,
             'pricebuy' => $this->pricebuy,
             'limit' => $this->limit,
             'descuento' => $this->descuento,
-            'unit' => $this->producto->unit->name,
+            'unit' => $this->producto['unit']['name'],
             'startdate' => !empty(trim($this->startdate)) ? $this->startdate :  null,
             'expiredate' => !empty(trim($this->expiredate)) ? $this->expiredate : null,
             'type' => $this->type,
@@ -175,7 +210,17 @@ class CreatePromocion extends Component
             Session::put('combo', $comboJSON);
         } else {
             $promocion = Promocion::create($promocion);
-            $promocion->producto->assignPriceProduct();
+            $promocion->producto->load(['promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->availables()->disponibles()->take(1);
+            }]);
+            $promocion->producto->assignPrice();
             $this->reset();
             $this->dispatchBrowserEvent('created');
             $this->emitTo('admin.promociones.show-promociones', 'render');
@@ -199,8 +244,18 @@ class CreatePromocion extends Component
                     'typecombo' => $item->typecombo,
                 ]);
             }
-            $promocion->producto->assignPriceProduct();
             DB::commit();
+            $promocion->producto->load(['promocions' => function ($query) {
+                $query->with(['itempromos.producto' => function ($query) {
+                    $query->with('unit')->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->availables()->disponibles()->take(1);
+            }]);
+            $promocion->producto->assignPrice();
             $this->emitTo('admin.promociones.show-promociones', 'render');
             $this->resetValidation();
             $this->dispatchBrowserEvent('created');
@@ -219,19 +274,35 @@ class CreatePromocion extends Component
         $this->authorize('admin.promociones.create');
 
         if (!empty($this->producto_id)) {
-            $this->limitstock = formatDecimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));
+            $this->limitstock = Producto::query()->select('id', 'name')->withCount([
+                'almacens as stock' => function ($query) {
+                    $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                }
+            ])->find($this->producto_id)->stock;
         }
 
         if (!empty($this->productosec_id)) {
-            $this->limitstocksec = formatDecimalOrInteger(Producto::find($this->productosec_id)->almacens()->sum('cantidad'));
+            $this->limitstocksec = Producto::query()->select('id', 'name')->withCount([
+                'almacens as stock' => function ($query) {
+                    $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                }
+            ])->find($this->productosec_id)->stock;
         }
 
         $this->validate([
             'producto_id' => [
-                'required', 'integer', 'min:1', 'exists:productos,id', new ValidatePrincipalCombo($this->producto_id, $this->type)
+                'required',
+                'integer',
+                'min:1',
+                'exists:productos,id',
+                new ValidatePrincipalCombo($this->producto_id, $this->type)
             ],
             'productosec_id' => [
-                'required', 'integer', 'min:1', 'exists:productos,id', 'different:producto_id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:productos,id',
+                'different:producto_id',
                 new ValidateSecondaryCombo()
             ],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'],
@@ -242,14 +313,18 @@ class CreatePromocion extends Component
         ]);
 
         if ($this->limit > 0) {
-            $stockitem = formatDecimalOrInteger(Producto::find($this->productosec_id)->almacens()->sum('cantidad'));
+            $stockitem = Producto::query()->select('id', 'name')->withCount([
+                'almacens as stock' => function ($query) {
+                    $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                }
+            ])->find($this->productosec_id)->stock;
             if ($stockitem < $this->limit) {
                 $this->addError('productosec_id', 'Stock del producto no disponible [' . $stockitem . ' UND].');
                 return false;
             }
         }
 
-        $producto = Producto::with('category')->find($this->productosec_id);
+        // $producto = Producto::with('category')->find($this->productosec_id);
         $comboCollect = getCombo();
         $comboitems = collect($comboCollect->get('comboitems') ?? []);
         $filtered = $comboitems->filter(function ($item) {
@@ -261,13 +336,11 @@ class CreatePromocion extends Component
             return false;
         }
 
-        // dd($comboCollect);
-
         $newscomboitems = $comboitems->push([
-            'producto_id' => $producto->id,
-            'name' => $producto->name,
+            'producto_id' => $this->productosec_id,
+            'name' => $this->productosec['name'],
+            'image' => $this->productosec['image'],
             'descuento' => $this->descuento ?? null,
-            'category' => $producto->category->name,
             'typecombo' => $this->typecombo
         ]);
 

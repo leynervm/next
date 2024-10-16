@@ -969,7 +969,7 @@ class ShowResumenVenta extends Component
     //             $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
     //             $carshoop->promocion->save();
     //             if ($carshoop->promocion->limit ==  $carshoop->cantidad + $carshoop->promocion->outs) {
-    //                 $carshoop->producto->assignPriceProduct();
+    //                 $carshoop->producto->assignPrice();
     //             }
     //         }
 

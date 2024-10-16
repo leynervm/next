@@ -103,7 +103,7 @@ class ShowRangos extends Component
                 $productos = Producto::whereRangoBetween($this->rango->desde, $this->rango->hasta)->get();
                 if (count($productos) > 0) {
                     foreach ($productos as $item) {
-                        $item->assignPriceProduct();
+                        $item->assignPrice();
                     }
                 }
             }
@@ -146,7 +146,7 @@ class ShowRangos extends Component
                 $productos = Producto::whereRangoBetween($rango->desde, $rango->hasta)->get();
                 if (count($productos) > 0) {
                     foreach ($productos as $item) {
-                        $item->assignPriceProduct();
+                        $item->assignPrice();
                     }
                 }
                 $this->dispatchBrowserEvent('updated');

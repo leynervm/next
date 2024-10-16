@@ -64,7 +64,7 @@ class ShowResumenCompra extends Component
     public function render()
     {
         $productos = Producto::with(['promocions' => function ($query) {
-            $query->disponibles();
+            $query->availables()->disponibles();
         }])->select('id', 'name')
             ->withWhereHas('almacens')->orderBy('name', 'asc')->get();
         $pricetypes = Pricetype::orderBy('id', 'asc')->get();
@@ -123,14 +123,21 @@ class ShowResumenCompra extends Component
                 'pricesale' => [
                     'nullable',
                     Rule::requiredIf(!mi_empresa()->usarlista()),
-                    'numeric', 'decimal:0,4', 'gt:0'
+                    'numeric',
+                    'decimal:0,4',
+                    'gt:0'
                 ],
                 'sumatoria_stock' => ['required', 'numeric', 'decimal:0,2', 'gt:0'],
                 'almacens' => [
-                    'required', 'array', 'min:1',
+                    'required',
+                    'array',
+                    'min:1',
                 ],
                 'almacens.*.cantidad' => [
-                    'required', 'numeric', 'min:0', 'decimal:0,2',
+                    'required',
+                    'numeric',
+                    'min:0',
+                    'decimal:0,2',
                 ]
             ],
             [],
@@ -218,7 +225,7 @@ class ShowResumenCompra extends Component
 
             $producto->save();
             // if (mi_empresa()->usarlista()) {
-            $producto->assignPriceProduct();
+            $producto->assignPrice();
             // }
             $compraitem->saveKardex(
                 $producto->id,
@@ -320,7 +327,7 @@ class ShowResumenCompra extends Component
                 $compraitem->producto->pricebuy = $compraitem->oldpricebuy;
                 $compraitem->producto->pricesale = $compraitem->oldpricesale;
                 $compraitem->producto->save();
-                $compraitem->producto->assignPriceProduct();
+                $compraitem->producto->assignPrice();
                 $compraitem->series()->forceDelete();
                 $compraitem->forceDelete();
                 DB::commit();
@@ -346,7 +353,8 @@ class ShowResumenCompra extends Component
         $this->validate([
             "serie.*.compraitem_id" => ['required', 'integer', 'min:1', 'exists:compraitems,id'],
             "serie.*.serie" => [
-                'required', 'min:4',
+                'required',
+                'min:4',
                 new CampoUnique('series', 'serie', null, true)
             ],
         ]);

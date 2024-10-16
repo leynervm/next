@@ -7,6 +7,7 @@ use App\Models\Client;
 use App\Models\Direccion;
 use App\Models\Moneda;
 use App\Models\Pricetype;
+use App\Models\Promocion;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Rules\Recaptcha;
@@ -129,14 +130,40 @@ class ShowShippments extends Component
                     Cart::instance('shopping')->remove($item->rowId);
                     $count++;
                 }
+
+                // dd(is_null($item->options->promocion_id));
+                if (!is_null($item->options->promocion_id)) {
+                    $promocion = Promocion::find($item->options->promocion_id);
+                    $isPrmdisponible = !empty(verifyPromocion($promocion)) ? true : false;
+                    if ($isPrmdisponible) {
+                        if ($promocion->limit > 0 && (($promocion->outs + $item->qty) > $promocion->limit)) {
+                            $isPrmdisponible = false;
+                            $mensaje = response()->json([
+                                'title' => "CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN.",
+                                'text' => null,
+                                'type' => 'warning'
+                            ])->getData();
+                            $this->dispatchBrowserEvent('validation', $mensaje);
+                            return false;
+                        }
+                    } else {
+                        $mensaje = response()->json([
+                            'title' => "STOCK DE PRODUCTOS AGREGADOS EN PROMOCIÓN AGOTADOS, LOS PRECIOS SE HAN ACTUALIZADO.",
+                            'text' => null, //'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
+                            'type' => 'warning'
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+                }
             }
             if (auth()->check()) {
                 Cart::instance('shopping')->store(auth()->id());
             }
             if ($count > 0) {
                 $mensaje = response()->json([
-                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO, INTENTE NUEVAMENTE.",
-                    'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
+                    'title' => "PRODUCTOS NO SE ENCUENTRAN DISPONIBLES FUERON REMOVIDOS DEL CARRITO, , INTENTE NUEVAMENTE.",
+                    'text' => null, //'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
                     'type' => 'warning'
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);

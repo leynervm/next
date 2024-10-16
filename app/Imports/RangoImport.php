@@ -55,7 +55,7 @@ class RangoImport implements ToModel, WithEvents, WithHeadingRow, WithValidation
                 $productos = Producto::get();
                 if (count($productos) > 0) {
                     foreach ($productos as $item) {
-                        $item->assignPriceProduct();
+                        $item->assignPrice();
                     }
                 }
             }

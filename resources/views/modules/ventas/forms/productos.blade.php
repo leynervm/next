@@ -2,15 +2,14 @@
     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
     @foreach ($productos as $item)
         <form id="cardproduct{{ $item->id }}" class="w-full block"
-            @submit.prevent="addtocarrito($event, {{ $item->id }})" {{-- wire:submit.prevent="addtocar(Object.fromEntries(new FormData($event.target)), {{ $item->id }})" --}}>
+            @submit.prevent="addtocarrito($event, {{ $item->id }})">
             @php
-                $image = $item->getImageURL();
-                $pricesale = $item->obtenerPrecioVenta($pricetype);
-                $promocion = $item->getPromocionDisponible();
-                $descuento = $item->getPorcentajeDescuento($promocion);
+                $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
+                $promocion = verifyPromocion($item->promocion);
+                $descuento = getDscto($promocion);
                 $combo = $item->getAmountCombo($promocion, $pricetype, $almacen_id);
-                // $priceCombo = $combo ? $combo->total : 0;
                 $almacen = null;
+                $pricesale = $item->obtenerPrecioVenta($pricetype);
 
                 if ($almacendefault->name) {
                     $stock = formatDecimalOrInteger($item->almacens->first()->pivot->cantidad);
@@ -18,8 +17,8 @@
                 }
             @endphp
 
-            <x-card-producto :name="$item->name" :image="$image ?? null" :category="$item->category->name ?? null" :almacen="$item->marca->name ?? null" :promocion="$promocion"
-                class="w-full h-full overflow-hidden">
+            <x-card-producto :name="$item->name" :image="$image" :category="$item->category->name" :almacen="$item->marca->name" :promocion="$promocion"
+                class="w-full h-full overflow-hidden" id="card_{{ $item->id }}">
 
                 @if ($combo)
                     @if (count($combo->products) > 0)
@@ -105,7 +104,7 @@
                 @if ($pricesale > 0)
                     <x-slot name="footer">
                         <div class="w-full flex items-end gap-1 justify-end mt-1">
-                            @if (count($item->seriesdisponibles) > 0)
+                            @if ($item->isRequiredserie())
                                 <div class="w-full flex-1">
                                     <x-label value="Ingresar serie :" />
                                     <x-input class="block w-full disabled:bg-gray-200" name="serie" required
