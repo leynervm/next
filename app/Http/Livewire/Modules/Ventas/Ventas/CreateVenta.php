@@ -396,14 +396,14 @@ class CreateVenta extends Component
                     ->orderBy('default', 'desc')->limit(1);
             }])->with([
                 'garantiaproductos.typegarantia',
+                'marca',
+                'unit',
                 'seriesdisponibles' => function ($query) {
                     $query->where('almacen_id', $this->almacen_id);
                 },
                 'category' => function ($query) {
                     $query->select('id', 'name');
                 },
-                'marca',
-                'unit',
                 'promocions' => function ($query) {
                     $query->with(['itempromos.producto' => function ($subQuery) {
                         $subQuery->with('unit')->addSelect(['image' => function ($q) {
@@ -423,19 +423,17 @@ class CreateVenta extends Component
 
         if (trim($this->search) !== '') {
             $searchTerms = explode(' ', $this->search);
-            $productos->where(function ($query) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $query->orWhere('name', 'ilike', '%' . $term . '%')
-                        ->orWhereHas('marca', function ($q) use ($term) {
-                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        })
-                        ->orWhereHas('category', function ($q) use ($term) {
-                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        })
-                        ->orWhereHas('especificacions', function ($q) use ($term) {
-                            $q->where('especificacions.name', 'ilike', '%' . $term . '%');
-                        });
-                }
+            $productos->where(function ($query) {
+                // foreach ($searchTerms as $term) {
+                $query->orWhere('name', 'ilike', '%' . $this->search . '%')
+                    ->orWhereHas('marca', function ($q) {
+                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
+                    })->orWhereHas('category', function ($q) {
+                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
+                    })->orWhereHas('especificacions', function ($q) {
+                        $q->where('especificacions.name', 'ilike', '%' . $this->search . '%');
+                    });
+                // }
             });
         }
 

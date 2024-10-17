@@ -52,7 +52,17 @@ class RangoImport implements ToModel, WithEvents, WithHeadingRow, WithValidation
                     }
                 }
 
-                $productos = Producto::get();
+                $productos = Producto::query()->select('id', 'name', 'slug', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+                    ->with(['promocions' => function ($query) {
+                        $query->with(['itempromos.producto' => function ($subQuery) {
+                            $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                                $q->select('url')->from('images')
+                                    ->whereColumn('images.imageable_id', 'productos.id')
+                                    ->where('images.imageable_type', Producto::class)
+                                    ->orderBy('default', 'desc')->limit(1);
+                            }]);
+                        }])->availables()->disponibles();
+                    }])->get();
                 if (count($productos) > 0) {
                     foreach ($productos as $item) {
                         $item->assignPrice();
@@ -79,8 +89,8 @@ class RangoImport implements ToModel, WithEvents, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            'desde' => ['required', 'numeric', 'decimal:0,2', 'gt:*.0'],
-            'hasta' => ['required', 'numeric', 'decimal:0,2', 'gt:*.desde'],
+            '*.desde' => ['required', 'numeric', 'decimal:0,2', 'gt:0'],
+            '*.hasta' => ['required', 'numeric', 'decimal:0,2', 'gt:*.desde'],
             // '*.desde' => ['required', 'numeric', 'decimal:0,2', 'gt:*.0'],
             // '*.hasta' => ['required', 'numeric', 'decimal:0,2', 'gt:*.desde'],
             'incremento' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
