@@ -23,6 +23,7 @@ use App\Models\Modalidadtransporte;
 use App\Models\Monthbox;
 use App\Models\Motivotraslado;
 use App\Models\Openbox;
+use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Seriecomprobante;
 use App\Models\Tvitem;
@@ -521,6 +522,11 @@ class CreateVenta extends Component
         if ($value) {
             $this->almacendefault = Almacen::find($value);
         }
+    }
+
+    public function updatedPricetypeId($value)
+    {
+        $this->pricetype = Pricetype::find($value);
     }
 
     public function getProductoBySerie()

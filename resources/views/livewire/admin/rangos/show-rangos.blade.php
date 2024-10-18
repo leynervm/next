@@ -3,34 +3,52 @@
         <x-loading-next />
     </div>
 
-    <div class="block w-full mt-1">
+    <div class="flex flex-col sm:flex-row gap-1 w-full py-2">
+        @canany(['admin.administracion.rangos.delete', 'admin.administracion.rangos.sync'])
+            <div class="flex flex-col md:flex-row gap-1 items-center sm:items-start md:items-end" style="display: none;"
+                x-show="selectedrangos.length > 0">
+                @can('admin.administracion.rangos.delete')
+                    <x-button-secondary @click="deleteselecteds" wire:loading.attr="disabled">
+                        {{ __('ELIMINAR SELECCIONADOS') }} <span x-text="selectedrangos.length"
+                            class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
+                            :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
+                    </x-button-secondary>
+                @endcan
+                @can('admin.administracion.rangos.sync')
+                    <x-button @click="syncprices" wire:loading.attr="disabled">
+                        {{ __('SINCRONIZAR PRECIOS DE RANGOS') }} <span x-text="selectedrangos.length"
+                            class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-fondobutton"
+                            :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
+                    </x-button>
+                @endcan
+            </div>
+        @endcanany
+
         @if ($rangos->hasPages())
-            <div class="w-full py-2">
+            <div class="w-full flex-1 flex  items-end justify-center sm:justify-end">
                 {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
             </div>
         @endif
+    </div>
 
-        @if (count($rangos) > 0)
-            <div class="w-full mb-1" style="display: none;" x-show="selectedrangos.length > 0">
-                <x-button-secondary onclick="confirmDeleteAll()" wire:loading.attr="disabled">
-                    {{ __('ELIMINAR SELECCIONADOS') }} <span :class="selectedrangos.length < 10 ? 'px-1' : ''"
-                        class="bg-white p-0.5 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
-                        x-text="selectedrangos.length"></span>
-                </x-button-secondary>
-            </div>
+    @if (count($rangos) > 0)
+        <div class="w-full">
             <x-table>
                 <x-slot name="header">
                     <tr>
-                        <th scope="col" class="p-2 font-medium text-center">
-                            @if (count($rangos) > 0)
-                                <label for="checkall"
-                                    class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
-                                    <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none"
-                                        name="checkall" type="checkbox" id="checkall" wire:loading.attr="disabled" />
-                                    TODO
-                                </label>
-                            @endif
-                        </th>
+                        @can('admin.administracion.rangos.delete')
+                            <th scope="col" class="p-2 font-medium text-center">
+                                @if (count($rangos) > 0)
+                                    <label for="checkall"
+                                        class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
+                                        <x-input @change="toggleAll" x-model="checkall" autocomplete="off"
+                                            class="cursor-pointer p-2 !rounded-none" name="checkall" type="checkbox"
+                                            id="checkall" x-ref="checkall" wire:loading.attr="disabled" />
+                                        TODO</label>
+                                @endif
+                            </th>
+                        @endcan
+
                         <th scope="col" class="p-2 font-medium">
                             <button class="flex items-center gap-x-3 focus:outline-none">
                                 <span class="leading-3">PRECIO <br> MÍNIMO</span>
@@ -44,9 +62,6 @@
                         <th scope="col" class="p-2 font-medium text-center">
                             % GANANCIA
                         </th>
-
-                        {{-- <th class="" colspan="{{ count($pricetypes) }}">
-                        </th> --}}
 
                         @if (count($pricetypes) > 0)
                             @foreach ($pricetypes as $item)
@@ -74,11 +89,14 @@
                 <x-slot name="body">
                     @foreach ($rangos as $item)
                         <tr>
-                            <td class="p-1 text-xs text-center">
-                                <x-input type="checkbox" name="selectedrangos" class="p-2 !rounded-none cursor-pointer"
-                                    id="{{ $item->id }}" x-model="selectedrangos" value="{{ $item->id }}"
-                                    wire:loading.attr="disabled" />
-                            </td>
+                            @can('admin.administracion.rangos.delete')
+                                <td class="p-1 text-xs text-center">
+                                    <x-input type="checkbox" name="selectedrangos" class="p-2 !rounded-none cursor-pointer"
+                                        id="{{ $item->id }}" @change="toggleRango" value="{{ $item->id }}"
+                                        wire:loading.attr="disabled" />
+                                </td>
+                            @endcan
+
                             <td class="p-1 text-xs">
                                 {{ $item->desde }}
                             </td>
@@ -103,8 +121,9 @@
                                 <td class="p-1 text-center">
                                     <p class="font-semibold text-[10px] text-center">{{ $lista->name }}</p>
                                     @can('admin.administracion.rangos.edit')
-                                        <x-input class="inline-block text-center" :value="$lista->pivot->ganancia" type="text"
-                                            step="0.01" min="0" id="ganancia_{{ $item->id . $lista->id }}"
+                                        <x-input class="inline-block text-center w-full max-w-20 sm:max-w-36"
+                                            :value="$lista->pivot->ganancia" type="text" step="0.01" min="0"
+                                            id="ganancia_{{ $item->id . $lista->id }}"
                                             x-mask:dynamic="$money($input, '.', '', 2)"
                                             onkeypress="return validarDecimal(event, 5)" wire:loading.attr="disabled"
                                             @keydown.enter.prevent="actualizar($event.target.value, {{ $item->id }}, {{ $lista->id }}, {{ $lista->pivot->ganancia }})"
@@ -114,7 +133,9 @@
                                     @cannot('admin.administracion.rangos.edit')
                                         <x-disabled-text :text="$lista->pivot->ganancia" class="inline-block md:px-5 border-0" />
                                     @endcannot
-                                    <p class="text-[10px] text-center text-colorsubtitleform">Enter para acualizar</p>
+                                    <p class="text-[10px] text-center text-colorsubtitleform !leading-none">Enter
+                                        para
+                                        acualizar</p>
                                 </td>
                             @endforeach
 
@@ -138,8 +159,9 @@
                     @endforeach
                 </x-slot>
             </x-table>
-        @endif
-    </div>
+        </div>
+    @endif
+
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -181,7 +203,11 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('rangos', () => ({
+                checkall: @entangle('checkall').defer,
                 selectedrangos: @entangle('selectedrangos').defer,
+                init() {
+
+                },
                 actualizar(value, rango_id, lista_id, oldpercent) {
                     let ganancia = value > 0 ? toDecimal(value, 2) : 0;
                     if (ganancia != toDecimal(oldpercent, 2)) {
@@ -197,30 +223,94 @@
                         value = toDecimal(value, 2);
                     }
                     return value;
+                },
+                toggleAll() {
+                    const selectedrangos = [];
+                    let checked = this.$event.target.checked;
+                    const rangos = document.querySelectorAll(
+                        '[type=checkbox][name=selectedrangos]');
+
+                    rangos.forEach(checkbox => {
+                        checkbox.checked = checked;
+                        if (checkbox.checked) {
+                            selectedrangos.push(parseInt(checkbox.value));
+                        }
+                    });
+
+                    this.selectedrangos = checked ? selectedrangos : [];
+                },
+                toggleRango() {
+                    let value = this.$event.target.value;
+                    let index = this.selectedrangos.indexOf(parseInt(value));
+
+                    if (index !== -1) {
+                        this.selectedrangos.splice(index, 1);
+                    } else {
+                        this.selectedrangos.push(parseInt(value));
+                    }
+                    const rangos = document.querySelectorAll(
+                        '[type=checkbox][name=selectedrangos]');
+                    this.checkall = (this.selectedrangos.length == rangos.length) ? true :
+                        false;
+                },
+                syncprices() {
+                    swal.fire({
+                        title: 'SINCRONIZAR LISTA DE PRECIOS DE VENTA DE LOS PRODUCTOS ?',
+                        text: null,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.syncprices(this.selectedrangos).then(result => {
+                                if (result) {
+                                    const rangos = document.querySelectorAll(
+                                        '[type=checkbox][name=selectedrangos]');
+
+                                    rangos.forEach(checkbox => {
+                                        checkbox.checked = false;
+                                    });
+                                }
+                            })
+                        }
+                    })
+                },
+                deleteselecteds() {
+                    swal.fire({
+                        title: 'ELIMINAR LISTA DE RANGOS SELECCIONADOS ?',
+                        text: null,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.deleteall(this.selectedrangos).then(result => {
+                                console.log(result);
+                                if (result) {
+                                    const rangos = document.querySelectorAll(
+                                        '[type=checkbox][name=selectedrangos]');
+
+                                    rangos.forEach(checkbox => {
+                                        checkbox.checked = false;
+                                    });
+                                }
+                            })
+                        }
+                    })
                 }
             }))
         })
 
-        function confirmDeleteAll() {
-            swal.fire({
-                title: 'Eliminar rangos de precios seleccionados ? ',
-                text: "Se eliminarán múltiples registros de la base de datos",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.deleteall();
-                }
-            })
-        }
-
         function confirmDeleteRango(rango) {
             swal.fire({
-                title: 'Eliminar rango de precio seleccionado, desde: ' + rango.desde + ' hasta: ' + rango.hasta,
+                title: 'Eliminar rango de precio seleccionado, desde: ' + rango.desde + ' hasta: ' + rango
+                    .hasta,
                 text: "Se eliminará un registro de la base de datos",
                 icon: 'question',
                 showCancelButton: true,
@@ -230,7 +320,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.delete(data.id);
+                    @this.delete(rango.id);
                 }
             })
         }

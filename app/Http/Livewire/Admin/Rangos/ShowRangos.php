@@ -67,9 +67,14 @@ class ShowRangos extends Component
     {
         $rangos = Rango::with(['pricetypes' => function ($query) {
             $query->activos()->orderBy('pricetypes.id', 'asc');
-        }])->orderBy('desde', 'asc')->paginate();
+        }])->orderBy('desde', 'asc')->paginate(15, ['*'], 'rangosPage');
         $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
         return view('livewire.admin.rangos.show-rangos', compact('rangos', 'pricetypes'));
+    }
+
+    public function updatedRangosPage()
+    {
+        $this->reset(['checkall', 'selectedrangos']);
     }
 
     public function edit(Rango $rango)
@@ -88,27 +93,50 @@ class ShowRangos extends Component
         $this->validate();
         DB::beginTransaction();
         try {
-            $this->rango->save();
-            // $pricetypes = Pricetype::pluck('id')->toArray();
-            // $this->rango->pricetypes()->syncWithPivotValues(
-            //     $pricetypes,
-            //     [
-            //         // 'ganancia' => $this->rango->incremento,
-            //         'user_id' => Auth::user()->id,
-            //         'created_at' => now('America/Lima'),
-            //         'updated_at' => now('America/Lima')
-            //     ]
-            // );
             if ($this->rango->isDirty('incremento')) {
-                $productos = Producto::whereRangoBetween($this->rango->desde, $this->rango->hasta)->get();
-                if (count($productos) > 0) {
-                    foreach ($productos as $item) {
-                        $item->assignPrice();
+                $this->rango->load(['pricetypes' => function ($query) {
+                    $query->activos()->orderBy('pricetypes.id', 'asc');
+                }]);
+
+                if (count($this->rango->pricetypes) > 0) {
+                    $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                        ->with(['promocions' => function ($query) {
+                            $query->with(['itempromos.producto' => function ($subQuery) {
+                                $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                                    $q->select('url')->from('images')
+                                        ->whereColumn('images.imageable_id', 'productos.id')
+                                        ->where('images.imageable_type', Producto::class)
+                                        ->orderBy('default', 'desc')->limit(1);
+                                }]);
+                            }])->availables()->disponibles();
+                        }])->whereRangoBetween($this->rango->desde, $this->rango->hasta)->get();
+
+                    if (count($productos) > 0) {
+                        foreach ($productos as $producto) {
+                            $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
+                            $promocion = verifyPromocion($firstPrm);
+
+                            foreach ($this->rango->pricetypes as $lista) {
+                                $precio_venta = getPriceDinamic(
+                                    $producto->pricebuy,
+                                    $lista->pivot->ganancia ?? 0,
+                                    $this->rango->incremento,
+                                    $lista->rounded,
+                                    $lista->decimals,
+                                    $promocion
+                                );
+
+                                $producto->{$lista->campo_table} = $precio_venta;
+                                $producto->save();
+                                // dd($producto, $item->incremento, $lista->ganancia, $precio_venta);
+                            }
+                        }
                     }
                 }
             }
+            $this->rango->save();
             DB::commit();
-            $this->resetExcept(['rango']);
+            $this->reset(['minHasta', 'open']);
             $this->dispatchBrowserEvent('updated');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -143,10 +171,32 @@ class ShowRangos extends Component
                     ['ganancia' => $ganancia]
                 );
 
-                $productos = Producto::whereRangoBetween($rango->desde, $rango->hasta)->get();
+                $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                    ->with(['promocions' => function ($query) {
+                        $query->with(['itempromos.producto' => function ($subQuery) {
+                            $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                                $q->select('url')->from('images')
+                                    ->whereColumn('images.imageable_id', 'productos.id')
+                                    ->where('images.imageable_type', Producto::class)
+                                    ->orderBy('default', 'desc')->limit(1);
+                            }]);
+                        }])->availables()->disponibles();
+                    }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
                 if (count($productos) > 0) {
-                    foreach ($productos as $item) {
-                        $item->assignPrice();
+                    foreach ($productos as $producto) {
+                        $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
+                        $promocion = verifyPromocion($firstPrm);
+                        $precio_venta = getPriceDinamic(
+                            $producto->pricebuy,
+                            $ganancia,
+                            $rango->incremento,
+                            $pricetype->rounded,
+                            $pricetype->decimals,
+                            $promocion
+                        );
+
+                        $producto->{$pricetype->campo_table} = $precio_venta;
+                        $producto->save();
                     }
                 }
                 $this->dispatchBrowserEvent('updated');
@@ -169,6 +219,7 @@ class ShowRangos extends Component
             $rango->pricetypes()->detach();
             $rango->delete();
             DB::commit();
+            $this->resetPage('rangosPage');
             $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -179,31 +230,91 @@ class ShowRangos extends Component
         }
     }
 
-
-    public function updatedCheckall()
+    public function syncprices($selectedrangos = [])
     {
-        if ($this->checkall) {
-            $this->selectedrangos = Rango::all()->pluck('id');
-        } else {
-            $this->reset(['selectedrangos']);
+        $this->authorize('admin.administracion.rangos.sync');
+        DB::beginTransaction();
+        try {
+            $rangos = Rango::query()->with(['pricetypes' => function ($query) {
+                $query->select('pricetypes.id', 'rounded', 'decimals', 'campo_table')
+                    ->addSelect('pricetype_rango.ganancia');;
+            }])->whereIn('id', $selectedrangos)->get();
+
+            foreach ($rangos as $item) {
+                if (count($item->pricetypes) > 0) {
+                    $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                        ->with(['promocions' => function ($query) {
+                            $query->with(['itempromos.producto' => function ($subQuery) {
+                                $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                                    $q->select('url')->from('images')
+                                        ->whereColumn('images.imageable_id', 'productos.id')
+                                        ->where('images.imageable_type', Producto::class)
+                                        ->orderBy('default', 'desc')->limit(1);
+                                }]);
+                            }])->availables()->disponibles();
+                        }])->whereRangoBetween($item->desde, $item->hasta)->get();
+
+                    if (count($productos) > 0) {
+                        foreach ($productos as $producto) {
+                            $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
+                            $promocion = verifyPromocion($firstPrm);
+
+                            foreach ($item->pricetypes as $lista) {
+                                $precio_venta = getPriceDinamic(
+                                    $producto->pricebuy,
+                                    $lista->ganancia,
+                                    $item->incremento,
+                                    $lista->rounded,
+                                    $lista->decimals,
+                                    $promocion
+                                );
+
+                                $producto->{$lista->campo_table} = $precio_venta;
+                                $producto->save();
+                                // dd($producto, $item->incremento, $lista->ganancia, $precio_venta);
+                            }
+                        }
+                    }
+                }
+            }
+            DB::commit();
+            $this->reset(['checkall', 'selectedrangos']);
+            $this->dispatchBrowserEvent('toast', toastJSON('SINCRONIZADO CORRECTAMENTE'));
+            return true;
+        } catch (Exception $e) {
+            DB::rollBack();
+            $json = response()->json([
+                'title' => 'ERROR AL ACTUALIZAR PRECIOS DE VENTA EN PRODUCTOS',
+                'text' => $e->getMessage()
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $json);
         }
     }
 
-    public function deleteall()
+    public function deleteall($rangos = [])
     {
-        DB::beginTransaction();
-        try {
-            if (count($this->selectedrangos) > 0) {
+        $this->authorize('admin.administracion.rangos.delete');
+        if (count($rangos)) {
+            DB::beginTransaction();
+            try {
                 Rango::whereIn('id', $this->selectedrangos)->delete();
                 DB::commit();
                 $this->dispatchBrowserEvent('deleted');
                 $this->reset(['selectedrangos', 'checkall']);
+                $this->resetPage('rangosPage');
+                return true;
+            } catch (Exception $e) {
+                DB::rollBack();
+                $json = response()->json([
+                    'title' => 'ERROR AL ELIMINAR',
+                    'text' => $e->getMessage()
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $json);
             }
-        } catch (Exception $e) {
-            DB::rollBack();
+        } else {
             $json = response()->json([
-                'title' => 'Error al importar rangos de precios !',
-                'text' => $e->getMessage()
+                'title' => 'SELECCIONAR RANGOS A ELIMINAR',
+                'text' => null,
             ])->getData();
             $this->dispatchBrowserEvent('validation', $json);
         }

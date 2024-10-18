@@ -30,13 +30,11 @@ class AddCarrito extends Component
     public function add_to_cart(Producto $producto, $cantidad)
     {
 
-        $producto->load([
-            'promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit');
-                }])->availables()->disponibles()->take(1);
-            }
-        ])->loadCount(['almacens as stock' => function ($query) {
+        $producto->load(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($query) {
+                $query->with('unit');
+            }])->availables()->disponibles()->take(1);
+        }])->loadCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
         }]);
 

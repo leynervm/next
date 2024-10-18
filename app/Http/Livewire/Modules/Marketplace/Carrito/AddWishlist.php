@@ -32,13 +32,11 @@ class AddWishlist extends Component
             return redirect()->route('login')->with('activeForm', 'login');
         }
 
-        $this->producto->load([
-            'promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit');
-                }])->availables()->disponibles()->take(1);
-            }
-        ]);
+        $this->producto->load(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($query) {
+                $query->with('unit');
+            }])->availables()->disponibles()->take(1);
+        }]);
 
 
         $promocion = verifyPromocion($this->producto->promocions->first());

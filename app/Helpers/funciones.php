@@ -545,7 +545,7 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
 {
 
     if ($pricebuy > 0) {
-        $precio_real_compra = $incremento > 0 ? number_format($pricebuy + ($pricebuy * ($incremento / 100)), 3, '.', '') : $pricebuy;
+        $precio_real_compra = $incremento > 0 ? number_format($pricebuy + ($pricebuy * ($incremento / 100)), $decimals, '.', '') : $pricebuy;
         $precio_venta = $ganancia > 0 ? $precio_real_compra + ($precio_real_compra * ($ganancia / 100)) : $precio_real_compra;
 
         if ($rounded > 0) {
@@ -553,13 +553,17 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
         }
 
         if ($promocion) {
-
             if ($promocion->isDescuento()) {
                 $precio_venta = number_format($precio_venta - ($precio_venta * $promocion->descuento / 100), $decimals, '.', '');
             }
+
             if ($promocion->isRemate()) {
                 $precio_venta = number_format($precio_real_compra, $decimals, '.', '');
             }
+
+            // if ($pricebuy == "30.89") {
+            //     dd($precio_venta, ($promocion->descuento / 100));
+            // }
 
             // if ($promocion->isDescuento() || $promocion->isRemate()) {
             //     if ($rounded > 0) {
@@ -567,6 +571,8 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
             //     }
             // }
         }
+
+
 
         return number_format($precio_venta, $decimals, '.', '');
     }

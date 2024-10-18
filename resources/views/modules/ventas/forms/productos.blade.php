@@ -19,6 +19,7 @@
 
             <x-card-producto :name="$item->name" :image="$image" :category="$item->category->name" :almacen="$item->marca->name" :promocion="$promocion"
                 class="w-full h-full overflow-hidden" id="card_{{ $item->id }}">
+                {{ $pricesale }}
 
                 @if ($combo)
                     @if (count($combo->products) > 0)
@@ -65,8 +66,7 @@
                                 onkeypress="return validarDecimal(event, 12)" />
                         @else
                             <x-input class="block w-full text-right disabled:bg-gray-200 input-number-none"
-                                name="price" type="number" min="0" step="0.0001"
-                                value="{{ formatDecimalOrInteger($pricesale, 3) }}"
+                                name="price" type="number" min="0" step="0.0001" value="{{ $pricesale }}"
                                 onkeypress="return validarDecimal(event, 12)" />
                         @endif
                     @else

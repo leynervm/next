@@ -63,50 +63,19 @@ class PricetypeSeeder extends Seeder
             'web' => 0,
         ]);
 
-        $rangos = Rango::all();
+        // $rangos = Rango::all();
         // $incremento2 = 60;
         // $incrementoweb = 50;
         // $incrementotecnico = 30;
         // $incrementodistribucion = 15;
 
-        if (count($rangos) > 0) {
-            foreach ($rangos as $rango) {
-
-                $rango->pricetypes()->sync([
-                    $lista1->id => [
-                        'ganancia' => 0
-                    ]
-                ]);
-
-                $rango->pricetypes()->sync([
-                    $lista2->id => [
-                        'ganancia' => 0
-                    ]
-                ]);
-
-                $rango->pricetypes()->sync([
-                    $lista3->id => [
-                        'ganancia' => 0
-                    ]
-                ]);
-
-                $rango->pricetypes()->sync([
-                    $lista4->id => [
-                        'ganancia' => 0
-                    ]
-                ]);
-
-                $rango->pricetypes()->sync([
-                    $lista5->id => [
-                        'ganancia' => 0
-                    ]
-                ]);
-
-                // $gananciafinal--;
-                // $gananciaweb--;
-                // $gananciatecnico--;
-                // $gananciadistribucion = number_format($gananciadistribucion - 0.5, 2, '.', '');
-            }
-        }
+        // if (count($rangos) > 0) {
+        //     foreach ($rangos as $rango) {
+        // $gananciafinal--;
+        // $gananciaweb--;
+        // $gananciatecnico--;
+        // $gananciadistribucion = number_format($gananciadistribucion - 0.5, 2, '.', '');
+        //     }
+        // }
     }
 }

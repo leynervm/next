@@ -34,8 +34,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="mt-3 flex gap-2">
-
+    <div class="flex gap-2">
         @can('admin.administracion.rangos.create')
             <livewire:admin.rangos.create-rango />
         @endcan
@@ -46,14 +45,14 @@
     </div>
 
     @can('admin.administracion.pricetypes')
-        <x-title-next titulo="LISTA PRECIOS" class="mt-5" />
+        {{-- <x-title-next titulo="LISTA PRECIOS" class="mt-5" /> --}}
         <div class="mt-3">
             <livewire:admin.pricetypes.show-pricetypes />
         </div>
     @endcan
 
     @can('admin.administracion.rangos')
-        <x-title-next titulo="RANGO DE PRECIOS COMPRA" class="mt-5" />
+        {{-- <x-title-next titulo="RANGO DE PRECIOS COMPRA" class="mt-5" /> --}}
         <div class="mt-3">
             <livewire:admin.rangos.show-rangos />
         </div>

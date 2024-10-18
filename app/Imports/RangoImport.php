@@ -52,7 +52,8 @@ class RangoImport implements ToModel, WithEvents, WithHeadingRow, WithValidation
                     }
                 }
 
-                $productos = Producto::query()->select('id', 'name', 'slug', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+                $rango->load(['pricetypes']);
+                $productos = Producto::query()->select('id', 'name', 'slug', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
                     ->with(['promocions' => function ($query) {
                         $query->with(['itempromos.producto' => function ($subQuery) {
                             $subQuery->with('unit')->addSelect(['image' => function ($q) {
@@ -62,10 +63,27 @@ class RangoImport implements ToModel, WithEvents, WithHeadingRow, WithValidation
                                     ->orderBy('default', 'desc')->limit(1);
                             }]);
                         }])->availables()->disponibles();
-                    }])->get();
-                if (count($productos) > 0) {
-                    foreach ($productos as $item) {
-                        $item->assignPrice();
+                    }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
+
+
+                if (count($productos) > 0 && count($rango->pricetypes) > 0) {
+                    foreach ($productos as $producto) {
+                        $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
+                        $promocion = verifyPromocion($firstPrm);
+
+                        foreach ($rango->pricetypes as $lista) {
+                            $precio_venta = getPriceDinamic(
+                                $producto->pricebuy,
+                                $lista->pivot->ganancia,
+                                $rango->incremento,
+                                $lista->rounded,
+                                $lista->decimals,
+                                $promocion
+                            );
+
+                            $producto->{$lista->campo_table} = $precio_venta;
+                            $producto->save();
+                        }
                     }
                 }
             }

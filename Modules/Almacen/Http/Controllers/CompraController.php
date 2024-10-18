@@ -45,7 +45,7 @@ class CompraController extends Controller
                                 ->where('images.imageable_type', Producto::class)
                                 ->orderBy('default', 'desc')->limit(1);
                         }]);
-                    }])->availables()->disponibles()->take(1);
+                    }])->availables()->disponibles();
                 }])->addSelect(['image' => function ($q) {
                     $q->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')

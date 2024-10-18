@@ -2,7 +2,8 @@
     <div class="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 gap-2">
         <div class="w-full col-span-2 xl:col-span-3">
             <x-label value="Buscar producto :" />
-            <x-input class="block w-full disabled:bg-gray-200" wire:model.debounce.700ms="search" placeholder="Buscar producto..." />
+            <x-input class="block w-full disabled:bg-gray-200" wire:model.debounce.700ms="search"
+                placeholder="Buscar producto..." />
             <x-jet-input-error for="search" />
         </div>
 
@@ -253,9 +254,9 @@
                     });
                     this.selectP.val(this.pricetype_id).trigger("change");
                     this.selectP.on("select2:select", (event) => {
-                        // this.pricetype_id = event.target.value;
-                        this.$wire.set('pricetype_id', event.target.value, true)
-                        this.$wire.$refresh()
+                        this.pricetype_id = event.target.value;
+                        // this.$wire.set('pricetype_id', event.target.value, true)
+                        // this.$wire.$refresh()
                     }).on('select2:open', function(e) {
                         const evt = "scroll.select2";
                         $(e.target).parents().off(evt);

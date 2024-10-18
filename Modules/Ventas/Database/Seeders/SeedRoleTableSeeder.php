@@ -178,6 +178,13 @@ class SeedRoleTableSeeder extends Seeder
             'module' => 'Principal',
             'orden' => '1'
         ])->syncRoles([$desarrollador, $admin]);
+        Permission::firstOrCreate([
+            'name' => 'admin.administracion.rangos.sync',
+            'descripcion' => 'Sincronizar precio de venta',
+            'table' => 'Rango precios',
+            'module' => 'Principal',
+            'orden' => '1'
+        ])->syncRoles([$desarrollador, $admin]);
 
 
         // VENTAS
