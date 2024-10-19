@@ -109,6 +109,9 @@
                         @endif
                     </x-simple-card>
 
+                    <p class="text-[10px] text-center text-colorsubtitleform">
+                        Resolución Mínima : 1920px X 560px</p>
+
                     <div class="w-full flex flex-wrap gap-2 justify-center">
                         @if (isset($image))
                             <x-button class="inline-flex px-6" wire:loading.attr="disabled" wire:click="clearImage"

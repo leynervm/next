@@ -404,52 +404,6 @@ class ShowResumenCompra extends Component
             $this->dispatchBrowserEvent('deleted');
         }
     }
-
-    // public function openmodalprice(Producto $producto, Pricetype $pricetype)
-    // {
-    //     $this->reset(['newprice', 'priceold', 'pricetype', 'producto', 'pricemanual']);
-    //     $this->resetValidation();
-    //     $this->pricetype = $pricetype;
-    //     $this->producto = $producto;
-    //     $prices = GetPrice::getPriceProducto($producto, $pricetype->id)->getData();
-    //     $this->priceold = $prices->oldPrice;
-    //     $this->newprice = $prices->pricemanual ?? $prices->pricesale;
-    //     $this->pricemanual = $producto
-    //         ->pricetypes()
-    //         ->where('pricetype_id', $pricetype->id)
-    //         ->first();
-    //     $this->openprice = true;
-    // }
-
-    // public function saveprecioventa()
-    // {
-    //     $this->validate([
-    //         'pricetype.id' => ['required', 'integer', 'min:1', 'exists:pricetypes,id'],
-    //         'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-    //         'newprice' => ['required', 'decimal:0,4', 'min:0.1'],
-    //     ]);
-
-    //     $this->producto->pricetypes()->syncWithoutDetaching([
-    //         $this->pricetype->id => [
-    //             'price' => $this->newprice,
-    //         ],
-    //     ]);
-
-    //     $this->resetValidation();
-    //     $this->reset(['openprice', 'newprice', 'priceold', 'pricemanual', 'producto', 'producto_id']);
-    //     $this->producto = new Producto();
-    // }
-
-    // public function deletepricemanual()
-    // {
-    //     if ($this->pricemanual) {
-    //         $this->producto->pricetypes()->detach($this->pricetype->id);
-    //         $this->resetValidation();
-    //         $this->reset(['openprice', 'newprice', 'priceold', 'producto', 'producto_id', 'pricemanual']);
-    //         $this->producto = new Producto();
-    //     }
-    // }
-
     public function updatedPricetypeId($value)
     {
         if ($value) {

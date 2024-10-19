@@ -104,6 +104,12 @@
                 </div>
 
                 <div class="w-full">
+                    <x-label value="Link Youtube :" />
+                    <x-input class="block w-full" wire:model.defer="empresa.youtube" />
+                    <x-jet-input-error for="empresa.youtube" />
+                </div>
+
+                <div class="w-full">
                     <x-label value="Link Instagram :" />
                     <x-input class="block w-full" wire:model.defer="empresa.instagram" />
                     <x-jet-input-error for="empresa.instagram" />
@@ -403,14 +409,14 @@
                             <x-jet-input-error for="empresa.viewpriceantes" />
                         </div>
 
-                        <div class="block">
+                        {{-- <div class="block">
                             <x-label-check for="viewespecificaciones">
                                 <x-input wire:model.defer="empresa.viewespecificaciones" value="1" name="viewlogomarca"
                                     type="checkbox" id="viewespecificaciones" />
-                                MOSTRAR ESPECFICACIONES DEL PRODUCTO
+                                MOSTRAR ESPECIFICACIONES SOBRE IMAGEN DEL PRODUCTO
                             </x-label-check>
                             <x-jet-input-error for="empresa.viewespecificaciones" />
-                        </div>
+                        </div> --}}
 
                         <div class="block">
                             <x-label-check for="viewlogomarca">

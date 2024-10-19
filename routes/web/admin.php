@@ -48,16 +48,15 @@ Route::middleware(['verifycompany'])->prefix('users')->name('admin.users')->grou
 });
 
 
-Route::prefix('administracion')->name('admin.administracion')->group(function () {
+Route::middleware(['verifycompany'])->prefix('administracion')->name('admin.administracion')->group(function () {
+
+    Route::get('/', [HomeController::class, 'administracion']);
+    Route::get('/empresa/create', [EmpresaController::class, 'create'])->name('.empresa.create')->middleware(['registercompany']);
 
     Route::get('/roles', [RoleController::class, 'index'])->name('.roles');
     Route::get('/roles/create', [RoleController::class, 'create'])->name('.roles.create');
     Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('.roles.edit');
     Route::get('/roles/permisos', [RoleController::class, 'permisos'])->name('.roles.permisos');
-
-
-    Route::get('/', [HomeController::class, 'administracion']);
-    Route::get('/empresa/create', [EmpresaController::class, 'create'])->name('.empresa.create')->middleware(['registercompany']);
 
     Route::middleware(['verifycompany'])->group(function () {
         Route::get('/empresa/edit/', [EmpresaController::class, 'edit'])->name('.empresa');

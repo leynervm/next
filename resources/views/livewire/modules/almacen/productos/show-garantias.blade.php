@@ -94,51 +94,55 @@
         </x-form-card>
     @endcan
 
-    @can('admin.administracion.pricetypes.productos')
-        @if (mi_empresa()->usarlista())
-            <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
-                <form wire:submit.prevent="updatelistaprecios" class="w-full flex flex-col gap-2">
-                    @if (count($pricetypes) > 0)
-                        <div class="w-full flex flex-wrap gap-2">
-                            @foreach ($pricetypes as $item)
-                                @if (in_array($item->campo_table, lista_precios()))
-                                    <x-simple-card
-                                        class="w-full xs:w-48 flex flex-col items-center justify-between rounded-xl p-2">
-                                        <x-span-text :text="$item->name" class="leading-3 !tracking-normal" />
+    @if (mi_empresa()->usarlista())
+        <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
+            <form wire:submit.prevent="updatelistaprecios" class="w-full flex flex-col gap-2">
+                @if (count($pricetypes) > 0)
+                    <div class="w-full flex flex-wrap gap-2">
+                        @foreach ($pricetypes as $item)
+                            @if (in_array($item->campo_table, array_keys($producto->getAttributes())))
+                                <x-simple-card
+                                    class="w-full xs:w-48 flex flex-col items-center justify-between rounded-xl p-2">
+                                    <x-span-text :text="$item->name" class="leading-3 !tracking-normal" />
 
-                                        <div>
+                                    <div class="w-full">
+                                        @can('admin.administracion.pricetypes.productos')
                                             <x-label value="S/." class="w-full text-left" />
-                                            <x-input class="block w-full" wire:model.defer="{{ $item->campo_table }}"
-                                                type="number" step="0.001" />
+                                            <x-input class="block w-full text-center input-number-none"
+                                                wire:model.defer="{{ $item->campo_table }}" type="number" step="0.0001"
+                                                onkeypress="return validarDecimal(event, 12)" />
                                             <x-jet-input-error for="{{ $item->campo_table }}" />
-                                        </div>
+                                        @endcan
+                                        @cannot('admin.administracion.pricetypes.productos')
+                                            <x-disabled-text class="w-full text-center block"
+                                                text="S/.  {{ number_format($producto->{$item->campo_table} ?? 0, $item->decimals, '.', ', ') }}" />
+                                        @endcannot
+                                    </div>
 
-                                        @if (mi_empresa()->verDolar())
-                                            @if (mi_empresa()->tipocambio > 0)
-                                                {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
+
+                                    @if (mi_empresa()->verDolar())
+                                        @if (mi_empresa()->tipocambio > 0)
+                                            {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
                                         S/. {{ formatDecimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
-                                            @else
-                                                <p class="text-center tracking-widest text-colorerror">
-                                                    TIPO CAMBIO NO CONFIGURADO</p>
-                                            @endif
+                                        @else
+                                            <p class="text-center tracking-widest text-colorerror">
+                                                TIPO CAMBIO NO CONFIGURADO</p>
                                         @endif
+                                    @endif
+                                </x-simple-card>
+                            @endif
+                        @endforeach
+                    </div>
+                @endif
 
-                                        {{-- <div class="w-full flex justify-end">
-                                        <x-button-edit wire:click="cambiarprecioventa({{ $lista->id }})"
-                                            wire:loading.attr="disabled" />
-                                    </div> --}}
-                                    </x-simple-card>
-                                @endif
-                            @endforeach
-                        </div>
-                    @endif
-                    <div class="w-full">
+                @can('admin.administracion.pricetypes.productos')
+                    <div class="w-full flex items-end justify-end">
                         <x-button type="submit" wire:loading.attr="disabled">ACTUALIZAR</x-button>
                     </div>
-                </form>
-            </x-form-card>
-        @endif
-    @endcan
+                @endcan
+            </form>
+        </x-form-card>
+    @endif
 
     @if (Module::isEnabled('Marketplace'))
         <x-form-card titulo="DETALLE PRODUCTO" style="display: none;" x-cloak x-show="viewdetalle">

@@ -87,16 +87,14 @@ trait CalcularPrecioVenta
     public function obtenerPrecioVenta($pricetype = null)
     {
         if (!empty($pricetype)) {
-            if ($pricetype->rounded > 0) {
-                $precioVenta = round_decimal($this->{$pricetype->campo_table}, $pricetype->rounded);
-            } else {
-                $precioVenta = $this->{$pricetype->campo_table};
-            }
-
-            return number_format($precioVenta, $pricetype->decimals, '.', '');
+            // if ($pricetype->rounded > 0) {
+            //     $precioVenta = round_decimal($this->{$pricetype->campo_table}, $pricetype->rounded);
+            // } else {
+            //     $precioVenta = $this->{$pricetype->campo_table};
+            // }
+            return number_format($this->{$pricetype->campo_table}, $pricetype->decimals, '.', '');
         } else {
-            $precioVenta = $this->pricesale;
-            return number_format($precioVenta, 2, '.', '');
+            return number_format($this->pricesale, 2, '.', '');
         }
     }
 

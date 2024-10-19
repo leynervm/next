@@ -126,7 +126,8 @@
         @if (count($client->direccions) > 0)
             <div class="w-full flex flex-wrap gap-1">
                 @foreach ($client->direccions as $item)
-                    <div class="w-full text-xs bg-body rounded p-2 rounded-lg border {{ $item->isDefault() ? 'shadow-md shadow-next-200 border-next-500' : 'border-borderminicard' }}">
+                    <div
+                        class="w-full text-xs bg-body rounded p-2 rounded-lg border {{ $item->isDefault() ? 'shadow-md shadow-next-200 border-next-500' : 'border-borderminicard' }}">
                         <p class="text-colorlabel text-[10px] font-medium">
                             {{ $item->name }}</p>
 
@@ -235,9 +236,8 @@
                     <p class="text-xs text-colorsubtitleform my-2">
                         Actualmente el cliente está registrado en nuestra tienda web...</p>
                     <x-simple-card class="w-48 mt-3 flex flex-col gap-1 rounded-xl cursor-default p-3 py-5">
-
                         <x-button-next class="mx-auto" titulo="SINCRONIZAR USUARIO WEB" wire:click="sincronizeuser"
-                            classTitulo="text-[10px] font-semibold" wire:loading.attr="disabled">
+                            wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" wire:loading.class="animate-spin">
@@ -251,7 +251,7 @@
 
                         <x-label :value="$user->document" class="font-semibold text-center" />
 
-                        <p class="text-xs text-center">{{ $user->email }}</p>
+                        <p class="text-xs text-center text-colorsubtitleform">{{ $user->email }}</p>
                     </x-simple-card>
                 </div>
             @endif

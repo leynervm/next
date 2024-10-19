@@ -19,7 +19,6 @@
 
             <x-card-producto :name="$item->name" :image="$image" :category="$item->category->name" :almacen="$item->marca->name" :promocion="$promocion"
                 class="w-full h-full overflow-hidden" id="card_{{ $item->id }}">
-                {{ $pricesale }}
 
                 @if ($combo)
                     @if (count($combo->products) > 0)
@@ -57,8 +56,8 @@
                             </span>
                         @endif
 
-                        <small
-                            class="text-[10px] font-semibold text-right text-colorlabel">{{ $moneda->currency }}</small>
+                        <small class="text-[10px] font-semibold text-right text-colorlabel">
+                            {{ $moneda->currency }}</small>
                         @if ($moneda->isDolar())
                             <x-input class="block w-full text-right disabled:bg-gray-200 input-number-none"
                                 name="price" type="number" min="0" step="0.001"

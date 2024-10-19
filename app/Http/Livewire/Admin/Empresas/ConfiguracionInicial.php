@@ -32,11 +32,11 @@ class ConfiguracionInicial extends Component
     public $step = 1;
 
     public $empresa = [], $sucursals = [], $telephones = [], $selectedsucursals = [], $almacens = [];
-    public $icono, $extencionicono, $image, $extencionimage, $cert, $idcert;
+    public $icono, $extencionicono, $image, $extencionimage, $extencionmarkagua, $cert, $idcert;
 
     public $document, $name, $direccion, $departamento, $provincia, $distrito, $telefono, $ubigeo_id,
         $estado, $condicion, $email, $web, $sendnode, $montoadelanto;
-    public $whatsapp, $facebook, $instagram, $tiktok;
+    public $whatsapp, $facebook, $youtube, $instagram, $tiktok;
     public $usuariosol, $clavesol, $passwordcert, $sendmode, $afectacionigv, $clientid, $clientsecret;
 
     public $validatemail;
@@ -159,8 +159,8 @@ class ConfiguracionInicial extends Component
                     'markagua' => [
                         'nullable',
                         'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'file',
-                        'mimes:png'
+                        'string',
+                        'regex:/^data:image\/png;base64,([A-Za-z0-9+\/=]+)$/'
                     ],
                     'alignmark' => [
                         'nullable',
@@ -203,6 +203,7 @@ class ConfiguracionInicial extends Component
                 'web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'whatsapp' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'facebook' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+                'youtube' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'instagram' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'tiktok' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             ]);
@@ -300,6 +301,7 @@ class ConfiguracionInicial extends Component
             'web' => $this->web,
             'whatsapp' => $this->whatsapp,
             'facebook' => $this->facebook,
+            'youtube' => $this->youtube,
             'instagram' => $this->instagram,
             'tiktok' => $this->tiktok,
             // 'icono' => $urlicono,
@@ -358,23 +360,24 @@ class ConfiguracionInicial extends Component
 
         $markURL = null;
         if ($this->markagua) {
+            $imageMark = $this->markagua;
+            list($type, $imageMark) = explode(';', $imageMark);
+            list(, $imageMark) = explode(',', $imageMark);
+            $imageMark = base64_decode($imageMark);
+
             if (!Storage::directoryExists('images/company/')) {
                 Storage::makeDirectory('images/company/');
             }
 
-            $compressedImage = Image::make($this->markagua->getRealPath())
-                ->orientate()->encode('jpg', 70);
-
-            $markURL = uniqid('markagua_') . '.' . $this->markagua->getClientOriginalExtension();
-            $compressedImage->save(public_path('storage/images/company/' . $markURL));
-
-            if ($compressedImage->filesize() > 1048576) { //1MB
-                $compressedImage->destroy();
+            $compressedMark = Image::make($imageMark)->orientate()->encode('jpg', 70);
+            if ($compressedMark->filesize() > 1048576) { //1MB
+                $compressedMark->destroy();
                 $this->addError('markagua', 'La imagen excede el tamaño máximo permitido.');
                 return false;
             }
+            $markURL = uniqid('markagua_') . '.' . $this->extencionmarkagua;
+            $compressedMark->save(public_path('storage/images/company/' . $markURL));
         }
-
 
         try {
             $empresa = Empresa::create([
@@ -779,11 +782,17 @@ class ConfiguracionInicial extends Component
         $this->resetValidation();
     }
 
-    public function clearMark()
-    {
-        $this->reset(['markagua']);
-        $this->resetValidation();
-    }
+    // public function clearLogo()
+    // {
+    //     $this->reset(['markagua']);
+    //     $this->resetValidation();
+    // }
+
+    // public function clearMark()
+    // {
+    //     $this->reset(['markagua']);
+    //     $this->resetValidation();
+    // }
 
     // 20600129997
 }

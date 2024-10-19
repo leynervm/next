@@ -25,7 +25,7 @@
     </span>
 
     @if (isset($titulo))
-        <p class="leading-3 text-center mt-1 text-[11px] font-bold">
+        <p class="leading-3 text-center mt-1 text-[10px] md:text-[11px] font-bold">
             {{ $titulo }}</p>
     @endif
 </button>

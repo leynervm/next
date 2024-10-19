@@ -22,16 +22,25 @@ class ShowEspecificaciones extends Component
     public $open = false;
     public $openespecificacion = false;
     public $openeditespecificacion = false;
+    public $search = '';
 
     public $name;
 
     protected $listeners = ['render'];
+    protected $queryString = [
+        'search' => [
+            'except' => '',
+            'as' => 'search'
+        ],
+    ];
 
     protected function rules()
     {
         return [
             'caracteristica.name' => [
-                'required', 'min:2', 'max:100',
+                'required',
+                'min:2',
+                'max:100',
                 new CampoUnique('caracteristicas', 'name', $this->caracteristica->id),
             ],
             'caracteristica.filterweb' => ['nullable', 'integer', 'min:0', 'max:1'],
@@ -48,7 +57,18 @@ class ShowEspecificaciones extends Component
 
     public function render()
     {
-        $caracteristicas = Caracteristica::with('especificacions')->orderBy('orden', 'asc')->paginate();
+        $caracteristicas = Caracteristica::with(['especificacions' => function ($query) {
+            // $query->where('name', 'ilike', '%' . $this->search . '%');
+        }]);
+
+        if (trim($this->search) != '') {
+            $caracteristicas->where('name', 'ilike', '%' . $this->search . '%')
+                ->orWhereHas('especificacions', function ($query) {
+                    $query->where('name', 'ilike', '%' . $this->search . '%');
+                });
+        }
+
+        $caracteristicas = $caracteristicas->orderBy('orden', 'asc')->paginate();
         return view('livewire.admin.especificaciones.show-especificaciones', compact('caracteristicas'));
     }
 
@@ -89,7 +109,8 @@ class ShowEspecificaciones extends Component
         $this->name = trim($this->name);
         $this->validate([
             'name' => [
-                'required', 'min:2',
+                'required',
+                'min:2',
                 new CampoUnique('especificacions', 'name', null, false, 'caracteristica_id', $this->caracteristica->id)
             ]
         ]);
@@ -123,13 +144,15 @@ class ShowEspecificaciones extends Component
         $this->name = trim($this->name);
         $this->validate([
             'name' => [
-                'required', 'min:2',
+                'required',
+                'min:2',
                 Rule::unique('especificacions', 'name')
                     ->where('caracteristica_id', $this->especificacion->caracteristica_id)
                     ->ignore($this->especificacion->id)
             ],
             'especificacion.caracteristica_id' => [
-                'required', 'exists:caracteristicas,id'
+                'required',
+                'exists:caracteristicas,id'
             ]
         ]);
 

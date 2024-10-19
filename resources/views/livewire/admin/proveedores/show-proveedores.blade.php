@@ -131,25 +131,9 @@
                                 <x-link-button class="inline-block">VER PEDIDOS</x-link-button>
                             </td>
                         @endcan
-                        {{-- <td class="p-2 whitespace-nowrap">
-                            <div class="flex gap-1 items-center">
-                                <x-button-delete></x-button-delete>
-                            </div>
-                        </td> --}}
                     </tr>
                 @endforeach
             </x-slot>
         @endif
     </x-table>
-
-    <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
-        <x-slot name="title">
-            {{ __('Actualizar producto') }}
-        </x-slot>
-
-        <x-slot name="content">
-
-        </x-slot>
-    </x-jet-dialog-modal>
-
 </div>

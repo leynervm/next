@@ -325,7 +325,8 @@
                         <div class="w-full flex flex-wrap gap-2 pt-5">
                             @foreach ($producto->almacens as $item)
                                 <x-minicard :title="null" size="sm">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 inline-block mx-auto"
+                                    <small class="text-[9px]">STOCK</small>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 inline-block mx-auto"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
                                         stroke-linecap="round" stroke-linejoin="round">
                                         <path
@@ -336,7 +337,6 @@
                                         <path d="M2 13H5" />
                                         <path d="M2 16H5" />
                                     </svg>
-
                                     <span class="text-[10px] text-center font-bold">
                                         {{ $item->name }}</span>
                                 </x-minicard>
@@ -348,7 +348,7 @@
                         <div class="w-full block pt-3" x-data="{ opengarantias: true }">
                             <button class="flex gap-1 items-center text-xs py-2"
                                 @click="opengarantias = !opengarantias">
-                                <div class="w-6 h-6 text-colortitleform">
+                                <div class="block w-4 h-4 text-colortitleform">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                                         color="currentColor" fill="none">
@@ -370,7 +370,7 @@
                                 x-show="opengarantias" x-transition>
                                 @foreach ($producto->garantiaproductos as $item)
                                     <div
-                                        class="w-full text-[10px] text-center rounded-lg md:rounded-xl border border-borderminicard p-2 py-3 font-semibold">
+                                        class="w-full text-[10px] text-colorsubtitleform text-center rounded-lg md:rounded-xl border border-borderminicard p-2 py-3 font-semibold">
                                         {{ $item->typegarantia->name }}
                                         /
                                         {{ $item->time }}

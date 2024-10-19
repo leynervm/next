@@ -145,7 +145,7 @@
                                     {{ formatDate($item->closedate, 'DD MMMM Y') }} <br>
                                     {{ formatDate($item->closedate, 'hh:mm A') }}
                                 @else
-                                    @if ($item->isExpired() || auth()->user()->isAdmin())
+                                    @if (($item->isExpired() && $item->user_id === auth()->user()->id) || auth()->user()->isAdmin())
                                         @canany(['admin.cajas.aperturas.close', 'admin.cajas.aperturas.closeothers'])
                                             <x-button class="inline-block" onclick="confirmClose({{ $item }})"
                                                 wire:loading.attr="disabled">
@@ -153,7 +153,7 @@
                                             </x-button>
                                         @endcanany
                                     @else
-                                        <x-span-text text="EN USO" class="leading-3 !tracking-normal" type="green" />
+                                        <x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" type="next" />
                                     @endif
                                 @endif
                             </td>

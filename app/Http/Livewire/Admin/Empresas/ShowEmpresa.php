@@ -37,6 +37,7 @@ class ShowEmpresa extends Component
             'empresa.web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             'empresa.whatsapp' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             'empresa.facebook' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            'empresa.youtube' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             'empresa.instagram' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             'empresa.tiktok' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
             'empresa.igv' => ['required', 'numeric', 'decimal:0,2', 'min:0'],

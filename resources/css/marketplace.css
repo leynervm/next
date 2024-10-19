@@ -214,6 +214,10 @@
     @apply !p-0 ring-[2px] ring-white text-fondofooter;
 }
 
+.footer-social .youtube {
+    @apply !p-0 ring-[2px] ring-white text-fondofooter;
+}
+
 .footer-social .whatsapp:hover {
     @apply text-white bg-green-500;
 }
@@ -224,6 +228,10 @@
 
 .footer-social .facebook:hover {
     @apply ring-white bg-blue-700 text-white;
+}
+
+.footer-social .youtube:hover {
+    @apply ring-white bg-red-600 text-white;
 }
 
 .footer-social .instagram {

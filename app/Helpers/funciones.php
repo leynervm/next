@@ -321,6 +321,13 @@ function round_decimal($value, $roundedTo = 1)
 }
 
 
+function round_up($value, $places)
+{
+    $mult = pow(10, abs($places));
+    return $places < 0 ? ceil($value / $mult) * $mult : ceil($value * $mult) / $mult;
+}
+
+
 function convertDolar($value, $tipocambio, $decimals = 2)
 {
     if ($value > 0 && $tipocambio > 0) {
@@ -561,18 +568,12 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
                 $precio_venta = number_format($precio_real_compra, $decimals, '.', '');
             }
 
-            // if ($pricebuy == "30.89") {
-            //     dd($precio_venta, ($promocion->descuento / 100));
-            // }
-
-            // if ($promocion->isDescuento() || $promocion->isRemate()) {
-            //     if ($rounded > 0) {
-            //         $precio_venta = round_decimal($precio_venta, $rounded);
-            //     }
-            // }
+            if ($promocion->isDescuento() || $promocion->isRemate()) {
+                if ($rounded > 0) {
+                    $precio_venta = round_decimal($precio_venta, $rounded);
+                }
+            }
         }
-
-
 
         return number_format($precio_venta, $decimals, '.', '');
     }
@@ -582,9 +583,10 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
 
 function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
 {
+    $total = 0;
+    $products = [];
+
     if (!empty($promocion) && $promocion->isCombo()) {
-        $total = 0;
-        $products = [];
         $type = null;
         foreach ($promocion->itempromos as $itempromo) {
             if ($almacen_id) {
@@ -611,7 +613,7 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
                 }
             }
 
-            $total = $total + number_format($price, $pricetype ? $pricetype->decimals : 3, '.', '');
+            $total = $total + number_format($price, !empty($pricetype) ? $pricetype->decimals : 2, '.', '');
             $products[] = [
                 'producto_id' => $itempromo->producto_id,
                 'name' => $itempromo->producto->name,
@@ -627,5 +629,6 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
         return response()->json(['total' => $total, 'products' => $products])->getData();
     } else {
         return null;
+        // return response()->json(['total' => $total, 'products' => $products])->getData();
     }
 }

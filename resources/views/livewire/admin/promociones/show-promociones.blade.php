@@ -127,7 +127,7 @@
                                             @endif
                                         </div>
                                         <div class="p-1 w-full flex-1">
-                                            <h1 class="text-[10px] leading-3 text-left">
+                                            <h1 class="text-[10px] text-colorsubtitleform leading-3 text-left">
                                                 {{ $itemcombo->name }}</h1>
                                             <h1 class="text-xs font-semibold text-next-500 mt-1 leading-3">
                                                 S/.

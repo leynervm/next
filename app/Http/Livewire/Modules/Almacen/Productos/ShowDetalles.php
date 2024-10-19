@@ -42,7 +42,10 @@ class ShowDetalles extends Component
         $caracteristicas = Caracteristica::with('especificacions');
 
         if (trim($this->searchcaracteristica) != '') {
-            $caracteristicas->where('name', 'ilike', '%' . $this->searchcaracteristica . '%');
+            $caracteristicas->where('name', 'ilike', '%' . $this->searchcaracteristica . '%')
+                ->orWhereHas('especificacions', function ($query) {
+                    $query->where('name', 'ilike', '%' . $this->searchcaracteristica . '%');
+                });
         }
 
         $caracteristicas = $caracteristicas->orderBy('orden', 'asc')->paginate(15, ['*'], 'caracteristicasPage');
@@ -130,7 +133,7 @@ class ShowDetalles extends Component
         }
 
         $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
-            ->resize(800, 800, function ($constraint) {
+            ->resize(1500, 1500, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
             })->orientate()->encode('jpg', 30);

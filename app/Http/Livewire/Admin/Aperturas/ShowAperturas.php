@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Admin\Aperturas;
 
 use App\Enums\MovimientosEnum;
 use App\Models\Box;
+use App\Models\Employer;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Models\Sucursal;
@@ -13,6 +14,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Nwidart\Modules\Facades\Module;
 
 class ShowAperturas extends Component
 {
@@ -21,7 +23,7 @@ class ShowAperturas extends Component
     use WithPagination;
 
     public $open = false;
-    public $openbox;
+    public $openbox, $employer;
     public $date = '', $dateto = '', $searchuser = '', $searchbox = '',
         $searchsucursal = '', $searchmonthbox = '';
     protected $listeners = ['render'];
@@ -52,19 +54,26 @@ class ShowAperturas extends Component
         ]
     ];
 
+    protected function messages()
+    {
+        return [
+            'openbox.expiredate.before_or_equal' => ":attribute máximo debe ser una hora después del turno asignado."
+        ];
+    }
+
+    protected $validationAttributes = [
+        'openbox.expiredate' => ' fecha de cierre',
+    ];
+
     protected function rules()
     {
         return [
-            'openbox.apertura' => [
-                'required',
-                'numeric',
-                'min:0',
-                'decimal:0,4'
-            ],
+            'openbox.apertura' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
             'openbox.expiredate' => [
                 'required',
                 'date',
                 'after:' . Carbon::parse($this->openbox->startdate)->format('Y-m-d h:i'),
+                !empty($this->employer) && !auth()->user()->isAdmin() ? 'before_or_equal:' . Carbon::parse($this->employer->turno->horasalida)->addHour()->format('Y-m-d H:i') : '',
             ],
         ];
     }
@@ -177,6 +186,13 @@ class ShowAperturas extends Component
     public function update()
     {
         $this->authorize('admin.cajas.aperturas.edit');
+
+        if (Module::isEnabled('Employer')) {
+            $this->openbox->load(['user' => function ($query) {
+                $query->with(['employer.turno']);
+            }]);
+            $this->employer = $this->openbox->user->employer;
+        }
         $this->validate();
         $this->openbox->save();
         $this->resetValidation();

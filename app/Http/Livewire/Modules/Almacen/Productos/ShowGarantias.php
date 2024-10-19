@@ -97,10 +97,10 @@ class ShowGarantias extends Component
         $this->reset(['newprice', 'priceold']);
         $this->resetValidation();
         $this->pricetype = $pricetype;
-        $prices = GetPrice::getPriceProducto($this->producto, $pricetype->id)->getData();
-        $this->priceold = $prices->oldPrice;
-        $this->newprice = $prices->pricemanual ?? $prices->pricesale;
-        $this->pricemanual = $this->producto->pricetypes()->where('pricetype_id', $pricetype->id)->first();
+        // $prices = GetPrice::getPriceProducto($this->producto, $pricetype->id)->getData();
+        // $this->priceold = $prices->oldPrice;
+        // $this->newprice = $prices->pricemanual ?? $prices->pricesale;
+        // $this->pricemanual = $this->producto->pricetypes()->where('pricetype_id', $pricetype->id)->first();
         $this->open = true;
     }
 
@@ -170,43 +170,43 @@ class ShowGarantias extends Component
     public function updatelistaprecios()
     {
 
-        $pricetypes = lista_precios();
+        $arrayKeys = array_keys($this->producto->getAttributes());
 
         $this->validate([
             'precio_1' => [
                 'nullable',
-                Rule::requiredIf(in_array('precio_1', $pricetypes)),
+                Rule::requiredIf(in_array('precio_1', $arrayKeys)),
                 'numeric',
                 'min:0',
                 'decimal:0,3'
             ],
             'precio_2' => [
                 'nullable',
-                Rule::requiredIf(in_array('precio_2', $pricetypes)),
+                Rule::requiredIf(in_array('precio_2', $arrayKeys)),
                 'numeric',
                 'min:0',
                 'decimal:0,3'
             ],
             'precio_3' => [
                 'nullable',
-                Rule::requiredIf(in_array('precio_3', $pricetypes)),
+                Rule::requiredIf(in_array('precio_3', $arrayKeys)),
                 'numeric',
                 'min:0',
                 'decimal:0,3'
             ],
             'precio_4' => [
                 'nullable',
-                Rule::requiredIf(in_array('precio_4', $pricetypes)),
+                Rule::requiredIf(in_array('precio_4', $arrayKeys)),
                 'numeric',
                 'min:0',
-                'decimal:0,3'
+                'decimal:0,4'
             ],
             'precio_5' => [
                 'nullable',
-                Rule::requiredIf(in_array('precio_5', $pricetypes)),
+                Rule::requiredIf(in_array('precio_5', $arrayKeys)),
                 'numeric',
                 'min:0',
-                'decimal:0,3'
+                'decimal:0,4'
             ],
         ]);
 

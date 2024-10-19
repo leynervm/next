@@ -1,4 +1,4 @@
-<div class="w-full flex flex-col gap-8" x-data="data">
+<div class="w-full flex flex-col gap-3 lg:gap-5" x-data="data">
     <div wire:loading.flex wire:target="producto_id,addproducto,removeitem,addserie,removeserie,save"
         class="fixed loading-overlay hidden">
         <x-loading-next />
@@ -134,188 +134,6 @@
                 </div> --}}
             </div>
 
-            @if (count($itemcompras) > 0)
-                <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-4">
-                    @foreach ($itemcompras as $key => $item)
-                        <x-card-producto :image="$item['image'] ?? null" :name="$item['name']" id="cardprodbuy_{{ $key }}"
-                            x-data="{ showForm: false }">
-                            <div
-                                class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
-                                @foreach ($item['almacens'] as $key => $value)
-                                    <div
-                                        class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
-                                        {{ formatDecimalOrInteger($value['cantidad']) }}
-                                        <small class="text-[10px] font-medium">{{ $item['unit'] }} \
-                                            {{ $value['name'] }}</small>
-                                    </div>
-                                    @if (count($value['series']) > 0)
-                                        <div class="w-full flex flex-wrap gap-1 items-start">
-                                            @foreach ($value['series'] as $ser)
-                                                <x-span-text :text="$ser" />
-                                                {{-- <div
-                                                    class="rounded-lg p-0.5 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
-                                                    <small
-                                                        class="text-[10px] leading-3 tracking-wider">{{ $ser }}</small>
-                                                    <x-button-delete @click="" wire:loading.attr="disabled" />
-                                                </div> --}}
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                @endforeach
-                            </div>
-
-                            <table class="w-full table text-[10px] text-colorsubtitleform">
-                                {{-- <tr>
-                                    <td colspan="3" class="text-center text-colorlabel">
-                                        TOTAL
-                                        <span class="font-semibold text-xl">
-                                            {{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
-                                        <small x-text="namemoneda"></small>
-                                    </td>
-                                </tr> --}}
-
-                                <tr>
-                                    <td class="align-middle">P. U. C. </td>
-                                    <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['pricebuy'], 2, ', ') }}</span>
-                                        <small x-text="namemoneda"></small>
-                                    </td>
-                                </tr>
-                                {{-- @if ($item['subtotaldsctoitem'] > 0) --}}
-                                <tr>
-                                    <td class="align-middle">SUBTOTAL</td>
-                                    <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotalitem'], 2, ', ') }}</span>
-                                        <small x-text="namemoneda"></small>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="align-middle">DESCUENTOS</td>
-                                    <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotaldsctoitem'], 2, ', ') }}</span>
-                                        <small x-text="namemoneda"></small>
-                                    </td>
-                                </tr>
-                                {{-- @endif --}}
-
-                                <tr>
-                                    <td class="align-middle">TOTAL </td>
-                                    <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
-                                        <small x-text="namemoneda"></small>
-                                    </td>
-                                </tr>
-
-                                <template x-if="codemoneda == 'USD'">
-                                    <tr class="text-colorlabel">
-                                        <td class="align-middle">P. U. C.</td>
-                                        <td class="text-end">
-                                            <span
-                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item['pricebuysoles'], 2, ', ') }}</span>
-                                            <small>SOLES</small>
-                                        </td>
-                                    </tr>
-                                </template>
-
-
-                                @if (!mi_empresa()->usarLista())
-                                    <tr class="text-colorlabel">
-                                        <td class="align-middle"> P. U. V. </td>
-                                        <td class="text-end">
-                                            <span
-                                                class="text-sm font-semibold">{{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
-                                            SOLES
-                                        </td>
-                                    </tr>
-                                    {{-- <tr>
-                                        <td colspan="3" class=" text-center text-colorlabel">
-                                            VENTA S/.
-                                            <span class="font-semibold text-xl">
-                                                {{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
-                                            SOLES
-                                        </td>
-                                    </tr> --}}
-                                @endif
-                            </table>
-
-                            <x-slot name="footer">
-                                <x-button-edit wire:key="edit_{{ $item['producto_id'] }}"
-                                    wire:click="edit('{{ $item['producto_id'] }}')" wire:loading.attr="disabled" />
-                                <x-button-delete wire:key="delete_{{ $item['producto_id'] }}"
-                                    wire:click="removeitem('{{ $item['producto_id'] }}')"
-                                    wire:loading.attr="disabled" />
-                            </x-slot>
-                        </x-card-producto>
-                    @endforeach
-                </div>
-            @else
-                <p class="font-semibold text-xs text-colorerror">Compra no contiene productos agregados</p>
-            @endif
-
-            {{-- <x-jet-input-error for="itemcompras" />
-            <x-jet-input-error for="total" /> --}}
-
-            @if (count($itemcompras) > 0)
-                <table class="w-full table text-xs text-colorsubtitleform">
-                    <tr>
-                        <td class="align-middle text-end">
-                            <small>EXONERADO : </small>
-                        </td>
-                        <td class="text-end w-40">
-                            <span x-text="exonerado" class="text-sm font-semibold"></span>
-                            <small x-text="namemoneda"></small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="align-middle text-end">
-                            <small>GRAVADO : </small>
-                        </td>
-                        <td class="text-end">
-                            <span x-text="gravado" class="text-sm font-semibold"></span>
-                            <small x-text="namemoneda"></small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="align-middle text-end">
-                            <small>IGV : </small>
-                        </td>
-                        <td class="text-end">
-                            <span x-text="igv" class="text-sm font-semibold"></span>
-                            <small x-text="namemoneda"></small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="align-middle text-end">
-                            <small>SUBTOTAL : </small>
-                        </td>
-                        <td class="text-end">
-                            <span x-text="subtotal" class="text-sm font-semibold"></span>
-                            <small x-text="namemoneda"></small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="align-middle text-end">
-                            <small>DESCUENTOS : </small>
-                        </td>
-                        <td class="text-end">
-                            <span x-text="descuento" class="text-sm font-semibold"></span>
-                            <small x-text="namemoneda"></small>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="2" class="text-sm text-colorlabel lg:text-3xl font-semibold text-end w-24">
-                            <span
-                                x-text="simbolo + ' '+ (total).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
-                        </td>
-                    </tr>
-                </table>
-            @endif
-
             <div class="w-full flex pt-4 justify-end">
                 <x-button type="submit" wire:loading.attr="disabled">
                     {{ __('Save') }}</x-button>
@@ -323,7 +141,7 @@
         </form>
     </x-form-card>
 
-    <x-form-card titulo="AGREGAR PRODUCTOS DE COMPRA">
+    <x-form-card titulo="AGREGAR PRODUCTOS">
         <form class="w-full flex flex-col gap-2" @submit.prevent="addproducto">
             <div class="flex w-full flex-col gap-1" x-on:keydown="handleKeydownOnOptions($event)"
                 x-on:keydown.esc.window="isOpen = false, openedWithKeyboard = false">
@@ -366,7 +184,7 @@
 
                             <ul class="flex max-h-60 p-1 flex-col overflow-y-auto">
                                 <li class="hidden px-4 py-2 text-sm text-colorlabel " x-ref="noResultsMessage">
-                                    <span>No matches found</span>
+                                    <span>No se encontraron resultados.</span>
                                 </li>
                                 <template x-for="(item, index) in filteredProducts" x-bind:key="item.id">
                                     <li class="combobox-option rounded-md inline-flex cursor-pointer justify-between items-center gap-2 p-1 text-xs text-colorlabel hover:bg-fondohoverselect2 focus-visible:border-none focus-visible:bg-fondohoverselect2 focus-visible:outline-none"
@@ -611,6 +429,183 @@
             </div>
         </form>
     </x-form-card>
+
+    @if (count($itemcompras) > 0)
+        <div
+            class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-4">
+            @foreach ($itemcompras as $key => $item)
+                <x-card-producto :image="$item['image'] ?? null" :name="$item['name']" id="cardprodbuy_{{ $key }}"
+                    x-data="{ showForm: false }">
+                    <div
+                        class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
+                        @foreach ($item['almacens'] as $key => $value)
+                            <div
+                                class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
+                                {{ formatDecimalOrInteger($value['cantidad']) }}
+                                <small class="text-[10px] font-medium">{{ $item['unit'] }} \
+                                    {{ $value['name'] }}</small>
+                            </div>
+                            @if (count($value['series']) > 0)
+                                <div class="w-full flex flex-wrap gap-1 items-start">
+                                    @foreach ($value['series'] as $ser)
+                                        <x-span-text :text="$ser" />
+                                        {{-- <div
+                                        class="rounded-lg p-0.5 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
+                                        <small
+                                            class="text-[10px] leading-3 tracking-wider">{{ $ser }}</small>
+                                        <x-button-delete @click="" wire:loading.attr="disabled" />
+                                    </div> --}}
+                                    @endforeach
+                                </div>
+                            @endif
+                        @endforeach
+                    </div>
+
+                    <table class="w-full table text-[10px] text-colorsubtitleform">
+                        {{-- <tr>
+                        <td colspan="3" class="text-center text-colorlabel">
+                            TOTAL
+                            <span class="font-semibold text-xl">
+                                {{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
+                            <small x-text="namemoneda"></small>
+                        </td>
+                    </tr> --}}
+
+                        <tr>
+                            <td class="align-middle">P. U. C. </td>
+                            <td class="text-end">
+                                <span
+                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['pricebuy'], 2, ', ') }}</span>
+                                <small x-text="namemoneda"></small>
+                            </td>
+                        </tr>
+                        {{-- @if ($item['subtotaldsctoitem'] > 0) --}}
+                        <tr>
+                            <td class="align-middle">SUBTOTAL</td>
+                            <td class="text-end">
+                                <span
+                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotalitem'], 2, ', ') }}</span>
+                                <small x-text="namemoneda"></small>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="align-middle">DESCUENTOS</td>
+                            <td class="text-end">
+                                <span
+                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotaldsctoitem'], 2, ', ') }}</span>
+                                <small x-text="namemoneda"></small>
+                            </td>
+                        </tr>
+                        {{-- @endif --}}
+
+                        <tr>
+                            <td class="align-middle">TOTAL </td>
+                            <td class="text-end">
+                                <span
+                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
+                                <small x-text="namemoneda"></small>
+                            </td>
+                        </tr>
+
+                        <template x-if="codemoneda == 'USD'">
+                            <tr class="text-colorlabel">
+                                <td class="align-middle">P. U. C.</td>
+                                <td class="text-end">
+                                    <span
+                                        class="text-sm font-semibold">{{ formatDecimalOrInteger($item['pricebuysoles'], 2, ', ') }}</span>
+                                    <small>SOLES</small>
+                                </td>
+                            </tr>
+                        </template>
+
+
+                        @if (!mi_empresa()->usarLista())
+                            <tr class="text-colorlabel">
+                                <td class="align-middle"> P. U. V. </td>
+                                <td class="text-end">
+                                    <span
+                                        class="text-sm font-semibold">{{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
+                                    SOLES
+                                </td>
+                            </tr>
+                            {{-- <tr>
+                            <td colspan="3" class=" text-center text-colorlabel">
+                                VENTA S/.
+                                <span class="font-semibold text-xl">
+                                    {{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
+                                SOLES
+                            </td>
+                        </tr> --}}
+                        @endif
+                    </table>
+
+                    <x-slot name="footer">
+                        <x-button-edit wire:key="edit_{{ $item['producto_id'] }}"
+                            wire:click="edit('{{ $item['producto_id'] }}')" wire:loading.attr="disabled" />
+                        <x-button-delete wire:key="delete_{{ $item['producto_id'] }}"
+                            wire:click="removeitem('{{ $item['producto_id'] }}')" wire:loading.attr="disabled" />
+                    </x-slot>
+                </x-card-producto>
+            @endforeach
+        </div>
+
+        <table class="w-full table text-xs text-colorsubtitleform">
+            <tr>
+                <td class="align-middle text-end">
+                    <small>EXONERADO : </small>
+                </td>
+                <td class="text-end w-40">
+                    <span x-text="(exonerado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <small x-text="namemoneda"></small>
+                </td>
+            </tr>
+            <tr>
+                <td class="align-middle text-end">
+                    <small>GRAVADO : </small>
+                </td>
+                <td class="text-end">
+                    <span x-text="(gravado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <small x-text="namemoneda"></small>
+                </td>
+            </tr>
+            <tr>
+                <td class="align-middle text-end">
+                    <small>IGV : </small>
+                </td>
+                <td class="text-end">
+                    <span x-text="(igv).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <small x-text="namemoneda"></small>
+                </td>
+            </tr>
+            <tr>
+                <td class="align-middle text-end">
+                    <small>SUBTOTAL : </small>
+                </td>
+                <td class="text-end">
+                    <span x-text="(subtotal).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <small x-text="namemoneda"></small>
+                </td>
+            </tr>
+            <tr>
+                <td class="align-middle text-end">
+                    <small>DESCUENTOS : </small>
+                </td>
+                <td class="text-end">
+                    <span x-text="(descuento).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <small x-text="namemoneda"></small>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="text-sm text-colorlabel lg:text-3xl font-semibold text-end w-24">
+                    <span
+                        x-text="simbolo + ' '+ (total).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                </td>
+            </tr>
+        </table>
+    @else
+        <p class="font-semibold text-xs text-colorerror">
+            Compra no contiene productos agregados</p>
+    @endif
 
     <script>
         document.addEventListener('alpine:init', () => {

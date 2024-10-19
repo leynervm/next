@@ -27,6 +27,7 @@ class CreateEmpresasTable extends Migration
             $table->string('web', 255)->nullable();
             $table->string('whatsapp', 255)->nullable();
             $table->string('facebook', 255)->nullable();
+            $table->string('youtube', 255)->nullable();
             $table->string('instagram', 255)->nullable();
             $table->string('tiktok', 255)->nullable();
             $table->string('icono', 100)->nullable();

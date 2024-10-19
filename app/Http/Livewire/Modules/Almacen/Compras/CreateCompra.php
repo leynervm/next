@@ -200,6 +200,11 @@ class CreateCompra extends Component
         }
     }
 
+    public function updatedAlmacens()
+    {
+        $this->resetValidation();
+    }
+
     public function addproducto($producto = null)
     {
 

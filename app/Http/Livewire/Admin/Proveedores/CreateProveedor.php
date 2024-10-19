@@ -34,16 +34,23 @@ class CreateProveedor extends Component
             'telefono' => ['nullable', 'numeric', 'min:9', 'regex:/^\d{9}$/'],
             'email' => ['nullable', 'email', 'min:6'],
             'document2' => [
-                'nullable', Rule::requiredIf($this->addcontacto),
-                'numeric', 'digits:8', 'regex:/^\d{8}$/'
+                'nullable',
+                Rule::requiredIf($this->addcontacto),
+                'numeric',
+                'digits:8',
+                'regex:/^\d{8}$/'
             ],
             'name2' => [
-                'nullable', Rule::requiredIf($this->addcontacto),
-                'string', 'min:3'
+                'nullable',
+                Rule::requiredIf($this->addcontacto),
+                'string',
+                'min:3'
             ],
             'telefono2' => [
-                'nullable', Rule::requiredIf($this->addcontacto),
-                'numeric', 'digits_between:7,9'
+                'nullable',
+                Rule::requiredIf($this->addcontacto),
+                'numeric',
+                'digits_between:7,9'
             ],
         ];
     }
@@ -55,7 +62,7 @@ class CreateProveedor extends Component
         return view('livewire.admin.proveedores.create-proveedor', compact('ubigeos', 'proveedortypes'));
     }
 
-    public function save()
+    public function save($closemodal = true)
     {
 
         $this->authorize('admin.proveedores.create');
@@ -79,7 +86,7 @@ class CreateProveedor extends Component
                     'phone' => $this->telefono
                 ]);
             }
-            
+
             if ($this->addcontacto) {
                 $representante = $proveedor->contacts()->create([
                     'document' => $this->document2,
@@ -92,7 +99,12 @@ class CreateProveedor extends Component
             }
             DB::commit();
             $this->dispatchBrowserEvent('created');
-            return redirect()->route('admin.proveedores');
+            $this->resetValidation();
+            if ($closemodal) {
+                return redirect()->route('admin.proveedores');
+            } else {
+                $this->reset();
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

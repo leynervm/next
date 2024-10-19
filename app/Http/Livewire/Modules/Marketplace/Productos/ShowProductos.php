@@ -42,7 +42,7 @@ class ShowProductos extends Component
         ],
         'filterselected' => [
             'except' => 'name_asc',
-            'as' => 'order-by'
+            'as' => 'ordenar'
         ]
     ];
 
@@ -102,12 +102,6 @@ class ShowProductos extends Component
         if (!empty(request('coincidencias'))) {
             $this->search = request('coincidencias');
         }
-        if (!empty(request('order'))) {
-            $this->sort = request('order');
-        }
-        if (!empty(request('by'))) {
-            $this->direction = request('by');
-        }
         if (empty(request('order-by'))) {
             $this->filterselected = 'name_asc';
         }
@@ -155,22 +149,14 @@ class ShowProductos extends Component
                 'column' => $column_price,
                 'order' => 'asc',
                 'text' => 'DE MENOR A MAYOR PRECIO',
+                'visible' => true
             ],
             'precio_desc' => [
                 'column' => $column_price,
                 'order' => 'desc',
                 'text' => 'DE MAYOR A MENOR PRECIO',
-            ],
-            'name_asc' => [
-                'column' => 'name',
-                'order' => 'asc',
-                'text' => 'POR NOMBRE ASCENDENTE',
-            ],
-            'name_desc' => [
-                'column' => 'name',
-                'order' => 'desc',
-                'text' => 'POR NOMBRE DESCENDENTE',
-            ],
+                'visible' => true
+            ]
         ];
     }
 
@@ -250,11 +236,14 @@ class ShowProductos extends Component
             });
         }
 
-        if (!isset($this->orderfilters[$this->filterselected])) {
+        if (isset($this->orderfilters[$this->filterselected])) {
+            $column = $this->orderfilters[$this->filterselected]['column'];
+            $order = $this->orderfilters[$this->filterselected]['order'];
+        } else {
             $this->filterselected = 'name_asc';
+            $column = 'name';
+            $order = 'asc';
         }
-        $column = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['column'] : 'name';
-        $order = !empty($this->filterselected) ? $this->orderfilters[$this->filterselected]['order'] : 'asc';
 
         $productos =  $this->readyToLoad ?
             $productos->visibles()->publicados()->orderBy($column, $order)

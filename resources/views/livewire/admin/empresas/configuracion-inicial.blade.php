@@ -49,11 +49,11 @@
                                 clip-rule="evenodd" />
                         </svg>
 
-                        <h2 class="text-2xl mb-4 text-gray-800 text-center font-bold">Registration Success</h2>
+                        <h2 class="text-2xl mb-4 text-colorsubtitleform text-center font-bold">
+                            Registrado correctamente</h2>
 
-                        <div class="text-gray-600 mb-8">
-                            Thank you. We have sent you an email to demo@demo.test. Please click the link in the message
-                            to activate your account.
+                        <div class="text-colorsubtitleform mb-8">
+                            Gracias. Su perfil de la empresa se ha configurado correctamente.
                         </div>
 
                         <x-button-web text="VOLVER AL INICIO" @click="step = 1" class="" />
@@ -241,7 +241,7 @@
                                     <x-label-check for="viewespecificaciones">
                                         <x-input x-model="viewespecificaciones" name="viewespecificaciones"
                                             type="checkbox" id="viewespecificaciones" />
-                                        MOSTRAR ESPECFICACIONES DEL PRODUCTO
+                                        MOSTRAR ESPECIFICACIONES SOBRE IMAGEN DEL PRODUCTO
                                     </x-label-check>
                                     <x-jet-input-error for="viewespecificaciones" />
                                 </div> --}}
@@ -250,7 +250,7 @@
                                     <x-label-check for="viewlogomarca">
                                         <x-input x-model="viewlogomarca" name="viewlogomarca" type="checkbox"
                                             id="viewlogomarca" />
-                                        MOSTRAR LOGO MARCA EN PRODUCTOS
+                                        MOSTRAR LOGO DE MARCA EN IMÁGEN PRODUCTOS
                                     </x-label-check>
                                     <x-jet-input-error for="viewlogomarca" />
                                 </div>
@@ -302,7 +302,7 @@
                             </div>
                         @endif
 
-                        <div class="w-full mt-2" x-data="loadimage()">
+                        <div class="w-full mt-2">
                             <x-label-check for="usemarca_agua">
                                 <x-input x-model="usemarkagua" type="checkbox" x-on:change="openmark = !openmark"
                                     id="usemarca_agua" />
@@ -316,7 +316,7 @@
 
                             <div class="grid grid-cols-1 xs:grid-cols-2 gap-2 items-start mt-2" style="display: none;"
                                 x-show="openmark" x-cloak>
-                                <div class="w-full">
+                                <div class="w-full text-center">
                                     <x-simple-card class="w-full h-40 md:max-w-xs mb-1 !shadow-none">
                                         <template x-if="markagua">
                                             <img id="markagua" class="object-scale-down block w-full h-full"
@@ -328,9 +328,9 @@
                                     </x-simple-card>
                                     <x-jet-input-error for="markagua" />
 
-                                    <div class="w-full flex gap-2 flex-wrap justify-center">
+                                    <div class="w-full flex gap-1 flex-wrap justify-center">
                                         <template x-if="markagua">
-                                            <x-button class="inline-flex " @click="reset"
+                                            <x-button class="inline-flex " @click="resetmarkagua"
                                                 wire:loading.attr="disabled">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -349,13 +349,13 @@
 
                                         <x-input-file for="fileMark" titulo="SELECCIONAR MARCA AGUA"
                                             wire:loading.class="disabled:opacity-25" class="">
-                                            <input type="file" class="hidden" wire:model="markagua"
-                                                id="fileMark" accept="image/png" @change="loadlogo" />
+                                            <input type="file" class="hidden" id="fileMark" accept="image/png"
+                                                @change="loadmarkagua" />
                                         </x-input-file>
                                     </div>
                                 </div>
 
-                                <div class="w-full grid grid-cols-1 gap-2 items-start">
+                                <div class="w-full grid grid-cols-1 gap-1 items-start">
                                     <div class="w-full">
                                         <x-label value="Posición:" />
                                         <div class="w-full relative" id="parentposicion" x-init="SelectPosicion">
@@ -405,22 +405,30 @@
                                         <x-icon-file-upload class="w-full h-full !my-0" />
                                     </template>
                                 </div>
-                                <label for="fileInput" type="button"
-                                    class="cursor-pointer text-[10px] inine-flex justify-between items-center focus:outline-none hover:ring-2 hover:ring-ringbutton py-2 px-4 rounded-lg shadow-sm text-left text-colorbutton bg-fondobutton hover:bg-fondohoverbutton hover:text-colorhoverbutton font-semibold tracking-widest">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="inline-flex flex-shrink-0 w-6 h-6 -mt-1 mr-1" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" fill="none"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="0" y="0" stroke="none"></rect>
-                                        <path
-                                            d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
-                                        <circle cx="12" cy="13" r="3" />
-                                    </svg>
-                                    SELECCIONAR LOGO
-                                </label>
 
-                                <input name="photo" id="fileInput" accept="image/*" class="hidden" type="file"
-                                    @change="loadlogo">
+                                <div class="w-full flex gap-1 flex-wrap justify-center">
+                                    <template x-if="image">
+                                        <x-button class="inline-flex " @click="resetlogo"
+                                            wire:loading.attr="disabled">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18" />
+                                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                <line x1="10" x2="10" y1="11" y2="17" />
+                                                <line x1="14" x2="14" y1="11" y2="17" />
+                                            </svg>
+                                            LIMPIAR
+                                        </x-button>
+                                    </template>
+
+                                    <x-input-file for="fileInput" titulo="SELECCIONAR LOGO"
+                                        wire:loading.class="disabled:opacity-25" class="">
+                                        <input type="file" class="hidden" id="fileInput" accept="image/*"
+                                            name="photo" @change="loadlogo" />
+                                    </x-input-file>
+                                </div>
                             </div>
                             <div class="w-full text-center">
                                 <div
@@ -434,22 +442,29 @@
                                     </template>
                                 </div>
 
-                                <label for="fileInputIcono" type="button"
-                                    class="cursor-pointer text-[10px] inine-flex justify-between items-center focus:outline-none hover:ring-2 hover:ring-ringbutton py-2 px-4 rounded-lg shadow-sm text-left text-colorbutton bg-fondobutton hover:bg-fondohoverbutton hover:text-colorhoverbutton font-semibold tracking-widest">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                        class="inline-flex flex-shrink-0 w-6 h-6 -mt-1 mr-1" viewBox="0 0 24 24"
-                                        stroke-width="1.5" stroke="currentColor" fill="none"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <rect x="0" y="0" stroke="none"></rect>
-                                        <path
-                                            d="M5 7h1a2 2 0 0 0 2 -2a1 1 0 0 1 1 -1h6a1 1 0 0 1 1 1a2 2 0 0 0 2 2h1a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2" />
-                                        <circle cx="12" cy="13" r="3" />
-                                    </svg>
-                                    SELECCIONAR ICONO WEB
-                                </label>
+                                <div class="w-full flex gap-1 flex-wrap justify-center">
+                                    <template x-if="icono">
+                                        <x-button class="inline-flex " @click="reseticono"
+                                            wire:loading.attr="disabled">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 6h18" />
+                                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                                <line x1="10" x2="10" y1="11" y2="17" />
+                                                <line x1="14" x2="14" y1="11" y2="17" />
+                                            </svg>
+                                            LIMPIAR
+                                        </x-button>
+                                    </template>
 
-                                <input name="icono" id="fileInputIcono" accept=".ico" class="hidden"
-                                    type="file" @change="loadicono">
+                                    <x-input-file for="fileInputIcono" titulo="SELECCIONAR ICONO WEB"
+                                        wire:loading.class="disabled:opacity-25" class="">
+                                        <input type="file" class="hidden" id="fileInputIcono" accept=".ico"
+                                            name="photo" @change="loadicono" />
+                                    </x-input-file>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -483,6 +498,12 @@
                                         <x-label value="Link Facebook :" />
                                         <x-input class="block w-full" wire:model.defer="facebook" />
                                         <x-jet-input-error for="facebook" />
+                                    </div>
+
+                                    <div class="w-full">
+                                        <x-label value="Link YouTube :" />
+                                        <x-input class="block w-full" wire:model.defer="youtube" />
+                                        <x-jet-input-error for="youtube" />
                                     </div>
 
                                     <div class="w-full">
@@ -810,19 +831,28 @@
 
                                 @if (!empty($empresa['whatsapp']))
                                     <p class="text-colorsubtitleform text-xs text-center">
-                                        <b>WHATSAPP: </b>{{ $empresa['whatsapp'] }}</p>
+                                        <b>WHATSAPP: </b>{{ $empresa['whatsapp'] }}
+                                    </p>
                                 @endif
                                 @if (!empty($empresa['facebook']))
                                     <p class="text-colorsubtitleform text-xs text-center">
-                                        <b>FACEBOOK: </b>{{ $empresa['facebook'] }}</p>
+                                        <b>FACEBOOK: </b>{{ $empresa['facebook'] }}
+                                    </p>
+                                @endif
+                                @if (!empty($empresa['youtube']))
+                                    <p class="text-colorsubtitleform text-xs text-center">
+                                        <b>YOUTUBE: </b>{{ $empresa['youtube'] }}
+                                    </p>
                                 @endif
                                 @if (!empty($empresa['instagram']))
                                     <p class="text-colorsubtitleform text-xs text-center">
-                                        <b>INSTAGRAM: </b>{{ $empresa['instagram'] }}</p>
+                                        <b>INSTAGRAM: </b>{{ $empresa['instagram'] }}
+                                    </p>
                                 @endif
                                 @if (!empty($empresa['tiktok']))
                                     <p class="text-colorsubtitleform text-xs text-center">
-                                        <b>TIK TOK: </b>{{ $empresa['tiktok'] }}</p>
+                                        <b>TIK TOK: </b>{{ $empresa['tiktok'] }}
+                                    </p>
                                 @endif
 
 
@@ -1279,6 +1309,7 @@
                 viewespecificaciones: @entangle('viewespecificaciones').defer,
                 ubigeo_id: @entangle('ubigeo_id').defer,
                 uselistprice: @entangle('uselistprice').defer,
+                usemarkagua: @entangle('usemarkagua').defer,
                 viewtextopromocion: @entangle('viewtextopromocion').defer,
                 usepricedolar: @entangle('usepricedolar').defer,
                 viewpricedolar: @entangle('viewpricedolar').defer,
@@ -1349,32 +1380,61 @@
                 loadlogo() {
                     let file = document.getElementById('fileInput').files[0];
                     var reader = new FileReader();
-                    reader.onload = (e) => this.image = e.target.result;
+                    reader.onload = (e) => {
+                        this.image = e.target.result;
+                        this.$wire.image = reader.result;
+                    };
                     reader.readAsDataURL(file);
 
                     if (file) {
                         let imageName = file.name;
                         let imageExtension = file.name.split('.').pop();
-                        this.getBase64(file, (result) => {
-                            @this.set('image', result);
-                            @this.set('extencionimage', imageExtension);
-                        });
+                        this.$wire.extencionimage = imageExtension;
                     }
+                },
+                resetlogo() {
+                    this.image = null;
+                    this.$wire.image = null;
+                    this.$wire.extencionimage = null;
                 },
                 loadicono() {
                     let file = document.getElementById('fileInputIcono').files[0];
                     var reader = new FileReader();
-                    reader.onload = (e) => this.icono = e.target.result;
+                    reader.onload = (e) => {
+                        this.icono = e.target.result;
+                        this.$wire.icono = reader.result;
+                    };
                     reader.readAsDataURL(file);
 
                     if (file) {
                         let imageName = file.name;
                         let imageExtension = file.name.split('.').pop();
-                        this.getBase64(file, (result) => {
-                            @this.set('icono', result);
-                            @this.set('extencionicono', imageExtension);
-                        });
+                        this.$wire.extencionicono = imageExtension;
                     }
+                },
+                reseticono() {
+                    this.icono = null;
+                    this.$wire.icono = null;
+                    this.$wire.extencionicono = null;
+                },
+                loadmarkagua() {
+                    let file = document.getElementById('fileMark').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.markagua = e.target.result;
+                        this.$wire.markagua = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+
+                    if (file) {
+                        let imageExtension = file.name.split('.').pop();
+                        this.$wire.extencionmarkagua = imageExtension;
+                    }
+                },
+                resetmarkagua() {
+                    this.markagua = null;
+                    this.$wire.markagua = null;
+                    this.$wire.extencionmarkagua = null;
                 },
                 getBase64(file, callback) {
                     const reader = new FileReader();
@@ -1386,22 +1446,6 @@
                 // validatestep() {
                 //     @this.validatestep(this.step);
                 // }
-            }
-        }
-
-        function loadimage() {
-            return {
-                usemarkagua: @entangle('usemarkagua').defer,
-                loadlogo() {
-                    let file = document.getElementById('fileMark').files[0];
-                    var reader = new FileReader();
-                    reader.onload = (e) => this.markagua = e.target.result;
-                    reader.readAsDataURL(file);
-                },
-                reset() {
-                    this.markagua = null;
-                    @this.clearMark();
-                }
             }
         }
 

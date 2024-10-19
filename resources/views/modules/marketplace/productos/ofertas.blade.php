@@ -30,7 +30,9 @@
             <p class="text-xs text-center text-colorsubtitleform">
                 ACTUALMENTE NO TENEMOS OFERTAS DISPONIBLES...</p>
 
-            <x-link-web text="VER TODOS LOS PRODUCTOS" class="mx-auto" href="{{ route('productos') }}" />
+            <div class="p-5 flex justify-center items-center">
+                <x-link-web text="VER TODOS LOS PRODUCTOS" class="mx-auto" href="{{ route('productos') }}" />
+            </div>
         @endif
     </div>
 </x-app-layout>

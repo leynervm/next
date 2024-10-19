@@ -63,7 +63,7 @@
         @endif
 
         <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto.">
-            <div class="w-full flex flex-col gap-3">
+            <div class="w-full flex h-full flex-1 flex-col justify-between gap-3">
                 @if (count($producto->images) > 0)
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->images as $item)
@@ -100,7 +100,9 @@
                 @endif
 
                 @can('admin.almacen.productos.images')
-                    <div class="w-full pt-4 flex justify-end">
+                    <div class="w-full pt-4 gap-2 flex justify-between items-end">
+                        <p class="text-[10px] text-center text-colorsubtitleform">
+                            Resolución Mínima : 500px X 500px</p>
                         <x-button wire:click="openmodalimage" wire:loading.attr="disabled">AÑADIR IMAGEN</x-button>
                     </div>
                 @endcan
@@ -117,13 +119,22 @@
             <div class="w-full flex flex-col gap-2 pb-2">
                 <div class="w-full">
                     <x-label value="Buscar :" />
-                    <x-input class="block w-full disabled:bg-gray-200" wire:model.lazy="searchcaracteristica"
-                        placeholder="Buscar..." />
+                    <div class="relative">
+                        <x-input class="block w-full disabled:bg-gray-200" wire:model.lazy="searchcaracteristica"
+                            placeholder="Buscar..." />
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            class="block p-1 w-auto h-full text-next-300 absolute right-1 top-0 bottom-0">
+                            <path
+                                d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
+                        </svg>
+                    </div>
+
                     <x-jet-input-error for="searchespecificacion" />
                 </div>
 
                 @if ($caracteristicas->hasPages())
-                    <div class="w-full py-2">
+                    <div class="w-full flex justify-end items-center py-2">
                         {{ $caracteristicas->onEachSide(0)->links('livewire::pagination-default') }}
                     </div>
                 @endif

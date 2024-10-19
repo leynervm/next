@@ -215,17 +215,19 @@
         </x-form-card>
 
         <x-form-card titulo="IMÁGEN REFERENCIAL">
-            <div class="w-full xs:max-w-xs">
+            <div class="w-full xs:max-w-sm">
                 <div class="relative" class="w-full relative">
-                    @if (isset($imagen))
-                        <x-simple-card class="w-full h-60 md:max-w-md mx-auto mb-1 border border-borderminicard">
+                    <x-simple-card class="w-full h-60 mx-auto border border-borderminicard">
+                        @if (isset($imagen))
                             <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down ">
-                        </x-simple-card>
-                    @else
-                        <x-icon-file-upload class="w-full h-60 text-gray-300" />
-                    @endif
+                        @else
+                            <x-icon-file-upload class="!w-full !h-full text-colorsubtitleform !border-none" />
+                        @endif
+                    </x-simple-card>
+                    <p class="text-[10px] text-center text-colorsubtitleform">
+                        Resolución Mínima : 500px X 500px</p>
 
-                    <div class="w-full flex flex-wrap gap-2 justify-center">
+                    <div class="w-full flex flex-wrap gap-1 justify-center">
                         <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
                             wire:target="imagen">
                             <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"

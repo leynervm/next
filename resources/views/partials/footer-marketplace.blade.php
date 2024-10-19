@@ -74,13 +74,16 @@
                     @endif
                     @if (count($empresa->telephones) > 0)
                         <li>
-                            <div class="w-full text-left mt-2 flex flex-wrap gap-2 justify-start">
+                            <div class="w-full text-left mt-2 flex flex-wrap gap-y-1 gap-x-4 justify-start">
                                 @foreach ($empresa->telephones as $item)
                                     <small class="tracking-wide leading-3 text-xs">
-                                        @if ($loop->first)
-                                        @else
-                                            -
-                                        @endif
+                                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            class="inline-block animate-bounce w-3 h-3 text-white">
+                                            <path
+                                                d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                        </svg>
                                         {{ formatTelefono($item->phone) }}
                                     </small>
                                 @endforeach
@@ -97,9 +100,9 @@
 
             <div class="footer-social w-full flex flex-wrap justify-center items-center gap-3">
                 @if ($empresa->whatsapp)
-                    <a class="social-footer whatsapp" target="_blank" href="https://wa.link/0fnbp6">
+                    <a class="social-footer whatsapp" target="_blank" href="{{ $empresa->whatsapp }}">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" color="currentColor"
-                            fill="currentColor" stroke="currentColor" stroke-width="0" stroke-linejoin="round"
+                            fill="currentColor" stroke="currentColor" stroke-width="0.7" stroke-linejoin="round"
                             class="block w-full h-full">
                             <path
                                 d=" M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.888 2.722.888.817 0 2.15-.515 2.478-1.318.13-.33.244-.73.244-1.088 0-.058 0-.144-.03-.215-.1-.172-2.434-1.39-2.678-1.39zm-2.908 7.593c-1.747 0-3.48-.53-4.942-1.49L7.793 24.41l1.132-3.337a8.955 8.955 0 0 1-1.72-5.272c0-4.955 4.04-8.995 8.997-8.995S25.2 10.845 25.2 15.8c0 4.958-4.04 8.998-8.998 8.998zm0-19.798c-5.96 0-10.8 4.842-10.8 10.8 0 1.964.53 3.898 1.546 5.574L5 27.176l5.974-1.92a10.807 10.807 0 0 0 16.03-9.455c0-5.958-4.842-10.8-10.802-10.8z" />
@@ -117,11 +120,22 @@
                         </svg>
                     </a>
                 @endif
+                @if ($empresa->youtube)
+                    <a href="{{ $empresa->youtube }}" target="_blank" class="social-footer youtube">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 310" color="currentColor"
+                            fill="currentColor" stroke="currentColor" stroke-width="0" stroke-linejoin="round"
+                            class="block w-full h-full p-1">
+                            <path
+                                d="M297.917,64.645c-11.19-13.302-31.85-18.728-71.306-18.728H83.386c-40.359,0-61.369,5.776-72.517,19.938   C0,79.663,0,100.008,0,128.166v53.669c0,54.551,12.896,82.248,83.386,82.248h143.226c34.216,0,53.176-4.788,65.442-16.527   C304.633,235.518,310,215.863,310,181.835v-53.669C310,98.471,309.159,78.006,297.917,64.645z M199.021,162.41l-65.038,33.991   c-1.454,0.76-3.044,1.137-4.632,1.137c-1.798,0-3.592-0.484-5.181-1.446c-2.992-1.813-4.819-5.056-4.819-8.554v-67.764   c0-3.492,1.822-6.732,4.808-8.546c2.987-1.814,6.702-1.938,9.801-0.328l65.038,33.772c3.309,1.718,5.387,5.134,5.392,8.861   C204.394,157.263,202.325,160.684,199.021,162.41z" />
+                        </svg>
+                    </a>
+                @endif
 
                 @if ($empresa->instagram)
                     <a href="{{ $empresa->instagram }}" target="_blank" class="social-footer instagram">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linejoin="round" class="block w-full h-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"
+                            class="block w-full h-full">
                             <path
                                 d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
                             <path
@@ -134,8 +148,8 @@
 
                 @if ($empresa->tiktok)
                     <a href="{{ $empresa->tiktok }}" target="_blank" class="social-footer tiktok">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linejoin="round"
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"
                             class="block w-full h-full">
                             <path
                                 d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />

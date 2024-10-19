@@ -214,7 +214,8 @@
     --fondo-input-disabled: theme("colors.neutral.500");
     --color-input-disabled: theme("colors.next.500");
 
-    --color-error: theme("colors.red.600");
+    /* --color-error: theme("colors.red.600"); */
+    --color-error: #ff4b4b;
 
     --fondo-pagination: theme("colors.neutral.500");
     --color-pagination: theme("colors.white");

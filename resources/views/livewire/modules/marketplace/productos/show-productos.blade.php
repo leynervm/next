@@ -6,8 +6,8 @@
         <button @click="sidebar = true, backdrop = true"
             class="p-2.5 tracking-wide inline-flex items-center justify-center gap-1 rounded-lg text-xs ring-1 ring-borderminicard shadow shadow-shadowminicard text-colorsubtitleform">
             FILTRAR
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4">
                 <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
             </svg>
         </button>
@@ -61,40 +61,24 @@
                                         <path d="M11 8h7" />
                                         <path d="M11 12h10" />
                                     </symbol>
-                                    <symbol id="name_asc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m3 8 4-4 4 4" />
-                                        <path d="M7 4v16" />
-                                        <path d="M20 8h-5" />
-                                        <path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10" />
-                                        <path d="M15 14h5l-5 6h5" />
-                                    </symbol>
-                                    <symbol id="name_desc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m3 16 4 4 4-4" />
-                                        <path d="M7 4v16" />
-                                        <path d="M15 4h5l-5 6h5" />
-                                        <path d="M15 20v-3.5a2.5 2.5 0 0 1 5 0V20" />
-                                        <path d="M20 18h-5" />
-                                    </symbol>
                                 </svg>
 
                                 @foreach ($orderfilters as $filter => $item)
-                                    <div>
-                                        <x-input type="radio" wire:model="filterselected"
-                                            id="filter_{{ $filter }}" class="peer" value="{{ $filter }}"
-                                            name="filterselected" style="display: none;"
-                                            wire:key="key_{{ $filter }}" />
-                                        <label for="filter_{{ $filter }}"
-                                            class="w-full peer-checked:bg-fondospancardproduct peer-checked:text-textspancardproduct cursor-pointer block p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                            <svg class="w-4 h-4 inline-block">
-                                                <use href="#{{ $filter }}"></use>
-                                            </svg>
-                                            {{ $item['text'] }}
-                                        </label>
-                                    </div>
+                                    @if ($item['visible'])
+                                        <div>
+                                            <x-input type="radio" wire:model="filterselected"
+                                                id="filter_{{ $filter }}" class="peer"
+                                                value="{{ $filter }}" name="filterselected" style="display: none;"
+                                                wire:key="key_{{ $filter }}" />
+                                            <label for="filter_{{ $filter }}"
+                                                class="w-full peer-checked:bg-fondospancardproduct peer-checked:text-textspancardproduct cursor-pointer block p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                                <svg class="w-4 h-4 inline-block">
+                                                    <use href="#{{ $filter }}"></use>
+                                                </svg>
+                                                {{ $item['text'] }}
+                                            </label>
+                                        </div>
+                                    @endif
                                 @endforeach
                             @endif
                             {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}" wire:click="order('precio', 'asc')"
@@ -165,8 +149,8 @@
                             @click="openfilter = !openfilter">
                             <h1 class="pl-2 font-semibold text-[11px]">CATEGORÍAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
-                                stroke-linejoin="round" class="block w-6 h-6">
+                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>

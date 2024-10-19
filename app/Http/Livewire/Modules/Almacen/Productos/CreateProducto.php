@@ -171,7 +171,7 @@ class CreateProducto extends Component
                 }
 
                 $compressedImage = Image::make($this->imagen->getRealPath())
-                    ->resize(800, 800, function ($constraint) {
+                    ->resize(1500, 1500, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
                     })->orientate()->encode('jpg', 30);

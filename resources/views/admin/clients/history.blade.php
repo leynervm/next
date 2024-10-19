@@ -102,7 +102,7 @@
                             <small class="text-[10px] font-medium">{{ $item->moneda->currency }}</small>
                         </h3>
 
-                        @if ($item->moneda->code == 'USD')
+                        @if ($item->moneda->isDolar())
                             <h3
                                 class="font-semibold text-[10px] leading-3 @if ($item->descuento > 0) text-green-500 @endif">
                                 <small class="font-medium">TIPO CAMBIO</small>

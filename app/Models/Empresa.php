@@ -29,6 +29,7 @@ class Empresa extends Model
         'icono',
         'whatsapp',
         'facebook',
+        'youtube',
         'instagram',
         'tiktok',
         'usuariosol',

@@ -66,7 +66,6 @@ class CreateSlider extends Component
 
         $this->authorize('admin.marketplace.sliders.create');
 
-
         DB::beginTransaction();
         try {
             $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
@@ -121,6 +120,7 @@ class CreateSlider extends Component
     {
         try {
             $url = $file->temporaryUrl();
+            $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['image']);
             $this->addError('image', $e->getMessage());

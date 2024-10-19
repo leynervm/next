@@ -22,6 +22,8 @@ class HomeController extends Controller
 
     public function __construct()
     {
+
+        $this->middleware('verifycompany')->only('administracion');
         // $this->middleware('can:admin.administracion.employers')->only('employers');
         // $this->middleware('can:admin.administracion.employers.payments')->only('payments');
         $this->middleware('can:admin.administracion.typecomprobantes')->only('typecomprobantes');

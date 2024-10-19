@@ -60,8 +60,7 @@
 
                 <div class="w-full">
                     <x-label value="Tipo proveedor :" />
-                    <div id="parentproveedortype_id" class="relative" x-data="{ proveedortype_id: @entangle('proveedortype_id').defer }" x-init="select2TypeproveedorAlpine"
-                        wire:ignore>
+                    <div id="parentproveedortype_id" class="relative" x-data="{ proveedortype_id: @entangle('proveedortype_id').defer }" x-init="select2TypeproveedorAlpine">
                         <x-select class="block w-full" x-ref="select" wire:model.defer="proveedortype_id"
                             id="proveedortype_id">
                             <x-slot name="options">
@@ -86,7 +85,7 @@
 
                 <div class="w-full">
                     <x-label value="Correo :" />
-                    <x-input class="block w-full" wire:model.defer="email" placeholder="Correo del cliente..."
+                    <x-input class="block w-full" wire:model.defer="email" placeholder="Correo del proveedor..."
                         type="email" />
                     <x-jet-input-error for="email" />
                 </div>
@@ -100,7 +99,7 @@
             </div>
         </x-form-card>
 
-        <x-form-card x-show="addcontacto" titulo="AGREGAR CONTACTO">
+        <x-form-card x-show="addcontacto" x-cloak style="display:none;" titulo="AGREGAR CONTACTO">
             <div class="w-full sm:grid sm:grid-cols-3 gap-2 rounded">
                 <div class="w-full">
                     <x-label value="DNI :" />
@@ -136,9 +135,11 @@
             </div>
         </x-form-card>
 
-        <div class="w-full flex pt-4 justify-end">
-            <x-button type="submit" wire:loading.attr="disabled">
+        <div class="w-full flex pt-4 justify-end gap-2">
+            <x-button type="button" wire:click="save(false)" wire:loading.attr="disabled">
                 {{ __('Save') }}</x-button>
+            <x-button type="submit" wire:loading.attr="disabled">
+                {{ __('Save and close') }}</x-button>
         </div>
     </form>
 
@@ -170,6 +171,9 @@
             });
             this.$watch("proveedortype_id", (value) => {
                 this.selectTP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectTP.select2().val(this.proveedortype_id).trigger('change');
             });
         }
 
