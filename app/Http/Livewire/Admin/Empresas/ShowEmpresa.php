@@ -21,7 +21,8 @@ class ShowEmpresa extends Component
 
     public $openphone = false;
     public $empresa, $telephone, $phone, $telefono;
-    public $icono, $logo, $idlogo, $idicono, $usemarkagua, $mark;
+    public $icono, $logo, $idlogo, $idicono, $usemarkagua, $mark, $logofooter,
+        $extencionlogofooter, $logoimpresion, $extencionlogoimpresion;
     public $validatemail;
 
     protected function rules()
@@ -287,33 +288,6 @@ class ShowEmpresa extends Component
         $this->dispatchBrowserEvent('deleted');
     }
 
-    public function deleteicono()
-    {
-        if ($this->empresa->icono) {
-            if (Storage::exists('images/company/' . $this->empresa->icono)) {
-                Storage::delete('images/company/' . $this->empresa->icono);
-                $this->empresa->icono = null;
-                $this->empresa->save();
-                $this->empresa->refresh();
-                $this->idicono = rand();
-                $this->dispatchBrowserEvent('deleted');
-            }
-        }
-    }
-
-    public function deletelogo()
-    {
-        if ($this->empresa->image) {
-            if (Storage::exists('images/company/' . $this->empresa->image->url)) {
-                Storage::delete('images/company/' . $this->empresa->image->url);
-                $this->empresa->image->delete();
-                $this->empresa->refresh();
-                $this->idlogo = rand();
-                $this->dispatchBrowserEvent('deleted');
-            }
-        }
-    }
-
     public function searchclient()
     {
 
@@ -423,22 +397,169 @@ class ShowEmpresa extends Component
         }
     }
 
+    public function savelogofooter()
+    {
+        $this->validate(['logofooter' => ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/']]);
+        if (!Storage::directoryExists('images/company/')) {
+            Storage::makeDirectory('images/company/');
+        }
+
+        $urlfooterlogo = $this->empresa->logofooter ?? null;
+        if ($this->logofooter) {
+            $imageFooter = $this->logofooter;
+            list($type, $imageFooter) = explode(';', $imageFooter);
+            list(, $imageFooter) = explode(',', $imageFooter);
+            $imageFooter = base64_decode($imageFooter);
+
+            if (!Storage::directoryExists('images/company/')) {
+                Storage::makeDirectory('images/company/');
+            }
+
+            $compressedFooter = Image::make($imageFooter)->orientate()->encode('jpg', 70);
+            if ($compressedFooter->filesize() > 1048576) { //1MB
+                $compressedFooter->destroy();
+                $this->addError('logofooter', 'La imagen excede el tamaño máximo permitido.');
+                return false;
+            }
+            $urlfooterlogo = uniqid('footer_') . '.' . $this->extencionlogofooter;
+            $compressedFooter->save(public_path('storage/images/company/' . $urlfooterlogo));
+
+            if ($this->empresa->logofooter) {
+                if (Storage::exists('images/company/' . $this->empresa->logofooter)) {
+                    Storage::delete('images/company/' . $this->empresa->logofooter);
+                }
+            }
+
+            $this->empresa->logofooter = $urlfooterlogo;
+            $this->empresa->save();
+            $this->reset(['logofooter', 'extencionlogofooter']);
+            $this->resetValidation();
+            $this->dispatchBrowserEvent('created');
+        }
+    }
+
+    public function savelogoimpresion()
+    {
+        $this->validate([
+            'logoimpresion' =>
+            ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/'],
+            'extencionlogoimpresion' =>
+            ['nullable', 'string', 'in:jpg,png,jpeg']
+        ]);
+        if (!Storage::directoryExists('images/company/')) {
+            Storage::makeDirectory('images/company/');
+        }
+
+        $urlimpresionlogo = $this->empresa->logoimpresion ?? null;
+        if ($this->logoimpresion) {
+            $imageImpresion = $this->logoimpresion;
+            list($type, $imageImpresion) = explode(';', $imageImpresion);
+            list(, $imageImpresion) = explode(',', $imageImpresion);
+            $imageImpresion = base64_decode($imageImpresion);
+
+            if (!Storage::directoryExists('images/company/')) {
+                Storage::makeDirectory('images/company/');
+            }
+
+            $compressedPrint = Image::make($imageImpresion)->orientate()->encode('jpg', 70);
+            if ($compressedPrint->filesize() > 1048576) { //1MB
+                $compressedPrint->destroy();
+                $this->addError('logoimpresion', 'La imagen excede el tamaño máximo permitido.');
+                return false;
+            }
+            $urlimpresionlogo = uniqid('logoprint_') . '.' . $this->extencionlogoimpresion;
+            $compressedPrint->save(public_path('storage/images/company/' . $urlimpresionlogo));
+
+            if ($this->empresa->logoimpresion) {
+                if (Storage::exists('images/company/' . $this->empresa->logoimpresion)) {
+                    Storage::delete('images/company/' . $this->empresa->logoimpresion);
+                }
+            }
+
+            $this->empresa->logoimpresion = $urlimpresionlogo;
+            $this->empresa->save();
+            $this->reset(['logoimpresion', 'extencionlogoimpresion']);
+            $this->resetValidation();
+            $this->dispatchBrowserEvent('created');
+        }
+    }
+
+    public function deleteicono()
+    {
+        if ($this->empresa->icono) {
+            if (Storage::exists('images/company/' . $this->empresa->icono)) {
+                Storage::delete('images/company/' . $this->empresa->icono);
+                $this->empresa->icono = null;
+                $this->empresa->save();
+                $this->empresa->refresh();
+                $this->idicono = rand();
+                $this->dispatchBrowserEvent('deleted');
+            }
+        }
+    }
+
+    public function deletelogo()
+    {
+        if ($this->empresa->image) {
+            if (Storage::exists('images/company/' . $this->empresa->image->url)) {
+                Storage::delete('images/company/' . $this->empresa->image->url);
+                $this->empresa->image->delete();
+                $this->empresa->refresh();
+                $this->idlogo = rand();
+                $this->dispatchBrowserEvent('deleted');
+            }
+        }
+    }
+
+    public function deletelogofooter()
+    {
+        if ($this->empresa->logofooter) {
+            if (Storage::exists('images/company/' . $this->empresa->logofooter)) {
+                Storage::delete('images/company/' . $this->empresa->logofooter);
+                $this->empresa->logofooter = null;
+                $this->reset(['logofooter', 'extencionlogofooter']);
+                $this->empresa->save();
+                $this->empresa->refresh();
+                $this->dispatchBrowserEvent('deleted');
+                return true;
+            }
+        }
+    }
+
+    public function deletelogoimpresion()
+    {
+        if ($this->empresa->logoimpresion) {
+            if (Storage::exists('images/company/' . $this->empresa->logoimpresion)) {
+                Storage::delete('images/company/' . $this->empresa->logoimpresion);
+                $this->empresa->logoimpresion = null;
+                $this->reset(['logoimpresion', 'extencionlogoimpresion']);
+                $this->empresa->save();
+                $this->empresa->refresh();
+                $this->dispatchBrowserEvent('deleted');
+                return true;
+            }
+        }
+    }
+
     public function clearLogo()
     {
         $this->reset(['logo']);
         $this->idlogo = rand();
+        $this->resetValidation();
     }
 
     public function clearIcono()
     {
         $this->reset(['icono']);
         $this->idicono = rand();
+        $this->resetValidation();
     }
 
     public function updatedLogo($file)
     {
         try {
             $url = $file->temporaryUrl();
+            $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['logo']);
             $this->addError('logo', __($e->getMessage()));
@@ -450,6 +571,7 @@ class ShowEmpresa extends Component
     {
         try {
             $url = $file->temporaryUrl();
+            $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['mark']);
             $this->addError('mark', $e->getMessage());
@@ -460,5 +582,6 @@ class ShowEmpresa extends Component
     public function clearMark()
     {
         $this->reset(['mark']);
+        $this->resetValidation();
     }
 }

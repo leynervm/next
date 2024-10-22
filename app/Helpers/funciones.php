@@ -478,6 +478,14 @@ function getLogoEmpresa($filename = null, $forceHTTPS = true)
     return null;
 }
 
+function getMarcaURL($filename = null)
+{
+    if (!is_null($filename)) {
+        return asset('storage/images/marcas/' . $filename);
+    }
+    return null;
+}
+
 function validarConfiguracionEmail()
 {
     $emailSettings = [

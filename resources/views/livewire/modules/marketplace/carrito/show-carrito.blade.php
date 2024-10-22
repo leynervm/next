@@ -61,11 +61,9 @@
                                         <x-input value="{{ $item->qty }}"
                                             class="w-14 text-center text-colorlabel input-number-none" type="number"
                                             step="1" min="1" onkeypress="return validarNumero(event, 4)"
-                                            @blur="
-                                            if ($el.value == '' || $el.value == 0 ) {
+                                            x-on:blur="if ($el.value == '' || $el.value == 0 ) {
                                                 $el.value = {{ $item->qty }}
                                             }
-
                                             if ( $el.value != {{ $item->qty }}) {
                                                 console.log('update')
                                                 $wire.updateitem('{{ $item->rowId }}', $el.value)

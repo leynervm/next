@@ -53,7 +53,12 @@ class ShowMarcas extends Component
 
     public function render()
     {
-        $marcas = Marca::orderBy('name', 'asc')->paginate();
+        $marcas = Marca::query()->with(['image'])->addSelect(['url' => function ($q) {
+            $q->select('url')->from('images')
+                ->whereColumn('images.imageable_id', 'marcas.id')
+                ->where('images.imageable_type', Marca::class)
+                ->orderBy('default', 'desc')->limit(1);
+        }])->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.marcas.show-marcas', compact('marcas'));
     }
 
@@ -83,7 +88,7 @@ class ShowMarcas extends Component
                 }
 
                 if ($this->marca->image) {
-                    Storage::delete($this->marca->image->getMarcaURL());
+                    Storage::delete(getMarcaURL($this->marca->image->url));
                     $this->marca->image()->delete();
                 }
 
@@ -122,7 +127,7 @@ class ShowMarcas extends Component
     {
         $this->authorize('admin.almacen.marcas.delete');
         if ($marca->image) {
-            Storage::delete($marca->image->getMarcaURL());
+            Storage::delete(getMarcaURL($marca->image->url));
             $marca->image()->delete();
         }
         $marca->delete();
@@ -133,7 +138,7 @@ class ShowMarcas extends Component
     {
         $this->authorize('admin.almacen.marcas.delete');
         if ($this->marca->image) {
-            Storage::delete($this->marca->image->getMarcaURL());
+            Storage::delete(getMarcaURL($this->marca->image->url));
             $this->marca->image()->delete();
             $this->marca->refresh();
         }
@@ -150,6 +155,7 @@ class ShowMarcas extends Component
     {
         try {
             $url = $file->temporaryUrl();
+            $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['logo']);
             $this->addError('logo', $e->getMessage());

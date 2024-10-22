@@ -211,10 +211,15 @@
 </style>
 
 <body class="">
-    @if ($comprobante->sucursal->empresa->image)
+    @if ($comprobante->sucursal->empresa->image || $comprobante->sucursal->empresa->logoimpresion)
         <div class="text-center">
-            <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}" alt=""
-                class="image" />
+            @if ($comprobante->sucursal->empresa->logoimpresion)
+                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->logoimpresion, false) }}" alt=""
+                    class="image" />
+            @else
+                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}" alt=""
+                    class="image" />
+            @endif
         </div>
     @endif
 

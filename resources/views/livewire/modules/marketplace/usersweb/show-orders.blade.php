@@ -34,12 +34,6 @@
         </div>
     </div>
 
-    @if ($orders->hasPages())
-        <div class="pt-3 pb-1">
-            {{ $orders->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     @if (count($orders) > 0)
         <div class="border border-borderminicard rounded-xl">
             <table class="w-full min-w-full text-[10px]">
@@ -77,7 +71,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="w-full py-3">
+        <div class="w-full flex flex-col items-center sm:items-end py-3">
             {{ $orders->onEachSide(0)->links('vendor.pagination.pagination-default') }}
         </div>
     @else

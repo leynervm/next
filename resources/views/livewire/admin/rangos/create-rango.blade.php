@@ -13,32 +13,32 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="save">
-                <div class="w-full flex flex-wrap sm:flex-nowrap gap-2">
-                    <div class="w-full sm:w-1/2">
+                <div class="w-full grid grid-cols-2 gap-2">
+                    <div class="w-full">
                         <x-label value="Rango inicio :" />
                         <x-input class="block w-full" wire:model.defer="desde" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="desde" />
                     </div>
-                    <div class="w-full sm:w-1/2">
+                    <div class="w-full">
                         <x-label value="Rango final :" />
                         <x-input class="block w-full" wire:model.defer="hasta" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="hasta" />
                     </div>
+                    <div class="w-full">
+                        <x-label value="Porcentaje ganancia (%) :" />
+                        <x-input class="block w-full" wire:model.defer="incremento" type="number" step="0.01"
+                            min="0" onkeypress="return validarDecimal(event, 9)" />
+                        <x-jet-input-error for="incremento" />
+                    </div>
                 </div>
 
-                <div class="md:w-1/2 mt-2">
-                    <x-label value="Porcentaje ganancia (%) :" />
-                    <x-input class="block w-full" wire:model.defer="incremento" type="number" step="0.01"
-                        min="0" onkeypress="return validarDecimal(event, 9)" />
-                    <x-jet-input-error for="incremento" />
-                </div>
-
-
-                <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled">
+                <div class="w-full flex pt-4 justify-end gap-2">
+                    <x-button wire:click="save(true)" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
+                    <x-button type="submit" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                 </div>
             </form>
         </x-slot>

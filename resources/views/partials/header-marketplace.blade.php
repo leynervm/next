@@ -2,7 +2,7 @@
     <div class="w-full mx-auto flex items-center relative">
         @if ($empresa->image)
             <div class="hidden xl:flex w-72 items-center h-full">
-                <a href="/" class="w-full p-1 h-[90%]">
+                <a href="/" class="w-full p-1 xl:p-2 h-[90%]">
                     <img class="mx-auto h-full w-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
                         alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
@@ -37,7 +37,7 @@
         <div class="mr-6 relative flex-1 hidden xl:flex" x-data="productSearch()"
             @click.away="products= [],selectedIndex=-1">
             <form @submit.prevent="handleEnter" autocomplete="off"
-                class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[999]'">
+                class="w-full bg-none self-center flex cursor-pointer" :class="openSidebar ? '' : 'z-[299]'">
                 <div class="w-full flex h-[46px] m-0 bg-fondosearchmarketplace justify-center items-center pl-6 rounded-3xl border-0.5 border-fondobuttonsearchmarketplace"
                     :class="products.length ? 'rounded-b-none' : ''">
                     <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">

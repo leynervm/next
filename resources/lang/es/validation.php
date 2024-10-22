@@ -386,5 +386,8 @@ return [
         'trackingstate_id'          =>  'estado tracking',
         'almacens.*.cantidad'       =>  'cantidad',
         'searchserie'               =>  'serie',
+        'logoimpresion'             =>  'logo impresión',
+        'logofooter'                =>  'logo pie de página',
+        'imagemobile'               =>  'imagen'
     ],
 ];

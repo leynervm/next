@@ -1,4 +1,4 @@
-<div>
+<div x-data="fileUploadEdit">
     @if ($sliders->hasPages())
         <div class="pb-2">
             {{ $sliders->onEachSide(0)->links('livewire::pagination-default') }}
@@ -66,11 +66,12 @@
                             <div class="flex-1 flex gap-2 justify-end items-end">
                                 @can('admin.marketplace.sliders.pause')
                                     <x-button-toggle onclick="confirmStatusSlider({{ $item }})"
-                                        wire:loading.attr="disabled" :checked="$item->isActivo() ? true : false" />
+                                        wire:loading.attr="disabled" :checked="$item->isActivo() ? true : false" @click="resetall()" />
                                 @endcan
 
                                 @can('admin.marketplace.sliders.edit')
-                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                    <x-button-edit @click="resetall" wire:loading.attr="disabled"
+                                        wire:click="edit({{ $item->id }})" wire:key="editslider_{{ $item->id }}" />
                                 @endcan
 
                                 @can('admin.marketplace.sliders.delete')
@@ -91,9 +92,11 @@
         </x-slot>
 
         <x-slot name="content">
-            <form x-data="fileUploadEdit" wire:submit.prevent="save" class="w-full flex flex-col gap-2">
+            <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
                 <div class="w-full relative">
-                    <x-simple-card class="w-full h-72 mx-auto mb-1">
+                    <p class="text-xs text-center text-colorlabel font-medium">
+                        VERSIÓN ESCRITORIO</p>
+                    <x-simple-card class="w-full h-40 sm:h-56 mx-auto mb-1 overflow-hidden">
                         @if (isset($image))
                             <template x-if="image">
                                 <img :src="image"
@@ -114,7 +117,7 @@
 
                     <div class="w-full flex flex-wrap gap-2 justify-center">
                         @if (isset($image))
-                            <x-button class="inline-flex px-6" wire:loading.attr="disabled" wire:click="clearImage"
+                            <x-button class="inline-flex px-6" wire:loading.attr="disabled" @click="reset"
                                 @click="reset">LIMPIAR
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -128,7 +131,7 @@
                             </x-button>
                         @else
                             <x-input-file for="{{ $id_image }}" titulo="SELECCIONAR IMAGEN" wire:loading.remove>
-                                <input type="file" class="hidden" id="{{ $id_image }}" wire:model.defer="image"
+                                <input type="file" class="hidden" id="{{ $id_image }}"
                                     accept="image/jpg, image/jpeg, image/png" @change="selectFile" />
                             </x-input-file>
                         @endif
@@ -136,34 +139,80 @@
                     <x-jet-input-error for="image" class="text-center" />
                 </div>
 
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5 mt-3">
+                    <div class="w-full relative">
+                        <p class="text-xs text-center text-colorlabel font-medium">
+                            VERSIÓN MOBILE</p>
 
-                <div class="w-full">
-                    <x-label class="mt-3" value="Link enlace :" />
-                    <x-input class="block w-full" wire:model.defer="slider.link"
-                        placeholder="Ingrese link para redireccionar al hacer click..." />
-                    <x-jet-input-error for="slider.link" />
-                </div>
+                        <x-simple-card class="w-full max-w-52 h-60 mx-auto mb-1 overflow-hidden">
+                            <template x-if="imagemobile">
+                                <img :src="imagemobile"
+                                    class="w-full h-full object-scale-down rounded animate__animated animate__fadeIn animate__faster">
+                            </template>
+                            <template x-if="!imagemobile">
+                                @if ($slider->urlmobile)
+                                    <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                        src="{{ $slider->getImageURLMobile() }}" />
+                                @else
+                                    <x-icon-file-upload type="file"
+                                        class="!w-full !h-full text-colorsubtitleform !border-0" />
+                                @endif
+                            </template>
+                        </x-simple-card>
 
-                <div class="w-full grid md:grid-cols-2 gap-2">
-                    <div class="w-full">
-                        <x-label class="mt-3" value="Fecha inicio :" />
-                        <x-input type="date" class="block w-full" wire:model.defer="slider.start" />
-                        <x-jet-input-error for="slider.start" />
+                        <p class="text-[10px] text-center text-colorsubtitleform">
+                            Resolución Mínima : 720x833px</p>
+
+                        <div class="w-full flex items-center justify-center flex-wrap gap-1">
+                            <x-input-file for="editfilemobile" titulo="SELECCIONAR IMAGEN MOBILE"
+                                class="disabled:opacity-25" wire:loading.attr="disabled">
+                                <input type="file" class="hidden" @change="loadeditimagemobile"
+                                    id="editfilemobile" name="photomobile" accept="image/*" />
+                            </x-input-file>
+
+                            @if (isset($imagemobile))
+                                <x-button class="inline-flex px-6" wire:loading.attr="disabled" @click="resetmobile">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        <line x1="10" x2="10" y1="11" y2="17" />
+                                        <line x1="14" x2="14" y1="11" y2="17" />
+                                    </svg>
+                                    LIMPIAR
+                                </x-button>
+                            @endif
+                        </div>
+                        <x-jet-input-error for="imagemobile" class="text-center" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label class="mt-3" value="Fecha expiración :" />
-                        <x-input type="date" class="block w-full" wire:model.defer="slider.end" />
-                        <x-jet-input-error for="slider.end" />
+                    <div class="w-full flex flex-col gap-2">
+                        <div class="w-full">
+                            <x-label value="Link enlace :" />
+                            <x-input class="block w-full" wire:model.defer="slider.link"
+                                placeholder="Ingrese link para redireccionar al hacer click..." />
+                            <x-jet-input-error for="slider.link" />
+                        </div>
+
+                        <div class="w-full">
+                            <x-label value="Fecha inicio :" />
+                            <x-input type="date" class="block w-full" wire:model.defer="slider.start" />
+                            <x-jet-input-error for="slider.start" />
+                        </div>
+
+                        <div class="w-full">
+                            <x-label value="Fecha expiración :" />
+                            <x-input type="date" class="block w-full" wire:model.defer="slider.end" />
+                            <x-jet-input-error for="slider.end" />
+                        </div>
                     </div>
                 </div>
-
-                {{-- {{ print_r($errors->all()) }} --}}
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('Save') }}
-                    </x-button>
+                        {{ __('Save') }}</x-button>
                 </div>
             </form>
         </x-slot>
@@ -173,6 +222,8 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('fileUploadEdit', () => ({
                 image: null,
+                imagemobile: null,
+                extensionimagemobile: null,
                 isUploading: false,
                 progress: 0,
                 selectFile(event) {
@@ -181,11 +232,42 @@
                     if (event.target.files.length < 1) {
                         return
                     }
-                    reader.readAsDataURL(file)
-                    reader.onload = () => (this.image = reader.result)
+                    reader.onload = (e) => {
+                        this.image = e.target.result;
+                        this.$wire.image = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                    if (file) {
+                        let imageExtension = file.name.split('.').pop();
+                        this.$wire.extencionimage = imageExtension;
+                    }
+                },
+                resetall() {
+                    this.reset();
+                    this.resetmobile();
                 },
                 reset() {
                     this.image = null;
+                    this.$wire.image = null;
+                    this.$wire.extencionimage = null;
+                },
+                loadeditimagemobile() {
+                    let file = document.getElementById('editfilemobile').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imagemobile = e.target.result;
+                        this.$wire.imagemobile = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                    if (file) {
+                        let imageExtension = file.name.split('.').pop();
+                        this.$wire.extencionimagemobile = imageExtension;
+                    }
+                },
+                resetmobile() {
+                    this.imagemobile = null;
+                    this.$wire.imagemobile = null;
+                    this.$wire.extencionimagemobile = null;
                 }
             }))
         })

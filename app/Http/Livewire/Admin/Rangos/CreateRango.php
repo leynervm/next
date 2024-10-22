@@ -24,11 +24,18 @@ class CreateRango extends Component
     {
         return [
             'desde' => [
-                'required', 'numeric', 'min:0', 'decimal:0,2', 'unique:rangos,desde',
+                'required',
+                'numeric',
+                'min:0',
+                'decimal:0,2',
+                'unique:rangos,desde',
                 new ValidateRango($this->desde, $this->hasta),
             ],
             'hasta' => [
-                'required', 'numeric', 'min:' . $this->minHasta, 'decimal:0,2',
+                'required',
+                'numeric',
+                'min:' . $this->minHasta,
+                'decimal:0,2',
                 new ValidateRango($this->desde, $this->hasta),
             ],
             'incremento' => ['required', 'numeric', 'min:0', 'decimal:0,2',]
@@ -50,7 +57,7 @@ class CreateRango extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
 
         $this->authorize('admin.administracion.rangos.create');
@@ -71,9 +78,14 @@ class CreateRango extends Component
                 ['ganancia' => 0]
             );
             DB::commit();
+            $this->resetValidation();
+            if ($closemodal) {
+                $this->reset();
+            } else {
+                $this->resetExcept(['open']);
+            }
             $this->emitTo('admin.rangos.show-rangos', 'render');
             $this->dispatchBrowserEvent('created');
-            $this->reset();
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;

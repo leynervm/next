@@ -201,10 +201,15 @@
 </style>
 
 <body class="">
-    @if ($venta->sucursal->empresa->image)
+    @if ($venta->sucursal->empresa->image || $venta->sucursal->empresa->logoimpresion)
         <div class="text-center">
-            <img src="{{ getLogoEmpresa($venta->sucursal->empresa->image->url, false) }}" alt=""
-                class="image" />
+            @if ($venta->sucursal->empresa->logoimpresion)
+                <img src="{{ getLogoEmpresa($venta->sucursal->empresa->logoimpresion, false) }}" alt=""
+                    class="image" />
+            @else
+                <img src="{{ getLogoEmpresa($venta->sucursal->empresa->image->url, false) }}" alt=""
+                    class="image" />
+            @endif
         </div>
     @endif
 

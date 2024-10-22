@@ -89,8 +89,8 @@
 
                 <div class="w-full">
                     <x-label value="Redondeo decimales :" />
-                    <div id="parentroundededit" class="relative" wire:ignore>
-                        <x-select class="block w-full" id="roundededit" x-ref="select">
+                    <div id="parentroundededit" class="relative" x-init="select2Rounded">
+                        <x-select class="block w-full" id="roundededit" x-ref="selectrounded">
                             <x-slot name="options">
                                 <option value="0">NO USAR REDONDEO</option>
                                 <option value="1">REDONDEAR DECIMAL (+0.5)</option>
@@ -138,7 +138,7 @@
                     <x-jet-input-error for="pricetype.temporal" />
 
                     <div x-show="show" class="relative mt-2">
-                        <div class="w-full flex gap-2 animate__animated animate__fadeInDown">
+                        <div class="w-full grid grid-cols-2 gap-2 animate__animated animate__fadeInDown">
                             <div class="w-full">
                                 <x-label value="Fecha inicio :" />
                                 <x-input class="w-full" type="date" wire:model.defer="pricetype.startdate" />
@@ -171,24 +171,7 @@
                 changeTemporal(target) {
                     this.show = !this.show;
                 },
-                init() {
-                    this.select2Rounded();
-                    // this.show = @this.get('pricetype.temporal');
-                },
-                select2Rounded() {
-                    this.selectR = $(this.$refs.select).select2();
-                    this.selectR.val(this.rounded).trigger("change");
-                    this.selectR.on("select2:select", (event) => {
-                        this.rounded = event.target.value;
-                    }).on('select2:open', function(e) {
-                        const evt = "scroll.select2";
-                        $(e.target).parents().off(evt);
-                        $(window).off(evt);
-                    });
-                    this.$watch("rounded", (value) => {
-                        this.selectR.val(value).trigger("change");
-                    });
-                },
+                init() {},
                 confirmDisable(pricetype) {
                     let estado_activo = "{{ \App\Models\Pricetype::ACTIVO }}";
                     let mensaje = pricetype.status == estado_activo ? 'DESACTIVAR' : 'ACTIVAR';
@@ -209,5 +192,24 @@
                 }
             }));
         })
+
+        function select2Rounded() {
+            this.selectRP = $(this.$refs.selectrounded).select2();
+            this.selectRP.val(this.rounded).trigger("change");
+            this.selectRP.on("select2:select", (event) => {
+                this.rounded = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("rounded", (value) => {
+                this.selectRP.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectRP.select2().val(this.rounded).trigger('change');
+            });
+
+        }
     </script>
 </div>

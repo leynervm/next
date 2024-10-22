@@ -73,7 +73,7 @@
                         @if ($producto->marca)
                             @if ($producto->marca->image && $empresa->verLogomarca())
                                 <div class="absolute top-1 right-0 w-24 h-12">
-                                    <img src="{{ $producto->marca->image->getMarcaURL() }}"
+                                    <img src="{{ getMarcaURL($producto->marca->image->url) }}"
                                         class="block w-full h-full object-scale-down">
                                 </div>
                             @endif

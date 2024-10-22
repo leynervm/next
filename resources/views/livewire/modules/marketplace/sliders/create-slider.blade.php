@@ -14,10 +14,12 @@
         <x-slot name="content">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
                 <div class="w-full relative">
-                    <x-simple-card class="w-full h-72 mx-auto mb-1">
+                    <p class="text-xs text-center text-colorlabel font-medium">
+                        VERSIÓN ESCRITORIO</p>
+                    <x-simple-card class="w-full h-40 sm:h-56 mx-auto mb-1 overflow-hidden">
                         <template x-if="image">
                             <img :src="image"
-                                class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
+                                class="w-full h-full object-scale-down rounded animate__animated animate__fadeIn animate__faster">
                         </template>
                         <template x-if="!image">
                             <x-icon-file-upload type="file" class="w-full h-full text-gray-300 !border-0" />
@@ -25,17 +27,17 @@
                     </x-simple-card>
 
                     <p class="text-[10px] text-center text-colorsubtitleform">
-                        Resolución Mínima : 1920px X 560px</p>
+                        Resolución Mínima : 1920x560px</p>
 
-                    <div class="w-full flex items-center justify-center flex-wrap gap-2">
-                        <x-input-file for="fileInput" titulo="SELECCIONAR IMÁGEN" class="disabled:opacity-25"
-                            wire:loading.attr="disabled" wire:target="imagen">
-                            <input type="file" class="hidden" wire:model="image" @change="loadlogo" id="fileInput"
-                                name="photo" accept="image/*" />
+                    <div class="w-full flex items-center justify-center flex-wrap gap-1">
+                        <x-input-file for="fileInput" titulo="SELECCIONAR IMAGEN" class="disabled:opacity-25"
+                            wire:loading.attr="disabled">
+                            <input type="file" class="hidden" @change="loadimage" id="fileInput" name="photo"
+                                accept="image/*" />
                         </x-input-file>
 
                         @if (isset($image))
-                            <x-button class="inline-flex px-6 !rounded-lg" wire:loading.attr="disabled" @click="reset">
+                            <x-button class="inline-flex px-6" wire:loading.attr="disabled" @click="reset">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -49,49 +51,71 @@
                             </x-button>
                         @endif
                     </div>
-                    {{-- <div class="w-full flex flex-wrap gap-2 justify-center">
-                        @if (isset($image))
-                            <x-button class="inline-flex px-6" wire:loading.attr="disabled" wire:click="clearImage"
-                                @click="reset">LIMPIAR
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                            </x-button>
-                        @else
-                            <x-input-file for="{{ $identificador }}" titulo="SELECCIONAR IMAGEN" wire:loading.remove>
-                                <input type="file" class="hidden" id="{{ $identificador }}"
-                                    accept="image/jpg, image/jpeg, image/png" @change="selectFile" />
-                            </x-input-file>
-                        @endif
-                    </div> --}}
                     <x-jet-input-error for="image" class="text-center" />
                 </div>
 
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-5 mt-3">
+                    <div class="w-full relative">
+                        <p class="text-xs text-center text-colorlabel font-medium">
+                            VERSIÓN MOBILE</p>
 
-                <div class="w-full">
-                    <x-label class="mt-3" value="Link enlace :" />
-                    <x-input class="block w-full" wire:model.defer="link"
-                        placeholder="Ingrese link para redireccionar al hacer click..." />
-                    <x-jet-input-error for="link" />
-                </div>
+                        <x-simple-card class="w-full max-w-52 h-60 mx-auto mb-1 overflow-hidden">
+                            <template x-if="imagemobile">
+                                <img :src="imagemobile"
+                                    class="w-full h-full object-scale-down rounded animate__animated animate__fadeIn animate__faster">
+                            </template>
+                            <template x-if="!imagemobile">
+                                <x-icon-file-upload type="file" class="w-full h-full text-gray-300 !border-0" />
+                            </template>
+                        </x-simple-card>
 
-                <div class="w-full grid md:grid-cols-2 gap-2">
-                    <div class="w-full">
-                        <x-label class="mt-3" value="Fecha inicio :" />
-                        <x-input type="date" class="block w-full" wire:model.defer="start" />
-                        <x-jet-input-error for="start" />
+                        <p class="text-[10px] text-center text-colorsubtitleform">
+                            Resolución Mínima : 720x833px</p>
+
+                        <div class="w-full flex items-center justify-center flex-wrap gap-1">
+                            <x-input-file for="filemobile" titulo="SELECCIONAR IMAGEN MOBILE"
+                                class="disabled:opacity-25" wire:loading.attr="disabled">
+                                <input type="file" class="hidden" @change="loadimagemobile" id="filemobile"
+                                    name="photomobile" accept="image/*" />
+                            </x-input-file>
+
+                            @if (isset($imagemobile))
+                                <x-button class="inline-flex px-6" wire:loading.attr="disabled" @click="resetmobile">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
+                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 6h18" />
+                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                        <line x1="10" x2="10" y1="11" y2="17" />
+                                        <line x1="14" x2="14" y1="11" y2="17" />
+                                    </svg>
+                                    LIMPIAR
+                                </x-button>
+                            @endif
+                        </div>
+                        <x-jet-input-error for="imagemobile" class="text-center" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label class="mt-3" value="Fecha expiración :" />
-                        <x-input type="date" class="block w-full" wire:model.defer="end" />
-                        <x-jet-input-error for="end" />
+                    <div class="w-full flex flex-col gap-2">
+                        <div class="w-full">
+                            <x-label value="Link enlace :" />
+                            <x-input class="block w-full" wire:model.defer="link"
+                                placeholder="Ingrese link para redireccionar al hacer click..." />
+                            <x-jet-input-error for="link" />
+                        </div>
+
+                        <div class="w-full">
+                            <x-label value="Fecha inicio :" />
+                            <x-input type="date" class="block w-full" wire:model.defer="start" />
+                            <x-jet-input-error for="start" />
+                        </div>
+
+                        <div class="w-full">
+                            <x-label value="Fecha expiración :" />
+                            <x-input type="date" class="block w-full" wire:model.defer="end" />
+                            <x-jet-input-error for="end" />
+                        </div>
                     </div>
                 </div>
 
@@ -109,39 +133,51 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('fileUpload', () => ({
                 image: null,
-                imageWidth: null,
-                imageHeight: null,
+                imagemobile: null,
+                extencionimage: null,
+                extencionimagemobile: null,
                 init() {
                     window.addEventListener('created', event => {
                         console.log(event);
                         this.image = null;
                     })
                 },
-                loadlogo() {
+                loadimage() {
                     let file = document.getElementById('fileInput').files[0];
                     var reader = new FileReader();
-                    reader.onload = (e) => this.image = e.target.result;
+                    reader.onload = (e) => {
+                        this.image = e.target.result;
+                        this.$wire.image = reader.result;
+                    };
                     reader.readAsDataURL(file);
-
                     if (file) {
-                        let imageName = file.name;
                         let imageExtension = file.name.split('.').pop();
-                        this.getBase64(file, (result) => {
-                            // @this.set('image', result);
-                            // @this.set('extencionimage', imageExtension);
-                        });
+                        this.$wire.extencionimage = imageExtension;
                     }
                 },
-                getBase64(file, callback) {
-                    const reader = new FileReader();
+                loadimagemobile() {
+                    let file = document.getElementById('filemobile').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.imagemobile = e.target.result;
+                        this.$wire.imagemobile = reader.result;
+                    };
                     reader.readAsDataURL(file);
-                    reader.onload = () => callback(reader.result);
-                    reader.onerror = error => console.error('Error: ', error);
+                    if (file) {
+                        let imageExtension = file.name.split('.').pop();
+                        this.$wire.extencionimagemobile = imageExtension;
+                    }
                 },
                 reset() {
                     this.image = null;
-                    @this.clearImage();
+                    this.$wire.image = null;
+                    this.$wire.extencionimage = null;
                 },
+                resetmobile() {
+                    this.imagemobile = null;
+                    this.$wire.imagemobile = null;
+                    this.$wire.extencionimagemobile = null;
+                }
             }))
         })
     </script>

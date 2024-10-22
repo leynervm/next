@@ -285,9 +285,15 @@
             <thead>
                 <tr class="align-baseline">
                     <th style="text-align: left;">
-                        @if ($empresa->image)
+                        @if ($empresa->image || $empresa->logoimpresion)
                             <div class="">
-                                <img src="{{ getLogoEmpresa($empresa->image->url, false) }}" alt="" class="image" />
+                                @if ($empresa->logoimpresion)
+                                    <img src="{{ getLogoEmpresa($empresa->logoimpresion, false) }}" alt=""
+                                        class="image" />
+                                @else
+                                    <img src="{{ getLogoEmpresa($empresa->image->url, false) }}" alt=""
+                                        class="image" />
+                                @endif
                             </div>
                         @endif
                     </th>

@@ -1,7 +1,7 @@
 <div class="relative">
 
     @if ($categories->hasPages())
-        <div class="w-full pb-2">
+        <div class="w-full flex flex-col justify-end items-center sm:items-end pb-2">
             {{ $categories->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif

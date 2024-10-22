@@ -2,8 +2,8 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Sliders;
 
-use App\Helpers\FormatoPersonalizado;
 use App\Models\Slider;
+use App\Rules\ValidateImageBase64;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +20,7 @@ class CreateSlider extends Component
     use AuthorizesRequests;
     use WithFileUploads;
 
-    public $image, $extencionimage;
+    public $image, $extencionimage, $imagemobile, $extencionimagemobile;
     public $identificador;
     public $orden, $link, $start, $end;
 
@@ -33,11 +33,20 @@ class CreateSlider extends Component
             'orden' => ['required', 'integer', 'min:0'],
             'image' => [
                 'required',
-                'file',
-                'mimes:jpeg,png,gif',
-                'max:5120',
-                'dimensions:min_width=1920,min_height=560'
-            ]
+                'string',
+                'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
+                // 'max:5120',
+                // 'dimensions:min_width=1920,min_height=560'
+                new ValidateImageBase64(1920, 560, ['JPG', 'JPEG', 'PNG'])
+            ],
+            'extencionimage' => ['in:jpg,jpeg,png,gif'],
+            'imagemobile' => [
+                'required',
+                'string',
+                'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
+                new ValidateImageBase64(720, 833, ['JPG', 'JPEG', 'PNG'])
+            ],
+            'extencionimagemobile' => ['in:jpg,jpeg,png,gif']
         ];
     }
 
@@ -63,35 +72,18 @@ class CreateSlider extends Component
 
     public function save($closemodal = false)
     {
-
         $this->authorize('admin.marketplace.sliders.create');
-
         DB::beginTransaction();
         try {
             $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
             $this->validate();
 
-            if (!Storage::directoryExists('images/slider/')) {
-                Storage::makeDirectory('images/slider/');
-            }
-
-            $compressedImage = ImageIntervention::make($this->image->getRealPath())
-                ->resize(1920, 560, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->orientate()->encode('jpg', 30);
-
-            $urlImage = uniqid('slider_') . '.' . $this->image->getClientOriginalExtension();
-            $compressedImage->save(public_path('storage/images/slider/' . $urlImage));
-
-            if ($compressedImage->filesize() > 2097152) { //2MB
-                $compressedImage->destroy();
-                $this->addError('image', 'El campo imagen no debe ser mayor que 2MB.');
-                return false;
-            }
+            $urlslider = $this->savepicture('image', 1920, 560, $this->extencionimage, 'desk_');
+            $urlslidermobile = $this->savepicture('imagemobile', 720, 833, $this->extencionimagemobile, 'mobile_');
 
             Slider::create([
-                'url' => $urlImage,
+                'url' => $urlslider,
+                'urlmobile' => $urlslidermobile,
                 'link' => $this->link,
                 'orden' => $this->orden,
                 'start' => $this->start,
@@ -116,20 +108,49 @@ class CreateSlider extends Component
         }
     }
 
-    public function updatedImage($file)
+    public function savepicture($attribute, $width, $height, $extencionimage, $responsive)
     {
-        try {
-            $url = $file->temporaryUrl();
-            $this->resetValidation();
-        } catch (\Exception $e) {
-            $this->reset(['image']);
-            $this->addError('image', $e->getMessage());
-            return;
+
+        $imageSlider = $this->{$attribute};
+        list($type, $imageSlider) = explode(';', $imageSlider);
+        list(, $imageSlider) = explode(',', $imageSlider);
+        $imageSlider = base64_decode($imageSlider);
+        $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 70);
+
+        if ($compressedSlider->width() < $width || $compressedSlider->height() < $height) {
+            $this->addError($attribute, "La :imagen debe tener dimensiones de " . $width . 'x' . $height . " píxeles.");
+            return false;
         }
+
+        if ($compressedSlider->filesize() > 1048576) { //1MB
+            $compressedSlider->destroy();
+            $this->addError($attribute, 'La imagen excede el tamaño máximo permitido.');
+            return false;
+        }
+
+        if (!Storage::directoryExists('images/slider/')) {
+            Storage::makeDirectory('images/slider/');
+        }
+
+        $urlslider = uniqid('slider_' . $responsive) . '.' . $extencionimage;
+        $compressedSlider->save(public_path('storage/images/slider/' . $urlslider));
+        return $urlslider;
     }
 
-    public function clearImage()
+    // public function updatedImage($file)
+    // {
+    //     try {
+    //         $url = $file->temporaryUrl();
+    //         $this->resetValidation();
+    //     } catch (\Exception $e) {
+    //         $this->reset(['image']);
+    //         $this->addError('image', $e->getMessage());
+    //         return;
+    //     }
+    // }
+
+    public function updated($propertyName)
     {
-        $this->reset(['image']);
+        $this->resetValidation();
     }
 }

@@ -41,11 +41,6 @@ class Image extends Model
         return Storage::url('images/marcas/' . $this->url);
     }
 
-    public function getMarcaURL()
-    {
-        return Storage::url('images/marcas/' . $this->url);
-    }
-
     public function getLogoEmpresa()
     {
         return Storage::url('images/company/' . $this->url);

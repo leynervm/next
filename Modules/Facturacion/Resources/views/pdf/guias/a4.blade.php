@@ -283,10 +283,15 @@
             <thead>
                 <tr class="align-baseline">
                     <th style="text-align: left;">
-                        @if ($guia->sucursal->empresa->image)
+                        @if ($guia->sucursal->empresa->image || $guia->sucursal->empresa->logoimpresion)
                             <div class="">
-                                <img src="{{ getLogoEmpresa($guia->sucursal->empresa->image->url, false) }}" alt=""
-                                    class="image" />
+                                @if ($guia->sucursal->empresa->logoimpresion)
+                                    <img src="{{ getLogoEmpresa($guia->sucursal->empresa->logoimpresion, false) }}"
+                                        alt="" class="image" />
+                                @else
+                                    <img src="{{ getLogoEmpresa($guia->sucursal->empresa->image->url, false) }}"
+                                        alt="" class="image" />
+                                @endif
                             </div>
                         @endif
                     </th>

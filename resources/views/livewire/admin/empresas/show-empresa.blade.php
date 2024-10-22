@@ -127,187 +127,373 @@
         </form>
     </x-form-card>
 
-    <div class="grid gap-8 lg:grid-cols-2">
-        <x-form-card titulo="LOGOTIPO & ICONO">
-            <div class="w-full grid gap-3 xs:grid-cols-2">
-                <div class="relative w-full text-center">
-                    <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
-                        @if (isset($logo))
+    <x-form-card titulo="CARGAR LOGOS EMPRESA">
+        <div class="w-full grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+            <div class="relative w-full text-center">
+                <p class="text-[10px] font-medium text-center text-colorsubtitleform">
+                    LOGO PRINCIPAL</p>
+                <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
+                    @if (isset($logo))
+                        <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                            src="{{ $logo->temporaryUrl() }}" />
+                    @else
+                        @if ($empresa->image)
                             <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                src="{{ $logo->temporaryUrl() }}" />
+                                src="{{ $empresa->image->getLogoEmpresa() }}" />
                         @else
-                            @if ($empresa->image)
-                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                    src="{{ $empresa->image->getLogoEmpresa() }}" />
-                            @else
-                                <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" />
-                            @endif
-                        @endif
-                    </x-simple-card>
+                            <div class="w-full bg-gray-200 h-full rounded-xl overflow-hidden">
+                                <div class="w-full flex flex-col p-1 h-full rounded">
+                                    <div
+                                        class="w-full flex rounded-t-md justify-between items-start gap-3 bg-gray-300 p-2">
+                                        <div
+                                            class="text-white animate-bounce inline-block leading-none text-[8px] bg-next-500 rounded py-2 px-4">
+                                            LOGO</div>
 
-                    <div class="w-full flex gap-2 flex-wrap justify-center">
-                        @if (isset($logo))
-                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
-                                wire:click="savelogo">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path
-                                        d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
-                                    <path
-                                        d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
-                                </svg>
-                                GUARDAR LOGO
-                            </x-button>
-                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
-                                wire:click="clearLogo">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                                LIMPIAR
-                            </x-button>
-                        @else
-                            <x-input-file class="!rounded-lg" :for="$idlogo" :titulo="$empresa->image ? 'CAMBIAR LOGO' : 'SELECCIONAR LOGO'" wire:loading.remove>
-                                <input type="file" class="hidden" wire:model.defer="logo"
-                                    id="{{ $idlogo }}" accept="image/jpg, image/jpeg, image/png" />
-                            </x-input-file>
+                                        <div class="py-0.5 px-5 bg-gray-400 mt-1 rounded"></div>
+                                        <div class="py-0.5 px-5 bg-gray-400 mt-1 rounded"></div>
+                                    </div>
+                                    <div class="flex-1 w-full pt-1 rounded-b-md">
+                                        <div class="bg-gray-300 border border-borderminicard h-full p-2 rounded-sm">
+                                            <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                            <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                            <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                            <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                            <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
+                                            <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
                         @endif
+                    @endif
+                </x-simple-card>
 
-                        @if (!isset($logo) && $empresa->image)
-                            <x-button wire:click="deletelogo" wire:loading.attr="disabled" class="!rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                                ELIMINAR LOGO
-                            </x-button>
-                        @endif
-                    </div>
-                    <x-jet-input-error for="logo" class="text-center" />
+                <div class="w-full flex gap-1 flex-wrap justify-center">
+                    @if (isset($logo))
+                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" wire:click="savelogo">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
+                                <path
+                                    d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
+                            </svg>
+                            GUARDAR LOGO
+                        </x-button>
+                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
+                            wire:click="clearLogo">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    @else
+                        <x-input-file class="!rounded-lg" :for="$idlogo" :titulo="$empresa->image ? 'CAMBIAR LOGO' : 'SELECCIONAR LOGO'" wire:loading.remove>
+                            <input type="file" class="hidden" wire:model.defer="logo" id="{{ $idlogo }}"
+                                accept="image/jpg, image/jpeg, image/png" />
+                        </x-input-file>
+                    @endif
+
+                    @if (!isset($logo) && $empresa->image)
+                        <x-button-secondary wire:click="deletelogo" wire:loading.attr="disabled">
+                            ELIMINAR</x-button-secondary>
+                    @endif
                 </div>
-
-                <div class="relative w-full text-center">
-                    <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
-                        @if (isset($icono))
-                            <img x-bind:src="URL.createObjectURL(icono)"
-                                class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
-                        @else
-                            @if ($empresa->icono)
-                                <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                    src="{{ $empresa->getIconoURL() }}" />
-                            @else
-                                <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" />
-                            @endif
-                        @endif
-                    </x-simple-card>
-
-                    <div class="w-full flex gap-1 flex-wrap justify-center">
-                        @if (isset($icono))
-                            <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
-                                wire:click="saveicono">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
-                                    <path
-                                        d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
-                                </svg>
-                                GUARDAR ICONO
-                            </x-button>
-                            <x-button class="inline-flex px-6 !rounded-lg" wire:loading.attr="disabled"
-                                wire:click="clearIcono">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                                LIMPIAR
-                            </x-button>
-                        @else
-                            <x-input-file for="{{ $idicono }}" :titulo="$empresa->icono ? 'CAMBIAR ÍCONO' : 'SELECCIONAR ÍCONO'" class="!rounded-lg"
-                                wire:loading.remove>
-                                <input type="file" class="hidden" wire:model.defer="icono"
-                                    id="{{ $idicono }}" accept=".ico"
-                                    @change="icono = $event.target.files[0]" />
-                            </x-input-file>
-                        @endif
-
-                        @if (!isset($icono) && $empresa->icono)
-                            <x-button wire:click="deleteicono({{ $empresa->id }})" wire:loading.attr="disabled"
-                                class="!rounded-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                                ELIMINAR ICONO
-                            </x-button>
-                        @endif
-                    </div>
-                    <x-jet-input-error for="icono" class="text-center" />
-                </div>
+                <x-jet-input-error for="logo" class="text-center" />
             </div>
-        </x-form-card>
 
-        <x-form-card titulo="TELÉFONOS" subtitulo="Agregue números de teléfono para contactarse.">
-            {{-- <div class="w-full flex flex-col gap-3 justify-between"> --}}
-            @if (count($empresa->telephones))
-                <div class="w-full flex gap-2 flex-wrap">
-                    @foreach ($empresa->telephones as $item)
-                        <x-minicard title="" :content="formatTelefono($item->phone)">
-                            <x-slot name="title">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mx-auto" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path
-                                        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                    <path d="M14.05 2a9 9 0 0 1 8 7.94" />
-                                    <path d="M14.05 6A5 5 0 0 1 18 10" />
-                                </svg>
-                            </x-slot>
-                            <x-slot name="buttons">
-                                <x-button-edit wire:click="editphone({{ $item->id }})"
-                                    wire:loading.attr="disabled" />
-                                <x-button-delete wire:click="deletephone({{ $item->id }})"
-                                    wire:loading.attr="disabled" />
-                            </x-slot>
-                        </x-minicard>
-                    @endforeach
+            <div class="relative w-full text-center">
+                <p class="text-[10px] font-medium text-center text-colorsubtitleform">
+                    ISOTIPO PRINCIPAL</p>
+                <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
+                    @if (isset($icono))
+                        <img x-bind:src="URL.createObjectURL(icono)"
+                            class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster">
+                    @else
+                        @if ($empresa->icono)
+                            <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                src="{{ $empresa->getIconoURL() }}" />
+                        @else
+                            <div class="w-full bg-gray-200 h-full p-1 rounded-xl overflow-hidden">
+                                <div class="w-full h-full flex flex-col gap-1 bg-gray-200 rounded">
+                                    <div class="w-full flex gap-0.5 justify-start">
+                                        <div
+                                            class="bg-gray-300 rounded-sm rounded-tr-lg py-2.5 px-7 border border-borderminicard relative">
+                                            <div
+                                                class="absolute top-1 right-1 animate-bounce inline-block bg-next-500 rounded-full p-1">
+                                            </div>
+                                        </div>
+                                        <div class="bg-gray-300 rounded-sm rounded-tr-lg py-2.5 px-5"></div>
+                                        <div class="bg-gray-300 rounded-sm rounded-tr-lg py-2.5 px-5"></div>
+                                    </div>
+                                    <div class="w-full flex-1 h-full bg-gray-300 p-2">
+                                        <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                        <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                        <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                        <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                        <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
+                                        <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
+                        @endif
+                    @endif
+                </x-simple-card>
+
+                <div class="w-full flex gap-1 flex-wrap justify-center">
+                    @if (isset($icono))
+                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled"
+                            wire:click="saveicono">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
+                                <path
+                                    d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
+                            </svg>
+                            GUARDAR ICONO
+                        </x-button>
+                        <x-button class="inline-flex px-6 !rounded-lg" wire:loading.attr="disabled"
+                            wire:click="clearIcono">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    @else
+                        <x-input-file for="{{ $idicono }}" :titulo="$empresa->icono ? 'CAMBIAR ÍCONO' : 'SELECCIONAR ÍCONO'" class="!rounded-lg"
+                            wire:loading.remove>
+                            <input type="file" class="hidden" wire:model.defer="icono" id="{{ $idicono }}"
+                                accept=".ico" @change="icono = $event.target.files[0]" />
+                        </x-input-file>
+                    @endif
+
+                    @if (!isset($icono) && $empresa->icono)
+                        <x-button-secondary wire:click="deleteicono({{ $empresa->id }})"
+                            wire:loading.attr="disabled">
+                            ELIMINAR</x-button-secondary>
+                    @endif
                 </div>
-            @endif
-
-            <div class="w-full flex justify-end mt-auto">
-                <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path
-                            d="M16.243 5.243h3m3 0h-3m0 0v-3m0 3v3M18.118 14.702L14 15.5c-2.782-1.396-4.5-3-5.5-5.5l.77-4.13L7.815 2H4.064c-1.128 0-2.016.932-1.847 2.047.42 2.783 1.66 7.83 5.283 11.453 3.805 3.805 9.286 5.456 12.302 6.113 1.165.253 2.198-.655 2.198-1.848v-3.584l-3.882-1.479z" />
-                    </svg>
-                </x-button>
+                <x-jet-input-error for="icono" class="text-center" />
             </div>
-            {{-- </div> --}}
-        </x-form-card>
-    </div>
+
+            <div class="relative w-full text-center">
+                <p class="text-[10px] font-medium text-center text-colorsubtitleform">
+                    LOGO PIE DE PÁGINA (OPCIONAL)</p>
+                <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
+                    <template x-if="logofooter">
+                        <img class="object-scale-down block w-full h-full" :src="logofooter" />
+                    </template>
+                    <template x-if="!logofooter">
+                        @if ($empresa->logofooter)
+                            <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                src="{{ $empresa->getLogoFooterURL() }}" />
+                        @else
+                            <div class="w-full bg-gray-200 h-full rounded-xl overflow-hidden">
+                                <div class="w-full flex flex-col h-full rounded">
+                                    <div class="flex-1 w-full p-1">
+                                        <div class="bg-gray-300 border border-borderminicard h-full p-2 rounded-t-md">
+                                            <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                            <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                            <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                            <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                            <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
+                                            <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                        </div>
+                                    </div>
+                                    <div class="w-full p-1">
+                                        <div class="w-full py-2 px-1 flex justify-between items-end gap-3 bg-gray-300 rounded-b-md">
+                                            <div
+                                                class="text-white animate-bounce inline-block leading-none text-[8px] bg-next-500 rounded py-2 px-4">
+                                                LOGO</div>
+                                            <div>
+                                                <div class="py-0.5 px-5 bg-gray-400 mt-1 rounded"></div>
+                                                <div class="py-0.5 px-5 bg-gray-400 mt-1 rounded"></div>
+                                            </div>
+                                            <div>
+                                                <div class="py-0.5 px-5 bg-gray-400 mt-1 rounded"></div>
+                                                <div class="py-0.5 px-5 bg-gray-400 mt-1 rounded"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
+                        @endif
+                    </template>
+                </x-simple-card>
+
+                <div class="w-full flex gap-1 flex-wrap justify-center">
+                    @if (isset($logofooter))
+                        <x-button class="inline-flex" wire:loading.attr="disabled" wire:key="savelogofooter"
+                            wire:click="savelogofooter">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
+                                <path
+                                    d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
+                            </svg>
+                            GUARDAR LOGO FOOTER
+                        </x-button>
+                        <x-button class="inline-flex px-6" wire:loading.attr="disabled" @click="clearLogoFooter">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    @else
+                        <x-input-file for="logofooter" :titulo="$empresa->logofooter ? 'CAMBIAR LOGO FOOTER' : 'SELECCIONAR LOGO FOOTER'" wire:loading.remove>
+                            <input type="file" class="hidden" id="logofooter" accept="image/*"
+                                @change="loadlogofooter" />
+                        </x-input-file>
+                    @endif
+
+                    @if (!isset($logofooter) && $empresa->logofooter)
+                        <x-button-secondary @click="deletelogofooter" wire:loading.attr="disabled">
+                            ELIMINAR</x-button-secondary>
+                    @endif
+                </div>
+                <x-jet-input-error for="logofooter" class="text-center" />
+            </div>
+
+            <div class="relative w-full text-center">
+                <p class="text-[10px] font-medium text-center text-colorsubtitleform">
+                    LOGO ALTERNATIVO DE IMPRESIÓN (OPCIONAL)</p>
+                <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
+                    <template x-if="logoimpresion">
+                        <img class="object-scale-down block w-full h-full" :src="logoimpresion" />
+                    </template>
+                    <template x-if="!logoimpresion">
+                        @if ($empresa->logoimpresion)
+                            <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
+                                src="{{ $empresa->getLogoImpresionURL() }}" />
+                        @else
+                            <div class="w-full h-full p-2 rounded-xl bg-gray-200 flex justify-center items-center">
+                                <div
+                                    class="w-full h-full max-w-[40%] bg-gray-300 rounded-sm p-2 border border-borderminicard">
+                                    <div
+                                        class="w-full animate-bounce text-white leading-none text-[8px] bg-next-500 rounded py-2 px-4">
+                                        LOGO</div>
+
+                                    <div class="w-full p-0.5 bg-gray-400 mt-3 rounded"></div>
+                                    <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-1 rounded"></div>
+                                    <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
+                                    <div class="w-full p-0.5 max-w-[80%] bg-gray-400 mt-1 rounded"></div>
+                                    <div class="w-full p-0.5 max-w-[80%] bg-gray-400 mt-1 rounded"></div>
+                                    <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
+                                    <div class="w-full p-0.5 max-w-[40%] bg-gray-400 mt-4 rounded"></div>
+                                    <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
+                                </div>
+                            </div>
+                            {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
+                        @endif
+                    </template>
+                </x-simple-card>
+
+                <div class="w-full flex gap-1 flex-wrap justify-center">
+                    @if (isset($logoimpresion))
+                        <x-button class="inline-flex" wire:loading.attr="disabled" wire:key="savelogoimpresion"
+                            wire:click="savelogoimpresion">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
+                                <path
+                                    d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
+                            </svg>
+                            GUARDAR LOGO IMPRESIÓN
+                        </x-button>
+                        <x-button class="inline-flex px-6" wire:loading.attr="disabled" @click="clearLogoImpresion">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    @else
+                        <x-input-file for="logoimpresion" :titulo="$empresa->logoimpresion ? 'CAMBIAR LOGO IMPRESIÓN' : 'SELECCIONAR LOGO IMPRESIÓN'" wire:loading.remove>
+                            <input type="file" class="hidden" id="logoimpresion" accept="image/*"
+                                @change="loadlogoimpresion" />
+                        </x-input-file>
+                    @endif
+
+                    @if (!isset($logoimpresion) && $empresa->logoimpresion)
+                        <x-button-secondary @click="deletelogoimpresion" wire:loading.attr="disabled">
+                            ELIMINAR</x-button-secondary>
+                    @endif
+                </div>
+                <x-jet-input-error for="logoimpresion" class="text-center" />
+                {{-- <x-jet-input-error for="extencionlogoimpresion" class="text-center" /> --}}
+            </div>
+        </div>
+    </x-form-card>
+
+    <x-form-card titulo="TELÉFONOS" subtitulo="Agregue números de teléfono para contactarse.">
+        @if (count($empresa->telephones))
+            <div class="w-full flex gap-2 flex-wrap">
+                @foreach ($empresa->telephones as $item)
+                    <x-minicard title="" :content="formatTelefono($item->phone)">
+                        <x-slot name="title">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mx-auto" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                <path d="M14.05 2a9 9 0 0 1 8 7.94" />
+                                <path d="M14.05 6A5 5 0 0 1 18 10" />
+                            </svg>
+                        </x-slot>
+                        <x-slot name="buttons">
+                            <x-button-edit wire:click="editphone({{ $item->id }})"
+                                wire:loading.attr="disabled" />
+                            <x-button-delete wire:click="deletephone({{ $item->id }})"
+                                wire:loading.attr="disabled" />
+                        </x-slot>
+                    </x-minicard>
+                @endforeach
+            </div>
+        @endif
+
+        <div class="w-full flex justify-end mt-auto">
+            <x-button wire:click="openmodalphone" wire:loading.attr="disabled">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M16.243 5.243h3m3 0h-3m0 0v-3m0 3v3M18.118 14.702L14 15.5c-2.782-1.396-4.5-3-5.5-5.5l.77-4.13L7.815 2H4.064c-1.128 0-2.016.932-1.847 2.047.42 2.783 1.66 7.83 5.283 11.453 3.805 3.805 9.286 5.456 12.302 6.113 1.165.253 2.198-.655 2.198-1.848v-3.584l-3.882-1.479z" />
+                </svg>
+            </x-button>
+        </div>
+    </x-form-card>
 
     <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
         <form wire:submit.prevent="updateopciones" class="w-full flex flex-col gap-8">
@@ -427,7 +613,7 @@
                             <x-jet-input-error for="empresa.viewlogomarca" />
                         </div>
 
-                        <div class="w-full" x-data="loadimage()">
+                        <div class="w-full">
                             <x-label-check for="usemarca_agua">
                                 <x-input wire:model.defer="empresa.usemarkagua" value="1" type="checkbox"
                                     x-on:change="openmark = !openmark" id="usemarca_agua" />
@@ -492,7 +678,7 @@
                                                     class="object-scale-down block w-full max-w-full h-full"
                                                     src="{{ $empresa->getMarkAguaURL() }}" />
                                             @else
-                                                <x-icon-file-upload class="w-full h-full !my-0" />
+                                                <x-icon-file-upload class="w-full h-full !border-none !my-0" />
                                             @endif
                                         </template>
                                     </x-simple-card>
@@ -500,7 +686,7 @@
 
                                     <div class="w-full flex gap-2 flex-wrap justify-center">
                                         <template x-if="markagua">
-                                            <x-button class="inline-flex !rounded-lg" @click="reset"
+                                            <x-button class="inline-flex" @click="resetmark"
                                                 wire:loading.attr="disabled">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -518,9 +704,9 @@
                                         </template>
 
                                         <x-input-file for="fileMark" titulo="SELECCIONAR MARCA AGUA"
-                                            wire:loading.class="disabled:opacity-25" class="!rounded-lg">
+                                            wire:loading.class="disabled:opacity-25">
                                             <input type="file" class="hidden" wire:model="mark" id="fileMark"
-                                                accept="image/png" @change="loadlogo" />
+                                                accept="image/png" @change="loadlogomark" />
                                         </x-input-file>
                                     </div>
                                 </div>
@@ -565,8 +751,6 @@
     </x-form-card>
 
 
-
-
     <x-jet-dialog-modal wire:model="openphone" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo teléfono') }}
@@ -576,7 +760,7 @@
             <form wire:submit.prevent="savetelefono">
                 <div class="w-full">
                     <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="phone" type="number"
+                    <x-input class="block w-full input-number-none" wire:model.defer="phone" type="number"
                         onkeypress="return validarNumero(event, 9)" />
                     <x-jet-input-error for="phone" />
                     <x-jet-input-error for="empresa.id" />
@@ -593,6 +777,8 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('showempresa', () => ({
+                openmark: false,
+                markagua: null,
                 uselistprice: @entangle('empresa.uselistprice').defer,
                 viewtextopromocion: @entangle('empresa.viewtextopromocion').defer,
                 ubigeo_id: @entangle('empresa.ubigeo_id').defer,
@@ -604,11 +790,75 @@
                 loadingdolar: false,
                 alignmark: @entangle('empresa.alignmark').defer,
                 usemarkagua: @entangle('empresa.usemarkagua').defer,
-
+                logofooter: null,
+                logoimpresion: null,
                 init() {
                     this.usepricedolar = !!this.usepricedolar;
                     this.viewpricedolar = !!this.viewpricedolar;
                     this.cambioauto = !!this.cambioauto;
+                    if (this.usemarkagua) {
+                        this.openmark = true;
+                    }
+                },
+                loadlogomark() {
+                    let file = document.getElementById('fileMark').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.markagua = e.target.result;
+                    reader.readAsDataURL(file);
+                },
+                resetmark() {
+                    this.markagua = null;
+                    @this.clearMark();
+                },
+                loadlogofooter() {
+                    let file = document.getElementById('logofooter').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.logofooter = e.target.result;
+                        this.$wire.logofooter = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                    if (file) {
+                        let imageExtension = file.name.split('.').pop();
+                        this.$wire.extencionlogofooter = imageExtension;
+                    }
+                },
+                loadlogoimpresion() {
+                    let file = document.getElementById('logoimpresion').files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.logoimpresion = e.target.result;
+                        this.$wire.logoimpresion = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                    if (file) {
+                        let imageExtension = file.name.split('.').pop();
+                        this.$wire.extencionlogoimpresion = imageExtension;
+                    }
+                },
+                clearLogoFooter() {
+                    this.logofooter = null;
+                    this.$wire.logofooter = null;
+                    this.$wire.extencionlogofooter = null;
+                },
+                clearLogoImpresion() {
+                    this.logoimpresion = null;
+                    this.$wire.logoimpresion = null;
+                    this.$wire.extencionlogoimpresion = null;
+                },
+                deletelogofooter() {
+                    this.logofooter = null;
+                    this.$wire.deletelogofooter().then(result => {
+                        if (result) {}
+                    })
+                },
+                deletelogoimpresion() {
+                    this.logoimpresion = null;
+                    this.$wire.deletelogoimpresion().then(result => {
+                        if (result) {
+
+                        }
+                    })
                 },
                 changePricedolar() {
                     if (this.usepricedolar) {
@@ -642,28 +892,6 @@
                 }
             }))
         });
-
-        function loadimage() {
-            return {
-                openmark: false,
-                markagua: null,
-                loadlogo() {
-                    let file = document.getElementById('fileMark').files[0];
-                    var reader = new FileReader();
-                    reader.onload = (e) => this.markagua = e.target.result;
-                    reader.readAsDataURL(file);
-                },
-                reset() {
-                    this.markagua = null;
-                    @this.clearMark();
-                },
-                init() {
-                    if (this.usemarkagua) {
-                        this.openmark = true;
-                    }
-                }
-            }
-        }
 
         function SelectUbigeoEmp() {
             this.selectU = $(this.$refs.selectubigeo).select2();

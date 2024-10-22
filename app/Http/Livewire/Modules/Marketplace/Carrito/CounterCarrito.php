@@ -10,19 +10,18 @@ use Livewire\Component;
 class CounterCarrito extends Component
 {
 
-    public $opencounter = false;
     public Empresa $empresa;
     public Moneda $moneda;
     public $pricetype;
 
     public function mount($pricetype = null)
     {
-        // $this->verifyProductoCarshoop();
         $this->pricetype = $pricetype;
     }
 
     public function render()
     {
+        $this->verifyProductoCarshoop();
         return view('livewire.modules.marketplace.carrito.counter-carrito');
     }
 
@@ -60,13 +59,6 @@ class CounterCarrito extends Component
         if (auth()->check()) {
             Cart::instance('shopping')->store(auth()->id());
         }
-    }
-
-    public function open()
-    {
-        $this->verifyProductoCarshoop();
-        $this->render();
-        $this->opencounter = true;
     }
 
     public function verifyProductoCarshoop()

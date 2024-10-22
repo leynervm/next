@@ -1,4 +1,4 @@
-<div x-data="loadimage">
+<div>
     <x-button-next titulo="Registrar" wire:click="$set('open', true)">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
@@ -42,30 +42,4 @@
             </form>
         </x-slot>
     </x-jet-dialog-modal>
-
-    <script>
-        function loadimage() {
-            return {
-                image: null,
-                logo: @entangle('logo').defer,
-                loadlogo() {
-                    let file = document.getElementById('fileInput').files[0];
-                    var reader = new FileReader();
-                    reader.onload = (e) => this.image = e.target.result;
-                    reader.readAsDataURL(file);
-                },
-                init() {
-                    this.$watch('logo', (value) => {
-                        if (value == undefined || value == null) {
-                            this.image = null;
-                        }
-                    });
-                },
-                reset() {
-                    this.image = null;
-                    @this.clearImage();
-                },
-            }
-        }
-    </script>
 </div>

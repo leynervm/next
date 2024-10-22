@@ -1,5 +1,6 @@
 <div>
-    <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
+    <x-loading-web-next class="!hidden" wire:target="gotoPage,previousPage,nextPage,edit,editespecificacion,addespecificacion,search"
+        wire:loading.class.remove="!hidden" />
 
     <div class="w-full flex flex-col lg:flex-row items-end justify-between gap-2 pb-2">
         <div class="w-full lg:max-w-sm">
@@ -14,7 +15,6 @@
                 </svg>
             </div>
             <x-jet-input-error for="searchespecificacion" />
-
         </div>
 
         @if ($caracteristicas->hasPages())
@@ -58,18 +58,24 @@
                             <div class="w-full mt-2 flex gap-1 flex-wrap items-start xl:max-h-96 xl:overflow-y-auto">
                                 @foreach ($item->especificacions as $itemespecif)
                                     <div
-                                        class="inline-flex gap-1 items-center text-[10px] p-1 rounded-md bg-fondospancardproduct text-textspancardproduct">
-                                        <span class="mr-2">{{ $itemespecif->name }}</span>
-                                        @can('admin.almacen.especificacions.edit')
-                                            <x-button-edit wire:loading.attr="disabled"
-                                                wire:click="editespecificacion({{ $itemespecif->id }})" />
-                                        @endcan
+                                        class="max-w-full inline-flex gap-1 items-center text-[10px] p-1 rounded-md bg-fondospancardproduct text-textspancardproduct">
+                                        <p class="flex-1">{{ $itemespecif->name }}</p>
 
-                                        @can('admin.almacen.especificacions.delete')
-                                            <x-button-delete wire:loading.attr="disabled"
-                                                wire:key="delesp_{{ $itemespecif->id }}"
-                                                onclick="confirmDeleteEspec({{ $itemespecif }})" />
-                                        @endcan
+                                        @canany(['admin.almacen.especificacions.edit',
+                                            'admin.almacen.especificacions.delete'])
+                                            <div class="flex-shrink-0">
+                                                @can('admin.almacen.especificacions.edit')
+                                                    <x-button-edit wire:loading.attr="disabled"
+                                                        wire:click="editespecificacion({{ $itemespecif->id }})" />
+                                                @endcan
+
+                                                @can('admin.almacen.especificacions.delete')
+                                                    <x-button-delete wire:loading.attr="disabled"
+                                                        wire:key="delesp_{{ $itemespecif->id }}"
+                                                        onclick="confirmDeleteEspec({{ $itemespecif }})" />
+                                                @endcan
+                                            </div>
+                                        @endcanany
                                     </div>
                                 @endforeach
                             </div>

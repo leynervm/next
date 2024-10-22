@@ -1,6 +1,10 @@
 <div x-data="loadeditimage">
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
     @if ($marcas->hasPages())
-        <div class="w-full pb-2">
+        <div class="w-full flex flex-col justify-end items-center sm:items-end pb-2">
             {{ $marcas->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
@@ -8,11 +12,7 @@
     <div class="flex gap-2 flex-wrap justify-around md:justify-start mt-2">
         @if (count($marcas))
             @foreach ($marcas as $item)
-                @php
-                    $imagen = $item->image ? $item->image->getMarcaURL() : null;
-                @endphp
-
-                <x-minicard :title="$item->name" size="lg" :imagen="$imagen">
+                <x-minicard :title="$item->name" size="lg" :imagen="getMarcaURL($item->url)">
                     @canany(['admin.almacen.marcas.edit', 'admin.almacen.marcas.delete'])
                         <x-slot name="buttons">
                             @can('admin.almacen.marcas.edit')
@@ -20,7 +20,8 @@
                                     @click="editimage=null" />
                             @endcan
                             @can('admin.almacen.marcas.delete')
-                                <x-button-delete wire:loading.attr="disabled" onclick="confirmDeleteMarca({{ $item }})" />
+                                <x-button-delete wire:loading.attr="disabled"
+                                    onclick="confirmDeleteMarca({{ $item }})" />
                             @endcan
                         </x-slot>
                     @endcanany
@@ -43,7 +44,7 @@
                     <template x-if="!editimage">
                         @if ($marca->image)
                             <img id="editimage" class="object-scale-down block w-full h-full"
-                                src="{{ $marca->image->getMarcaURL() }}" />
+                                src="{{ getMarcaURL($marca->image->url) }}" />
                         @else
                             <x-icon-file-upload class="w-full h-full !my-0" />
                         @endif

@@ -2,8 +2,14 @@
     <div
         class="contenedor grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-3 mx-auto py-3 md:py-8">
         <div class="w-full max-w-sm h-16 mx-auto col-span-2 md:col-span-1">
-            @if ($empresa->image)
-                <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
+            @if ($empresa->image || $empresa->logofooter)
+                @if ($empresa->logofooter)
+                    <img class="w-full h-full object-scale-down" src="{{ $empresa->getLogoFooterURL() }}"
+                        alt="">
+                @else
+                    <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
+                        alt="">
+                @endif
             @else
                 <h1 class="text-center p-3 font-bold tracking-widest text-xl leading-5 truncate max-w-xs">
                     {{ $empresa->name }}</h1>

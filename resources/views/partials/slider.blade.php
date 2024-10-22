@@ -1,12 +1,20 @@
 <div class="w-full max-w-full p-0">
     <div class="relative {{ count($sliders) > 1 ? '' : '' }}">
-        <div class="relative w-full overflow-hidden h-0 pt-[29%] min-h-[290px] mt-[108px] xl:mt-20" id="slider">
+        <div class="relative w-full overflow-hidden h-0 pt-0 min-h-[480px] xs:min-h-[620px] sm:min-h-[720px] md:pt-[29%] md:min-h-[290px] {{-- mt-[108px] xl:mt-20 --}}"
+            id="slider">
             @foreach ($sliders as $item)
                 <div class="carousel-item {{ $loop->first ? 'activo' : '' }}">
                     <div class="h-full flex relative efecto-slider">
-                        <div class="lazyload-wrapper ">
-                            <img src="{{ $item->getImageURL() }}" alt="home"
-                                class="absolute w-full h-full object-cover">
+                        <div class="lazyload-wrapper">
+                            <picture>
+                                {{-- <source media="(width >= 900px)" srcset="logo-large.png"> --}}
+                                <source media="(min-width : 768px)" srcset="{{ $item->getImageURL() }}">
+                                <source srcset="{{ $item->getImageURLMobile() }}">
+                                <img src="{{ $item->getImageURL() }}" alt="{{ $item->url }}"
+                                    class="absolute w-full h-full object-cover">
+                            </picture>
+                            {{-- <img src="{{ $item->getImageURL() }}" alt="home"
+                                class="absolute w-full h-full object-cover"> --}}
                         </div>
                         <div class="carousel-item-link">
                             @if ($item->link)

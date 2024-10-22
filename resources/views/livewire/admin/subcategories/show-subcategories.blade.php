@@ -1,6 +1,6 @@
 <div class="relative">
     @if ($subcategories->hasPages())
-        <div class="w-full pb-2">
+        <div class="w-full flex flex-col items-center sm:items-end pb-2">
             {{ $subcategories->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif

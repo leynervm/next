@@ -31,6 +31,8 @@ class CreateEmpresasTable extends Migration
             $table->string('instagram', 255)->nullable();
             $table->string('tiktok', 255)->nullable();
             $table->string('icono', 100)->nullable();
+            $table->string('logofooter', 100)->nullable();
+            $table->string('logoimpresion', 100)->nullable();
             $table->string('cert', 100)->nullable();
             $table->string('passwordcert', 100)->nullable();
             $table->string('usuariosol', 32)->nullable();

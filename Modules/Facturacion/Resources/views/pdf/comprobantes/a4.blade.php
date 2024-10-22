@@ -267,10 +267,15 @@
             <thead>
                 <tr class="align-baseline">
                     <th style="text-align: left;">
-                        @if ($comprobante->sucursal->empresa->image)
+                        @if ($comprobante->sucursal->empresa->image || $comprobante->sucursal->empresa->logoimpresion)
                             <div class="">
-                                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}"
-                                    alt="" class="image" />
+                                @if ($comprobante->sucursal->empresa->logoimpresion)
+                                    <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->logoimpresion, false) }}"
+                                        alt="" class="image" />
+                                @else
+                                    <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}"
+                                        alt="" class="image" />
+                                @endif
                             </div>
                         @endif
                     </th>

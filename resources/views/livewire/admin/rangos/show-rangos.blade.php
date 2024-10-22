@@ -170,28 +170,26 @@
 
         <x-slot name="content">
             <form wire:submit.prevent="update">
-                <div class="w-full flex flex-wrap sm:flex-nowrap gap-2">
-                    <div class="w-full sm:w-1/2">
+                <div class="w-full grid grid-cols-2 gap-2">
+                    <div class="w-full">
                         <x-label value="Rango inicio :" />
                         <x-input class="block w-full" wire:model.defer="rango.desde" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="rango.desde" />
                     </div>
-                    <div class="w-full sm:w-1/2">
+                    <div class="w-full">
                         <x-label value="Rango final :" />
                         <x-input class="block w-full" wire:model.defer="rango.hasta" type="number" step="0.01"
                             min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="rango.hasta" />
                     </div>
+                    <div class="w-full">
+                        <x-label value="Porcentaje ganancia (%) :" />
+                        <x-input class="block w-full" wire:model.defer="rango.incremento" type="number"
+                            step="0.01" min="0" onkeypress="return validarDecimal(event, 9)" />
+                        <x-jet-input-error for="rango.incremento" />
+                    </div>
                 </div>
-
-                <div class="md:w-1/2 mt-2">
-                    <x-label value="Porcentaje ganancia (%) :" />
-                    <x-input class="block w-full" wire:model.defer="rango.incremento" type="number" step="0.01"
-                        min="0" onkeypress="return validarDecimal(event, 9)" />
-                    <x-jet-input-error for="rango.incremento" />
-                </div>
-
 
                 <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">

@@ -59,9 +59,11 @@ width: 100% !important;
 
 
 <div class="content-ticket">
-<div style="display: block; background:#000; width:100%; height: 100px;text-align: center; padding: 5px">
-<img src="https://next.net.pe/img/logo.png" alt="Imagen de Bienvenida" style="max-width: 100%; width:auto; height: 100%; margin: auto;">
+@if ($comprobante->sucursal->empresa->image)
+<div style="display: block; width:100%; max-width: 100%; height: 100px;text-align: center; padding: 5px">
+<img src="{{ $comprobante->sucursal->empresa->image->getLogoEmpresa() }}" alt="{{ $comprobante->sucursal->empresa->name }}" style="max-width: 100%; width:auto; height: 100%; margin: auto;">
 </div>
+@endif
 
 <div style="margin-top:10px;">
 <h1 style="margin:0;font-size:16px;" class="text-center">{{ $comprobante->sucursal->empresa->name }}</h1>

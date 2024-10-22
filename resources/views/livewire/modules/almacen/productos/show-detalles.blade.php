@@ -1,4 +1,8 @@
 <div>
+    <div wire:loading.flex class="loading-overlay hidden fixed z-[299]">
+        <x-loading-next />
+    </div>
+
     <div class="w-full grid {{ Module::isEnabled('Marketplace') ? 'xl:grid-cols-2 gap-8' : '' }}">
         @if (Module::isEnabled('Marketplace'))
             <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto.">
@@ -144,12 +148,12 @@
                 <div class="w-full overflow-y-auto max-h-[500px]">
                     @if (count($caracteristicas) > 0)
                         @foreach ($caracteristicas as $item)
-                            <fieldset class="w-full border p-2 rounded border-primary mb-2">
+                            <fieldset class="w-full block border p-2 rounded border-primary mb-2">
                                 <legend class="text-colorlabel text-xs px-1">{{ $item->name }}</legend>
                                 <div class="w-full flex gap-2 flex-wrap">
                                     @if (count($item->especificacions))
                                         @foreach ($item->especificacions as $especificacion)
-                                            <x-input-radio :for="'especificacion_' . $especificacion->id" :text="$especificacion->name">
+                                            <x-input-radio :for="'especificacion_' . $especificacion->id" :text="$especificacion->name" class="text-wrap">
                                                 <x-input wire:model.defer="selectedEspecificacion.{{ $item->id }}"
                                                     class="sr-only peer" type="radio" :id="'especificacion_' . $especificacion->id"
                                                     :name="'especificaciones_' . $item->id . '[]'" value="{{ $especificacion->id }}" />

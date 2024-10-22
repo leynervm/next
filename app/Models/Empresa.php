@@ -27,6 +27,8 @@ class Empresa extends Model
         'email',
         'web',
         'icono',
+        'logofooter',
+        'logoimpresion',
         'whatsapp',
         'facebook',
         'youtube',
@@ -191,5 +193,15 @@ class Empresa extends Model
     public function getIconoURL()
     {
         return Storage::url('images/company/' . $this->icono);
+    }
+
+    public function getLogoFooterURL()
+    {
+        return Storage::url('images/company/' . $this->logofooter);
+    }
+
+    public function getLogoImpresionURL()
+    {
+        return Storage::url('images/company/' . $this->logoimpresion);
     }
 }

@@ -270,10 +270,15 @@
             <thead>
                 <tr class="align-baseline">
                     <th style="text-align: left;">
-                        @if ($compra->sucursal->empresa->image)
+                        @if ($compra->sucursal->empresa->image || $compra->sucursal->empresa->logoimpresion)
                             <div class="">
-                                <img src="{{ getLogoEmpresa($compra->sucursal->empresa->image->url, false) }}"
-                                    alt="" class="image" />
+                                @if ($compra->sucursal->empresa->logoimpresion)
+                                    <img src="{{ getLogoEmpresa($compra->sucursal->empresa->logoimpresion, false) }}"
+                                        alt="" class="image" />
+                                @else
+                                    <img src="{{ getLogoEmpresa($compra->sucursal->empresa->image->url, false) }}"
+                                        alt="" class="image" />
+                                @endif
                             </div>
                         @endif
                     </th>

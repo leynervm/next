@@ -3,9 +3,9 @@
         <x-loading-next />
     </div>
 
-    <div class="flex flex-wrap gap-2 mt-3">
+    <div class="flex flex-wrap gap-1 mt-3">
         <div class="w-full xs:max-w-sm">
-            <x-label value="Buscar cliente / comprobante :" />
+            <x-label value="Buscar N° Orden :" />
             <div class="relative flex items-center">
                 <span class="absolute">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
@@ -46,17 +46,9 @@
             <x-input type="date" wire:model.lazy="dateto" class="w-full" />
         </div>
     </div>
-    {{-- @can('admin.ventas.deletes')
-        <div class="w-full mt-1">
-            <x-label-check for="eliminados">
-                <x-input wire:model.lazy="deletes" name="deletes" value="true" type="checkbox" id="eliminados" />
-                MOSTRAR VENTAS EN LÍNEA ELIMINADAS
-            </x-label-check>
-        </div>
-    @endcan --}}
 
     @if ($orders->hasPages())
-        <div class="pt-3 pb-1">
+        <div class="pt-3 w-full flex flex-col items-center sm:items-end">
             {{ $orders->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
