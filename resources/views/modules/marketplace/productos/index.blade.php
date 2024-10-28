@@ -16,6 +16,7 @@
 
     {{-- <div class="flex flex-wrap gap-2">
     </div> --}}
+
     @if ($empresa && $empresa->isDefault())
         <div class="w-full p-1">
             <livewire:modules.marketplace.productos.show-productos :empresa="$empresa" :moneda="$moneda"

@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Listeners\Login\RestoreCartItems;
+use App\Listeners\Login\VerificarListaWeb;
+use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -19,8 +22,9 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
 
-        \Illuminate\Auth\Events\Login::class => [
-            \App\Listeners\Login\RestoreCartItems::class,
+        Login::class => [
+            RestoreCartItems::class,
+            VerificarListaWeb::class
         ],
     ];
 

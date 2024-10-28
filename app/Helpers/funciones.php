@@ -144,7 +144,11 @@ function mi_empresa()
     //     'afectacionigv',
     //     'limitsucursals'
     // )->first();
-    $empresa = Empresa::first();
+    $empresa = Empresa::query()->select('*')->addSelect(['logo' => function ($q) {
+        $q->select('url')->from('images')->whereColumn('images.imageable_id', 'empresas.id')
+            ->where('images.imageable_type', Empresa::class)
+            ->orderBy('id', 'desc')->limit(1);
+    }])->first();
     return $empresa;
 }
 
@@ -354,26 +358,29 @@ function convertMoneda(float $amount, string $code_moneda, float $tipo_cambio, i
     return (string) number_format($amount_converted, $decimals, '.', $separate);
 }
 
-function getPricetypeAuth($empresa)
+function getPricetypeAuth()
 {
-    $pricetype = null;
 
-    if ($empresa) {
-        if ($empresa->usarlista()) {
-            if (auth()->user()) {
-                if (auth()->user()->client) {
-                    if (auth()->user()->client->pricetype) {
-                        if (auth()->user()->client->pricetype->isActivo()) {
-                            $pricetype = auth()->user()->client->pricetype;
-                        }
-                    }
-                }
-                if (empty($pricetype)) {
-                    $pricetype = Pricetype::login()->first();
-                }
+    $pricetype = null;
+    $empresa = view()->shared('empresa');
+
+    if ($empresa && $empresa->usarlista()) {
+        $authuser = auth()->user();
+        if ($authuser) {
+            $authuser->load(['client.pricetype']);
+            if ($authuser->client && $authuser->client->pricetype && $authuser->client->pricetype->isActivo()) {
+                $pricetype = $authuser->client->pricetype;
             } else {
-                $pricetype = Pricetype::web()->first();
+                $pricetype = Pricetype::login()->first();
             }
+
+            //Si despues de validar lista no hay predeterminados
+            // por defecto tomar el primero
+            if (empty($pricetype)) {
+                $pricetype = Pricetype::orderBy('id', 'asc')->limit(1)->first();
+            }
+        } else {
+            $pricetype = Pricetype::default()->first();
         }
     }
 
@@ -482,6 +489,14 @@ function getMarcaURL($filename = null)
 {
     if (!is_null($filename)) {
         return asset('storage/images/marcas/' . $filename);
+    }
+    return null;
+}
+
+function getCategoryURL($filename = null)
+{
+    if (!is_null($filename)) {
+        return asset('storage/images/categories/' . $filename);
     }
     return null;
 }

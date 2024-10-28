@@ -22,8 +22,17 @@ class Pricetype extends Model
     const IS_TEMPORAL = '1';
 
     protected $fillable = [
-        'name', 'rounded', 'decimals', 'default', 'web', 'status',
-        'defaultlogin', 'temporal', 'startdate', 'expiredate', 'campo_table'
+        'name',
+        'rounded',
+        'decimals',
+        'default',
+        'web',
+        'status',
+        'defaultlogin',
+        'temporal',
+        'startdate',
+        'expiredate',
+        'campo_table'
     ];
 
     public function getRoundedAttribute($value)
@@ -36,10 +45,10 @@ class Pricetype extends Model
         return (int) $value;
     }
 
-    public function getWebAttribute($value)
-    {
-        return (int) $value;
-    }
+    // public function getWebAttribute($value)
+    // {
+    //     return (int) $value;
+    // }
 
     public function getDefaultloginAttribute($value)
     {
@@ -78,24 +87,22 @@ class Pricetype extends Model
         return $query->where('status', self::ACTIVO);
     }
 
+    //web: Lista por defecto en panel administrativo
     public function scopeDefault($query)
     {
         return $query->where('default', self::DEFAULT);
     }
 
-    public function scopeWeb($query)
-    {
-        return $query->where('web', self::DEFAULT);
-    }
+    //web: Lista por defecto en tienda web sin Logearse
+    // public function scopeWeb($query)
+    // {
+    //     return $query->where('web', self::DEFAULT);
+    // }
 
+    //defaultlogin: Lista por defecto en tienda web despues Logearse
     public function scopeLogin($query)
     {
         return $query->where('defaultlogin', self::DEFAULT);
-    }
-
-    public function productos(): BelongsToMany
-    {
-        return $this->belongsToMany(Producto::class)->withPivot('price');
     }
 
     public function isActivo()
@@ -106,6 +113,16 @@ class Pricetype extends Model
     public function isInactivo()
     {
         return $this->status == self::DISABLED;
+    }
+
+    public function isDefault()
+    {
+        return $this->default == self::DEFAULT;
+    }
+
+    public function isDefaultLogin()
+    {
+        return $this->defaultlogin == self::DEFAULT;
     }
 
     public function isTemporal()

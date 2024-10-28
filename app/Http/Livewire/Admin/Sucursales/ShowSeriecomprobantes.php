@@ -17,7 +17,7 @@ class ShowSeriecomprobantes extends Component
     use AuthorizesRequests;
 
     public $sucursal, $seriecomprobante;
-    public $typecomprobante_id, $serie;
+    public $typecomprobante_id, $serie, $seriecompleta, $indicio;
     public $contador = 0;
 
 
@@ -62,6 +62,7 @@ class ShowSeriecomprobantes extends Component
     {
         $this->authorize('admin.administracion.sucursales.seriecomprobantes.edit');
         $this->serie = trim($this->serie);
+        $this->seriecompleta = trim($this->indicio) . trim($this->serie);
         $regex = '';
         $code = null;
         $mensaje = 'El campo serie es obligatorio';
@@ -105,11 +106,17 @@ class ShowSeriecomprobantes extends Component
 
         $this->validate([
             'typecomprobante_id' => [
-                'required', 'integer', 'min:1', 'exists:typecomprobantes,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:typecomprobantes,id',
                 new CampoUnique('seriecomprobantes', 'typecomprobante_id', $this->seriecomprobante->id ?? null, true, 'sucursal_id', $this->sucursal->id)
             ],
-            'serie' => [
-                'required', 'string', 'size:4', $regex,
+            'seriecompleta' => [
+                'required',
+                'string',
+                'size:4',
+                $regex,
                 new CampoUnique('seriecomprobantes', 'serie', $this->seriecomprobante->id ?? null, true)
             ],
             'contador' => ['required', 'integer', 'min:0']
@@ -119,23 +126,34 @@ class ShowSeriecomprobantes extends Component
 
         try {
             DB::beginTransaction();
-            $exists = Seriecomprobante::onlyTrashed()->where('serie', $this->serie)->exists();
+            $exists = Seriecomprobante::onlyTrashed()->where('serie', $this->seriecompleta)->exists();
             if ($exists) {
                 $mensaje = response()->json([
-                    'title' => 'Serie ' . $this->serie . ' se encuentra deshabilitada.',
+                    'title' => 'Serie ' . $this->seriecompleta . ' se encuentra deshabilitada.',
                     'text' => "Existen registros de comprobante con la misma serie en la base de datos.",
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
+
+            $default = 0;
+            $exists = $this->sucursal->seriecomprobantes()->whereHas('typecomprobante', function ($query) {
+                $query->whereNotIn('code', ['09', '07']);
+            })->exists();
+
+            if (!$exists) {
+                $default = Seriecomprobante::DEFAULT;
+            }
+
             $this->sucursal->seriecomprobantes()->create([
-                'serie' => $this->serie,
+                'serie' => $this->seriecompleta,
                 'contador' => $this->contador,
                 'code' => $code,
+                'default' => $default,
                 'typecomprobante_id' => $this->typecomprobante_id,
             ]);
             DB::commit();
-            $this->reset(['typecomprobante_id', 'contador', 'serie']);
+            $this->reset(['typecomprobante_id', 'contador', 'serie', 'seriecompleta', 'indicio']);
             $this->resetValidation();
             $this->sucursal->refresh();
             $this->dispatchBrowserEvent('created');
@@ -157,6 +175,8 @@ class ShowSeriecomprobantes extends Component
             $guias = $seriecomprobante->guias()->exists();
             $ventas = $seriecomprobante->ventas()->exists();
             if ($comprobantes || $ventas || $guias) {
+                $seriecomprobante->default = 0;
+                $seriecomprobante->save();
                 $seriecomprobante->delete();
             } else {
                 $seriecomprobante->forceDelete();
@@ -164,6 +184,10 @@ class ShowSeriecomprobantes extends Component
         } else {
             $ventas = $seriecomprobante->ventas()->exists();
             if ($ventas) {
+                if ($seriecomprobante->isDefault()) {
+                    $seriecomprobante->default = 0;
+                    $seriecomprobante->save();
+                }
                 $seriecomprobante->delete();
             } else {
                 $seriecomprobante->forceDelete();

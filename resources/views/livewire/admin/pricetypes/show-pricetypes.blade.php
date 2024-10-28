@@ -24,10 +24,10 @@
 
                     <x-slot name="buttons">
                         <div class="inline-flex">
-                            @if ($item->default)
+                            @if ($item->isDefault())
                                 <x-icon-default />
                             @endif
-                            @if ($item->web)
+                            @if ($item->isDefaultLogin())
                                 <span class="text-next-500 @if ($item->default) absolute left-6 @endif">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 scale-110"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -41,17 +41,18 @@
                             @endif
                         </div>
 
-                        <div class="inline-flex gap-1 items-end">
+                        <div class="inline-flex flex-1 gap-1 items-end justify-end">
                             @can('admin.administracion.pricetypes.edit')
                                 @if ($item->isActivo())
-                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})" />
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
+                                        @click="temporal = false" />
                                 @endif
                             @endcan
 
                             @can('admin.administracion.pricetypes.delete')
                                 <x-button-toggle :checked="$item->isActivo()" wire:loading.attr="disabled"
                                     wire:key="restorepricetype_{{ $item->id }}"
-                                    @click="confirmDisable({{ $item }})" />
+                                    x-on:click="confirmDisable({{ $item }})" />
                             @endcan
                         </div>
                     </x-slot>
@@ -106,39 +107,38 @@
                     <x-label-check for="default_edit">
                         <x-input wire:model.defer="pricetype.default" name="default" value="1" type="checkbox"
                             id="default_edit" />
-                        SELECCIONAR COMO PREDETERMINADO
+                        PREDETERMINADO PARA CLIENTES DE TIENDA ADMINISTRATIVA
                     </x-label-check>
                     <x-jet-input-error for="pricetype.default" />
                 </div>
 
-                <div class="">
+                {{-- <div class="">
                     <x-label-check for="web_edit">
                         <x-input wire:model.defer="pricetype.web" name="web" value="1" type="checkbox"
                             id="web_edit" />
-                        PREDETERMINADO PARA TIENDA WEB SIN INICIAR SESIÓN
+                        PREDETERMINADO PARA CLIENTES DE TIENDA WEB SIN INICIAR SESIÓN
                     </x-label-check>
                     <x-jet-input-error for="pricetype.web" />
-                </div>
+                </div> --}}
 
                 <div class="">
                     <x-label-check for="edit_defaultlogin">
                         <x-input wire:model.defer="pricetype.defaultlogin" name="defaultlogin" value="1"
                             type="checkbox" id="edit_defaultlogin" />
-                        PREDETERMINADO PARA USUARIOS LOGEADOS EN TIENDA WEB
+                        PREDETERMINADO PARA CLIENTES LOGUEADOS EN TIENDA WEB
                     </x-label-check>
                     <x-jet-input-error for="pricetype.defaultlogin" />
                 </div>
 
                 <div class="block">
                     <x-label-check for="edit_temporal">
-                        <x-input wire:model.defer="pricetype.temporal" @change="changeTemporal($event.target)"
-                            name="temporal" type="checkbox" id="edit_temporal" />
-                        USAR DE MANERA TEMPORAL PARA VENTAS POR INTERNET
+                        <x-input x-model="temporal" name="temporal" type="checkbox" id="edit_temporal" />
+                        USAR DE MANERA TEMPORAL PARA VENTAS WEB
                     </x-label-check>
                     <x-jet-input-error for="pricetype.temporal" />
 
-                    <div x-show="show" class="relative mt-2">
-                        <div class="w-full grid grid-cols-2 gap-2 animate__animated animate__fadeInDown">
+                    <div x-show="temporal" class="relative mt-2" x-transition>
+                        <div class="w-full grid grid-cols-2 gap-2">
                             <div class="w-full">
                                 <x-label value="Fecha inicio :" />
                                 <x-input class="w-full" type="date" wire:model.defer="pricetype.startdate" />
@@ -166,12 +166,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('loaderpricetypes', () => ({
                 rounded: @entangle('pricetype.rounded').defer,
-                show: @entangle('pricetype.temporal').defer,
-
-                changeTemporal(target) {
-                    this.show = !this.show;
-                },
-                init() {},
+                temporal: @entangle('pricetype.temporal').defer,
                 confirmDisable(pricetype) {
                     let estado_activo = "{{ \App\Models\Pricetype::ACTIVO }}";
                     let mensaje = pricetype.status == estado_activo ? 'DESACTIVAR' : 'ACTIVAR';
@@ -209,7 +204,6 @@
             Livewire.hook('message.processed', () => {
                 this.selectRP.select2().val(this.rounded).trigger('change');
             });
-
         }
     </script>
 </div>

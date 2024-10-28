@@ -23,7 +23,7 @@
 
             <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-1 xs:gap-0">
                 @foreach ($ofertas as $item)
-                    <x-card-producto-oferta :producto="$item" />
+                    <x-card-producto-oferta :producto="$item" :pricetype="$pricetype" />
                 @endforeach
             </div>
         @else

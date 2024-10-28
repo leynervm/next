@@ -8,7 +8,7 @@
 }
 
 .header-marketplace {
-    @apply  xl:h-24 bg-fondoheadermarketplace text-colorheadermarketplace fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto;
+    @apply xl:h-24 bg-fondoheadermarketplace text-colorheadermarketplace fixed top-0 left-0 z-[101] w-full flex flex-col xl:flex-row flex-nowrap m-auto;
     /* background-color: transparent;
     background-image: linear-gradient(220deg, #0ecfcf 0%, #0ecfcf 100%); */
     /* bg-gradient-to-r from-next-400 to-next-900 */
@@ -24,10 +24,10 @@
     @apply -mt-[108px] xl:-mt-24;
 }
 .sidebar-content-marketplace {
-    @apply h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)];
+    @apply h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-fondoheadermarketplace;
 }
 .sidebar-productos {
-    @apply w-full absolute z-[101] left-0 top-[108px] xl:top-0 h-[calc(100vh-108px)] xl:relative  xl:z-0 bg-body max-w-[80%] xs:max-w-72 xl:max-w-72 flex-shrink-0 ;
+    @apply w-full absolute z-[101] left-0 top-[108px] xl:top-0 h-[calc(100vh-108px)] xl:relative  xl:z-0 bg-body max-w-[80%] xs:max-w-72 xl:max-w-72 flex-shrink-0;
 }
 /* .sidebar-productos {
     @apply w-full fixed left-0 top-[108px] xl:top-24 h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-body max-w-[80%] xs:max-w-72 flex-shrink-0 ;
@@ -37,7 +37,7 @@
     @apply w-full flex flex-wrap justify-center divide-x-2 divide-colorlinkfooter px-5 text-colorlinkfooter font-semibold;
 }
 
-.nav-marketplace>li>a {
+.nav-marketplace > li > a {
     @apply inline-block text-sm tracking-wide relative py-1 px-5 hover:text-hoverlinkfooter rounded transition duration-300;
 }
 
@@ -55,7 +55,6 @@
 .title-content {
     @apply text-hoverlinkfooter p-5 text-center font-semibold text-3xl tracking-widest;
 }
-
 
 .btn-next {
     /* w-[calc(80px+5.5vmin)] */
@@ -110,10 +109,6 @@
     @apply bg-next-800;
 }
 
-
-
-
-
 .card-similares,
 .card-sugerencias {
     @apply rounded-xl xs:rounded-none;
@@ -132,7 +127,6 @@
 .card-sugerencias::before:first-child {
     @apply w-0;
 }
-
 
 .icon-button-menu {
     @apply content-[''] absolute top-[50%] left-[50%] -translate-x-[50%] h-[5px] w-10 bg-colorheadermarketplace transition-transform ease-out duration-200;
@@ -182,11 +176,9 @@
     /* transform: translateX(0); */
 }
 
-
 .footer-marketplace {
     @apply bg-fondofooter text-[10px] lg:text-xs text-colorlinkfooter;
 }
-
 
 .footer-marketplace ul {
     @apply w-full block p-3;
@@ -205,9 +197,12 @@
     @apply w-full p-1 text-center tracking-wide font-medium hover:text-hoverlinkfooter transition duration-300;
 }
 
-
 .footer-social .social-footer {
     @apply block bg-white rounded-full w-8 h-8 transition-transform ease-linear duration-300;
+}
+
+.footer-social .email {
+    @apply ring-[2px] ring-white text-fondofooter;
 }
 
 .footer-social .whatsapp {
@@ -216,6 +211,10 @@
 
 .footer-social .youtube {
     @apply !p-0 ring-[2px] ring-white text-fondofooter;
+}
+
+.footer-social .email:hover {
+    @apply text-white bg-red-700;
 }
 
 .footer-social .whatsapp:hover {
@@ -240,7 +239,14 @@
 
 .footer-social .instagram:hover {
     @apply bg-white text-white;
-    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    background: radial-gradient(
+        circle at 30% 107%,
+        #fdf497 0%,
+        #fdf497 5%,
+        #fd5949 45%,
+        #d6249f 60%,
+        #285aeb 90%
+    );
 }
 
 .footer-social .tiktok {
@@ -252,17 +258,8 @@
 }
 
 .footer-social .social-footer:hover {
-    transform: rotate(360deg)scale(1.2);
+    transform: rotate(360deg) scale(1.2);
 }
-
-
-
-
-
-
-
-
-
 
 /* START CARD 3D */
 .flip3D {
@@ -324,19 +321,17 @@
     @apply block md:-skew-x-[8deg] text-[10px] lg:text-sm p-3 px-5 text-white font-semibold;
 }
 
-.flip3D:hover>.front {
+.flip3D:hover > .front {
     transform: rotateY(-180deg);
 }
 
-.flip3D:hover>.card.back {
+.flip3D:hover > .card.back {
     transform: rotateY(0deg);
 }
 
 /* END CARD 3d */
 
-
 /* START SLIDER SERVICIOS */
-
 
 .next-wow {
     @apply p-3 sm:p-5 text-center rounded-lg sm:rounded-3xl border;
@@ -356,23 +351,21 @@
     @apply font-normal text-sm leading-6 text-center text-colorsubtitleform;
 }
 
-
 @keyframes fadeInUp {
     0% {
         -webkit-transform: translate3d(0, 100%, 0);
         opacity: 0;
-        transform: translate3d(0, 100%, 0)
+        transform: translate3d(0, 100%, 0);
     }
 
     to {
         -webkit-transform: translateZ(0);
         opacity: 1;
-        transform: translateZ(0)
+        transform: translateZ(0);
     }
 }
 
 /* END SLIDER SERVICIOS */
-
 
 .indicador-slider {
     @apply flex-shrink-0 cursor-pointer w-2.5 h-2.5 block bg-neutral-200 rounded-full opacity-100 transition-all ease-out duration-300;
@@ -390,16 +383,9 @@
     @apply w-full h-full;
 }
 
-
-
-
-
-
-
 * {
     flex: 0 0 auto;
 }
-
 
 .carrusel-item {
     @apply w-full opacity-0 invisible absolute top-0 left-0 lg:flex lg:justify-end;
@@ -433,8 +419,11 @@
     }
 }
 
-
-.slider.desvanecer .carrusel-contenedor .carrusel-contenido ul.carrusel-lista .carousel-item {
+.slider.desvanecer
+    .carrusel-contenedor
+    .carrusel-contenido
+    ul.carrusel-lista
+    .carousel-item {
     height: 100%;
     transition: 1s;
     transition-property: opacity, visibility;
@@ -446,7 +435,6 @@
     position: relative;
     z-index: 1;
 }
-
 
 .dropdown-login::before {
     border-color: transparent transparent #fff;
@@ -460,13 +448,10 @@
     position: absolute;
 }
 
-
-
-
 /* SIDEBAR MARKETPLACE */
 
 .boxes-sidebar {
-    @apply w-full flex-1 relative ;
+    @apply w-full flex-1 relative;
 }
 
 .item-sidebar {
@@ -517,10 +502,6 @@
 } */
 
 /* END SIDEBAR */
-
-
-
-
 
 /* BUTTON PERSONALIZADo */
 .custom-btn {
@@ -601,11 +582,9 @@
 
 /* END BUTTTON PERSONALIZADO */
 
-
 .badge-especificacion {
-    box-shadow: 0px 1px 3px 3px  #AAA;
+    box-shadow: 0px 1px 3px 3px #aaa;
 }
-
 
 /* MARQUEE */
 .marquee-container {
@@ -642,11 +621,6 @@
     }
 }
 
-
-
-
-
-
 .marquee-container2 {
     width: 200px;
     /* Adjust as needed */
@@ -680,7 +654,6 @@
     }
 }
 
-
 .marquee-container3 {
     width: 100%;
     height: 150px;
@@ -712,10 +685,171 @@
     } */
 }
 
+/*Buttons Soluciones Integrales */
 
+.button-tic {
+    @apply size-[5.5rem] md:size-28 flex flex-col gap-1 justify-center items-center p-2 xs:p-2 md:p-3 rounded-full border border-borderminicard text-[8px] md:text-[10px] font-medium transition-colors duration-150 ease-in-out;
+}
 
+.heading {
+    width: 100%;
+    margin-left: 1rem;
+    font-weight: 900;
+    font-size: 1.618rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1ch;
+    line-height: 1;
+    padding-bottom: 0.5em;
+    margin-bottom: 1rem;
+    position: relative;
+}
+.heading:after {
+    display: block;
+    content: "";
+    position: absolute;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(135deg, #1a9be6, #1a57e6);
+    bottom: 0;
+}
 
+.card-solutions {
+    @apply w-full cursor-pointer relative;
+    perspective: 1000px;
+}
 
+.card-solutions img {
+    @apply overflow-hidden w-full h-full min-h-60 max-h-full object-cover object-center;
+}
+
+.card-solutions .front-card-solutions,
+.card-solutions .back-card-solutions,
+.card-solutions img,
+.card-solutions:before {
+    @apply rounded-lg md:rounded-3xl;
+}
+
+.card-solutions .front-card-solutions,
+.card-solutions .back-card-solutions {
+    @apply absolute w-full h-full max-w-full top-0 left-0 flex justify-center items-center content-center p-3 md:p-5;
+    background-position: center;
+    background-size: cover;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+    transition: ease-in-out 600ms;
+}
+
+.card-solutions .front-card-solutions {
+    width: 100%;
+    background-size: cover;
+    font-size: 1.618rem;
+    font-weight: 500;
+    overflow: hidden;
+}
+
+.card-solutions:hover .front-card-solutions {
+    opacity: 0;
+    /* background: rgba(255, 255, 255, 1); */
+    transform: rotateY(180deg);
+}
+
+.card-solutions .back-card-solutions {
+    width: 100%;
+    color: white;
+    background: rgba(0, 0, 0, 0.6);
+    transform: rotateY(180deg);
+}
+
+.card-solutions:hover .back-card-solutions {
+    transform: rotateY(0deg);
+}
+
+.card-solutions.security {
+    position: relative;
+}
+
+.card-solutions.security:before {
+    position: absolute;
+    content: "";
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    /* background: rgb(255, 255, 255); */
+    background: -moz-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.9) 15%,
+        rgba(255, 255, 255, 0) 45%
+    );
+    background: -webkit-linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.9) 15%,
+        rgba(255, 255, 255, 0) 45%
+    );
+    background: linear-gradient(
+        0deg,
+        rgba(255, 255, 255, 0.9) 15%,
+        rgba(255, 255, 255, 0) 45%
+    );
+}
+
+.list-datacenter li {
+    @apply leading-none space-y-5;
+}
+
+.list-datacenter li::marker {
+    /* font-size: 1.2rem; */
+    font-weight: 700;
+}
+
+.grecaptcha-badge {
+    visibility: hidden;
+}
+
+.btn-float-whatsapp {
+    @apply fixed text-white bg-[#25d366] p-6 md:p-8 z-[29] bottom-3 md:bottom-5 right-3 md:right-5 flex items-center justify-center w-0 h-0 rounded-full;
+    animation-name: pulsation;
+    animation-duration: 1.5s;
+    animation-timing-function: ease-out;
+    animation-iteration-count: infinite;
+}
+
+/* .btn-float-whatsapp:before {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    padding: 25px;
+    border: 5px solid #25d366;
+    opacity: 0.75;
+    animation-name: pulse-border;
+    animation-duration: 1.5s;
+    animation-timing-function: ease-out;
+    animation-iteration-count: infinite;
+} */
+
+@keyframes pulsation {
+    0% {
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
+    }
+    80% {
+        box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
+    }
+}
+
+/* @keyframes pulse-border {
+    0% {
+        padding: 25px;
+        opacity: 0.75;
+    }
+    75% {
+        padding: 50px;
+        opacity: 0;
+    }
+    100% {
+        opacity: 0;
+    }
+} */
 
 /* .animate-marquee {
     animation: marquee 28320ms linear infinite;

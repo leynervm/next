@@ -29,24 +29,23 @@ class ViewServiceProvider extends ServiceProvider
     public function boot()
     {
 
+        // view()->composer('*', function ($view) {
         $empresa = null;
         if (Schema::hasTable('empresas')) {
             $empresa = mi_empresa();
             $moneda = Moneda::default()->first();
-            $pricetype = $empresa ? getPricetypeAuth($empresa) : null;
             $categories = [];
             if (Module::isEnabled('Marketplace')) {
-                $categories = Category::with(['subcategories'])->wherehas('productos', function ($query) {
+                $categories = Category::query()->with(['image', 'subcategories'])->wherehas('productos', function ($query) {
                     $query->visibles()->publicados();
                 })->orderBy('orden', 'asc')->get();
             }
-            // Compartir los datos de la empresa con todas las vistas
 
+            // Compartir los datos de la empresa con todas las vistas
             View::share('moneda', $moneda);
-            View::share('pricetype', $pricetype);
             View::share('categories', $categories);
             View::share('empresa', $empresa);
         }
-
+        // });
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Pricetype;
 use App\Models\User;
 use GuzzleHttp\Exception\ClientException;
 use Illuminate\Http\Request;
@@ -58,9 +59,6 @@ class AuthController extends Controller
             // DB::beginTransaction();
             // try {
             $email = $socialUser->getEmail();
-            $empresa = mi_empresa();
-            $pricetype = getPricetypeAuth($empresa);
-
             $userDB = User::withTrashed()->where('email', $email)->first();
             if ($userDB && $userDB->trashed()) {
                 return redirect()->route('login')->with('mensaje', "__('The user is have down')");
@@ -69,17 +67,6 @@ class AuthController extends Controller
             $user = User::updateOrCreate(['email' => $email], [
                 'name' => $socialUser->getName(),
             ]);
-
-            $client = Client::withTrashed()->where('email', $email)->first();
-            if ($client && !$client->trashed()) {
-                $documentusers = User::withTrashed()->where('document', trim($client->document))->count();
-                if ($documentusers == 0 && is_null($client->user_id)) {
-                    $client->user()->associate($user);
-                    $client->save();
-                    $user->document = $client->document;
-                    $user->save();
-                }
-            }
 
             // auth()->login($user, true);
             Auth::login($user, true);

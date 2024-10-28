@@ -2,12 +2,12 @@
     <div
         class="contenedor grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1 sm:gap-3 mx-auto py-3 md:py-8">
         <div class="w-full max-w-sm h-16 mx-auto col-span-2 md:col-span-1">
-            @if ($empresa->image || $empresa->logofooter)
-                @if ($empresa->logofooter)
-                    <img class="w-full h-full object-scale-down" src="{{ $empresa->getLogoFooterURL() }}"
+            @if (!empty($empresa->logo) || !empty($empresa->logofooter))
+                @if (!empty($empresa->logofooter))
+                    <img class="w-full h-full object-scale-down" src="{{ getLogoEmpresa($empresa->logofooter, false) }}"
                         alt="">
                 @else
-                    <img class="w-full h-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
+                    <img class="w-full h-full object-scale-down" src="{{ getLogoEmpresa($empresa->logo, false) }}"
                         alt="">
                 @endif
             @else
@@ -161,6 +161,17 @@
                                 d="M2.5 12C2.5 7.52166 2.5 5.28249 3.89124 3.89124C5.28249 2.5 7.52166 2.5 12 2.5C16.4783 2.5 18.7175 2.5 20.1088 3.89124C21.5 5.28249 21.5 7.52166 21.5 12C21.5 16.4783 21.5 18.7175 20.1088 20.1088C18.7175 21.5 16.4783 21.5 12 21.5C7.52166 21.5 5.28249 21.5 3.89124 20.1088C2.5 18.7175 2.5 16.4783 2.5 12Z" />
                             <path
                                 d="M10.5359 11.0075C9.71585 10.8916 7.84666 11.0834 6.93011 12.7782C6.01355 14.4729 6.9373 16.2368 7.51374 16.9069C8.08298 17.5338 9.89226 18.721 11.8114 17.5619C12.2871 17.2746 12.8797 17.0603 13.552 14.8153L13.4738 5.98145C13.3441 6.95419 14.4186 9.23575 17.478 9.5057" />
+                        </svg>
+                    </a>
+                @endif
+
+                @if ($empresa->email)
+                    <a class="social-footer email" target="_blank" href="{{ route('contactanos') }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                            fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round">
+                            <path
+                                d="M4 4H20C21.1046 4 22 4.89543 22 6V18C22 19.1046 21.1046 20 20 20H4C2.89543 20 2 19.1046 2 18V6C2 4.89543 2.89543 4 4 4Z" />
+                            <path d="M22 7L12.8944 11.5528C12.3314 11.8343 11.6686 11.8343 11.1056 11.5528L2 7" />
                         </svg>
                     </a>
                 @endif

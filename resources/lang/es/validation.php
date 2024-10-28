@@ -388,6 +388,7 @@ return [
         'searchserie'               =>  'serie',
         'logoimpresion'             =>  'logo impresión',
         'logofooter'                =>  'logo pie de página',
-        'imagemobile'               =>  'imagen'
+        'imagemobile'               =>  'imagen',
+        'seriecompleta'             =>  'serie comprobante',
     ],
 ];

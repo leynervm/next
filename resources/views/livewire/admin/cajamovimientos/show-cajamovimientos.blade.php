@@ -113,7 +113,7 @@
     </div>
 
     @if ($movimientos->hasPages())
-        <div class="pt-3 pb-1">
+        <div class="pt-3 pb-1 flex flex-col justify-end items-end">
             {{ $movimientos->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif

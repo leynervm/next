@@ -22,7 +22,7 @@ class GetClient
         $this->urlruc = 'https://api.apis.net.pe/v2/sunat/ruc';
     }
 
-    public function getClient($document, $autosaved = true)
+    public function getClient($document, $autosaved = true, $searchBD = true)
     {
 
         $usarlistaprecios = mi_empresa()->usarlista() ?? false;
@@ -48,10 +48,13 @@ class GetClient
             }
         }
 
-        $cliente = Client::with(['pricetype', 'direccions', 'telephones'])
-            ->withTrashed()->where('document', $document)->first();
+        $cliente = null;
+        if ($searchBD) {
+            $cliente = Client::with(['pricetype', 'direccions', 'telephones'])
+                ->withTrashed()->where('document', $document)->first();
+        }
 
-        if ($cliente) {
+        if ($searchBD && $cliente) {
             if ($cliente->trashed()) {
                 $cliente->restore();
                 $cliente->pricetype_id = $pricetype_id;

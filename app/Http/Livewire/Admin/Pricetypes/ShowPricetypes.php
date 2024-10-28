@@ -32,10 +32,10 @@ class ShowPricetypes extends Component
             'pricetype.decimals' => [
                 'required', 'integer', 'min:0', 'max:4',
             ],
-            'pricetype.web' => [
-                'required', 'integer', 'min:0', 'max:1',
-                new DefaultValue('pricetypes', 'web',  $this->pricetype->id)
-            ],
+            // 'pricetype.web' => [
+            //     'required', 'integer', 'min:0', 'max:1',
+            //     new DefaultValue('pricetypes', 'web',  $this->pricetype->id)
+            // ],
             'pricetype.default' => [
                 'required', 'integer', 'min:0', 'max:1',
                 new DefaultValue('pricetypes', 'default', $this->pricetype->id)

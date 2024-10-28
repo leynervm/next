@@ -1,12 +1,12 @@
-@props(['producto'])
+@props(['producto', 'pricetype' => null])
 
 @php
     $mensajeprecios = null;
     $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
     $promocion = verifyPromocion($producto->promocion);
     $descuento = getDscto($promocion);
-    $combo = $producto->getAmountCombo($promocion, $pricetype ?? null);
-    $pricesale = $producto->obtenerPrecioVenta($pricetype ?? null);
+    $combo = $producto->getAmountCombo($promocion, $pricetype);
+    $pricesale = $producto->obtenerPrecioVenta($pricetype);
 @endphp
 
 

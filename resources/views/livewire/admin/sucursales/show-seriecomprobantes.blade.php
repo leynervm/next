@@ -29,13 +29,18 @@
                         </div>
                         <div class="w-full">
                             <x-label value="Serie :" />
-                            <x-input class="block w-full" x-model="serie" maxlength="4" />
+                            <div class="w-full relative">
+                                <x-input class="block w-full pl-6" x-model="serie" maxlength="4" />
+                                <span x-text="indicio"
+                                    class="absolute h-full pr-0.5 w-4 text-end text-sm flex items-center justify-end top-0 left-2.5 bottom-0 text-colorlabel"></span>
+                            </div>
                             <x-jet-input-error for="serie" />
+                            <x-jet-input-error for="seriecompleta" />
                         </div>
                         <div class="w-full mt-2">
                             <x-label value="Contador :" />
-                            <x-input class="block w-full" wire:model.defer="contador" type="number" min="0"
-                                step="1" />
+                            <x-input class="block w-full input-number-none" wire:model.defer="contador" type="number"
+                                min="0" step="1" onkeypress="return validarNumero(event)" />
                             <x-jet-input-error for="contador" />
                         </div>
                         <div class="w-full flex justify-end">
@@ -77,7 +82,8 @@
                                     <td class="p-2 text-center">
                                         @can('admin.administracion.sucursales.seriecomprobantes.edit')
                                             <x-input value="{{ $item->contador }}" type="number" step="1"
-                                                min="0" class="w-auto inline-block text-center max-w-[100px]"
+                                                min="0"
+                                                class="w-auto inline-block text-center max-w-[100px] input-number-none"
                                                 onkeypress="return validarNumero(event)"
                                                 wire:keydown.enter="updatecontador({{ $item->id }}, $event.target.value)" />
                                         @endcan
@@ -137,7 +143,8 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('seriecomprobante', () => ({
                 typecomprobante_id: @entangle('typecomprobante_id').defer,
-                serie: @entangle('serie').defer
+                serie: @entangle('serie').defer,
+                indicio:  @entangle('indicio').defer,
             }))
         })
 
@@ -152,22 +159,28 @@
                 // console.log(sendsunat);
                 switch (code) {
                     case '01':
-                        this.serie = 'F001';
+                        this.serie = '001';
+                        this.indicio = 'F';
                         break;
                     case '03':
-                        this.serie = 'B001';
+                        this.serie = '001';
+                        this.indicio = 'B';
                         break;
                     case '07':
-                        this.serie = referencia == '01' ? 'FC01' : 'BC01';
+                        this.serie = referencia == '01' ? '01' : '01';
+                        this.indicio = referencia == '01' ? 'FC' : 'BC';
                         break;
                     case '09':
-                        this.serie = sendsunat > 0 ? 'T001' : 'E001';
+                        this.serie = sendsunat > 0 ? '001' : '001';
+                        this.indicio = sendsunat > 0 ? 'T' : 'E';
                         break;
                     case 'VT':
-                        this.serie = 'TK01';
+                        this.serie = '01';
+                        this.indicio = 'TK';
                         break;
                     default:
                         this.serie = null;
+                        this.indicio = null;
                         break;
                 }
             }).on('select2:open', function(e) {

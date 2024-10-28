@@ -17,22 +17,14 @@ class CreateCategory extends Component
     use AuthorizesRequests, WithFileUploads;
 
     public $open = false;
-    public $name, $icon;
+    public $name, $icon, $image, $extensionimage;
 
     protected function rules()
     {
         return [
-            'name' => [
-                'required',
-                'string',
-                'min:1',
-                'max:100',
-                new CampoUnique('categories', 'name', null, true),
-            ],
-            'icon' => [
-                'nullable',
-                'string',
-            ]
+            'name' => ['required', 'string', 'min:1', 'max:100', new CampoUnique('categories', 'name', null, true)],
+            'icon' => ['nullable', 'string'],
+            'image' => ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/']
         ];
     }
 
@@ -65,11 +57,46 @@ class CreateCategory extends Component
                 $category->orden = $orden + 1;
                 $category->icon = $this->icon;
                 $category->restore();
+                if ($category->image) {
+                    if (Storage::exists('images/categories/' . $category->image->url)) {
+                        Storage::delete('images/categories/' . $category->image->url);
+                    }
+                    $category->image->delete();
+                }
             } else {
                 $category = Category::create([
                     'name' => $this->name,
                     'icon' => $this->icon,
                     'orden' => $orden + 1
+                ]);
+            }
+
+            $urlimage = null;
+            if ($this->image) {
+                $imageLogo = $this->image;
+                list($type, $imageLogo) = explode(';', $imageLogo);
+                list(, $imageLogo) = explode(',', $imageLogo);
+                $imageLogo = base64_decode($imageLogo);
+
+                if (!Storage::directoryExists('images/categories/')) {
+                    Storage::makeDirectory('images/categories/');
+                }
+
+                $compressedImage = Image::make($imageLogo)->resize(300, 300, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('jpg', 70);
+
+                if ($compressedImage->filesize() > 1048576) { //1MB
+                    $compressedImage->destroy();
+                    $this->addError('image', 'La imagen excede el tamaño máximo permitido.');
+                    return false;
+                }
+                $urlimage = uniqid('category_') . '.' . $this->extensionimage;
+                $compressedImage->save(public_path('storage/images/categories/' . $urlimage));
+                $category->image()->create([
+                    'url' => $urlimage,
+                    'default' => 1
                 ]);
             }
 

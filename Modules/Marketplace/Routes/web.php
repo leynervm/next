@@ -26,17 +26,15 @@ Route::get('/login/auth/{driver}/callback', [AuthController::class, 'callback'])
 
 
 Route::get('/completar-perfil', [UserController::class, 'profilecomplete'])->name('profile.complete')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
 Route::post('/completar-perfil/store', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
 
 Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile')
-    ->middleware(['auth:sanctum', config('jetstream.auth_session')]);
+    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
 
 
 
-
-
-Route::middleware('verifyproductocarshoop')->group(function () {
+Route::middleware(['web', 'verifyproductocarshoop'])->group(function () {
     Route::get('/productos', [MarketplaceController::class, 'productos'])->name('productos');
     Route::get('/productos/{producto:slug}', [MarketplaceController::class, 'showproducto'])->name('productos.show');
     Route::get('/ofertas', [MarketplaceController::class, 'ofertas'])->name('ofertas');
@@ -54,6 +52,8 @@ Route::middleware('verifyproductocarshoop')->group(function () {
     Route::get('/centro-autorizado', [MarketplaceController::class, 'centroautorizado'])->name('centroautorizado');
     Route::get('/ubicanos', [MarketplaceController::class, 'ubicanos'])->name('ubicanos');
     Route::get('/trabaja-con-nosotros', [MarketplaceController::class, 'trabaja'])->name('trabaja');
+
+    Route::get('/soluciones-integrales', [MarketplaceController::class, 'tic'])->name('tic');
 });
 
 

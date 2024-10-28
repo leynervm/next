@@ -38,11 +38,8 @@ class HomeController extends Controller
     public function welcome()
     {
 
-        $empresa = mi_empresa();
-        $moneda = Moneda::default()->first();
-        $pricetype = getPricetypeAuth($empresa);
+        $pricetype = getPricetypeAuth();
         $sliders = Slider::activos()->disponibles()->orderBy('orden', 'asc')->get();
-
         $status_pendiente = StatusPayWebEnum::PENDIENTE->value;
 
         if (auth()->user()) {
@@ -54,7 +51,10 @@ class HomeController extends Controller
             }
         }
 
-        return view('welcome', compact('sliders', 'empresa', 'moneda', 'pricetype'));
+        // $empresa = view()->shared('empresa');
+        // dd($empresa);
+
+        return view('welcome', compact('sliders', 'pricetype'));
     }
 
     public function dashboard()

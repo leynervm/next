@@ -22,12 +22,12 @@ class DatabaseSeeder extends Seeder
     {
 
         // \App\Models\User::factory(10)->create();
-        Storage::deleteDirectory('marcas');
-        Storage::makeDirectory('marcas');
-        Storage::deleteDirectory('equipos');
-        Storage::makeDirectory('equipos');
-        Storage::deleteDirectory('productos');
-        Storage::makeDirectory('productos');
+        Storage::deleteDirectory('images/marcas');
+        Storage::makeDirectory('images/marcas');
+        Storage::deleteDirectory('images/equipos');
+        Storage::makeDirectory('images/equipos');
+        Storage::deleteDirectory('images/productos');
+        Storage::makeDirectory('images/productos');
 
         // DATA VACIO, COMENTAR CODIGO EN ALMACENDATABASESEEDER
         $this->call(UbigeoSeeder::class); //Requerido

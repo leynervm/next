@@ -23,7 +23,7 @@
         </section> --}}
 
         @if (count($categories))
-            <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">Categorías</h1>
+            <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">Nuestros Productos</h1>
             <section
                 class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
                 @foreach ($categories as $item)
@@ -31,8 +31,14 @@
                         class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                         <div
                             class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
-                            @if ($item->icon)
-                                {!! $item->icon !!}
+                            @if ($item->image)
+                                <picture>
+                                    <source srcset="{{ getCategoryURL($item->image->url) }}">
+                                    <img src="{{ getCategoryURL($item->image->url) }}"
+                                        alt="{{ getCategoryURL($item->image->url) }}"
+                                        class="w-full h-full object-scale-down overflow-hidden">
+                                </picture>
+                                {{-- {!! $item->icon !!} --}}
                             @else
                                 <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round"
@@ -48,6 +54,72 @@
                 @endforeach
             </section>
         @endif
+
+        <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">
+            Nuestros Servicios</h1>
+        <section
+            class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+            <a href="{{ route('tic') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                <div
+                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    <picture>
+                        <source srcset="{{ asset('images/home/recursos/soluciones_integrales.png') }}">
+                        <img src="{{ asset('images/home/recursos/soluciones_integrales.png') }}"
+                            alt="{{ asset('images/home/recursos/soluciones_integrales.png') }}"
+                            class="w-full h-full object-scale-down overflow-hidden">
+                    </picture>
+                </div>
+                <h1
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    SOLUCIONES INTEGRALES EN TI</h1>
+            </a>
+            <a href="{{ route('tic') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                <div
+                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    <picture>
+                        <source srcset="{{ asset('images/home/recursos/internet.png') }}">
+                        <img src="{{ asset('images/home/recursos/internet.png') }}"
+                            alt="{{ asset('images/home/recursos/internet.png') }}"
+                            class="w-full h-full object-scale-down overflow-hidden">
+                    </picture>
+                </div>
+                <h1
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    SERVICIO DE INTERNET</h1>
+            </a>
+            <a href="{{ route('tic') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                <div
+                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    <picture>
+                        <source srcset="{{ asset('images/home/recursos/centro_autorizado.png') }}">
+                        <img src="{{ asset('images/home/recursos/centro_autorizado.png') }}"
+                            alt="{{ asset('images/home/recursos/centro_autorizado.png') }}"
+                            class="w-full h-full object-scale-down overflow-hidden">
+                    </picture>
+                </div>
+                <h1
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    CENTRO AUTORIZADO</h1>
+            </a>
+            <a href="{{ route('tic') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                <div
+                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    <picture>
+                        <source srcset="{{ asset('images/home/recursos/orders.png') }}">
+                        <img src="{{ asset('images/home/recursos/orders.png') }}"
+                            alt="{{ asset('images/home/recursos/orders.png') }}"
+                            class="w-full h-full object-scale-down overflow-hidden">
+                    </picture>
+                </div>
+                <h1
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    ORDEN DE TRABAJO</h1>
+            </a>
+        </section>
 
         <section class="w-full">
             <a href="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}"
@@ -108,6 +180,8 @@
                     src="{{ asset('images/ofertas/desk/ofertas_1.jpg') }}" alt="">
             </a>
         </section>
+
+
 
 
         {{-- <section class="my-8">
@@ -179,7 +253,7 @@
                 </div>
             </div>
         </section> --}}
-      
+
 
         {{-- <section class="w-full py-12">
             <div class="w-full grid grid-cols-1 xl:grid-cols-4">

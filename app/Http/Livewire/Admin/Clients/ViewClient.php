@@ -13,7 +13,6 @@ use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDireccion;
 use App\Rules\ValidateDocument;
-use App\Rules\ValidateNacimiento;
 use App\Rules\ValidatePhoneClient;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
@@ -39,23 +38,31 @@ class ViewClient extends Component
     {
         return [
             'client.document' => [
-                'required', 'integer', 'numeric', 'digits_between:8,11',
+                'required',
+                'integer',
+                'numeric',
+                'digits_between:8,11',
                 new ValidateDocument,
                 new CampoUnique('clients', 'document', $this->client->id, true)
             ],
             'client.name' => ['required', 'min:3'],
             'client.email' => ['nullable', 'min:6', 'email'],
             'client.sexo' => [
-                'nullable', 'string', 'min:1',
+                'nullable',
+                'string',
+                'min:1',
                 Rule::in(['M', 'F', 'E'])
             ],
             'client.nacimiento' => [
-                'nullable', 'date',
+                'nullable',
+                'date',
             ],
             'client.pricetype_id' => [
                 'nullable',
                 Rule::requiredIf(mi_empresa()->usarlista()),
-                'integer', 'min:1', 'exists:pricetypes,id'
+                'integer',
+                'min:1',
+                'exists:pricetypes,id'
             ],
         ];
     }
@@ -192,7 +199,9 @@ class ViewClient extends Component
         $this->telefono2 = trim($this->telefono2);
         $this->validate([
             'newtelefono' => [
-                'required', 'numeric', 'digits_between:7,9',
+                'required',
+                'numeric',
+                'digits_between:7,9',
                 new ValidatePhoneClient('clients', $this->client->id, $this->telephone->id ?? null)
             ]
         ]);
@@ -241,7 +250,9 @@ class ViewClient extends Component
     {
         $this->validate([
             'namedireccion' => [
-                'required', 'string', 'min:3',
+                'required',
+                'string',
+                'min:3',
                 new ValidateDireccion($this->client->id, $this->direccion->id ?? null),
             ],
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
@@ -353,7 +364,7 @@ class ViewClient extends Component
         $this->resetValidation(['client.document', 'client.name', 'client.pricetype_id']);
 
         $http = new GetClient();
-        $response = $http->getClient($this->client->document, false);
+        $response = $http->getClient($this->client->document, false, false);
 
         if ($response->getData()) {
             if ($response->getData()->success) {

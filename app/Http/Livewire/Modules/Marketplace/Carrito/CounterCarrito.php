@@ -14,9 +14,9 @@ class CounterCarrito extends Component
     public Moneda $moneda;
     public $pricetype;
 
-    public function mount($pricetype = null)
+    public function mount()
     {
-        $this->pricetype = $pricetype;
+        $this->pricetype = getPricetypeAuth();
     }
 
     public function render()

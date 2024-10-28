@@ -71,8 +71,9 @@ class MarketplaceController extends Controller
                 $producto->promocion = $producto->promocions->first();
                 return $producto;
             });
-
-        return view('modules.marketplace.productos.ofertas', compact('ofertas'));
+            $pricetype = getPricetypeAuth();
+        
+            return view('modules.marketplace.productos.ofertas', compact('ofertas', 'pricetype'));
     }
 
     public function orders()
@@ -178,7 +179,8 @@ class MarketplaceController extends Controller
 
     public function productos(Request $request)
     {
-        return view('modules.marketplace.productos.index');
+        $pricetype = getPricetypeAuth();
+        return view('modules.marketplace.productos.index', compact('pricetype'));
     }
 
     public function showproducto(Producto $producto)
@@ -191,6 +193,7 @@ class MarketplaceController extends Controller
         // INNER JOIN UBIGEOS ON SUCURSALS.ubigeo_id = UBIGEOS.id
         // WHERE PRODUCTO_ID = ? GROUP BY name,direccion,lugar", [$producto->id]) ?? [];
         $this->authorize('publicado', $producto);
+        $pricetype = getPricetypeAuth();
         // $stocksucursals = DB::table('almacen_sucursal')
         //     ->join('almacen_producto', 'almacen_producto.almacen_id', '=', 'almacen_sucursal.almacen_id')
         //     ->join('sucursals', 'sucursals.id', '=', 'almacen_sucursal.sucursal_id')
@@ -206,7 +209,6 @@ class MarketplaceController extends Controller
         //     ->get();
 
         // $empresa = mi_empresa();
-        // $pricetype = getPricetypeAuth($empresa);
         $shipmenttypes = Shipmenttype::get();
         $producto->views = $producto->views + 1;
         $producto->save();
@@ -285,7 +287,7 @@ class MarketplaceController extends Controller
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
         }]);
 
-        return view('modules.marketplace.productos.show', compact('producto', 'shipmenttypes', 'relacionados', 'interesantes'));
+        return view('modules.marketplace.productos.show', compact('producto', 'shipmenttypes', 'relacionados', 'interesantes', 'pricetype'));
     }
 
     public function carshoop()
@@ -353,28 +355,203 @@ class MarketplaceController extends Controller
 
     public function nosotros()
     {
-        return view('partials.nosotros');
+        return view('modules.marketplace.nosotros');
     }
 
     public function contactanos()
     {
-        return view('partials.contactanos');
+        return view('modules.marketplace.contactanos');
     }
 
     public function centroautorizado()
     {
-        return view('partials.centro-autorizado');
+        return view('modules.marketplace.centro-autorizado');
     }
 
     public function ubicanos()
     {
         $sucursals = Sucursal::orderBy('codeanexo')->get();
-        return view('partials.ubicanos', compact('sucursals'));
+        return view('modules.marketplace.ubicanos', compact('sucursals'));
     }
 
     public function trabaja()
     {
-        return view('partials.trabaja-nosotros');
+        return view('modules.marketplace.trabaja-nosotros');
+    }
+
+    public function tic()
+    {
+        $desarrollo = [
+            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'content' => [
+                [
+                    'title' => 'DevOps',
+                    'description' => 'Implementamos procesos a través de la configuración de software para la gestión automatizada, pruebas de regresión, otros sistemas software y la nube que impulsan soluciones competitivas en el mercado.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ],
+                [
+                    'title' => 'Ingeniería de Calidad',
+                    'description' => 'Maximizamos la estabilidad de las aplicaciones y optimizamos el tiempo de las pruebas y los costos. Al mismo tiempo que incluimos pruebas unitarias, funcionales, integradas a los sistemas de rendimiento, de seguridad y de aceptación del usuario. El alcance de la automatización inteligente comprende de áreas móviles, web, APIs y servicios.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ]
+            ]
+        ];
+        $soporte = [
+            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'content' => [
+                [
+                    'title' => 'Cambio de Pantalla',
+                    'description' => 'Devuélvele la claridad a tu dispositivo: cambio de pantalla para que disfrutes cada detalle de nuevo.',
+                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                ],
+                [
+                    'title' => 'Repotenciamos tu case',
+                    'description' => 'Repotenciamos tu case para que luzca y rinda como nuevo, llevando tu tecnología al siguiente nivel.',
+                    'url' => asset('images/home/recursos/reparacion_hw_sw.jpg'),
+                ],
+                [
+                    'title' => 'Cambio de teclado',
+                    'description' => 'Renueva tu experiencia de escritura: cambia tu teclado y siente la diferencia en cada pulsación.',
+                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                ],
+                [
+                    'title' => 'Instalación de programas de ingeniería',
+                    'description' => 'Instala tus herramientas de ingeniería y transforma ideas en soluciones innovadoras.',
+                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                ],
+                [
+                    'title' => 'Soporte técnico de impresora',
+                    'description' => 'Estamos aquí para asegurar que tu impresión fluya sin problemas: ¡tu soporte técnico de confianza para impresoras!.',
+                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                ],
+                [
+                    'title' => 'Reparación de case',
+                    'description' => 'Devuelve la vida a tu equipo: reparación de cases para que tu tecnología siempre esté protegida y lista para rendir.',
+                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                ],
+            ]
+        ];
+        $seguridad = [
+            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'content' => [
+                [
+                    'title' => 'Cámaras de vigilancia (CCTV)',
+                    'description' => 'Las cámaras de vigilancia (CCTV) son tus ojos en todo momento, asegurando la seguridad y protección de tus espacios.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Alarmas de intrusión',
+                    'description' => 'Las alarmas de intrusión son tu primera línea de defensa, alertando sobre cualquier acceso no autorizado y manteniendo tu hogar o negocio a salvo.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Control de acceso',
+                    'description' => 'El control de acceso garantiza que solo las personas autorizadas ingresen a áreas sensibles, protegiendo tu seguridad y la de tus bienes.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Sensores de humo y fuego',
+                    'description' => 'Los sensores de humo y fuego son guardianes silenciosos que salvan vidas al detectar peligros a tiempo.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Sistema de videovigilancia en la nube',
+                    'description' => 'El sistema de videovigilancia en la nube te ofrece seguridad y acceso instantáneo a tus grabaciones desde cualquier lugar.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Sensores de movimiento',
+                    'description' => 'Los sensores de movimiento son la primera alerta ante intrusos, protegiendo tus espacios con precisión.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+            ]
+        ];
+        $datacenter = [
+            'image' => asset('images/home/recursos/recurso_5.jpg'),
+            'content' => []
+        ];
+        $redes = [
+            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'content' => [
+                [
+                    'title' => 'Conectividad a Internet',
+                    'description' => 'Ofrecemos acceso a internet de alta velocidad con opciones de redundancia para una conexión ininterrumpida.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Redes Privadas Virtuales (VPN)',
+                    'description' => 'Conéctate de forma segura a tu red corporativa desde cualquier lugar con nuestras soluciones VPN.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Servicios de Telefonía IP',
+                    'description' => 'Reduce costos y mejora la comunicación con nuestras soluciones de telefonía VoIP avanzadas.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Gestión de Redes',
+                    'description' => 'Monitorea y optimiza tu red con nuestros servicios de gestión integral y soporte técnico.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Instalación y Mantenimiento de Infraestructura de Red',
+                    'description' => 'Diseñamos e implementamos la infraestructura de red perfecta para tus necesidades, con soporte continuo.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+                [
+                    'title' => 'Servicios de Seguridad de Redes',
+                    'description' => 'Protege tu red y datos con nuestras soluciones avanzadas de ciberseguridad y monitoreo constante.',
+                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                ],
+            ]
+        ];
+        $electricidad = [
+            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'content' => [
+                [
+                    'title' => 'Instalación de Iluminación LED',
+                    'description' => 'Implementación de soluciones de iluminación LED para mejorar la eficiencia energética y reducir costos de electricidad.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ],
+                [
+                    'title' => 'Control de Climatización Inteligente',
+                    'description' => 'Instalación de sistemas de control inteligente para aire acondicionado, permitiendo la programación y el control remoto de la temperatura.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ],
+                [
+                    'title' => 'Actualización de Paneles Eléctricos',
+                    'description' => 'Modernización de paneles eléctricos para mejorar la capacidad y seguridad de la instalación eléctrica.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ],
+                [
+                    'title' => 'Inspección de Seguridad Eléctrica',
+                    'description' => 'Evaluaciones detalladas de sistemas eléctricos para identificar riesgos y garantizar el cumplimiento de las normativas de seguridad.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ],
+                [
+                    'title' => 'Deshumidificación y Purificación de Aire',
+                    'description' => 'Instalación de sistemas adicionales para deshumidificar y purificar el aire en espacios cerrados, mejorando la calidad del aire interior.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ],
+                [
+                    'title' => 'Asesoramiento Energético',
+                    'description' => 'Consultoría sobre soluciones energéticas sostenibles y eficientes, ayudando a los clientes a tomar decisiones informadas sobre sus sistemas eléctricos y de aire acondicionado.',
+                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                ]
+            ]
+        ];
+
+        $data = response()->json([
+            'image' => asset('images/home/recursos/tic.jpg'),
+            'desarrollo' => $desarrollo,
+            'soporte' => $soporte,
+            'seguridad' => $seguridad,
+            'datacenter' => $datacenter,
+            'redes' => $redes,
+            'electricidad' => $electricidad,
+        ])->getData();
+
+        return view('modules.marketplace.tic', ['data' => $data]);
     }
 
     public function search(Request $request)

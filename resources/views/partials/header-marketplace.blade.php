@@ -172,14 +172,15 @@
 
         <div class="w-full flex flex-1 sm:w-auto sm:flex-none sm:ml-auto">
             <ul class="w-full sm:w-auto flex justify-end h-full m-0 p-0" x-data="{ login: false }">
+                <li
+                    class="group flex relative h-[68%] self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
+                    <a class="h-full flex flex-col items-center px-1 font-semibold text-inherit text-lg leading-none cursor-pointer group-hover:opacity-80"
+                        href="{{ route('ofertas') }}">
+                        Ofertas
+                    </a>
+                </li>
+
                 @auth
-                    <li
-                        class="group hidden relative h-[68%] md:flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
-                        <a class="h-full flex items-center p-3 px-1 sm:px-3 font-semibold text-inherit text-lg leading-4 cursor-pointer group-hover:opacity-80"
-                            href="{{ route('orders') }}">
-                            Mis<br>compras
-                        </a>
-                    </li>
                 @else
                     <li
                         class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
@@ -235,13 +236,12 @@
                     </li>
                 @endauth
                 <li class="group relative h-[68%] flex self-center transition ease-out duration-150">
-                    <livewire:modules.marketplace.carrito.counter-carrito :empresa="$empresa" :moneda="$moneda"
-                        :pricetype="$pricetype" />
+                    <livewire:modules.marketplace.carrito.counter-carrito :empresa="$empresa" :moneda="$moneda" />
                 </li>
                 <li class="relative h-[68%] flex items-center self-center">
                     @auth
-                        <div @mouseover="login = true" @mouseover.outside="login = false">
-                            <button
+                        <div @click.away="login=false">
+                            <button @click="login=!login"
                                 class="h-full flex justify-center items-center px-1 py-3 sm:px-3 cursor-pointer text-inherit group-hover:opacity-80 transition ease-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     class="block w-8 h-8" stroke="currentColor" stroke-width="1.5"
@@ -290,35 +290,56 @@
                                     </div>
 
                                     <ul class="w-full">
-                                        <li>
-                                            <p class="block w-full text-center text-xs font-normal p-2.5 text-colordropdown"
+                                        @php
+                                            $pricetype = getPricetypeAuth();
+                                        @endphp
+                                        <li
+                                            class="w-full flex gap-1 text-[10px] py-1 pt-2 items-center justify-between divide-x border-borderminicard">
+                                            <p class="block px-1.5 w-full max-w-[60%] flex-shrink-0 truncate text-inherit"
                                                 style="text-wrap:wrap;">
                                                 {{ Auth::user()->name }}</p>
-                                        </li>
-                                        @if ($pricetype)
-                                            <li>
-                                                <p
-                                                    class="block w-full text-center text-xs font-normal p-2.5 text-colordropdown">
+                                            @if ($pricetype)
+                                                <p class="block px-1.5 w-full text-end !leading-none flex-1 text-inherit">
                                                     {{ $pricetype->name }}</p>
-                                            </li>
-                                        @endif
+                                            @endif
+                                        </li>
+
                                         @if (auth()->user()->isAdmin() || auth()->user()->sucursal)
                                             <li>
-                                                <a class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-colordropdown hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
+                                                <a class="block w-full text-sm font-medium p-2.5 rounded-lg text-inherit hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
                                                     href="{{ route('admin') }}">{{ __('Dashboard') }}</a>
                                             </li>
                                         @endif
+
                                         <li>
-                                            <a class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-colordropdown hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
-                                                href="{{ route('profile') }}">{{ __('Profile') }}</a>
+                                            <a class="block w-full text-sm font-medium p-2.5 rounded-lg text-inherit hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
+                                                href="{{ route('orders') }}">
+                                                Mis compras
+                                            </a>
                                         </li>
-                                        <li>
-                                            <form class="w-full text-center" method="POST"
-                                                action="{{ route('logout') }}" x-data>
+
+                                        {{-- <li>
+                                            <a class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-inherit hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
+                                                href="{{ route('profile') }}">{{ __('Profile') }}</a>
+                                        </li> --}}
+                                        <li class="w-full flex gap-1 items-center">
+                                            <a class="block w-full flex-1 text-sm font-medium p-2.5 rounded-lg text-inherit hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
+                                                href="{{ route('profile') }}">{{ __('Profile') }}</a>
+
+                                            <form class="flex-shrink-0" method="POST" action="{{ route('logout') }}"
+                                                x-data>
                                                 @csrf
                                                 <a href="{{ route('logout') }}" @click.prevent="$root.submit();"
-                                                    class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-colordropdown hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150">
-                                                    {{ __('Log Out') }}</a>
+                                                    class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-colorerror hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150">
+                                                    {{-- {{ __('Log Out') }} --}}
+                                                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                                        stroke="currentColor" stroke-linecap="round"
+                                                        stroke-linejoin="round" stroke-width="1.5" fill="none"
+                                                        class="w-6 h-6 block">
+                                                        <path
+                                                            d="M20 12h-9.5m7.5 3l3-3-3-3m-5-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h5a2 2 0 002-2v-1" />
+                                                    </svg>
+                                                </a>
                                             </form>
                                         </li>
                                     </ul>

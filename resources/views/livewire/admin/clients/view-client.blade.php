@@ -30,9 +30,9 @@
                     @if (mi_empresa()->usarLista())
                         <div class="w-full">
                             <x-label value="Lista precio :" />
-                            <div class="w-full relative" id="parentpricetype_id" x-data="{ pricetype_id: @entangle('client.pricetype_id') }"
+                            <div class="w-full relative" id="parentpricetypesale_id" x-data="{ pricetype_id: @entangle('client.pricetype_id') }"
                                 x-init="pricetype">
-                                <x-select class="block w-full" x-ref="selectpricetype" id="pricetype_id">
+                                <x-select class="block w-full" x-ref="pricetypesale" id="pricetypesale_id">
                                     <x-slot name="options">
                                         @if (count($pricetypes) > 0)
                                             @foreach ($pricetypes as $item)
@@ -486,9 +486,9 @@
         }
 
         function pricetype() {
-            this.selectP = $(this.$refs.selectpricetype).select2();
-            this.selectP.val(this.pricetype_id).trigger("change");
-            this.selectP.on("select2:select", (event) => {
+            this.selectPTS = $(this.$refs.pricetypesale).select2();
+            this.selectPTS.val(this.pricetype_id).trigger("change");
+            this.selectPTS.on("select2:select", (event) => {
                 this.pricetype_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -496,7 +496,10 @@
                 $(window).off(evt);
             });
             this.$watch("pricetype_id", (value) => {
-                this.selectP.val(value).trigger("change");
+                this.selectPTS.val(value).trigger("change");
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectPTS.select2().val(this.pricetype_id).trigger('change');
             });
         }
     </script>
