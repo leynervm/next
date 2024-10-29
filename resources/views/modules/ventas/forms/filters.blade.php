@@ -22,7 +22,7 @@
             <div class="w-full">
                 <x-label value="Lista precios :" />
                 <div id="parentventapricetype_id" class="relative">
-                    <x-select class="block w-full" id="ventapricetype_id" x-ref="selectp">
+                    <x-select class="block w-full" id="ventapricetype_id" x-ref="selectpricelist">
                     </x-select>
                     <x-icon-select />
                 </div>
@@ -249,7 +249,7 @@
                     });
                 },
                 select2Pricetype() {
-                    this.selectP = $(this.$refs.selectp).select2({
+                    this.selectP = $(this.$refs.selectpricelist).select2({
                         data: this.pricetypes
                     });
                     this.selectP.val(this.pricetype_id).trigger("change");

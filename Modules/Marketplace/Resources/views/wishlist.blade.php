@@ -14,7 +14,7 @@
     </x-slot>
 
     {{-- @can('admin.ventas') --}}
-    <div class="w-full contenedor max-w-xl mx-auto">
+    <div class="w-full">
         <livewire:modules.marketplace.wishlist.show-wishlists :moneda="$moneda" />
     </div>
     {{-- @endcan --}}

@@ -218,7 +218,8 @@
 
                 @auth
                     <li class="group relative h-[68%] self-center hidden xs:block">
-                        <a class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-inherit cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
+                        <a x-data="{ counterwishlist: ' {{ Cart::instance('wishlist')->count() }}' }"
+                            class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-inherit cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
                             href="{{ route('wishlist') }}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
@@ -228,8 +229,11 @@
                                 <path
                                     d="M17.8 20.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" />
                             </svg>
-                            <span id="counterwishlist"
-                                class="{{ Cart::instance('wishlist')->count() == 0 ? 'hidden' : 'flex' }} absolute w-4 h-4 top-0.5 right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-fondobadgemarketplace text-colorbadgemarketplace rounded-full">
+                            <span x-show="counterwishlist > 0" x-text="counterwishlist"
+                                @updatewishlist.window ="(data)=> {
+                                    counterwishlist = typeof data.detail === 'object' ? 0 : data.detail;
+                                }"
+                                class="flex absolute w-4 h-4 top-0.5 -right-1 xl:right-1 tracking-tight h-100 justify-center items-center leading-3 text-[9px] bg-fondobadgemarketplace text-colorbadgemarketplace rounded-full">
                                 {{ Cart::instance('wishlist')->count() }}
                             </span>
                         </a>
@@ -329,7 +333,8 @@
                                             <form class="flex-shrink-0" method="POST" action="{{ route('logout') }}"
                                                 x-data>
                                                 @csrf
-                                                <a href="{{ route('logout') }}" @click.prevent="$root.submit();"
+                                                <a href="{{ route('logout') }}" title="{{ __('Log Out') }}"
+                                                    @click.prevent="$root.submit();"
                                                     class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-colorerror hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150">
                                                     {{-- {{ __('Log Out') }} --}}
                                                     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"

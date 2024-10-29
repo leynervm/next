@@ -82,8 +82,8 @@ class ShowWishlists extends Component
             ]
         ])->associate(Producto::class);
         $this->render();
-        $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
         $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
+        $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
         if (auth()->check()) {
             Cart::instance('wishlist')->store(auth()->id());
         }

@@ -1914,7 +1914,9 @@ class CreateVenta extends Component
                 // dd($response->getData());
                 $this->resetValidation(['client_id', 'document', 'name', 'direccion']);
                 $this->name = $response->getData()->name;
+
                 $this->client_id = $response->getData()->client_id;
+
                 if (!empty($response->getData()->direccion)) {
                     $this->direccion = $response->getData()->direccion;
                 }
@@ -1924,6 +1926,7 @@ class CreateVenta extends Component
                         $this->pricetypeasigned = $response->getData()->pricetypeasigned;
                         // $this->pricetype = $pricetype;
                         $this->pricetype_id = $response->getData()->pricetype_id;
+                        $this->pricetype = Pricetype::find($this->pricetype_id);
                     }
                 }
 

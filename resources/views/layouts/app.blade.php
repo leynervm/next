@@ -220,16 +220,6 @@
         })
     })
 
-    document.addEventListener('updatewishlist', data => {
-        let counter = document.getElementById('counterwishlist');
-        if (typeof data.detail === 'object') {
-            counter.style.display = 'none';
-        } else {
-            counter.style.display = 'flex';
-            counter.innerHTML = data.detail;
-        }
-    })
-
     // SI FUNCIONA PROVADO EN ONKEYPRERSS DEL INPUT
     //onkeypress="return validarNumeroDecimal(event)"
     function validarDecimal(event, maxlenth = 0) {

@@ -107,7 +107,7 @@
                     <x-label-check for="default_edit">
                         <x-input wire:model.defer="pricetype.default" name="default" value="1" type="checkbox"
                             id="default_edit" />
-                        PREDETERMINADO PARA CLIENTES DE TIENDA ADMINISTRATIVA
+                        PREDETERMINADO PARA TIENDA FÍSICA
                     </x-label-check>
                     <x-jet-input-error for="pricetype.default" />
                 </div>
@@ -125,7 +125,7 @@
                     <x-label-check for="edit_defaultlogin">
                         <x-input wire:model.defer="pricetype.defaultlogin" name="defaultlogin" value="1"
                             type="checkbox" id="edit_defaultlogin" />
-                        PREDETERMINADO PARA CLIENTES LOGUEADOS EN TIENDA WEB
+                        PREDETERMINADO PARA TIENDA WEB
                     </x-label-check>
                     <x-jet-input-error for="pricetype.defaultlogin" />
                 </div>
@@ -133,7 +133,7 @@
                 <div class="block">
                     <x-label-check for="edit_temporal">
                         <x-input x-model="temporal" name="temporal" type="checkbox" id="edit_temporal" />
-                        USAR DE MANERA TEMPORAL PARA VENTAS WEB
+                        USAR DE MANERA TEMPORAL PARA TIENDA WEB
                     </x-label-check>
                     <x-jet-input-error for="pricetype.temporal" />
 

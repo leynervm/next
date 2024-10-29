@@ -85,7 +85,8 @@
                 <div class="w-full inline-flex gap-1">
                     <x-input class="block w-full flex-1 numeric prevent" x-model="document" wire:model.defer="document"
                         wire:keydown.enter="getClient" minlength="8" maxlength="11"
-                        onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
+                        onkeypress="return validarNumero(event, 11)" onpaste="return validarPasteNumero(event, 11)"
+                        onkeydown="disabledEnter(event)" />
                     <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">

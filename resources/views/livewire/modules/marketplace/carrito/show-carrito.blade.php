@@ -6,7 +6,7 @@
                     <h1 class="text-lg font-semibold text-primary">CARRITO DE COMPRAS</h1>
                     <x-button-secondary wire:click="delete" wire:loading.attr="disabled"
                         class="hidden sm:inline-flex items-center gap-1 mb-2">
-                        ELIMINAR CARRITO</x-button-secondary>
+                        ELIMINAR TODO</x-button-secondary>
                 </div>
 
                 <div class="w-full flex flex-col gap-3">

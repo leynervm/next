@@ -83,6 +83,7 @@ class ShowCarrito extends Component
         $this->render();
         $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
         $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
+
         if (auth()->check()) {
             Cart::instance('shopping')->store(auth()->id());
         }
