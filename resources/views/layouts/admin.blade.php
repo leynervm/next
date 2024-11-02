@@ -392,7 +392,7 @@
         return charCode == 13 ? true : false;
     }
 
-    function validarPasteNumero(event, maxlenth = 0) {
+    function validarPasteNumero(event, propiedad, maxlenth = 0) {
         const clipboardData = event.clipboardData || window.clipboardData;
         const pastedData = clipboardData.getData('Text');
         const onlyNumbers = pastedData.replace(/[^0-9]/g, '');
@@ -402,7 +402,7 @@
         const start = input.selectionStart;
         const end = input.selectionEnd;
 
-        if (start !== end) { 
+        if (start !== end) {
             input.value = input.value.substring(0, start) + onlyNumbers + input.value.substring(end);
         } else {
             input.value += onlyNumbers;
@@ -414,7 +414,7 @@
 
         const newLength = (start !== end) ? start + onlyNumbers.length : input.value.length;
         input.setSelectionRange(newLength, newLength);
-
+        input.dispatchEvent(new Event("input"));
         return true;
     }
 
@@ -484,6 +484,25 @@
         function setTheme(event) {
             localStorage.theme = event.getAttribute('theme');
         }
+
+
+        const inputsPaste = document.querySelectorAll('.numeric_onpaste_number');
+        inputsPaste.forEach(input => {
+            input.addEventListener('paste', e => {
+                e.preventDefault();
+                const paste = (e.clipboardData || window.clipboardData).getData('text');
+                const cleaned = paste.replace(/[^0-9]/g, '');
+                let newValue = isNaN(cleaned) || cleaned.length == 0 ? 1 : cleaned;
+                input.value = newValue;
+
+                if (input.hasAttribute('x-model')) {
+                    const xModelProp = input.getAttribute('x-model');
+                    console.log(xModelProp, input.value);
+                    this.xModelProp = newValue;
+                }
+                input.dispatchEvent(new Event("input"));
+            });
+        })
     })
 </script>
 

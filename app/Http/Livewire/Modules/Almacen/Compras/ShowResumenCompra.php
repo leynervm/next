@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Almacen\Compras;
 
-use App\Helpers\GetPrice;
 use App\Models\Kardex;
 use App\Models\Pricetype;
 use App\Models\Producto;
@@ -42,7 +41,7 @@ class ShowResumenCompra extends Component
     // ];
 
 
-    public function mount()
+    public function mount($pricetype = null)
     {
         $this->producto = new Producto();
         // $this->pricetype = new Pricetype();
@@ -50,14 +49,7 @@ class ShowResumenCompra extends Component
         $this->percent = $this->compra->sucursal->empresa->igv;
 
         if ($this->compra->sucursal->empresa->usarLista()) {
-            $pricetypes = Pricetype::default()->orderBy('id', 'asc');
-            if ($pricetypes->exists()) {
-                $this->pricetype_id = $pricetypes->first()->id ?? null;
-                $this->pricetype = $pricetypes->first();
-            } else {
-                $this->pricetype = Pricetype::orderBy('id', 'asc')->first();
-                $this->pricetype_id = $this->pricetype->id ?? null;
-            }
+            $this->pricetype_id = $pricetype->id;
         }
     }
 

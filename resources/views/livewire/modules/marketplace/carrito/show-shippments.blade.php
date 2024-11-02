@@ -7,7 +7,7 @@
             <p class="text-sm font-medium text-colorsubtitleform">TOTAL</p>
             <p class="text-3xl text-right font-semibold text-colorlabel">
                 <small class="text-[10px] font-medium">{{ $moneda->simbolo }}</small>
-                {{ formatDecimalOrInteger(Cart::instance('shopping')->subtotal(), 2, ', ') }}
+                {{ decimalOrInteger(Cart::instance('shopping')->subtotal(), 2, ', ') }}
             </p>
         </div>
 
@@ -46,7 +46,7 @@
                             {{ $order['local_entrega']['ubigeo']['region'] }}</p>
 
                         <p class="text-[10px] leading-3 font-medium text-colorsubtitleform mt-2">
-                            FECHA ENTREGA</p>
+                            FECHA RECOJO</p>
                         <p class="text-sm font-semibold text-colorlabel leading-3">
                             {{ formatDate($order['daterecojo'], 'DD MMMM Y') }}</p>
                     @else
@@ -229,7 +229,7 @@
                         <x-jet-input-error for="local_id" />
                     </div>
                     <div class="w-full">
-                        <x-label value="Fecha de reclamo :" />
+                        <x-label value="Fecha de recojo :" />
                         <x-input class="block w-full" x-model="daterecojo" type="date" />
                         <x-jet-input-error for="daterecojo" />
                     </div>

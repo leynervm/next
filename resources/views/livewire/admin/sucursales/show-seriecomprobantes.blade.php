@@ -98,7 +98,7 @@
                                     <td class="p-2 text-center">
                                         @if ($item->isDefault())
                                             <x-icon-default class="inline-block" />
-                                        @elseif (!$item->trashed() && !$item->isDefault() && !in_array($item->typecomprobante->code, ['09', '07']))
+                                        @elseif (!$item->trashed() && !$item->isDefault() && !in_array($item->typecomprobante->code, ['09', '07', '13']))
                                             @can('admin.administracion.sucursales.seriecomprobantes.edit')
                                                 <x-icon-default wire:click="setcomprobantedefault({{ $item->id }})"
                                                     wire:key="default_{{ $item->id }}"
@@ -144,7 +144,7 @@
             Alpine.data('seriecomprobante', () => ({
                 typecomprobante_id: @entangle('typecomprobante_id').defer,
                 serie: @entangle('serie').defer,
-                indicio:  @entangle('indicio').defer,
+                indicio: @entangle('indicio').defer,
             }))
         })
 

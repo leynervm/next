@@ -105,7 +105,7 @@
                             </td>
                             <td class="p-1 text-xs">
                                 <div class="flex gap-1 text-green-500 items-center justify-center">
-                                    <span>{{ formatDecimalOrInteger($item->incremento) }}%</span>
+                                    <span>{{ decimalOrInteger($item->incremento) }}%</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
                                         class="w-4 h-4 block" stroke-width="0.5" stroke="currentColor"
                                         fill-rule="evenodd" clip-rule="evenodd">

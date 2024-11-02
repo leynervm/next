@@ -397,7 +397,7 @@
                                 {{ $item->producto->name }}
                             </td>
                             <td class="p-2 text-center align-middle" style="width: 60px;" rowspan="2">
-                                {{ formatDecimalOrInteger($item->cantidad) }} {{ $item->producto->unit->name }}
+                                {{ decimalOrInteger($item->cantidad) }} {{ $item->producto->unit->name }}
                             </td>
                         </tr>
                         <tr class="border-table font-normal"
@@ -411,7 +411,7 @@
                                 @foreach ($item->almacencompras as $almacen)
                                     <p class="font-normal" style="margin: 0; padding: 0">
                                         <span class="font-medium">
-                                            [{{ formatDecimalOrInteger($almacen->cantidad) }}
+                                            [{{ decimalOrInteger($almacen->cantidad) }}
                                             {{ $item->producto->unit->name }}]</span>
                                         - {{ $almacen->almacen->name }}
                                     </p>

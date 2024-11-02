@@ -128,14 +128,14 @@
                             </td>
                             <td class="p-2 text-center">
                                 {{ $item->cajamovimiento->moneda->simbolo }}
-                                {{ formatDecimalOrInteger($item->cajamovimiento->amount, 2, ', ') }}
+                                {{ decimalOrInteger($item->cajamovimiento->amount, 2, ', ') }}
                             </td>
                             <td class="p-2 text-center">
                                 @foreach ($item->cajamovimientos as $saldo)
                                     <p class="text-[10px]">
                                         {{ $saldo->moneda->simbolo }}
                                         <span
-                                            class="text-xs font-semibold">{{ formatDecimalOrInteger($saldo->diferencia, 2, ', ') }}</span>
+                                            class="text-xs font-semibold">{{ decimalOrInteger($saldo->diferencia, 2, ', ') }}</span>
                                         {{ $saldo->moneda->currency }}
                                     </p>
                                 @endforeach

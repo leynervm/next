@@ -338,7 +338,6 @@
     <x-jet-dialog-modal wire:model="openModalClient" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo cliente') }}
-            <x-button-close-modal wire:click="$toggle('openModalClient')" wire:loading.attr="disabled"/>
         </x-slot>
 
         <x-slot name="content">

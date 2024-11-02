@@ -86,7 +86,7 @@
                         </tr>
                     @endif
 
-                    @if ($venta->descuentos > 0)
+                    {{-- @if ($venta->descuentos > 0)
                         <tr>
                             <td class="sm:text-end">DESCUENTOS :</td>
                             <td class="sm:text-end">
@@ -95,7 +95,7 @@
                                 <small>{{ $venta->moneda->currency }}</small>
                             </td>
                         </tr>
-                    @endif
+                    @endif --}}
 
                     @if ($venta->gratuito + $venta->descuentos > 0)
                         <tr>
@@ -112,12 +112,12 @@
                         <td class="sm:text-end">TOTAL PAGAR :</td>
                         <td class="sm:text-end">
                             <span class="font-semibold text-xl">
-                                {{ number_format($venta->total - ($venta->gratuito + $venta->igvgratuito), 2, '.', ', ') }}</span>
+                                {{ number_format($venta->total, 2, '.', ', ') }}</span>
                             <small>{{ $venta->moneda->currency }}</small>
 
                             @if ($venta->increment > 0)
                                 <br>
-                                INC. + {{ formatDecimalOrInteger($venta->increment) }}%
+                                INC. + {{ decimalOrInteger($venta->increment) }}%
                                 ({{ number_format($amountincrement, 2, '.', ', ') }})
                             @endif
                         </td>
@@ -126,7 +126,7 @@
                         <td class="sm:text-end">PENDIENTE :</td>
                         <td class="sm:text-end">
                             <span class="font-semibold text-xl text-red-600">
-                                {{ number_format($venta->total - ($venta->gratuito + $venta->igvgratuito + $venta->cajamovimientos()->sum('amount')), 2, '.', ', ') }}</span>
+                                {{ number_format($venta->total - $venta->cajamovimientos()->sum('amount'), 2, '.', ', ') }}</span>
                             <small>{{ $venta->moneda->currency }}</small>
                         </td>
                     </tr>
@@ -134,41 +134,39 @@
             </div>
         </div>
 
-        @can('admin.ventas.delete')
-            <div class="w-full flex flex-col xs:flex-row gap-1 items-end justify-between mt-4">
-                <div class="flex flex-wrap gap-1">
-                    @if (Module::isEnabled('Facturacion'))
-                        @if ($venta->comprobante)
-                            <x-link-button href="{{ route('admin.facturacion.print.a4', $venta->comprobante) }}"
-                                target="_blank">IMPRIMIR A4</x-link-button>
 
-                            <x-link-button href="{{ route('admin.facturacion.print.ticket', $venta->comprobante) }}"
-                                target="_blank">IMPRIMIR TICKET</x-link-button>
+        <div class="w-full flex flex-col xs:flex-row gap-1 items-end justify-between mt-4">
+            <div class="flex flex-wrap gap-1">
+                @if (Module::isEnabled('Facturacion'))
+                    @if ($venta->comprobante)
+                        <x-link-button href="{{ route('admin.facturacion.print.a4', $venta->comprobante) }}"
+                            target="_blank">IMPRIMIR A4</x-link-button>
 
-                            @can('admin.facturacion.sunat')
+                        <x-link-button href="{{ route('admin.facturacion.print.ticket', $venta->comprobante) }}"
+                            target="_blank">IMPRIMIR TICKET</x-link-button>
+
+                        {{-- @can('admin.facturacion.sunat')
                                 @if ($venta->seriecomprobante->typecomprobante->isSunat())
                                     @if (!$venta->comprobante->isSendSunat())
                                         <x-button wire:click="enviarsunat" wire:loading.attr="disabled" class="inline-block">
                                             ENVIAR SUNAT</x-button>
                                     @endif
                                 @endif
-                            @endcan
-                        @else
-                            {{-- <x-button wire:click="generarcomprobante" wire:loading.attr="disabled"
+                            @endcan --}}
+                    @else
+                        {{-- <x-button wire:click="generarcomprobante" wire:loading.attr="disabled"
                         class="inline-block">GENERAR COMPROBANTE</x-button> --}}
 
-                            <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
-                                IMPRIMIR TICKET</x-link-button>
-                        @endif
-                    @else
                         <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
                             IMPRIMIR TICKET</x-link-button>
                     @endif
-                </div>
-                <x-button-secondary onclick="confirmDelete({{ $venta }})" wire:loading.attr="disabled">
-                    {{ __('ELIMINAR') }}</x-button-secondary>
+                @else
+                    <x-link-button href="{{ route('admin.ventas.print.ticket', $venta) }}" target="_blank">
+                        IMPRIMIR TICKET</x-link-button>
+                @endif
             </div>
-        @endcan
+        </div>
+
     </x-simple-card>
 
     <x-form-card titulo="RESUMEN PAGO" class="flex flex-col gap-1 rounded-md cursor-default p-3">
@@ -179,7 +177,8 @@
                     @foreach ($venta->cajamovimientos as $item)
                         <x-card-payment-box :cajamovimiento="$item" :moneda="$venta->moneda">
                             <x-slot name="footer">
-                                <x-button-print class="mr-auto" href="{{ route('admin.payments.print', $item) }}" />
+                                <x-button-print class="mr-auto" target="_blank"
+                                    href="{{ route('admin.payments.print', $item) }}" />
 
                                 @can('admin.ventas.payments.edit')
                                     <x-button-delete onclick="confirmDeletePayment({{ $item->id }})"
@@ -215,7 +214,7 @@
                                 <div class="w-full">
                                     <p class="text-colorminicard text-xl font-semibold text-center">
                                         <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
-                                        {{ formatDecimalOrInteger($item->amount, 2, ', ') }}
+                                        {{ decimalOrInteger($item->amount, 2, ', ') }}
                                         <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                                     </p>
 
@@ -349,7 +348,7 @@
     @endif
 
     <x-form-card titulo="RESUMEN PRODUCTOS">
-        <div class="w-full" x-data="{ showForm: false }">
+        <div class="w-full">
             @if (count($venta->tvitems))
                 <div
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
@@ -358,21 +357,23 @@
                             $image = !empty($item->producto->image)
                                 ? pathURLProductImage($item->producto->image)
                                 : null;
-                            $textcategory = null;
-                            if ($item->isGratuito()) {
-                                $textcategory = !empty($item->promocion_id) ? 'GRATUITO' : 'GRATUITO';
-                            }
                         @endphp
-                        <x-card-producto :image="$image" :name="$item->producto->name" :category="$textcategory" :increment="$item->increment"
-                            :promocion="$item->promocion_id" class="overflow-hidden">
+                        <x-card-producto :image="$image" :name="$item->producto->name" :marca="$item->producto->marca->name" :category="$item->producto->category->name"
+                            :increment="$item->increment" :promocion="$item->promocion_id" id="card_{{ $item->producto->id }}"
+                            class="overflow-hidden">
+
+                            @if ($item->isGratuito())
+                                <x-span-text text="GRATUITO" type="green" class="!py-0.5" />
+                            @endif
+
                             <h1 class="text-xl text-center font-semibold text-colortitleform">
                                 <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
-                                {{ formatDecimalOrInteger($item->subtotal + $item->subtotaligv, 2, ', ') }}
+                                {{ decimalOrInteger($item->subtotal + $item->subtotaligv, 2, ', ') }}
                                 <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                             </h1>
 
                             <div class="text-xl font-semibold mt-1 text-colorlabel">
-                                {{ formatDecimalOrInteger($item->cantidad, 2, ', ') }}
+                                {{ decimalOrInteger($item->cantidad, 2, ', ') }}
                                 <small class="text-[10px] font-medium">
                                     {{ $item->producto->unit->name }} /
                                     {{ $item->almacen->name }}
@@ -381,14 +382,14 @@
 
                             <div class="text-sm font-semibold text-colorlabel leading-3">
                                 <small class="text-[10px] font-medium">P.U.V : </small>
-                                {{ formatDecimalOrInteger($item->price + $item->igv, 2, ', ') }}
+                                {{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}
                                 <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                             </div>
 
                             @if (count($item->itemseries) == 1)
                                 <div class="text-sm font-semibold text-colorlabel leading-3">
-                                    <small class="text-[10px] font-medium">SERIE :
-                                        {{ $item->itemseries->first()->serie->serie }}
+                                    <small class="text-[10px] font-medium">
+                                        SN: {{ $item->itemseries->first()->serie->serie }}
                                     </small>
                                 </div>
                             @endif
@@ -414,7 +415,7 @@
                                 </div>
                             @endif
 
-                            <div class="w-full mt-1">
+                            <div class="w-full mt-1" x-data="{ showForm: false }">
                                 @if (count($item->itemseries) > 1)
                                     <x-button @click="showForm = !showForm" class="whitespace-nowrap">
                                         {{ __('VER SERIES') }}</x-button>
@@ -929,23 +930,6 @@
             Livewire.hook('message.processed', () => {
                 this.selectCM.select2().val(this.methodpayment_id).trigger('change');
             });
-        }
-
-        function confirmDelete(venta) {
-            swal.fire({
-                title: 'Desea anular venta con serie ' + venta.seriecompleta + ' ?',
-                text: "Se eliminará un registro de la base de datos, incluyendo sus items del registro.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.delete(venta.id);
-                }
-            })
         }
 
         function confirmDeletePaycuota(cuota, cajamovimiento_id) {

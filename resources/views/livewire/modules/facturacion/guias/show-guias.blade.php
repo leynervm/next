@@ -37,7 +37,7 @@
             </x-button>
         @endcan
         @if ($guias->hasPages())
-            <div class="w-full flex-1">
+            <div class="w-full flex-1 flex flex-col justify-end items-center sm:items-end">
                 {{ $guias->onEachSide(0)->links('livewire::pagination-default') }}
             </div>
         @endif
@@ -170,7 +170,7 @@
                             <p class="leading-3">{{ $item->nametransport }}</p>
                         </td>
                         <td class="p-2 text-center whitespace-nowrap">
-                            <p>{{ formatDecimalOrInteger($item->peso) }} {{ $item->unit }}</p>
+                            <p>{{ decimalOrInteger($item->peso) }} {{ $item->unit }}</p>
 
                             @if ($item->packages)
                                 <p>{{ $item->packages }} {{ $item->packages > 1 ? 'BULTOS' : 'BULTO' }}</p>

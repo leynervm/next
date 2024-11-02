@@ -1,8 +1,9 @@
 <div
     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
     @foreach ($productos as $item)
-        <form id="cardproduct{{ $item->id }}" class="w-full block"
-            @submit.prevent="addtocarrito($event, {{ $item->id }})">
+        <form id="cardproduct{{ $item->id }}" class="w-full block" x-data="{ serie_id: null, seriealmacen_id: null }"
+            @submit.prevent="addtocarrito($event, {{ $item->id }}, serie_id, seriealmacen_id)" autocomplete="off"
+            novalidate>
             @php
                 $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
                 $promocion = verifyPromocion($item->promocion);
@@ -10,15 +11,10 @@
                 $combo = $item->getAmountCombo($promocion, $pricetype, $almacen_id);
                 $almacen = null;
                 $pricesale = $item->obtenerPrecioVenta($pricetype);
-
-                if ($almacendefault->name) {
-                    $stock = formatDecimalOrInteger($item->almacens->first()->pivot->cantidad);
-                    $almacenStock = $almacendefault->name . " [$stock " . $item->unit->name . ']';
-                }
             @endphp
 
-            <x-card-producto :name="$item->name" :image="$image" :category="$item->category->name" :almacen="$item->marca->name" :promocion="$promocion"
-                class="w-full h-full overflow-hidden" id="card_{{ $item->id }}">
+            <x-card-producto :name="$item->name" :image="$image" :category="$item->category->name" :marca="$item->marca->name" :promocion="$promocion"
+                class="w-full h-full" id="card_{{ $item->id }}">
 
                 @if ($combo)
                     @if (count($combo->products) > 0)
@@ -47,32 +43,86 @@
                     @endif
                 @endif
 
-                <x-prices-card-product :name="$almacenStock ?? '***'">
+                <div class="w-full py-2">
                     @if ($pricesale > 0)
                         @if ($descuento > 0)
-                            <span class="block w-full line-through text-red-600 text-right">
+                            <p class="block w-full line-through text-red-600 text-center">
                                 {{ $moneda->simbolo }}
-                                {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
-                            </span>
+                                {{ decimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                            </p>
                         @endif
 
-                        <small class="text-[10px] font-semibold text-right text-colorlabel">
-                            {{ $moneda->currency }}</small>
-                        @if ($moneda->isDolar())
-                            <x-input class="block w-full text-right disabled:bg-gray-200 input-number-none"
+                        <div class="w-full relative">
+                            <x-input class="block pl-7 w-full text-end disabled:bg-gray-200 input-number-none"
                                 name="price" type="number" min="0" step="0.001"
-                                value="{{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) }}"
+                                value="{{ $moneda->isDolar() ? convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) : $pricesale }}"
                                 onkeypress="return validarDecimal(event, 12)" />
-                        @else
-                            <x-input class="block w-full text-right disabled:bg-gray-200 input-number-none"
-                                name="price" type="number" min="0" step="0.0001" value="{{ $pricesale }}"
-                                onkeypress="return validarDecimal(event, 12)" />
-                        @endif
+                            <small
+                                class="text-xs left-2.5 absolute top-[50%] -translate-y-[50%] font-medium text-left text-colorsubtitleform">
+                                {{ $moneda->simbolo }}</small>
+                        </div>
                     @else
                         <p class="text-colorerror text-[10px] font-semibold text-center">
-                            PRECIO DE VENTA NO ENCONTRADO</p>
+                            PRECIO DE VENTA NO DISPONIBLE</p>
                     @endif
-                </x-prices-card-product>
+                </div>
+
+                @if ($item->isRequiredserie())
+                    <div class="w-full">
+                        <x-label value="Seleccionar serie :" />
+                        <div id="parentserieproducto_{{ $item->id }}" class="relative">
+                            <x-select name="serie_id" class="block w-full relative"
+                                id="serieproducto_{{ $item->id }}" data-placeholder="null"
+                                data-minimum-results-for-search="0" x-init="$nextTick(() => {
+                                    $($el).select2({ templateResult: formatOption }).on('select2:open', function(e) {
+                                        const evt = 'scroll.select2';
+                                        $(e.target).parents().off(evt);
+                                        $(window).off(evt);
+                                    }).on('change', (e) => {
+                                        serie_id = $el.value;
+                                        const paramsData = $(e.target).select2('data')[0];
+                                        seriealmacen_id = paramsData ? paramsData.element.dataset.almacen_id : null;
+                                    });
+                                    $watch('serie_id', (value) => {
+                                        $($el).val(value).select2({ templateResult: formatOption }).trigger('change');
+                                    });
+                                    Livewire.hook('message.processed', () => {
+                                        $($el).select2({ templateResult: formatOption }).val(serie_id).trigger('change');
+                                    });
+                                })">
+                                <x-slot name="options">
+                                    @foreach ($item->seriesdisponibles as $ser)
+                                        <option data-almacen_id="{{ $ser->almacen_id }}" value="{{ $ser->id }}"
+                                            title="{{ $ser->almacen->name }}">
+                                            {{ $ser->serie }}</option>
+                                    @endforeach
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="cart.{{ $item->id }}.serie" />
+                        <x-jet-input-error for="cart.{{ $item->id }}.serie_id" />
+                    </div>
+                @else
+                    @if (count($item->almacens) > 0)
+                        <div class="w-full flex flex-wrap gap-1">
+                            @foreach ($item->almacens as $alm)
+                                <x-input-radio class="py-2 !text-[10px]" for="almacen_{{ $item->id . $alm->id }}"
+                                    :text="$alm->name .
+                                        ' [' .
+                                        decimalOrInteger($alm->pivot->cantidad) .
+                                        ' ' .
+                                        $item->unit->name .
+                                        ']'">
+                                    <input name="selectedalmacen_{{ $item->id }}"
+                                        class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                        id="almacen_{{ $item->id . $alm->id }}" value="{{ $alm->id }}"
+                                        @if ($almacen_id === $alm->id || count($item->almacens) == 1) checked @endif />
+                                </x-input-radio>
+                            @endforeach
+                        </div>
+                    @endif
+                @endif
 
                 @if (Module::isEnabled('Almacen'))
                     @if (count($item->garantiaproductos) > 0)
@@ -102,30 +152,40 @@
 
                 @if ($pricesale > 0)
                     <x-slot name="footer">
-                        <div class="w-full flex items-end gap-1 justify-end mt-1">
+                        @if (!$item->isRequiredserie())
+                            <div class="w-full flex-1 flex justify-center xl:justify-start gap-0.5"
+                                x-data="{ cantidad: 1 }">
+                                <button type="button" wire:loading.attr="disabled" @click="parseFloat(cantidad--)"
+                                    x-bind:disabled="cantidad == 1"
+                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-neutral-300 transition ease-in-out duration-150">-</button>
+                                <x-input x-model="cantidad"
+                                    class="w-full rounded-xl flex-1 text-center text-colorlabel input-number-none numeric_onpaste_number"
+                                    type="number" step="1" min="1" name="cantidad"
+                                    onkeypress="return validarNumero(event, 4)"
+                                    @blur="if (!cantidad || cantidad === '0') cantidad = '1'" />
+                                <button type="button" wire:loading.attr="disabled" @click="parseFloat(cantidad++)"
+                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                            </div>
+                            {{-- <div class="w-full flex-1">
+                                <x-label value="Cantidad :" />
+                                <x-input class="block w-full disabled:bg-gray-200 input-number-none" name="cantidad"
+                                    type="number" min="1" required value="1"
+                                    onkeypress="return validarDecimal(event, 12)" />
+                            </div> --}}
+                        @endif
+                        <x-button-add-car
+                            class="{{ $item->isRequiredserie() ? 'flex-1 text-[10px] flex items-center justify-center gap-3' : '' }}"
+                            type="submit" wire:loading.attr="disabled">
                             @if ($item->isRequiredserie())
-                                <div class="w-full flex-1">
-                                    <x-label value="Ingresar serie :" />
-                                    <x-input class="block w-full disabled:bg-gray-200" name="serie" required
-                                        min="3" />
-                                </div>
-                            @else
-                                <div class="w-full flex-1">
-                                    <x-label value="Cantidad :" />
-                                    <x-input class="block w-full disabled:bg-gray-200 input-number-none" name="cantidad"
-                                        type="number" min="1" required max="{{ $stock }}" value="1"
-                                        onkeypress="return validarDecimal(event, 12)" />
-                                </div>
+                                AGREGAR PRODUCTO
                             @endif
-                            <x-button-add-car type="submit" wire:loading.attr="disabled" />
-                        </div>
+                        </x-button-add-car>
                     </x-slot>
                 @endif
 
                 <x-slot name="messages">
                     <x-jet-input-error for="cart.{{ $item->id }}.price" />
                     <x-jet-input-error for="cart.{{ $item->id }}.almacen_id" />
-                    <x-jet-input-error for="cart.{{ $item->id }}.serie" />
                     <x-jet-input-error for="cart.{{ $item->id }}.cantidad" />
                 </x-slot>
 
@@ -136,4 +196,12 @@
             </x-card-producto>
         </form>
     @endforeach
+
+    <script>
+        function formatOption(option) {
+            var $option = $(`<p>${option.text}</p>
+                <p class="select2-subtitle-option text-[10px] !text-next-500">${option.title}</p>`);
+            return $option;
+        }
+    </script>
 </div>

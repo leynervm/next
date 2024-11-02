@@ -255,7 +255,7 @@
                                     @foreach ($item->almacens as $almacen)
                                         <x-span-text :text="$almacen->name .
                                             ' [' .
-                                            formatDecimalOrInteger($almacen->pivot->cantidad) .
+                                            decimalOrInteger($almacen->pivot->cantidad) .
                                             ']'"
                                             class="whitespace-nowrap leading-3 !tracking-normal" />
                                     @endforeach
@@ -317,7 +317,8 @@
     </x-table>
 
     @if ($productos->hasPages())
-        <div class="w-full md:pl-64 flex justify-center items-center sm:justify-end p-1 sm:pr-6 fixed bottom-0 right-0 bg-body">
+        <div
+            class="w-full md:pl-64 flex justify-center items-center sm:justify-end p-1 sm:pr-6 fixed bottom-0 right-0 bg-body">
             {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
@@ -371,9 +372,7 @@
                         cancelButtonText: 'Cancelar'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            this.$wire.call('deleteall').then(() => {
-                                console.log('function ejecutado correctamente');
-                            }).catch(error => {
+                            this.$wire.call('deleteall').then(() => {}).catch(error => {
                                 console.error('Error al ejecutar la función:', error);
                             });
                         }

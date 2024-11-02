@@ -441,7 +441,7 @@
                         @foreach ($item['almacens'] as $key => $value)
                             <div
                                 class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
-                                {{ formatDecimalOrInteger($value['cantidad']) }}
+                                {{ decimalOrInteger($value['cantidad']) }}
                                 <small class="text-[10px] font-medium">{{ $item['unit'] }} \
                                     {{ $value['name'] }}</small>
                             </div>
@@ -466,7 +466,7 @@
                         <td colspan="3" class="text-center text-colorlabel">
                             TOTAL
                             <span class="font-semibold text-xl">
-                                {{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
+                                {{ decimalOrInteger($item['totalitem'], 2, ', ') }}</span>
                             <small x-text="namemoneda"></small>
                         </td>
                     </tr> --}}
@@ -475,7 +475,7 @@
                             <td class="align-middle">P. U. C. </td>
                             <td class="text-end">
                                 <span
-                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['pricebuy'], 2, ', ') }}</span>
+                                    class="text-sm font-medium">{{ decimalOrInteger($item['pricebuy'], 2, ', ') }}</span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -484,7 +484,7 @@
                             <td class="align-middle">SUBTOTAL</td>
                             <td class="text-end">
                                 <span
-                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotalitem'], 2, ', ') }}</span>
+                                    class="text-sm font-medium">{{ decimalOrInteger($item['subtotalitem'], 2, ', ') }}</span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -492,7 +492,7 @@
                             <td class="align-middle">DESCUENTOS</td>
                             <td class="text-end">
                                 <span
-                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['subtotaldsctoitem'], 2, ', ') }}</span>
+                                    class="text-sm font-medium">{{ decimalOrInteger($item['subtotaldsctoitem'], 2, ', ') }}</span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -502,7 +502,7 @@
                             <td class="align-middle">TOTAL </td>
                             <td class="text-end">
                                 <span
-                                    class="text-sm font-medium">{{ formatDecimalOrInteger($item['totalitem'], 2, ', ') }}</span>
+                                    class="text-sm font-medium">{{ decimalOrInteger($item['totalitem'], 2, ', ') }}</span>
                                 <small x-text="namemoneda"></small>
                             </td>
                         </tr>
@@ -512,7 +512,7 @@
                                 <td class="align-middle">P. U. C.</td>
                                 <td class="text-end">
                                     <span
-                                        class="text-sm font-semibold">{{ formatDecimalOrInteger($item['pricebuysoles'], 2, ', ') }}</span>
+                                        class="text-sm font-semibold">{{ decimalOrInteger($item['pricebuysoles'], 2, ', ') }}</span>
                                     <small>SOLES</small>
                                 </td>
                             </tr>
@@ -524,7 +524,7 @@
                                 <td class="align-middle"> P. U. V. </td>
                                 <td class="text-end">
                                     <span
-                                        class="text-sm font-semibold">{{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
+                                        class="text-sm font-semibold">{{ decimalOrInteger($item['priceventa'], 2, ', ') }}</span>
                                     SOLES
                                 </td>
                             </tr>
@@ -532,7 +532,7 @@
                             <td colspan="3" class=" text-center text-colorlabel">
                                 VENTA S/.
                                 <span class="font-semibold text-xl">
-                                    {{ formatDecimalOrInteger($item['priceventa'], 2, ', ') }}</span>
+                                    {{ decimalOrInteger($item['priceventa'], 2, ', ') }}</span>
                                 SOLES
                             </td>
                         </tr> --}}

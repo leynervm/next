@@ -21,11 +21,17 @@ class CreateMotivoTraslado extends Component
     {
         return [
             'name' => [
-                'required', 'string', 'min:6', 'max:255',
+                'required',
+                'string',
+                'min:6',
+                'max:255',
                 new CampoUnique('motivotraslados', 'name', null, true)
             ],
             'typecomprobante_id' => [
-                'nullable', 'integer', 'min:1', 'exists:typecomprobantes,id'
+                'nullable',
+                'integer',
+                'min:1',
+                'exists:typecomprobantes,id'
             ]
         ];
     }
@@ -52,7 +58,7 @@ class CreateMotivoTraslado extends Component
         }
     }
 
-    public function save()
+    public function save($closemodal = false)
     {
 
         $this->authorize('admin.facturacion.guias.motivos.create');
@@ -70,8 +76,12 @@ class CreateMotivoTraslado extends Component
             Motivotraslado::create($validateData);
         }
         $this->resetValidation();
-        $this->reset();
         $this->dispatchBrowserEvent('created');
+        if ($closemodal) {
+            $this->reset();
+        } else {
+            $this->resetExcept(['open']);
+        }
         $this->emitTo('modules.facturacion.motivos.show-motivos-traslado', 'render');
     }
 }

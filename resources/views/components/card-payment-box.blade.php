@@ -11,7 +11,7 @@
             @if ($moneda->id !== $cajamovimiento->moneda_id)
                 <p class="font-semibold text-[10px] align-middle leading-3 {{-- line-through --}}">
                     {{ $moneda->simbolo }}
-                    {{ formatDecimalOrInteger($cajamovimiento->amount, 2, ', ') }}
+                    {{ decimalOrInteger($cajamovimiento->amount, 2, ', ') }}
                     <small class="font-normal">{{ $moneda->currency }}</small>
                 </p>
             @endif
@@ -19,7 +19,7 @@
 
         <p class="text-xl text-colortitleform">
             <small class="text-[10px] font-medium">{{ $cajamovimiento->moneda->simbolo }}</small>
-            {{ formatDecimalOrInteger($cajamovimiento->totalamount, 2, ', ') }}
+            {{ decimalOrInteger($cajamovimiento->totalamount, 2, ', ') }}
             <small class="text-[10px] font-medium">{{ $cajamovimiento->moneda->currency }}</small>
         </p>
 

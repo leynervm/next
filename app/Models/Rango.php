@@ -37,7 +37,7 @@ class Rango extends Model
 
     // public function getIncremento($value)
     // {
-    //     return formatDecimalOrInteger($value);
+    //     return decimalOrInteger($value);
     // }
 
     public function pricetypes(): BelongsToMany

@@ -130,7 +130,7 @@
     --color-button-search-marketplace:theme("colors.white");
     --ring-button-search-marketplace:theme("colors.neutral.300");
 
-    --fondo-badge-marketplace:theme("colors.neutral.500");
+    --fondo-badge-marketplace:theme("colors.next.800");
     --color-badge-marketplace:theme("colors.white");
 
 }

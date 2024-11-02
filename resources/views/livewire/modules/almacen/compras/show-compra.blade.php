@@ -208,13 +208,13 @@
                             $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
                         @endphp
 
-                        <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" class="overflow-hidden" x-data="{ showForm: false }">
+                        <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" class="overflow-hidden">
                             <div
                                 class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
                                 @foreach ($item->almacencompras as $almac)
                                     <div
                                         class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
-                                        {{ formatDecimalOrInteger($almac->cantidad) }}
+                                        {{ decimalOrInteger($almac->cantidad) }}
                                         <small class="text-[10px] font-medium">
                                             {{ $almac->compraitem->producto->unit->name }} \
                                             {{ $almac->almacen->name }}</small>
@@ -240,7 +240,7 @@
                                     <td class="align-middle">P. U. C. </td>
                                     <td class="text-end">
                                         <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item->price + $item->igv, 2, ', ') }}</span>
+                                            class="text-sm font-medium">{{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
@@ -248,7 +248,7 @@
                                     <td class="align-middle">SUBTOTAL</td>
                                     <td class="text-end">
                                         <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item->subtotal, 2, ', ') }}</span>
+                                            class="text-sm font-medium">{{ decimalOrInteger($item->subtotal, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
@@ -256,7 +256,7 @@
                                     <td class="align-middle">DESCUENTOS</td>
                                     <td class="text-end">
                                         <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item->subtotaldescuento, 2, ', ') }}</span>
+                                            class="text-sm font-medium">{{ decimalOrInteger($item->subtotaldescuento, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
@@ -265,7 +265,7 @@
                                     <td class="align-middle">TOTAL </td>
                                     <td class="text-end">
                                         <span
-                                            class="text-sm font-medium">{{ formatDecimalOrInteger($item->total, 2, ', ') }}</span>
+                                            class="text-sm font-medium">{{ decimalOrInteger($item->total, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
@@ -275,7 +275,7 @@
                                         <td class="align-middle">P. U. C.</td>
                                         <td class="text-end">
                                             <span
-                                                class="text-sm font-semibold">{{ formatDecimalOrInteger(($item->price + $item->igv) * $compra->tipocambio, 2, ', ') }}</span>
+                                                class="text-sm font-semibold">{{ decimalOrInteger(($item->price + $item->igv) * $compra->tipocambio, 2, ', ') }}</span>
                                             <small>SOLES</small>
                                         </td>
                                     </tr>
@@ -284,7 +284,7 @@
                                     <td class="align-middle"> P. U. V. </td>
                                     <td class="text-end">
                                         <span
-                                            class="text-sm font-semibold">{{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}</span>
+                                            class="text-sm font-semibold">{{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}</span>
                                         SOLES
                                     </td>
                                 </tr>
@@ -295,7 +295,7 @@
                                     @if ($descuento > 0)
                                         <span class="block w-full line-through text-red-600 text-center">
                                             S/.
-                                            {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                                            {{ decimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
                                         </span>
                                     @endif
                                 @endif
@@ -513,7 +513,7 @@
                                         <small class="w-full block text-center text-[8px] leading-3">STOCK
                                             ACTUAL</small>
                                         <span class="inline-block text-2xl text-center font-semibold">
-                                            {{ formatDecimalOrInteger($item['pivot']['cantidad']) }}</span>
+                                            {{ decimalOrInteger($item['pivot']['cantidad']) }}</span>
                                         <small
                                             class="inline-block text-center text-[10px] leading-3">{{ $compraitem->producto->unit->name }}</small>
                                     </div>
@@ -544,7 +544,7 @@
 
                                             <p class="text-end text-[9px] font-semibold">
                                                 <span>{{ count($item['series']) + 1 }}</span>
-                                                / <span>{{ formatDecimalOrInteger($item['cantidad']) }}</span>
+                                                / <span>{{ decimalOrInteger($item['cantidad']) }}</span>
                                             </p>
                                         </div>
 

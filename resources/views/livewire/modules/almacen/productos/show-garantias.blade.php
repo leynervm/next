@@ -123,7 +123,7 @@
                                     @if (mi_empresa()->verDolar())
                                         @if (mi_empresa()->tipocambio > 0)
                                             {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
-                                        S/. {{ formatDecimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
+                                        S/. {{ decimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
                                         @else
                                             <p class="text-center tracking-widest text-colorerror">
                                                 TIPO CAMBIO NO CONFIGURADO</p>
@@ -171,7 +171,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Cambiar precio venta') }}
-            <x-button-close-modal wire:click="$toggle('open')" wire:loading.attr="disabled" />
         </x-slot>
 
         <x-slot name="content">

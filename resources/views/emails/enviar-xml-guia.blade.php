@@ -109,7 +109,7 @@ DOCUMENTO NACIONAL IDENTIDAD (DNI)
 |CANT. | DESCRIPCIÓN | P. UNIT | IMPORTE |
 |:---- |:------------| -------:| -------:|
 @foreach ($guia->tvitems as $item)
-| {{ formatDecimalOrInteger($item->cantidad) }} {{ $item->producto->unit->code }} | {{ $item->producto->name }} | {{ number_format($item->price, 2, '.', ', ') }} | {{ number_format($item->subtotal, 2, '.', ', ') }} |
+| {{ decimalOrInteger($item->cantidad) }} {{ $item->producto->unit->code }} | {{ $item->producto->name }} | {{ number_format($item->price, 2, '.', ', ') }} | {{ number_format($item->subtotal, 2, '.', ', ') }} |
 @endforeach
 </x-mail::table>
 

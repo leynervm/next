@@ -92,7 +92,7 @@
             </x-button>
         @endcan
         @if ($comprobantes->hasPages())
-            <div class="w-full flex-1 ">
+            <div class="w-full flex-1 flex flex-col justify-end items-center sm:items-end">
                 {{ $comprobantes->onEachSide(0)->links('livewire::pagination-default') }}
             </div>
         @endif

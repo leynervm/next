@@ -303,15 +303,15 @@ class CreateCompra extends Component
         ];
 
         if ($this->afectacion == 'S') {
-            $this->gravado = formatDecimalOrInteger($this->gravado + ($this->totalitem - $this->subtotaligvitem), 2);
-            $this->igv = formatDecimalOrInteger($this->igv + $this->subtotaligvitem, 2);
+            $this->gravado = decimalOrInteger($this->gravado + ($this->totalitem - $this->subtotaligvitem), 2);
+            $this->igv = decimalOrInteger($this->igv + $this->subtotaligvitem, 2);
         } else {
-            $this->exonerado = formatDecimalOrInteger($this->exonerado + ($this->totalitem), 2);
+            $this->exonerado = decimalOrInteger($this->exonerado + ($this->totalitem), 2);
         }
 
-        $this->descuento = formatDecimalOrInteger($this->descuento + $this->subtotaldsctoitem, 2);
-        $this->total = formatDecimalOrInteger($this->total + $this->totalitem, 2);
-        $this->subtotal = formatDecimalOrInteger($this->subtotal + $this->subtotalitem, 2);
+        $this->descuento = decimalOrInteger($this->descuento + $this->subtotaldsctoitem, 2);
+        $this->total = decimalOrInteger($this->total + $this->totalitem, 2);
+        $this->subtotal = decimalOrInteger($this->subtotal + $this->subtotalitem, 2);
 
         $this->reset([
             'producto_id',
@@ -345,14 +345,14 @@ class CreateCompra extends Component
 
         if (count($this->itemcompras) > 0) {
             if ($this->afectacion == 'S') {
-                $this->gravado = formatDecimalOrInteger($this->gravado - ($item['subtotalitem'] - $item['subtotaligvitem']), 2);
-                $this->igv = formatDecimalOrInteger($this->igv - $item['subtotaligvitem'], 2);
+                $this->gravado = decimalOrInteger($this->gravado - ($item['subtotalitem'] - $item['subtotaligvitem']), 2);
+                $this->igv = decimalOrInteger($this->igv - $item['subtotaligvitem'], 2);
             } else {
-                $this->exonerado = formatDecimalOrInteger($this->exonerado - $item['totalitem'], 2);
+                $this->exonerado = decimalOrInteger($this->exonerado - $item['totalitem'], 2);
             }
-            $this->descuento = formatDecimalOrInteger($this->descuento - $item['subtotaldsctoitem'], 2);
-            $this->total = formatDecimalOrInteger($this->exonerado + $this->gravado + $this->igv, 2);
-            $this->subtotal = formatDecimalOrInteger($this->total + $this->descuento, 2);
+            $this->descuento = decimalOrInteger($this->descuento - $item['subtotaldsctoitem'], 2);
+            $this->total = decimalOrInteger($this->exonerado + $this->gravado + $this->igv, 2);
+            $this->subtotal = decimalOrInteger($this->total + $this->descuento, 2);
         } else {
             $this->exonerado = 0;
             $this->gravado = 0;
@@ -425,7 +425,7 @@ class CreateCompra extends Component
         $combined = Producto::find($producto_id)->almacens->map(function ($item) use ($arrayalmacens) {
             $almacencompra = collect($arrayalmacens)->firstWhere('id', $item['id']);
             if ($almacencompra) {
-                $almacen['cantidad'] = formatDecimalOrInteger($almacencompra['cantidad']);
+                $almacen['cantidad'] = decimalOrInteger($almacencompra['cantidad']);
                 $almacen['series'] = $almacencompra['series'];
             } else {
                 $almacen['cantidad'] = 0;

@@ -2,6 +2,7 @@
 
 namespace Modules\Almacen\Http\Controllers;
 
+use App\Models\Pricetype;
 use App\Models\Producto;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class CompraController extends Controller
     {
 
         $this->authorize('sucursal', $compra);
-        $compra->load(['compraitems' => function ($query) {
+        $compra->load(['sucursal.empresa', 'compraitems' => function ($query) {
             $query->with(['producto' => function ($subQuery) {
                 $subQuery->with(['unit', 'promocions' => function ($queryPrm) {
                     $queryPrm->with(['itempromos.producto' => function ($queryItemprm) {
@@ -54,7 +55,18 @@ class CompraController extends Controller
                 }]);
             }]);
         }]);
-        return view('almacen::compras.show', compact('compra'));
+
+        $pricetype = null;
+        if ($compra->sucursal->empresa->usarlista()) {
+            $pricetypes = Pricetype::default();
+            if (count($pricetypes->get()) > 0) {
+                $pricetype = $pricetypes->first();
+            } else {
+                $pricetype = Pricetype::orderBy('id', 'asc')->first();
+            }
+        }
+
+        return view('almacen::compras.show', compact('compra', 'pricetype'));
     }
 
     public function printA4(Compra $compra)

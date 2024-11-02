@@ -42,7 +42,7 @@
 
                     <div class="w-full">
                         <x-button class="block w-full" type="submit" wire:loading.attr="disabled">
-                            {{ __('Save') }}</x-button>
+                            {{ __('Save sale') }}</x-button>
                     </div>
 
                     {{-- @if ($errors->any())
@@ -88,19 +88,21 @@
                             <small>{{ $moneda->currency }}</small>
                         </td>
                     </tr>
-                    <tr>
+                    {{-- <tr>
                         <td>DESCUENTOS :</td>
                         <td class="text-end">
                             <span class="font-semibold text-sm">
                                 {{ number_format($descuentos, 2, '.', ', ') }}</span>
                             <small>{{ $moneda->currency }}</small>
                         </td>
-                    </tr>
+                    </tr> --}}
                     <tr>
                         <td>SUBTOTAL :</td>
                         <td class="text-end">
                             <span class="font-semibold text-sm">
-                                {{ number_format($total, 2, '.', ', ') }}</span>
+                                {{ number_format($subtotal, 2, '.', ', ') }}</span>
+                            {{-- <span class="font-semibold text-sm">
+                                {{ number_format($total, 2, '.', ', ') }}</span> --}}
                             <small>{{ $moneda->currency }}</small>
                         </td>
                     </tr>
@@ -109,12 +111,12 @@
                         <td>TOTAL PAGAR :</td>
                         <td class="text-end">
                             <span class="font-semibold text-xl">
-                                {{ number_format($total - ($gratuito + $igvgratuito), 2, '.', ', ') }}</span>
+                                {{ number_format($total, 2, '.', ', ') }}</span>
                             <small>{{ $moneda->currency }}</small>
 
                             @if ($increment > 0)
                                 <br>
-                                INC. {{ formatDecimalOrInteger($increment) }}%
+                                INC. {{ decimalOrInteger($increment) }}%
                                 ({{ number_format($amountincrement, 2, '.', ', ') }})
                             @endif
                         </td>
@@ -123,7 +125,7 @@
                         <td>PENDIENTE :</td>
                         <td class="text-end">
                             <span class="font-semibold text-xl text-red-600">
-                                {{ number_format($total - ($gratuito + $igvgratuito + $paymentactual), 2, '.', ', ') }}</span>
+                                {{ number_format($total - $paymentactual, 2, '.', ', ') }}</span>
                             <small>{{ $moneda->currency }}</small>
                         </td>
                     </tr>
@@ -135,15 +137,23 @@
             <div class="w-full flex flex-col">
                 <div class="w-full flex flex-wrap gap-2">
                     @foreach ($parcialpayments as $index => $item)
-                        <x-minicard size="md" alignFooter="justify-end">
+                        <div class="block text-center size-28 rounded-xl border p-2.5 border-borderminicard">
                             <h1 class="text-lg text-center leading-5 font-semibold text-colorlabel">
                                 {{ number_format($item['amount'], 2, '.', ', ') }}</h1>
-                            <span
-                                class="text-[10px] text-center text-colorsubtitleform mt-2">{{ $item['method'] }}</span>
-                            <slot name="buttons">
+                            <span class="text-[9px] leading-none text-center text-colorsubtitleform mt-2">
+                                {{ $item['method'] }}</span>
+
+                            @if (!empty($item['detalle']))
+                                <p
+                                    class="w-full block uppercase text-[10px] leading-none text-center text-colorsubtitleform mt-0.5">
+                                    <small class="font-semibold">DETALLE</small>
+                                    {{ $item['detalle'] }}
+                                </p>
+                            @endif
+                            <div class="w-full text-center">
                                 <x-button-delete wire:click="removepay({{ $index }})" />
-                            </slot>
-                        </x-minicard>
+                            </div>
+                        </div>
                     @endforeach
                 </div>
                 <x-jet-input-error for="parcialpayments" />
@@ -183,12 +193,12 @@
 
                                 <h1 class="text-colorlabel w-full text-[10px] leading-3 text-left z-[1]">
                                     <span class="font-semibold text-sm">
-                                        {{ formatDecimalOrInteger($item->cantidad) }}
+                                        {{ decimalOrInteger($item->cantidad) }}
                                         {{ $item->producto->unit->name }}</span>
                                     {{ $item->producto->name }}
 
                                     @if (count($item->carshoopseries) == 1)
-                                        - SN: {{ $item->carshoopseries()->first()->serie->serie }}
+                                        <br>SN: {{ $item->carshoopseries()->first()->serie->serie }}
                                     @endif
                                 </h1>
 
@@ -280,7 +290,7 @@
                         @endforeach
                     </div>
 
-                    <div class="w-full flex justify-end mt-2">
+                    <div class="w-full flex mt-2">
                         <x-button-secondary wire:loading.attr="disabled" class="inline-block"
                             @click="confirmDeleteAllCarshoop">ELIMINAR TODO</x-button-secondary>
                     </div>
@@ -303,14 +313,7 @@
 
                     @include('modules.ventas.forms.productos')
                 @else
-                    <div>
-                        @php
-                            $almacenstring = is_null($almacendefault)
-                                ? '...[SUCURSAL SIN ALAMACENES]'
-                                : $almacendefault->name;
-                        @endphp
-                        <x-span-text :text="'NO SE ENCONTRARON REGISTROS DE PRODUCTOS PARA EL ALMACEN, ' . $almacenstring" class="inline-block" type="" />
-                    </div>
+                    <p class="text-xs text-colorsubtitleform">NO SE ENCONTRARON REGISTROS DE PRODUCTOS</p>
                 @endif
             </div>
         </x-form-card>
@@ -389,33 +392,53 @@
                 ubigeodestino_id: @entangle('ubigeodestino_id').defer,
                 typepay: @entangle('typepay').defer,
                 parcialpayments: @entangle('parcialpayments').defer,
+                istransferencia: @entangle('istransferencia').defer,
 
                 ubigeos: [],
                 typepayments: [],
                 methodpayments: [],
+                seriecomprobantes: [],
                 searchmarca: @entangle('searchmarca'),
                 searchcategory: @entangle('searchcategory'),
                 searchsubcategory: @entangle('searchsubcategory'),
                 pricetype_id: @entangle('pricetype_id'),
-                almacen_id: @entangle('almacen_id'),
 
                 init() {
+
+                    $(this.$refs.selectcomprobante).select2();
+                    $(this.$refs.selectmethodpayment).select2();
+                    $(this.$refs.selectpayment).select2();
                     this.obtenerDatos();
 
                     this.$watch("moneda_id", (value) => {
                         const message = this.updatemonedacart(value);
                     });
+                    this.$watch("methodpayment_id", (value) => {
+                        this.selectMP.val(value).trigger("change");
+                    });
                     this.$watch("seriecomprobante_id", (value, oldvalue) => {
                         let digits = this.document.length ?? 0;
                         if (this.codecomprobante == '01' && digits !== 11) {
+                            this.seriecomprobante_id = '';
+                            this.selectTC.val(this.seriecomprobante_id).trigger("change");
                             this.$dispatch('validation', {
                                 title: 'INGRESE N° RUC VÁLIDO PARA EL COMPROBANTE SELECCIONADO !',
                                 text: null
                             });
-                            this.seriecomprobante_id = '';
                             return false;
                         }
                     });
+
+                    Livewire.hook('message.processed', () => {
+                        this.selectTC.select2({
+                            data: this.seriecomprobantes
+                        }).val(this.seriecomprobante_id).trigger('change');
+
+                        this.selectMP.select2({
+                            data: this.methodpayments
+                        }).val(this.methodpayment_id).trigger('change');
+                    });
+
 
                 },
                 toggle() {
@@ -472,23 +495,6 @@
                             this.loadingpublic = false;
                     }
                 },
-                getCodeSend(target) {
-                    this.sendsunat = target.options[target.selectedIndex].getAttribute(
-                        'data-sunat');
-                    switch (this.sendsunat) {
-                        case '0':
-                            this.incluyeguia = false;
-                            this.openguia = false;
-                            break;
-                        case '1':
-                            this.openguia = true;
-                            break;
-                        default:
-                            this.openguia = false;
-                            this.incluyeguia = false;
-                            this.sendsunat = '';
-                    }
-                },
                 savepay(event) {
                     this.$wire.call('savepay').then(() => {
                         // console.log('function ejecutado correctamente');
@@ -529,18 +535,22 @@
                         }
                     })
                 },
-                addtocarrito(event, producto_id) {
+                addtocarrito(event, producto_id, serie_id, seriealmacen_id) {
                     let form = event.target;
+                    let propertyalmacen = 'selectedalmacen_' + producto_id;
                     const cart = {
                         price: form.price.value,
                         cantidad: form.cantidad == undefined ? 1 : form.cantidad.value,
-                        serie: form.serie == undefined ? null : form.serie.value
+                        serie: form.serie == undefined ? null : form.serie.value,
+                        serie_id: form.serie_id == undefined ? null : form.serie_id.value,
+                        almacen_id: form[propertyalmacen] == undefined ? null : form[
+                            propertyalmacen].value
                     };
-                    this.$wire.addtocar(producto_id, cart).then(result => {
-                        console.log('addtocar ejecutado correctamente');
-                    }).catch(error => {
-                        console.error(error);
-                    });
+                    // console.log(cart, serie_id, seriealmacen_id);
+                    this.$wire.addtocar(producto_id, cart, serie_id, seriealmacen_id).then(result => {})
+                        .catch(error => {
+                            console.error(error);
+                        });
                 },
                 async updatemonedacart(moneda_id) {
                     const route =
@@ -614,36 +624,36 @@
 
                         if (response.status === 200) {
                             this.$wire.call('setTotal').then(() => {
-                                console.log('setTotal ejecutado correctamente');
+                                // console.log('setTotal ejecutado correctamente');
                             });
                         } else {
-                            throw new Error('Error al vaciar el carrito');
+                            throw new Error('Error al eliminar el carrito');
                         }
                     } catch (error) {
-                        console.error('Error al vaciar el carrito:', error);
+                        console.error('Error al eliminar el carrito:', error);
                         throw error;
                     }
                 },
                 async obtenerDatos() {
+                    const ROUTE = {
+                        typepayments: "{{ route('admin.ventas.typepayments.list') }}",
+                        methodpayments: "{{ route('admin.ventas.methodpayments.list') }}",
+                        seriecomprobantes: "{{ route('admin.ventas.seriecomprobantes.list') }}",
+                        ubigeos: "{{ route('admin.ventas.ubigeos.list') }}"
+                    }
 
-                    let urltypepayments = "{{ route('api.ventas.create.typepayments') }}";
-                    let urlmethodpayments = "{{ route('api.ventas.create.methodpayments') }}";
+                    // const [typepayments, methodpayments] = await Promise.all([
+                    //     fetchAsyncDatos(ROUTE.typepayments),
+                    //     fetchAsyncDatos(ROUTE.methodpayments)
+                    // ]);
 
-                    const [typepayments, methodpayments] = await Promise.all([
-                        fetchAsyncDatos(urltypepayments),
-                        fetchAsyncDatos(urlmethodpayments),
-                    ]);
-
-                    this.typepayments = typepayments;
-                    this.methodpayments = methodpayments;
-
-                    this.selectMethodpayment()
+                    this.typepayments = await fetchAsyncDatos(ROUTE.typepayments);
                     this.selectPayment()
-
-                    const ubigeos = await fetchAsyncDatos(
-                        "{{ route('api.ventas.create.ubigeos') }}");
-                    this.ubigeos = ubigeos;
-
+                    this.methodpayments = await fetchAsyncDatos(ROUTE.methodpayments);
+                    this.selectMethodpayment()
+                    this.seriecomprobantes = await fetchAsyncDatos(ROUTE.seriecomprobantes);
+                    this.selectComprobante()
+                    this.ubigeos = await fetchAsyncDatos(ROUTE.ubigeos);
                     this.selectUbigeoEmision()
                     this.selectUbigeoDestino()
                 },
@@ -693,25 +703,21 @@
                 },
                 selectMethodpayment() {
                     this.selectMP = $(this.$refs.selectmethodpayment).select2({
-                        data: this.methodpayments
-                    });
-                    this.selectMP.val(this.methodpayment_id).trigger("change");
-                    this.selectMP.on("select2:select", (event) => {
-                        this.methodpayment_id = event.target.value;
-                    }).on('select2:open', function(e) {
+                        data: this.methodpayments,
+                    }).on('select2:open', (e) => {
                         const evt = "scroll.select2";
                         $(e.target).parents().off(evt);
                         $(window).off(evt);
-                    });
-                    this.$watch("methodpayment_id", (value) => {
-                        this.selectMP.val(value).trigger("change");
-                    });
-
-                    Livewire.hook('message.processed', () => {
-                        this.selectMP.select2({
-                            data: this.methodpayments
-                        }).val(this.methodpayment_id).trigger('change');
-                    });
+                    }).on('change', (e) => {
+                        this.methodpayment_id = e.target.value
+                        // console.log($(e.target).select2('data')[0]);
+                        const paramsData = $(e.target).select2('data')[0];
+                        if (paramsData) {
+                            this.istransferencia = paramsData.transferencia;
+                        } else {
+                            this.istransferencia = false;
+                        }
+                    }).val(this.methodpayment_id).trigger("change");
                 },
                 selectPayment() {
                     this.selectTP = $(this.$refs.selectpayment).select2({
@@ -759,8 +765,51 @@
                             },
                         }).val(this.typepayment_id).trigger('change');
                     });
+                },
+                selectComprobante() {
+                    this.selectTC = $(this.$refs.selectcomprobante).select2({
+                        data: this.seriecomprobantes,
+                    }).on('change', (e) => {
+                        this.seriecomprobante_id = e.target.value
+                        const paramsData = $(e.target).select2('data')[0];
+                        if (paramsData) {
+                            this.sendsunat = paramsData.sunat;
+                            this.codecomprobante = paramsData.code;
+                            switch (this.sendsunat) {
+                                case false:
+                                    this.incluyeguia = false;
+                                    this.openguia = false;
+                                    break;
+                                case true:
+                                    this.openguia = true;
+                                    break;
+                                default:
+                                    this.openguia = false;
+                                    this.incluyeguia = false;
+                                    this.sendsunat = '';
+                            }
+                        } else {
+                            this.openguia = false;
+                            this.incluyeguia = false;
+                            this.sendsunat = '';
+                        }
+                    }).on('select2:open', function(e) {
+                        const evt = "scroll.select2";
+                        $(e.target).parents().off(evt);
+                        $(window).off(evt);
+                    }).val(this.seriecomprobante_id).trigger("change");
+
                 }
+                // getSelectedData(ref, propiedad, nameData) {
+                //     const selectData = $(this.$refs[ref]).select2('data')[0];
+                //     this[propiedad] = selectData.transferencia;
+                // }
             }));
         })
+
+        // function formatOption(option) {
+        //     var option = $('<span data-prueba="' + option.transferencia + '">' + option.text + '</span>');
+        //     return option;
+        // }
     </script>
 </div>

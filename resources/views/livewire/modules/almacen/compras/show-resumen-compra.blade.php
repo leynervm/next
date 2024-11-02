@@ -39,7 +39,7 @@
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" x-data="{ showForm: false }">
 
                             <div class="text-sm font-semibold mt-1 text-colorlabel">
-                                {{ formatDecimalOrInteger($item->cantidad) }}
+                                {{ decimalOrInteger($item->cantidad) }}
                                 <small class="text-[10px] font-medium">{{ $item->producto->unit->name }} \
                                     {{ $item->almacen->name }}</small>
                             </div>
@@ -85,7 +85,7 @@
                                     @if ($descuento > 0)
                                         <span class="block w-full line-through text-red-600 text-center">
                                             S/.
-                                            {{ formatDecimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                                            {{ decimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
                                         </span>
                                     @endif
                                 @endif
@@ -93,7 +93,7 @@
 
                             <h1 class="text-xl text-center font-semibold text-colortitleform">
                                 <small class="text-[10px] font-medium">VENTA S/.</small>
-                                {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                {{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                 <small class="text-[10px] font-medium">SOLES</small>
                             </h1>
 

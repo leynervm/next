@@ -2,7 +2,7 @@
 
 namespace App\Helpers\Facturacion;
 
-use App\Helpers\formatDecimalOrIntegeron;
+use App\Helpers\decimalOrIntegeron;
 use DOMDocument;
 use Illuminate\Support\Facades\Storage;
 use Modules\Facturacion\Entities\Comprobante;
@@ -131,7 +131,7 @@ class createXML
                <cbc:PaymentMeansID>' . ucfirst(strtolower($comprobante->typepayment->name)) . '</cbc:PaymentMeansID>';
 
       if ($comprobante->seriecomprobante->typecomprobante->code == '01' && $comprobante->typepayment->paycuotas) {
-         $xml .= '<cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->total - ($comprobante->paymentactual + $comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:Amount>';
+         $xml .= '<cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->total - ($comprobante->paymentactual + $comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:Amount>';
       }
 
       $xml .= '</cac:PaymentTerms>';
@@ -142,7 +142,7 @@ class createXML
                $xml .= '<cac:PaymentTerms>
                         <cbc:ID>FormaPago</cbc:ID>
                         <cbc:PaymentMeansID>Cuota' . substr('000' . $cuota->cuota, -3) . '</cbc:PaymentMeansID>
-                        <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($cuota->amount) . '</cbc:Amount>
+                        <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($cuota->amount) . '</cbc:Amount>
                         <cbc:PaymentDueDate>' . formatDate($cuota->expiredate, "YYYY-MM-DD") . '</cbc:PaymentDueDate>
                      </cac:PaymentTerms>';
             }
@@ -150,12 +150,12 @@ class createXML
       }
 
       $xml .= '<cac:TaxTotal>
-               <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>';
+               <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>';
 
       if ($comprobante->gravado > 0) {
          $xml .= '<cac:TaxSubtotal>
-                     <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->gravado) . '</cbc:TaxableAmount>
-                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>
+                     <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->gravado) . '</cbc:TaxableAmount>
+                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>
                      <cac:TaxCategory>
                      <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">S</cbc:ID>
                         <cac:TaxScheme>
@@ -169,7 +169,7 @@ class createXML
 
       if ($comprobante->exonerado > 0) {
          $xml .= '<cac:TaxSubtotal>
-                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->exonerado) . '</cbc:TaxableAmount>
+                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->exonerado) . '</cbc:TaxableAmount>
                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">0.00</cbc:TaxAmount>
                     <cac:TaxCategory>
                        <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">E</cbc:ID>
@@ -184,7 +184,7 @@ class createXML
 
       if ($comprobante->inafecto > 0) {
          $xml .= '<cac:TaxSubtotal>
-                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->inafecto) . '</cbc:TaxableAmount>
+                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->inafecto) . '</cbc:TaxableAmount>
                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">0.00</cbc:TaxAmount>
                     <cac:TaxCategory>
                        <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">O</cbc:ID>
@@ -199,8 +199,8 @@ class createXML
 
       if ($comprobante->gratuito > 0) {
          $xml .= '<cac:TaxSubtotal>
-                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->gratuito) . '</cbc:TaxableAmount>
-                    <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->igvgratuito) . '</cbc:TaxAmount>
+                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->gratuito) . '</cbc:TaxableAmount>
+                    <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->igvgratuito) . '</cbc:TaxAmount>
                     <cac:TaxCategory>
                        <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">Z</cbc:ID>
                        <cac:TaxScheme>
@@ -216,31 +216,31 @@ class createXML
 
       $xml .= '</cac:TaxTotal>
            <cac:LegalMonetaryTotal>
-              <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($total_antes_de_impuestos) . '</cbc:LineExtensionAmount>
-              <cbc:TaxInclusiveAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:TaxInclusiveAmount>
-              <cbc:PayableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:PayableAmount>
+              <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($total_antes_de_impuestos) . '</cbc:LineExtensionAmount>
+              <cbc:TaxInclusiveAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:TaxInclusiveAmount>
+              <cbc:PayableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:PayableAmount>
            </cac:LegalMonetaryTotal>';
 
       foreach ($comprobante->facturableitems as $item) {
 
          $xml .= '<cac:InvoiceLine>
                   <cbc:ID>' . $item->item . '</cbc:ID>
-                  <cbc:InvoicedQuantity unitCode="' . trim($item->unit) . '" unitCodeListAgencyName="United Nations Economic Commission for Europe" unitCodeListID="UN/ECE rec 20">' . formatDecimalOrInteger($item->cantidad) . '</cbc:InvoicedQuantity>
-                  <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotal) . '</cbc:LineExtensionAmount>
+                  <cbc:InvoicedQuantity unitCode="' . trim($item->unit) . '" unitCodeListAgencyName="United Nations Economic Commission for Europe" unitCodeListID="UN/ECE rec 20">' . decimalOrInteger($item->cantidad) . '</cbc:InvoicedQuantity>
+                  <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotal) . '</cbc:LineExtensionAmount>
                   <cac:PricingReference>
                      <cac:AlternativeConditionPrice>
-                        <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->codeafectacion == "9996" ? $item->price : $item->price + $item->igv) . '</cbc:PriceAmount>
+                        <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->codeafectacion == "9996" ? $item->price : $item->price + $item->igv) . '</cbc:PriceAmount>
                         <cbc:PriceTypeCode listName="Tipo de Precio" listAgencyName="PE:SUNAT" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo16">' . $item->codetypeprice . '</cbc:PriceTypeCode>
                      </cac:AlternativeConditionPrice>
                   </cac:PricingReference>
                   <cac:TaxTotal>
-                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
+                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
                      <cac:TaxSubtotal>
-                        <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotal) . '</cbc:TaxableAmount>
-                        <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
+                        <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotal) . '</cbc:TaxableAmount>
+                        <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
                         <cac:TaxCategory>
                             <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">' . $item->abreviatureafectacion . '</cbc:ID>
-                           <cbc:Percent>' . formatDecimalOrInteger($item->percent) . '</cbc:Percent>
+                           <cbc:Percent>' . decimalOrInteger($item->percent) . '</cbc:Percent>
                            <cbc:TaxExemptionReasonCode listAgencyName="PE:SUNAT" listName="Afectacion del IGV" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">' . $item->afectacion . '</cbc:TaxExemptionReasonCode>
                            <cac:TaxScheme>
                               <cbc:ID schemeID="UN/ECE 5153" schemeName="Codigo de tributos" schemeAgencyName="PE:SUNAT">' . $item->codeafectacion . '</cbc:ID>
@@ -257,7 +257,7 @@ class createXML
                      </cac:SellersItemIdentification>
                   </cac:Item>
                   <cac:Price>
-                     <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->codeafectacion == "9996" ? 0 : $item->price) . '</cbc:PriceAmount>
+                     <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->codeafectacion == "9996" ? 0 : $item->price) . '</cbc:PriceAmount>
                   </cac:Price>
                </cac:InvoiceLine>';
       }
@@ -402,7 +402,7 @@ class createXML
          $xml .= '<cac:PaymentTerms>
                <cbc:ID>FormaPago</cbc:ID>
                <cbc:PaymentMeansID>' . ucfirst(strtolower($comprobante->typepayment->name)) . '</cbc:PaymentMeansID>
-               <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->total - ($comprobante->paymentactual + $comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:Amount>
+               <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->total - ($comprobante->paymentactual + $comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:Amount>
             </cac:PaymentTerms>';
       }
 
@@ -411,7 +411,7 @@ class createXML
             $xml .= '<cac:PaymentTerms>
                         <cbc:ID>FormaPago</cbc:ID>
                         <cbc:PaymentMeansID>Cuota' . substr('000' . $cuota->cuota, -3) . '</cbc:PaymentMeansID>
-                        <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($cuota->amount) . '</cbc:Amount>
+                        <cbc:Amount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($cuota->amount) . '</cbc:Amount>
                         <cbc:PaymentDueDate>' . formatDate($cuota->expiredate, "YYYY-MM-DD") . '</cbc:PaymentDueDate>
                      </cac:PaymentTerms>';
          }
@@ -419,12 +419,12 @@ class createXML
 
 
       $xml .= '<cac:TaxTotal>
-               <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>';
+               <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>';
 
       if ($comprobante->gravado > 0) {
          $xml .= '<cac:TaxSubtotal>
-                     <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->gravado) . '</cbc:TaxableAmount>
-                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>
+                     <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->gravado) . '</cbc:TaxableAmount>
+                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->igv) . '</cbc:TaxAmount>
                      <cac:TaxCategory>
                      <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">S</cbc:ID>
                         <cac:TaxScheme>
@@ -438,7 +438,7 @@ class createXML
 
       if ($comprobante->exonerado > 0) {
          $xml .= '<cac:TaxSubtotal>
-                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->exonerado) . '</cbc:TaxableAmount>
+                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->exonerado) . '</cbc:TaxableAmount>
                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">0.00</cbc:TaxAmount>
                     <cac:TaxCategory>
                        <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">E</cbc:ID>
@@ -453,7 +453,7 @@ class createXML
 
       if ($comprobante->inafecto > 0) {
          $xml .= '<cac:TaxSubtotal>
-                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->inafecto) . '</cbc:TaxableAmount>
+                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->inafecto) . '</cbc:TaxableAmount>
                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">0.00</cbc:TaxAmount>
                     <cac:TaxCategory>
                        <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">O</cbc:ID>
@@ -468,8 +468,8 @@ class createXML
 
       if ($comprobante->gratuito > 0) {
          $xml .= '<cac:TaxSubtotal>
-                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->gratuito) . '</cbc:TaxableAmount>
-                    <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->igvgratuito) . '</cbc:TaxAmount>
+                    <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->gratuito) . '</cbc:TaxableAmount>
+                    <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->igvgratuito) . '</cbc:TaxAmount>
                     <cac:TaxCategory>
                        <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">Z</cbc:ID>
                        <cac:TaxScheme>
@@ -485,31 +485,31 @@ class createXML
 
       $xml .= '</cac:TaxTotal>
            <cac:LegalMonetaryTotal>
-              <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($total_antes_de_impuestos) . '</cbc:LineExtensionAmount>
-              <cbc:TaxInclusiveAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:TaxInclusiveAmount>
-              <cbc:PayableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:PayableAmount>
+              <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($total_antes_de_impuestos) . '</cbc:LineExtensionAmount>
+              <cbc:TaxInclusiveAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:TaxInclusiveAmount>
+              <cbc:PayableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($comprobante->total - ($comprobante->gratuito + $comprobante->igvgratuito)) . '</cbc:PayableAmount>
            </cac:LegalMonetaryTotal>';
 
       foreach ($comprobante->facturableitems as $item) {
 
          $xml .= '<cac:CreditNoteLine>
                   <cbc:ID>' . $item->item . '</cbc:ID>
-                  <cbc:CreditedQuantity unitCode="' . trim($item->unit) . '" unitCodeListAgencyName="United Nations Economic Commission for Europe" unitCodeListID="UN/ECE rec 20">' . formatDecimalOrInteger($item->cantidad) . '</cbc:CreditedQuantity>
-                  <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotal) . '</cbc:LineExtensionAmount>
+                  <cbc:CreditedQuantity unitCode="' . trim($item->unit) . '" unitCodeListAgencyName="United Nations Economic Commission for Europe" unitCodeListID="UN/ECE rec 20">' . decimalOrInteger($item->cantidad) . '</cbc:CreditedQuantity>
+                  <cbc:LineExtensionAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotal) . '</cbc:LineExtensionAmount>
                   <cac:PricingReference>
                      <cac:AlternativeConditionPrice>
-                        <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->codeafectacion == "1000" ? $item->igv + $item->price : $item->price) . '</cbc:PriceAmount>
+                        <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->codeafectacion == "1000" ? $item->igv + $item->price : $item->price) . '</cbc:PriceAmount>
                         <cbc:PriceTypeCode listName="Tipo de Precio" listAgencyName="PE:SUNAT" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo16">' . $item->codetypeprice . '</cbc:PriceTypeCode>
                      </cac:AlternativeConditionPrice>
                   </cac:PricingReference>
                   <cac:TaxTotal>
-                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
+                     <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
                      <cac:TaxSubtotal>
-                        <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotal) . '</cbc:TaxableAmount>
-                        <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
+                        <cbc:TaxableAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotal) . '</cbc:TaxableAmount>
+                        <cbc:TaxAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->subtotaligv) . '</cbc:TaxAmount>
                         <cac:TaxCategory>
                             <cbc:ID schemeID="UN/ECE 5305" schemeName="Tax Category Identifier" schemeAgencyName="United Nations Economic Commission for Europe">' . $item->abreviatureafectacion . '</cbc:ID>
-                           <cbc:Percent>' . formatDecimalOrInteger($item->percent) . '</cbc:Percent>
+                           <cbc:Percent>' . decimalOrInteger($item->percent) . '</cbc:Percent>
                            <cbc:TaxExemptionReasonCode listAgencyName="PE:SUNAT" listName="Afectacion del IGV" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo07">' . $item->afectacion . '</cbc:TaxExemptionReasonCode>
                            <cac:TaxScheme>
                               <cbc:ID schemeID="UN/ECE 5153" schemeName="Codigo de tributos" schemeAgencyName="PE:SUNAT">' . $item->codeafectacion . '</cbc:ID>
@@ -526,7 +526,7 @@ class createXML
                      </cac:SellersItemIdentification>
                   </cac:Item>
                   <cac:Price>
-                     <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . formatDecimalOrInteger($item->codeafectacion == "9996" ? 0 : $item->price) . '</cbc:PriceAmount>
+                     <cbc:PriceAmount currencyID="' . $comprobante->moneda->code . '">' . decimalOrInteger($item->codeafectacion == "9996" ? 0 : $item->price) . '</cbc:PriceAmount>
                   </cac:Price>
                </cac:CreditNoteLine>';
       }
@@ -656,7 +656,7 @@ class createXML
                   <cbc:ID>SUNAT_Envio</cbc:ID>
                   <cbc:HandlingCode listAgencyName="PE:SUNAT" listName="Motivo de traslado" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo20">' . $guia->motivotraslado->code . '</cbc:HandlingCode>
                   <cbc:HandlingInstructions><![CDATA[' . $guia->motivotraslado->name . ']]></cbc:HandlingInstructions>
-                  <cbc:GrossWeightMeasure unitCode="' . $guia->unit . '">' . formatDecimalOrInteger($guia->peso, 3) . '</cbc:GrossWeightMeasure>';
+                  <cbc:GrossWeightMeasure unitCode="' . $guia->unit . '">' . decimalOrInteger($guia->peso, 3) . '</cbc:GrossWeightMeasure>';
 
 
       if (!empty($guia->packages)) {
@@ -803,7 +803,7 @@ class createXML
 
          $xml .= '<cac:DespatchLine>
                <cbc:ID>' . $i . '</cbc:ID>
-               <cbc:DeliveredQuantity unitCode="' . $item->producto->unit->name . '">' . formatDecimalOrInteger($item->cantidad) . '</cbc:DeliveredQuantity>
+               <cbc:DeliveredQuantity unitCode="' . $item->producto->unit->name . '">' . decimalOrInteger($item->cantidad) . '</cbc:DeliveredQuantity>
                <cac:OrderLineReference>
                   <cbc:LineID>' . $i . '</cbc:LineID>
                </cac:OrderLineReference>

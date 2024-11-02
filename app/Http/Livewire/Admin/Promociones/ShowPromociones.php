@@ -76,16 +76,24 @@ class ShowPromociones extends Component
     public function delete(Promocion $promocion)
     {
         $this->authorize('admin.promociones.delete');
-        // $producto = Producto::find(2);
-        // $descuento = $producto->promocions()->descuentos()->disponibles()->get();
-        // dd($descuento);
+        $producto = $promocion->producto;
+        $producto = $promocion->producto->load(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }]);
+            }])->availables()->disponibles()->take(1);
+        }]);
 
-        // $promocion->status = 1;
-        // $promocion->save;
+
         if ($promocion->itempromos()->exists()) {
             $promocion->itempromos()->delete();
         }
         $promocion->delete();
+        $producto->assignPrice();
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción eliminado correctamente'));
     }
 
@@ -94,6 +102,16 @@ class ShowPromociones extends Component
         $this->authorize('admin.promociones.edit');
         $promocion->status = Promocion::FINALIZADO;
         $promocion->save();
+        $promocion->producto->load(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }]);
+            }])->availables()->disponibles()->take(1);
+        }]);
         $promocion->producto->assignPrice($promocion);
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción finalizado correctamente'));
     }
@@ -103,12 +121,11 @@ class ShowPromociones extends Component
         $this->authorize('admin.promociones.edit');
         $promocion->status = $promocion->isActivo() ? Promocion::DESACTIVADO : Promocion::ACTIVO;
         if ($promocion->isActivo()) {
-
             if (!is_null($promocion->expiredate)) {
                 if (Carbon::now('America/Lima')->gt(Carbon::parse($promocion->expiredate)->format('d-m-Y'))) {
                     $mensaje = response()->json([
-                        'title' => 'No se puede activar una promoción con fecha expirada !',
-                        'text' => "La fecha de finalización de promoción ha expirado, no se puede activar la promoción."
+                        'title' => 'PROMOCIÓN NO DISPONIBLE, LA FECHA HA EXPIRADO !',
+                        'text' => null
                     ])->getData();
                     $this->dispatchBrowserEvent('validation', $mensaje);
                     return false;
@@ -118,28 +135,37 @@ class ShowPromociones extends Component
             $existotherpromociones = Promocion::disponibles()->where('producto_id', $promocion->producto_id)->exists();
             if ($existotherpromociones) {
                 $mensaje = response()->json([
-                    'title' => 'Producto ya cuenta con promociones activas !',
-                    'text' => "No puede tener distintas promociones activas de un solo producto."
+                    'title' => "PRODUCTO YA CUENTA CON PROMOCIONES ACTIVAS !",
+                    'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
 
-            $existproductoitemcombos = Promocion::disponibles()
-                ->withWhereHas('itempromos', function ($query) use ($promocion) {
-                    $query->where('producto_id', $promocion->producto_id);
-                })->exists();
+            $existproductoitemcombos = Promocion::disponibles()->withWhereHas('itempromos', function ($query) use ($promocion) {
+                $query->where('producto_id', $promocion->producto_id);
+            })->exists();
 
             if ($existproductoitemcombos) {
                 $mensaje = response()->json([
-                    'title' => 'EL producto promocionado se encuentra dentro de un combo activo promocionado !',
-                    'text' => "EL producto a promocionar no puede estar vinculado a una promoción activa."
+                    'title' =>  "PRODUCTO SE ENCUENTRA INCLUIDO DENTRO DE UNA PROMOCIÓN (COMBO) !",
+                    'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
         }
         $promocion->save();
+        $promocion->producto->load(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }]);
+            }])->availables()->disponibles()->take(1);
+        }]);
         $promocion->producto->assignPrice($promocion);
         $this->dispatchBrowserEvent('updated');
     }

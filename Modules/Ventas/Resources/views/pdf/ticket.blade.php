@@ -294,7 +294,7 @@
                             <td class="p-1 text-9 leading-5 text-start" style="width:100%">
                                 <p>
                                     <small class="font-medium">[
-                                        {{ formatDecimalOrInteger($item->cantidad) }}
+                                        {{ decimalOrInteger($item->cantidad) }}
                                         {{ $item->producto->unit->code }}
                                         ]</small>
                                     {{ $item->producto->name }}

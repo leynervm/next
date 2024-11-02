@@ -142,7 +142,7 @@
                             </div>
                             <div class="text-[10px] text-colorsubtitleform flex gap-3">
                                 @if (!empty($producto->partnumber))
-                                    <span>N° Parte: {{ $producto->partnumber }}</span>
+                                    <span>N° PARTE: {{ $producto->partnumber }}</span>
                                 @endif
 
                                 @if (!empty($producto->sku))
@@ -152,6 +152,10 @@
                         </div>
                         <p class="text-colorlabel text-[10px] leading-3 xs:text-sm xs:leading-5">
                             {{ $producto->name }}</p>
+                        @if (!empty($producto->modelo))
+                            <span class="text-[10px] text-colorsubtitleform inline-block">
+                                MODELO : {{ $producto->modelo }}</span>
+                        @endif
                     </div>
 
                     <div class="w-full pt-3 flex items-center justify-between gap-2">
@@ -159,7 +163,7 @@
                             <div class="w-full flex-1">
                                 <h1 class="font-semibold text-3xl text-center md:text-start text-colorlabel">
                                     <small class="text-lg"> {{ $moneda->simbolo }}</small>
-                                    {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
+                                    {{ decimalOrInteger($pricesale, 2, ', ') }}
                                 </h1>
 
                                 @if ($descuento > 0 && $empresa->verOldprice())
@@ -244,7 +248,7 @@
 
                                 @if ($promocion->limit > 0)
                                     <br>
-                                    [{{ formatDecimalOrInteger($promocion->limit) }}
+                                    [{{ decimalOrInteger($promocion->limit) }}
                                     {{ $promocion->producto->unit->name }}]
                                 @endif
                             @else
@@ -486,7 +490,7 @@
                                         </p>
                                     </div>
 
-                                    <x-span-text :text="formatDecimalOrInteger($item->total) . ' UND'"
+                                    <x-span-text :text="decimalOrInteger($item->total) . ' UND'"
                                         class="!text-colorsubtitleform text-xs rounded-lg font-medium" />
                                 </x-simple-card>
                             @endforeach
@@ -541,7 +545,7 @@
                                     <h1 class="text-colorlabel text-center">
                                         <small class="text-sm">{{ $moneda->simbolo }}</small>
                                         <span
-                                            class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                            class="inline-block font-semibold text-2xl">{{ decimalOrInteger($pricesale, 2, ', ') }}</span>
                                         {{-- <small class="text-[10px]">{{ $moneda->currency }}</small> --}}
                                     </h1>
                                     @if ($descuento > 0 && $empresa->verOldprice())
@@ -609,7 +613,7 @@
                                     <h1 class="text-colorlabel text-center">
                                         <small class="text-sm">{{ $moneda->simbolo }}</small>
                                         <span
-                                            class="inline-block font-semibold text-2xl">{{ formatDecimalOrInteger($pricesale, 2, ', ') }}</span>
+                                            class="inline-block font-semibold text-2xl">{{ decimalOrInteger($pricesale, 2, ', ') }}</span>
                                         {{-- <small class="text-[10px]">{{ $moneda->currency }}</small> --}}
                                     </h1>
                                     @if ($descuento > 0 && $empresa->verOldprice())

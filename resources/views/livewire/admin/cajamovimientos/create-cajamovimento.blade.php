@@ -21,7 +21,7 @@
 
                                 <h3 class="font-semibold text-xl mb-2">
                                     {{ $item->moneda->simbolo }}
-                                    {{ formatDecimalOrInteger($item->diferencia, 2, ', ') }}
+                                    {{ decimalOrInteger($item->diferencia, 2, ', ') }}
                                 </h3>
 
                                 @if (count($diferenciasbytype->where('moneda_id', $item->moneda_id)) > 0)

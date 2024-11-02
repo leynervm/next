@@ -105,7 +105,7 @@
                     </div>
                     <div>
                         <x-label value="Cantidad entrante :" />
-                        <x-span-text :text="formatDecimalOrInteger($serie->compraitem->cantidad) .
+                        <x-span-text :text="decimalOrInteger($serie->compraitem->cantidad) .
                             ' ' .
                             $serie->compraitem->producto->unit->name" class="leading-3 !tracking-normal" />
                     </div>
@@ -129,7 +129,7 @@
                     </div>
                     <div>
                         <x-label value="Cantidad salida :" />
-                        <x-span-text :text="formatDecimalOrInteger($serie->itemserie->tvitem->cantidad) .
+                        <x-span-text :text="decimalOrInteger($serie->itemserie->tvitem->cantidad) .
                             ' ' .
                             $serie->producto->unit->name" class="leading-3 !tracking-normal" />
                     </div>

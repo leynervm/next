@@ -40,11 +40,11 @@ class ShowGarantias extends Component
                 $this->descripcion =  $producto->detalleproducto->descripcion;
             }
         }
-        $this->precio_1 = formatDecimalOrInteger($producto->precio_1, 2,);
-        $this->precio_2 = formatDecimalOrInteger($producto->precio_2, 2);
-        $this->precio_3 = formatDecimalOrInteger($producto->precio_3, 2);
-        $this->precio_4 = formatDecimalOrInteger($producto->precio_4, 2);
-        $this->precio_5 = formatDecimalOrInteger($producto->precio_5, 2);
+        $this->precio_1 = decimalOrInteger($producto->precio_1, 2,);
+        $this->precio_2 = decimalOrInteger($producto->precio_2, 2);
+        $this->precio_3 = decimalOrInteger($producto->precio_3, 2);
+        $this->precio_4 = decimalOrInteger($producto->precio_4, 2);
+        $this->precio_5 = decimalOrInteger($producto->precio_5, 2);
     }
 
     public function render()

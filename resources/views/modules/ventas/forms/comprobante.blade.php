@@ -83,10 +83,9 @@
                 </div>
             @else
                 <div class="w-full inline-flex gap-1">
-                    <x-input class="block w-full flex-1 numeric prevent" x-model="document" wire:model.defer="document"
-                        wire:keydown.enter="getClient" minlength="8" maxlength="11"
-                        onkeypress="return validarNumero(event, 11)" onpaste="return validarPasteNumero(event, 11)"
-                        onkeydown="disabledEnter(event)" />
+                    <x-input class="block w-full flex-1" x-model="document" wire:model.defer="document"
+                        wire:keydown.enter.prevent="getClient" minlength="8" maxlength="11"
+                        onkeypress="return validarNumero(event, 11)" onpaste="return validarPasteNumero(event, 11)" />
                     <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -121,10 +120,9 @@
     <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-1">
         <div class="w-full">
             <x-label value="Tipo comprobante :" />
-            <div id="parenttpcmpbt" class="relative" x-init="selectComprobante">
-                <x-select class="block w-full" x-ref="selectcomprobante" id="tpcmpbt"
-                    @change="getCodeSend($event.target)" data-placeholder="null">
-                    <x-slot name="options">
+            <div id="parenttpcmpbt" class="relative">
+                <x-select class="block w-full" x-ref="selectcomprobante" id="tpcmpbt" data-placeholder="null">
+                    {{-- <x-slot name="options">
                         @if (count($typecomprobantes) > 0)
                             @foreach ($typecomprobantes as $item)
                                 <option value="{{ $item->id }}" data-code="{{ $item->typecomprobante->code }}"
@@ -133,7 +131,7 @@
                                 </option>
                             @endforeach
                         @endif
-                    </x-slot>
+                    </x-slot> --}}
                 </x-select>
                 <x-icon-select />
             </div>
@@ -170,7 +168,7 @@
         </div>
 
         <div class="w-full" x-cloak x-show="!paymentcuotas" style="display: none;">
-            <x-label value="Seleccionar pago :" />
+            <x-label value="Modalidad pago :" />
             <div id="parenttypepay" class="relative" x-init="selectTypepay">
                 <x-select class="block w-full" x-ref="typepay" id="typepay">
                     <x-slot name="options">
@@ -200,6 +198,12 @@
                 <x-icon-select />
             </div>
             <x-jet-input-error for="methodpayment_id" />
+        </div>
+
+        <div class="w-full" x-show="istransferencia" x-cloak style="display: none;">
+            <x-label value="Detalle, N° transacción, etc :" />
+            <x-input class="block w-full" wire:model.defer="detallepago" />
+            <x-jet-input-error for="detallepago" />
         </div>
 
         <div class="w-full flex justify-end items-end" x-cloak x-show="typepay == '1'" style="display: none;"
@@ -255,28 +259,6 @@
 
             Livewire.hook('message.processed', () => {
                 this.selectMD.select2().val(this.moneda_id).trigger('change');
-            });
-        }
-
-        function selectComprobante() {
-            this.selectTC = $(this.$refs.selectcomprobante).select2();
-            this.selectTC.val(this.seriecomprobante_id).trigger("change");
-            this.selectTC.on("select2:select", (event) => {
-                this.seriecomprobante_id = event.target.value;
-                const selectedOption = event.params.data.element;
-                const dataCode = selectedOption.getAttribute('data-code');
-                this.codecomprobante = dataCode;
-                this.getCodeSend(event.target);
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("seriecomprobante_id", (value) => {
-                this.selectTC.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectTC.select2().val(this.seriecomprobante_id).trigger('change');
             });
         }
 

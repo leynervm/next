@@ -30,12 +30,12 @@
                                 @endcannot
 
                                 <p class="font-semibold text-colorlabel">MIN. STOCK:
-                                    {{ formatDecimalOrInteger($item->minstock) }}</p>
+                                    {{ decimalOrInteger($item->minstock) }}</p>
                                 <div class="w-full flex flex-wrap gap-1 mt-1 text-colorsubtitleform">
                                     @foreach ($item->almacens as $almacen)
                                         <div class="p-1 rounded ring-1 ring-colorerror">
                                             <h1 class="text-xs text-colorerror font-medium text-center">
-                                                {{ formatDecimalOrInteger($almacen->pivot->cantidad) }}
+                                                {{ decimalOrInteger($almacen->pivot->cantidad) }}
                                                 {{ $item->unit->name }}
                                             </h1>
                                             <p class="text-[9px]">{{ $almacen->name }}</p>

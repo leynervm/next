@@ -11,6 +11,7 @@ use App\Models\Marca;
 use App\Models\Producto;
 use App\Models\Subcategory;
 use App\Models\Unit;
+use App\Rules\CampoUnique;
 use Illuminate\Support\Facades\DB;
 use Nwidart\Modules\Facades\Module;
 use Illuminate\Support\Str;
@@ -23,6 +24,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithUpserts;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Events\BeforeSheet;
+use Maatwebsite\Excel\Validators\ValidationException;
 
 class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithValidation, WithUpserts, WithBatchInserts, WithChunkReading
 {
@@ -197,9 +199,9 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
     {
         return [
             'nombre' => ['required', 'string', 'min:3'],
-            'modelo' => ['nullable', 'string', 'min:1'],
-            'sku' => ['nullable', 'string', 'min:4'],
-            'numero_parte' => ['nullable', 'string', 'min:4'],
+            'modelo' => ['nullable', 'string'],
+            'sku' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'sku', null, true)],
+            'numero_parte' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', null, true)],
             '*.precio_compra' => [
                 'required',
                 'numeric',

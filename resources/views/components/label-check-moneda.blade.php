@@ -11,7 +11,7 @@
         <h3 class="font-semibold text-xl mb-2">
             {{ $simbolo }}
             @if (!is_null($saldo))
-                {{ formatDecimalOrInteger($saldo, 2, ', ') }}
+                {{ decimalOrInteger($saldo, 2, ', ') }}
             @endif
         </h3>
 

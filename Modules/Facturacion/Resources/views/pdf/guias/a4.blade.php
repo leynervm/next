@@ -628,7 +628,7 @@
                             <td class="p-2 align-middle text-start leading-3" style="">
                                 {{ $item->producto->name }}</td>
                             <td class="p-2 text-center align-middle" style="width: 30px;">
-                                {{ formatDecimalOrInteger($item->cantidad) }}</td>
+                                {{ decimalOrInteger($item->cantidad) }}</td>
                             <td class="p-2 font-normal text-center align-middle" style="width: 30px;">
                                 {{ $item->producto->unit->code }}
                             </td>

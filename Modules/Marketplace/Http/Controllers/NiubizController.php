@@ -73,7 +73,7 @@ class NiubizController extends Controller
             'order' => [
                 'tokenId' => $request->transactionToken,
                 'purchaseNumber' => $request->purchaseNumber,
-                'amount' => formatDecimalOrInteger(Cart::instance('shopping')->subtotal(), 2),
+                'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal(), 2),
                 'currency' => config('services.niubiz.currency'),
             ],
             'yape' => [
@@ -179,7 +179,7 @@ class NiubizController extends Controller
                     foreach (Cart::instance('shopping')->content() as $item) {
                         $order->tvitems()->create([
                             'date' => now('America/Lima'),
-                            'cantidad' => formatDecimalOrInteger($item->qty),
+                            'cantidad' => decimalOrInteger($item->qty),
                             'pricebuy' => number_format($item->options->pricebuy, 2, '.', ''),
                             'price' => number_format($item->price, 2, '.', ''),
                             'igv' => number_format($item->options->igv, 2, '.', ''),
@@ -310,7 +310,7 @@ class NiubizController extends Controller
             'Content-Type' => "application/json",
         ])->post(config('services.niubiz.url_api') . 'api.ecommerce/v2/ecommerce/token/session/' . config('services.niubiz.merchant_id'), [
             'channel' => 'web',
-            'amount' => formatDecimalOrInteger(Cart::instance('shopping')->subtotal()),
+            'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal()),
             'antifraud' => [
                 'clientIp' => request()->ip(),
                 'merchantDefineData' => [
@@ -407,7 +407,7 @@ class NiubizController extends Controller
             'channel' => 'web',
             'merchantid' => config('services.niubiz.merchant_id'),
             'purchasenumber' => $purchasenumber,
-            'amount' => formatDecimalOrInteger(Cart::instance('shopping')->subtotal()),
+            'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal()),
             'expirationminutes' => 5,
             'timeouturl' =>  route('carshoop.create'),
             'merchantlogo' => mi_empresa()->image->getLogoEmpresa(),

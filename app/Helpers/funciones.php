@@ -27,7 +27,7 @@ function verificarCarpeta($path, $disk = 'public')
 }
 
 
-function formatDecimalOrInteger($numero, $decimals = 2, $separate = '')
+function decimalOrInteger($numero, $decimals = 2, $separate = '')
 {
     $valueInteger = empty($separate) ? intval($numero) : number_format($numero, 0, '.', $separate);
     return intval($numero) == floatval($numero) ? $valueInteger : number_format($numero, $decimals, '.', $separate);
@@ -295,9 +295,9 @@ function getTotalCarrito($sesionName)
     }
 
     return json_encode([
-        'total' => formatDecimalOrInteger($total, 3),
-        'gratuito' => formatDecimalOrInteger($gratuito, 3),
-        'sumatoria' => formatDecimalOrInteger($total + $gratuito, 3),
+        'total' => decimalOrInteger($total, 3),
+        'gratuito' => decimalOrInteger($gratuito, 3),
+        'sumatoria' => decimalOrInteger($total + $gratuito, 3),
         'countgratuitos' => $countgratuitos,
         'countnogratuitos' => $countnogratuitos,
         'count' => $countgratuitos + $countnogratuitos,
@@ -394,9 +394,9 @@ function getPriceAntes($precio_venta, $descuento, $pricetype = null, $separate =
         // if ($pricetype->rounded > 0) {
         //     $precio_venta = round_decimal($precio_venta, $pricetype->rounded);
         // }
-        return formatDecimalOrInteger($precio_venta, $pricetype->decimals, $separate);
+        return decimalOrInteger($precio_venta, $pricetype->decimals, $separate);
     } else {
-        return formatDecimalOrInteger($precio_venta, 2, $separate);
+        return decimalOrInteger($precio_venta, 2, $separate);
     }
 }
 
@@ -613,7 +613,7 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
         $type = null;
         foreach ($promocion->itempromos as $itempromo) {
             if ($almacen_id) {
-                $stockCombo = formatDecimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
+                $stockCombo = decimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
             } else {
                 $stockCombo = null;
             }
@@ -623,7 +623,7 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
 
             if ($itempromo->isDescuento()) {
                 $price = getPriceDscto($price, $itempromo->descuento, $pricetype);
-                $type = formatDecimalOrInteger($itempromo->descuento) . '% DSCT';
+                $type = decimalOrInteger($itempromo->descuento) . '% DSCT';
             }
             if ($itempromo->isGratuito()) {
                 $price = $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy;

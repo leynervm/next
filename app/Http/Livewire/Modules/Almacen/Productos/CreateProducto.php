@@ -16,6 +16,7 @@ use Livewire\WithFileUploads;
 use App\Models\Almacenarea;
 use App\Models\Estante;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\Rule;
 use Intervention\Image\ImageManagerStatic as Image;
 use Nwidart\Modules\Facades\Module;
 
@@ -44,22 +45,12 @@ class CreateProducto extends Component
     protected function rules()
     {
         return [
-            'name' => [
-                'required',
-                'min:3',
-                new CampoUnique('productos', 'name', null, true)
-            ],
+            'name' => ['required', 'string', 'min:3', new CampoUnique('productos', 'name', null, true)],
             'modelo' => ['required', 'string'],
-            // 'sku' => ['nullable', 'string', 'min:4'],
-            'partnumber' => ['nullable', 'string', 'min:4'],
-            'pricebuy' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'gt:0'],
-            'pricesale' => [
-                'required',
-                'numeric',
-                'decimal:0,4',
-                'min:0',
-                !mi_empresa()->usarLista() ? 'gt:0' : ''
-            ],
+            'sku' => ['nullable', 'string', 'min:6', new CampoUnique('productos', 'sku', null, true)],
+            'partnumber' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', null, true)],
+            'pricebuy' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
+            'pricesale' => mi_empresa()->usarLista() ? ['nullable', 'numeric', 'min:0', 'decimal:0,4'] : ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'igv' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
             'minstock' => ['required', 'integer', 'min:0'],
             'marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
@@ -112,19 +103,17 @@ class CreateProducto extends Component
         }
     }
 
-    public function save()
+    public function save($confirmsave = false)
     {
-
-        // dd($this->descripcionproducto);
         $this->authorize('admin.almacen.productos.create');
         $this->publicado = trim($this->publicado) == 1 ? 1 : 0;
         $this->viewdetalle = trim($this->viewdetalle) == 1 ? 1 : 0;
         $this->viewespecificaciones = trim($this->viewespecificaciones) == 1 ? 1 : 0;
         $this->requireserie = trim($this->requireserie) == 1 ? 1 : 0;
-        $this->name = trim($this->name);
-        $this->modelo = trim($this->modelo);
+        $this->name = trim(mb_strtoupper($this->name, "UTF-8"));
+        $this->modelo = trim(mb_strtoupper($this->modelo, "UTF-8"));
         $this->partnumber = trim($this->partnumber);
-        $this->sku = trim($this->sku);
+        $this->sku = trim(mb_strtoupper($this->sku, "UTF-8"));;
         $this->pricebuy = trim($this->pricebuy);
         $this->pricesale = trim($this->pricesale);
         $this->igv = trim($this->igv);
@@ -138,6 +127,12 @@ class CreateProducto extends Component
 
         DB::beginTransaction();
         try {
+
+            $exists = Producto::where('modelo', $this->modelo)->where('marca_id', $this->marca_id)->exists();
+            if (!$confirmsave && $exists) {
+                $this->dispatchBrowserEvent('confirmsave');
+                return false;
+            }
             $producto = Producto::create([
                 'name' => $this->name,
                 'modelo' => $this->modelo,

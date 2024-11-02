@@ -23,9 +23,10 @@
         </section> --}}
 
         @if (count($categories))
-            <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">Nuestros Productos</h1>
+            <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">
+                Nuestros Productos</h1>
             <section
-                class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+                class="w-full pt-4 pb-6 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
                 @foreach ($categories as $item)
                     <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
                         class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
@@ -55,7 +56,7 @@
             </section>
         @endif
 
-        <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">
+        <h1 class="text-center font-semibold text-xl text-colorsubtitleform">
             Nuestros Servicios</h1>
         <section
             class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">

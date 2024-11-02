@@ -74,7 +74,7 @@
                                                             <div class="text-colorsubtitleform text-center">
                                                                 <span
                                                                     class="inline-block text-sm text-center font-semibold">
-                                                                    {{ formatDecimalOrInteger($kardex->cantidad) }}</span>
+                                                                    {{ decimalOrInteger($kardex->cantidad) }}</span>
                                                                 <small
                                                                     class="inline-block text-center text-[10px] leading-3">
                                                                     {{ $item->producto->unit->name }}</small>
@@ -112,7 +112,7 @@
                                         <div class="flex items-end lg:items-center lg:w-60 lg:flex-shrink-0 ">
                                             <span
                                                 class="text-left p-2 text-xs sm:text-end font-semibold whitespace-nowrap">
-                                                x{{ formatDecimalOrInteger($item->cantidad) }}
+                                                x{{ decimalOrInteger($item->cantidad) }}
                                                 {{ $item->producto->unit->name }}
                                             </span>
 
@@ -175,7 +175,7 @@
 
         @if (count($order->trackings) > 0)
             <ol class="relative ms-3 border-s border-borderminicard">
-                @foreach ($order->trackings()->orderBy('date', 'desc')->get() as $item)
+                @foreach ($order->trackings as $item)
                     <li class="mb-10 ms-6 text-colorlabel">
                         <span
                             class="absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full bg-next-500 ring-8 ring-body">
@@ -252,7 +252,7 @@
                                         <small class="w-full block text-center text-[8px] leading-3">
                                             STOCK ACTUAL</small>
                                         <span class="inline-block text-2xl text-center font-semibold">
-                                            {{ formatDecimalOrInteger($item['pivot']['cantidad']) }}</span>
+                                            {{ decimalOrInteger($item['pivot']['cantidad']) }}</span>
                                         <small class="inline-block text-center text-[10px] leading-3">
                                             {{ $tvitem->producto->unit->name }}</small>
                                     </div>

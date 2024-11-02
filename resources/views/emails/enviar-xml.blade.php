@@ -111,7 +111,7 @@ DOCUMENTO NACIONAL IDENTIDAD (DNI)
 |CANT. | DESCRIPCIÓN | P. UNIT | IMPORTE |
 |:---- |:------------| -------:| -------:|
 @foreach ($comprobante->facturableitems as $item)
-| {{ formatDecimalOrInteger($item->cantidad) }} {{ $item->unit }} | {{ $item->descripcion }} | {{ number_format($item->price, 2, '.', ', ') }} | {{ number_format($item->subtotal, 2, '.', ', ') }} |
+| {{ decimalOrInteger($item->cantidad) }} {{ $item->unit }} | {{ $item->descripcion }} | {{ number_format($item->price, 2, '.', ', ') }} | {{ number_format($item->subtotal, 2, '.', ', ') }} |
 @endforeach
 </x-mail::table>
 

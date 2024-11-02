@@ -91,7 +91,7 @@
     "Length Required": "Longitud requerida",
     "Locked": "Bloqueado",
     "Log in": "Iniciar sesión",
-    "Log Out": "Finalizar sesión",
+    "Log Out": "Cerrar sesión",
     "Log Out Other Browser Sessions": "Cerrar las demás sesiones",
     "Loop Detected": "Bucle detectado",
     "Maintenance Mode": "Modo de mantenimiento",
@@ -254,6 +254,7 @@
     "methodpayments": "métodos pago",
     "This driver does not support creating temporary URLs.": "Este controlador no admite la creación de direcciones URL temporales.",
     "All rights reserved.": "Todos los derechos reservados.",
+    "Save sale": "Guardar venta",
     "Save and close": "Guardar y cerrar",
     "Save changues": "Guardar cambios",
     "The verification of Recaptcha failed.": "La verificación de Recaptcha ha fallado.",
@@ -269,5 +270,6 @@
     "Store": "Tienda",
     "areaworks": "areas de trabajo",
     "Verify email" : "Verificar correo",
-    "seriecomprobantes" : "series de comprobantes"
+    "seriecomprobantes" : "series de comprobantes",
+    "Welcome" : "Bienvenido"
 }

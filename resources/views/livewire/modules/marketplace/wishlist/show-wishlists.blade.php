@@ -1,6 +1,6 @@
 <div class="py-5">
     @if (Cart::instance('wishlist')->count() > 0)
-        <div class="w-full md:max-w-3xl mx-auto">
+        <div class="w-full md:max-w-3xl mx-auto px-1 md:px-0">
             <div class="w-full flex items-end justify-between border-b border-borderminicard">
                 <h1 class="text-lg font-semibold text-primary">
                     MI LISTA DE DESEOS</h1>
@@ -14,8 +14,8 @@
                     <div class="w-full flex flex-col xs:flex-row justify-between gap-2 text-xs sm:py-3">
                         <div class="w-full h-48 xs:w-24 xs:h-24 rounded overflow-hidden">
                             @if ($item->model->getImageURL())
-                                <img src="{{ $item->model->getImageURL() }}" alt=""
-                                    class="w-full h-full object-scale-down xs:object-cover xs:object-center">
+                                <img src="{{ $item->model->getImageURL() }}" alt="{{ $item->model->getImageURL() }}"
+                                    class="w-full h-full object-scale-down object-center">
                             @else
                                 <x-icon-file-upload class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform"
                                     type="unknown" />
@@ -63,7 +63,7 @@
 
                                 <div class="w-full flex-1 flex gap-1 justify-end">
                                     <x-button-add-car type="button" wire:loading.attr="disabled"
-                                        class="!rounded-xl px-3 flex-1 xs:flex-none !flex !justify-center !gap-1 items-center text-xs"
+                                        class="!rounded-xl px-3 !text-[10px] flex-1 xs:flex-none !flex !justify-center !gap-1 items-center text-xs"
                                         wire:click="move_to_carshoop('{{ $item->rowId }}')"
                                         wire:key="add_{{ $item->rowId }}">AGREGAR AL CARRITO</x-button-add-car>
                                     <x-button-delete wire:click="deleteitem('{{ $item->rowId }}')" class="px-2"
@@ -76,7 +76,7 @@
             </div>
         </div>
     @else
-        <h1 class="text-xs p-2 font-medium text-neutral-500">NO EXISTEN PRODUCTOS AGREGADOS EN LA LISTA DE DESEOS...
-        </h1>
+        <h1 class="text-xs p-2 font-medium text-colorsubtitleform">
+            NO EXISTEN PRODUCTOS AGREGADOS EN LA LISTA DE DESEOS...</h1>
     @endif
 </div>

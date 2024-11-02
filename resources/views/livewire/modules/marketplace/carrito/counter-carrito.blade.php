@@ -100,12 +100,12 @@
                                     <div class="w-full flex justify-between items-end gap-2">
                                         <h1 class="text-xs text-colorsubtitleform">
                                             <small class="text-[10px]">P. UNIT : </small>
-                                            {{ formatDecimalOrInteger($item->price, 2, ', ') }}
+                                            {{ decimalOrInteger($item->price, 2, ', ') }}
                                         </h1>
                                         <h1 class="text-xs text-colorlabel">
                                             <small class="text-[10px] text-colorsubtitleform">
                                                 SUBTOTAL : {{ $item->options->simbolo }}</small>
-                                            {{ formatDecimalOrInteger($item->price * $item->qty, 2, ', ') }}
+                                            {{ decimalOrInteger($item->price * $item->qty, 2, ', ') }}
                                         </h1>
                                     </div>
 

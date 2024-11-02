@@ -390,5 +390,7 @@ return [
         'logofooter'                =>  'logo pie de página',
         'imagemobile'               =>  'imagen',
         'seriecompleta'             =>  'serie comprobante',
+        'detallepago'               =>  'detalle de pago',
+        'seriecomprobante_id'       =>  'tipo de comprobante',
     ],
 ];

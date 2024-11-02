@@ -23,7 +23,7 @@
                         LIQUIDACIÓN
                     @else
                         @if ($promocion->isDescuento())
-                            -{{ formatDecimalOrInteger($promocion->descuento) }}%
+                            -{{ decimalOrInteger($promocion->descuento) }}%
                         @elseif ($promocion->isCombo())
                             OFERTA
                         @else
@@ -61,7 +61,7 @@
                             @endif
                             <div class="text-xl font-semibold text-colorlabel">
                                 <small class="text-sm">{{ $moneda->simbolo }}</small>
-                                {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
+                                {{ decimalOrInteger($pricesale, 2, ', ') }}
                             </div>
                         </div>
 

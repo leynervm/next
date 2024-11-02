@@ -19,9 +19,10 @@ class CampoUnique implements Rule
     protected $ignoreId;
     protected $columnOptional;
     protected $valueOptional;
+    protected $mensaje;
 
 
-    public function __construct($table, $column, $ignoreId = null, $softDeleted = false, $columnOptional = null, $valueOptional = null)
+    public function __construct($table, $column, $ignoreId = null, $softDeleted = false, $columnOptional = null, $valueOptional = null, $mensaje = null)
     {
         $this->table = $table;
         $this->column = $column;
@@ -29,6 +30,7 @@ class CampoUnique implements Rule
         $this->softDeleted = $softDeleted;
         $this->columnOptional = $columnOptional;
         $this->valueOptional = $valueOptional;
+        $this->mensaje = $mensaje;
     }
 
     /**
@@ -71,6 +73,10 @@ class CampoUnique implements Rule
      */
     public function message()
     {
+
+        if (!empty($this->mensaje)) {
+            return $this->mensaje;
+        }
         return __("The field :attribute exist in the table") . ' ' . __($this->table);
     }
 }

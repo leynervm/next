@@ -82,21 +82,21 @@
                                 S/.
                                 @if (count($item->itempromos) > 0)
                                     @if ($item->isDisponible() && $item->isAvailable())
-                                        {{ formatDecimalOrInteger($pricesale - $combo->total, $pricetype->decimals ?? 2, ', ') }}
+                                        {{ decimalOrInteger($pricesale - $combo->total, $pricetype->decimals ?? 2, ', ') }}
                                     @else
-                                        {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                        {{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                     @endif
                                 @else
-                                    {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                    {{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                                 @endif
                             </x-label-price> --}}
 
                             <div class="w-full">
-                                <x-span-text :text="formatDecimalOrInteger($item->outs) . ' SALIDAS'" class="leading-3 !tracking-normal" />
+                                <x-span-text :text="decimalOrInteger($item->outs) . ' SALIDAS'" class="leading-3 !tracking-normal" />
 
                                 <x-span-text :text="$item->limit > 0
                                     ? 'STOCK MAXIMO : ' .
-                                        formatDecimalOrInteger($item->limit) .
+                                        decimalOrInteger($item->limit) .
                                         ' ' .
                                         $item->producto->unit->name
                                     : 'HASTA AGOTAR STOCK'" class="leading-3 !tracking-normal" />
@@ -131,7 +131,7 @@
                                                 {{ $itemcombo->name }}</h1>
                                             <h1 class="text-xs font-semibold text-next-500 mt-1 leading-3">
                                                 S/.
-                                                {{ formatDecimalOrInteger($itemcombo->price, $pricetype->decimals ?? 2, ', ') }}
+                                                {{ decimalOrInteger($itemcombo->price, $pricetype->decimals ?? 2, ', ') }}
                                             </h1>
                                             @if ($itemcombo->type)
                                                 <x-span-text :text="$itemcombo->type" type="green" class="leading-3" />
@@ -145,7 +145,7 @@
                         @if ($pricesale > 0)
                             <h1 class="text-colorsubtitleform font-semibold text-2xl text-center">
                                 <small class="text-[10px]">S/. </small>
-                                {{ formatDecimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                {{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                             </h1>
                             @if ($descuento > 0)
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">
@@ -156,7 +156,7 @@
                             @if ($item->isRemate())
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">
                                     S/.
-                                    {{ formatDecimalOrInteger($item->pricebuy, 2, ', ') }}
+                                    {{ decimalOrInteger($item->pricebuy, 2, ', ') }}
                                 </small>
                             @endif
                         @endif
@@ -214,7 +214,7 @@
                         class="w-auto h-auto {{ !empty(verifyPromocion($item)) ? 'bg-red-600' : 'bg-neutral-500' }}  absolute -left-8 top-3 -rotate-[35deg] leading-3">
                         <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
                             @if ($item->isDescuento())
-                                - {{ formatDecimalOrInteger($item->descuento) }}% DSCT
+                                - {{ decimalOrInteger($item->descuento) }}% DSCT
                             @elseif ($item->isCombo())
                                 COMBO
                             @else

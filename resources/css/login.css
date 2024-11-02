@@ -3,7 +3,7 @@
 }
 
 .container-login {
-    @apply py-10 md:py-3 bg-fondominicard rounded-3xl relative overflow-hidden w-full max-w-[420px] md:max-w-[768px] md:min-h-[750px];
+    @apply py-8 md:py-3 bg-fondominicard rounded-3xl relative overflow-hidden w-full md:max-w-[800px] md:min-h-[750px];
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
 }
 

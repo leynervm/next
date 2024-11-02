@@ -173,11 +173,10 @@
         <div class="w-full flex flex-1 sm:w-auto sm:flex-none sm:ml-auto">
             <ul class="w-full sm:w-auto flex justify-end h-full m-0 p-0" x-data="{ login: false }">
                 <li
-                    class="group flex relative h-[68%] self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
-                    <a class="h-full flex flex-col items-center px-1 font-semibold text-inherit text-lg leading-none cursor-pointer group-hover:opacity-80"
+                    class="group relative h-[68%] self-center hidden xs:flex min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
+                    <a class="h-full flex flex-col text-primary items-center px-1 font-semibold text-lg leading-none cursor-pointer group-hover:opacity-80"
                         href="{{ route('ofertas') }}">
-                        Ofertas
-                    </a>
+                        Ofertas</a>
                 </li>
 
                 @auth

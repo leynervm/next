@@ -54,7 +54,7 @@ class Guia extends Model
 
     public function getPesoAttribute($value)
     {
-        return formatDecimalOrInteger($value, 2);
+        return decimalOrInteger($value, 2);
     }
 
     public function setNametransportAttribute($value)

@@ -124,14 +124,14 @@
                             <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
                         </td>
                         <td class="p-2 text-xs text-center">
-                            {{ formatDecimalOrInteger($item->oldstock) }}
+                            {{ decimalOrInteger($item->oldstock) }}
                         </td>
                         <td class="p-2 text-xs text-center">
                             @if ($item->simbolo == '+')
                                 <span
                                     class="p-0.5 px-1 leading-3 rounded bg-green-500 inline-flex items-center gap-1 text-white">
                                     <p class="font-medium text-xs">{{ $item->simbolo }}
-                                        {{ formatDecimalOrInteger($item->cantidad) }}</p>
+                                        {{ decimalOrInteger($item->cantidad) }}</p>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2">
                                         <path
@@ -146,7 +146,7 @@
                                 <span
                                     class="p-0.5 px-1 leading-3 rounded bg-red-500 inline-flex items-center gap-1 text-white">
                                     <p class="font-medium text-xs">{{ $item->simbolo }}
-                                        {{ formatDecimalOrInteger($item->cantidad) }}</p>
+                                        {{ decimalOrInteger($item->cantidad) }}</p>
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="2">
                                         <path
@@ -160,7 +160,7 @@
                             @endif
                         </td>
                         <td class="p-2 text-center">
-                            {{ formatDecimalOrInteger($item->newstock) }}
+                            {{ decimalOrInteger($item->newstock) }}
                         </td>
                         <td class="p-2 text-center align-middle">
                             {{ $item->detalle }}

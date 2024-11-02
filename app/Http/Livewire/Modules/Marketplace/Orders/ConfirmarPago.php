@@ -47,8 +47,8 @@ class ConfirmarPago extends Component
         if (!$this->open) {
             $this->reset(['moneda_id']);
             $this->resetValidation();
-            $this->pendiente = formatDecimalOrInteger($this->order->total - $this->order->cajamovimientos()->sum('amount'));
-            $this->paymentactual = formatDecimalOrInteger($this->pendiente, 2);
+            $this->pendiente = decimalOrInteger($this->order->total - $this->order->cajamovimientos()->sum('amount'));
+            $this->paymentactual = decimalOrInteger($this->pendiente, 2);
             $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
             $this->moneda_id = $this->order->moneda_id;
             $this->open = true;
@@ -82,8 +82,8 @@ class ConfirmarPago extends Component
             'detalle' => ['nullable'],
         ]);
 
-        $sumatoria_pagos = formatDecimalOrInteger($this->order->cajamovimientos()->sum('amount') + $this->paymentactual, 2, '.', '');
-        if ($sumatoria_pagos > formatDecimalOrInteger($this->order->total)) {
+        $sumatoria_pagos = decimalOrInteger($this->order->cajamovimientos()->sum('amount') + $this->paymentactual, 2, '.', '');
+        if ($sumatoria_pagos > decimalOrInteger($this->order->total)) {
             $mensaje =  response()->json([
                 'title' => "MONTO A PAGAR SUPERA AL TOTAL DE LA ORDEN",
                 'text' => null
@@ -110,7 +110,7 @@ class ConfirmarPago extends Component
                 trim($this->detalle)
             );
 
-            if ($sumatoria_pagos == formatDecimalOrInteger($this->order->total)) {
+            if ($sumatoria_pagos == decimalOrInteger($this->order->total)) {
                 $this->order->status = StatusPayWebEnum::PAGO_CONFIRMADO;
                 $this->order->save();
                 $this->order->refresh();
@@ -139,7 +139,7 @@ class ConfirmarPago extends Component
         try {
             $cajamovimiento->delete();
             DB::commit();
-            $sumatoria_pagos = formatDecimalOrInteger($this->order->cajamovimientos()->sum('amount') ?? 0);
+            $sumatoria_pagos = decimalOrInteger($this->order->cajamovimientos()->sum('amount') ?? 0);
 
             if ($sumatoria_pagos < $this->order->total) {
                 $this->order->status = StatusPayWebEnum::PENDIENTE;

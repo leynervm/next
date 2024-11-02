@@ -95,7 +95,7 @@
                                 <p class="text-[10px]">
                                     {{ $saldo->moneda->simbolo }}
                                     <span
-                                        class="text-xs font-semibold">{{ formatDecimalOrInteger($saldo->diferencia, 2, ', ') }}</span>
+                                        class="text-xs font-semibold">{{ decimalOrInteger($saldo->diferencia, 2, ', ') }}</span>
                                     {{ $saldo->moneda->currency }}
                                 </p>
                             @endforeach

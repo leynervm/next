@@ -88,7 +88,7 @@
                                                         <x-span-text text="SIN DESCUENTO" type="orange"
                                                             class="leading-3 !tracking-normal" />
                                                     @elseif ($item->typecombo == \App\Models\Itempromo::DESCUENTO)
-                                                        <x-span-text :text="formatDecimalOrInteger($item->descuento) . '% DSCT'" type="green"
+                                                        <x-span-text :text="decimalOrInteger($item->descuento) . '% DSCT'" type="green"
                                                             class="leading-3 !tracking-normal" />
                                                     @else
                                                         <x-span-text text="GRATIS" type="green"

@@ -327,7 +327,7 @@
                         @endif
                         <h1 class="text-colorlabel font-semibold text-sm sm:text-2xl text-center">
                             <small class="text-sm">{{ $moneda->simbolo }}</small>
-                            {{ formatDecimalOrInteger($pricesale, 2, ', ') }}
+                            {{ decimalOrInteger($pricesale, 2, ', ') }}
                         </h1>
                         @if ($descuento > 0 && $empresa->verOldprice())
                             <h1 class="text-colorsubtitleform text-center text-[10px] text-red-600">
@@ -348,7 +348,7 @@
                                     @endif
 
                                     @if ($promocion->limit > 0)
-                                        [{{ formatDecimalOrInteger($promocion->limit) }}
+                                        [{{ decimalOrInteger($promocion->limit) }}
                                         {{ $promocion->producto->unit->name }}]
                                     @endif
                                 @else

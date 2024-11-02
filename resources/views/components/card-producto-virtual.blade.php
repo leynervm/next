@@ -82,7 +82,7 @@
                 LIQUIDACIÓN
             @else
                 @if ($promocion->isDescuento())
-                    - {{ formatDecimalOrInteger($promocion->descuento) }}% DSCT
+                    - {{ decimalOrInteger($promocion->descuento) }}% DSCT
                 @elseif ($promocion->isCombo())
                     OFERTA
                 @else

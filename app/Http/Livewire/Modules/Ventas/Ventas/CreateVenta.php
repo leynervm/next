@@ -42,9 +42,8 @@ class CreateVenta extends Component
     use WithPagination;
 
     public $empresa, $sucursal, $pricetype, $moneda, $producto;
-    public $open = false;
+    public $open, $istransferencia = false;
     public $disponibles = 1;
-    public $almacendefault;
     public $producto_id, $serie_id, $almacen_id, $pricetype_id;
 
     public $search = '';
@@ -119,60 +118,19 @@ class CreateVenta extends Component
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
             ],
             'name' => ['required', 'string', 'min:6'],
-            'direccion' => ['required', 'string', 'min:3'],
+            'direccion' => ['nullable', 'string', 'min:3'],
             'client_id' => ['required', 'integer', 'min:1', 'exists:clients,id'],
             'typecomprobante.id' => ['required', 'integer', 'min:1', 'exists:typecomprobantes,id'],
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'typepayment.id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
-            'paymentactual' => [
-                'nullable',
-                Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'numeric',
-                'min:0',
-                $this->typepayment->paycuotas ? 'lt:' . $this->total : '',
-                'decimal:0,2'
-            ],
-            'increment' => [
-                'nullable',
-                Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'numeric',
-                'min:0',
-                'decimal:0,2'
-            ],
-            'countcuotas' => [
-                'nullable',
-                Rule::requiredIf($this->typepayment->paycuotas == 1),
-                'integer',
-                'min:1'
-            ],
-            'concept.id' => [
-                'nullable',
-                Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer',
-                'min:1',
-                'exists:concepts,id',
-            ],
-            'openbox.id' => [
-                'nullable',
-                Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer',
-                'min:1',
-                'exists:openboxes,id',
-            ],
-            'monthbox.id' => [
-                'nullable',
-                Rule::requiredIf($this->typepayment->paycuotas == 0),
-                'integer',
-                'min:1',
-                'exists:monthboxes,id',
-            ],
-            'typepay' => [
-                'required',
-                'integer',
-                'min:0',
-                'max:1',
-            ],
+            'paymentactual' => ['nullable', Rule::requiredIf($this->typepayment->isCredito()), 'numeric', 'min:0', $this->typepayment->isCredito() ? 'lt:' . $this->total : '', 'decimal:0,2'],
+            'increment' => ['nullable', Rule::requiredIf($this->typepayment->isCredito()), 'numeric', 'min:0', 'decimal:0,2'],
+            'countcuotas' => ['nullable', Rule::requiredIf($this->typepayment->isCredito()), 'integer', 'min:1'],
+            'concept.id' => ['nullable', Rule::requiredIf($this->typepayment->isContado()), 'integer', 'min:1', 'exists:concepts,id'],
+            'openbox.id' => ['nullable', Rule::requiredIf($this->typepayment->isContado()), 'integer', 'min:1', 'exists:openboxes,id'],
+            'monthbox.id' => ['nullable', Rule::requiredIf($this->typepayment->isContado()), 'integer', 'min:1', 'exists:monthboxes,id',],
+            'typepay' => ['required', 'integer', 'min:0', 'max:1',],
             'parcialpayments' => [
                 'nullable',
                 Rule::requiredIf($this->typepayment->isContado() && $this->typepay == '1'),
@@ -185,16 +143,11 @@ class CreateVenta extends Component
                 'min:1',
                 'exists:methodpayments,id',
             ],
-            'detallepago' => ['nullable'],
+            'detallepago' => ['nullable', Rule::requiredIf($this->istransferencia && $this->typepay == '0'), 'string', 'min:4'],
             'cotizacion_id' => ['nullable', 'integer', 'min:1', 'exists:cotizacions,id'],
             'sucursal.id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
             'seriecomprobante_id' => ['required', 'integer', 'min:1', 'exists:seriecomprobantes,id'],
-            'items' => [
-                'required',
-                'array',
-                'min:1',
-                new ValidateCarrito($this->moneda->id, $this->sucursal->id)
-            ],
+            'items' => ['required', 'array', 'min:1', new ValidateCarrito($this->moneda->id, $this->sucursal->id)],
             'ructransport' => [
                 'nullable',
                 Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
@@ -258,81 +211,27 @@ class CreateVenta extends Component
                 'min:6',
                 'max:8'
             ],
-            'peso' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'numeric',
-                'gt:0',
-                'decimal:0,4',
-            ],
-            'packages' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'integer',
-                'min:1',
-            ],
-            'datetraslado' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'date',
-                'after_or_equal:today',
-            ],
+            'peso' => ['nullable', Rule::requiredIf($this->incluyeguia), 'numeric', 'gt:0', 'decimal:0,4'],
+            'packages' => ['nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1'],
+            'datetraslado' => ['nullable', Rule::requiredIf($this->incluyeguia), 'date', 'after_or_equal:today'],
             'placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
             'note' => ['nullable', 'string', 'min:10'],
-            'ubigeoorigen_id' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'integer',
-                'min:1',
-                'exists:ubigeos,id'
-            ],
-            'direccionorigen' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'string',
-                'min:6',
-            ],
-            'ubigeodestino_id' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'integer',
-                'min:1',
-                'exists:ubigeos,id'
-            ],
-            'direcciondestino' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'string',
-                'min:6',
-            ],
-            'motivotraslado_id' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'integer',
-                'min:1',
-                'exists:motivotraslados,id'
-            ],
-            'modalidadtransporte_id' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'integer',
-                'min:1',
-                'exists:modalidadtransportes,id'
-            ],
-            'serieguia_id' => [
-                'nullable',
-                Rule::requiredIf($this->incluyeguia),
-                'integer',
-                'min:1',
-                'exists:seriecomprobantes,id'
-            ],
+            'ubigeoorigen_id' => ['nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1', 'exists:ubigeos,id'],
+            'direccionorigen' => ['nullable', Rule::requiredIf($this->incluyeguia), 'string', 'min:6'],
+            'ubigeodestino_id' => ['nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1', 'exists:ubigeos,id'],
+            'direcciondestino' => ['nullable', Rule::requiredIf($this->incluyeguia), 'string', 'min:6'],
+            'motivotraslado_id' => ['nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1', 'exists:motivotraslados,id'],
+            'modalidadtransporte_id' => ['nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1', 'exists:modalidadtransportes,id'],
+            'serieguia_id' => ['nullable', Rule::requiredIf($this->incluyeguia), 'integer', 'min:1', 'exists:seriecomprobantes,id'],
         ];
     }
 
     protected function messages()
     {
         return [
-            'parcialpayments.required_if' => 'No se encontraron registros de pagos.'
+            'parcialpayments.required' => 'Agregar pagos parciales',
+            'parcialpayments.required_if' => 'No se encontraron registros de pagos.',
+            'cart.*.cantidad.min' => 'La cantidad mínima es 1.'
         ];
     }
 
@@ -347,6 +246,9 @@ class CreateVenta extends Component
     {
         $this->producto = new Producto();
         $this->sucursal = auth()->user()->sucursal;
+        $this->sucursal->load(['almacens' => function ($query) {
+            $query->orderBy('default', 'desc')->orderBy('id', 'asc');
+        }]);
         $this->empresa = $empresa;
         $this->pricetype = $pricetype;
         $this->moneda = $moneda;
@@ -357,9 +259,8 @@ class CreateVenta extends Component
                 ->whereHas('productos')->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         }
 
-        if (count(auth()->user()->sucursal->almacens) > 0) {
-            $this->almacendefault = auth()->user()->sucursal->almacens()->first();
-            $this->almacen_id = $this->almacendefault->id;
+        if (count($this->sucursal->almacens) > 0) {
+            $this->almacen_id = $this->sucursal->almacens->first()->id;
         }
 
         $this->motivotraslado = new Motivotraslado();
@@ -371,7 +272,7 @@ class CreateVenta extends Component
         $this->monthbox = Monthbox::usando($this->sucursal->id)->first();
         $this->openbox = Openbox::mybox($this->sucursal->id)->first();
         $this->typepayment_id = Typepayment::default()->first()->id ?? null;
-        $this->seriecomprobante_id = $seriecomprobante->id ?? null;
+        $this->seriecomprobante_id = $seriecomprobante->id;
         $this->typecomprobante = $seriecomprobante->typecomprobante;
         $this->moneda_id = $moneda->id ?? null;
         $this->moneda = $moneda;
@@ -384,11 +285,6 @@ class CreateVenta extends Component
     public function render()
     {
 
-        $almacens = [];
-        if ($this->almacen_id) {
-            $almacens[] = $this->almacen_id;
-        }
-
         $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'marca_id', 'category_id', 'subcategory_id', 'unit_id')
             ->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
@@ -396,11 +292,12 @@ class CreateVenta extends Component
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('default', 'desc')->limit(1);
             }])->with([
-                'garantiaproductos.typegarantia',
                 'marca',
                 'unit',
+                'garantiaproductos.typegarantia',
                 'seriesdisponibles' => function ($query) {
-                    $query->where('almacen_id', $this->almacen_id);
+                    $query->with(['almacen']);
+                    // $query->where('almacen_id', $this->almacen_id);
                 },
                 'category' => function ($query) {
                     $query->select('id', 'name');
@@ -415,8 +312,8 @@ class CreateVenta extends Component
                         }]);
                     }])->availables()->disponibles();
                 }
-            ])->withWhereHas('almacens', function ($query) use ($almacens) {
-                $query->whereIn('almacens.id', $almacens);
+            ])->withWhereHas('almacens', function ($query) {
+                $query->whereIn('almacens.id', $this->sucursal->almacens->pluck('id'));
                 if ($this->disponibles) {
                     $query->where('cantidad', '>', 0);
                 }
@@ -497,42 +394,40 @@ class CreateVenta extends Component
 
     public function updatedSearch()
     {
+        $this->resetValidation();
         $this->resetPage();
     }
 
     public function updatedSearchmarca()
     {
+        $this->resetValidation();
         $this->resetPage();
     }
 
     public function updatedSearchcategory()
     {
+        $this->resetValidation();
         $this->resetPage();
     }
 
     public function updatedSearchsubcategory()
     {
-        $this->resetPage();
-    }
-
-    public function updatedAlmacenId($value)
-    {
-        $this->resetPage();
         $this->resetValidation();
-        if ($value) {
-            $this->almacendefault = Almacen::find($value);
-        }
+        $this->resetPage();
     }
 
     public function updatedPricetypeId($value)
     {
+        $this->resetValidation();
         $this->pricetype = Pricetype::find($value);
+        $this->updatecartpricelist($this->pricetype);
     }
 
     public function getProductoBySerie()
     {
 
-        $this->searchserie = trim($this->searchserie);
+        $this->resetValidation();
+        $this->searchserie = trim(mb_strtoupper($this->searchserie, "UTF-8"));
         $this->validate([
             'searchserie' => ['required', 'string', 'min:4'],
             'moneda.id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
@@ -546,35 +441,38 @@ class CreateVenta extends Component
 
         DB::beginTransaction();
         try {
-
-            $serieProducto = Serie::withWhereHas('producto', function ($query) {
+            $serie = Serie::with(['almacen', 'producto' => function ($query) {
                 $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'unit_id')
-                    ->with('unit')->visibles();
-            })->disponibles()->whereRaw('UPPER(serie) = ?', trim(mb_strtoupper($this->searchserie, "UTF-8")))
-                ->whereIn('almacen_id', auth()->user()->sucursal->almacens()->pluck('almacen_id'))->first();
+                    ->with(['unit', 'promocions' => function ($subQuery) {
+                        $subQuery->with(['itempromos.producto' => function ($q) {
+                            $q->with('unit');
+                        }])->availables()->disponibles()->take(1);
+                    }])->visibles();
+            }])->disponibles()->whereRaw('UPPER(serie) = ?', $this->searchserie)
+                ->whereIn('almacen_id', $this->sucursal->almacens->pluck('id'))->first();
 
-            if (empty($serieProducto)) {
+            if (empty($serie)) {
                 $mensaje =  response()->json([
-                    'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
+                    'title' => "SERIE $this->searchserie NO SE ENCUENTRA DISPONIBLE !",
                     'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
 
-            if (Carshoopserie::where('serie_id', $serieProducto->id)->exists()) {
-                $mensaje =  response()->json([
-                    'title' => 'SERIE YA SE ENCUENTRA REGISTRADO EN EL CARRITO !',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
+            // if (Carshoopserie::where('serie_id', $serie->id)->exists()) {
+            //     $mensaje =  response()->json([
+            //         'title' => 'SERIE YA SE ENCUENTRA REGISTRADO EN EL CARRITO !',
+            //         'text' => null
+            //     ])->getData();
+            //     $this->dispatchBrowserEvent('validation', $mensaje);
+            //     return false;
+            // }
 
-            if ($serieProducto->isDisponible()) {
-                $serieProducto->status = Serie::SALIDA;
-                $serieProducto->dateout = $date;
-                $serieProducto->save();
+            if ($serie->isDisponible()) {
+                $serie->status = Serie::SALIDA;
+                $serie->dateout = $date;
+                $serie->save();
             } else {
                 $mensaje =  response()->json([
                     'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
@@ -583,13 +481,7 @@ class CreateVenta extends Component
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
-
-            $this->validate([
-                'searchserie' => [
-                    new ValidateStock($serieProducto->producto_id, $serieProducto->almacen_id, $cantidad)
-                ],
-            ]);
-            $stock = $serieProducto->producto->almacens->find($serieProducto->almacen_id)->pivot->cantidad;
+            $stock = $serie->producto->almacens->find($serie->almacen_id)->pivot->cantidad;
 
             if ($stock && $stock > 0) {
                 if (($stock - $cantidad) < 0) {
@@ -602,14 +494,14 @@ class CreateVenta extends Component
                 }
             }
 
-            $promocion = verifyPromocion($serieProducto->producto->promocions->first());
-            $combo = $serieProducto->producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
-            $pricesale = $serieProducto->producto->obtenerPrecioVenta($this->pricetype ?? null);
+            $promocion = verifyPromocion($serie->producto->promocions->first());
+            $combo = $serie->producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
+            $pricesale = $serie->producto->obtenerPrecioVenta($this->pricetype ?? null);
 
             if ($this->moneda->isDolar()) {
                 $pricesale = convertMoneda($pricesale, 'USD', $this->empresa->tipocambio, 2);
             } else {
-                $pricesale = formatDecimalOrInteger($pricesale, 2);
+                $pricesale = decimalOrInteger($pricesale, 2);
             }
 
             if ($promocion) {
@@ -665,14 +557,14 @@ class CreateVenta extends Component
                 $promocion->outs = $promocion->outs + $cantidad;
                 $promocion->save();
                 if ($promocion->limit ==  $promocion->outs) {
-                    $serieProducto->producto->assignPrice($promocion);
+                    $serie->producto->assignPrice($promocion);
                 }
             }
 
             $pricesaleNew = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->price : $pricesale;
             $igvsale = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->igv : 0;
-            $existsInCart = Carshoop::where('producto_id', $serieProducto->producto_id)
-                ->where('almacen_id', $serieProducto->almacen_id)
+            $existsInCart = Carshoop::where('producto_id', $serie->producto_id)
+                ->where('almacen_id', $serie->almacen_id)
                 ->where('moneda_id', $this->moneda->id)
                 ->where('gratuito', '0')
                 ->where('user_id', auth()->user()->id)
@@ -684,7 +576,7 @@ class CreateVenta extends Component
             if ($existsInCart->exists()) {
                 $carshoop = $existsInCart->first();
                 $carshoop->cantidad = $carshoop->cantidad + $cantidad;
-                $carshoop->pricebuy = $serieProducto->producto->pricebuy;
+                $carshoop->pricebuy = $serie->producto->pricebuy;
                 $carshoop->price = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->price : $pricesale;
                 $carshoop->igv = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->igv : 0;
                 $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
@@ -716,7 +608,7 @@ class CreateVenta extends Component
                 $carshoop = Carshoop::create([
                     'date' => $date,
                     'cantidad' => $cantidad,
-                    'pricebuy' => $serieProducto->producto->pricebuy,
+                    'pricebuy' => $serie->producto->pricebuy,
                     'price' => $pricesaleNew,
                     'igv' => $igvsale,
                     'subtotal' => $pricesaleNew * $cantidad,
@@ -724,8 +616,8 @@ class CreateVenta extends Component
                     'gratuito' => 0,
                     'status' => 0,
                     'promocion_id' => $promocion_id,
-                    'producto_id' => $serieProducto->producto_id,
-                    'almacen_id' => $serieProducto->almacen_id,
+                    'producto_id' => $serie->producto_id,
+                    'almacen_id' => $serie->almacen_id,
                     'moneda_id' => $this->moneda->id,
                     'user_id' => auth()->user()->id,
                     'sucursal_id' => $this->sucursal->id,
@@ -749,7 +641,7 @@ class CreateVenta extends Component
 
             $carshoop->carshoopseries()->create([
                 'date' =>  $date,
-                'serie_id' => $serieProducto->id,
+                'serie_id' => $serie->id,
                 'user_id' => auth()->user()->id
             ]);
 
@@ -772,96 +664,104 @@ class CreateVenta extends Component
         }
     }
 
-    // public function addtocar($formData, Producto $producto)
-    // {
-    public function addtocar(Producto $producto, $cart)
+    public function addtocar(Producto $producto, $cart, $serie_id = null, $seriealmacen_id = null)
     {
 
-        $price = $cart['price'] ?? "";
-        $serie = $cart['serie'];
-        $cantidad = $cart['cantidad'] ?? 1;
-        $promocion_id = null;
-        $carshoopitems = collect([]);
-
+        $this->resetValidation();
         $this->cart[$producto->id] = $cart;
-        $this->cart[$producto->id]["almacen_id"] = $this->almacen_id;
-        $producto->load([
-            'unit',
-            'promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
-                }])->availables()->disponibles()->take(1);
-            }
+        if (!empty($seriealmacen_id)) {
+            $this->cart[$producto->id]["almacen_id"] = $seriealmacen_id;
+        }
+
+        $producto->load(['unit', 'promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with('unit')->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }]);
+            }])->availables()->disponibles()->take(1);
+        }]);
+
+        $validatedCart = $this->validate([
+            "cart.$producto->id.price" => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
+            "cart.$producto->id.almacen_id" => ($producto->isRequiredserie() && empty($this->cart[$producto->id]['serie_id'])) ? [] : ['required', 'integer', 'min:1', 'exists:almacens,id', $producto->isRequiredserie() ? '' : new ValidateStock($producto->id, $this->cart[$producto->id]["almacen_id"])],
+            "cart.$producto->id.cantidad" => ['required', 'numeric', 'min:1', 'integer', empty($this->cart[$producto->id]['almacen_id']) ? '' : new ValidateStock($producto->id, $this->cart[$producto->id]["almacen_id"], $this->cart[$producto->id]["cantidad"])],
+            // "cart.$producto->id.serie" => ['nullable', Rule::requiredIf($producto->isRequiredserie()), 'string', 'min:4'],
+            "cart.$producto->id.serie_id" => ['nullable', Rule::requiredIf($producto->isRequiredserie()), 'integer', 'min:1', 'exists:series,id'],
+            "moneda.id" => ['required', 'integer', 'min:1', 'exists:monedas,id'],
+        ], [], [
+            "cart.$producto->id.price" => 'precio',
+            "cart.$producto->id.almacen_id" => 'almacen',
+            "cart.$producto->id.cantidad" => 'cantidad',
+            "cart.$producto->id.serie" => 'serie',
+            "cart.$producto->id.serie_id" => 'serie',
         ]);
 
-        $this->validate(
-            [
-                "cart.*.price" => [
-                    'required',
-                    'numeric',
-                    'min:0',
-                    'decimal:0,4',
-                    'gt:0',
-                ],
-                "cart.*.almacen_id" => [
-                    'required',
-                    'integer',
-                    'exists:almacens,id',
-                    new ValidateStock($producto->id, $this->almacen_id)
-                ],
-                "cart.*.cantidad" => [
-                    'required',
-                    'numeric',
-                    'min:1',
-                    'integer',
-                    new ValidateStock($producto->id, $this->almacen_id, $cantidad)
-                ],
-                "cart.$producto->id.serie" => [
-                    'nullable',
-                    Rule::requiredIf($producto->isRequiredserie()),
-                    'string',
-                    'min:4',
-                ],
-                "moneda.id" => [
-                    'required',
-                    'integer',
-                    'min:1',
-                    'exists:monedas,id'
-                ],
-            ],
-            [],
-            ["cart.$producto->id.serie" => 'serie']
-        );
+        $price = $this->cart[$producto->id]['price'];
+        $cantidad = $this->cart[$producto->id]['cantidad'];
+        $almacen_id = $this->cart[$producto->id]['almacen_id'];
+        $serie_id = $this->cart[$producto->id]['serie_id'];
+        $promocion_id = null;
+        $carshoopitems = collect([]);
+        $carshoopserie = [];
+        // dd($validatedCart);
+        DB::beginTransaction();
+        try {
+            if (!empty($serie_id)) {
+                // if (Carshoopserie::where('serie_id', $serie_id)->exists()) {
+                //     $mensaje =  response()->json([
+                //         'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN EL CARRITO !',
+                //         'text' => null
+                //     ])->getData();
+                //     $this->dispatchBrowserEvent('validation', $mensaje);
+                //     return false;
+                // }
 
-        $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
-        $promocion = verifyPromocion($producto->promocions->first());
-        $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
+                $serie = Serie::find($serie_id);
+                if ($serie->isDisponible()) {
+                    $serie->status = Serie::SALIDA;
+                    $serie->dateout = now('America/Lima');
+                    $serie->save();
+                    $carshoopserie = [
+                        'date' =>  now('America/Lima'),
+                        'serie_id' => $serie->id,
+                        'user_id' => auth()->user()->id
+                    ];
+                } else {
+                    $mensaje =  response()->json([
+                        'title' => "SERIE $serie->serie NO SE ENCUENTRA DISPONIBLE !",
+                        'text' => null
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+            }
 
-        if ($stock && $stock > 0) {
-            if (($stock - $cantidad) < 0) {
+
+            $stock = $producto->almacens->find($almacen_id)->pivot->cantidad;
+            $promocion = verifyPromocion($producto->promocions->first());
+            $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null, $almacen_id);
+
+            if ($stock && $stock > 0) {
+                if (($stock - $cantidad) < 0) {
+                    $mensaje =  response()->json([
+                        'title' => 'CANTIDAD SUPERA EL STOCK DISPONIBLE DEL PRODUCTO !',
+                        'text' => null
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+            } else {
                 $mensaje =  response()->json([
-                    'title' => 'CANTIDAD SUPERA EL STOCK DISPONIBLE DEL PRODUCTO !',
+                    'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO !',
                     'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
-        } else {
-            $mensaje =  response()->json([
-                'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO !',
-                'text' => null
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
 
-        DB::beginTransaction();
-        try {
             if ($promocion) {
                 if ($promocion->limit > 0 && ($promocion->outs + $cantidad) > $promocion->limit) {
                     $mensaje =  response()->json([
@@ -902,7 +802,7 @@ class CreateVenta extends Component
                                 'producto_id' => $itemcombo->producto_id
                             ]);
 
-                            Producto::find($itemcombo->producto_id)->almacens()->updateExistingPivot($this->almacen_id, [
+                            Producto::find($itemcombo->producto_id)->almacens()->updateExistingPivot($almacen_id, [
                                 'cantidad' => $itemcombo->stock - $cantidad,
                             ]);
                         }
@@ -922,7 +822,7 @@ class CreateVenta extends Component
             $pricesale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->price : $price;
             $igvsale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->igv : 0;
             $existsInCart = Carshoop::where('producto_id', $producto->id)
-                ->where('almacen_id', $this->almacen_id)
+                ->where('almacen_id', $almacen_id)
                 ->where('moneda_id', $this->moneda->id)
                 ->where('promocion_id', $promocion_id)
                 ->where('gratuito', '0')
@@ -974,7 +874,7 @@ class CreateVenta extends Component
                     'gratuito' => 0,
                     'status' => 0,
                     'producto_id' => $producto->id,
-                    'almacen_id' => $this->almacen_id,
+                    'almacen_id' => $almacen_id,
                     'moneda_id' => $this->moneda->id,
                     'user_id' => auth()->user()->id,
                     'sucursal_id' => $this->sucursal->id,
@@ -996,54 +896,17 @@ class CreateVenta extends Component
                 }
             }
 
-            if (!empty($serie)) {
-                $serieProducto = Serie::disponibles()->where('serie', trim(mb_strtoupper($serie, "UTF-8")))->first();
-
-                if ($serieProducto) {
-                    if (Carshoopserie::where('serie_id', $serieProducto->id)->exists()) {
-                        $mensaje =  response()->json([
-                            'title' => 'SERIE YA SE ENCUENTRA REGISTRADO EN EL CARRITO !',
-                            'text' => "La serie $serieProducto->serie ya se encuentra registrado en los items de la venta."
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-
-                    if ($serieProducto->isDisponible()) {
-                        $serieProducto->status = Serie::SALIDA;
-                        $serieProducto->dateout = $date;
-                        $serieProducto->save();
-                    } else {
-                        $mensaje =  response()->json([
-                            'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
-                            'text' => "La serie $serieProducto->serie ya no se encuentra disponible en este momento."
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-
-                    $carshoop->carshoopseries()->create([
-                        'date' =>  $date,
-                        'serie_id' => $serieProducto->id,
-                        'user_id' => auth()->user()->id
-                    ]);
-                } else {
-                    $mensaje =  response()->json([
-                        'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-            }
-
             if (!$existskardex) {
                 $carshoop->saveKardexOutCarshoop($stock, $promocion_id);
             }
 
+            if (count($carshoopserie) > 0) {
+                $carshoop->carshoopseries()->create($carshoopserie);
+            }
+
             $carshoop->updateStockAlmacen($stock, $cantidad);
             $this->setTotal();
-            // $producto->almacens()->updateExistingPivot($this->almacen_id, [
+            // $producto->almacens()->updateExistingPivot($almacen_id, [
             //     'cantidad' => $stock - $cantidad,
             // ]);
             DB::commit();
@@ -1068,19 +931,9 @@ class CreateVenta extends Component
     public function savepay()
     {
         $this->validate([
-            'amountparcial' => [
-                'required',
-                'numeric',
-                'min:0',
-                'gt:0',
-                'decimal:0,4'
-            ],
-            'methodpayment_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:methodpayments,id',
-            ],
+            'amountparcial' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,4'],
+            'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
+            'detallepago' => ['nullable', Rule::requiredIf($this->istransferencia), 'string', 'min:4'],
         ]);
 
         $parcialamount = 0;
@@ -1089,7 +942,7 @@ class CreateVenta extends Component
             $parcialamount = $collect->sum('amount');
         }
 
-        if (($parcialamount + $this->amountparcial) > number_format($this->total - ($this->gratuito + $this->amountincrement), 2, '.', '')) {
+        if (($parcialamount + $this->amountparcial) > number_format($this->total - $this->amountincrement, 2, '.', '')) {
             $mensaje =  response()->json([
                 'title' => 'PAGO PARCIAL SUPERA MONTO TOTAL DE VENTA !',
                 'text' => null
@@ -1107,13 +960,14 @@ class CreateVenta extends Component
             $this->parcialpayments[] = [
                 'id' => Str::uuid()->toString(),
                 'amount' => number_format($this->amountparcial, 3, '.', ''),
+                'detalle' => $this->istransferencia ? $this->detallepago : null,
                 'methodpayment_id' => $this->methodpayment_id,
                 'method' => Methodpayment::find($this->methodpayment_id)->name,
             ];
         }
 
         $this->resetValidation();
-        $this->reset(['amountparcial', 'methodpayment_id']);
+        $this->reset(['amountparcial', 'methodpayment_id', 'detallepago', 'istransferencia']);
         $this->setTotal();
     }
 
@@ -1128,13 +982,14 @@ class CreateVenta extends Component
     {
 
         $results = Carshoop::select(
+            DB::raw("COALESCE(SUM(subtotal),0) as subtotal"),
             DB::raw("COALESCE(SUM(total),0) as total"),
             DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN igv * cantidad ELSE 0 END),0) as igv"),
             DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '1' THEN igv * cantidad ELSE 0 END), 0) as igvgratuito"),
             DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as gravado"),
             DB::raw("COALESCE(SUM(CASE WHEN igv = 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as exonerado"),
             DB::raw("COALESCE(SUM(CASE WHEN gratuito = '1' THEN price * cantidad ELSE 0 END), 0) as gratuitos")
-        )->ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)->get();
+        )->ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)->first();
         // dd($results[0]);
 
         if ($this->typepay == '1') {
@@ -1145,15 +1000,17 @@ class CreateVenta extends Component
         }
 
         // SE LE INCREMENTA AL MONTO PENDIENTE PAGO, NO AL TOTAL
-        $saldopagar = number_format($results[0]->total - ($results[0]->gratuitos + $results[0]->igvgratuito + $this->paymentactual), 3, '.', '');
+        $saldopagar = number_format($results->total - $this->paymentactual, 3, '.', '');
         // TOTAL = ESTÁ INCLUY. IGV+ GRAB+EXO+DESC+GRATUI+INCREM.
         $this->amountincrement = number_format($saldopagar * $this->increment / 100, 3, '.', '');
 
-        $this->igv = number_format($results[0]->igv, 3, '.', '');
-        $this->igvgratuito = number_format($results[0]->igvgratuito, 3, '.', '');
-        $this->gratuito =  number_format($results[0]->gratuitos, 3, '.', '');
-        $this->exonerado = number_format($results[0]->exonerado, 3, '.', '');
-        $this->gravado = number_format($results[0]->gravado, 3, '.', '');
+        $this->igv = number_format($results->igv, 3, '.', '');
+        $this->igvgratuito = number_format($results->igvgratuito, 3, '.', '');
+        $this->gratuito =  number_format($results->gratuitos, 3, '.', '');
+        $this->exonerado = number_format($results->exonerado, 3, '.', '');
+        $this->gravado = number_format($results->gravado, 3, '.', '');
+        $this->subtotal = number_format($results->subtotal, 3, '.', '');
+
 
         if ($this->empresa->isAfectacionIGV()) {
             $this->gravado += getPriceIGV($this->amountincrement, $this->empresa->igv)->price;
@@ -1162,7 +1019,7 @@ class CreateVenta extends Component
             $this->exonerado += $this->amountincrement;
         }
 
-        $this->total = number_format($results[0]->total + $this->amountincrement, 3, '.', '');
+        $this->total = number_format($results->total + $this->amountincrement, 3, '.', '');
     }
 
     public function updatedMonedaId($value)
@@ -1200,7 +1057,7 @@ class CreateVenta extends Component
 
     public function save()
     {
-
+        $this->resetValidation();
         if (!$this->monthbox || !$this->monthbox->isUsing()) {
             $this->dispatchBrowserEvent('validation', getMessageMonthbox());
             return false;
@@ -1287,9 +1144,9 @@ class CreateVenta extends Component
             $collect = collect($this->parcialpayments);
             $parcialamount = $collect->sum('amount') ?? 0;
 
-            if ($this->typepayment->isContado() && number_format($parcialamount, 2, '.', '') <> number_format($this->total - $this->gratuito, 2, '.', '')) {
+            if ($this->typepayment->isContado() && number_format($parcialamount, 2, '.', '') <> number_format($this->total, 2, '.', '')) {
                 $mensaje =  response()->json([
-                    'title' => "MONTO PARCIAL (" . number_format($parcialamount, 2, '.', ', ') . ") DIFERENTE AL TOTAL PAGAR DE VENTA (" . number_format($this->total - $this->gratuito, 2, '.', ', ') . ") !",
+                    'title' => "MONTO PARCIAL " . $this->moneda->simbolo . " " . number_format($parcialamount, 2, '.', ', ') . " DIFERENTE AL TOTAL PAGAR DE VENTA " . $this->moneda->simbolo . " " . number_format($this->total, 2, '.', ', ') . " !",
                     'text' => null
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
@@ -1297,7 +1154,7 @@ class CreateVenta extends Component
             }
         }
 
-        if ($this->typepayment->isCredito() && $this->paymentactual >= ($this->total - $this->gratuito)) {
+        if ($this->typepayment->isCredito() && $this->paymentactual >= $this->total) {
             $mensaje =  response()->json([
                 'title' => 'SE RECOMIENDA USAR TIPO DE PAGO "CONTADO" EN EL PRESENTE COMPROBANTE',
                 'text' => null
@@ -1307,7 +1164,6 @@ class CreateVenta extends Component
         }
 
         DB::beginTransaction();
-
         try {
 
             $client = Client::find($this->client_id);
@@ -1327,7 +1183,7 @@ class CreateVenta extends Component
                 'otros' => number_format($this->otros, 3, '.', ''),
                 'igv' => number_format($this->igv, 3, '.', ''),
                 'igvgratuito' => number_format($this->igvgratuito, 3, '.', ''),
-                'subtotal' => number_format($this->gravado + $this->exonerado + $this->inafecto, 3, '.', ''),
+                'subtotal' => number_format($this->subtotal, 3, '.', ''),
                 'total' => number_format($this->total, 3, '.', ''),
                 'paymentactual' => number_format($this->typepayment->isCredito() ? $this->paymentactual : $this->total, 3, '.', ''),
                 'tipocambio' => $this->moneda->code == 'USD' ? $this->empresa->tipocambio : null,
@@ -1354,14 +1210,14 @@ class CreateVenta extends Component
                         $this->openbox->id,
                         $this->monthbox->id,
                         $seriecomprobante->serie . '-' . $numeracion,
-                        'PAGO PARCIAL VENTA'
+                        $item["detalle"]
                     );
                 }
             } else {
                 $venta->savePayment(
                     $this->sucursal->id,
-                    $this->total - ($this->gratuito + $this->igvgratuito),
-                    $this->total - ($this->gratuito + $this->igvgratuito),
+                    $this->total,
+                    $this->total,
                     null,
                     $this->moneda_id,
                     $this->methodpayment_id,
@@ -1370,7 +1226,7 @@ class CreateVenta extends Component
                     $this->openbox->id,
                     $this->monthbox->id,
                     $seriecomprobante->serie . '-' . $numeracion,
-                    null
+                    $this->istransferencia ? $this->detallepago : null
                 );
             }
 
@@ -1455,9 +1311,9 @@ class CreateVenta extends Component
             }
 
             $counter = 1;
-            $totalAmountCuotas = number_format($this->total - ($this->gratuito + $this->paymentactual), 3, '.', '');
+            $totalAmountCuotas = number_format($this->total - $this->paymentactual, 3, '.', '');
             // $amountCuota = number_format($totalAmountCuotas / $this->countcuotas, 3, '.', '');
-            $percentPay = number_format($this->paymentactual * 100 / ($this->total - ($this->gratuito + $this->amountincrement)), 3, '.', '');
+            $percentPay = number_format($this->paymentactual * 100 / ($this->total - $this->amountincrement), 3, '.', '');
             $percentItem = number_format($this->increment - ($this->increment * $percentPay / 100), 3, '.', '');
             // dd($percentPay, $percentItem);
 
@@ -1535,7 +1391,7 @@ class CreateVenta extends Component
                 $abreviatureafectacion = $item->igv > 0 ? 'S' : 'E';
 
                 if (Module::isEnabled('Facturacion')) {
-                    if ($seriecomprobante->typecomprobante->sendsunat) {
+                    if ($seriecomprobante->typecomprobante->isSunat()) {
                         $comprobante->facturableitems()->create([
                             'item' => $counter,
                             'descripcion' => $item->producto->name,
@@ -1601,7 +1457,7 @@ class CreateVenta extends Component
                         }
 
                         if (Module::isEnabled('Facturacion')) {
-                            if ($seriecomprobante->typecomprobante->sendsunat) {
+                            if ($seriecomprobante->typecomprobante->isSunat()) {
                                 $comprobante->facturableitems()->create([
                                     'item' => $counter,
                                     'descripcion' => $carshoopitem->producto->name,
@@ -1655,7 +1511,7 @@ class CreateVenta extends Component
                         $venta->save();
 
                         if (Module::isEnabled('Facturacion')) {
-                            if ($seriecomprobante->typecomprobante->sendsunat) {
+                            if ($seriecomprobante->typecomprobante->isSunat()) {
                                 $comprobante->gratuito = number_format($comprobante->gratuito + $totalcomboGRA, 4, '.', '');
                                 $comprobante->igvgratuito = number_format($comprobante->igvgratuito + $totalIGVcomboGRA, 4, '.', '');
                                 $comprobante->save();
@@ -1717,8 +1573,16 @@ class CreateVenta extends Component
 
     public function updategratis(Carshoop $carshoop)
     {
-        $carshoop->gratuito = $carshoop->gratuito == 1 ? 0 : 1;
-        $carshoop->save();
+        if ($carshoop->isGratuito()) {
+            $total = ($carshoop->price + $carshoop->igv) * $carshoop->cantidad;
+            $carshoop->total = $total;
+            $carshoop->gratuito = 0;
+            $carshoop->save();
+        } else {
+            $carshoop->total = 0;
+            $carshoop->gratuito = Tvitem::GRATUITO;
+            $carshoop->save();
+        }
         $this->setTotal();
     }
 
@@ -1837,14 +1701,12 @@ class CreateVenta extends Component
 
         foreach ($tvitems as $item) {
             $date = now('America/Lima');
-            // $promocion = $item->producto->getPromocionDisponible();
-            // $combo = $item->producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
             $pricesale = $item->producto->obtenerPrecioVenta($this->pricetype ?? null);
 
             if ($this->moneda->isDolar()) {
                 $pricesale = convertMoneda($pricesale, 'USD', $this->empresa->tipocambio, 2);
             } else {
-                $pricesale = formatDecimalOrInteger($pricesale, 2);
+                $pricesale = decimalOrInteger($pricesale, 2);
             }
 
             $carshoop = Carshoop::create([
@@ -1927,6 +1789,7 @@ class CreateVenta extends Component
                         // $this->pricetype = $pricetype;
                         $this->pricetype_id = $response->getData()->pricetype_id;
                         $this->pricetype = Pricetype::find($this->pricetype_id);
+                        $this->updatecartpricelist($this->pricetype);
                     }
                 }
 
@@ -2026,5 +1889,42 @@ class CreateVenta extends Component
         } else {
             dd($response);
         }
+    }
+
+    public function updatecartpricelist($pricetype)
+    {
+        $carshoops = Carshoop::with(['promocion.producto', 'producto'])
+            ->ventas()->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->orderBy('id', 'asc')->get();
+
+        foreach ($carshoops as $item) {
+            $price = $item->producto->{$pricetype->campo_table};
+            $pricesale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->price : $price;
+            $igvsale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->igv : 0;
+            $item->pricebuy = $item->producto->pricebuy;
+            $item->price = $pricesale;
+            $item->igv = $igvsale;
+            $item->subtotal =  $price * $item->cantidad;
+            if ($item->isGratuito()) {
+                $item->total = 0;
+            } else {
+                $item->total = $pricesale * $item->cantidad;
+            }
+            $item->save();
+            // if ($carshoopitems->count() > 0) {
+            //     if (count($carshoop->carshoopitems) == 0) {
+            //         foreach ($carshoopitems as $itemcombo) {
+            //             $carshoop->carshoopitems()->create([
+            //                 'pricebuy' => $itemcombo["pricebuy"],
+            //                 // 'price' => $itemcombo["price"],
+            //                 'price' => 0,
+            //                 'producto_id' => $itemcombo["producto_id"]
+            //             ]);
+            //         }
+            //     }
+            // }
+        }
+        $this->setTotal();
     }
 }

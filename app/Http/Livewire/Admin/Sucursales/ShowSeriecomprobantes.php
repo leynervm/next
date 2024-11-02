@@ -39,12 +39,15 @@ class ShowSeriecomprobantes extends Component
             $typecomprobantes = Typecomprobante::Default()->orderBy('code', 'asc')->get();
         }
 
-        $seriecomprobantes = $this->sucursal->seriecomprobantes()
-            ->withTrashed()->withWherehas('typecomprobante', function ($query) {
-                if (Module::isDisabled('Facturacion')) {
-                    $query->default();
-                }
-            })->orderBy('default', 'desc')->get();
+        $seriecomprobantes = $this->sucursal->seriecomprobantes()->withTrashed()
+            ->select('seriecomprobantes.id', 'seriecomprobantes.code', 'seriecomprobantes.serie', 'contador', 'contadorprueba', 'default', 'typecomprobante_id')
+            ->join('typecomprobantes', 'seriecomprobantes.typecomprobante_id', '=', 'typecomprobantes.id')
+            ->when(Module::isDisabled('Facturacion'), function ($query) {
+                $query->whereHas('typecomprobante', function ($q) {
+                    $q->default();
+                });
+            })->orderBy('typecomprobantes.code', 'asc')->orderBy('seriecomprobantes.default', 'desc')
+            ->with('typecomprobante')->get();
 
         return view('livewire.admin.sucursales.show-seriecomprobantes', compact('typecomprobantes', 'seriecomprobantes'));
     }

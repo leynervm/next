@@ -105,7 +105,7 @@
                                                 <div class="flex items-end sm:items-center sm:w-60 sm:flex-shrink-0 ">
                                                     <span
                                                         class="text-left p-2 text-xs sm:text-end font-semibold whitespace-nowrap">
-                                                        x{{ formatDecimalOrInteger($item->qty) }}
+                                                        x{{ decimalOrInteger($item->qty) }}
                                                         {{ $item->model->unit->name }}
                                                     </span>
                                                     <span
@@ -130,7 +130,8 @@
 
         @if (auth()->user())
             <div class="w-full lg:w-96 lg:flex-shrink-0">
-                <livewire:modules.marketplace.carrito.show-shippments :empresa="$empresa" :moneda="$moneda" />
+                <livewire:modules.marketplace.carrito.show-shippments :empresa="$empresa" :moneda="$moneda"
+                    :pricetype="$pricetype" />
             </div>
         @endif
     </div>

@@ -441,7 +441,7 @@
                             <td class="p-2 align-middle text-start leading-3">
                                 {{ $item->descripcion }}</td>
                             <td class="p-2 text-center" style="width: 70px;">
-                                {{ formatDecimalOrInteger($item->cantidad) }} {{ $item->unit }}</td>
+                                {{ decimalOrInteger($item->cantidad) }} {{ $item->unit }}</td>
                             <td class="p-2 text-center" style="width: 70px;">
                                 {{ number_format($item->price + $item->igv, 2, '.', ', ') }}</td>
                             <td class="p-2 text-center align-middle" style="width: 80px;">

@@ -38,23 +38,15 @@ class AddCarrito extends Component
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
         }]);
 
-        if ($producto->stock <= 0) {
-            $mensaje = response()->json([
-                'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO ! !',
-                'text' => null,
-                'icon' => 'warning'
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
-
+        $cart = Cart::instance('shopping')->content()->firstWhere('id', $producto->id);
+        $qtyexistente = !empty($cart) ? $cart->qty : 0;
         $promocion = verifyPromocion($producto->promocions->first());
         $combo = $producto->getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
         $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
 
         if ($promocion) {
-            if ($promocion->limit > 0 && ($promocion->outs + $cantidad > $promocion->limit)) {
+            if ($promocion->limit > 0 && (($promocion->outs + $cantidad + $qtyexistente) > $promocion->limit)) {
                 $mensaje = response()->json([
                     'title' => 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN',
                     'text' => 'Ingrese un monto menor o igual al stock de unidades disponibles.',
@@ -63,6 +55,16 @@ class AddCarrito extends Component
                 $this->dispatchBrowserEvent('validation', $mensaje);
                 return false;
             }
+        }
+
+        if ($producto->stock <= 0 || $producto->stock < ($cantidad + $qtyexistente)) {
+            $mensaje = response()->json([
+                'title' => 'LÍMITE DE STOCK EN PRODUCTO ALCANZADO !',
+                'text' => null,
+                'icon' => 'warning'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
 
         if ($pricesale > 0) {

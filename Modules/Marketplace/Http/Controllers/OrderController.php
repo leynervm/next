@@ -18,8 +18,9 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
+        $order->load(['tvitems.producto.unit', 'transaccion', 'trackings' => function ($query) {
+            $query->with('trackingstate')->orderBy('date', 'asc');
+        }]);
         return view('marketplace::admin.orders.show', compact('order'));
     }
-
-  
 }

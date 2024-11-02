@@ -71,9 +71,9 @@ class MarketplaceController extends Controller
                 $producto->promocion = $producto->promocions->first();
                 return $producto;
             });
-            $pricetype = getPricetypeAuth();
-        
-            return view('modules.marketplace.productos.ofertas', compact('ofertas', 'pricetype'));
+        $pricetype = getPricetypeAuth();
+
+        return view('modules.marketplace.productos.ofertas', compact('ofertas', 'pricetype'));
     }
 
     public function orders()
@@ -83,7 +83,8 @@ class MarketplaceController extends Controller
 
     public function create()
     {
-        return view('modules.marketplace.orders.create');
+        $pricetype = getPricetypeAuth();
+        return view('modules.marketplace.orders.create', compact('pricetype'));
     }
 
     public function generateSessionToken($order)
@@ -100,7 +101,7 @@ class MarketplaceController extends Controller
             'Content-Type' => "application/json",
         ])->post(config('services.niubiz.url_api') . 'api.ecommerce/v2/ecommerce/token/session/' . config('services.niubiz.merchant_id'), [
             'channel' => 'web',
-            'amount' => formatDecimalOrInteger($order->total),
+            'amount' => decimalOrInteger($order->total),
             'antifraud' => [
                 'clientIp' => request()->ip(),
                 'merchantDefineData' => [
@@ -127,9 +128,12 @@ class MarketplaceController extends Controller
     public function payment(Order $order)
     {
         $this->authorize('user', $order);
-        $order = Order::with('transaccion')->find($order->id);
-        $session_token = $this->generateSessionToken($order);
-        return view('modules.marketplace.orders.payment', compact('order', 'session_token'));
+        $order->load(['tvitems' => function ($query) {
+            $query->with(['producto.unit']);
+        }, 'transaccion', 'trackings' => function ($query) {
+            $query->with('trackingstate')->orderBy('date', 'asc');
+        }]);
+        return view('modules.marketplace.orders.payment', compact('order'));
     }
 
     public function deposito(Request $request, Order $order,)
@@ -213,7 +217,7 @@ class MarketplaceController extends Controller
         $producto->views = $producto->views + 1;
         $producto->save();
 
-        $relacionados = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+        $relacionados = Producto::query()->select('id', 'name', 'slug', 'modelo', 'sku', 'partnumber', 'marca_id', 'subcategory_id', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
             ->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
@@ -235,7 +239,7 @@ class MarketplaceController extends Controller
                 return $producto;
             });
         // dd($relacionados);
-        $interesantes = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+        $interesantes = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
             ->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
@@ -292,7 +296,8 @@ class MarketplaceController extends Controller
 
     public function carshoop()
     {
-        return view('marketplace::carrito');
+        $pricetype = getPricetypeAuth();
+        return view('marketplace::carrito', compact('pricetype'));
     }
 
     public function wishlist()

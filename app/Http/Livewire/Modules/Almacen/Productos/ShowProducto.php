@@ -35,18 +35,14 @@ class ShowProducto extends Component
     protected function rules()
     {
         return [
-            'producto.name' => [
-                'required', 'min:3', new CampoUnique('productos', 'name', $this->producto->id, true)
-            ],
+            'producto.name' => ['required', 'string', 'min:3', new CampoUnique('productos', 'name', $this->producto->id, true)],
             'producto.marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
             'producto.modelo' => ['required', 'string'],
-            'producto.partnumber' => ['nullable', 'string', 'min:4'],
+            'producto.sku' => ['nullable', 'string', 'min:6', new CampoUnique('productos', 'sku', $this->producto->id, true)],
+            'producto.partnumber' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', $this->producto->id, true)],
             'producto.unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'producto.pricebuy' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
-            'producto.pricesale' => [
-                'required', 'numeric', 'decimal:0,4', 'min:0',
-                !mi_empresa()->usarLista() ? 'gt:0' : ''
-            ],
+            'producto.pricesale' => mi_empresa()->usarLista() ? ['nullable', 'numeric', 'min:0', 'decimal:0,4'] : ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'producto.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'producto.minstock' => ['required', 'integer', 'min:0'],
             'producto.category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
@@ -136,7 +132,7 @@ class ShowProducto extends Component
         $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
         $this->validate();
         $this->producto->save();
-
+        $this->resetValidation();
         if ($this->producto->isDirty('pricebuy')) {
             $this->producto->assignPrice();
         }
@@ -161,9 +157,12 @@ class ShowProducto extends Component
         $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'almacen_id' => [
-                'required', 'integer', 'min:1', 'exists:almacens,id',
+                'required',
+                'integer',
+                'min:1',
+                'exists:almacens,id',
                 Rule::unique('almacen_producto', 'almacen_id')
-                    ->where(fn (Builder $query) => $query
+                    ->where(fn(Builder $query) => $query
                         ->where('producto_id', $this->producto->id))
                     ->ignore($this->almacen_id, 'almacen_id')
             ],

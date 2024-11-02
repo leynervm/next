@@ -42,7 +42,7 @@ trait CalcularPrecioVenta
             $rango = Rango::query()->with(['pricetypes' => function ($query) {
                 $query->select('pricetypes.id', 'rounded', 'decimals', 'campo_table')
                     ->addSelect('pricetype_rango.ganancia');
-            }])->whereRangoBetween('desde', $this->pricebuy)->first();
+            }])->whereRangoBetween($this->pricebuy)->first();
 
             foreach ($rango->pricetypes as $lista) {
                 $precio_venta = getPriceDinamic(
@@ -170,7 +170,7 @@ trait CalcularPrecioVenta
             $type = null;
             foreach ($promocion->itempromos as $itempromo) {
                 if ($almacen_id) {
-                    $stockCombo = formatDecimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
+                    $stockCombo = decimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
                 } else {
                     $stockCombo = null;
                 }
@@ -180,7 +180,7 @@ trait CalcularPrecioVenta
 
                 if ($itempromo->isDescuento()) {
                     $price = getPriceDscto($price, $itempromo->descuento, $pricetype);
-                    $type = formatDecimalOrInteger($itempromo->descuento) . '% DSCT';
+                    $type = decimalOrInteger($itempromo->descuento) . '% DSCT';
                 }
                 if ($itempromo->isGratuito()) {
                     $price = $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy;

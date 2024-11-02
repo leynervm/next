@@ -22,7 +22,7 @@
     <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
 
     <!-- Scripts -->
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
 </head>
 
 <body class="{{ config('app.theme') }}">

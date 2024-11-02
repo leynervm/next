@@ -262,6 +262,32 @@
         //permitir hacer enter en input
         return charCode == 13 ? true : false;
     }
+
+    function validarPasteNumero(event, maxlenth = 0) {
+        const clipboardData = event.clipboardData || window.clipboardData;
+        const pastedData = clipboardData.getData('Text');
+        const onlyNumbers = pastedData.replace(/[^0-9]/g, '');
+        event.preventDefault();
+
+        const input = event.target;
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+
+        if (start !== end) {
+            input.value = input.value.substring(0, start) + onlyNumbers + input.value.substring(end);
+        } else {
+            input.value += onlyNumbers;
+        }
+
+        if (input.value.length > input.maxLength) {
+            input.value = input.value.substring(0, input.maxLength);
+        }
+
+        const newLength = (start !== end) ? start + onlyNumbers.length : input.value.length;
+        input.setSelectionRange(newLength, newLength);
+        input.dispatchEvent(new Event("input"));
+        return true;
+    }
 </script>
 
 </html>

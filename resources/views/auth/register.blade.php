@@ -11,8 +11,9 @@
 
             <div>
                 <x-label for="document" value="{{ __('Document') }}" />
-                <x-input id="document" class="block mt-1 w-full" type="number" name="document" :value="old('document')" required
-                    onkeypress="return validarNumero(event, 11)" />
+                <x-input id="document" class="block mt-1 w-full input-number-none" type="number" name="document"
+                    :value="old('document')" required onkeypress="return validarNumero(event, 11)"
+                    onpaste="return validarPasteNumero(event, 11)" />
             </div>
 
             <div class="mt-4">
@@ -72,8 +73,7 @@
                 </a>
 
                 <x-button class="ml-4" type="submit">
-                    {{ __('Register') }}
-                </x-button>
+                    {{ __('Register') }}</x-button>
             </div>
         </form>
     </x-jet-authentication-card>

@@ -2,12 +2,18 @@
 
 namespace Modules\Ventas\Http\Controllers;
 
+use App\Models\Almacen;
+use App\Models\Category;
 use App\Models\Concept;
+use App\Models\Marca;
+use App\Models\Methodpayment;
 use App\Models\Moneda;
 use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Models\Pricetype;
 use App\Models\Producto;
+use App\Models\Typepayment;
+use App\Models\Ubigeo;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
 use Illuminate\Http\Request;
 use Modules\Ventas\Entities\Venta;
@@ -40,15 +46,16 @@ class VentaController extends Controller
         $empresa = mi_empresa();
         $moneda = Moneda::default()->first();
         $concept = Concept::ventas()->first();
-
-        $seriecomprobante = auth()->user()->sucursal->seriecomprobantes()
-            ->withWhereHas('typecomprobante', function ($query) {
-                if (!Module::isEnabled('Facturacion')) {
-                    $query->default();
-                }
-                $query->whereNotIn('code', ['07', '09', '13'])->orderBy('code', 'asc');
-            })->orderBy('default', 'desc')->first();
-
+        $seriecomprobante = auth()->user()->sucursal->seriecomprobantes()->withTrashed()
+            ->select('seriecomprobantes.*')
+            ->join('typecomprobantes', 'seriecomprobantes.typecomprobante_id', '=', 'typecomprobantes.id')
+            ->when(Module::isDisabled('Facturacion'), function ($query) {
+                $query->whereHas('typecomprobante', function ($q) {
+                    $q->default();
+                });
+            })->whereNotIn('typecomprobantes.code', ['07', '09', '13'])
+            ->orderBy('seriecomprobantes.default', 'desc')->orderBy('typecomprobantes.code', 'asc')
+            ->orderBy('seriecomprobantes.default', 'desc')->with('typecomprobante')->first();
 
         $pricetype = null;
         if ($empresa->usarlista()) {
@@ -110,5 +117,173 @@ class VentaController extends Controller
         $heightPage = number_format($heightHeader + $heightBody + $heightFooter, 2, '.', '');
         $pdf =  PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('ventas::pdf.ticket', compact('venta'));
         return $pdf->stream();
+    }
+
+
+    public function data(Request $request)
+    {
+        $search = $request->input('search');
+        $products = Producto::query()->select('id', 'name', 'slug');
+
+        if (strlen(trim($search)) < 2) {
+            $products->visibles()->orderBy('name', 'asc');
+        } else {
+            if (trim($search) !== '') {
+                $searchTerms = explode(' ', $search);
+                $products->where(function ($query) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $query->orWhere('name', 'ilike', '%' . $term . '%');
+                    }
+                })->visibles()->orderBy('name', 'asc')->limit(10);
+            }
+        }
+
+        $products = $products->get()->map(function ($producto) {
+            return [
+                'value' => $producto->id,
+                'text' => $producto->name,
+            ];
+        });
+
+        return response()->json($products);
+    }
+
+    public function marcas()
+    {
+
+        $marcas = Marca::whereHas('productos')->orderBy('name', 'asc');
+        $marcas = $marcas->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' => $item->name,
+            ];
+        });
+
+        return response()->json($marcas);
+    }
+
+    public function categories()
+    {
+
+        $categories = Category::whereHas('productos')->orderBy('orden', 'asc');
+        $categories = $categories->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' => $item->name,
+            ];
+        });
+
+        return response()->json($categories);
+    }
+
+    public function subcategories(Request $request)
+    {
+
+        $subcategories = [];
+        $category_id = $request->input('category_id');
+
+        if (!empty($category_id)) {
+            $subcategories = Category::with(['subcategories' => function ($query) {
+                $query->whereHas('productos')->orderBy('orden', 'asc');
+            }])->find($category_id)->subcategories;
+            $subcategories = $subcategories->map(function ($item) use ($category_id) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->name,
+                ];
+            });
+        }
+
+        return response()->json($subcategories);
+    }
+
+    public function ubigeos()
+    {
+        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')
+            ->orderBy('distrito', 'asc');
+        $ubigeos = $ubigeos->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' =>  "$item->region / $item->provincia / $item->distrito / $item->ubigeo_reniec",
+            ];
+        });
+
+        return response()->json($ubigeos);
+    }
+
+    public function almacens()
+    {
+        $almacens = Almacen::whereHas('productos')->orderBy('name', 'asc');
+        $almacens = $almacens->get()->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' =>  $item->name,
+            ];
+        });
+
+        return response()->json($almacens);
+    }
+
+    public function pricetypes()
+    {
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
+        $pricetypes = $pricetypes->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' =>  $item->name,
+            ];
+        });
+
+        return response()->json($pricetypes);
+    }
+
+    public function typepayments()
+    {
+        $typepayments = Typepayment::activos()->orderBy('default', 'desc')->get();
+        $typepayments = $typepayments->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' =>  $item->name,
+                'paycuotas' => $item->isCredito()
+            ];
+        });
+
+        return response()->json($typepayments);
+    }
+
+    public function methodpayments()
+    {
+        $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
+        $methodpayments = $methodpayments->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'text' =>  $item->name,
+                'transferencia' => $item->isTransferencia()
+            ];
+        });
+
+        return response()->json($methodpayments);
+    }
+
+    public function seriecomprobantes()
+    {
+        $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()->withTrashed()
+            ->select('seriecomprobantes.*')->join('typecomprobantes', 'seriecomprobantes.typecomprobante_id', '=', 'typecomprobantes.id')
+            ->when(Module::isDisabled('Facturacion'), function ($query) {
+                $query->whereHas('typecomprobante', function ($q) {
+                    $q->default();
+                });
+            })->whereNotIn('typecomprobantes.code', ['07', '09', '13'])
+            ->orderBy('seriecomprobantes.default', 'desc')->orderBy('typecomprobantes.code', 'asc')
+            ->orderBy('seriecomprobantes.default', 'desc')->with('typecomprobante')->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->typecomprobante->name,
+                    'code' => $item->typecomprobante->code,
+                    'sunat' =>  $item->typecomprobante->isSunat(),
+                ];
+            });
+
+        return response()->json($typecomprobantes);
     }
 }

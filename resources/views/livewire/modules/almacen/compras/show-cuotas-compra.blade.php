@@ -20,7 +20,7 @@
                             <div class="w-full">
                                 <p class="text-colorminicard text-xl font-semibold text-center">
                                     <small class="text-[10px] font-medium">{{ $compra->moneda->simbolo }}</small>
-                                    {{ formatDecimalOrInteger($item->amount, 2, ', ') }}
+                                    {{ decimalOrInteger($item->amount, 2, ', ') }}
                                     <small class="text-[10px] font-medium">{{ $compra->moneda->currency }}</small>
                                 </p>
 

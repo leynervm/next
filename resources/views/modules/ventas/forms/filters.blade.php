@@ -31,18 +31,6 @@
             {{-- @endif --}}
         @endif
 
-        @if (count($sucursal->almacens) > 1)
-            <div class="w-full">
-                <x-label value="Almacén :" />
-                <div id="parentalmacen_id" class="relative">
-                    <x-select class="block w-full" id="almacen_id" x-ref="selecta">
-                    </x-select>
-                    <x-icon-select />
-                </div>
-                <x-jet-input-error for="almacen_id" />
-            </div>
-        @endif
-
         <div class="w-full">
             <x-label value="Marca :" />
             <div id="parentsearchmarca" class="relative">
@@ -94,7 +82,6 @@
                 subcategories: [],
                 subcategories: [],
                 pricetypes: [],
-                almacens: [],
 
                 init() {
                     this.fetchMultipleDatos();
@@ -102,24 +89,20 @@
                 },
                 async fetchMultipleDatos() {
                     try {
-                        let urlmarcas = "{{ route('api.ventas.create.marcas') }}";
-                        let urlcategorias = "{{ route('api.ventas.create.categories') }}";
-                        let urlpricetypes = "{{ route('api.ventas.create.pricetypes') }}";
-                        let urlalmacens = "{{ route('api.ventas.create.almacens') }}";
+                        let urlmarcas = "{{ route('admin.ventas.marcas.list') }}";
+                        let urlcategorias = "{{ route('admin.ventas.categories.list') }}";
+                        let urlpricetypes = "{{ route('admin.ventas.pricetypes.list') }}";
 
-                        const [marcas, categories, pricetypes, almacens] = await Promise.all([
+                        const [marcas, categories, pricetypes] = await Promise.all([
                             fetchAsyncDatos(urlmarcas),
                             fetchAsyncDatos(urlcategorias),
                             fetchAsyncDatos(urlpricetypes),
-                            fetchAsyncDatos(urlalmacens),
                         ]);
 
                         this.marcas = marcas;
                         this.categories = categories;
                         this.pricetypes = pricetypes;
-                        this.almacens = almacens;
 
-                        this.select2Almacen()
                         this.select2Pricetype()
                         this.select2Marca()
                         this.select2Category()
@@ -129,7 +112,7 @@
                     }
                 },
                 async obtenerDatos() {
-                    // const subcategories = await fetchAsyncDatos("{{ route('api.ventas.create.subcategories') }}", {
+                    // const subcategories = await fetchAsyncDatos("{{ route('admin.ventas.subcategories.list') }}", {
                     //     category_id: this.searchcategory
                     // });
                     // if (subcategories) {
@@ -138,7 +121,7 @@
                     // this.selectSubcategory()
                 },
                 async obtenerSubcategorias(category_id = null) {
-                    const subcategories = await fetchAsyncDatos("{{ route('api.ventas.create.subcategories') }}", {
+                    const subcategories = await fetchAsyncDatos("{{ route('admin.ventas.subcategories.list') }}", {
                         category_id: category_id
                     });
                     if (subcategories) {
@@ -222,30 +205,6 @@
                             data: this.subcategories,
                             cache: true
                         }).val(this.searchsubcategory).trigger('change');
-                    });
-                },
-                select2Almacen() {
-                    this.selectA = $(this.$refs.selecta).select2({
-                        data: this.almacens
-                    });
-                    this.selectA.val(this.almacen_id).trigger("change");
-                    this.selectA.on("select2:select", (event) => {
-                        // this.almacen_id = event.target.value;
-                        this.$wire.set('almacen_id', event.target.value, true)
-                        this.$wire.$refresh()
-                    }).on('select2:open', function(e) {
-                        const evt = "scroll.select2";
-                        $(e.target).parents().off(evt);
-                        $(window).off(evt);
-                    });
-                    this.$watch("almacen_id", (value) => {
-                        this.selectA.val(value).trigger("change");
-                    });
-
-                    Livewire.hook('message.processed', () => {
-                        this.selectA.select2({
-                            data: this.almacens
-                        }).val(this.almacen_id).trigger('change');
                     });
                 },
                 select2Pricetype() {

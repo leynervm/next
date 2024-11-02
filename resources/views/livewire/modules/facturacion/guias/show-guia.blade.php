@@ -509,7 +509,7 @@
                             <x-card-producto :name="$item->producto->name" :image="$item->producto->getImageURL()" :almacen="$item->almacen->name" :class="$class">
 
                                 <p class="text-center text-colorlabel text-xl">
-                                    {{ formatDecimalOrInteger($item->cantidad) }}
+                                    {{ decimalOrInteger($item->cantidad) }}
                                     <small class="text-[10px]">
                                         {{ $item->producto->unit->name }}</small>
                                 </p>

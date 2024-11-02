@@ -1,7 +1,9 @@
-<div x-data="createproducto">
+<div x-data="createproducto" x-on:confirmsave.window ="confirmsave">
     <div wire:loading.flex class="loading-overlay hidden fixed">
         <x-loading-next />
     </div>
+
+    {{ print_r($errors->all()) }}
 
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
@@ -466,11 +468,28 @@
                 viewdetalle: @entangle('viewdetalle').defer,
                 // descripcionproducto: @entangle('descripcionproducto').defer,
 
-                init() {
-
-                },
+                init() {},
+                confirmsave() {
+                    swal.fire({
+                        title: "YA EXISTE UN PRODUCTO CON EL MISMO MODELO Y MARCA",
+                        text: null,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Continuar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.save(true).then(() => {}).catch(error => {
+                                console.error('Error al ejecutar la función:', error);
+                            });
+                        }
+                    })
+                }
             }));
         })
+
 
         function selectUnit() {
             this.selectM = $(this.$refs.selectunit).select2();

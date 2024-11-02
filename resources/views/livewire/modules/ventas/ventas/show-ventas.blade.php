@@ -67,7 +67,7 @@
     @endcan
 
     @if ($ventas->hasPages())
-        <div class="pt-3 pb-1">
+        <div class="pt-3 pb-1 flex flex-col justify-end items-center sm:items-end">
             {{ $ventas->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
@@ -114,6 +114,10 @@
                         COMPROBANTE</th>
                     <th scope="col" class="p-2 font-medium text-center">
                         SUCURSAL / USUARIO</th>
+                    @can('admin.ventas.delete')
+                        <th scope="col" class="p-2 font-medium">
+                            OPCIONES</th>
+                    @endcan
                 </tr>
             </x-slot>
 
@@ -188,25 +192,29 @@
                             </div>
                         </td>
                         <td class="p-2 text-center align-middle">
-                            @if ($item->typepayment->isCredito())
-                                @if (number_format($item->cuotas()->whereHas('cajamovimientos')->sum('amount'), 2, '.', '') ==
-                                        number_format($item->cuotas()->sum('amount'), 2, '.', ''))
-                                    <x-span-text text="PAGADO" class="leading-3" type="green" />
+                            @if (!$item->trashed())
+                                @if ($item->typepayment->isCredito())
+                                    @if (number_format($item->cuotas()->whereHas('cajamovimientos')->sum('amount'), 2, '.', '') ==
+                                            number_format($item->cuotas()->sum('amount'), 2, '.', ''))
+                                        <x-span-text text="PAGADO" class="leading-3" type="green" />
+                                    @else
+                                        <x-span-text text="PENDIENTE" class="leading-3" type="red" />
+                                    @endif
                                 @else
-                                    <x-span-text text="PENDIENTE" class="leading-3" type="red" />
-                                @endif
-                            @else
-                                @if (number_format($item->cajamovimientos()->sum('amount') ?? 0, 2, '.', '') == number_format($item->total, 2, '.', ''))
-                                    <x-span-text text="PAGADO" class="leading-3" type="green" />
-                                @else
-                                    <x-span-text text="PENDIENTE" class="leading-3" type="red" />
+                                    @if (number_format($item->cajamovimientos()->sum('amount') ?? 0, 2, '.', '') == number_format($item->total, 2, '.', ''))
+                                        <x-span-text text="PAGADO" class="leading-3" type="green" />
+                                    @else
+                                        <x-span-text text="PENDIENTE" class="leading-3" type="red" />
+                                    @endif
                                 @endif
                             @endif
                         </td>
                         <td class="p-2 text-center align-middle">
-                            @if (Module::isEnabled('Facturacion'))
-                                @if ($item->comprobante)
-                                    <p class="">{{ $item->comprobante->seriecompleta }}</p>
+                            @if ($item->seriecomprobante->typecomprobante->isSunat())
+                                @if (Module::isEnabled('Facturacion'))
+                                    @if ($item->comprobante)
+                                        <p class="">{{ $item->comprobante->seriecompleta }}</p>
+                                    @endif
                                 @endif
                             @endif
                         </td>
@@ -217,6 +225,10 @@
                             @endif
                             <p class="text-[10px] text-colorsubtitleform">USUARIO : {{ $item->user->name }}</p>
                         </td>
+                        <td class="p-2 text-center">
+                            <x-button-delete onclick="confirmDelete({{ $item }})"
+                                wire:loading.attr="disabled" />
+                        </td>
                     </tr>
                 @endforeach
             </x-slot>
@@ -226,6 +238,24 @@
     @endif
 
     <script>
+        function confirmDelete(venta) {
+            swal.fire({
+                title: 'Desea anular venta con serie ' + venta.seriecompleta + ' ?',
+                text: "Se eliminará un registro de la base de datos, incluyendo sus items del registro.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0FB9B9',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    @this.delete(venta.id);
+                }
+            })
+        }
+
+
         function select2SucursalAlpine() {
             this.selectS = $(this.$refs.selects).select2();
             this.selectS.val(this.searchsucursal).trigger("change");

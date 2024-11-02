@@ -26,13 +26,23 @@ class CreateNewUser implements CreatesNewUsers
     public function create(array $input)
     {
 
+        $messages = [
+            // 'document.unique' => 'El documento ingresado ya está registrado',
+            // 'name.required' => 'Por favor ingresa tu nombre.',
+            // 'email.required' => 'Por favor ingresa tu correo electrónico.',
+            // 'email.email' => 'El correo electrónico no es válido.',
+            // 'password.required' => 'Por favor ingresa una contraseña.',
+            // 'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            // 'password.confirmed' => 'La confirmación de contraseña no coincide.',
+        ];
+
         Validator::make($input, [
             'document' => [
                 'required',
                 'numeric',
                 'regex:/^\d{8}(?:\d{3})?$/',
                 new ValidateDocument(),
-                new CampoUnique('users', 'document', null, true)
+                new CampoUnique('users', 'document', null, true, null, null, 'El documento ingresado ya está registrado.')
             ],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users', new CampoUnique('users', 'email', null, true)],

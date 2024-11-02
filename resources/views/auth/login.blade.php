@@ -62,8 +62,10 @@
                         @csrf
                         <h1 class="title-login">{{ __('Create Account') }}</h1>
 
-                        <input type="number" id="document" name="document" placeholder="DNI / RUC"
-                            value="{{ old('document') }}" required onkeypress="return validarNumero(event, 11)" />
+                        <input type="number" class="block w-full input-number-none" id="document" name="document"
+                            placeholder="DNI / RUC" value="{{ old('document') }}" required
+                            onkeypress="return validarNumero(event, 11)"
+                            onpaste="return validarPasteNumero(event, 11)" />
                         <x-jet-input-error for="document" class="w-full" />
 
                         <input type="text" id="name" name="name" placeholder="Nombres"
@@ -251,7 +253,7 @@
                 <div class="toggle">
                     @if ($empresa && Module::isEnabled('Marketplace'))
                         <div class="toggle-panel toggle-left">
-                            <h1>{{ __('Bienvenido Nuevamente') }}!</h1>
+                            <h1>{{ __('Welcome') }}!</h1>
                             <h5>{{ __('Enter your Personal details to use all of site features') }}</h5>
                             <x-button-web class="btn-white" :text="__('Log in')" id="login"
                                 @click="setActiveForm('login')" />

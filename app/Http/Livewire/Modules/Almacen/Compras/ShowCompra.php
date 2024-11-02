@@ -355,7 +355,7 @@ class ShowCompra extends Component
         $combined = $compraitem->producto->almacens->map(function ($item) use ($arrayalmacens) {
             $almacencompra = collect($arrayalmacens)->firstWhere('almacen_id', $item['id']);
             if ($almacencompra) {
-                $almacencompra['cantidad'] = formatDecimalOrInteger($almacencompra['cantidad']);
+                $almacencompra['cantidad'] = decimalOrInteger($almacencompra['cantidad']);
                 $almacencompra['series'] = $almacencompra['series'];
             } else {
                 $almacencompra['cantidad'] = 0;

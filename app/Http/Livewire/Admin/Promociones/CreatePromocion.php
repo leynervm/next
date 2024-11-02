@@ -114,7 +114,7 @@ class CreatePromocion extends Component
     {
         $this->reset(['producto', 'pricebuy']);
         if (trim($value) !== '') {
-            $this->producto = Producto::query()->select('id', 'name', 'pricesale', 'unit_id', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+            $this->producto = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'unit_id', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
                 ->with(['almacens', 'unit'])->addSelect(['image' => function ($query) {
                     $query->select('url')->from('images')->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
@@ -154,7 +154,7 @@ class CreatePromocion extends Component
         $this->authorize('admin.promociones.create');
 
         if (!empty($this->producto_id)) {
-            $this->limitstock =  formatDecimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));
+            $this->limitstock =  decimalOrInteger(Producto::find($this->producto_id)->almacens()->sum('cantidad'));
             $this->limit = $this->agotarstock ? $this->limitstock : $this->limit;
         }
 
@@ -167,27 +167,10 @@ class CreatePromocion extends Component
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
             ],
             'pricebuy' => ['required', 'numeric', 'decimal:0,4'],
-            'limit' => [
-                'nullable',
-                Rule::requiredIf(!$this->agotarstock),
-                'numeric',
-                'min:1',
-                'max:' . $this->limitstock,
-                'decimal:0,2'
-            ],
+            'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'],
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],
-            'startdate' => [
-                'nullable',
-                'date',
-                'after_or_equal:' . now('America/Lima')->format('Y-m-d')
-            ],
-            'expiredate' => [
-                'nullable',
-                Rule::requiredIf(!empty($this->startdate)),
-                'date',
-                'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
-                'after_or_equal:startdate'
-            ],
+            'startdate' => ['nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')],
+            'expiredate' => ['nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'), 'after_or_equal:startdate'],
             'type' => ['required', 'integer', 'min:0', 'max:2'],
             'descuento' => ['nullable', 'required_if:type,' . Promocion::DESCUENTO, 'numeric', 'min:0', 'gt:0', 'max:100', 'decimal:0,2'],
         ], ['descuento.required_if' => 'El campo :attribute es obligatorio cuando la promoción es un descuento.'],);
@@ -211,8 +194,8 @@ class CreatePromocion extends Component
         } else {
             $promocion = Promocion::create($promocion);
             $promocion->producto->load(['promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit')->addSelect(['image' => function ($q) {
+                $query->with(['itempromos.producto' => function ($subQuery) {
+                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
@@ -246,8 +229,8 @@ class CreatePromocion extends Component
             }
             DB::commit();
             $promocion->producto->load(['promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($query) {
-                    $query->with('unit')->addSelect(['image' => function ($q) {
+                $query->with(['itempromos.producto' => function ($subQuery) {
+                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
@@ -255,6 +238,7 @@ class CreatePromocion extends Component
                     }]);
                 }])->availables()->disponibles()->take(1);
             }]);
+            // dd($promocion->producto);
             $promocion->producto->assignPrice();
             $this->emitTo('admin.promociones.show-promociones', 'render');
             $this->resetValidation();

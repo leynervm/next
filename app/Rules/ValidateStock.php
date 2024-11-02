@@ -33,12 +33,17 @@ class ValidateStock implements Rule
     public function passes($attribute, $value)
     {
 
+
+        if (empty($this->almacen_id)) {
+            $this->mensaje = "El campo almacen es obligatorio.";
+            return;
+        }
         $producto = Producto::with(['unit', 'almacens'])->find($this->producto_id);
-        $query = $producto->almacens()->find($this->almacen_id)->pivot->cantidad;
+        $query = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
 
         $this->mensaje = $this->cantidad > 0
-            ? "Cantidad supera al stock disponible [" . formatDecimalOrInteger($query) . " " . $producto->unit->name. "]."
-            : "Stock no disponible en almacén seleccionado [" . formatDecimalOrInteger($query) . " " . $producto->unit->name. "].";
+            ? "Cantidad supera al stock disponible [" . decimalOrInteger($query) . " " . $producto->unit->name . "]."
+            : "Stock no disponible en almacén seleccionado [" . decimalOrInteger($query) . " " . $producto->unit->name . "].";
         $query = $this->cantidad > 0 ? $query - $this->cantidad : $query;
         return $this->cantidad > 0 ? $query >= 0 : $query > 0;
 

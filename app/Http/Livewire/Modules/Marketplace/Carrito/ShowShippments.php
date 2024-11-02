@@ -2,11 +2,9 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
-use App\Models\Almacen;
 use App\Models\Client;
 use App\Models\Direccion;
 use App\Models\Moneda;
-use App\Models\Pricetype;
 use App\Models\Promocion;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
@@ -20,7 +18,6 @@ use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
-use Modules\Marketplace\Entities\Trackingstate;
 
 class ShowShippments extends Component
 {
@@ -36,6 +33,7 @@ class ShowShippments extends Component
         'telefono' => null
     ];
 
+    public $pricetype;
     public $lugar_id, $direccion, $referencia, $shipmenttype,
         $shipmenttype_id, $local_id, $daterecojo, $direccionenvio_id, $g_recaptcha_response;
     public $terms;
@@ -87,9 +85,10 @@ class ShowShippments extends Component
         ];
     }
 
-    public function mount()
+    public function mount($pricetype = null)
     {
 
+        $this->pricetype = $pricetype;
         $this->shipmenttype = new Shipmenttype();
         // $this->phoneuser = auth()->user()->telephones()
         //     ->orderBy('default', 'desc')->orderBy('id', 'desc')->first();
@@ -156,6 +155,23 @@ class ShowShippments extends Component
                         return false;
                     }
                 }
+
+                if ($item->model) {
+                    $producto = $item->model;
+                    $producto->loadCount(['almacens as stock' => function ($query) {
+                        $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+                    }]);
+
+                    if ($producto->stock <= 0 || $producto->stock < $item->qty) {
+                        $mensaje = response()->json([
+                            'title' => 'LÍMITE DE STOCK EN PRODUCTO ALCANZADO !',
+                            'text' => null,
+                            'icon' => 'warning'
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+                }
             }
             if (auth()->check()) {
                 Cart::instance('shopping')->store(auth()->id());
@@ -174,6 +190,7 @@ class ShowShippments extends Component
         $this->cart = Cart::instance('shopping')->content()->toArray();
         $monedascart_id = Arr::pluck($this->cart, 'options.moneda_id');
         $diferencia = array_diff($monedascart_id, [$this->moneda->id ?? 0]);
+        // dd($this->cart);
         if (count($diferencia) > 0) {
             $mensaje = response()->json([
                 'title' => 'EXISTEN PRODUCTOS EN EL CARRITO CON EL PRECIO DE UNA MONEDA DIFERENTE A LA COMPRA !',

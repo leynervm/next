@@ -34,7 +34,7 @@
                         d="M5 11.917 9.724 16.5 19 7.5"></path>
                 </svg>
                 <h1 class="text-2xl font-semibold text-primary">
-                    Gracias por su compra !</h1>
+                    ! Gracias por su compra !</h1>
             </div>
         @endif
 
@@ -267,7 +267,7 @@
                                         <div class="flex items-end sm:items-center sm:w-60 sm:flex-shrink-0 ">
                                             <span
                                                 class="text-left p-2 text-xs sm:text-end font-semibold whitespace-nowrap">
-                                                x{{ formatDecimalOrInteger($item->cantidad) }}
+                                                x{{ decimalOrInteger($item->cantidad) }}
                                                 {{ $item->producto->unit->name }}
                                             </span>
 
@@ -298,7 +298,7 @@
                 <h3 class="text-xl font-semibold text-colorsubtitleform">Tracking</h3>
 
                 <ol class="relative ms-3 border-s border-borderminicard">
-                    @foreach ($order->trackings()->orderBy('date', 'desc')->get() as $item)
+                    @foreach ($order->trackings as $item)
                         <li class="mb-10 ms-6 text-colorlabel">
                             <span
                                 class="absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full bg-next-500 ring-8 ring-body">

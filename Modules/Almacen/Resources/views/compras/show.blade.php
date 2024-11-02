@@ -49,7 +49,7 @@
         <livewire:modules.almacen.compras.show-compra :compra="$compra" />
 
         @if ($compra->typepayment->isCredito())
-            <livewire:modules.almacen.compras.show-cuotas-compra :compra="$compra" />
+            <livewire:modules.almacen.compras.show-cuotas-compra :compra="$compra" :pricetype="$pricetype" />
         @endif
     </div>
 </x-admin-layout>

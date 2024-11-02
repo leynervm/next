@@ -26,6 +26,18 @@ Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_sessi
         if (Module::isEnabled('Facturacion')) {
             Route::get('/cobranzas', [VentaController::class, 'cobranzas'])->name('admin.ventas.cobranzas');
         }
+
+
+        // Route::post('data', [ApiController::class, 'data'])->name('api.data');
+        Route::post('/seriecomprobantes/list', [VentaController::class, 'seriecomprobantes'])->name('admin.ventas.seriecomprobantes.list');
+        Route::post('/marcas/list', [VentaController::class, 'marcas'])->name('admin.ventas.marcas.list');
+        Route::post('/categories/list', [VentaController::class, 'categories'])->name('admin.ventas.categories.list');
+        Route::post('/subcategories/list', [VentaController::class, 'subcategories'])->name('admin.ventas.subcategories.list');
+        Route::post('/ubigeos/list', [VentaController::class, 'ubigeos'])->name('admin.ventas.ubigeos.list');
+        Route::post('/pricetypes/list', [VentaController::class, 'pricetypes'])->name('admin.ventas.pricetypes.list');
+        Route::post('/almacens/list', [VentaController::class, 'almacens'])->name('admin.ventas.almacens.list');
+        Route::post('/typepayments/list', [VentaController::class, 'typepayments'])->name('admin.ventas.typepayments.list');
+        Route::post('/methodpayments/list', [VentaController::class, 'methodpayments'])->name('admin.ventas.methodpayments.list');
     });
 
     Route::get('/promociones', [HomeController::class, 'promociones'])->name('admin.promociones')->middleware(['verifypricetype']);

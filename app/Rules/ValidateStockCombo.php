@@ -36,7 +36,7 @@ class ValidateStockCombo implements Rule
 
         if (count($comboitems) > 0) {
             foreach ($comboitems as $item) {
-                $stocksecundario = formatDecimalOrInteger(Producto::find($item->producto_id)->almacens()->sum('cantidad'));
+                $stocksecundario = decimalOrInteger(Producto::find($item->producto_id)->almacens()->sum('cantidad'));
                 if ($this->limit > $stocksecundario) {
                     $this->mensaje = 'Stock del producto ' . $item->name . ' no disponible.';
                     return false;
@@ -55,7 +55,7 @@ class ValidateStockCombo implements Rule
         }
 
 
-        $stockprincipal = formatDecimalOrInteger(Producto::find($this->principal_id)->almacens()->sum('cantidad'));
+        $stockprincipal = decimalOrInteger(Producto::find($this->principal_id)->almacens()->sum('cantidad'));
         if ($this->limit > 0) {
             if ($this->limit > $stockprincipal) {
                 $this->mensaje = 'Stock del producto principal no disponible.';
