@@ -1,8 +1,7 @@
 <x-app-layout>
 
     <div class="contenedor w-full py-5">
-
-        <section class="">
+        {{-- <section class="">
             <h1 class="text-2xl font-semibold text-center text-primary capitalize lg:text-3xl">
                 Nuestro equipo de trabajo</h1>
 
@@ -117,7 +116,7 @@
                         Content Writer</p>
                 </div>
             </div>
-        </section>
+        </section> --}}
     </div>
 
     <script>

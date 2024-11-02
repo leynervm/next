@@ -18,7 +18,7 @@
     @apply mt-[108px] xl:mt-24;
 }
 .content {
-    @apply mt-[108px] xl:mt-24;
+    @apply mt-[108px] /* xl:mt-24 */;
 }
 .content-home {
     @apply -mt-[108px] xl:-mt-24;

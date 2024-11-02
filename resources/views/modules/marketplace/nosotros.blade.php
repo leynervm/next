@@ -132,7 +132,7 @@
         </section>
 
 
-        <section x-data="{
+        {{-- <section x-data="{
             openFaq1: false,
             openFaq2: false,
             openFaq3: false,
@@ -322,7 +322,7 @@
                     </defs>
                 </svg>
             </div>
-        </section>
+        </section> --}}
 
     </div>
 </x-app-layout>

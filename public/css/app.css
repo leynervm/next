@@ -1128,12 +1128,6 @@ input[type=number].input-number-none {
 .content {
     margin-top: 108px;
 }
-@media (min-width: 1280px) {
-
-    .content {
-        margin-top: 6rem;
-    }
-}
 .content-home {
     margin-top: -108px;
 }

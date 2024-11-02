@@ -31,12 +31,12 @@
                         LIBRO DE RECLAMACIONES
                     </a>
                 </li>
-                <li>
+                {{-- <li>
                     <a class="item-footer text-[10px]" href="{{ route('nosotros') }}">NOSOTROS</a>
-                </li>
-                <li>
+                </li> --}}
+                {{-- <li>
                     <a class="item-footer text-[10px]" href="{{ route('centroautorizado') }}">CENTRO AUTORIZADO</a>
-                </li>
+                </li> --}}
                 <li>
                     <a class="item-footer text-[10px]" href="{{ route('contactanos') }}">CONTÁCTANOS</a>
                 </li>
@@ -47,12 +47,12 @@
         </div>
         <div>
             <ul>
-                <li>
+                {{-- <li>
                     <a class="item-footer text-[10px]" href="{{ route('trabaja') }}">TRABAJA CON NOSOTROS</a>
-                </li>
-                <li>
+                </li> --}}
+                {{-- <li>
                     <a class="item-footer text-[10px]" href="{{ route('terms.show') }}">TÉRMINOS Y CONDICIONES</a>
-                </li>
+                </li> --}}
                 <li>
                     <a class="item-footer text-[10px]" href="{{ route('policy.show') }}">POLÍTICAS DE PRIVACIDAD</a>
                 </li>

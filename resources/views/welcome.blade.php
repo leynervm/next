@@ -56,7 +56,7 @@
             </section>
         @endif
 
-        <h1 class="text-center font-semibold text-xl text-colorsubtitleform">
+        {{-- <h1 class="text-center font-semibold text-xl text-colorsubtitleform">
             Nuestros Servicios</h1>
         <section
             class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
@@ -120,7 +120,7 @@
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     ORDEN DE TRABAJO</h1>
             </a>
-        </section>
+        </section> --}}
 
         <section class="w-full">
             <a href="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}"
