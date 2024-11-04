@@ -24,30 +24,13 @@ class CreateSucursal extends Component
     protected function rules()
     {
         return [
-            'name' => [
-                'required', 'min:3', 'max:255',
-                new CampoUnique('sucursals', 'name', null, true),
-            ],
-            'direccion' => [
-                'required', 'string', 'min:3', 'max:255'
-            ],
-            'ubigeo_id' => [
-                'required', 'integer', 'min:1', 'exists:ubigeos,id',
-            ],
-            'codeanexo' => [
-                'required', 'string', 'min:4', 'max:4',
-                new CampoUnique('sucursals', 'codeanexo', null, true),
-            ],
-            'typesucursal_id' => [
-                'required', 'integer', 'min:1', 'exists:typesucursals,id',
-            ],
-            'default' => [
-                'required', 'integer', 'min:0', 'max:1',
-                new DefaultValue('sucursals', 'default', null, true)
-            ],
-            'empresa.id' => [
-                'required', 'integer', 'min:1', 'exists:empresas,id'
-            ]
+            'name' => ['required', 'min:3', 'max:255', new CampoUnique('sucursals', 'name', null, true),],
+            'direccion' => ['required', 'string', 'min:3', 'max:255'],
+            'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id',],
+            'codeanexo' => ['required', 'string', 'min:4', 'max:4', new CampoUnique('sucursals', 'codeanexo', null, true),],
+            'typesucursal_id' => ['nullable', 'integer', 'min:1', 'exists:typesucursals,id',],
+            'default' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', null, true)],
+            'empresa.id' => ['required', 'integer', 'min:1', 'exists:empresas,id']
         ];
     }
 
@@ -58,9 +41,10 @@ class CreateSucursal extends Component
 
     public function render()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
-        return view('livewire.admin.sucursales.create-sucursal', compact('ubigeos', 'typesucursals'));
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        // $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
+        return view('livewire.admin.sucursales.create-sucursal', compact('ubigeos'));
     }
 
 
@@ -76,9 +60,14 @@ class CreateSucursal extends Component
     public function save($closemodal = false)
     {
         $this->authorize('admin.administracion.sucursales.create');
-        if (!is_null(mi_empresa()->limitsucursals) && mi_empresa()->sucursals()->withTrashed()->count() >= mi_empresa()->limitsucursals) {
+        $empresa = Empresa::query()->select('id', 'document', 'limitsucursals')
+            ->with(['sucursals' => function ($query) {
+                $query->withTrashed();
+            }])->first();
+
+        if ($empresa->document !== "20538954099" && !is_null($empresa->limitsucursals) && count($empresa->sucursals) >= $empresa->limitsucursals) {
             $mensaje = response()->json([
-                'title' => 'Contáctese con su proveedor de servicio !',
+                'title' => 'CONTÁCTESE CON SU PROVEEDOR DE SERVICIO !',
                 'text' => "Se alcanzó el límite de sucursales permitidos por el sistema, contáctese con su proveedor del servicio."
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);

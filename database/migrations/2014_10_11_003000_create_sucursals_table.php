@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('codeanexo', 4);
             $table->integer('status')->default(0);
             $table->integer('default')->default(0);
-            $table->unsignedTinyInteger('typesucursal_id');
+            $table->unsignedTinyInteger('typesucursal_id')->nullable();
             $table->unsignedSmallInteger('ubigeo_id');
             $table->unsignedTinyInteger('empresa_id');
             $table->foreign('typesucursal_id')->on('typesucursals')->references('id');

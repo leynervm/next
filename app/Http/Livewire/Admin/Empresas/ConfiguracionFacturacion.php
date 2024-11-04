@@ -133,7 +133,6 @@ class ConfiguracionFacturacion extends Component
     public function updatedCert($file)
     {
         try {
-            $url = $file->temporaryUrl();
             $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['cert']);

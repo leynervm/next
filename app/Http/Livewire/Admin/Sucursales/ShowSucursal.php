@@ -21,27 +21,12 @@ class ShowSucursal extends Component
     protected function rules()
     {
         return [
-            'sucursal.name' => [
-                'required', 'min:3', 'max:255',
-                new CampoUnique('sucursals', 'name', $this->sucursal->id, true),
-            ],
-            'sucursal.direccion' => [
-                'required', 'string', 'min:3', 'max:255'
-            ],
-            'sucursal.ubigeo_id' => [
-                'required', 'integer', 'min:1', 'exists:ubigeos,id',
-            ],
-            'sucursal.typesucursal_id' => [
-                'required', 'integer', 'min:1', 'exists:typesucursals,id',
-            ],
-            'sucursal.codeanexo' => [
-                'required', 'string', 'min:4', 'max:4',
-                new CampoUnique('sucursals', 'codeanexo', $this->sucursal->id, true),
-            ],
-            'sucursal.default' => [
-                'required', 'integer', 'min:0', 'max:1',
-                new DefaultValue('sucursals', 'default', $this->sucursal->id, true)
-            ]
+            'sucursal.name' => ['required', 'min:3', 'max:255', new CampoUnique('sucursals', 'name', $this->sucursal->id, true),],
+            'sucursal.direccion' => ['required', 'string', 'min:3', 'max:255'],
+            'sucursal.ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id',],
+            'sucursal.typesucursal_id' => ['nullable', 'integer', 'min:1', 'exists:typesucursals,id',],
+            'sucursal.codeanexo' => ['required', 'string', 'min:4', 'max:4', new CampoUnique('sucursals', 'codeanexo', $this->sucursal->id, true)],
+            'sucursal.default' => ['required', 'integer', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', $this->sucursal->id, true)]
         ];
     }
 
@@ -52,9 +37,10 @@ class ShowSucursal extends Component
 
     public function render()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
-        return view('livewire.admin.sucursales.show-sucursal', compact('ubigeos', 'typesucursals'));
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        // $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
+        return view('livewire.admin.sucursales.show-sucursal', compact('ubigeos'));
     }
 
     public function update()

@@ -148,8 +148,8 @@
                                         data-minimum-results-for-search="3">
                                         <x-slot name="options">
                                             @foreach ($ubigeos as $item)
-                                                <option value="{{ $item->id }}">{{ $item->region }} /
-                                                    {{ $item->provincia }} /
+                                                <option value="{{ $item->id }}">
+                                                    {{ $item->region }} / {{ $item->provincia }} /
                                                     {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                             @endforeach
                                         </x-slot>
@@ -1242,7 +1242,7 @@
                 <div class="w-full">
                     <x-label value="Dirección :" />
                     <x-input class="block w-full" wire:model.defer="direccionsucursal"
-                        placeholder="Dirección de sucursal..." />
+                         />
                     <x-jet-input-error for="direccionsucursal" />
                 </div>
 
@@ -1254,9 +1254,9 @@
                             <x-slot name="options">
                                 @if (count($ubigeos) > 0)
                                     @foreach ($ubigeos as $item)
-                                        <option value="{{ $item->id }}">{{ $item->region }} /
-                                            {{ $item->provincia }}
-                                            / {{ $item->distrito }}</option>
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->region }} / {{ $item->provincia }}
+                                            / {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                     @endforeach
                                 @endif
                             </x-slot>
@@ -1287,7 +1287,7 @@
                 <div class="w-full">
                     <x-label value="Código anexo :" />
                     <x-input class="block w-full input-number-none" type="number" wire:model.defer="codeanexo"
-                        placeholder="Anexo de sucursal..." onkeypress="return validarNumero(event, 4)" />
+                        onkeypress="return validarNumero(event, 4)" />
                     <x-jet-input-error for="codeanexo" />
                 </div>
 

@@ -34,8 +34,9 @@
                             <x-slot name="options">
                                 @if (count($ubigeos))
                                     @foreach ($ubigeos as $item)
-                                        <option value="{{ $item->id }}">{{ $item->region }} / {{ $item->provincia }}
-                                            / {{ $item->distrito }}</option>
+                                        <option value="{{ $item->id }}">
+                                            {{ $item->region }} / {{ $item->provincia }}
+                                            / {{ $item->distrito }} / {{ $item->ubigeo_reniec }}</option>
                                     @endforeach
                                 @endif
                             </x-slot>
@@ -45,7 +46,7 @@
                     <x-jet-input-error for="ubigeo_id" />
                 </div>
 
-                <div class="w-full">
+                {{-- <div class="w-full">
                     <x-label value="Tipo establecimiento :" />
                     <div class="relative" x-data="{ typesucursal_id: @entangle('typesucursal_id').defer }" x-init="typeSucursal">
                         <x-select class="block w-full" x-ref="selecttypesucursal" id="typesucursal_id"
@@ -61,7 +62,7 @@
                         <x-icon-select />
                     </div>
                     <x-jet-input-error for="typesucursal_id" />
-                </div>
+                </div> --}}
 
                 <div class="w-full">
                     <x-label value="Código anexo :" />

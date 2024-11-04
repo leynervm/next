@@ -16,8 +16,8 @@ class TypesucursalSeeder extends Seeder
     public function run()
     {
         Typesucursal::firstOrCreate([
-            'name' => 'Casa Matriz',
             'code' => 'MA',
+            'name' => 'Casa Matriz',
             'descripcion' => 'Lugar donde la empresa centraliza las operaciones realizadas por sus sucursales y/o agencias.',
         ]);
         Typesucursal::firstOrCreate([

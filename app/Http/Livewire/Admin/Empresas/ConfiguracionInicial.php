@@ -82,7 +82,8 @@ class ConfiguracionInicial extends Component
 
     public function render()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
         return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos', 'typesucursals'));
     }
