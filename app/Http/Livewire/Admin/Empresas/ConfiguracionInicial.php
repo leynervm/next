@@ -162,26 +162,9 @@ class ConfiguracionInicial extends Component
                         'string',
                         'regex:/^data:image\/png;base64,([A-Za-z0-9+\/=]+)$/'
                     ],
-                    'alignmark' => [
-                        'nullable',
-                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'string',
-                        'max:25'
-                    ],
-                    'widthmark' => [
-                        'nullable',
-                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'integer',
-                        'min:50',
-                        'max:300'
-                    ],
-                    'heightmark' => [
-                        'nullable',
-                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'integer',
-                        'min:50',
-                        'max:300'
-                    ],
+                    'alignmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'string', 'max:25'],
+                    'widthmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'integer', 'min:50', 'max:300'],
+                    'heightmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'integer', 'min:50', 'max:300'],
                 ],
                 [
                     'markagua.required_if'      => 'El campo :attribute es obligatorio.',
@@ -235,55 +218,19 @@ class ConfiguracionInicial extends Component
             }
         } else {
             $this->validate([
-                'afectacionigv' => [
-                    'required',
-                    'integer',
-                    'min:0',
-                    'max:1'
-                ],
-                'sendmode' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'integer',
-                    'min:0',
-                    'max:1'
-                ],
+                'afectacionigv' => ['required', 'integer', 'min:0', 'max:1'],
+                'sendmode' => ['nullable', Rule::requiredIf(module::isEnabled('Facturacion')), 'integer', 'min:0', 'max:1'],
                 'cert' => [
                     'nullable',
                     Rule::requiredIf(module::isEnabled('Facturacion') && $this->sendmode == Empresa::PRODUCCION),
                     'file',
                     new ValidateFileKey("pfx")
                 ],
-                'usuariosol' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string',
-                    'min:4'
-                ],
-                'clavesol' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string',
-                    'min:4'
-                ],
-                'passwordcert' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string',
-                    'min:6'
-                ],
-                'clientid' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string',
-                    'min:6'
-                ],
-                'clientsecret' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Facturacion')),
-                    'string',
-                    'min:6'
-                ],
+                'usuariosol' => ['nullable', Rule::requiredIf(module::isEnabled('Facturacion')), 'string', 'min:4'],
+                'clavesol' => ['nullable', Rule::requiredIf(module::isEnabled('Facturacion')), 'string', 'min:4'],
+                'passwordcert' => ['nullable', Rule::requiredIf(module::isEnabled('Facturacion')), 'string', 'min:6'],
+                'clientid' => ['nullable', Rule::requiredIf(module::isEnabled('Facturacion')), 'string', 'min:6'],
+                'clientsecret' => ['nullable', Rule::requiredIf(module::isEnabled('Facturacion')), 'string', 'min:6'],
 
             ]);
         }
@@ -656,44 +603,12 @@ class ConfiguracionInicial extends Component
         $this->codeanexo = trim($this->codeanexo);
 
         $this->validate([
-            'namesucursal' => [
-                'required',
-                'min:3',
-                'max:255',
-                new CampoUnique('sucursals', 'name', null, true),
-            ],
-            'direccionsucursal' => [
-                'required',
-                'string',
-                'min:3',
-                'max:255'
-            ],
-            'typesucursal_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:typesucursals,id',
-            ],
-            'ubigeosucursal_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:ubigeos,id',
-            ],
-            'codeanexo' => [
-                'required',
-                'string',
-                'min:4',
-                'max:4',
-                new CampoUnique('sucursals', 'codeanexo', null, true),
-            ],
-            'defaultsucursal' => [
-                'required',
-                'boolean',
-                'min:0',
-                'max:1',
-                new DefaultValue('sucursals', 'default', null, true)
-            ]
+            'namesucursal' => ['required', 'min:3', 'max:255', new CampoUnique('sucursals', 'name', null, true),],
+            'direccionsucursal' => ['required', 'string', 'min:3', 'max:255'],
+            'typesucursal_id' => ['required', 'integer', 'min:1', 'exists:typesucursals,id',],
+            'ubigeosucursal_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id',],
+            'codeanexo' => ['required', 'string', 'min:4', 'max:4', new CampoUnique('sucursals', 'codeanexo', null, true),],
+            'defaultsucursal' => ['required', 'boolean', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', null, true)]
         ]);
 
         if (count($this->sucursals) > 0) {

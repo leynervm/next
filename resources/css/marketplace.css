@@ -21,7 +21,7 @@
     @apply mt-[108px] /* xl:mt-24 */;
 }
 .content-home {
-    @apply -mt-[108px] xl:-mt-24;
+    @apply mt-[108px] xl:mt-24;
 }
 .sidebar-content-marketplace {
     @apply h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-fondoheadermarketplace;

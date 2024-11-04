@@ -23,30 +23,34 @@ class ConfiguracionFacturacion extends Component
     {
         return [
             'empresa.usuariosol' => [
-                'nullable',  Rule::requiredIf($this->empresa->isProduccion()),
+                'nullable',
+                Rule::requiredIf($this->empresa->isProduccion()),
                 'string'
             ],
             'empresa.clavesol' => [
-                'nullable',  Rule::requiredIf($this->empresa->isProduccion()),
+                'nullable',
+                Rule::requiredIf($this->empresa->isProduccion()),
                 'string'
             ],
             'empresa.passwordcert' => [
-                'nullable',  Rule::requiredIf($this->empresa->isProduccion()),
-                'string', 'min:3'
-            ],
-            'empresa.clientid' => [
-                'nullable',  Rule::requiredIf($this->empresa->isProduccion()),
-                'string', 'min:3'
-            ],
-            'empresa.clientsecret' => [
-                'nullable',  Rule::requiredIf($this->empresa->isProduccion()),
-                'string', 'min:3'
-            ],
-            'cert' => [
                 'nullable',
                 Rule::requiredIf($this->empresa->isProduccion()),
-                'file',  new ValidateFileKey("pfx")
+                'string',
+                'min:3'
             ],
+            'empresa.clientid' => [
+                'nullable',
+                Rule::requiredIf($this->empresa->isProduccion()),
+                'string',
+                'min:3'
+            ],
+            'empresa.clientsecret' => [
+                'nullable',
+                Rule::requiredIf($this->empresa->isProduccion()),
+                'string',
+                'min:3'
+            ],
+            'cert' => ['nullable', 'file', new ValidateFileKey("pfx")],
             'empresa.sendmode' => ['integer', 'min:0', 'max:1'],
             'empresa.afectacionigv' => ['integer', 'min:0', 'max:1'],
         ];
@@ -64,9 +68,8 @@ class ConfiguracionFacturacion extends Component
 
     public function update()
     {
-
-        $this->validate();
         try {
+            $this->validate();
             DB::beginTransaction();
             if (!Storage::directoryExists(storage_path('app/company/cert/'))) {
                 Storage::disk('local')->makeDirectory('company/cert');
@@ -81,6 +84,11 @@ class ConfiguracionFacturacion extends Component
                 if (Storage::disk('local')->exists($urlOld)) {
                     Storage::disk('local')->delete($urlOld);
                 }
+            }
+
+            if (empty($urlcert)) {
+                $this->addError('cert', 'El campo certificado es obligatorio.');
+                return false;
             }
 
             $this->empresa->cert = $urlcert;
@@ -120,5 +128,17 @@ class ConfiguracionFacturacion extends Component
     {
         $this->idcert = rand();
         $this->reset(['cert']);
+    }
+
+    public function updatedCert($file)
+    {
+        try {
+            $url = $file->temporaryUrl();
+            $this->resetValidation();
+        } catch (\Exception $e) {
+            $this->reset(['cert']);
+            $this->addError('cert', $e->getMessage());
+            return;
+        }
     }
 }

@@ -101,8 +101,11 @@
             </div>
         @endif
     @else
-        <div class="fixed top-0 left-0 h-screen w-full flex gap-5 justify-center items-center">
+        <div class="fixed top-0 left-0 h-screen w-full flex flex-col xs:flex-row gap-5 justify-center items-center">
             @auth
+                @if (auth()->user()->isAdmin())
+                    <x-link-web :text="__('Dashboard')" href="{{ route('admin') }}" class="btn-next" />
+                @endif
                 <form class="text-center" method="POST" action="{{ route('logout') }}" x-data>
                     @csrf
                     <x-link-web :text="__('Log Out')" href="{{ route('logout') }}" @click.prevent="$root.submit();"

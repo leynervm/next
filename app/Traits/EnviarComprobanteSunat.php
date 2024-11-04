@@ -18,16 +18,16 @@ trait EnviarComprobanteSunat
                 if (!Storage::disk('local')->exists($filename)) {
                     $mensaje = response()->json([
                         'success' => false,
-                        'title' => 'Certificado digital SUNAT no encontrado !',
-                        'mensaje' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
+                        'title' => 'NO SE HA ENCONTRADO EL CERTIFICADO DIGITAL SUNAT !',
+                        'mensaje' => null, //'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
                     ])->getData();
                     return $mensaje;
                 }
             } else {
                 $mensaje = response()->json([
                     'success' => false,
-                    'title' => 'No se ha configurado el certificado digital SUNAT !',
-                    'mensaje' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
+                    'title' => 'NO SE HA CARGADO EL CERTIFICADO DIGITAL SUNAT !',
+                    'mensaje' => null, //'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
                 ])->getData();
                 return $mensaje;
             }
@@ -36,8 +36,8 @@ trait EnviarComprobanteSunat
             if (!Storage::disk('local')->exists($filename)) {
                 $mensaje = response()->json([
                     'success' => false,
-                    'title' => 'Certificado digital de prueba SUNAT no encontrado !',
-                    'mensaje' => 'No se pudo encontrar el certificado digital de prueba para la firma de comprobantes electrónicos.',
+                    'title' => 'CERTIFICADO DIGITAL SUNAT DE PRUEBA NO ENCONTRADO !',
+                    'mensaje' => null, //'No se pudo encontrar el certificado digital de prueba para la firma de comprobantes electrónicos.',
                 ])->getData();
                 return $mensaje;
             }
@@ -46,8 +46,8 @@ trait EnviarComprobanteSunat
         if (!$this->sucursal->empresa->usuariosol || !$this->sucursal->empresa->usuariosol) {
             $mensaje = response()->json([
                 'success' => false,
-                'title' => 'Configurar usuario y clave SOL para la emisión de comprobantes electrónicos !',
-                'mensaje' => 'No se pudo encontrar los datos de usuario y clave SOL para emitir guías de remisión a SUNAT.',
+                'title' => 'CONFIGURAR USUARIO Y CLAVE SOL PARA LA EMISIÓN DE COMPROBANTES ELECTRÓNICOS !',
+                'mensaje' => null, //'No se pudo encontrar los datos de usuario y clave SOL para emitir guías de remisión a SUNAT.',
             ])->getData();
             return $mensaje;
         }
@@ -112,7 +112,5 @@ trait EnviarComprobanteSunat
         }
     }
 
-    public function anularComprobante($seriecomprobante)
-    {
-    }
+    public function anularComprobante($seriecomprobante) {}
 }

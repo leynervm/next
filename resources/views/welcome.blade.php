@@ -6,22 +6,6 @@
     @endif
 
     <div class="contenedor content-home w-full py-5">
-        {{-- <section class="w-full flex flex-col justify-center items-center mx-auto py-12">
-            <h2 class="tracking-wide text-center text-2xl xl:text-5xl mb-3 font-semibold text-next-500">
-                NEXT TECHNOLOGIES<br> TU ALIADO TECNOLÓGICO</h2>
-
-            <p
-                class="mt-3 mx-auto tracking-wide mb-3 text-justify [text-align-last:center] text-las p-5 max-w-xl text-colorsubtitleform ">
-                Somos una empresa creada en 2012, dedicada a la
-                venta de productos y servicios. Distribuimos accesorios,
-                suministros, piezas, partes y equipos de la industria
-                tecnológica, ubicada en la zona nororiente del país.
-                Formamos alianzas con empresas importadoras y puntos de
-                venta directa para brindar una mejor experiencia a nuestros
-                clientes.
-            </p>
-        </section> --}}
-
         @if (count($categories))
             <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">
                 Nuestros Productos</h1>
@@ -39,7 +23,6 @@
                                         alt="{{ getCategoryURL($item->image->url) }}"
                                         class="w-full h-full object-scale-down overflow-hidden">
                                 </picture>
-                                {{-- {!! $item->icon !!} --}}
                             @else
                                 <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
                                     viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round"

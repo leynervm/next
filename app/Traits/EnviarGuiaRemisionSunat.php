@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\Storage;
 
 trait EnviarGuiaRemisionSunat
 {
-
-    
-
     public function enviarGuiaRemision()
     {
 
@@ -20,16 +17,16 @@ trait EnviarGuiaRemisionSunat
                 if (!Storage::disk('local')->exists($filename)) {
                     $mensaje = response()->json([
                         'success' => false,
-                        'title' => 'Certificado digital SUNAT no encontrado !',
-                        'mensaje' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
+                        'title' => 'NO SE HA ENCONTRADO EL CERTIFICADO DIGITAL SUNAT !',
+                        'mensaje' => null, //'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
                     ])->getData();
                     return $mensaje;
                 }
             } else {
                 $mensaje = response()->json([
                     'success' => false,
-                    'title' => 'No se ha configurado el certificado digital SUNAT !',
-                    'mensaje' => 'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
+                    'title' => 'NO SE HA CARGADO EL CERTIFICADO DIGITAL SUNAT !',
+                    'mensaje' => null, //'No se pudo encontrar el certificado digital para la firma de comprobantes electrónicos.',
                 ])->getData();
                 return $mensaje;
             }
@@ -38,8 +35,8 @@ trait EnviarGuiaRemisionSunat
             if (!Storage::disk('local')->exists($filename)) {
                 $mensaje = response()->json([
                     'success' => false,
-                    'title' => 'Certificado digital de prueba SUNAT no encontrado !',
-                    'mensaje' => 'No se pudo encontrar el certificado digital de prueba para la firma de comprobantes electrónicos.',
+                    'title' => 'NO SE HA CARGADO EL CERTIFICADO DIGITAL SUNAT !',
+                    'mensaje' => null, //'No se pudo encontrar el certificado digital de prueba para la firma de comprobantes electrónicos.',
                 ])->getData();
                 return $mensaje;
             }
@@ -48,8 +45,8 @@ trait EnviarGuiaRemisionSunat
         if (!$this->sucursal->empresa->usuariosol || !$this->sucursal->empresa->usuariosol) {
             $mensaje = response()->json([
                 'success' => false,
-                'title' => 'Configurar usuario y clave SOL para la emisión de comprobantes electrónicos !',
-                'mensaje' => 'No se pudo encontrar los datos de usuario y clave SOL para emitir guías de remisión a SUNAT.',
+                'title' => 'CONFIGURAR USUARIO Y CLAVE SOL PARA LA EMISIÓN DE COMPROBANTES ELECTRÓNICOS !',
+                'mensaje' => null, //'No se pudo encontrar los datos de usuario y clave SOL para emitir guías de remisión a SUNAT.',
             ])->getData();
             return $mensaje;
         }
@@ -57,8 +54,8 @@ trait EnviarGuiaRemisionSunat
         if (!$this->sucursal->empresa->clientid) {
             $mensaje = response()->json([
                 'success' => false,
-                'title' => 'Configurar Client Id para emitir guías de remisión !',
-                'mensaje' => 'No se pudo encontrar el Client Id para emitir guías de remisión a SUNAT.',
+                'title' => 'CONFIGURAR CLIENT ID PARA EMISIÓN DE GUÍAS ELECTRÓNICAS !',
+                'mensaje' => null, //'No se pudo encontrar el Client Id para emitir guías de remisión a SUNAT.',
             ])->getData();
             return $mensaje;
         }
@@ -66,8 +63,8 @@ trait EnviarGuiaRemisionSunat
         if (!$this->sucursal->empresa->clientsecret) {
             $mensaje = response()->json([
                 'success' => false,
-                'title' => 'Configurar Client Secret para emitir guías de remisión !',
-                'mensaje' => 'No se pudo encontrar el Client Secret para emitir guías de remisión a SUNAT.',
+                'title' => 'CONFIGURAR CLIENT SECRET PARA EMISIÓN DE GUÍAS ELECTRÓNICAS !',
+                'mensaje' => null, //'No se pudo encontrar el Client Secret para emitir guías de remisión a SUNAT.',
             ])->getData();
             return $mensaje;
         }
