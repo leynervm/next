@@ -5,9 +5,9 @@
         </x-slot>
     @endif
 
-    <div class="contenedor content-home w-full py-5">
+    <div class="contenedor {{ count($sliders) > 0 ? '-mt-[108px] xl:-mt-24' : '' }} w-full py-5">
         @if (count($categories))
-            <h1 class="text-center font-semibold text-xl pt-6 text-colorsubtitleform">
+            <h1 class="text-center font-semibold text-xl text-colorsubtitleform">
                 Nuestros Productos</h1>
             <section
                 class="w-full pt-4 pb-6 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">

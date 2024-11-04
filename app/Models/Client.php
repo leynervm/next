@@ -24,6 +24,11 @@ class Client extends Model
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = trim(mb_strtolower($value, "UTF-8"));
+    }
+
     public function direccion(): MorphOne
     {
         return $this->morphOne(Direccion::class, 'direccionable')

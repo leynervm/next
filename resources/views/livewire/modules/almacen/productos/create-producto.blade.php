@@ -3,8 +3,6 @@
         <x-loading-next />
     </div>
 
-    {{ print_r($errors->all()) }}
-
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
@@ -233,7 +231,7 @@
                         <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
                             wire:target="imagen">
                             <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"
-                                accept="image/jpg, image/jpeg, image/png" />
+                                accept="image/jpg,image/jpeg,image/png,image/webp" />
                         </x-input-file>
                         @if (isset($imagen))
                             <x-button class="inline-flex" wire:loading.attr="disabled" wire:target="clearImage"

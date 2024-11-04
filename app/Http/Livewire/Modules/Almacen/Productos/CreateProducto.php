@@ -64,7 +64,7 @@ class CreateProducto extends Component
             'viewdetalle' => ['nullable', 'integer', 'min:0', 'max:1'],
             'viewespecificaciones' => ['nullable', 'integer', 'min:0', 'max:1'],
             'requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
-            'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'dimensions:min_width=500,min_height=500'],
+            'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500'],
             'descripcionproducto' => ['nullable', 'string']
         ];
     }

@@ -1128,19 +1128,18 @@ input[type=number].input-number-none {
 .content {
     margin-top: 108px;
 }
-.content-home {
-    margin-top: 108px;
-}
 @media (min-width: 1280px) {
 
-    .content-home {
+    .content {
         margin-top: 6rem;
     }
 }
+
 .sidebar-content-marketplace {
     height: calc(100vh - 108px);
     background-color: var(--fondo-header-marketplace);
 }
+
 @media (min-width: 1280px) {
 
     .sidebar-content-marketplace {
@@ -4911,6 +4910,9 @@ select {
 .mt-auto {
   margin-top: auto;
 }
+.-mt-\[108px\] {
+  margin-top: -108px;
+}
 .box-border {
   box-sizing: border-box;
 }
@@ -7121,6 +7123,10 @@ select {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity));
 }
+.\!ring-next-500 {
+  --tw-ring-opacity: 1 !important;
+  --tw-ring-color: rgb(15 185 185 / var(--tw-ring-opacity)) !important;
+}
 .ring-opacity-5 {
   --tw-ring-opacity: 0.05;
 }
@@ -7857,6 +7863,10 @@ select {
 .focus\:ring-yellow-300:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(253 224 71 / var(--tw-ring-opacity));
+}
+.focus\:\!ring-next-500:focus {
+  --tw-ring-opacity: 1 !important;
+  --tw-ring-color: rgb(15 185 185 / var(--tw-ring-opacity)) !important;
 }
 .focus\:ring-opacity-50:focus {
   --tw-ring-opacity: 0.5;
@@ -9052,6 +9062,10 @@ select {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .md\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
   .md\:flex-row {
     flex-direction: row;
   }
@@ -9542,6 +9556,10 @@ select {
 
   .xl\:mt-20 {
     margin-top: 5rem;
+  }
+
+  .xl\:-mt-24 {
+    margin-top: -6rem;
   }
 
   .xl\:flex {

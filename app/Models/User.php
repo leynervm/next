@@ -90,6 +90,11 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = trim(mb_strtolower($value, "UTF-8"));
+    }
+
     public function openboxes(): HasMany
     {
         return $this->hasMany(Openbox::class);

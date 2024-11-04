@@ -118,7 +118,7 @@ class ShowDetalles extends Component
         $this->authorize('admin.almacen.productos.images');
         $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png', 'dimensions:min_width=500,min_height=500']
+            'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500']
         ]);
 
         $countImages = $this->producto->images()->count();

@@ -200,7 +200,7 @@
                         <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
                             wire:target="imagen">
                             <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"
-                                accept="image/jpg, image/jpeg, image/png" />
+                                accept="image/jpg,image/jpeg,image/png,image/webp" />
                         </x-input-file>
 
                         @if (isset($imagen))

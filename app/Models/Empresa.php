@@ -95,6 +95,11 @@ class Empresa extends Model
     //     return (bool) $value; 
     // }
 
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = trim(mb_strtolower($value, "UTF-8"));
+    }
+
     public function scopeDefaultEmpresa($query)
     {
         return $query->where('default', 1);

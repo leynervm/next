@@ -23,6 +23,11 @@ class Proveedor extends Model
         $this->attributes['name'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = trim(mb_strtolower($value, "UTF-8"));
+    }
+
     public function setDireccionAttribute($value)
     {
         $this->attributes['direccion'] = trim(mb_strtoupper($value, "UTF-8"));
