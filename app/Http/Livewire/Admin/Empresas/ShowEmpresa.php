@@ -322,7 +322,6 @@ class ShowEmpresa extends Component
         }
     }
 
-
     public function savelogo()
     {
 
@@ -489,12 +488,12 @@ class ShowEmpresa extends Component
         if ($this->empresa->icono) {
             if (Storage::exists('images/company/' . $this->empresa->icono)) {
                 Storage::delete('images/company/' . $this->empresa->icono);
-                $this->empresa->icono = null;
-                $this->empresa->save();
-                $this->empresa->refresh();
-                $this->idicono = rand();
-                $this->dispatchBrowserEvent('deleted');
             }
+            $this->empresa->icono = null;
+            $this->empresa->save();
+            $this->empresa->refresh();
+            $this->idicono = rand();
+            $this->dispatchBrowserEvent('deleted');
         }
     }
 
@@ -503,11 +502,11 @@ class ShowEmpresa extends Component
         if ($this->empresa->image) {
             if (Storage::exists('images/company/' . $this->empresa->image->url)) {
                 Storage::delete('images/company/' . $this->empresa->image->url);
-                $this->empresa->image->delete();
-                $this->empresa->refresh();
-                $this->idlogo = rand();
-                $this->dispatchBrowserEvent('deleted');
             }
+            $this->empresa->image->delete();
+            $this->empresa->refresh();
+            $this->idlogo = rand();
+            $this->dispatchBrowserEvent('deleted');
         }
     }
 
@@ -516,13 +515,13 @@ class ShowEmpresa extends Component
         if ($this->empresa->logofooter) {
             if (Storage::exists('images/company/' . $this->empresa->logofooter)) {
                 Storage::delete('images/company/' . $this->empresa->logofooter);
-                $this->empresa->logofooter = null;
-                $this->reset(['logofooter', 'extencionlogofooter']);
-                $this->empresa->save();
-                $this->empresa->refresh();
-                $this->dispatchBrowserEvent('deleted');
-                return true;
             }
+            $this->empresa->logofooter = null;
+            $this->reset(['logofooter', 'extencionlogofooter']);
+            $this->empresa->save();
+            $this->empresa->refresh();
+            $this->dispatchBrowserEvent('deleted');
+            return true;
         }
     }
 
@@ -531,13 +530,14 @@ class ShowEmpresa extends Component
         if ($this->empresa->logoimpresion) {
             if (Storage::exists('images/company/' . $this->empresa->logoimpresion)) {
                 Storage::delete('images/company/' . $this->empresa->logoimpresion);
-                $this->empresa->logoimpresion = null;
-                $this->reset(['logoimpresion', 'extencionlogoimpresion']);
-                $this->empresa->save();
-                $this->empresa->refresh();
-                $this->dispatchBrowserEvent('deleted');
-                return true;
             }
+
+            $this->empresa->logoimpresion = null;
+            $this->reset(['logoimpresion', 'extencionlogoimpresion']);
+            $this->empresa->save();
+            $this->empresa->refresh();
+            $this->dispatchBrowserEvent('deleted');
+            return true;
         }
     }
 

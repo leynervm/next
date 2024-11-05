@@ -10,9 +10,7 @@ use Modules\Ventas\Entities\Venta;
 
 class createXML
 {
-   public function __construct()
-   {
-   }
+   public function __construct() {}
 
    function comprobanteVentaXML($nombreXML, $emisor, $cliente, $comprobante)
    {
@@ -41,10 +39,10 @@ class createXML
            <cbc:IssueTime>' . formatDate($comprobante->date, "HH:mm:ss") . '</cbc:IssueTime>
            <cbc:DueDate>' . formatDate($comprobante->date, "YYYY-MM-DD") . '</cbc:DueDate>
            <cbc:InvoiceTypeCode listAgencyName="PE:SUNAT" listName="Tipo de Documento" listURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01" listID="0101" name="Tipo de Operacion" listSchemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo51">' . $comprobante->seriecomprobante->typecomprobante->code . '</cbc:InvoiceTypeCode>
-           <cbc:Note languageLocaleID="1000"><![CDATA[' . $comprobante->leyenda . ']]></cbc:Note>';
+           <cbc:Note languageLocaleID="1000">' . $comprobante->leyenda . '</cbc:Note>';
 
       if ($comprobante->exonerado > 0) {
-         $xml .= '<cbc:Note languageLocaleID="2001"><![CDATA[ BIENES TRANSFERIDOS EN LA AMAZONÍA REGIÓN SELVA PARA SER CONSUMIDOS EN LA MISMA ]]></cbc:Note>';
+         $xml .= '<cbc:Note languageLocaleID="2001">BIENES TRANSFERIDOS EN LA AMAZONÍA REGIÓN SELVA PARA SER CONSUMIDOS EN LA MISMA</cbc:Note>';
       }
 
       $xml .= '<cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" listName="Currency" listAgencyName="United Nations Economic Commission for Europe">' . $comprobante->moneda->code . '</cbc:DocumentCurrencyCode>
@@ -86,15 +84,9 @@ class createXML
                     <cac:RegistrationAddress>
                        <cbc:ID schemeName="Ubigeos" schemeAgencyName="PE:INEI">' . $emisor->ubigeo->ubigeo_reniec . '</cbc:ID>
                        <cbc:AddressTypeCode listAgencyName="PE:SUNAT" listName="Establecimientos anexos">' . trim($comprobante->sucursal->codeanexo) . '</cbc:AddressTypeCode>
-                       <cbc:CityName>
-                           <![CDATA[' . trim($comprobante->sucursal->ubigeo->region) . ']]>
-                       </cbc:CityName>
-                       <cbc:CountrySubentity>
-                           <![CDATA[' . trim($comprobante->sucursal->ubigeo->provincia) . ']]>
-                       </cbc:CountrySubentity>
-                       <cbc:District>
-                           <![CDATA[' . trim($comprobante->sucursal->ubigeo->distrito) . ']]>
-                       </cbc:District>
+                       <cbc:CityName><![CDATA[' . trim($comprobante->sucursal->ubigeo->region) . ']]></cbc:CityName>
+                       <cbc:CountrySubentity><![CDATA[' . trim($comprobante->sucursal->ubigeo->provincia) . ']]></cbc:CountrySubentity>
+                       <cbc:District><![CDATA[' . trim($comprobante->sucursal->ubigeo->distrito) . ']]></cbc:District>
                        <cac:AddressLine>
                           <cbc:Line><![CDATA[' . trim($comprobante->sucursal->direccion) . ']]></cbc:Line>
                        </cac:AddressLine>
@@ -357,15 +349,9 @@ class createXML
                     <cac:RegistrationAddress>
                        <cbc:ID schemeName="Ubigeos" schemeAgencyName="PE:INEI">' . $emisor->ubigeo->ubigeo_reniec . '</cbc:ID>
                        <cbc:AddressTypeCode listAgencyName="PE:SUNAT" listName="Establecimientos anexos">' . trim($comprobante->sucursal->codeanexo) . '</cbc:AddressTypeCode>
-                       <cbc:CityName>
-                           <![CDATA[' . trim($comprobante->sucursal->ubigeo->region) . ']]>
-                       </cbc:CityName>
-                       <cbc:CountrySubentity>
-                           <![CDATA[' . trim($comprobante->sucursal->ubigeo->provincia) . ']]>
-                       </cbc:CountrySubentity>
-                       <cbc:District>
-                           <![CDATA[' . trim($comprobante->sucursal->ubigeo->distrito) . ']]>
-                       </cbc:District>
+                       <cbc:CityName><![CDATA[' . trim($comprobante->sucursal->ubigeo->region) . ']]></cbc:CityName>
+                       <cbc:CountrySubentity><![CDATA[' . trim($comprobante->sucursal->ubigeo->provincia) . ']]></cbc:CountrySubentity>
+                       <cbc:District><![CDATA[' . trim($comprobante->sucursal->ubigeo->distrito) . ']]></cbc:District>
                        <cac:AddressLine>
                           <cbc:Line><![CDATA[' . trim($comprobante->sucursal->direccion) . ']]></cbc:Line>
                        </cac:AddressLine>
@@ -691,8 +677,6 @@ class createXML
                      <cac:TransitPeriod>
                         <cbc:StartDate>' . formatDate($guia->datetraslado, "YYYY-MM-DD") . '</cbc:StartDate>
                      </cac:TransitPeriod>';
-
-
 
 
       // 01: PUBLICO, 02:PRIVADO

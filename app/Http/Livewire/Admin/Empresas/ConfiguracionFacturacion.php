@@ -22,34 +22,11 @@ class ConfiguracionFacturacion extends Component
     protected function rules()
     {
         return [
-            'empresa.usuariosol' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->isProduccion()),
-                'string'
-            ],
-            'empresa.clavesol' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->isProduccion()),
-                'string'
-            ],
-            'empresa.passwordcert' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->isProduccion()),
-                'string',
-                'min:3'
-            ],
-            'empresa.clientid' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->isProduccion()),
-                'string',
-                'min:3'
-            ],
-            'empresa.clientsecret' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->isProduccion()),
-                'string',
-                'min:3'
-            ],
+            'empresa.usuariosol' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string'],
+            'empresa.clavesol' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string'],
+            'empresa.passwordcert' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string', 'min:3'],
+            'empresa.clientid' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string', 'min:3'],
+            'empresa.clientsecret' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string', 'min:3'],
             'cert' => ['nullable', 'file', new ValidateFileKey("pfx")],
             'empresa.sendmode' => ['integer', 'min:0', 'max:1'],
             'empresa.afectacionigv' => ['integer', 'min:0', 'max:1'],

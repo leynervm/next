@@ -36,7 +36,7 @@ class SendXML
                 }
 
                 $xml_envio = '<?xml version="1.0" encoding="UTF-8"?>
-                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasisopen.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
                 <soapenv:Header>
                     <wsse:Security>
                         <wsse:UsernameToken Id="ABC-123">
@@ -59,7 +59,7 @@ class SendXML
                     "Cache-Control: no-cache",
                     "Pragma: no-cache",
                     "SOAPAction: ",
-                    "Content-lenght: " . strlen($xml_envio)
+                    "Content-Length: " . strlen($xml_envio)
                 );
 
                 $response = Http::withOptions([
