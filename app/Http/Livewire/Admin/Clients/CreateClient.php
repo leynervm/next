@@ -192,13 +192,7 @@ class CreateClient extends Component
         $this->authorize('admin.clientes.create');
         $this->document = trim($this->document);
         $this->validate([
-            'document' => [
-                'required',
-                'numeric',
-                'digits_between:8,11',
-                'regex:/^\d{8}(?:\d{3})?$/',
-                new ValidateDocument
-            ]
+            'document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/', new ValidateDocument]
         ]);
 
         $this->resetValidation();

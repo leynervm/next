@@ -639,11 +639,11 @@
                                                 <p class="text-colorsubtitleform leading-3">
                                                     {{ $item['codigo'] }}</p>
                                             </div>
-                                            <div>
+                                            {{-- <div>
                                                 <x-label value="TIPO ESTABLECIMIENTO :" class="font-semibold" />
                                                 <p class="text-colorsubtitleform leading-3">
                                                     [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
-                                            </div>
+                                            </div> --}}
                                         @endif
 
                                         <div class="w-full flex items-end gap-2 justify-end">
@@ -1096,11 +1096,11 @@
                                                     <p class="text-colorsubtitleform leading-3">
                                                         {{ $item['codigo'] }}</p>
                                                 </div>
-                                                <div>
+                                                {{-- <div>
                                                     <x-label value="TIPO ESTABLECIMIENTO :" class="font-semibold" />
                                                     <p class="text-colorsubtitleform leading-3">
                                                         [{{ $item['cod_tipo'] }}] - {{ $item['tipo'] }}</p>
-                                                </div>
+                                                </div> --}}
                                             @endif
                                         </x-simple-card>
                                     @endforeach
@@ -1234,15 +1234,13 @@
             <form wire:submit.prevent="addsucursal" class="flex flex-col gap-2">
                 <div class="w-full">
                     <x-label value="Nombre :" />
-                    <x-input class="block w-full" wire:model.defer="namesucursal"
-                        placeholder="Nombre de sucursal..." />
+                    <x-input class="block w-full" wire:model.defer="namesucursal" />
                     <x-jet-input-error for="namesucursal" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Dirección :" />
-                    <x-input class="block w-full" wire:model.defer="direccionsucursal"
-                         />
+                    <x-input class="block w-full" wire:model.defer="direccionsucursal" />
                     <x-jet-input-error for="direccionsucursal" />
                 </div>
 
@@ -1266,7 +1264,7 @@
                     <x-jet-input-error for="ubigeosucursal_id" />
                 </div>
 
-                <div class="w-full">
+                {{-- <div class="w-full">
                     <x-label value="Tipo establecimiento :" />
                     <div class="relative" x-init="typeSucursal" wire:ignore>
                         <x-select class="block w-full" x-ref="selecttypesucursal" id="typesucursal_id"
@@ -1282,7 +1280,7 @@
                         <x-icon-select />
                     </div>
                     <x-jet-input-error for="typesucursal_id" />
-                </div>
+                </div> --}}
 
                 <div class="w-full">
                     <x-label value="Código anexo :" />

@@ -6,7 +6,7 @@
                     <div class="w-full">
                         <x-label value="RUC :" />
                         <div class="w-full inline-flex gap-1">
-                            <x-disabled-text :text="$proveedor->document" class="w-full" />
+                            <x-disabled-text :text="$proveedor->document" class="w-full flex-1" />
                             {{-- <x-input class="block w-full prevent" wire:model.defer="proveedor.document"
                                 wire:keydown.enter="searchclient" /> --}}
                             <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"

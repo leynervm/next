@@ -31,7 +31,6 @@ class ShowVentas extends Component
         'deletes' => ['except' => false, 'as' => 'eliminados'],
     ];
 
-
     public function render()
     {
         $users = User::whereHas('ventas', function ($query) {

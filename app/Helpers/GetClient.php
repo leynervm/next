@@ -105,7 +105,7 @@ class GetClient
                 if (isset($result->message)) {
                     $response = [
                         'success' => false,
-                        'message' => $result->message,
+                        'message' => __($result->message),
                     ];
                 } else {
 
@@ -179,7 +179,7 @@ class GetClient
             if (isset($result->message)) {
                 return response()->json([
                     'success' => false,
-                    'message' => $result->message,
+                    'message' => __($result->message),
                 ]);
             } else {
 

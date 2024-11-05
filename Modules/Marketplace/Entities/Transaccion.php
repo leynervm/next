@@ -46,4 +46,9 @@ class Transaccion extends Model
     {
         return $query->where('action_code', self::AUTORIZADO);
     }
+
+    public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)
+    {
+        return $query->whereDate($fieldName, '>=', $date)->whereDate($fieldName, '<=', $dateto);
+    }
 }

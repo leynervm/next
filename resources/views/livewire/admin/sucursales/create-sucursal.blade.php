@@ -15,13 +15,13 @@
             <form wire:submit.prevent="save" class="flex flex-col gap-2">
                 <div class="w-full">
                     <x-label value="Nombre :" />
-                    <x-input class="block w-full" wire:model.defer="name" placeholder="Nombre de sucursal..." />
+                    <x-input class="block w-full" wire:model.defer="name" />
                     <x-jet-input-error for="name" />
                 </div>
 
                 <div class="w-full">
                     <x-label value="Dirección :" />
-                    <x-input class="block w-full" wire:model.defer="direccion" placeholder="Dirección de sucursal..." />
+                    <x-input class="block w-full" wire:model.defer="direccion" />
                     <x-jet-input-error for="direccion" />
                 </div>
 
@@ -66,8 +66,7 @@
 
                 <div class="w-full">
                     <x-label value="Código anexo :" />
-                    <x-input class="block w-full" wire:model.defer="codeanexo" placeholder="Anexo de sucursal..."
-                        maxlength="4" />
+                    <x-input class="block w-full" wire:model.defer="codeanexo" maxlength="4" />
                     <x-jet-input-error for="codeanexo" />
                 </div>
 

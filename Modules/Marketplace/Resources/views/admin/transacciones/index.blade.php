@@ -13,4 +13,11 @@
             </x-slot>
         </x-link-breadcrumb>
     </x-slot>
+
+
+    @can('admin.marketplace.transacciones')
+        <div class="">
+            <livewire:modules.marketplace.transaccions.show-transaccions />
+        </div>
+    @endcan
 </x-admin-layout>

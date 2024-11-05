@@ -7,28 +7,12 @@
         MIS COMPRAS</h1>
 
     <div class="flex flex-wrap gap-2 pb-3">
-        <div class="w-full xs:max-w-xs">
-            <x-label value="Estado pago :" />
-            <div class="relative" x-data="{ pago: @entangle('pago') }" x-init="select2Pago" id="parentpago">
-                <x-select class="block w-full" x-model="pago" x-ref="selectpago" id="pago" data-placeholder="null">
-                    @if (count(getStatusPayWeb()) > 0)
-                        <x-slot name="options">
-                            @foreach (getStatusPayWeb() as $item)
-                                <option value="{{ $item->value }}">{{ str_replace('_', ' ', $item->name) }}</option>
-                            @endforeach
-                        </x-slot>
-                    @endif
-                </x-select>
-                <x-icon-select />
-            </div>
-        </div>
-
-        <div class="w-full xs:max-w-[150px]">
+        <div class="w-full xs:max-w-[170px]">
             <x-label value="Fecha :" />
             <x-input type="date" wire:model.lazy="date" class="w-full" />
         </div>
 
-        <div class="w-full xs:max-w-[150px]">
+        <div class="w-full xs:max-w-[170px]">
             <x-label value="Hasta :" />
             <x-input type="date" wire:model.lazy="dateto" class="w-full" />
         </div>
@@ -49,8 +33,11 @@
                                 </a>
                             </td>
                             <td class="text-center p-3 xl:py-5 text-xs">
-                                {{ number_format($item->total, 2, '.', ', ') }}
-                                <p class="font-semibold text-[10px]">{{ $item->moneda->currency }}</p>
+                                MONTO <br>
+                                <p class="font-semibold text-sm">
+                                    <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
+                                    {{ number_format($item->total, 2, '.', ', ') }}
+                                </p>
                             </td>
                             <td class="text-center p-3 xl:py-5">
                                 @if ($item->isPagoconfirmado())
@@ -63,7 +50,39 @@
                             </td>
                             @if ($item->transaccion)
                                 <td class="text-center p-3 xl:py-5 uppercase">
+                                    @if ($item->transaccion->brand == 'visa')
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#visa" />
+                                        </svg>
+                                    @elseif ($item->transaccion->brand == 'mastercard')
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#mastercard" />
+                                        </svg>
+                                    @elseif ($item->transaccion->brand == 'paypal')
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#paypal" />
+                                        </svg>
+                                    @elseif ($item->transaccion->brand == 'unionpay')
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#unionpay" />
+                                        </svg>
+                                    @elseif ($item->transaccion->brand == 'dinersclub')
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#dinersclub" />
+                                        </svg>
+                                    @elseif ($item->transaccion->brand == 'amex')
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#amex" />
+                                        </svg>
+                                    @else
+                                        <svg class="w-10 h-6 block mx-auto">
+                                            <use href="#default" />
+                                        </svg>
+                                    @endif
+
                                     {{ $item->transaccion->brand }}
+                                    <br>
+                                    {{ $item->transaccion->card }}
                                 </td>
                             @endif
                         </tr>
@@ -78,6 +97,7 @@
         <h1 class="text-[10px] p-5 text-colorsubtitleform">NO TIENES ORDENES REGISTRADAS...</h1>
     @endif
 
+    @include('partials.icons-cards')
 
     <script>
         function select2Estado() {

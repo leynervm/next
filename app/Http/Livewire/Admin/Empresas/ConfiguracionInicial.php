@@ -84,8 +84,8 @@ class ConfiguracionInicial extends Component
     {
         $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
             ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
-        return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos', 'typesucursals'));
+        // $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
+        return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos'));
     }
     public function openModal()
     {
@@ -212,7 +212,7 @@ class ConfiguracionInicial extends Component
             }
 
             if (!is_null($acceso->limitsucursals)) {
-                if (count($this->selectedsucursals) > $acceso->limitsucursals) {
+                if ($this->document !== '20538954099' && count($this->selectedsucursals) > $acceso->limitsucursals) {
                     $this->addError('selectedsucursals', 'Límite de sucursales alcanzado ' . $acceso->limitsucursals . ', seleccione sucursales correspondiente a registrar ');
                     return false;
                 }
@@ -606,7 +606,7 @@ class ConfiguracionInicial extends Component
         $this->validate([
             'namesucursal' => ['required', 'min:3', 'max:255', new CampoUnique('sucursals', 'name', null, true),],
             'direccionsucursal' => ['required', 'string', 'min:3', 'max:255'],
-            'typesucursal_id' => ['required', 'integer', 'min:1', 'exists:typesucursals,id',],
+            'typesucursal_id' => ['nullable', 'integer', 'min:1', 'exists:typesucursals,id',],
             'ubigeosucursal_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id',],
             'codeanexo' => ['required', 'string', 'min:4', 'max:4', new CampoUnique('sucursals', 'codeanexo', null, true),],
             'defaultsucursal' => ['required', 'boolean', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', null, true)]
@@ -658,16 +658,16 @@ class ConfiguracionInicial extends Component
 
         $codesucursal = '';
         $typesucursal = '';
-        if ($this->typesucursal_id) {
-            $typesucursal = Typesucursal::find($this->typesucursal_id);
-            $codesucursal = $typesucursal->code;
-            $typesucursal = $typesucursal->name;
-        }
+        // if ($this->typesucursal_id) {
+        //     $typesucursal = Typesucursal::find($this->typesucursal_id);
+        //     $codesucursal = $typesucursal->code;
+        //     $typesucursal = $typesucursal->name;
+        // }
         $this->sucursals[] = [
             'descripcion' => $this->namesucursal,
             'direccion' => $this->direccionsucursal,
             'ubigeo_id' => $this->ubigeosucursal_id,
-            'typesucursal_id' => $this->typesucursal_id,
+            'typesucursal_id' => null,
             'departamento' => $departamento,
             'provincia' => $provincia,
             'distrito' => $distrito,

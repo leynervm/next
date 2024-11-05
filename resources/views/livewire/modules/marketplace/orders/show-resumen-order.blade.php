@@ -211,7 +211,6 @@
                 @endforeach
             </ol>
         @endif
-
     </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">

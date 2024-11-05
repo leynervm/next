@@ -20,7 +20,7 @@
             </div>
         </div>
 
-        <div class="w-full xs:max-w-xs">
+        {{-- <div class="w-full xs:max-w-xs">
             <x-label value="Estado pago :" />
             <div class="relative" x-data="{ pago: @entangle('pago') }" x-init="select2Pago" id="parentpago">
                 <x-select class="block w-full" x-model="pago" x-ref="selectpago" id="pago" data-placeholder="null">
@@ -34,7 +34,7 @@
                 </x-select>
                 <x-icon-select />
             </div>
-        </div>
+        </div> --}}
 
         <div class="w-full xs:max-w-[150px]">
             <x-label value="Fecha :" />
@@ -154,9 +154,41 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="p-2 text-center leading-3 text-xs uppercase">
+                        <td class="p-2 text-center leading-3 text-[10px] uppercase">
                             @if ($item->transaccion)
+                                @if ($item->transaccion->brand == 'visa')
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#visa" />
+                                    </svg>
+                                @elseif ($item->transaccion->brand == 'mastercard')
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#mastercard" />
+                                    </svg>
+                                @elseif ($item->transaccion->brand == 'paypal')
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#paypal" />
+                                    </svg>
+                                @elseif ($item->transaccion->brand == 'unionpay')
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#unionpay" />
+                                    </svg>
+                                @elseif ($item->transaccion->brand == 'dinersclub')
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#dinersclub" />
+                                    </svg>
+                                @elseif ($item->transaccion->brand == 'amex')
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#amex" />
+                                    </svg>
+                                @else
+                                    <svg class="w-10 h-6 block mx-auto">
+                                        <use href="#default" />
+                                    </svg>
+                                @endif
+
                                 {{ $item->transaccion->brand }}
+                                <br>
+                                {{ $item->transaccion->card }}
                             @endif
                         </td>
                         <td class="p-2 text-center text-[10px]">
@@ -175,6 +207,8 @@
     @else
         <x-span-text text="NO EXISTEN REGISTROS DE VENTAS EN LÍNEA..." class="mt-3 bg-transparent" />
     @endif
+
+    @include('partials.icons-cards')
 
     <script>
         function select2Pago() {
