@@ -35,10 +35,11 @@ class SendXML
                     $ws = "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService";
                 }
 
-                $xml_envio = '<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasisopen.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+                $xml_envio = '<?xml version="1.0" encoding="UTF-8"?>
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasisopen.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
                 <soapenv:Header>
                     <wsse:Security>
-                        <wsse:UsernameToken>
+                        <wsse:UsernameToken Id="ABC-123">
                             <wsse:Username>' . $emisor->document . $emisor->usuariosol . '</wsse:Username>
                             <wsse:Password>' . $emisor->clavesol . '</wsse:Password>
                         </wsse:UsernameToken>
