@@ -115,13 +115,14 @@ class ConfiguracionFacturacion extends Component
         if ($this->empresa->cert) {
             if (Storage::disk('local')->exists('company/cert/' . $this->empresa->cert)) {
                 Storage::disk('local')->delete('company/cert/' . $this->empresa->cert);
-                $this->empresa->cert = null;
-                $this->empresa->save();
-                $this->idcert = rand();
-                $this->empresa->refresh();
-                $this->dispatchBrowserEvent('deleted');
             }
         }
+
+        $this->empresa->cert = null;
+        $this->empresa->save();
+        $this->idcert = rand();
+        $this->empresa->refresh();
+        $this->dispatchBrowserEvent('deleted');
     }
 
     public function clearCert()
