@@ -174,18 +174,18 @@
                         @endcan
                         <td class="p-2 text-[10px]">
                             {{ $item->seriecompleta }}
-                            <p class="leading-3">
+                            <p class="leading-none text-nowrap">
                                 {{ $item->seriecomprobante->typecomprobante->descripcion }}
                             </p>
                             @if ($item->isProduccion())
-                                <x-span-text class="leading-3 font-semibold text-[8px] tracking-widest" type="green"
+                                <x-span-text class="leading-none font-semibold text-[8px] inline-block" type="green"
                                     text="PRODUCCIÓN" />
                             @else
-                                <x-span-text class="leading-3 font-semibold text-[8px] tracking-widest"
+                                <x-span-text class="leading-none font-semibold text-[8px] inline-block"
                                     text="PRUEBAS" />
                             @endif
                         </td>
-                        <td class="p-2 uppercase text-[10px]">
+                        <td class="p-2 uppercase text-[10px] text-center text-nowrap">
                             {{ formatDate($item->date, 'DD MMMM Y') }}
                             <br>
                             {{ formatDate($item->date, 'hh:mm A') }}
@@ -251,15 +251,15 @@
                             @endif
                         </td>
                         <td class="p-2 text-center text-[10px]">
-                            <p>{{ $item->sucursal->name }}</p>
+                            <p class="leading-none">{{ $item->sucursal->name }}</p>
                             @if ($item->sucursal->trashed())
                                 <x-span-text text="NO DISPONIBLE" class="leading-3 inline-block" />
                             @endif
-                            <p class="text-[10px] text-colorsubtitleform">{{ $item->user->name }}</p>
+                            <p class="text-[10px] text-colorsubtitleform leading-none mt-1">{{ $item->user->name }}</p>
                         </td>
                         <td class="p-2 align-middle">
-                            @if (!$item->trashed())
-                                <div class="flex items-center justify-end gap-1">
+                            <div class="flex items-center justify-end gap-1">
+                                @if (!$item->trashed())
                                     <a href="{{ route('admin.facturacion.print.a4', $item) }}" target="_blank"
                                         class="p-1.5 bg-red-800 text-white block rounded-lg transition-colors duration-150">
                                         <svg class="w-4 h-4 block scale-110 " xmlns="http://www.w3.org/2000/svg"
@@ -276,23 +276,27 @@
 
                                     <x-button-print href="{{ route('admin.facturacion.print.ticket', $item) }}"
                                         target="_blank" />
+                                @endif
 
-                                    @if ($item->seriecomprobante->typecomprobante->sendsunat && $item->codesunat == '0')
-                                        <div x-data="{ dropdownOpen: false }" class="">
-                                            <button @click="dropdownOpen = !dropdownOpen"
-                                                class="p-1.5 mx-auto bg-fondospancardproduct text-textspancardproduct block rounded-lg transition-colors duration-150">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
-                                                    class="w-4 h-4">
-                                                    <path
-                                                        d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
-                                                </svg>
-                                            </button>
-                                            <div x-show="dropdownOpen" @click.away="dropdownOpen = false"
-                                                class="absolute right-0 mt-1 w-36 bg-fondodropdown rounded-md shadow shadow-fondominicard border border-borderminicard z-20">
+                                @if ($item->seriecomprobante->typecomprobante->isSunat())
+                                    <div x-data="{ dropdownOpen: false }" class="">
+                                        <button @click="dropdownOpen = !dropdownOpen"
+                                            class="p-1.5 mx-auto bg-fondospancardproduct text-textspancardproduct block rounded-lg transition-colors duration-150">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                class="w-4 h-4">
+                                                <path
+                                                    d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+                                            </svg>
+                                        </button>
+                                        <div x-show="dropdownOpen" @click.away="dropdownOpen = false" x-cloak
+                                            style="display: none;"
+                                            class="absolute right-0 mt-1 w-36 bg-fondodropdown rounded-md shadow shadow-fondominicard border border-borderminicard z-20">
+                                            @if (!$item->trashed() && $item->codesunat == '0')
                                                 <a target="_blank"
                                                     href="{{ route('facturacion.download.xml', ['comprobante' => $item, 'type' => 'xml']) }}"
-                                                    class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
+                                                    class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between"
+                                                    @click="dropdownOpen = false">
                                                     DESCARGAR XML
                                                     <svg class="w-4 h-4 block scale-110"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -307,7 +311,8 @@
                                                 </a>
                                                 <a target="_blank"
                                                     href="{{ route('facturacion.download.xml', ['comprobante' => $item, 'type' => 'cdr']) }}"
-                                                    class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between">
+                                                    class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between"
+                                                    @click="dropdownOpen = false">
                                                     DESCARGAR CDR
                                                     <svg class="w-4 h-4 block scale-110"
                                                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -335,11 +340,24 @@
                                                             d="M22 17.5L14 17.5M22 17.5C22 16.7998 20.0057 15.4915 19.5 15M22 17.5C22 18.2002 20.0057 19.5085 19.5 20" />
                                                     </svg>
                                                 </button>
-                                            </div>
+                                            @else
+                                            @endif
+                                            <button type="button" wire:click="consultarsunat({{ $item->id }})"
+                                                class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between leading-none disabled:opacity-25"
+                                                @click="dropdownOpen = false">
+                                                VALIDAR ESTADO EN SUNAT
+                                                <svg class="w-4 h-4 block flex-shrink-0 scale-110"
+                                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                    stroke-width="1.5" stroke="currentColor" fill="none">
+                                                    <path
+                                                        d="M14 2.26953V6.40007C14 6.96012 14 7.24015 14.109 7.45406C14.2049 7.64222 14.3578 7.7952 14.546 7.89108C14.7599 8.00007 15.0399 8.00007 15.6 8.00007H19.7305M16 18.5L14.5 17M14 2H8.8C7.11984 2 6.27976 2 5.63803 2.32698C5.07354 2.6146 4.6146 3.07354 4.32698 3.63803C4 4.27976 4 5.11984 4 6.8V17.2C4 18.8802 4 19.7202 4.32698 20.362C4.6146 20.9265 5.07354 21.3854 5.63803 21.673C6.27976 22 7.11984 22 8.8 22H15.2C16.8802 22 17.7202 22 18.362 21.673C18.9265 21.3854 19.3854 20.9265 19.673 20.362C20 19.7202 20 18.8802 20 17.2V8L14 2ZM15.5 14.5C15.5 16.433 13.933 18 12 18C10.067 18 8.5 16.433 8.5 14.5C8.5 12.567 10.067 11 12 11C13.933 11 15.5 12.567 15.5 14.5Z" />
+                                                </svg>
+                                            </button>
                                         </div>
-                                    @endif
-                                </div>
-                            @endif
+                                    </div>
+                                @endif
+                            </div>
+
                         </td>
                     </tr>
                 @endforeach

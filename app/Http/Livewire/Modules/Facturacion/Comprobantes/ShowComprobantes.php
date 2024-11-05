@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Facturacion\Comprobantes;
 
+use App\Helpers\Facturacion\SendXML;
 use App\Mail\EnviarXMLMailable;
 use App\Models\Typecomprobante;
 use App\Models\Typepayment;
@@ -62,7 +63,7 @@ class ShowComprobantes extends Component
     public function render()
     {
 
-        $comprobantes = Comprobante::withTrashed()->with(['facturableitems', 'sucursal'])
+        $comprobantes = Comprobante::withTrashed()->with(['client', 'typepayment', 'moneda', 'facturableitems', 'sucursal', 'user', 'seriecomprobante.typecomprobante'])
             ->withWherehas('sucursal', function ($query) {
                 $query->where('id', auth()->user()->sucursal_id);
             });
@@ -297,5 +298,41 @@ class ShowComprobantes extends Component
         } else {
             $this->reset(['selectedcomprobantes']);
         }
+    }
+
+    public function consultarsunat($comprobante_id)
+    {
+        $comprobante = Comprobante::withTrashed()->with(['client', 'seriecomprobante.typecomprobante', 'sucursal.empresa'])
+            ->find($comprobante_id);
+
+        $objApi = new SendXML();
+
+        $codetypecomprobante = $comprobante->seriecomprobante->typecomprobante->code;
+        $nombreXML = $comprobante->isSendSunat() ? null : $comprobante->sucursal->empresa->document . '-' . $codetypecomprobante . '-' . $comprobante->seriecompleta;
+        $ruta = is_null($nombreXML) ? null : storage_path('app/xml/' . $codetypecomprobante . '/');
+
+        $response = $objApi->getStatus(
+            $comprobante->sucursal->empresa,
+            $codetypecomprobante,
+            substr($comprobante->seriecompleta, 0, 4),
+            substr($comprobante->seriecompleta, 5),
+            $nombreXML,
+            $ruta
+        );
+
+        // dd($response);
+        if (!$comprobante->isSendSunat()) {
+            $comprobante->codesunat = $response->code;
+            $comprobante->descripcion = $response->descripcion;
+            $comprobante->save();
+        }
+
+        $mensaje = response()->json([
+            'icon' => $response->code == Comprobante::ENVIADO_SUNAT ? 'success' : 'info',
+            'title' =>  $response->descripcion,
+            'html' => null,
+        ])->getData();
+
+        $this->dispatchBrowserEvent('validation', $mensaje);
     }
 }

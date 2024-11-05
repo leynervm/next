@@ -2,7 +2,6 @@
 
 namespace App\Helpers\Facturacion;
 
-use App\Models\Empresa;
 use DOMDocument;
 use Exception;
 use GuzzleHttp\Client;
@@ -286,18 +285,129 @@ class SendXML
         return $mensaje->getData();
     }
 
-    function codeConsult()
+    function getStatus($empresa, $tipo, $serie, $correlativo, $nombre = null, $ruta_archivo_cdr = null)
     {
-        // // CONSULTAR CDR COMPROBANTE USA TOKEN GRE
-        // $tokenCDR = Http::asForm()->acceptJson()->post($ws, [
+
+        // $wsApiCDR = "https://api-cpe.sunat.gob.pe/v1/contribuyente/enviossp/20538954099-03-B002-00000543/estados";
+        // $wsCV = "https://e-factura.sunat.gob.pe/ol-it-wsconsvalidcpe/billValidService";
+        $ws = "https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService";
+
+        $xml_envio = '<?xml version="1.0" encoding="UTF-8"?>
+        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ser="http://service.sunat.gob.pe" xmlns:wsse="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+            <soapenv:Header>
+                <wsse:Security>
+                    <wsse:UsernameToken Id="ABC-123">
+                        <wsse:Username>' . $empresa->document . $empresa->usuariosol . '</wsse:Username>
+                        <wsse:Password>' . $empresa->clavesol . '</wsse:Password>
+                    </wsse:UsernameToken>
+                </wsse:Security>
+            </soapenv:Header>
+            <soapenv:Body>
+                <ser:getStatusCdr>
+                    <rucComprobante>' . $empresa->document . '</rucComprobante>
+                    <tipoComprobante>' . $tipo . '</tipoComprobante>
+                    <serieComprobante>' . $serie . '</serieComprobante>
+                    <numeroComprobante>' . $correlativo . '</numeroComprobante>
+                </ser:getStatusCdr>
+            </soapenv:Body>
+        </soapenv:Envelope>';
+
+        $header = array(
+            "Content-Type: text/xml; charset=utf-8",
+            "SOAPAction: getStatusCdr",
+            "Content-Length: " . strlen($xml_envio)
+        );
+
+        try {
+            $response = Http::withOptions(['verify' => true, 'timeout' => 30])
+                ->withHeaders($header)->withBody($xml_envio, 'text/xml')->post($ws);
+
+            if ($response->status() == 200) {
+                $doc = new DOMDocument();
+                $doc->loadXML($response->body());
+
+                $statusCodeNode = $doc->getElementsByTagName('statusCode')->item(0);
+                $statusCode = $statusCodeNode ? $statusCodeNode->nodeValue : null;
+
+                $statusMessageNode = $doc->getElementsByTagName('statusMessage')->item(0);
+                $statusMessage = $statusMessageNode ? $statusMessageNode->nodeValue : null;
+
+                if (!empty($ruta_archivo_cdr)) {
+                    $contentNode = $doc->getElementsByTagName('content')->item(0);
+                    if ($contentNode && $contentNode->nodeValue) {
+                        $cdrBase64 = $contentNode->nodeValue;
+                        // Guarda el CDR como un archivo ZIP
+                        $nombreCdrZip = "R-" . $nombre . ".zip";
+                        $rutaArchivoCdr = $ruta_archivo_cdr . $nombreCdrZip;
+                        file_put_contents($rutaArchivoCdr, base64_decode($cdrBase64));
+
+                        // Extrae el archivo XML del CDR (opcional: para analizar su contenido)
+                        $zip = new ZipArchive();
+                        if ($zip->open($rutaArchivoCdr) === TRUE) {
+                            $zip->extractTo($ruta_archivo_cdr, "R-" . $nombre . ".xml");
+                            $zip->close();
+
+                            // Si deseas procesar el contenido del XML extraído
+                            $rutaCdrXml = $ruta_archivo_cdr . "R-" . $nombre . ".xml";
+                            $codeResponse = getValueNode($rutaCdrXml, 'ResponseCode');
+                            $descripcion = getValueNode($rutaCdrXml, 'Description');
+                            $notes = getNotesNode($rutaCdrXml);
+
+                            $mensaje = response()->json([
+                                'codRespuesta' => $response->status(),
+                                'code' => $codeResponse,
+                                'descripcion' => $descripcion,
+                                'notes' => $notes,
+                            ]);
+                        } else {
+                            $mensaje = response()->json([
+                                'codRespuesta' => $response->status(),
+                                'code' => $statusCode,
+                                'descripcion' => "$statusMessage \nNo se pudo extraer el archivo ZIP del CDR"
+                            ]);
+                        }
+                    } else {
+                        $mensaje = response()->json([
+                            'codRespuesta' => $response->status(),
+                            'code' => $statusCode,
+                            'descripcion' => "$statusMessage \nNo se pudo obtener el archivo ZIP del CDR"
+                        ]);
+                    }
+                } else {
+                    $mensaje = response()->json([
+                        'codRespuesta' => $response->status(),
+                        'code' => $statusCode,
+                        'descripcion' => $statusMessage
+                    ]);
+                }
+            } else {
+                $mensaje = response()->json([
+                    'codRespuesta' => $response->status(),
+                    'code' => $response->status(),
+                    'descripcion' => $response->body()
+                ]);
+            }
+        } catch (Exception $error) {
+            $mensaje = response()->json([
+                'codRespuesta' => 'Error',
+                'code' => '0***',
+                'descripcion' => $error->getMessage()
+            ]);
+        }
+
+        return $mensaje->getData();
+
+
+        // $tokenCDR = Http::asForm()->acceptJson()->post($wsCDR, [
         //     'grant_type' => 'password',
         //     'scope' => 'https://api-cpe.sunat.gob.pe',
-        //     'client_id' => $client_id_produccion,
-        //     'client_secret' => $client_secret_produccion,
+        //     'client_id' => $empresa->clientid,
+        //     'client_secret' => $empresa->clientsecret,
+        //     // 'username' => $empresa->document . $empresa->usuariosol,
+        //     // 'password' => $empresa->clavesol,
         //     'username' => '20538954099IONSOCAT',
-        //     'password' => 'nextjoel'
+        //     'password' => 'nextjoel',
         // ]);
-
 
         // dd($tokenCDR->body());
 
@@ -307,6 +417,8 @@ class SendXML
         //     'scope' => 'https://api.sunat.gob.pe/v1/contribuyente/contribuyentes',
         //     'client_id' => 'e12bb62c-efc4-42cd-9137-31be9c5e15c5',
         //     'client_secret' => 'etlfBUMvDy+UGHP12xFOIw==',
+        //     // 'client_id' => 'e12bb62c-efc4-42cd-9137-31be9c5e15c5',
+        //     // 'client_secret' => 'etlfBUMvDy+UGHP12xFOIw==',
         // ]);
 
         // if ($responseToken->status() == 200) {

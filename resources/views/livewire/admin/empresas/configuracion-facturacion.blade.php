@@ -155,6 +155,27 @@
                 clientid: @entangle('empresa.clientid').defer,
                 clientsecret: @entangle('empresa.clientsecret').defer,
                 passwordcert: @entangle('empresa.passwordcert').defer,
+
+                init() {
+                    this.$watch("sendmode", value => {
+                        if (value > 0) {
+                            @this.clearCert();
+                            this.usuariosol = '';
+                            this.clavesol = '';
+                            this.clientid = '';
+                            this.clientsecret = '';
+                            this.passwordcert = '';
+                        } else {
+                            this.usuariosol = '{{ \App\Models\Empresa::USER_SOL_PRUEBA }}';
+                            this.clavesol = '{{ \App\Models\Empresa::PASSWORD_SOL_PRUEBA }}';
+                            this.clientid = '{{ \App\Models\Empresa::CLIENT_ID_GRE_PRUEBA }}';
+                            this.clientsecret =
+                                '{{ \App\Models\Empresa::CLIENT_SECRET_GRE_PRUEBA }}';
+                            this.passwordcert =
+                                '{{ \App\Models\Empresa::PASSWORD_CERT_PRUEBA }}';
+                        }
+                    });
+                }
             }))
         });
 

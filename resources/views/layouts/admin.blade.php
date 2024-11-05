@@ -294,7 +294,6 @@
     window.addEventListener('validation', data => {
         // console.log(data.detail);
         var icon = data.detail.icon ? data.detail.icon : 'info';
-        console.log(icon);
         swal.fire({
             title: data.detail.title,
             text: data.detail.text,

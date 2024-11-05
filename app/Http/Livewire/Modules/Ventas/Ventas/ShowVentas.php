@@ -133,7 +133,6 @@ class ShowVentas extends Component
                             })->first();
 
                         if ($serienotacredito) {
-                            // dd($serienotacredito);
                             $numeracion = $venta->sucursal->empresa->isProduccion() ? $serienotacredito->contador + 1 : $serienotacredito->contadorprueba + 1;
                             $comprobante = Comprobante::create([
                                 'seriecompleta' => $serienotacredito->serie . '-' . $numeracion,
@@ -202,7 +201,7 @@ class ShowVentas extends Component
                                 }
                             }
 
-                            if ($this->venta->sucursal->empresa->isProduccion()) {
+                            if ($venta->sucursal->empresa->isProduccion()) {
                                 $serienotacredito->contador = $numeracion;
                             } else {
                                 $serienotacredito->contadorprueba = $numeracion;

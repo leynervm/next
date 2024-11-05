@@ -4796,6 +4796,9 @@ select {
 .-mt-20 {
   margin-top: -5rem;
 }
+.-mt-\[108px\] {
+  margin-top: -108px;
+}
 .mb-0\.5 {
   margin-bottom: 0.125rem;
 }
@@ -4909,9 +4912,6 @@ select {
 }
 .mt-auto {
   margin-top: auto;
-}
-.-mt-\[108px\] {
-  margin-top: -108px;
 }
 .box-border {
   box-sizing: border-box;
@@ -5739,6 +5739,9 @@ select {
 .text-wrap {
   text-wrap: wrap;
 }
+.text-nowrap {
+  text-wrap: nowrap;
+}
 .break-words {
   overflow-wrap: break-word;
 }
@@ -6558,6 +6561,9 @@ select {
 .text-\[1rem\] {
   font-size: 1rem;
 }
+.text-\[7px\] {
+  font-size: 7px;
+}
 .text-\[8px\] {
   font-size: 8px;
 }
@@ -6583,6 +6589,9 @@ select {
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
+}
+.text-\[87px\] {
+  font-size: 87px;
 }
 .font-bold {
   font-weight: 700;
@@ -7122,10 +7131,6 @@ select {
 .ring-white {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity));
-}
-.\!ring-next-500 {
-  --tw-ring-opacity: 1 !important;
-  --tw-ring-color: rgb(15 185 185 / var(--tw-ring-opacity)) !important;
 }
 .ring-opacity-5 {
   --tw-ring-opacity: 0.05;
@@ -7864,10 +7869,6 @@ select {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(253 224 71 / var(--tw-ring-opacity));
 }
-.focus\:\!ring-next-500:focus {
-  --tw-ring-opacity: 1 !important;
-  --tw-ring-color: rgb(15 185 185 / var(--tw-ring-opacity)) !important;
-}
 .focus\:ring-opacity-50:focus {
   --tw-ring-opacity: 0.5;
 }
@@ -8226,6 +8227,10 @@ select {
     max-width: 150px;
   }
 
+  .xs\:max-w-\[170px\] {
+    max-width: 170px;
+  }
+
   .xs\:max-w-\[200px\] {
     max-width: 200px;
   }
@@ -8248,14 +8253,6 @@ select {
 
   .xs\:max-w-xs {
     max-width: 20rem;
-  }
-
-  .xs\:max-w-\[180px\] {
-    max-width: 180px;
-  }
-
-  .xs\:max-w-\[170px\] {
-    max-width: 170px;
   }
 
   .xs\:flex-none {
@@ -9070,10 +9067,6 @@ select {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .md\:grid-cols-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
   .md\:flex-row {
     flex-direction: row;
   }
@@ -9092,10 +9085,6 @@ select {
 
   .md\:justify-start {
     justify-content: flex-start;
-  }
-
-  .md\:justify-end {
-    justify-content: flex-end;
   }
 
   .md\:justify-center {
@@ -9562,16 +9551,16 @@ select {
     grid-column: span 5 / span 5;
   }
 
+  .xl\:-mt-24 {
+    margin-top: -6rem;
+  }
+
   .xl\:mt-2 {
     margin-top: 0.5rem;
   }
 
   .xl\:mt-20 {
     margin-top: 5rem;
-  }
-
-  .xl\:-mt-24 {
-    margin-top: -6rem;
   }
 
   .xl\:flex {

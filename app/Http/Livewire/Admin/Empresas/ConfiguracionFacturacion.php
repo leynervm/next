@@ -118,4 +118,17 @@ class ConfiguracionFacturacion extends Component
             return;
         }
     }
+
+    // public function updatedEmpresaSendmode()
+    // {
+
+    //     if ($this->empresa->isProduccion()) {
+    //         //Quiere decir que cambio a produccion
+    //     }
+    //     $usuariosol = Empresa::USER_SOL_PRUEBA;
+    //     $clavesol = Empresa::PASSWORD_SOL_PRUEBA;
+    //     $clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
+    //     $clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
+    //     $passwordcert = Empresa::PASSWORD_CERT_PRUEBA;
+    // }
 }
