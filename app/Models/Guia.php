@@ -199,4 +199,9 @@ class Guia extends Model
     {
         return $this->indicadorvehiculosml == '1';
     }
+
+    public function isProduccion()
+    {
+        return $this->sendmode == Empresa::PRODUCCION;
+    }
 }

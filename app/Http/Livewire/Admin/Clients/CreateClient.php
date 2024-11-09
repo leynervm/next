@@ -45,19 +45,8 @@ class CreateClient extends Component
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'direccion' => ['required', 'string', 'min:3'],
             'email' => ['nullable', 'email'],
-            'sexo' => [
-                'required',
-                'string',
-                'min:1',
-                'max:1',
-                Rule::in(['M', 'F', 'E'])
-            ],
-            'nacimiento' => [
-                'nullable',
-                'date',
-                'before_or_equal:today'
-                // new ValidateNacimiento(10)
-            ],
+            'sexo' => ['required', 'string', 'min:1', 'max:1', Rule::in(['M', 'F', 'E'])],
+            'nacimiento' => ['nullable', 'date', 'before_or_equal:today'],
             'pricetype_id' => [
                 'nullable',
                 Rule::requiredIf(mi_empresa()->usarlista()),
@@ -65,7 +54,7 @@ class CreateClient extends Component
                 'min:1',
                 'exists:pricetypes,id'
             ],
-            'telefono' => ['required', 'numeric', 'digits_between:7,9'],
+            'telefono' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
             'documentContact' => [
                 'nullable',
                 Rule::requiredIf($this->addcontacto),
@@ -76,18 +65,15 @@ class CreateClient extends Component
                 Rule::requiredIf($this->addcontacto),
                 new ValidateContacto($this->document)
             ],
-            'telefonoContact' => [
-                'nullable',
-                Rule::requiredIf($this->addcontacto),
-                new ValidateContacto($this->document)
-            ],
+            'telefonoContact' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/', new ValidateContacto($this->document)],
         ];
     }
 
     public function render()
     {
-        $pricetypes = Pricetype::orderBy('name', 'asc')->get();
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        $pricetypes = Pricetype::orderBy('id', 'asc')->get();
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         return view('livewire.admin.clients.create-client', compact('pricetypes', 'ubigeos'));
     }
 
@@ -154,9 +140,11 @@ class CreateClient extends Component
                 'default' => $default,
             ]);
 
-            $client->telephones()->create([
-                'phone' => $this->telefono
-            ]);
+            if (trim($this->telefono) !== '') {
+                $client->telephones()->create([
+                    'phone' => $this->telefono
+                ]);
+            }
 
             if ($this->addcontacto && strlen(trim($this->document)) == 11) {
                 $contact = $client->contacts()->create([
@@ -164,9 +152,11 @@ class CreateClient extends Component
                     'name' => $this->nameContact
                 ]);
 
-                $contact->telephone()->create([
-                    'phone' => $this->telefonoContact
-                ]);
+                if (trim($this->telefonoContact) !== '') {
+                    $contact->telephone()->create([
+                        'phone' => $this->telefonoContact
+                    ]);
+                }
             }
 
             DB::commit();

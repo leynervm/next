@@ -1,17 +1,15 @@
 <x-guest-layout>
     <x-jet-authentication-card>
         <x-slot name="logo">
-            @php
-                $empresa = mi_empresa();
-            @endphp
             @if ($empresa)
-                @if ($empresa->image)
-                    <img class="w-48 h-32 object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
+                @if ($empresa->logo)
+                    <img class="w-full max-w-60 h-auto max-h-40 object-scale-down"
+                        src="{{ getLogoEmpresa($empresa->logo, false) }}" alt="">
                 @endif
             @endif
         </x-slot>
 
-        <div class="mb-4 text-sm text-colorlabel">
+        <div class="mb-4 text-sm text-colorlabel text-center">
             {{ __('Antes de continuar, complete los datos de su perfil.') }}
         </div>
 

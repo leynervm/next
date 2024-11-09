@@ -83,7 +83,7 @@ class ShowCajamovimientos extends Component
             });
         })->withTrashed()->get();
 
-        $movimientos = Cajamovimiento::with(['sucursal', 'concept', 'methodpayment', 'user', 'monthbox', 'moneda',])
+        $movimientos = Cajamovimiento::with(['sucursal', 'concept', 'methodpayment', 'user', 'monthbox', 'moneda', 'openbox.box'])
             ->withWhereHas('sucursal', function ($query) {
                 $query->withTrashed()->where('id', auth()->user()->sucursal_id);
             })->withWhereHas('openbox', function ($query) {

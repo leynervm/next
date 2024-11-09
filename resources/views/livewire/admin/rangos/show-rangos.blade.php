@@ -3,32 +3,25 @@
         <x-loading-next />
     </div>
 
-    <div class="flex flex-col sm:flex-row gap-1 w-full py-2">
+    <div class="w-full pb-1 flex flex-row flex-wrap gap-1 items-center justify-start">
         @canany(['admin.administracion.rangos.delete', 'admin.administracion.rangos.sync'])
-            <div class="flex flex-col md:flex-row gap-1 items-center sm:items-start md:items-end" style="display: none;"
-                x-show="selectedrangos.length > 0">
-                @can('admin.administracion.rangos.delete')
-                    <x-button-secondary @click="deleteselecteds" wire:loading.attr="disabled">
-                        {{ __('ELIMINAR SELECCIONADOS') }} <span x-text="selectedrangos.length"
-                            class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
-                            :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
-                    </x-button-secondary>
-                @endcan
-                @can('admin.administracion.rangos.sync')
-                    <x-button @click="syncprices" wire:loading.attr="disabled">
-                        {{ __('SINCRONIZAR PRECIOS DE RANGOS') }} <span x-text="selectedrangos.length"
-                            class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-fondobutton"
-                            :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
-                    </x-button>
-                @endcan
-            </div>
+            @can('admin.administracion.rangos.delete')
+                <x-button-secondary @click="deleteselecteds" wire:loading.attr="disabled" style="display: none;"
+                    x-show="selectedrangos.length > 0">
+                    {{ __('ELIMINAR SELECCIONADOS') }} <span x-text="selectedrangos.length"
+                        class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
+                        :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
+                </x-button-secondary>
+            @endcan
+            @can('admin.administracion.rangos.sync')
+                <x-button @click="syncprices" wire:loading.attr="disabled" style="display: none;"
+                    x-show="selectedrangos.length > 0">
+                    {{ __('SINCRONIZAR PRECIOS DE RANGOS') }} <span x-text="selectedrangos.length"
+                        class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-fondobutton"
+                        :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
+                </x-button>
+            @endcan
         @endcanany
-
-        @if ($rangos->hasPages())
-            <div class="w-full flex-1 flex  items-end justify-center sm:justify-end">
-                {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
-            </div>
-        @endif
     </div>
 
     @if (count($rangos) > 0)
@@ -121,21 +114,21 @@
                                 <td class="p-1 text-center">
                                     <p class="font-semibold text-[10px] text-center">{{ $lista->name }}</p>
                                     @can('admin.administracion.rangos.edit')
-                                        <x-input class="inline-block text-center w-full max-w-20 sm:max-w-36"
+                                        <x-input class="inline-block text-center w-full min-w-28 max-w-28 sm:max-w-36"
                                             :value="$lista->pivot->ganancia" type="text" step="0.01" min="0"
-                                            id="ganancia_{{ $item->id . $lista->id }}"
+                                            id="ganancia_{{ $item->id . $lista->id }}" pricetype_id="{{ $lista->id }}"
+                                            rango_id="{{ $item->id }}" name="percent_ganacia"
                                             x-mask:dynamic="$money($input, '.', '', 2)"
-                                            onkeypress="return validarDecimal(event, 5)" wire:loading.attr="disabled"
-                                            @keydown.enter.prevent="actualizar($event.target.value, {{ $item->id }}, {{ $lista->id }}, {{ $lista->pivot->ganancia }})"
+                                            onkeypress="return validarDecimal(event, 5)"
+                                            wire:key="ganancia_{{ $item->id . $lista->id }}" wire:loading.attr="disabled"
                                             @blur="$el.value = getBlurValue($el.value)" />
                                     @endcan
+
+                                    {{-- @keydown.enter.prevent="actualizar($event.target.value, {{ $item->id }}, {{ $lista->id }}, {{ $lista->pivot->ganancia }})" --}}
 
                                     @cannot('admin.administracion.rangos.edit')
                                         <x-disabled-text :text="$lista->pivot->ganancia" class="inline-block md:px-5 border-0" />
                                     @endcannot
-                                    <p class="text-[10px] text-center text-colorsubtitleform !leading-none">Enter
-                                        para
-                                        acualizar</p>
                                 </td>
                             @endforeach
 
@@ -162,6 +155,26 @@
         </div>
     @endif
 
+    @if ($rangos->hasPages())
+        <div class="w-full flex justify-between items-center p-1 sticky -bottom-1 right-0 bg-body">
+            @can('admin.administracion.rangos.sync')
+                <x-button @click="saveganancias" wire:loading.attr="disabled">ACTUALIZAR LISTA</x-button>
+            @endcan
+
+            {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+
+
+        {{-- <div class="w-full flex justify-between items-center p-1 gap-2 sm:pr-6 fixed bottom-0 right-0 bg-body"
+            :class="openSidebar ? 'md:pl-52' : 'md:pl-20'">
+            @can('admin.administracion.rangos.sync')
+                <x-button @click="saveganancias" wire:loading.attr="disabled">ACTUALIZAR LISTA</x-button>
+            @endcan
+            <div class="w-full flex-1 flex flex-col justify-end items-end">
+                {{ $rangos->onEachSide(0)->links('livewire::pagination-default') }}
+            </div>
+        </div> --}}
+    @endif
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -173,20 +186,21 @@
                 <div class="w-full grid grid-cols-2 gap-2">
                     <div class="w-full">
                         <x-label value="Rango inicio :" />
-                        <x-input class="block w-full" wire:model.defer="rango.desde" type="number" step="0.01"
-                            min="0" onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="rango.desde" type="number"
+                            step="0.01" min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="rango.desde" />
                     </div>
                     <div class="w-full">
                         <x-label value="Rango final :" />
-                        <x-input class="block w-full" wire:model.defer="rango.hasta" type="number" step="0.01"
-                            min="0" onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="rango.hasta" type="number"
+                            step="0.01" min="0" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="rango.hasta" />
                     </div>
                     <div class="w-full">
                         <x-label value="Porcentaje ganancia (%) :" />
-                        <x-input class="block w-full" wire:model.defer="rango.incremento" type="number"
-                            step="0.01" min="0" onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="rango.incremento"
+                            type="number" step="0.01" min="0"
+                            onkeypress="return validarDecimal(event, 5)" />
                         <x-jet-input-error for="rango.incremento" />
                     </div>
                 </div>
@@ -205,15 +219,21 @@
                 selectedrangos: @entangle('selectedrangos').defer,
                 init() {
 
+                    Livewire.hook('message.processed', () => {
+                        const rangos = document.querySelectorAll(
+                            '[type=checkbox][name=selectedrangos]:checked');
+                        this.checkall = (this.selectedrangos.length == rangos
+                                .length && rangos.length > 0) ? true :
+                            false;
+                    });
                 },
-                actualizar(value, rango_id, lista_id, oldpercent) {
-                    let ganancia = value > 0 ? toDecimal(value, 2) : 0;
-                    if (ganancia != toDecimal(oldpercent, 2)) {
-                        this.$wire.updatepricerango(rango_id, lista_id, ganancia).then(function() {
-                            // console.log('updatepricerango proceess finish successfull');
-                        });
-                    }
-                },
+                // actualizar(value, rango_id, lista_id, oldpercent) {
+                //     let ganancia = value > 0 ? toDecimal(value, 2) : 0;
+                //     if (ganancia != toDecimal(oldpercent, 2)) {
+                //         this.$wire.updatepricerango(rango_id, lista_id, ganancia).then(function() {
+                //         });
+                //     }
+                // },
                 getBlurValue(value) {
                     if (value === '' || isNaN(value)) {
                         value = '0.00';
@@ -271,6 +291,7 @@
                                     rangos.forEach(checkbox => {
                                         checkbox.checked = false;
                                     });
+                                    this.checkall = false;
                                 }
                             })
                         }
@@ -297,10 +318,41 @@
                                     rangos.forEach(checkbox => {
                                         checkbox.checked = false;
                                     });
+                                    this.checkall = false;
                                 }
                             })
                         }
                     })
+                },
+                saveganancias() {
+                    ganancias = []
+                    const inputs = document.querySelectorAll(
+                        '[type=text][name=percent_ganacia]');
+                    inputs.forEach((item, index) => {
+                        // ganancias[item.getAttribute('pricetype_rango_id')] = item.value;
+                        ganancias.push({
+                            rango_id: item.getAttribute('rango_id'),
+                            pricetype_id: item.getAttribute('pricetype_id'),
+                            ganancia: item.value
+                        });
+                    })
+                    // console.log(ganancias);
+                    if (ganancias.length > 0) {
+                        swal.fire({
+                            title: 'ACTUALIZAR PORCENTAJES DE GANANCIA DE LISTA DE PRECIOS ?',
+                            text: null,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#0FB9B9',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Confirmar',
+                            cancelButtonText: 'Cancelar'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                this.$wire.updateganacias(ganancias).then(result => {})
+                            }
+                        })
+                    }
                 }
             }))
         })

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Nwidart\Modules\Facades\Module;
 
 class ShowProductos extends Component
 {
@@ -54,8 +55,19 @@ class ShowProductos extends Component
     public function render()
     {
 
-        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems', 'images']);
+        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems.compra.proveedor'])
+            ->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }])->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }]);
 
+        if (Module::isEnabled('Almacen')) {
+            $productos->with(['almacenarea', 'estante']);
+        }
         if (trim($this->search) !== '') {
             // $searchTerms = explode(' ', $this->search);
             $productos->where(function ($query) {
@@ -116,22 +128,22 @@ class ShowProductos extends Component
 
     public function updatedSearch()
     {
-        $this->resetPage();
+        $this->reseFilters();
     }
 
     public function updatedSearchalmacen()
     {
-        $this->resetPage();
+        $this->reseFilters();
     }
 
     public function updatedSearchmarca()
     {
-        $this->resetPage();
+        $this->reseFilters();
     }
 
     public function updatedSearchcategory($value)
     {
-        $this->resetPage();
+        $this->reseFilters();
         $this->reset(['subcategories', 'searchsubcategory']);
         if (trim($value) !== "") {
             $this->subcategories = Category::with('subcategories')->find($value)->subcategories;
@@ -140,41 +152,63 @@ class ShowProductos extends Component
 
     public function updatedSearchsubcategory()
     {
-        $this->resetPage();
+        $this->reseFilters();
     }
 
     public function updatedPublicado()
     {
-        $this->resetPage();
+        $this->reseFilters();
     }
 
-    public function updatedCheckall()
+    public function updatedPage()
     {
-        if ($this->checkall) {
-            $this->selectedproductos = Producto::all()->pluck('id');
-        } else {
-            $this->reset(['selectedproductos']);
-        }
+        $this->resetValidation();
+        $this->reset(['checkall', 'selectedproductos']);
     }
 
-    public function deleteall()
+    private function reseFilters()
+    {
+        $this->resetPage();
+        $this->resetValidation();
+        $this->reset(['checkall', 'selectedproductos']);
+    }
+
+
+    public function deleteall($selectedproductos = [])
     {
         $this->authorize('admin.almacen.productos.delete');
 
-        if (count($this->selectedproductos) > 0) {
+        if (count($selectedproductos) > 0) {
             $count = 0;
-            foreach ($this->selectedproductos as $item) {
-                $producto = Producto::with(['tvitems', 'compraitems', 'images'])->find($item);
-                $tvitems = $producto->tvitems()->count();
-                $compraitems = $producto->compraitems()->count();
-                $cadena = extraerMensaje([
-                    'Items_Venta' => $tvitems,
-                    'Items_Compra' => $compraitems,
+            foreach ($selectedproductos as $item) {
+                $producto = Producto::with('images')->find($item);
+                // $tvitems = $producto->tvitems()->count();
+                // $compraitems = $producto->compraitems()->count();
+                $producto->loadCount([
+                    'tvitems as totaltvitems' => function ($query) {
+                        $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+                    },
+                    'compraitems as totaltvcompras' => function ($query) {
+                        $query->select(DB::raw('COALESCE(COUNT(*),0)'));
+                    },
+                    'carshoops as totalcarshoops' => function ($query) {
+                        $query->select(DB::raw('COALESCE(COUNT(*),0)'));
+                    },
+                    'series as totaloutseries' => function ($query) {
+                        $query->salidas()->select(DB::raw('COALESCE(COUNT(*),0)'));
+                    },
                 ]);
 
-                if ($tvitems > 0 || $compraitems > 0) {
+                $cadena = extraerMensaje([
+                    'Items_Venta' => $producto->totaltvitems,
+                    'Items_Compra' => $producto->totaltvcompras,
+                    'Items_Carrito_Venta' => $producto->totalcarshoops,
+                    'Items_Series_Salientes' => $producto->totaloutseries,
+                ]);
+
+                if ($producto->totaltvitems > 0 || $producto->totaltvcompras > 0 || $producto->totalcarshoops > 0 || $producto->totaloutseries > 0) {
                     $mensaje = response()->json([
-                        'title' => 'No se puede eliminar registro, ' . $producto->name,
+                        'title' => 'NO SE PUEDE ELIMINAR EL PRODUCTO ' . $producto->name,
                         'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
                     ])->getData();
                     $this->dispatchBrowserEvent('validation', $mensaje);
@@ -210,6 +244,7 @@ class ShowProductos extends Component
             if ($count > 0) {
                 $this->reset(['selectedproductos']);
                 $this->dispatchBrowserEvent('toast', toastJSON("$count PRODUCTOS ELIMINADOS CORRECTAMENTE !"));
+                return true;
             }
         }
     }

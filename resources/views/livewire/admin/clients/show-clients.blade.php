@@ -1,10 +1,4 @@
 <div>
-    @if ($clients->hasPages())
-        <div class="pb-2">
-            {{ $clients->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <div class="flex items-center gap-2 mt-4 mb-1">
         <div class="relative flex items-center">
             <span class="absolute">
@@ -42,7 +36,7 @@
                 <th scope="col" class="p-2 font-medium">
                     CORREO</th>
 
-                @if (Module::isEnabled('Ventas'))
+                @if (Module::isEnabled('Ventas') && $empresa->usarLista())
                     <th scope="col" class="p-2 font-medium">
                         LISTA PRECIO</th>
                 @endif
@@ -74,7 +68,7 @@
                                 <a href="{{ route('admin.clientes.edit', $item) }}"
                                     class="font-medium inline-block break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
                                     {{ $item->name }}
-                                    <h1 class="text-xs">{{ $item->document }}</h1>
+                                    <h1 class="text-xs text-colorsubtitleform">{{ $item->document }}</h1>
                                 </a>
                             @endcan
                             @cannot('admin.clientes.edit')
@@ -115,7 +109,7 @@
                         {{-- <td class="p-2 text-xs text-center">
                             {{ $item->channelsale->name }}
                         </td> --}}
-                        @if (Module::isEnabled('Ventas'))
+                        @if (Module::isEnabled('Ventas') && $empresa->usarLista())
                             <td class="p-2 text-xs text-center">
                                 @if ($item->pricetype)
                                     {{ $item->pricetype->name }}
@@ -168,4 +162,14 @@
             </x-slot>
         @endif
     </x-table>
+
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+
+    @if ($clients->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $clients->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 </div>

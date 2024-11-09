@@ -25,7 +25,8 @@ class ShowPromociones extends Component
 
     public function mount()
     {
-        if (mi_empresa()->usarLista()) {
+        $empresa = view()->shared('empresa');
+        if ($empresa->usarLista()) {
             $pricetypes = Pricetype::activos()->default();
             if (count($pricetypes->get()) > 0) {
                 $this->pricetype = $pricetypes->first();

@@ -1,18 +1,8 @@
 <div x-data="data">
-    <div wire:loading.flex class="loading-overlay hidden fixed">
-        <x-loading-next />
-    </div>
-
-    @if ($promociones->hasPages())
-        <div class="pt-3 pb-1">
-            {{ $promociones->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <div class="w-full flex flex-wrap gap-2 mb-3">
-        @if (mi_empresa()->usarlista())
+        @if ($empresa->usarlista())
             @if (count($pricetypes) > 0)
-                <div class="w-full mb-3 max-w-sm">
+                <div class="w-full mb-3 max-w-60">
                     <x-label value="Lista precios :" />
                     <div id="parentventapricetype_id" class="relative" x-init="selectPricetype" wire:ignore>
                         <x-select class="block w-full" id="ventapricetype_id" x-ref="selectp">
@@ -30,7 +20,7 @@
             @endif
         @endif
 
-        <div class="w-full max-w-xs">
+        <div class="w-full max-w-60">
             <x-label value="Filtrar estado :" />
             <div class="relative" id="parentselectestado" x-init="selectEstado">
                 <x-select class="block w-full" id="selectestado" x-ref="selectestado">
@@ -224,6 +214,16 @@
                     </div>
                 </x-simple-card>
             @endforeach
+        </div>
+    @endif
+
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+
+    @if ($promociones->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $promociones->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 

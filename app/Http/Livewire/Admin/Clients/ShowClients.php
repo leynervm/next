@@ -18,13 +18,13 @@ class ShowClients extends Component
 
     public function render()
     {
-        $clients = Client::orderBy('name', 'asc');
+        $clients = Client::with(['telephones', 'direccion.ubigeo', 'pricetype']);
 
         if (trim($this->search) !== '') {
             $clients->where('document', 'ilike', '%' . $this->search . '%')
                 ->orWhere('name', 'ilike', '%' . $this->search . '%');
         }
-        $clients = $clients->orderBy('document', 'asc')->paginate();
+        $clients = $clients->orderBy('name', 'asc')->orderBy('document', 'asc')->paginate(20);
 
         return view('livewire.admin.clients.show-clients', compact('clients'));
     }

@@ -46,20 +46,13 @@ class ShowSerieskardex extends Component
 
         $sucursals = Sucursal::withTrashed()->whereHas('almacens')->get();
         $almacens = Almacen::whereHas('series')->get();
-        $serieskardex = Serie::with(['almacen', 'producto', 'compraitem', 'almacen'])
-            ->withWhereHas('almacen', function ($query) {
+        $serieskardex = Serie::with(['almacen', 'producto', 'almacencompra.compraitem.compra.proveedor', 'user']);
 
-                if ($this->searchalmacen !== '') {
-                    $query->where('almacen_id', $this->searchalmacen);
-                }
-
-                // if ($this->searchsucursal !== '') {
-                //     $query->where('id', $this->searchsucursal);
-                // } else {
-                //     $query->where('id', auth()->user()->sucursal_id);
-                // }
-
-            });
+        if ($this->searchalmacen !== '') {
+            $serieskardex->where('almacen_id', $this->searchalmacen);
+        } else {
+            $serieskardex->whereIn('almacen_id', auth()->user()->sucursal->almacens->pluck('id')->toArray());
+        }
 
         if ($this->searchserie !== '') {
             $serieskardex->where('serie', 'ilike', '%' . $this->searchserie . '%');
@@ -73,7 +66,8 @@ class ShowSerieskardex extends Component
             }
         }
 
-        $serieskardex = $serieskardex->orderBy('status', 'desc')->orderBy('created_at', 'desc')->paginate();
+        $serieskardex = $serieskardex->whereIn('status', [Serie::SALIDA, Serie::RESERVADA])
+            ->orderBy('status', 'desc')->orderBy('created_at', 'desc')->paginate();
         return view('livewire.modules.almacen.kardex.show-serieskardex', compact('serieskardex', 'almacens', 'sucursals'));
     }
 

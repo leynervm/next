@@ -1,4 +1,4 @@
-<div class="w-full flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh_-_4rem)]" x-data="loader">
+<div class="w-full flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh-4rem)]" x-data="loader">
     {{-- <div wire:loading.flex
         wire:target="page,typepayment_id,pricetype_id,almacen_id,save,addtocar,disponibles,gratuito,searchcategory,searchsubcategory,searchmarca,setTotal"
         class="fixed loading-overlay hidden">
@@ -8,9 +8,14 @@
     <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
 
     <div class="w-full flex flex-col gap-5 lg:flex-shrink-0 lg:w-80 lg:overflow-y-auto soft-scrollbar h-full">
-        <x-form-card titulo="GENERAR NUEVA VENTA" subtitulo="Complete todos los campos para registrar una nueva venta.">
+        <x-form-card titulo="GENERAR NUEVA VENTA">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2">
                 <div class="w-full flex flex-col gap-1">
+
+                    <div class="w-full mb-1">
+                        <x-button-secondary wire:click="limpiarventa" class="block w-full justify-center" type="button"
+                            wire:loading.attr="disabled">{{ __('New sale') }}</x-button-secondary>
+                    </div>
 
                     @include('modules.ventas.forms.comprobante')
 
@@ -31,8 +36,8 @@
                         @endif
                     @endcan
 
-                    <div class="w-full flex flex-col gap-1">
-                        <x-jet-input-error for="typepayment.id" />
+                    <div class="w-full flex flex-col gap-0.5">
+                        <x-jet-input-error for="typepayment_id" />
                         <x-jet-input-error for="items" />
                         <x-jet-input-error for="typepay" />
                         <x-jet-input-error for="concept.id" />
@@ -216,7 +221,6 @@
                                     @endif
                                 @endif
 
-
                                 <div class="w-full flex gap-1 items-end">
                                     <h1 class="text-colorlabel whitespace-nowrap text-xs text-right">
                                         <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
@@ -249,26 +253,24 @@
                                 </div>
 
                                 @if (count($item->carshoopseries) > 1)
-                                    <div x-data="{ showForm: false }" class="mt-1">
+                                    <div x-data="{ showForm: false }" class="w-full mt-1" key="formseries">
                                         <x-button @click="showForm = !showForm" class="whitespace-nowrap">
-                                            {{ __('VER SERIES') }}
-                                        </x-button>
-                                        <div x-show="showForm" x-transition class="block w-full rounded mt-1">
+                                            {{ __('VER SERIES') }}</x-button>
+                                        <div x-show="showForm" x-cloack style="display: none;" x-transition
+                                            class="block w-full rounded mt-1" wire:key="formseries_{{ $item->id }}">
                                             <div class="w-full flex flex-wrap gap-1">
                                                 @foreach ($item->carshoopseries as $itemserie)
                                                     <span
                                                         class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
                                                         {{ $itemserie->serie->serie }}
-                                                        <x-button-delete
-                                                            onclick="confirmDeleteSerie({{ $itemserie }})"
-                                                            wire:loading.attr="disabled" />
+                                                        <x-button-delete wire:loading.attr="disabled"
+                                                            @click="confirmDeleteSerie({{ $itemserie->id }}, '{{ $itemserie->serie->serie }}')" />
                                                     </span>
                                                 @endforeach
                                             </div>
                                         </div>
                                     </div>
                                 @endif
-
 
                                 <div
                                     class="w-full flex items-end gap-2 {{ is_null($item->promocion_id) ? 'justify-between' : 'justify-end' }} mt-2">
@@ -283,7 +285,7 @@
                                             </div>
                                         @endcan
                                     @endif
-                                    <x-button-delete wire:loading.attr="disabled"
+                                    <x-button-delete wire:loading.attr="disabled" :key="'deletecarshoop_{{ $item->id }}'"
                                         @click="confirmDeleteCarshoop('{{ $item->id }}')" />
                                 </div>
                             </x-simple-card>
@@ -299,45 +301,23 @@
         </div>
     </div>
 
-    <div class="w-full flex-1 lg:overflow-y-auto soft-scrollbar h-full">
-        <x-form-card titulo="PRODUCTOS">
-            <div class="w-full">
-                @include('modules.ventas.forms.filters')
+    <div class="w-full flex-1 lg:overflow-y-auto soft-scrollbar h-full lg:pr-2">
+        {{-- <x-form-card titulo="PRODUCTOS"> --}}
+        <div class="w-full relative">
+            @include('modules.ventas.forms.filters')
+            @include('modules.ventas.forms.productos')
 
-                @if (count($productos) > 0)
-                    @if ($productos->hasPages())
-                        <div class="w-full flex justify-end py-2">
-                            {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
-                        </div>
-                    @endif
-
-                    @include('modules.ventas.forms.productos')
-                @else
-                    <p class="text-xs text-colorsubtitleform">NO SE ENCONTRARON REGISTROS DE PRODUCTOS</p>
-                @endif
-            </div>
-        </x-form-card>
+            @if ($productos->hasPages())
+                <div
+                    class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+                    {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
+                </div>
+            @endif
+        </div>
+        {{-- </x-form-card> --}}
     </div>
 
-
     <script>
-        function confirmDeleteSerie(itemserie) {
-            swal.fire({
-                title: 'Eliminar serie ' + itemserie.serie.serie + ' del carrito de ventas ?',
-                text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.deleteserie(itemserie.id);
-                }
-            })
-        }
-
         async function fetchAsyncDatos(ruta, data = {}) {
             try {
                 const response = await fetch(ruta, {
@@ -438,8 +418,6 @@
                             data: this.methodpayments
                         }).val(this.methodpayment_id).trigger('change');
                     });
-
-
                 },
                 toggle() {
                     this.vehiculosml = !this.vehiculosml;
@@ -496,9 +474,7 @@
                     }
                 },
                 savepay(event) {
-                    this.$wire.call('savepay').then(() => {
-                        // console.log('function ejecutado correctamente');
-                    });
+                    this.$wire.savepay();
                     event.preventDefault();
                 },
                 confirmDeleteCarshoop(carshoop_id) {
@@ -513,14 +489,14 @@
                         cancelButtonText: 'Cancelar'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            // @this.delete(carshoop_id);
-                            const message = this.deleteitem(carshoop_id);
+                            // const message = this.deleteitem(carshoop_id);
+                            this.$wire.delete(carshoop_id);
                         }
                     })
                 },
                 confirmDeleteAllCarshoop() {
                     swal.fire({
-                        title: 'Eliminar carrito de ventas ?',
+                        title: 'ELIMINAR TODOS LOS ITEMS DEL CARRITO DE COMPRAS ?',
                         text: "Se eliminarán todos los productos del carrito de ventas y se actualizará su stock correspondientes.",
                         icon: 'question',
                         showCancelButton: true,
@@ -530,8 +506,24 @@
                         cancelButtonText: 'Cancelar'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            const message = this.deleteAll();
-                            // @this.deleteallcarshoop();
+                            // const message = this.deleteAll();
+                            this.$wire.deleteall();
+                        }
+                    })
+                },
+                confirmDeleteSerie(itemserie_id, serie) {
+                    swal.fire({
+                        title: `ELIMINAR SERIE ${serie} DEL CARRITO ?`,
+                        text: "Se eliminará un registro del carrito de ventas y se actualizará el stock del producto.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.deleteserie(itemserie_id);
                         }
                     })
                 },
@@ -556,11 +548,12 @@
                     const route =
                         "{{ route('admin.carshoop.updatemoneda', ['moneda_id' => ':moneda_id']) }}"
                         .replace(':moneda_id', moneda_id);
+                    const token = document.querySelector('meta[name="csrf-token"]')
+                        .getAttribute('content');
+
                     const response = await axios.post(route, {
                         headers: {
-                            'X-CSRF-TOKEN': document.querySelector(
-                                    'meta[name="csrf-token"]')
-                                .getAttribute('content')
+                            'X-CSRF-TOKEN': token
                         },
                         moneda_id: moneda_id
                     }).catch(function(error) {
@@ -568,70 +561,9 @@
                     });
 
                     if (response.status === 200) {
-                        this.$wire.call('setTotal').then(() => {
-                            console.log('setTotal ejecutado correctamente');
-                        });
+                        this.$wire.setTotal();
                     } else {
-                        throw new Error('Error al actualizar moneda del carrito');
-                    }
-                },
-                async deleteitem(carshoop_id) {
-                    try {
-                        const route =
-                            "{{ route('admin.carshoop.delete', ['carshoop' => ':carshoop_id']) }}"
-                            .replace(':carshoop_id', carshoop_id);
-                        const response = await axios.post(route, {
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]')
-                                    .getAttribute('content')
-                            }
-                        })
-
-                        if (response.status === 200) {
-                            if (response.data.success) {
-                                this.$wire.call('setTotal').then(() => {
-                                    console.log('setTotal ejecutado correctamente');
-                                });
-                            } else {
-                                console.log('Error al eliminar item del carrito de ventas.');
-                                // window.dispatchEvent(new CustomEvent('validation', {
-                                //     detail: {
-                                //         title: response.data.mensaje,
-                                //         text: 
-
-                                //     }
-                                // }));
-                            }
-                        } else {
-                            throw new Error('Error al vaciar el carrito');
-                        }
-                    } catch (error) {
-                        console.error('Error al vaciar el carrito:', error);
-                        throw error;
-                    }
-                },
-                async deleteAll() {
-                    try {
-                        const response = await axios.post(
-                            "{{ route('admin.carshoop.delete.all') }}", {
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                            'meta[name="csrf-token"]')
-                                        .getAttribute('content')
-                                }
-                            })
-
-                        if (response.status === 200) {
-                            this.$wire.call('setTotal').then(() => {
-                                // console.log('setTotal ejecutado correctamente');
-                            });
-                        } else {
-                            throw new Error('Error al eliminar el carrito');
-                        }
-                    } catch (error) {
-                        console.error('Error al eliminar el carrito:', error);
-                        throw error;
+                        throw new Error('Error al actualizar moneda');
                     }
                 },
                 async obtenerDatos() {

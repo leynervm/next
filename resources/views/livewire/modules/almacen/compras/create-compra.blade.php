@@ -269,7 +269,7 @@
                     <x-jet-input-error for="typedescuento" />
                 </div>
 
-                @if (!mi_empresa()->usarLista())
+                @if (!$empresa->usarLista())
                     <div class="w-full">
                         <x-label value="Precio venta unitario (SOLES):" />
                         <x-input class="block w-full" x-model="priceventa" placeholder="0.00"
@@ -519,7 +519,7 @@
                         </template>
 
 
-                        @if (!mi_empresa()->usarLista())
+                        @if (!$empresa->usarLista())
                             <tr class="text-colorlabel">
                                 <td class="align-middle"> P. U. V. </td>
                                 <td class="text-end">

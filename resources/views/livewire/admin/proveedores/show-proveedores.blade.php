@@ -1,10 +1,4 @@
 <div>
-    @if ($proveedors->hasPages())
-        <div class="pb-2">
-            {{ $proveedors->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <div class="flex items-center gap-2 mt-4 mb-1">
         <div class="relative flex items-center">
             <span class="absolute">
@@ -14,8 +8,7 @@
                         d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                 </svg>
             </span>
-            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model="search">
-            </x-input>
+            <x-input placeholder="Buscar" class="block w-full md:w-80 pl-9" wire:model.lazy="search" />
         </div>
     </div>
 
@@ -72,7 +65,7 @@
                                 <a href="{{ route('admin.proveedores.edit', $item) }}"
                                     class="font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
                                     {{ $item->name }}</a>
-                                <p class="text-xs">{{ $item->document }}</p>
+                                <p class="text-xs text-colorsubtitleform">{{ $item->document }}</p>
                             @endcan
 
                             @cannot('admin.proveedores.edit')
@@ -136,4 +129,14 @@
             </x-slot>
         @endif
     </x-table>
+
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
+    @if ($proveedors->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $proveedors->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 </div>

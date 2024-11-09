@@ -31,28 +31,12 @@ class ShowSeries extends Component
     ];
 
     // Escucha render method desde show-productos
-
     public function rules()
     {
         return [
-            'producto.id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:productos,id'
-            ],
-            'almacen_id' => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:almacens,id'
-            ],
-            'serie' => [
-                'required',
-                'string',
-                'min:3',
-                new CampoUnique('series', 'serie', null, true)
-            ]
+            'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
+            'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
+            'serie' => ['required', 'string', 'min:3', new CampoUnique('series', 'serie', null, true)]
         ];
     }
 
@@ -64,7 +48,9 @@ class ShowSeries extends Component
     public function render()
     {
 
-        $seriesalmacen = $this->producto->series()->orderBy('serie', 'asc');
+        $seriesalmacen = $this->producto->series()->with(['almacen' => function ($query) {
+            $query->withTrashed();
+        }])/* ->whereHas('almacen') */->orderBy('serie', 'asc');
 
         if (trim($this->disponibles) !== '') {
             $seriesalmacen->where('status', $this->disponibles);

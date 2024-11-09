@@ -46,7 +46,8 @@ class ShowProveedor extends Component
 
     public function render()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $proveedortypes = Proveedortype::orderBy('name', 'asc')->get();
         return view('livewire.admin.proveedores.show-proveedor', compact('ubigeos', 'proveedortypes'));
     }
@@ -185,7 +186,9 @@ class ShowProveedor extends Component
         $this->telefono2 = trim($this->telefono2);
         $this->validate([
             'newtelefono' => [
-                'required', 'numeric', 'digits_between:7,9',
+                'required',
+                'numeric',
+                'digits_between:7,9',
                 new ValidatePhoneClient('proveedors', $this->proveedor->id, $this->telephone->id ?? null)
             ]
         ]);

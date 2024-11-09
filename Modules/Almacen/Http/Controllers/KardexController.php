@@ -14,7 +14,6 @@ class KardexController extends Controller
     {
         $this->middleware('can:admin.almacen.kardex')->only('index');
         $this->middleware('can:admin.almacen.kardex.series')->only('series');
-        $this->middleware('can:admin.almacen.kardex.series.show')->only('show');
     }
 
     public function index()
@@ -25,10 +24,5 @@ class KardexController extends Controller
     public function series()
     {
         return view('almacen::kardex.serieskardex');
-    }
-
-    public function show(Serie $serie)
-    {
-        return view('almacen::kardex.show', compact('serie'));
     }
 }

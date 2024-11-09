@@ -123,17 +123,17 @@ trait KardexTrait
 
     public function producto(): BelongsTo
     {
-        return $this->belongsTo(Producto::class);
+        return $this->belongsTo(Producto::class)->withTrashed();
     }
 
     public function almacen(): BelongsTo
     {
-        return $this->belongsTo(Almacen::class);
+        return $this->belongsTo(Almacen::class)->withTrashed();
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function isGratuito()

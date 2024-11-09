@@ -22,6 +22,7 @@ class ClientController extends Controller
 
     public function edit(Client $client)
     {
+        $client->load(['telephones', 'direccions.ubigeo', 'pricetype', 'contacts']);
         return view('admin.clients.show', compact('client'));
     }
 

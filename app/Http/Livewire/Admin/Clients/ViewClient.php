@@ -47,23 +47,9 @@ class ViewClient extends Component
             ],
             'client.name' => ['required', 'min:3'],
             'client.email' => ['nullable', 'min:6', 'email'],
-            'client.sexo' => [
-                'nullable',
-                'string',
-                'min:1',
-                Rule::in(['M', 'F', 'E'])
-            ],
-            'client.nacimiento' => [
-                'nullable',
-                'date',
-            ],
-            'client.pricetype_id' => [
-                'nullable',
-                Rule::requiredIf(mi_empresa()->usarlista()),
-                'integer',
-                'min:1',
-                'exists:pricetypes,id'
-            ],
+            'client.sexo' => ['nullable', 'string', 'min:1', Rule::in(['M', 'F', 'E'])],
+            'client.nacimiento' => ['nullable', 'date'],
+            'client.pricetype_id' => ['nullable', Rule::requiredIf(mi_empresa()->usarlista()), 'integer', 'min:1', 'exists:pricetypes,id'],
         ];
     }
 
@@ -86,7 +72,8 @@ class ViewClient extends Component
     public function render()
     {
         $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         return view('livewire.admin.clients.view-client', compact('pricetypes', 'ubigeos'));
     }
 
@@ -142,7 +129,7 @@ class ViewClient extends Component
         $this->validate([
             'document2' => ['required', 'numeric', 'digits:8'],
             'name2' => ['required', 'string', 'min:3'],
-            'telefono2' => ['required', 'numeric'],
+            'telefono2' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
         ]);
 
         try {
@@ -201,7 +188,8 @@ class ViewClient extends Component
             'newtelefono' => [
                 'required',
                 'numeric',
-                'digits_between:7,9',
+                'digits:9',
+                'regex:/^\d{9}$/',
                 new ValidatePhoneClient('clients', $this->client->id, $this->telephone->id ?? null)
             ]
         ]);

@@ -1,26 +1,22 @@
 <div class="relative">
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
-    <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
-        <div class="w-full xs:max-w-sm">
+    <div class="flex flex-wrap gap-2">
+        <div class="w-full xs:max-w-52">
             <x-label value="Buscar serie :" />
             <x-input type="text" wire:model.lazy="searchserie" class="w-full block" placeholder="Buscar serie..." />
         </div>
 
-        <div class="w-full xs:w-auto">
+        <div class="w-full xs:max-w-40">
             <x-label value="Fecha salida:" />
             <x-input type="date" wire:model.lazy="date" class="w-full block" />
         </div>
 
-        <div class="w-full xs:w-auto">
+        <div class="w-full xs:max-w-40">
             <x-label value="Hasta (Fecha salida):" />
             <x-input type="date" wire:model.lazy="dateto" class="w-full block" />
         </div>
 
         @if (count($sucursals) > 1)
-            <div class="w-full xs:w-52">
+            <div class="w-full xs:max-w-52">
                 <x-label value="Almacén :" />
                 <div x-data="{ searchalmacen: @entangle('searchalmacen') }" x-init="select2Almacen" id="parentsearchalmacen" class="relative"
                     wire:ignore>
@@ -58,27 +54,17 @@
         @endif
     </div>
 
-    @if ($serieskardex->hasPages())
-        <div class="pt-3 pb-1">
-            {{ $serieskardex->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <x-table class="mt-1">
         <x-slot name="header">
             <tr>
                 <th scope="col" class="p-2 font-medium">
                     SERIE</th>
-
                 <th scope="col" class="p-2 font-medium text-left">
-                    PRODUCTO</th>
-
+                    DESCRIPCIÓN DEL PRODUCTO</th>
                 <th scope="col" class="p-2 font-medium">
                     ENTRADA</th>
-
                 <th scope="col" class="p-2 font-medium">
                     SALIDA</th>
-
                 <th scope="col" class="p-2 font-medium">
                     ESTADO</th>
             </tr>
@@ -88,43 +74,41 @@
             <x-slot name="body">
                 @foreach ($serieskardex as $item)
                     <tr>
-                        <td class="p-2 text-center">
-                            @can('admin.almacen.kardex.series.show')
-                                <a class="text-linktable hover:text-hoverlinktable cursor-pointer transition-all ease-in-out duration-150"
-                                    href="{{ route('admin.almacen.kardex.series.show', $item->serie) }}">
-                                    {{ $item->serie }} </a>
-                            @endcan
-
-                            @cannot('admin.almacen.kardex.series.show')
-                                <h1 class="text-linktable">{{ $item->serie }} </h1>
-                            @endcannot
+                        <td class="p-2 text-center text-colorlabel">
+                            {{ $item->serie }}
                         </td>
-
-                        <td class="p-2 text-justify">
+                        <td class="p-2 min-w-72">
                             <p class="w-full">{{ $item->producto->name }}</p>
                             <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
                         </td>
-
-                        <td class="p-2 text-center">
-                            @if ($item->compraitem)
-                                <x-span-text :text="formatDate($item->compraitem->created_at, 'DD MMMM YYYY')" class="leading-3 !tracking-normal" />
-                                <p class="text-colorlabel leading-3 text-[10px]">
-                                    REF. COMPRA: {{ $item->compraitem->compra->referencia }}</p>
+                        <td class="p-2 text-center min-w-52">
+                            @if ($item->almacencompra)
+                                <p class="text-colorlabel text-center leading-3 text-[10px]">
+                                    PROVEEDOR :{{ $item->almacencompra->compraitem->compra->proveedor->name }}
+                                    <br>
+                                    REF. COMPRA : {{ $item->almacencompra->compraitem->compra->referencia }}
+                                </p>
                             @endif
-                        </td>
 
-                        <td class="p-2 text-center">
+                            <p class="text-[10px]">
+                                {{ formatDate($item->created_at, 'DD MMMM YYYY') }}
+                                <br>
+                                {{ $item->user->name }}
+                            </p>
+                        </td>
+                        <td class="p-2 text-center min-w-40">
                             @if ($item->itemserie)
-                                <x-span-text :text="formatDate($item->itemserie->date, 'DD MMMM YYYY')" class="leading-3 !tracking-normal" />
-                                <p class="text-colorlabel leading-3 text-[10px]">
-                                    {{ $item->itemserie->tvitem->tvitemable->seriecompleta }}</p>
+                                <p class="text-colorsubtitleform text-[10px]">
+                                    {{ formatDate($item->itemserie->date, 'DD MMMM YYYY') }}
+                                    <br>
+                                    {{ $item->itemserie->tvitem->tvitemable->seriecompleta }}
+                                </p>
                             @endif
                         </td>
-
                         <td class="p-2 text-xs text-center">
-                            @if ($item->status == 0)
+                            @if ($item->isDisponible())
                                 <x-span-text text="DISPONIBLE" class="leading-3 !tracking-normal" type="green" />
-                            @elseif ($item->status == 1)
+                            @elseif ($item->isReservada())
                                 <x-span-text text="RESERVADO" class="leading-3 !tracking-normal" />
                             @else
                                 <x-span-text text="SALIDA" class="leading-3 !tracking-normal" type="red" />
@@ -135,6 +119,16 @@
             </x-slot>
         @endif
     </x-table>
+
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
+    @if ($serieskardex->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $serieskardex->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 
     <script>
         function select2Almacen() {

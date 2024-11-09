@@ -510,12 +510,5 @@ class SeedRoleTableSeeder extends Seeder
             'module' => 'Almacén',
             'orden' => '3'
         ])->syncRoles([$desarrollador, $admin, $ventas]);
-        Permission::firstOrCreate([
-            'name' => 'admin.almacen.kardex.series.show',
-            'descripcion' => 'Administrar historial de series',
-            'table' => 'Kardex',
-            'module' => 'Almacén',
-            'orden' => '3'
-        ])->syncRoles([$desarrollador, $admin, $ventas]);
     }
 }

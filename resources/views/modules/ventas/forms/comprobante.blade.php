@@ -102,12 +102,12 @@
             <x-input class="block w-full" wire:model.defer="name" placeholder="" />
             <x-jet-input-error for="name" />
         </div>
-        <div class="w-full {{ mi_empresa()->usarLista() ? '' : 'sm:col-span-2' }} lg:col-span-1">
+        <div class="w-full {{ $empresa->usarLista() ? '' : 'sm:col-span-2' }} lg:col-span-1">
             <x-label value="Dirección :" />
             <x-input class="block w-full" wire:model.defer="direccion" placeholder="" />
             <x-jet-input-error for="direccion" />
         </div>
-        @if (mi_empresa()->usarLista())
+        @if ($empresa->usarLista())
             @if ($pricetypeasigned)
                 <div class="w-full xs:col-span-2 sm:col-span-1">
                     <x-label value="Lista precio asignado :" />

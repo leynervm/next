@@ -65,18 +65,8 @@ class ShowShippments extends Component
                 'min:1',
                 'exists:direccions,id'
             ],
-            'receiver' => [
-                'required',
-                'integer',
-                Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])
-            ],
-            'receiver_info.document' => [
-                'required',
-                'string',
-                'numeric',
-                'digits_between:8,11',
-                'regex:/^\d{8}(?:\d{3})?$/'
-            ],
+            'receiver' => ['required', 'integer', Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])],
+            'receiver_info.document' => ['required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'],
             'receiver_info.name' => ['required', 'string', 'min:8',],
             'receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
             'cart' => ['required', 'array', 'min:1'],
@@ -110,7 +100,8 @@ class ShowShippments extends Component
 
     public function render()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $direccions = auth()->user()->direccions()->with('ubigeo')->orderBy('default', 'desc')->orderBy('name', 'asc')->get();
         $shipmenttypes = Shipmenttype::orderBy('name', 'asc')->get();
         $locals = mi_empresa()->sucursals()->with('ubigeo')->orderBy('default', 'desc')->orderBy('codeanexo', 'asc')->get();

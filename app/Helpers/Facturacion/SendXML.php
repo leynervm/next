@@ -10,7 +10,7 @@ use ZipArchive;
 
 class SendXML
 {
-    public function enviarComprobante($emisor, $nombre, $rutacertificado = "", $pass_firma, $ruta_archivo_xml = "xml/", $ruta_archivo_cdr = "cdr/")
+    public function enviarComprobante($isProduccion = false, $emisor, $nombre, $rutacertificado = "", $pass_firma, $ruta_archivo_xml = "xml/", $ruta_archivo_cdr = "cdr/")
     {
         $objFirma = new Signature();
         $flg_firma = 0;
@@ -28,7 +28,7 @@ class SendXML
                     $zip->close();
                 }
 
-                if ($emisor->isProduccion()) {
+                if ($isProduccion) {
                     $ws = "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService";
                 } else {
                     $ws = "https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService";
@@ -129,7 +129,7 @@ class SendXML
         return $mensaje->getData();
     }
 
-    public function enviarGuia($emisor, $nombre, $rutacertificado = "", $ruta_archivo_xml = "xml/", $ruta_archivo_cdr = "cdr/")
+    public function enviarGuia($isProduccion = false, $emisor, $nombre, $rutacertificado = "", $ruta_archivo_xml = "xml/", $ruta_archivo_cdr = "cdr/")
     {
 
         $objFirma = new Signature();
@@ -149,7 +149,7 @@ class SendXML
                 $zip->close();
             }
 
-            if ($emisor->isProduccion()) {
+            if ($isProduccion) {
                 // $client_id = "d5829b1b-d28d-4ae4-b746-bdb8ccd909cb";
                 // $client_secret = "1MUzl7c18miMqhTyiZAD8g==";
 
@@ -335,6 +335,7 @@ class SendXML
                 if (!empty($ruta_archivo_cdr)) {
                     $contentNode = $doc->getElementsByTagName('content')->item(0);
                     if ($contentNode && $contentNode->nodeValue) {
+
                         $cdrBase64 = $contentNode->nodeValue;
                         // Guarda el CDR como un archivo ZIP
                         $nombreCdrZip = "R-" . $nombre . ".zip";
@@ -344,7 +345,15 @@ class SendXML
                         // Extrae el archivo XML del CDR (opcional: para analizar su contenido)
                         $zip = new ZipArchive();
                         if ($zip->open($rutaArchivoCdr) === TRUE) {
-                            $zip->extractTo($ruta_archivo_cdr, "R-" . $nombre . ".xml");
+                            $fileExtract = $zip->getNameIndex(0);
+                            if ($fileExtract != "R-" . $nombre . ".xml" || $fileExtract != "R-" . $nombre . ".XML") {
+                                $zip->extractTo($ruta_archivo_cdr, $fileExtract);
+                                $tempPath = $ruta_archivo_cdr . $fileExtract;
+                                $renameFile = $ruta_archivo_cdr . "/R-" . $nombre . '.xml';
+                                rename($tempPath, $renameFile);
+                            } else {
+                                $zip->extractTo($ruta_archivo_cdr, "R-" . $nombre . ".xml");
+                            }
                             $zip->close();
 
                             // Si deseas procesar el contenido del XML extraído
@@ -363,14 +372,14 @@ class SendXML
                             $mensaje = response()->json([
                                 'codRespuesta' => $response->status(),
                                 'code' => $statusCode,
-                                'descripcion' => "$statusMessage \nNo se pudo extraer el archivo ZIP del CDR"
+                                'descripcion' => "$statusMessage <br> No se pudo extraer el archivo ZIP del CDR"
                             ]);
                         }
                     } else {
                         $mensaje = response()->json([
                             'codRespuesta' => $response->status(),
                             'code' => $statusCode,
-                            'descripcion' => "$statusMessage \nNo se pudo obtener el archivo ZIP del CDR"
+                            'descripcion' => "$statusMessage <br> No se pudo obtener el archivo ZIP del CDR"
                         ]);
                     }
                 } else {

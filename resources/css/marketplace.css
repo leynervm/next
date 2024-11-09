@@ -56,7 +56,7 @@
 
 .btn-next {
     /* w-[calc(80px+5.5vmin)] */
-    @apply block text-[10px] text-white tracking-widest h-[calc(30px+2.5vmin)] xs:h-[calc(25px+2.5vmin)] md:h-[calc(20px+2.5vmin)] font-semibold relative z-0 max-w-full;
+    @apply block text-[10px] text-white tracking-widest h-[calc(30px+2.5vmin)] xs:h-[calc(25px+2.5vmin)] md:h-[calc(20px+2.5vmin)] font-semibold relative z-0 max-w-full disabled:opacity-70;
 }
 
 .btn-next:before {

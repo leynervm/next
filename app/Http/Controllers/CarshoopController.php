@@ -11,119 +11,114 @@ use Illuminate\Support\Facades\DB;
 class CarshoopController extends Controller
 {
 
-    public function delete(Carshoop $carshoop, $isDeleteAll = false)
-    {
-        DB::beginTransaction();
-        try {
-            if (count($carshoop->carshoopitems) > 0) {
-                foreach ($carshoop->carshoopitems as $carshoopitem) {
-                    $stockCombo = $carshoopitem->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
-                    $carshoopitem->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
-                        'cantidad' => $stockCombo + $carshoop->cantidad,
-                    ]);
-                    $carshoopitem->delete();
-                }
-            }
+    // public function delete(Carshoop $carshoop, $isDeleteAll = false)
+    // {
+    //     DB::beginTransaction();
+    //     // $carshoop->load(['carshoopitems.producto.almacens', ])
+    //     try {
+    //         if (count($carshoop->carshoopitems) > 0) {
+    //             foreach ($carshoop->carshoopitems as $carshoopitem) {
+    //                 $stockCombo = $carshoopitem->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
+    //                 $carshoopitem->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+    //                     'cantidad' => $stockCombo + $carshoop->cantidad,
+    //                 ]);
+    //                 $carshoopitem->delete();
+    //             }
+    //         }
 
-            if ($carshoop->promocion) {
-                //CUANDO PROMOCION ESTA VACIA = (NO DISPONIBLE) => AHI ACTUALIZAR
-                //XQUE SINO ESTA VALIDA SEGUIR CON MISMO PRECIO TDAVIA
-                //PRIMERO VERIFICO SI PRM ESTA DISPONIBLE
-                $is_disponible_antes_update = !empty(verifyPromocion($carshoop->promocion)) ? true : false;
-                $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
-                $carshoop->promocion->save();
+    //         if ($carshoop->promocion) {
+    //             //CUANDO PROMOCION ESTA VACIA = (NO DISPONIBLE) => AHI ACTUALIZAR
+    //             //XQUE SINO ESTA VALIDA SEGUIR CON MISMO PRECIO TDAVIA
+    //             //PRIMERO VERIFICO SI PRM ESTA DISPONIBLE
+    //             $is_disponible_antes_update = !empty(verifyPromocion($carshoop->promocion)) ? true : false;
+    //             $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
+    //             $carshoop->promocion->save();
 
-                //LUEGO DESPUES ACTUALIZAR SALIDAS VUELVO VERIFICAR
-                // SI PRM VUELVE ESTAR DISPONIBLE
-                //SOLAMNETE ACTUALIZAR CUANDO PRM ANTES NO ESTUBO DISPONIBLE Y
-                //LUEGO DE RETORNAR SALIDAS VOLVIO ACTIVARSE
-                if ($carshoop->promocion->outs < $carshoop->promocion->limit && !empty(verifyPromocion($carshoop->promocion))) {
-                    if (!$is_disponible_antes_update) {
-                        $carshoop->producto->load(['promocions' => function ($query) {
-                            $query->with(['itempromos.producto' => function ($query) {
-                                $query->with('unit')->addSelect(['image' => function ($q) {
-                                    $q->select('url')->from('images')
-                                        ->whereColumn('images.imageable_id', 'productos.id')
-                                        ->where('images.imageable_type', Producto::class)
-                                        ->orderBy('default', 'desc')->limit(1);
-                                }]);
-                            }])->availables()->disponibles()->take(1);
-                        }]);
-                        $carshoop->producto->assignPrice($carshoop->promocion);
-                    }
-                }
+    //             //LUEGO DESPUES ACTUALIZAR SALIDAS VUELVO VERIFICAR
+    //             // SI PRM VUELVE ESTAR DISPONIBLE
+    //             //SOLAMNETE ACTUALIZAR CUANDO PRM ANTES NO ESTUBO DISPONIBLE Y
+    //             //LUEGO DE RETORNAR SALIDAS VOLVIO ACTIVARSE
+    //             if ($carshoop->promocion->outs < $carshoop->promocion->limit && !empty(verifyPromocion($carshoop->promocion))) {
+    //                 if (!$is_disponible_antes_update) {
+    //                     $carshoop->producto->load(['promocions' => function ($query) {
+    //                         $query->with(['itempromos.producto.unit'])->availables()
+    //                             ->disponibles()->take(1);
+    //                     }]);
+    //                     $carshoop->producto->assignPrice($carshoop->promocion);
+    //                 }
+    //             }
 
-                // if ($promocion->limit == $promocion->outs) {
-                //     $producto->assignPrice($promocion);
-                // }
-            }
+    //             // if ($promocion->limit == $promocion->outs) {
+    //             //     $producto->assignPrice($promocion);
+    //             // }
+    //         }
 
-            if (count($carshoop->carshoopseries) > 0) {
-                $carshoop->carshoopseries()->each(function ($carshoopserie) use ($carshoop) {
-                    if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
-                        $carshoopserie->serie->dateout = null;
-                        $carshoopserie->serie->status = 0;
-                        $carshoopserie->serie->save();
-                    }
-                    $carshoopserie->delete();
-                });
-            }
+    //         if (count($carshoop->carshoopseries) > 0) {
+    //             $carshoop->carshoopseries()->each(function ($carshoopserie) use ($carshoop) {
+    //                 if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+    //                     $carshoopserie->serie->dateout = null;
+    //                     $carshoopserie->serie->status = 0;
+    //                     $carshoopserie->serie->save();
+    //                 }
+    //                 $carshoopserie->delete();
+    //             });
+    //         }
 
-            if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
-                $stock = $carshoop->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
-                $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
-                    'cantidad' => $stock + $carshoop->cantidad,
-                ]);
-            }
+    //         if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+    //             $stock = $carshoop->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
+    //             $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+    //                 'cantidad' => $stock + $carshoop->cantidad,
+    //             ]);
+    //         }
 
-            if ($carshoop->kardex) {
-                $carshoop->kardex->delete();
-            }
+    //         if ($carshoop->kardex) {
+    //             $carshoop->kardex->delete();
+    //         }
 
-            $carshoop->delete();
-            DB::commit();
-            if (!$isDeleteAll) {
-                // $this->setTotal();
-                return response()->json([
-                    'success' => true,
-                    'mensaje' => 'ELIMINADO CORRECTAMENTE',
-                    'form_id' => NULL
-                ])->getData();
-                // $this->dispatchBrowserEvent('show-resumen-venta', $datos);
-            }
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
+    //         $carshoop->delete();
+    //         DB::commit();
+    //         if (!$isDeleteAll) {
+    //             // $this->setTotal();
+    //             return response()->json([
+    //                 'success' => true,
+    //                 'mensaje' => 'ELIMINADO CORRECTAMENTE',
+    //                 'form_id' => NULL
+    //             ])->getData();
+    //             // $this->dispatchBrowserEvent('show-resumen-venta', $datos);
+    //         }
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     } catch (\Throwable $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     }
+    // }
 
-    public function deleteall()
-    {
-        try {
-            DB::beginTransaction();
-            Carshoop::with(['carshoopseries'])->ventas()->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
-                    self::delete($carshoop, true);
-                });
-            DB::commit();
-            // $this->resetValidation();
-            return response()->json([
-                'success' => true,
-                'mensaje' => 'CARRITO ELIMINADO CORRECTAMENTE',
-                'form_id' => null
-            ])->getData();
-            // $this->dispatchBrowserEvent('show-resumen-venta', $datos);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
+    // public function deleteall()
+    // {
+    //     try {
+    //         DB::beginTransaction();
+    //         Carshoop::with(['carshoopseries'])->ventas()->where('user_id', auth()->user()->id)
+    //             ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
+    //                 self::delete($carshoop, true);
+    //             });
+    //         DB::commit();
+    //         // $this->resetValidation();
+    //         return response()->json([
+    //             'success' => true,
+    //             'mensaje' => 'CARRITO ELIMINADO CORRECTAMENTE',
+    //             'form_id' => null
+    //         ])->getData();
+    //         // $this->dispatchBrowserEvent('show-resumen-venta', $datos);
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     } catch (\Throwable $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     }
+    // }
 
 
     public function updatemoneda(Request $request)

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Empresa;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -45,6 +46,7 @@ return new class extends Migration
             $table->text('descripcion')->nullable();
             $table->text('notasunat')->nullable();
             $table->char('referencia', 13)->nullable();
+            $table->string('sendmode', 1)->default(Empresa::PRUEBA);
             $table->tinyInteger('motivotraslado_id');
             $table->tinyInteger('modalidadtransporte_id');
             $table->bigInteger('ubigeoorigen_id');

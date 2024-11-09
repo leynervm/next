@@ -1,7 +1,4 @@
-<div x-data="{
-    selectedcomprobantes: @entangle('selectedcomprobantes').defer,
-    checkall: @entangle('checkall')
-}">
+<div x-data="comprobantes">
     <div wire:loading.flex class="fixed loading-overlay hidden">
         <x-loading-next />
     </div>
@@ -82,32 +79,17 @@
         @endif
     </div>
 
-    <div class="w-full flex flex-col items-start sm:flex-row justify-between sm:items-end gap-2 sm:gap-5 pt-3 pb-1">
-        @can('admin.facturacion.sunat')
-            <x-button class="inline-block flex-shrink-0" x-cloak x-show="selectedcomprobantes.length>0"
-                @click="$wire.multisend()" wire:loading.attr="disabled" style="display: none;">
-                {{ __('ENVIAR SELECCIONADOS') }}
-                <span x-text="selectedcomprobantes.length" :class="selectedcomprobantes.length < 10 ? 'px-1' : ''"
-                    class="bg-white p-0.5 text-[9px] rounded-full !tracking-normal font-semibold text-next-500"></span>
-            </x-button>
-        @endcan
-        @if ($comprobantes->hasPages())
-            <div class="w-full flex-1 flex flex-col justify-end items-center sm:items-end">
-                {{ $comprobantes->onEachSide(0)->links('livewire::pagination-default') }}
-            </div>
-        @endif
-    </div>
-
-
     <x-table class="mt-1 overflow-hidden">
         <x-slot name="header">
             <tr>
                 @can('admin.facturacion.sunat')
                     <th scope="col" class="p-2 font-medium text-center">
                         @if (count($comprobantes) > 0)
-                            <x-label value="TODO" class="text-textheadertable cursor-pointer" for="allcomprobantes" />
-                            <x-input x-model="checkall" type="checkbox" @change="$wire.allcomprobantes(checkall)"
-                                class="p-2 !rounded-0 !rounded-none cursor-pointer" id="allcomprobantes" />
+                            <label for="checkall" class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
+                                <x-input @change="toggleAll" x-model="checkall" autocomplete="off"
+                                    class="cursor-pointer p-2 !rounded-none" name="checkall" type="checkbox" id="checkall"
+                                    x-ref="checkall" wire:loading.attr="disabled" wire:key="{{ $item->id }}" />
+                                TODO</label>
                         @endif
                     </th>
                 @endcan
@@ -141,9 +123,7 @@
                 <th scope="col" class="p-2 font-medium">
                     TOTAL</th>
                 <th scope="col" class="p-2 font-medium">
-                    TIPO PAGO</th>
-                <th scope="col" class="p-2 font-medium text-center">
-                    REFERENCIA</th>
+                    TIPO PAGO / REFERENCIA</th>
                 <th scope="col" class="p-2 font-medium">
                     SUNAT</th>
                 <th scope="col" class="p-2 font-medium">
@@ -163,18 +143,18 @@
                                 @if (!$item->trashed())
                                     @if ($item->seriecomprobante->typecomprobante->isSunat())
                                         @if (!$item->isSendSunat())
-                                            <x-input type="checkbox" value="{{ $item->id }}"
-                                                x-model="selectedcomprobantes" name="comprobantes"
-                                                class="p-2 !rounded-0 !rounded-none cursor-pointer"
-                                                id="{{ $item->id }}" />
+                                            <x-input type="checkbox" name="selectedcomprobantes"
+                                                class="p-2 !rounded-none cursor-pointer" id="{{ $item->id }}"
+                                                @change="toggleCPE" value="{{ $item->id }}"
+                                                wire:loading.attr="disabled" wire:model.defer="selectedcomprobantes" />
                                         @endif
                                     @endif
                                 @endif
                             </td>
                         @endcan
-                        <td class="p-2 text-[10px]">
+                        <td class="p-2 text-[10px] min-w-40">
                             {{ $item->seriecompleta }}
-                            <p class="leading-none text-nowrap">
+                            <p class="leading-none">
                                 {{ $item->seriecomprobante->typecomprobante->descripcion }}
                             </p>
                             @if ($item->isProduccion())
@@ -190,7 +170,7 @@
                             <br>
                             {{ formatDate($item->date, 'hh:mm A') }}
                         </td>
-                        <td class="p-2 text-left">
+                        <td class="p-2 text-left min-w-72">
                             <p class="text-[10px] leading-3">{{ $item->client->name }}</p>
                             <p class="">{{ $item->client->document }}</p>
                             <p class="text-[10px] text-colorsubtitleform">{{ $item->direccion }}</p>
@@ -217,10 +197,11 @@
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->typepayment->name }}
+                            <br>
+                            <small class="leading-none text-colorsubtitleform">
+                                REF: {{ $item->referencia }}</small>
                         </td>
-                        <td class="p-2 text-center">
-                            {{ $item->referencia }}
-                        </td>
+
                         <td class="p-2 text-center">
                             @if ($item->trashed())
                                 <x-span-text text="ANULADO" type="red" class="leading-3 !tracking-normal" />
@@ -242,20 +223,21 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="p-2 text-center w-48">
+                        <td class="p-2 text-center w-48 max-w-48">
                             <p class="text-center text-wrap leading-3">
-                                {{ $item->descripcion }}</p>
+                                {!! $item->descripcion !!}</p>
 
                             @if (!$item->isSendSunat())
                                 <p>{{ $item->codesunat }}</p>
                             @endif
                         </td>
-                        <td class="p-2 text-center text-[10px]">
+                        <td class="p-2 text-center text-[10px] min-w-40">
                             <p class="leading-none">{{ $item->sucursal->name }}</p>
                             @if ($item->sucursal->trashed())
                                 <x-span-text text="NO DISPONIBLE" class="leading-3 inline-block" />
                             @endif
-                            <p class="text-[10px] text-colorsubtitleform leading-none mt-1">{{ $item->user->name }}</p>
+                            <p class="text-[10px] text-colorsubtitleform leading-none mt-1">{{ $item->user->name }}
+                            </p>
                         </td>
                         <td class="p-2 align-middle">
                             <div class="flex items-center justify-end gap-1">
@@ -365,7 +347,97 @@
         @endif
     </x-table>
 
+    @if ($comprobantes->hasPages())
+        <div class="w-full flex flex-wrap gap-2 items-center p-1 sticky -bottom-1 right-0 bg-body"
+            :class="selectedcomprobantes.length > 0 ? 'justify-between' : 'justify-end'">
+            @can('admin.facturacion.sunat')
+                <x-button x-show="selectedcomprobantes.length > 0" x-cloak style="display: none;" @click="multisend"
+                    wire:loading.attr="disabled">
+                    {{ __('ENVIAR SELECCIONADOS') }} <span x-text="selectedcomprobantes.length"
+                        class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-fondobutton"
+                        :class="selectedcomprobantes.length < 10 ? 'px-1.5' : 'px-1'"></span>
+                </x-button>
+            @endcan
+
+            {{ $comprobantes->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('comprobantes', () => ({
+                // selectedrangos: @entangle('selectedrangos').defer,
+                checkall: @entangle('checkall').defer,
+                selectedcomprobantes: @entangle('selectedcomprobantes').defer,
+                init() {
+                    Livewire.hook('message.processed', () => {
+                        const comprobantes = document.querySelectorAll(
+                            '[type=checkbox][name=selectedcomprobantes]:checked');
+                        this.checkall = (this.selectedcomprobantes.length == comprobantes
+                                .length && comprobantes.length > 0) ? true :
+                            false;
+                    });
+                },
+                toggleAll() {
+                    const selectedcomprobantes = [];
+                    let checked = this.$event.target.checked;
+                    const comprobantes = document.querySelectorAll(
+                        '[type=checkbox][name=selectedcomprobantes]');
+
+                    comprobantes.forEach(checkbox => {
+                        checkbox.checked = checked;
+                        if (checkbox.checked) {
+                            selectedcomprobantes.push(parseInt(checkbox.value));
+                        }
+                    });
+
+                    this.selectedcomprobantes = checked ? selectedcomprobantes : [];
+                },
+                toggleCPE() {
+                    let value = this.$event.target.value;
+                    let index = this.selectedcomprobantes.indexOf(parseInt(value));
+
+                    if (index !== -1) {
+                        this.selectedcomprobantes.splice(index, 1);
+                    } else {
+                        this.selectedcomprobantes.push(parseInt(value));
+                    }
+                    const comprobantes = document.querySelectorAll(
+                        '[type=checkbox][name=selectedcomprobantes]');
+                    this.checkall = (this.selectedcomprobantes.length == comprobantes.length) ? true :
+                        false;
+                },
+                multisend() {
+                    swal.fire({
+                        title: 'ENVIAR TODOS LOS COMPROBANTES SELECCIONADOS ?',
+                        text: 'Este proceso puedar tardar unos minutos, dependiendo a la cantidad de comprobantes seleccionados.',
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.multisend(this.selectedcomprobantes).then(result => {
+                                if (result) {
+                                    const comprobantes = document.querySelectorAll(
+                                        '[type=checkbox][name=selectedcomprobantes]'
+                                    );
+
+                                    comprobantes.forEach(checkbox => {
+                                        checkbox.checked = false;
+                                    });
+                                    this.checkall = false;
+                                }
+                            })
+                        }
+                    })
+                }
+            }))
+        })
+
+
         function select2Type() {
             this.selectT = $(this.$refs.selecttype).select2();
             this.selectT.val(this.searchtypepayment).trigger("change");

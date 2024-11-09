@@ -74,7 +74,7 @@
                             <div
                                 class="w-48 group shadow border border-borderminicard shadow-shadowminicard rounded-md relative overflow-hidden hover:shadow-md hover:shadow-shadowminicard">
                                 <div class="w-full h-24 block">
-                                    <img src="{{ $item->getImageURL() }}" alt=""
+                                    <img src="{{ pathURLProductImage($item->url) }}" alt=""
                                         class="w-full h-full object-cover">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">

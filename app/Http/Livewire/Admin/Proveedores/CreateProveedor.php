@@ -31,33 +31,18 @@ class CreateProveedor extends Component
             'direccion' => ['required', 'string', 'min:3'],
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
             'proveedortype_id' => ['required', 'integer', 'min:1', 'exists:proveedortypes,id'],
-            'telefono' => ['nullable', 'numeric', 'min:9', 'regex:/^\d{9}$/'],
+            'telefono' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
             'email' => ['nullable', 'email', 'min:6'],
-            'document2' => [
-                'nullable',
-                Rule::requiredIf($this->addcontacto),
-                'numeric',
-                'digits:8',
-                'regex:/^\d{8}$/'
-            ],
-            'name2' => [
-                'nullable',
-                Rule::requiredIf($this->addcontacto),
-                'string',
-                'min:3'
-            ],
-            'telefono2' => [
-                'nullable',
-                Rule::requiredIf($this->addcontacto),
-                'numeric',
-                'digits_between:7,9'
-            ],
+            'document2' => ['nullable', Rule::requiredIf($this->addcontacto), 'numeric', 'digits:8', 'regex:/^\d{8}$/'],
+            'name2' => ['nullable', Rule::requiredIf($this->addcontacto), 'string', 'min:3'],
+            'telefono2' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
         ];
     }
 
     public function render()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
         $proveedortypes = Proveedortype::orderBy('name', 'asc')->get();
         return view('livewire.admin.proveedores.create-proveedor', compact('ubigeos', 'proveedortypes'));
     }
@@ -93,9 +78,11 @@ class CreateProveedor extends Component
                     'name' => $this->name2
                 ]);
 
-                $representante->telephone()->create([
-                    'phone' => $this->telefono2
-                ]);
+                if (trim($this->telefono2) !== '') {
+                    $representante->telephone()->create([
+                        'phone' => $this->telefono2
+                    ]);
+                }
             }
             DB::commit();
             $this->dispatchBrowserEvent('created');

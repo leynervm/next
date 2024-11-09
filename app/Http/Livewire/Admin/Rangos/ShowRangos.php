@@ -49,12 +49,7 @@ class ShowRangos extends Component
                 'decimal:0,2',
                 new ValidateRango($this->rango->desde, $this->rango->hasta, $this->rango->id),
             ],
-            'rango.incremento' => [
-                'required',
-                'numeric',
-                'min:0',
-                'decimal:0,2',
-            ]
+            'rango.incremento' => ['required', 'numeric', 'min:0', 'decimal:0,2']
         ];
     }
 
@@ -67,7 +62,7 @@ class ShowRangos extends Component
     {
         $rangos = Rango::with(['pricetypes' => function ($query) {
             $query->activos()->orderBy('pricetypes.id', 'asc');
-        }])->orderBy('desde', 'asc')->paginate(15, ['*'], 'rangosPage');
+        }])->orderBy('desde', 'asc')->paginate(10, ['*'], 'rangosPage');
         $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->get();
         return view('livewire.admin.rangos.show-rangos', compact('rangos', 'pricetypes'));
     }
@@ -147,67 +142,102 @@ class ShowRangos extends Component
         }
     }
 
-    public function updatepricerango(Rango $rango, Pricetype $pricetype, $ganancia)
+    // public function updatepricerango(Rango $rango, Pricetype $pricetype, $ganancia)
+    // {
+    //     $this->authorize('admin.administracion.rangos.edit');
+
+    //     if (empty($ganancia)) {
+    //         $ganancia = 0;
+    //         // $json = response()->json([
+    //         //     'title' => 'INGRESE UN NÚMERO VÁLIDO !',
+    //         //     'text' => 'el campo requiere un valor de tipo numérico'
+    //         // ])->getData();
+    //         // $this->dispatchBrowserEvent('validation', $json);
+    //         // return false;
+    //     }
+
+    //     DB::beginTransaction();
+    //     try {
+    //         $gananciaOld = $rango->pricetypes()->find($pricetype)->pivot->ganancia;
+    //         if ($gananciaOld <> $ganancia) {
+    //             $rango->pricetypes()->updateExistingPivot($pricetype, [
+    //                 'ganancia' => $ganancia
+    //             ]);
+
+    //             $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+    //                 ->with(['promocions' => function ($query) {
+    //                     $query->with(['itempromos.producto' => function ($subQuery) {
+    //                         $subQuery->with('unit');
+    //                     }])->availables()->disponibles();
+    //                 }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
+    //             if (count($productos) > 0) {
+    //                 foreach ($productos as $producto) {
+    //                     // $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
+    //                     // $promocion = verifyPromocion($firstPrm);
+    //                     // $precio_venta = getPriceDinamic(
+    //                     //     $producto->pricebuy,
+    //                     //     $ganancia,
+    //                     //     $rango->incremento,
+    //                     //     $pricetype->rounded,
+    //                     //     $pricetype->decimals,
+    //                     //     $promocion
+    //                     // );
+
+    //                     // $producto->{$pricetype->campo_table} = $precio_venta;
+    //                     // $producto->save();
+    //                     $producto->assignPrice();
+    //                 }
+    //             }
+    //             $this->dispatchBrowserEvent('updated');
+    //         }
+    //         DB::commit();
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     } catch (\Throwable $e) {
+    //         DB::rollBack();
+    //         throw $e;
+    //     }
+    // }
+
+    public function updateganacias($ganancias = [])
     {
-        // dd($rango, $pricetype, $ganancia);
-        $this->authorize('admin.administracion.rangos.edit');
+        if (count($ganancias) > 0) {
+            DB::beginTransaction();
+            try {
+                foreach ($ganancias as $item) {
+                    $rango = Rango::with(['pricetypes' => function ($query) use ($item) {
+                        $query->where('pricetypes.id', $item['pricetype_id']);
+                    }])->find($item['rango_id']);
 
-        if (empty($ganancia)) {
-            $ganancia = 0;
-            // $json = response()->json([
-            //     'title' => 'INGRESE UN NÚMERO VÁLIDO !',
-            //     'text' => 'el campo requiere un valor de tipo numérico'
-            // ])->getData();
-            // $this->dispatchBrowserEvent('validation', $json);
-            // return false;
-        }
+                    if ($rango->pricetypes && $rango->pricetypes->first()->pivot->ganancia <> $item['ganancia']) {
+                        $rango->pricetypes()->updateExistingPivot($item['pricetype_id'], [
+                            'ganancia' => $item['ganancia']
+                        ]);
 
-        DB::beginTransaction();
-        try {
-            $gananciaOld = $rango->pricetypes()->find($pricetype)->pivot->ganancia;
-            if ($gananciaOld <> $ganancia) {
-                $rango->pricetypes()->updateExistingPivot(
-                    $pricetype,
-                    ['ganancia' => $ganancia]
-                );
-
-                $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
-                    ->with(['promocions' => function ($query) {
-                        $query->with(['itempromos.producto' => function ($subQuery) {
-                            $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                                $q->select('url')->from('images')
-                                    ->whereColumn('images.imageable_id', 'productos.id')
-                                    ->where('images.imageable_type', Producto::class)
-                                    ->orderBy('default', 'desc')->limit(1);
-                            }]);
-                        }])->availables()->disponibles();
-                    }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
-                if (count($productos) > 0) {
-                    foreach ($productos as $producto) {
-                        $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
-                        $promocion = verifyPromocion($firstPrm);
-                        $precio_venta = getPriceDinamic(
-                            $producto->pricebuy,
-                            $ganancia,
-                            $rango->incremento,
-                            $pricetype->rounded,
-                            $pricetype->decimals,
-                            $promocion
-                        );
-
-                        $producto->{$pricetype->campo_table} = $precio_venta;
-                        $producto->save();
+                        $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                            ->with(['promocions' => function ($query) {
+                                $query->with(['itempromos.producto' => function ($subQuery) {
+                                    $subQuery->with('unit');
+                                }])->availables()->disponibles();
+                            }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
+                        if (count($productos) > 0) {
+                            foreach ($productos as $producto) {
+                                $producto->assignPrice();
+                            }
+                        }
                     }
                 }
-                $this->dispatchBrowserEvent('updated');
+                DB::commit();
+                $this->dispatchBrowserEvent('toast', toastJSON('LISTA DE PRECIOS ACTUALIZADO CORRECTAMENTE'));
+                return true;
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                throw $e;
             }
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
         }
     }
 

@@ -76,24 +76,31 @@ class CreateGuia extends Component
             'ructransport' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'numeric', 'digits:11', 'regex:/^\d{11}$/',
+                'numeric',
+                'digits:11',
+                'regex:/^\d{11}$/',
                 $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : ''
             ],
             'nametransport' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-                'string', 'min:6',
+                'string',
+                'min:6',
                 $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.name' : ''
             ],
             'placavehiculo' => ['nullable', 'string', 'min:6', 'max:8'],
 
             'documentdestinatario' => [
-                'required', 'numeric', $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
                 $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
             ],
             'namedestinatario' => [
-                'required', 'string', 'min:6',
+                'required',
+                'string',
+                'min:6',
                 $this->motivotraslado->code == '03' ? 'different:namecomprador' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : '')
             ],
@@ -101,14 +108,16 @@ class CreateGuia extends Component
             'documentcomprador' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '03' || $this->motivotraslado->code == '13'),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:documentdestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
             ],
             'namecomprador' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '03' || $this->motivotraslado->code == '13'),
-                'string', 'min:6',
+                'string',
+                'min:6',
                 $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:namedestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.name' : '')
             ],
@@ -116,14 +125,17 @@ class CreateGuia extends Component
             'rucproveedor' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '02' || $this->motivotraslado->code == '13'),
-                'numeric', 'digits:11', 'regex:/^\d{11}$/',
+                'numeric',
+                'digits:11',
+                'regex:/^\d{11}$/',
                 $this->motivotraslado->code == '02' ? 'different:documentdestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
             ],
             'nameproveedor' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '02' || $this->motivotraslado->code == '13'),
-                'string', 'min:6',
+                'string',
+                'min:6',
                 $this->motivotraslado->code == '02' ? 'different:namedestinatario' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.name' : ''
             ],
@@ -131,39 +143,53 @@ class CreateGuia extends Component
             'documentdriver' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'numeric', 'digits:8', 'regex:/^\d{8}$/',
+                'numeric',
+                'digits:8',
+                'regex:/^\d{8}$/',
             ],
             'namedriver' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:3', 'max:255',
+                'string',
+                'min:3',
+                'max:255',
             ],
             'lastname' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:3', 'max:255',
+                'string',
+                'min:3',
+                'max:255',
             ],
             'licencia' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'string', 'min:9', 'max:10', 'uppercase',
+                'string',
+                'min:9',
+                'max:10',
+                'uppercase',
             ],
             'placavehiculos' => [
                 'nullable',
                 Rule::requiredIf($this->modalidadtransporte->code == '02' && $this->vehiculosml == false),
-                'array', ($this->modalidadtransporte->code == '02' && $this->vehiculosml == false) ? 'min:1' : ''
+                'array',
+                ($this->modalidadtransporte->code == '02' && $this->vehiculosml == false) ? 'min:1' : ''
             ],
 
             'anexoorigen' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '04'),
-                'numeric', 'min:0', 'max:4',
+                'numeric',
+                'min:0',
+                'max:4',
                 $this->motivotraslado->code == '04' ? 'different:anexodestino' : '',
             ],
             'anexodestino' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '04'),
-                'numeric', 'min:0', 'max:4',
+                'numeric',
+                'min:0',
+                'max:4',
                 $this->motivotraslado->code == '04' ? 'different:anexoorigen' : '',
             ],
             'ubigeoorigen_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
@@ -178,7 +204,9 @@ class CreateGuia extends Component
             'referencia' => [
                 'nullable',
                 Rule::requiredIf($this->motivotraslado->code == '01' || $this->motivotraslado->code == '03'),
-                'string', 'min:6', 'max:13'
+                'string',
+                'min:6',
+                'max:13'
             ],
             'vehiculosml' => ['required', 'boolean'],
             'motivotraslado_id' => ['required', 'integer', 'min:1', 'exists:motivotraslados,id'],
@@ -190,7 +218,7 @@ class CreateGuia extends Component
             'items' => ['required', 'array', 'min:1']
         ];
     }
-    
+
     protected $messages = [
         'placa.uppercase' => 'El campo placa debe contener letras en mayusculas.',
     ];
@@ -328,6 +356,7 @@ class CreateGuia extends Component
                 'indicadorvehretorvacio' => 0,
                 'indicadorvehretorenvacios' => 0,
                 'referencia' => empty($this->referencia) ? null : trim($this->referencia),
+                'sendmode' => $this->empresa->sendmode,
                 'motivotraslado_id' => $this->motivotraslado_id,
                 'modalidadtransporte_id' => $this->modalidadtransporte_id,
                 'ubigeoorigen_id' => $this->ubigeoorigen_id,
@@ -454,7 +483,10 @@ class CreateGuia extends Component
     {
         $this->referencia = mb_strtoupper(trim($this->referencia), "UTF-8");
         $this->validate(['referencia' => [
-            'required', 'string', 'min:6', 'max:13'
+            'required',
+            'string',
+            'min:6',
+            'max:13'
         ]]);
 
         if ($this->motivotraslado_id) {
@@ -562,17 +594,24 @@ class CreateGuia extends Component
             'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
             'producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
             'cantidad' => [
-                'nullable', Rule::requiredIf(count($this->series) == 0 || in_array($this->mode, [Almacen::NO_ALTERAR_STOCK, Almacen::INCREMENTAR_STOCK])),
-                'integer', 'min:1',
+                'nullable',
+                Rule::requiredIf(count($this->series) == 0 || in_array($this->mode, [Almacen::NO_ALTERAR_STOCK, Almacen::INCREMENTAR_STOCK])),
+                'integer',
+                'min:1',
                 in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK]) ? new ValidateStock($this->producto_id, $this->almacen_id) : ''
             ],
             'serie_id' => [
                 'nullable',
                 Rule::requiredIf(count($this->series) > 0 && in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])),
-                'integer', 'min:1', 'exists:series,id'
+                'integer',
+                'min:1',
+                'exists:series,id'
             ],
             'mode' => [
-                'nullable', 'integer', 'min:0', 'max:3',
+                'nullable',
+                'integer',
+                'min:0',
+                'max:3',
                 Rule::in([Almacen::NO_ALTERAR_STOCK, Almacen::RESERVAR_STOCK, Almacen::INCREMENTAR_STOCK, Almacen::DISMINUIR_STOCK])
             ],
         ]);
@@ -953,7 +992,10 @@ class CreateGuia extends Component
         $this->ructransport = trim($this->ructransport);
         $this->validate([
             'ructransport' => [
-                'required', 'numeric', 'digits:11', 'regex:/^\d{11}$/',
+                'required',
+                'numeric',
+                'digits:11',
+                'regex:/^\d{11}$/',
                 $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : ''
             ],
         ]);
@@ -979,7 +1021,9 @@ class CreateGuia extends Component
         $this->documentdestinatario = trim($this->documentdestinatario);
         $this->validate([
             'documentdestinatario' => [
-                'required', 'numeric', $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
                 $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
             ],
@@ -1007,7 +1051,9 @@ class CreateGuia extends Component
         $this->documentcomprador = trim($this->documentcomprador);
         $this->validate([
             'documentcomprador' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:documentdestinatario' : '',
             ],
         ]);
@@ -1034,7 +1080,8 @@ class CreateGuia extends Component
         $this->validate([
             'documentdriver' => [
                 Rule::requiredIf($this->modalidadtransporte->code == '02'),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/'
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/'
             ],
         ]);
 

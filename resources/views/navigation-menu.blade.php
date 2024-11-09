@@ -345,7 +345,7 @@
         const iconLinks = sidebar.querySelectorAll('li a svg');
 
         const isSidebarMobileOpen = localStorage.getItem('isSidebarMobileOpen') === 'true';
-        console.log(isSidebarOpen);
+        // console.log(isSidebarOpen);
 
         if (isSidebarOpen) {
             sidebar.classList.toggle('md:w-16');
@@ -376,7 +376,6 @@
         // console.log("Contiene clase w-64 : " + sidebar.classList.contains('w-64'));
 
         sidebarToggle.addEventListener('click', () => {
-
             // console.log("Contiene clase w-16 Negacion: " + !sidebar.classList.contains('w-16'))
             sidebar.classList.toggle('md:w-16');
             sidebar.classList.toggle('md:w-48');

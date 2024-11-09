@@ -3,9 +3,6 @@
 
 <head>
     <meta charset="utf-8">
-    @php
-        $empresa = mi_empresa();
-    @endphp
     @if ($empresa->icono ?? null)
         <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
     @endif
@@ -32,7 +29,8 @@
     <!-- Scripts -->
 </head>
 
-<body class="{{ config('app.theme') }}">
+<body class="{{ config('app.theme') }}" x-data="{ openSidebar: false }" x-init="openSidebar = localStorage.getItem('isSidebarOpen') === 'true';
+$watch('openSidebar', value => console.log(openSidebar))">
     <div class="relative flex h-screen min-h-screen overflow-hidden">
         @auth
             @if ($empresa)
@@ -55,14 +53,13 @@
                     id="menu">
                     <div class="md:flex w-full h-16 px-1 items-center justify-center" id="sidebar-header">
                         <div class="h-12 w-32 hidden ease-in-out duration-100" id="logo-sidebar">
-                            @if ($empresa)
-                                @if ($empresa->image)
-                                    <img class="w-full h-full object-scale-down object-center"
-                                        src="{{ Storage::url('images/company/' . $empresa->image->url) }}" alt="">
-                                @endif
+                            @if ($empresa->logo)
+                                <img class="w-full h-full object-scale-down object-center"
+                                    src="{{ getLogoEmpresa($empresa->logo, false) }}" alt="">
                             @endif
                         </div>
                         <button type="button" id="sidebar-toggle"
+                            @click="openSidebar = localStorage.getItem('isSidebarOpen') === 'true'"
                             class="hidden md:block text-iconmenu shadow focus:outline-none rounded-xs p-1.5 rounded-lg hover:shadow focus:shadow hover:bg-hoverlinknav hover:text-hovercolorlinknav focus:bg-hoverlinknav focus:text-hovercolorlinknav transition-colors ease-in-out duration-100">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 p-1.5" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -111,7 +108,8 @@
 
                                     @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
                                         <img class="h-8 w-8 rounded-full object-cover"
-                                            src="{{ Auth::user()->profile_photo_url }}" alt="{{ Auth::user()->name }}" />
+                                            src="{{ Auth::user()->profile_photo_url }}"
+                                            alt="{{ Auth::user()->name }}" />
                                     @else
                                         <svg class="h-8 w-8 p-1.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
                                             fill="currentColor">

@@ -100,16 +100,17 @@
 
                     <div class="w-full">
                         <x-label value="Precio compra :" />
-                        <x-input class="block w-full" wire:model.defer="producto.pricebuy" type="number" min="0"
-                            step="0.0001" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="producto.pricebuy"
+                            type="number" min="0" step="0.001" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="producto.pricebuy" />
                     </div>
 
-                    @if (mi_empresa()->uselistprice == 0 ?? 0)
+                    @if (!$empresa->usarLista())
                         <div class="w-full">
                             <x-label value="Precio venta :" />
-                            <x-input class="block w-full" wire:model.defer="producto.pricesale" type="number"
-                                min="0" step="0.0001" />
+                            <x-input class="block w-full input-number-none" wire:model.defer="producto.pricesale"
+                                type="number" min="0" step="0.001"
+                                onkeypress="return validarDecimal(event, 9)" />
                             <x-jet-input-error for="producto.pricesale" />
                         </div>
                     @endif
@@ -123,8 +124,8 @@
 
                     <div class="w-full">
                         <x-label value="Stock Mínimo :" />
-                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number" step="1"
-                            min="0" />
+                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number"
+                            step="1" min="0" />
                         <x-jet-input-error for="producto.minstock" />
                     </div>
 

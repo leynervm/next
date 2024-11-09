@@ -35,25 +35,26 @@ trait CalcularPrecioVenta
         // $precio_real_compra = $this->precio_real_compra;
         //Verifico si cuenta con promocion activa y disponible 
         $promocion = $this->getPromocion();
-        $usarLista = Empresa::query()->select('uselistprice')->first()->usarlista() ?? false;
+        // $usarLista = Empresa::query()->select('uselistprice')->first()->usarlista() ?? false;
+        $usarLista = view()->shared('empresa')->usarlista() ?? false;
         // $descuento = getDscto($promocion);
 
         if ($usarLista) {
             $rango = Rango::query()->with(['pricetypes' => function ($query) {
                 $query->select('pricetypes.id', 'rounded', 'decimals', 'campo_table')
-                    ->addSelect('pricetype_rango.ganancia');
+                    ->addSelect('pricetype_rango.ganancia')->orderBy('id', 'asc');
             }])->whereRangoBetween($this->pricebuy)->first();
 
             foreach ($rango->pricetypes as $lista) {
                 $precio_venta = getPriceDinamic(
                     $this->pricebuy,
-                    $rango->ganancia,
+                    $lista->ganancia,
                     $rango->incremento,
                     $lista->rounded,
                     $lista->decimals,
                     $promocion
                 );
-
+                
                 if ($promocion && $promocion->isCombo()) {
                     $combo = $this->getAmountCombo($promocion, $lista);
                     $precio_venta = $precio_venta + $combo->total;
@@ -159,7 +160,7 @@ trait CalcularPrecioVenta
     //siempre traer las relacione cargadas con with en el producto
     private function getPromocion()
     {
-        return count($this->promocions) > 0 ? verifyPromocion($this->promocions->first()) : null;
+        return ($this->promocions && count($this->promocions) > 0) ? verifyPromocion($this->promocions->first()) : null;
     }
 
     public function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)

@@ -36,5 +36,4 @@ Route::middleware([
 
     Route::get('/kardex', [KardexController::class, 'index'])->name('admin.almacen.kardex');
     Route::get('/kardex/series', [KardexController::class, 'series'])->name('admin.almacen.kardex.series');
-    Route::get('/kardex/series/{serie:serie}/show', [KardexController::class, 'show'])->name('admin.almacen.kardex.series.show');
 });

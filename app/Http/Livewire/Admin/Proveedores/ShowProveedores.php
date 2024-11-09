@@ -13,10 +13,23 @@ class ShowProveedores extends Component
 
 
     public $open = false;
+    public $search = '';
+    protected $queryString = ['search' => ['except' => '']];
 
     public function render()
     {
-        $proveedors = Proveedor::with(['proveedortype', 'telephones', 'ubigeo'])->orderBy('name', 'asc')->paginate();
+        $proveedors = Proveedor::with(['proveedortype', 'telephones', 'ubigeo']);
+
+        if (trim($this->search) !== '') {
+            $proveedors->where('document', 'ilike', '%' . $this->search . '%')
+                ->orWhere('name', 'ilike', '%' . $this->search . '%');
+        }
+        $proveedors = $proveedors->orderBy('name', 'asc')->orderBy('document', 'asc')->paginate(20);
         return view('livewire.admin.proveedores.show-proveedores', compact('proveedors'));
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
     }
 }

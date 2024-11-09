@@ -24,6 +24,7 @@ class CreateProducto extends Component
 {
     use WithFileUploads, AuthorizesRequests;
 
+    public $empresa;
     public $imagen;
     public $identificador;
     public $subcategories = [];
@@ -50,7 +51,7 @@ class CreateProducto extends Component
             'sku' => ['nullable', 'string', 'min:6', new CampoUnique('productos', 'sku', null, true)],
             'partnumber' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', null, true)],
             'pricebuy' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
-            'pricesale' => mi_empresa()->usarLista() ? ['nullable', 'numeric', 'min:0', 'decimal:0,4'] : ['required', 'numeric', 'decimal:0,4', 'gt:0'],
+            'pricesale' => $this->empresa->usarLista() ? ['nullable', 'numeric', 'min:0', 'decimal:0,4'] : ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'igv' => ['required', 'numeric', 'min:0', 'decimal:0,4'],
             'minstock' => ['required', 'integer', 'min:0'],
             'marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
@@ -71,6 +72,8 @@ class CreateProducto extends Component
 
     public function mount()
     {
+
+        $this->empresa = view()->shared('empresa');
         $this->identificador = rand();
         $this->selectedAlmacens = Almacen::orderBy('default', 'desc')->pluck('id');
         if (Module::isEnabled('Marketplace')) {
@@ -171,18 +174,18 @@ class CreateProducto extends Component
                         $constraint->upsize();
                     })->orientate()->encode('jpg', 30);
 
-                $empresa = mi_empresa();
-                if ($empresa->usarMarkagua()) {
-                    $w = $empresa->widthmark  ?? 100;
-                    $h = $empresa->heightmark  ?? 100;
-                    $urlMark = public_path('storage/images/company/' . $empresa->markagua);
-                    $margin = $empresa->alignmark !== 'center' ? 20 : 0;
+
+                if ($this->empresa->usarMarkagua()) {
+                    $w = $this->empresa->widthmark  ?? 100;
+                    $h = $this->empresa->heightmark  ?? 100;
+                    $urlMark = public_path('storage/images/company/' . $this->empresa->markagua);
+                    $margin = $this->empresa->alignmark !== 'center' ? 20 : 0;
                     // create a new Image instance for inserting
                     $mark = Image::make($urlMark)->resize($w, $h, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
                     })->orientate();
-                    $compressedImage->insert($mark, $empresa->alignmark, $margin, $margin);
+                    $compressedImage->insert($mark, $this->empresa->alignmark, $margin, $margin);
                 }
 
                 $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
@@ -206,11 +209,8 @@ class CreateProducto extends Component
                 ]);
             }
 
-            if (mi_empresa()->usarlista()) {
-                $producto->assignPrice();
-            }
-            // dd('FIN DEL PROCESO');
             DB::commit();
+            $producto->assignPrice();
             $this->resetValidation();
             $this->reset();
             $this->dispatchBrowserEvent('created');

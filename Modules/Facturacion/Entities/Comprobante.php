@@ -9,7 +9,6 @@ use App\Models\Guia;
 use App\Models\Moneda;
 use App\Models\Seriecomprobante;
 use App\Models\Sucursal;
-use App\Models\Tribute;
 use App\Models\Typepayment;
 use App\Models\User;
 use App\Traits\EnviarComprobanteSunat;

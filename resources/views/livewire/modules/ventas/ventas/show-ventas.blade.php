@@ -124,7 +124,7 @@
             <x-slot name="body">
                 @foreach ($ventas as $item)
                     <tr>
-                        <td class="p-2 text-[10px]">
+                        <td class="p-2 text-[10px] min-w-36">
                             @if ($item->trashed())
                                 <p class="block w-full leading-3 text-colorsubtitleform mb-1">
                                     {{ $item->seriecompleta }}
@@ -154,14 +154,17 @@
                         {{-- <td class="p-2 text-[10px]">
                                 {{ $item->comprobante->seriecompleta }}
                             </td> --}}
-                        <td class="p-2 text-center">
+                        <td class="p-2 text-center leading-none text-[10px] min-w-28">
                             <p> {{ formatDate($item->date, 'DD MMMM Y') }}</p>
-                            <p> {{ formatDate($item->date, 'H:m A') }}</p>
+                            <p class="mt-1"> {{ formatDate($item->date, 'H:m A') }}</p>
                         </td>
-                        <td class="p-2 ">
-                            <p class="">{{ $item->client->name }}</p>
+                        <td class="p-2 min-w-72">
+                            <p class="leading-none">{{ $item->client->name }}</p>
                             <p class="text-[10px]">{{ $item->client->document }}</p>
-                            <p class="text-[10px] text-colorsubtitleform">{{ $item->direccion }}</p>
+                            @if (!empty($item->direccion))
+                                <p class="text-[10px] text-colorsubtitleform leading-none">
+                                    {{ $item->direccion }}</p>
+                            @endif
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->moneda->simbolo }}
@@ -218,12 +221,13 @@
                                 @endif
                             @endif
                         </td>
-                        <td class="p-2 text-center">
+                        <td class="p-2 text-center min-w-52 max-w-52 leading-none">
                             {{ $item->sucursal->name }}
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
                             @endif
-                            <p class="text-[10px] text-colorsubtitleform">USUARIO : {{ $item->user->name }}</p>
+                            <p class="text-[10px] text-colorsubtitleform mt-1">
+                                {{ $item->user->name }}</p>
                         </td>
                         <td class="p-2 text-center">
                             <x-button-delete onclick="confirmDelete({{ $item }})"

@@ -58,7 +58,8 @@
         <div class="container-login" id="container" x-bind:class="{ 'active': activeForm === 'register' }">
             @if ($empresa && Module::isEnabled('Marketplace'))
                 <div class="form-container sign-up" style="display: none" x-show="activeForm === 'register'" x-cloak>
-                    <form method="POST" action="{{ route('register') }}" id="register_form">
+                    <form @submit.prevent="submitPrevent" method="POST" action="{{ route('register') }}"
+                        id="register_form">
                         @csrf
                         <h1 class="title-login">{{ __('Create Account') }}</h1>
 
@@ -167,7 +168,7 @@
             @endif
 
             <div class="form-container sign-in" style="display: none" x-show="activeForm === 'login'" x-cloak>
-                <form method="POST" action="{{ route('login') }}" id="login_form">
+                <form @submit.prevent="submitPrevent" method="POST" action="{{ route('login') }}" id="login_form">
                     @csrf
 
                     @if (session('status'))
@@ -242,7 +243,7 @@
                                 </span>
                             </a>
 
-                            <a href="{{ url()->previous() }}"
+                            <a href="{{ in_array(url()->previous(), [route('login'), route('register')]) ? '/' : url()->previous() }}"
                                 class="text-xs mx-auto inline-block text-center p-2.5 hover:text-texthovertable text-colorsubtitleform transition ease-in-out duration-150">
                                 VOLVER</a>
                         </div>
@@ -276,25 +277,6 @@
     {{-- <script async src="https://www.google.com/recaptcha/api.js"></script> --}}
 
     <script>
-        // grecaptcha.ready(function() {
-        //     document.getElementById('register_form').addEventListener("submit", function(event) {
-        //         event.preventDefault();
-        //         grecaptcha.execute('{{ config('services.recaptcha_v3.key_web') }}', {
-        //                 action: 'register'
-        //             })
-        //             .then(function(token) {
-        //                 let form = event.target;
-        //                 let input = document.createElement('input');
-        //                 input.type = 'hidden';
-        //                 input.name = 'g_recaptcha_response';
-        //                 input.value = token;
-        //                 form.appendChild(input);
-        //                 document.getElementById('register_form').submit();
-        //             });
-        //     });
-        // });
-
-
         function authForm() {
             return {
                 activeForm: 'login',
@@ -307,6 +289,13 @@
                 setActiveForm(form) {
                     this.activeForm = form;
                     localStorage.setItem('activeForm', form);
+                },
+                submitPrevent(e) {
+                    let form = e.target;
+                    let submitButton = form.querySelector('[type="submit"]');
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                    }
                 }
             }
         }

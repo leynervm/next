@@ -1,14 +1,4 @@
 <div>
-    <div wire:loading.flex class="loading-overlay hidden fixed">
-        <x-loading-next />
-    </div>
-
-    @if ($compras->hasPages())
-        <div class="pb-2">
-            {{ $compras->links() }}
-        </div>
-    @endif
-
     <div class="flex flex-wrap items-center gap-1 mt-4">
         <div class="w-full xs:max-w-sm">
             <x-label value="Buscar proveedor compra :" />
@@ -26,7 +16,7 @@
             </div>
         </div>
 
-        <div class="w-full xs:max-w-xs">
+        <div class="w-full xs:max-w-48">
             <x-label value="Fecha compra :" />
             <x-input type="date" name="date" wire:model.lazy="date" id="search" class="w-full block" />
         </div>
@@ -187,6 +177,15 @@
         @endif
     </x-table>
 
+    <div wire:loading.flex class="loading-overlay hidden fixed">
+        <x-loading-next />
+    </div>
+
+    @if ($compras->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $compras->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 
     <script>
         function select2Sucursal() {
@@ -225,5 +224,4 @@
             });
         }
     </script>
-
 </div>

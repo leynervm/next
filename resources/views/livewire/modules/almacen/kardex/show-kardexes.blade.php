@@ -1,26 +1,22 @@
 <div class="relative">
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
-    <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
-        <div class="w-full xs:max-w-md">
+    <div class="flex flex-wrap gap-2">
+        <div class="w-full xs:max-w-xs">
             <x-label value="Buscar producto :" />
-            <x-input type="text" wire:model.lazy="searchproducto" class="w-full block xs:max-w-md"
+            <x-input type="text" wire:model.lazy="searchproducto" class="w-full block"
                 placeholder="Buscar producto..." />
         </div>
 
-        <div class="w-full xs:w-auto">
+        <div class="w-full max-w-36 xs:max-w-40">
             <x-label value="Fecha :" />
             <x-input type="date" wire:model.lazy="date" class="w-full block" />
         </div>
 
-        <div class="w-full xs:w-auto">
+        <div class="w-full max-w-36 xs:max-w-40">
             <x-label value="Hasta :" />
-            <x-input type="date" wire:model.lazy="dateto" class="w-full block xs:w-auto" />
+            <x-input type="date" wire:model.lazy="dateto" class="w-full block" />
         </div>
 
-        <div class="w-full xs:w-52">
+        <div class="w-full max-w-40">
             <x-label value="Almacén :" />
             <div x-data="{ searchalmacen: @entangle('searchalmacen') }" x-init="select2Almacen" id="parentsearchalmacen" class="relative" wire:ignore>
                 <x-select id="searchalmacen" x-ref="selectalmacen" data-placeholder="null">
@@ -37,7 +33,7 @@
         </div>
 
         @if (count($users) > 1)
-            <div class="w-full xs:w-60">
+            <div class="w-full max-w-60">
                 <x-label value="Usuario :" />
                 <div x-data="{ searchuser: @entangle('searchuser') }" x-init="select2UserAlpine" class="relative" id="parentsearchuser" wire:ignore>
                     <x-select id="searchuser" x-ref="select" data-placeholder="null">
@@ -53,7 +49,7 @@
         @endif
 
         @if (count($sucursals) > 1)
-            <div class="w-full xs:w-full xs:max-w-xs">
+            <div class="w-full max-w-60">
                 <x-label value="Sucursal :" />
                 <div x-data="{ searchsucursal: @entangle('searchsucursal') }" x-init="select2SucursalAlpine" id="parentsearchsucursal" class="relative"
                     wire:ignore>
@@ -71,12 +67,6 @@
             </div>
         @endif
     </div>
-
-    @if ($kardexes->hasPages())
-        <div class="pt-3 pb-1">
-            {{ $kardexes->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
 
     <x-table class="mt-1">
         <x-slot name="header">
@@ -116,10 +106,11 @@
             <x-slot name="body">
                 @foreach ($kardexes as $item)
                     <tr>
-                        <td class="p-2 text-xs uppercase">
-                            {{ formatDate($item->date) }}
+                        <td class="p-2 text-xs uppercase text-center min-w-36">
+                            {{ formatDate($item->date, "DD MMMM Y") }}
+                            {{ formatDate($item->date, "hh:mm A") }}
                         </td>
-                        <td class="p-2 text-xs text-justify">
+                        <td class="p-2 text-xs min-w-60">
                             <p>{{ $item->producto->name }}</p>
                             <x-span-text :text="$item->almacen->name" class="leading-3 !tracking-normal" />
                         </td>
@@ -162,16 +153,16 @@
                         <td class="p-2 text-center">
                             {{ decimalOrInteger($item->newstock) }}
                         </td>
-                        <td class="p-2 text-center align-middle">
+                        <td class="p-2 text-center leading-none align-middle min-w-40">
                             {{ $item->detalle }}
                             {{-- <x-span-text :text="$item->detalle" :type="$item->simbolo == '+' ? 'green' : 'orange'" class="leading-3 !tracking-normal" /> --}}
                         </td>
                         <td class="p-2 text-center">
                             {{ $item->reference }}
                         </td>
-                        <td class="p-2 text-center">
-                            <p>{{ $item->sucursal->name }}</p>
-                            <p class="text-colorsubtitleform text-[10px] leading-3">
+                        <td class="p-2 text-center min-w-52">
+                            <p class="leading-none">{{ $item->sucursal->name }}</p>
+                            <p class="text-colorsubtitleform text-[10px] leading-none mt-1">
                                 USUARIO : {{ $item->user->name }}</p>
                         </td>
                     </tr>
@@ -179,6 +170,16 @@
             </x-slot>
         @endif
     </x-table>
+
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
+    @if ($kardexes->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $kardexes->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 
     <script>
         function select2Almacen() {

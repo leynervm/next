@@ -1,21 +1,16 @@
-<div class="pb-12 md:pb-20" x-data="loadproductos">
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
-        <x-loading-next />
-    </div>
-
+<div x-data="loadproductos">
     <div class="flex flex-wrap items-center gap-2 mt-4 ">
         <div class="w-full xs:max-w-sm">
             <x-label value="Buscar producto :" />
-            <div class="relative flex items-center">
-                <span class="absolute">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                        stroke="currentColor" class="w-4 h-4 mx-3 text-next-300">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            <div class="relative flex gap-0.5">
+                <x-input placeholder="Buscar" class="block w-full flex-1" wire:model.lazy="search" />
+                <x-button-add class="px-2.5" @click="$wire.$refresh()" wire:loading.attr="disabled">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="m21 21-4.3-4.3" />
                     </svg>
-                </span>
-                <x-input placeholder="Buscar" class="block w-full pl-9" wire:model.lazy="search">
-                </x-input>
+                </x-button-add>
             </div>
         </div>
 
@@ -104,36 +99,41 @@
         </div>
     </div>
 
-    {{-- @can('admin.ventas.deletes') --}}
-    <div class="w-full mt-1">
-        <x-label-check for="ocultos">
-            <x-input wire:model.lazy="ocultos" name="ocultos" value="true" type="checkbox" id="ocultos" />
-            MOSTRAR PRODUCTOS OCULTOS
-        </x-label-check>
-    </div>
-    {{-- @endcan --}}
+    @can('admin.almacen.productos')
+        <div class="w-full mt-1">
+            <x-label-check for="ocultos">
+                <x-input wire:model.lazy="ocultos" name="ocultos" value="true" type="checkbox" id="ocultos" />
+                MOSTRAR PRODUCTOS OCULTOS
+            </x-label-check>
+        </div>
+    @endcan
 
-    <div class="w-full pt-2" x-cloak x-show="selectedproductos.length>0" style="display: none;">
-        <x-button-secondary @click="confirmDeleteAllProductos()" wire:loading.attr="disabled">
-            {{ __('ELIMINAR SELECCIONADOS') }}
-            <span x-text="selectedproductos.length" :class="selectedproductos.length < 10 ? 'px-1' : ''"
-                class="bg-white p-0.5 lead text-[9px] rounded-full !tracking-normal font-semibold text-red-500"></span>
-        </x-button-secondary>
-    </div>
+
+    @can('admin.almacen.productos.delete')
+        <div class="w-full pt-2" x-cloak x-show="selectedproductos.length>0" style="display: none;">
+            <x-button-secondary @click="deleteall" wire:loading.attr="disabled">
+                {{ __('ELIMINAR SELECCIONADOS') }} <span x-text="selectedproductos.length"
+                    class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
+                    :class="selectedproductos.length < 10 ? 'px-1.5' : 'px-1'"></span>
+            </x-button-secondary>
+        </div>
+    @endcan
 
     <x-table class="mt-1">
         <x-slot name="header">
             <tr>
-                <th scope="col" class="p-2 font-medium text-center">
-                    <label for="checkall"
-                        class="text-xs flex flex-col justify-center leading-3 items-center gap-1 leading-3">
-                        TODO
+                @can('admin.almacen.productos.delete')
+                    <th scope="col" class="p-2 font-medium text-center">
                         @if (count($productos) > 0)
-                            <x-input wire:model.lazy="checkall" class="cursor-pointer p-2 !rounded-none"
-                                name="productos" type="checkbox" id="checkall" wire:loading.attr="disabled" />
+                            <label for="checkall"
+                                class="text-xs flex flex-col justify-center items-center gap-1 leading-3">
+                                <x-input @change="toggleAll" x-model="checkall" autocomplete="off"
+                                    class="cursor-pointer p-2 !rounded-none" name="checkall" type="checkbox"
+                                    id="checkall" x-ref="checkall" wire:loading.attr="disabled" />
+                                TODO</label>
                         @endif
-                    </label>
-                </th>
+                    </th>
+                @endcan
                 <th scope="col" class="p-2 font-medium">
                     <button class="flex items-center gap-x-3 focus:outline-none">
                         <span>PRODUCTO</span>
@@ -164,8 +164,8 @@
                 @endif
                 <th scope="col" class="p-2 font-medium leading-3">
                     PRECIO COMPRA</th>
-                @if (mi_empresa())
-                    @if (!mi_empresa()->usarLista())
+                @if ($empresa)
+                    @if (!$empresa->usarLista())
                         <th scope="col" class="p-2 font-medium leading-3">
                             PRECIO VENTA</th>
                     @endif
@@ -189,30 +189,23 @@
             <x-slot name="body">
                 @foreach ($productos as $item)
                     <tr>
-                        <td class="p-2 align-middle text-center">
-                            <x-input type="checkbox" value="{{ $item->id }}" x-model="selectedproductos"
-                                name="productos" class="p-2 !rounded-0 !rounded-none cursor-pointer"
-                                id="{{ $item->id }}" />
-                        </td>
-                        <td class="p-2 min-w-96">
+                        @can('admin.almacen.productos.delete')
+                            <td class="p-2 align-middle text-center">
+                                <x-input type="checkbox" name="selectedproductos"
+                                    class="p-2 !rounded-none cursor-pointer" id="{{ $item->id }}"
+                                    @change="toggleProducto" value="{{ $item->id }}" wire:key="{{ $item->id }}"
+                                    wire:loading.attr="disabled" wire:model.defer="selectedproductos" />
+                            </td>
+                        @endcan
+                        <td class="p-2 min-w-72">
                             <div class="inline-flex gap-2 items-start justify-start">
-                                @php
-                                    $image = $item->getImageURL();
-                                @endphp
-
                                 <button
                                     class="block rounded overflow-hidden w-16 h-16 flex-shrink-0 shadow relative hover:shadow-lg cursor-pointer">
-                                    @if ($image)
-                                        <img src="{{ $image }}" alt=""
+                                    @if ($item->image)
+                                        <img src="{{ pathURLProductImage($item->image) }}" alt=""
                                             class="w-full h-full object-cover">
                                     @else
                                         <x-icon-image-unknown class="w-full h-full" />
-                                    @endif
-
-                                    @if (count($item->images) > 1)
-                                        <p
-                                            class="absolute bottom-0 right-0 flex items-center justify-center w-6 h-6 text-textspantable bg-fondospantable rounded-full">
-                                            +{{ count($item->images) - 1 }}</p>
                                     @endif
                                 </button>
 
@@ -242,12 +235,11 @@
                             {{ $item->codefabricante }}
                         </td>
                         <td class="p-2">
-                            <div>
-                                <h4>{{ $item->category->name }}</h4>
-                                @if ($item->subcategory)
-                                    <p class="text-colorsubtitleform text-[10px]">{{ $item->subcategory->name }}</p>
-                                @endif
-                            </div>
+                            <h4 class="leading-none">{{ $item->category->name }}</h4>
+                            @if ($item->subcategory)
+                                <p class="text-colorsubtitleform text-[10px] leading-none pt-1">
+                                    {{ $item->subcategory->name }}</p>
+                            @endif
                         </td>
                         <td class="p-2 align-middle">
                             @if (count($item->almacens))
@@ -276,8 +268,8 @@
                             {{ number_format($item->pricebuy, 3, '.', ', ') }}
                         </td>
 
-                        @if (mi_empresa())
-                            @if (!mi_empresa()->usarLista())
+                        @if ($empresa)
+                            @if (!$empresa->usarLista())
                                 <td class="p-2 text-center">
                                     {{ number_format($item->pricesale, 3, '.', ', ') }}
                                 </td>
@@ -285,12 +277,10 @@
                         @endif
 
                         @if (Module::isEnabled('Almacen'))
-                            <td class="p-2 text-[10px] text-center leading-3">
+                            <td class="p-2 text-[10px] text-center leading-3 min-w-32">
                                 @if (count($item->compraitems) > 0)
-                                    <p class="">
-                                        {{ formatDate($item->compraitems->first()->compra->date, 'DD MMMM Y') }}
-                                    </p>
-                                    <p class="leading-3">{{ $item->compraitems->first()->compra->proveedor->name }}
+                                    <p class="leading-none">
+                                        {{ $item->compraitems->first()->compra->proveedor->name }}
                                     </p>
                                 @endif
                             </td>
@@ -316,14 +306,94 @@
         @endif
     </x-table>
 
+    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+        <x-loading-next />
+    </div>
+
     @if ($productos->hasPages())
-        <div
-            class="w-full md:pl-64 flex justify-center items-center sm:justify-end p-1 sm:pr-6 fixed bottom-0 right-0 bg-body">
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
             {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
         </div>
     @endif
 
     <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('loadproductos', () => ({
+                searchmarca: @entangle('searchmarca'),
+                searchcategory: @entangle('searchcategory'),
+                searchsubcategory: @entangle('searchsubcategory'),
+                searchalmacen: @entangle('searchalmacen'),
+                publicado: @entangle('publicado'),
+                checkall: @entangle('checkall').defer,
+                selectedproductos: @entangle('selectedproductos').defer,
+                init() {
+                    Livewire.hook('message.processed', () => {
+                        const productos = document.querySelectorAll(
+                            '[type=checkbox][name=selectedproductos]:checked');
+                        this.checkall = (productos.length > 0 && productos.length == this
+                                .selectedproductos.length) ? true :
+                            false;
+                    });
+                },
+                toggleAll() {
+                    const selectedproductos = [];
+                    let checked = this.$event.target.checked;
+                    const productos = document.querySelectorAll(
+                        '[type=checkbox][name=selectedproductos]');
+
+                    productos.forEach(checkbox => {
+                        checkbox.checked = checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                        if (checkbox.checked) {
+                            selectedproductos.push(parseInt(checkbox.value));
+                        }
+                    });
+
+                    this.selectedproductos = checked ? selectedproductos : [];
+                },
+                toggleProducto() {
+                    let value = this.$event.target.value;
+                    let index = this.selectedproductos.indexOf(parseInt(value));
+
+                    if (index !== -1) {
+                        this.selectedproductos.splice(index, 1);
+                    } else {
+                        this.selectedproductos.push(parseInt(value));
+                    }
+                    const selectedproductos = document.querySelectorAll(
+                        '[type=checkbox][name=selectedproductos]');
+                    this.checkall = (this.selectedproductos.length == selectedproductos.length) ? true :
+                        false;
+                },
+                deleteall() {
+                    swal.fire({
+                        title: 'ELIMINAR TODOS LOS PRODUCTOS SELECCIONADOS',
+                        text: "Se eliminará todos los registros seleccionados de la base de datos.",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.deleteall(this.selectedproductos).then(result => {
+                                if (result) {
+                                    const selectedproductos = document.querySelectorAll(
+                                        '[type=checkbox][name=selectedproductos]');
+
+                                    selectedproductos.forEach(checkbox => {
+                                        checkbox.checked = false;
+                                    });
+                                    this.checkall = false;
+                                }
+                            })
+                        }
+                    })
+                }
+            }))
+        })
+
         function confirmHiddenProducto(producto) {
             swal.fire({
                 title: 'EL PRODUCTO ' + producto.name + ' DEJARÁ DE ESTAR VISIBLE',
@@ -345,41 +415,6 @@
             })
         }
 
-
-
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('loadproductos', () => ({
-                searchmarca: @entangle('searchmarca'),
-                searchcategory: @entangle('searchcategory'),
-                searchsubcategory: @entangle('searchsubcategory'),
-                searchalmacen: @entangle('searchalmacen'),
-                publicado: @entangle('publicado'),
-                selectedproductos: @entangle('selectedproductos').defer,
-
-                init() {
-                    // selectMarca();
-
-                },
-                confirmDeleteAllProductos() {
-                    swal.fire({
-                        title: 'ELIMINAR PRODUCTOS SELECCIONADOS',
-                        text: "Se eliminará todos los registros seleccionados de la base de datos.",
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#0FB9B9',
-                        cancelButtonColor: '#d33',
-                        confirmButtonText: 'Confirmar',
-                        cancelButtonText: 'Cancelar'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            this.$wire.call('deleteall').then(() => {}).catch(error => {
-                                console.error('Error al ejecutar la función:', error);
-                            });
-                        }
-                    })
-                }
-            }));
-        })
 
         function selectMarca() {
             this.selectM = $(this.$refs.selectmarca).select2();

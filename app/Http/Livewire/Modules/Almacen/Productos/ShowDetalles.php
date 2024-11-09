@@ -139,7 +139,7 @@ class ShowDetalles extends Component
             })->orientate()->encode('jpg', 30);
 
 
-        $empresa = mi_empresa();
+        $empresa = view()->shared('empresa');
         if ($empresa->usarMarkagua()) {
             $w = $empresa->widthmark  ?? 100;
             $h = $empresa->heightmark  ?? 100;

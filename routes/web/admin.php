@@ -112,8 +112,8 @@ if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
     Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.edit')->middleware(['verifysucursal']);
 }
 
-Route::post('admin/carshoops/{carshoop}/delete', [CarshoopController::class, 'delete'])->name('admin.carshoop.delete');
-Route::post('admin/carshoops/delete/all', [CarshoopController::class, 'deleteall'])->name('admin.carshoop.delete.all');
+// Route::post('admin/carshoops/{carshoop}/delete', [CarshoopController::class, 'delete'])->name('admin.carshoop.delete');
+// Route::post('admin/carshoops/delete/all', [CarshoopController::class, 'deleteall'])->name('admin.carshoop.delete.all');
 Route::post('admin/carshoops/moneda/{moneda_id}/update', [CarshoopController::class, 'updatemoneda'])->name('admin.carshoop.updatemoneda');
 
 Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class, 'imprimirticket'])->name('admin.payments.print');

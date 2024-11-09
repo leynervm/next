@@ -36,7 +36,7 @@ class ShowVentas extends Component
         $users = User::whereHas('ventas', function ($query) {
             $query->where('sucursal_id', auth()->user()->sucursal_id);
         })->orderBy('name', 'asc')->get();
-        $ventas = Venta::with(['sucursal', 'user', 'client', 'typepayment', 'cajamovimientos', 'cuotas'])
+        $ventas = Venta::with(['sucursal', 'user', 'client', 'typepayment', 'cajamovimientos', 'cuotas', 'moneda', 'seriecomprobante.typecomprobante'])
             ->where('sucursal_id', auth()->user()->sucursal_id);
 
         if (trim($this->search) !== '') {

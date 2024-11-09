@@ -113,7 +113,6 @@ class CreateCompra extends Component
             $compra = Compra::create($validateData);
 
             foreach ($this->itemcompras as $item) {
-
                 $producto = Producto::with('almacens')->find($item['producto_id']);
 
                 $compraitem = $compra->compraitems()->create([

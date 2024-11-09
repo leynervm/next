@@ -43,7 +43,7 @@
 
                 <div class="w-full mt-2">
                     <x-label value="Saldo apertura :" />
-                    <x-input class="block w-full" x-model="apertura" wire:model.defer="apertura" type="number"
+                    <x-input class="block w-full input-number-none" x-model="apertura" wire:model.defer="apertura" type="number"
                         step="0.01" min="0" onkeypress="return validarDecimal(event, 8)" />
                     <x-jet-input-error for="apertura" />
                 </div>

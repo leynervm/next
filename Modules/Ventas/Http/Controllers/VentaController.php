@@ -43,7 +43,7 @@ class VentaController extends Controller
     public function create()
     {
 
-        $empresa = mi_empresa();
+        $empresa = view()->shared('empresa');
         $moneda = Moneda::default()->first();
         $concept = Concept::ventas()->first();
         $seriecomprobante = auth()->user()->sucursal->seriecomprobantes()->withTrashed()
@@ -59,12 +59,7 @@ class VentaController extends Controller
 
         $pricetype = null;
         if ($empresa->usarlista()) {
-            $pricetypes = Pricetype::default();
-            if (count($pricetypes->get()) > 0) {
-                $pricetype = $pricetypes->first();
-            } else {
-                $pricetype = Pricetype::orderBy('id', 'asc')->first();
-            }
+            $pricetype = Pricetype::activos()->orderBy('default', 'desc')->orderBy('id', 'asc')->first();
         }
 
         return view('ventas::ventas.create', compact('seriecomprobante', 'empresa', 'moneda', 'concept', 'pricetype'));
@@ -199,8 +194,8 @@ class VentaController extends Controller
 
     public function ubigeos()
     {
-        $ubigeos = Ubigeo::orderBy('region', 'asc')->orderBy('provincia', 'asc')
-            ->orderBy('distrito', 'asc');
+        $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
+            ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc');
         $ubigeos = $ubigeos->get()->map(function ($item) {
             return [
                 'id' => $item->id,
@@ -278,7 +273,30 @@ class VentaController extends Controller
             ->orderBy('seriecomprobantes.default', 'desc')->with('typecomprobante')->get()->map(function ($item) {
                 return [
                     'id' => $item->id,
-                    'text' => $item->typecomprobante->name,
+                    'text' => $item->typecomprobante->name . " [$item->serie]",
+                    'code' => $item->typecomprobante->code,
+                    'sunat' =>  $item->typecomprobante->isSunat(),
+                ];
+            });
+
+        return response()->json($typecomprobantes);
+    }
+
+
+    public function seriesguia()
+    {
+        $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()->withTrashed()
+            ->select('seriecomprobantes.*')->join('typecomprobantes', 'seriecomprobantes.typecomprobante_id', '=', 'typecomprobantes.id')
+            ->when(Module::isDisabled('Facturacion'), function ($query) {
+                $query->whereHas('typecomprobante', function ($q) {
+                    $q->default();
+                });
+            })->whereIn('typecomprobantes.code', ['09', '13'])
+            ->orderBy('seriecomprobantes.default', 'desc')->orderBy('typecomprobantes.code', 'asc')
+            ->orderBy('seriecomprobantes.default', 'desc')->with('typecomprobante')->get()->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'text' => $item->typecomprobante->name . " [$item->serie]",
                     'code' => $item->typecomprobante->code,
                     'sunat' =>  $item->typecomprobante->isSunat(),
                 ];

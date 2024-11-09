@@ -1,20 +1,16 @@
 <div>
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
-        <div class="w-full xs:w-60">
+        <div class="w-full max-w-40">
             <x-label value="Fecha :" />
             <x-input type="date" wire:model.lazy="date" class="w-full block" />
         </div>
 
-        <div class="w-full xs:w-60">
+        <div class="w-full max-w-40">
             <x-label value="Hasta :" />
             <x-input type="date" wire:model.lazy="dateto" class="w-full block" />
         </div>
 
-        <div class="w-full sm:max-w-xs">
+        <div class="w-full sm:max-w-48">
             <x-label value="Movimiento :" />
             <div x-data="{ searchtype: @entangle('searchtype') }" x-init="select2Type" class="relative" id="parentsearchtype" wire:ignore>
                 <x-select id="searchtype" x-ref="select" data-placeholder="null">
@@ -28,7 +24,7 @@
         </div>
 
         @if (count($methodpayments) > 1)
-            <div class="w-full sm:max-w-xs">
+            <div class="w-full sm:max-w-48">
                 <x-label value="Método pago :" />
                 <div class="relative" x-data="{ searchmethodpayment: @entangle('searchmethodpayment') }" x-init="select2Methodpay" id="parentsearchmethodpayment"
                     wire:ignore>
@@ -45,7 +41,7 @@
         @endif
 
         @if (count($concepts) > 1)
-            <div class="w-full sm:max-w-xs">
+            <div class="w-full sm:max-w-60">
                 <x-label value="Concepto :" />
                 <div class="relative" x-data="{ searchconcept: @entangle('searchconcept') }" x-init="select2Concept" id="parentsearchconcept"
                     wire:ignore>
@@ -62,7 +58,7 @@
         @endif
 
         @if (count($users) > 1)
-            <div class="w-full sm:max-w-xs">
+            <div class="w-full sm:max-w-60">
                 <x-label value="Usuario :" />
                 <div class="relative" x-data="{ searchuser: @entangle('searchuser') }" x-init="select2User" id="parentsearchuser" wire:ignore>
                     <x-select id="searchuser" x-ref="select" data-placeholder="null">
@@ -78,7 +74,7 @@
         @endif
 
         @if (count($boxes) > 1)
-            <div class="w-full sm:max-w-xs">
+            <div class="w-full sm:max-w-48">
                 <x-label value="Caja :" />
                 <div class="relative" x-data="{ searchcaja: @entangle('searchcaja') }" x-init="select2Caja" id="parentsearchcaja" wire:ignore>
                     <x-select id="searchcaja" x-ref="selectcaja" data-placeholder="null">
@@ -94,7 +90,7 @@
         @endif
 
         @if (count($monthboxes) > 1)
-            <div class="w-full sm:max-w-xs">
+            <div class="w-full sm:max-w-48">
                 <x-label value="Caja mensual :" />
                 <div class="relative" x-data="{ searchmonthbox: @entangle('searchmonthbox') }" x-init="select2Monthbox" id="parentsearchmonthbox"
                     wire:ignore>
@@ -111,12 +107,6 @@
             </div>
         @endif
     </div>
-
-    @if ($movimientos->hasPages())
-        <div class="pt-3 pb-1 flex flex-col justify-end items-end">
-            {{ $movimientos->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
 
     <x-table class="mt-1">
         <x-slot name="header">
@@ -224,6 +214,17 @@
             </x-slot>
         @endif
     </x-table>
+
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
+
+    @if ($movimientos->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $movimientos->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
     <script>
         function select2Monthbox() {
             this.selectMB = $(this.$refs.selectmb).select2();

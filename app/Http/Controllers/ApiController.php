@@ -20,7 +20,7 @@ class ApiController extends Controller
 
         $search = $request->input('search');
         $products = Producto::query()->select('id', 'name', 'slug', 'requireserie', 'marca_id', 'unit_id')
-            ->with('images', 'marca', 'unit', 'almacens');
+            ->with(['images', 'marca', 'unit', 'almacens']);
 
         if (strlen(trim($search)) < 2) {
             $products->visibles()->orderBy('name', 'asc');

@@ -63,7 +63,6 @@ class CreateVenta extends Component
         'searchmarca' => ['except' => '', 'as' => 'marca'],
     ];
 
-
     public $typepayment, $modalidadtransporte, $motivotraslado;
     public $cotizacion_id, $client_id, $direccion_id, $mensaje;
     public $moneda_id, $monthbox, $openbox, $methodpayment_id, $typepayment_id, $detallepago, $concept;
@@ -250,8 +249,9 @@ class CreateVenta extends Component
             $query->orderBy('default', 'desc')->orderBy('id', 'asc');
         }]);
         $this->empresa = $empresa;
-        $this->pricetype = $pricetype;
         $this->moneda = $moneda;
+        $this->moneda_id = $moneda->id ?? null;
+        $this->pricetype = $pricetype;
         $this->pricetype_id = $pricetype->id ?? null;
 
         if (trim($this->searchcategory) !== '') {
@@ -267,15 +267,11 @@ class CreateVenta extends Component
         $this->modalidadtransporte = new Modalidadtransporte();
         $this->typepayment = new Typepayment();
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
-        $this->sucursal = auth()->user()->sucursal;
-        $this->empresa = mi_empresa();
         $this->monthbox = Monthbox::usando($this->sucursal->id)->first();
         $this->openbox = Openbox::mybox($this->sucursal->id)->first();
         $this->typepayment_id = Typepayment::default()->first()->id ?? null;
         $this->seriecomprobante_id = $seriecomprobante->id;
         $this->typecomprobante = $seriecomprobante->typecomprobante;
-        $this->moneda_id = $moneda->id ?? null;
-        $this->moneda = $moneda;
         $this->concept = $concept;
         $this->setTotal();
         $this->ubigeoorigen_id = $this->sucursal->ubigeo_id;
@@ -361,13 +357,13 @@ class CreateVenta extends Component
             $motivotraslados = [];
         }
 
-        $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()
-            ->withWhereHas('typecomprobante', function ($query) {
-                $query->whereNotIn('code', ['07', '09']);
-                if (Module::isDisabled('Facturacion')) {
-                    $query->default();
-                }
-            });
+        // $typecomprobantes = auth()->user()->sucursal->seriecomprobantes()
+        //     ->withWhereHas('typecomprobante', function ($query) {
+        //         $query->whereNotIn('code', ['07', '09']);
+        //         if (Module::isDisabled('Facturacion')) {
+        //             $query->default();
+        //         }
+        //     });
         $comprobantesguia = auth()->user()->sucursal->seriecomprobantes()
             ->withWhereHas('typecomprobante', function ($query) {
                 $query->whereIn('code', ['09', '13']);
@@ -376,9 +372,9 @@ class CreateVenta extends Component
                 }
             });
 
-        $typecomprobantes = $typecomprobantes->orderBy('code', 'asc')->get();
+        // $typecomprobantes = $typecomprobantes->orderBy('code', 'asc')->get();
         $comprobantesguia = $comprobantesguia->orderBy('code', 'asc')->get();
-        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen', 'promocion' => function ($query) {
+        $carshoops = Carshoop::with(['carshoopitems.producto.almacens', 'carshoopseries.serie', 'producto', 'almacen', 'promocion' => function ($query) {
             $query->with('itempromos.producto');
         }])->ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)
             ->orderBy('id', 'asc')->paginate();
@@ -389,7 +385,7 @@ class CreateVenta extends Component
             $monedas = Moneda::where('code', 'PEN')->orderBy('currency', 'asc')->get();
         }
 
-        return view('livewire.modules.ventas.ventas.create-venta', compact('productos', 'carshoops', 'typecomprobantes', 'comprobantesguia', 'monedas', 'modalidadtransportes', 'motivotraslados'));
+        return view('livewire.modules.ventas.ventas.create-venta', compact('productos', 'carshoops', 'comprobantesguia', 'monedas', 'modalidadtransportes', 'motivotraslados'));
     }
 
     public function updatedSearch()
@@ -1167,7 +1163,9 @@ class CreateVenta extends Component
         try {
 
             $client = Client::find($this->client_id);
-            $client->direccions()->updateOrCreate(['name' => $this->direccion]);
+            if ($this->direccion != '') {
+                $client->direccions()->updateOrCreate(['name' => $this->direccion]);
+            }
             $totalcomboGRA = 0;
             $totalIGVcomboGRA = 0;
 
@@ -1926,5 +1924,146 @@ class CreateVenta extends Component
             // }
         }
         $this->setTotal();
+    }
+
+    public function limpiarventa()
+    {
+
+        $this->resetExcept([
+            'empresa',
+            'sucursal',
+            'monthbox',
+            'openbox',
+            'moneda',
+            'moneda_id',
+            'typecomprobante',
+            'motivotraslado',
+            'modalidadtransporte',
+            'typepayment',
+            'methodpayment',
+            'methodpayment_id',
+            'pricetype',
+            'pricetype_id',
+            'typepayment',
+            'typepayment_id'
+        ]);
+        self::deleteall();
+        self::setTotal();
+
+        $pricetype = null;
+        if ($this->empresa->usarlista()) {
+            $this->pricetype = Pricetype::activos()->orderBy('default', 'desc')->orderBy('id', 'asc')->first();
+            $this->pricetype_id = $pricetype->id ?? null;
+        }
+
+        $this->moneda = Moneda::default()->first();
+        $this->moneda_id = $this->moneda->id;
+        $this->concept = Concept::ventas()->first();
+        $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
+        $this->typepayment_id = Typepayment::default()->first()->id ?? null;
+
+        $this->resetValidation();
+        $this->resetPage();
+    }
+
+    public function deleteall()
+    {
+        try {
+            DB::beginTransaction();
+            Carshoop::ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)
+                ->get()->map(function ($carshoop) {
+                    self::delete($carshoop, true);
+                });
+            DB::commit();
+            $this->resetValidation();
+            self::setTotal();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function delete(Carshoop $carshoop, $isDeleteAll = false)
+    {
+        DB::beginTransaction();
+        $carshoop->load(['carshoopitems.producto.almacens', 'producto', 'almacen', 'promocion', 'carshoopseries.serie']);
+
+        try {
+            if (count($carshoop->carshoopitems) > 0) {
+                foreach ($carshoop->carshoopitems as $carshoopitem) {
+                    $queryStock = $carshoopitem->producto->almacens->find($carshoop->almacen_id);
+                    if ($queryStock) {
+                        $carshoopitem->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+                            'cantidad' => $queryStock->pivot->cantidad + $carshoop->cantidad,
+                        ]);
+                    }
+                    $carshoopitem->delete();
+                }
+            }
+
+            if ($carshoop->promocion) {
+                //CUANDO PROMOCION ESTA VACIA = (NO DISPONIBLE) => AHI ACTUALIZAR
+                //XQUE SINO ESTA VALIDA SEGUIR CON MISMO PRECIO TDAVIA
+                //PRIMERO VERIFICO SI PRM ESTA DISPONIBLE
+                $is_disponible_antes_update = !empty(verifyPromocion($carshoop->promocion)) ? true : false;
+                $carshoop->promocion->outs = $carshoop->promocion->outs - $carshoop->cantidad;
+                $carshoop->promocion->save();
+
+                //LUEGO DESPUES ACTUALIZAR SALIDAS VUELVO VERIFICAR
+                // SI PRM VUELVE ESTAR DISPONIBLE
+                //SOLAMNETE ACTUALIZAR CUANDO PRM ANTES NO ESTUBO DISPONIBLE Y
+                //LUEGO DE RETORNAR SALIDAS VOLVIO ACTIVARSE
+                if ($carshoop->promocion->outs < $carshoop->promocion->limit && !empty(verifyPromocion($carshoop->promocion))) {
+                    if (!$is_disponible_antes_update) {
+                        $carshoop->producto->load(['promocions' => function ($query) {
+                            $query->with(['itempromos.producto.unit'])->availables()
+                                ->disponibles()->take(1);
+                        }]);
+                        $carshoop->producto->assignPrice($carshoop->promocion);
+                    }
+                }
+            }
+
+            if (count($carshoop->carshoopseries) > 0) {
+                foreach ($carshoop->carshoopseries as $item) {
+                    if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+                        $item->serie->dateout = null;
+                        $item->serie->status = 0;
+                        $item->serie->save();
+                    }
+                    $item->delete();
+                }
+            }
+
+            if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
+                $qStock = $carshoop->producto->almacens->find($carshoop->almacen_id);
+                if ($qStock) {
+                    $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
+                        'cantidad' => $qStock->pivot->cantidad + $carshoop->cantidad,
+                    ]);
+                }
+            }
+
+            if ($carshoop->kardex) {
+                $carshoop->kardex->delete();
+            }
+
+            $carshoop->delete();
+            DB::commit();
+            if (!$isDeleteAll) {
+                self::setTotal();
+                $this->dispatchBrowserEvent('deleted');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

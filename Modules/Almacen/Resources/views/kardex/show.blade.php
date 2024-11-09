@@ -62,7 +62,6 @@
     </x-slot>
 
     <div class="w-full mt-3 flex flex-wrap gap-5">
-
         <div class="w-full p-3 shadow shadow-shadowminicard rounded max-w-sm bg-fondominicard">
             <x-title-next titulo="DETALLES" />
 

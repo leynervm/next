@@ -28,7 +28,6 @@ class ShowComprobantes extends Component
     public $checkall = false;
     public $selectedcomprobantes = [];
 
-
     protected $queryString = [
         'search' => [
             'except' => '',
@@ -116,12 +115,57 @@ class ShowComprobantes extends Component
             $comprobantes->where('seriecompleta', 'ilike', trim($this->serie) . '%');
         }
 
-        if ($this->checkall) {
-            $this->allcomprobantes();
-        }
-        $comprobantes = $comprobantes->orderBy("id", "desc")->paginate();
+        $comprobantes = $comprobantes->orderBy("date", "desc")->paginate(20);
 
         return view('livewire.modules.facturacion.comprobantes.show-comprobantes', compact('comprobantes', 'typepayments', 'typecomprobantes', 'users'));
+    }
+
+    public function updatedSearch()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedSerie()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedDate()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedDateto()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedSearchtypepayment()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedSearchtypecomprobante()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedSearchuser()
+    {
+        $this->reseFilters();
+    }
+
+    public function updatedPage()
+    {
+        $this->resetValidation();
+        $this->reset(['checkall', 'selectedcomprobantes']);
+    }
+
+    private function reseFilters()
+    {
+        $this->resetPage();
+        $this->resetValidation();
+        $this->reset(['checkall', 'selectedcomprobantes']);
     }
 
     public function enviarsunat($id)
@@ -195,14 +239,14 @@ class ShowComprobantes extends Component
         }
     }
 
-    public function multisend()
+    public function multisend($selectedcomprobantes = [])
     {
 
-        if (count($this->selectedcomprobantes) > 0) {
+        if (count($selectedcomprobantes) > 0) {
             $correctos = 0;
             $con_observaciones = 0;
 
-            foreach ($this->selectedcomprobantes as $key => $id) {
+            foreach ($selectedcomprobantes as $key => $id) {
                 $comprobante =  Comprobante::find($id);
                 if ($comprobante && !$comprobante->isSendSunat()) {
                     $response = $comprobante->enviarComprobante();
@@ -213,7 +257,7 @@ class ShowComprobantes extends Component
                         } else {
                             $con_observaciones++;
                         }
-                        unset($this->selectedcomprobantes[$key]);
+                        unset($selectedcomprobantes[$key]);
                     }
                 }
             }
@@ -243,60 +287,13 @@ class ShowComprobantes extends Component
             $this->resetValidation();
             $this->reset(['selectedcomprobantes', 'checkall']);
             $this->dispatchBrowserEvent('validation', $mensaje->getData());
+            return true;
         } else {
             $mensaje = response()->json([
                 'title' => "SELECCIONE LOS COMPROBANTES ELECTRÓNICOS A EMITIR !",
                 'text' => null,
             ]);
             $this->dispatchBrowserEvent('validation', $mensaje->getData());
-        }
-    }
-
-    public function allcomprobantes()
-    {
-        if ($this->checkall) {
-            $comprobantes = Comprobante::noEnviadoSunat()
-                ->where('sucursal_id', auth()->user()->sucursal_id);
-
-            if ($this->search !== '') {
-                $comprobantes->whereHas('client', function ($query) {
-                    $query->where('name', 'ilike', '%' . $this->search . '%')
-                        ->orWhere('document', 'ilike', $this->search . '%');
-                });
-            }
-
-            if ($this->date) {
-                if ($this->dateto) {
-                    $comprobantes->whereDateBetween('date', $this->date, $this->dateto);
-                } else {
-                    $comprobantes->whereDate('date', $this->date);
-                }
-            }
-
-            if ($this->searchtypepayment !== '') {
-                $comprobantes->whereHas('typepayment', function ($query) {
-                    $query->where('typepayments.name', $this->searchtypepayment);
-                });
-            }
-
-            if ($this->searchtypecomprobante !== '') {
-                $comprobantes->whereHas('seriecomprobante.typecomprobante', function ($query) {
-                    $query->where('typecomprobantes.code', $this->searchtypecomprobante);
-                });
-            }
-
-            if ($this->searchuser !== '') {
-                $comprobantes->where('user_id', $this->searchuser);
-            }
-
-            if ($this->serie !== '') {
-                $comprobantes->where('seriecompleta', 'ilike', trim($this->serie) . '%');
-            }
-
-            // $comprobantes = $comprobantes->get()->pluck('id');
-            $this->selectedcomprobantes = $comprobantes->get()->pluck('id');
-        } else {
-            $this->reset(['selectedcomprobantes']);
         }
     }
 

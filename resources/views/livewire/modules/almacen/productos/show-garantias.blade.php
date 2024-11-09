@@ -94,7 +94,7 @@
         </x-form-card>
     @endcan
 
-    @if (mi_empresa()->usarlista())
+    @if ($empresa->usarlista())
         <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
             <form wire:submit.prevent="updatelistaprecios" class="w-full flex flex-col gap-2">
                 @if (count($pricetypes) > 0)
@@ -120,8 +120,8 @@
                                     </div>
 
 
-                                    @if (mi_empresa()->verDolar())
-                                        @if (mi_empresa()->tipocambio > 0)
+                                    @if ($empresa->verDolar())
+                                        @if ($empresa->tipocambio > 0)
                                             {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
                                         S/. {{ decimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
                                         @else

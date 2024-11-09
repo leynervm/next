@@ -35,16 +35,16 @@ class CreateEmployer extends Component
     {
         return [
             'document' => [
-                'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'digits_between:8,11',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 new CampoUnique('employers', 'document', null, true),
                 $this->adduser && is_null($this->user) ? new CampoUnique('users', 'document', null, true) : '',
             ],
             'name' => ['required', 'string', 'min:6'],
-            'nacimiento' => [
-                'required', 'date', 'date_format:Y-m-d', 'before:today',
-                // new ValidateNacimiento(13)
-            ],
-            'telefono' => ['required', 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
+            'nacimiento' => ['required', 'date', 'date_format:Y-m-d', 'before:today'],
+            'telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
             'sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F', 'E'])],
             'sueldo' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
             'areawork_id' => ['required', 'integer', 'min:1', 'exists:areaworks,id'],
@@ -52,12 +52,16 @@ class CreateEmployer extends Component
             'sucursal_id' => ['required', 'integer', 'min:1', 'exists:sucursals,id'],
 
             'email' => [
-                'nullable', Rule::requiredIf($this->adduser && $this->user == null),
-                'email', new CampoUnique('users', 'email', null, true)
+                'nullable',
+                Rule::requiredIf($this->adduser && $this->user == null),
+                'email',
+                new CampoUnique('users', 'email', null, true)
             ],
             'password' => [
-                'nullable', Rule::requiredIf($this->adduser && $this->user == null),
-                'min:8', 'confirmed'
+                'nullable',
+                Rule::requiredIf($this->adduser && $this->user == null),
+                'min:8',
+                'confirmed'
             ],
             'selectedRoles' => ['nullable', 'array', 'min:0', 'exists:roles,id'],
         ];
@@ -201,7 +205,10 @@ class CreateEmployer extends Component
         $this->document = trim($this->document);
         $this->validate([
             'document' => [
-                'required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/',
+                'required',
+                'numeric',
+                'digits_between:8,11',
+                'regex:/^\d{8}(?:\d{3})?$/',
                 new CampoUnique('employers', 'document', null, true)
             ],
         ]);

@@ -68,7 +68,7 @@ trait EnviarComprobanteSunat
 
             $objApi = new SendXML();
             $pass_firma = $this->sucursal->empresa->passwordcert;
-            $response = $objApi->enviarComprobante($this->sucursal->empresa, $nombreXML,  $this->sucursal->empresa->isProduccion() ? storage_path('app/company/cert/' . $this->sucursal->empresa->cert) : storage_path('app/company/cert/demo.pfx'), $pass_firma, storage_path('app/' . $ruta), storage_path('app/' . $ruta));
+            $response = $objApi->enviarComprobante($this->isProduccion(), $this->sucursal->empresa, $nombreXML,  $this->sucursal->empresa->isProduccion() ? storage_path('app/company/cert/' . $this->sucursal->empresa->cert) : storage_path('app/company/cert/demo.pfx'), $pass_firma, storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
             if ($response->code == '0') {
                 $this->descripcion = $response->descripcion;
