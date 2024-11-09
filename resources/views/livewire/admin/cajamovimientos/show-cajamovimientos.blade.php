@@ -1,5 +1,5 @@
 <div>
-    <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
+    <div class="flex flex-wrap gap-2">
         <div class="w-full max-w-40">
             <x-label value="Fecha :" />
             <x-input type="date" wire:model.lazy="date" class="w-full block" />
@@ -10,7 +10,7 @@
             <x-input type="date" wire:model.lazy="dateto" class="w-full block" />
         </div>
 
-        <div class="w-full sm:max-w-48">
+        <div class="w-full xs:max-w-48">
             <x-label value="Movimiento :" />
             <div x-data="{ searchtype: @entangle('searchtype') }" x-init="select2Type" class="relative" id="parentsearchtype" wire:ignore>
                 <x-select id="searchtype" x-ref="select" data-placeholder="null">
@@ -24,7 +24,7 @@
         </div>
 
         @if (count($methodpayments) > 1)
-            <div class="w-full sm:max-w-48">
+            <div class="w-full xs:max-w-48">
                 <x-label value="Método pago :" />
                 <div class="relative" x-data="{ searchmethodpayment: @entangle('searchmethodpayment') }" x-init="select2Methodpay" id="parentsearchmethodpayment"
                     wire:ignore>
@@ -41,7 +41,7 @@
         @endif
 
         @if (count($concepts) > 1)
-            <div class="w-full sm:max-w-60">
+            <div class="w-full xs:max-w-60">
                 <x-label value="Concepto :" />
                 <div class="relative" x-data="{ searchconcept: @entangle('searchconcept') }" x-init="select2Concept" id="parentsearchconcept"
                     wire:ignore>
@@ -58,7 +58,7 @@
         @endif
 
         @if (count($users) > 1)
-            <div class="w-full sm:max-w-60">
+            <div class="w-full xs:max-w-60">
                 <x-label value="Usuario :" />
                 <div class="relative" x-data="{ searchuser: @entangle('searchuser') }" x-init="select2User" id="parentsearchuser" wire:ignore>
                     <x-select id="searchuser" x-ref="select" data-placeholder="null">
@@ -74,7 +74,7 @@
         @endif
 
         @if (count($boxes) > 1)
-            <div class="w-full sm:max-w-48">
+            <div class="w-full xs:max-w-48">
                 <x-label value="Caja :" />
                 <div class="relative" x-data="{ searchcaja: @entangle('searchcaja') }" x-init="select2Caja" id="parentsearchcaja" wire:ignore>
                     <x-select id="searchcaja" x-ref="selectcaja" data-placeholder="null">
@@ -90,7 +90,7 @@
         @endif
 
         @if (count($monthboxes) > 1)
-            <div class="w-full sm:max-w-48">
+            <div class="w-full xs:max-w-48">
                 <x-label value="Caja mensual :" />
                 <div class="relative" x-data="{ searchmonthbox: @entangle('searchmonthbox') }" x-init="select2Monthbox" id="parentsearchmonthbox"
                     wire:ignore>

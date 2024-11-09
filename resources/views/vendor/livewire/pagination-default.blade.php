@@ -162,7 +162,7 @@
                 </div>
 
                 <div class="w-full">
-                    <p class="text-xs text-primary leading-5 text-center sm:text-end w-full">
+                    <p class="text-xs text-primary leading-5 text-center sm:text-end w-full text-descripcion-paginator">
                         <span>{!! __('Showing') !!}</span>
                         <span class="font-medium">{{ $paginator->firstItem() }}</span>
                         <span>{!! __('to') !!}</span>

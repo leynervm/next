@@ -813,6 +813,10 @@
     animation-iteration-count: infinite;
 }
 
+.paginator-marketplace-productos .text-descripcion-paginator{
+    @apply sm:!text-center;
+}
+
 /* .btn-float-whatsapp:before {
     content: "";
     position: absolute;

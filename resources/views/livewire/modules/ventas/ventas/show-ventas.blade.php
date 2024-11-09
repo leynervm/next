@@ -66,11 +66,6 @@
         </div>
     @endcan
 
-    @if ($ventas->hasPages())
-        <div class="pt-3 pb-1 flex flex-col justify-end items-center sm:items-end">
-            {{ $ventas->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
     @if (count($ventas) > 0)
         <x-table class="w-full mt-1">
             <x-slot name="header">
@@ -239,6 +234,12 @@
         </x-table>
     @else
         <x-span-text text="NO EXISTEN REGISTROS DE VENTAS..." class="mt-3 bg-transparent" />
+    @endif
+
+    @if ($ventas->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $ventas->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
     @endif
 
     <script>

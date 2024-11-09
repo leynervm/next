@@ -2737,6 +2737,13 @@ input[type=number].input-number-none {
     animation-iteration-count: infinite;
 }
 
+@media (min-width: 640px) {
+
+    .paginator-marketplace-productos .text-descripcion-paginator {
+        text-align: center !important;
+    }
+}
+
 /* .btn-float-whatsapp:before {
     content: "";
     position: absolute;
@@ -8266,6 +8273,10 @@ select {
     max-width: 13rem;
   }
 
+  .xs\:max-w-60 {
+    max-width: 15rem;
+  }
+
   .xs\:max-w-\[150px\] {
     max-width: 150px;
   }
@@ -8591,10 +8602,6 @@ select {
 
   .sm\:max-w-3xl {
     max-width: 48rem;
-  }
-
-  .sm\:max-w-48 {
-    max-width: 12rem;
   }
 
   .sm\:max-w-4xl {
