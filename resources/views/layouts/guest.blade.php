@@ -3,10 +3,6 @@
 
 <head>
     <meta charset="utf-8">
-
-    @php
-        $empresa = mi_empresa();
-    @endphp
     @if ($empresa)
         @if ($empresa->icono ?? null)
             <link rel="icon" type="image/x-icon" href="{{ Storage::url('images/company/' . $empresa->icono) }}">
@@ -30,6 +26,8 @@
         {{ $slot }}
     </div>
     <script src="{{ asset('js/app.js') }}"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>

@@ -1,10 +1,5 @@
 <div class="w-full flex flex-col gap-8" x-data="showempresa">
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
     {{-- 20201987297 --}}
-
     <x-form-card titulo="DATOS EMPRESA">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-8">
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
@@ -318,7 +313,8 @@
                                         </div>
                                     </div>
                                     <div class="w-full p-1">
-                                        <div class="w-full py-2 px-1 flex justify-between items-end gap-3 bg-gray-300 rounded-b-md">
+                                        <div
+                                            class="w-full py-2 px-1 flex justify-between items-end gap-3 bg-gray-300 rounded-b-md">
                                             <div
                                                 class="text-white animate-bounce inline-block leading-none text-[8px] bg-next-500 rounded py-2 px-4">
                                                 LOGO</div>
@@ -498,31 +494,80 @@
     <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
         <form wire:submit.prevent="updateopciones" class="w-full flex flex-col gap-8">
             @if (Module::isEnabled('Ventas'))
-                <div class="w-full grid grid-cols-1 md:grid-cols-2 items-start gap-2 lg:gap-8">
-                    <div class="w-full flex flex-col gap-1">
-                        <div class="w-full">
-                            <x-label value="Tipos precio venta (Productos):" />
-                            <div class="w-full relative" id="parentuselistprice" x-init="SelectPrecios">
-                                <x-select class="block w-full" x-ref="selectprice" id="uselistprice"
-                                    data-parent="parentuselistprice">
-                                    <x-slot name="options">
-                                        <option value="0" title="Ingresar precio de venta manualmente">
-                                            PRECIO MANUAL</option>
-                                        <option value="1"
-                                            title="Precio automático en base al % ganacia del rango de precio compra">
-                                            LISTA DE PRECIOS (05 LISTAS DISPONIBLES)
-                                        </option>
-                                        {{-- <option value="2"
-                                            title="Precio automático de acuerdo al % ganancia del producto">
-                                            PRECIO AUTOMÁTICO
-                                        </option> --}}
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="empresa.uselistprice" />
+                <div class="w-full grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 items-start gap-1 lg:gap-2">
+                    <div class="w-full">
+                        <x-label value="Tipos precio venta (Productos):" />
+                        <div class="w-full relative" id="parentuselistprice" x-init="SelectPrecios">
+                            <x-select class="block w-full" x-ref="selectprice" id="uselistprice"
+                                data-parent="parentuselistprice">
+                                <x-slot name="options">
+                                    <option value="0" title="Ingresar precio de venta manualmente">
+                                        PRECIO MANUAL</option>
+                                    <option value="1"
+                                        title="Precio automático en base al % ganacia del rango de precio compra">
+                                        LISTA DE PRECIOS (05 LISTAS DISPONIBLES)
+                                    </option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
                         </div>
+                        <x-jet-input-error for="empresa.uselistprice" />
+                    </div>
+                    <div class="w-full">
+                        <x-label value="Etiqueta de producto promocionado :" />
+                        <div class="w-full relative" id="parentviewtextopromocion" x-init="SelectTextoPromocion">
+                            <x-select class="block w-full" x-ref="selecttextopromo" id="viewtextopromocion">
+                                <x-slot name="options">
+                                    <option value="0">TEXTO POR DEFECTO</option>
+                                    <option value="1">MOSTRAR TEXTO DE "PROMOCIÓN"</option>
+                                    <option value="2">MOSTRAR TEXTO DE "LIQUIDACIÓN"</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="empresa.viewtextopromocion" />
+                    </div>
+                    <div class="w-full">
+                        <x-label value="Disponibilidad de productos en tienda virtual :" />
+                        <div class="w-full relative" id="parentviewproductosweb" x-init="SelectProductosweb">
+                            <x-select class="block w-full" x-ref="selectviewproductosweb" id="viewproductosweb">
+                                <x-slot name="options">
+                                    <option value="0">MOSTRAR TODOS</option>
+                                    <option value="1">MOSTRAR SOLAMENTE DISPONIBLES</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="empresa.viewtextopromocion" />
+                    </div>
 
+                    <div class="w-full">
+                        <x-label-check for="autogeneratesku">
+                            <x-input x-model="generatesku" name="autogeneratesku" type="checkbox"
+                                id="autogeneratesku" />AUTOGENERAR SKU DEL PRODUCTO</x-label-check>
+                        <x-jet-input-error for="empresa.generatesku" />
+                    </div>
+
+                    @if (Module::isEnabled('Marketplace'))
+                        <div class="w-full block">
+                            <x-label-check for="viewalmacens">
+                                <x-input x-model="viewalmacens" name="viewalmacens" type="checkbox"
+                                    id="viewalmacens" />
+                                MOSTRAR ALMACÉNES DEL PRODUCTO EN GALERÍA DE TIENDA VIRTUAL
+                            </x-label-check>
+                            <x-jet-input-error for="empresa.viewalmacens" />
+                        </div>
+                        <div class="w-full block">
+                            <x-label-check for="viewalmacensdetalle">
+                                <x-input x-model="viewalmacensdetalle" name="viewalmacensdetalle" type="checkbox"
+                                    id="viewalmacensdetalle" />
+                                MOSTRAR ALMACÉNES EN DETALLE DEL PRODUCTO DE TIENDA VIRTUAL
+                            </x-label-check>
+                            <x-jet-input-error for="empresa.viewalmacensdetalle" />
+                        </div>
+                    @endif
+
+                    <div class="w-full flex flex-col gap-1">
                         <div class="block">
                             <x-label-check for="usepricedolar">
                                 <x-input x-model="usepricedolar" type="checkbox" id="usepricedolar"
@@ -555,7 +600,7 @@
                                     id="tipocambioauto" @change="changeAutomatico" />
                                 <div class="flex flex-col flex-1">
                                     ACTUALIZAR TIPO CAMBIO AUTOMÁTICO
-                                    <small class="font-medium text-xs tracking-normal">
+                                    <small class="font-medium text-xs tracking-normal text-colorsubtitleform">
                                         El tipo de cambio se actualizará todos los dias a las 12:00 am
                                         hrs</small>
                                 </div>
@@ -564,62 +609,31 @@
                         </div>
                     </div>
 
+                    <div class="block">
+                        <x-label-check for="viewpriceantes">
+                            <x-input wire:model.defer="empresa.viewpriceantes" value="1" name="viewpriceantes"
+                                type="checkbox" id="viewpriceantes" />
+                            MOSTRAR PRECIO ANTERIOR EN PRODUCTOS OFERTADOS
+                        </x-label-check>
+                        <x-jet-input-error for="empresa.viewpriceantes" />
+                    </div>
+                    <div class="block">
+                        <x-label-check for="viewlogomarca">
+                            <x-input wire:model.defer="empresa.viewlogomarca" value="1" name="viewlogomarca"
+                                type="checkbox" id="viewlogomarca" />
+                            MOSTRAR LOGO DE MARCA EN PRODUCTOS
+                        </x-label-check>
+                        <x-jet-input-error for="empresa.viewlogomarca" />
+                    </div>
+
                     <div class="w-full flex flex-col gap-1">
-                        <div class="w-full">
-                            <x-label value="Etiqueta de producto promocionado :" />
-                            <div class="w-full relative" id="parentviewtextopromocion" x-init="SelectTextoPromocion">
-                                <x-select class="block w-full" x-ref="selecttextopromo" id="viewtextopromocion"
-                                    data-parent="parentviewtextopromocion">
-                                    <x-slot name="options">
-                                        <option value="0">
-                                            TEXTO POR DEFECTO</option>
-                                        <option value="1">
-                                            MOSTRAR TEXTO DE "PROMOCIÓN"
-                                        </option>
-                                        <option value="2">
-                                            MOSTRAR TEXTO DE "LIQUIDACIÓN"
-                                        </option>
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="empresa.viewtextopromocion" />
-                        </div>
-
-                        <div class="block">
-                            <x-label-check for="viewpriceantes">
-                                <x-input wire:model.defer="empresa.viewpriceantes" value="1"
-                                    name="viewpriceantes" type="checkbox" id="viewpriceantes" />
-                                MOSTRAR PRECIO ANTERIOR EN PRODUCTOS OFERTADOS
-                            </x-label-check>
-                            <x-jet-input-error for="empresa.viewpriceantes" />
-                        </div>
-
-                        {{-- <div class="block">
-                            <x-label-check for="viewespecificaciones">
-                                <x-input wire:model.defer="empresa.viewespecificaciones" value="1" name="viewlogomarca"
-                                    type="checkbox" id="viewespecificaciones" />
-                                MOSTRAR ESPECIFICACIONES SOBRE IMAGEN DEL PRODUCTO
-                            </x-label-check>
-                            <x-jet-input-error for="empresa.viewespecificaciones" />
-                        </div> --}}
-
-                        <div class="block">
-                            <x-label-check for="viewlogomarca">
-                                <x-input wire:model.defer="empresa.viewlogomarca" value="1" name="viewlogomarca"
-                                    type="checkbox" id="viewlogomarca" />
-                                MOSTRAR LOGO MARCA EN PRODUCTOS
-                            </x-label-check>
-                            <x-jet-input-error for="empresa.viewlogomarca" />
-                        </div>
-
                         <div class="w-full">
                             <x-label-check for="usemarca_agua">
                                 <x-input wire:model.defer="empresa.usemarkagua" value="1" type="checkbox"
                                     x-on:change="openmark = !openmark" id="usemarca_agua" />
                                 <div class="flex flex-col flex-1">
                                     AGREGAR MARCA DE AGUA EN IMAGENES DE PRODUCTOS
-                                    <small class="font-medium text-xs tracking-normal">
+                                    <small class="font-medium leading-none text-xs tracking-normal text-colorsubtitleform">
                                         Se recomienda usar imagen transparente PNG</small>
                                 </div>
                             </x-label-check>
@@ -627,7 +641,7 @@
 
                             <div class="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-1 xl:grid-cols-2 gap-2 items-start mt-2"
                                 style="display: none;" x-show="openmark" x-cloak>
-                                <div class="w-full grid grid-cols-1 gap-2 items-start">
+                                <div class="w-full grid grid-cols-1 gap-1 items-start">
                                     <div class="w-full">
                                         <x-label value="Posición:" />
                                         <div class="w-full relative" id="parentposicion" x-init="SelectPosicion">
@@ -750,6 +764,9 @@
         </form>
     </x-form-card>
 
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     <x-jet-dialog-modal wire:model="openphone" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -781,6 +798,7 @@
                 markagua: null,
                 uselistprice: @entangle('empresa.uselistprice').defer,
                 viewtextopromocion: @entangle('empresa.viewtextopromocion').defer,
+                generatesku: @entangle('empresa.generatesku').defer,
                 ubigeo_id: @entangle('empresa.ubigeo_id').defer,
                 usepricedolar: @entangle('empresa.usepricedolar').defer,
                 viewpricedolar: @entangle('empresa.viewpricedolar').defer,
@@ -790,15 +808,47 @@
                 loadingdolar: false,
                 alignmark: @entangle('empresa.alignmark').defer,
                 usemarkagua: @entangle('empresa.usemarkagua').defer,
+                viewalmacens: @entangle('empresa.viewalmacens').defer,
+                viewalmacensdetalle: @entangle('empresa.viewalmacensdetalle').defer,
+                viewproductosweb: @entangle('empresa.viewproductosweb').defer,
                 logofooter: null,
                 logoimpresion: null,
                 init() {
                     this.usepricedolar = !!this.usepricedolar;
                     this.viewpricedolar = !!this.viewpricedolar;
                     this.cambioauto = !!this.cambioauto;
+                    this.generatesku = !!this.generatesku;
+                    this.viewalmacens = !!this.viewalmacens;
+                    this.viewalmacensdetalle = !!this.viewalmacensdetalle;
                     if (this.usemarkagua) {
                         this.openmark = true;
                     }
+
+                    this.$watch("ubigeo_id", (value) => {
+                        this.selectU.val(value).trigger("change");
+                    });
+                    this.$watch("alignmark", (value) => {
+                        this.selectPO.val(value).trigger("change");
+                    });
+                    this.$watch("uselistprice", (value) => {
+                        this.selectMP.val(value).trigger("change");
+                    });
+                    this.$watch("viewtextopromocion", (value) => {
+                        this.selectTP.val(value).trigger("change");
+                    });
+                    this.$watch("viewproductosweb", (value) => {
+                        this.selectPW.val(value).trigger("change");
+                    });
+                    Livewire.hook('message.processed', () => {
+                        this.selectPO.select2().val(this.alignmark).trigger('change');
+                        this.selectU.select2().val(this.ubigeo_id).trigger('change');
+                        this.selectTP.select2().val(this.viewtextopromocion).trigger('change');
+                        this.selectPW.select2().val(this.viewproductosweb).trigger('change');
+                        this.selectMP.select2({
+                            templateResult: formatOption
+                        }).val(this.uselistprice).trigger('change');
+                    });
+
                 },
                 loadlogomark() {
                     let file = document.getElementById('fileMark').files[0];
@@ -903,12 +953,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("ubigeo_id", (value) => {
-                this.selectU.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectU.select2().val(this.ubigeo_id).trigger('change');
-            });
         }
 
         function SelectPosicion() {
@@ -920,12 +964,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("alignmark", (value) => {
-                this.selectPO.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectPO.select2().val(this.alignmark).trigger('change');
             });
         }
 
@@ -941,14 +979,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("uselistprice", (value) => {
-                this.selectMP.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectMP.select2({
-                    templateResult: formatOption
-                }).val(this.uselistprice).trigger('change');
-            });
         }
 
         function SelectTextoPromocion() {
@@ -961,11 +991,17 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("viewtextopromocion", (value) => {
-                this.selectTP.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectTP.select2().val(this.viewtextopromocion).trigger('change');
+        }
+
+        function SelectProductosweb() {
+            this.selectPW = $(this.$refs.selectviewproductosweb).select2();
+            this.selectPW.val(this.viewproductosweb).trigger("change");
+            this.selectPW.on("select2:select", (event) => {
+                this.viewproductosweb = event.target.value;
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
             });
         }
 

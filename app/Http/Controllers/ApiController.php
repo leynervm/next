@@ -20,7 +20,12 @@ class ApiController extends Controller
 
         $search = $request->input('search');
         $products = Producto::query()->select('id', 'name', 'slug', 'requireserie', 'marca_id', 'unit_id')
-            ->with(['images', 'marca', 'unit', 'almacens']);
+            ->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->with(['marca', 'unit', 'almacens']);
 
         if (strlen(trim($search)) < 2) {
             $products->visibles()->orderBy('name', 'asc');
@@ -35,10 +40,10 @@ class ApiController extends Controller
                             })
                             ->orWhereHas('category', function ($q) use ($term) {
                                 $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                            })
-                            ->orWhereHas('especificacions', function ($q) use ($term) {
-                                $q->where('especificacions.name', 'ilike', '%' . $term . '%');
                             });
+                        // ->orWhereHas('especificacions', function ($q) use ($term) {
+                        //     $q->where('especificacions.name', 'ilike', '%' . $term . '%');
+                        // });
                     }
                 })->visibles()->orderBy('name', 'asc')->limit(10);
             }
@@ -53,7 +58,7 @@ class ApiController extends Controller
                 'marca' => $producto->marca->name,
                 'unit' => $producto->unit->name,
                 'almacens' => $producto->almacens,
-                'image_url' => $producto->getImageURL(),
+                'image_url' => ($producto->image && pathURLProductImage($producto->image)) ? pathURLProductImage($producto->image) : null,
             ];
         });
 

@@ -70,7 +70,7 @@ class Kernel extends HttpKernel
         'verifycompany' => \App\Http\Middleware\VerifyCompany::class,
         'verifysucursal' => \App\Http\Middleware\VerifySucursal::class,
         'verifyserieventas' => \App\Http\Middleware\VerifySerieventas::class,
-        'verifyserieguias' => \App\Http\Middleware\verifyserieguias::class,
+        'verifyserieguias' => \App\Http\Middleware\VerifySerieguias::class,
         'verifymethodpayment' => \App\Http\Middleware\VerifyMethodpayment::class,
         'verifyconcept' => \App\Http\Middleware\VerifyConcept::class,
         'verifypricetype' => \App\Http\Middleware\VerifyPricetype::class,

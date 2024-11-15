@@ -31,13 +31,15 @@ class ShowProducto extends Component
     public $almacen_id;
     public $newcantidad = 0;
     public $subcategories = [];
+    public $empresa;
+    public $skuold;
 
     protected function rules()
     {
         return [
             'producto.name' => ['required', 'string', 'min:3', new CampoUnique('productos', 'name', $this->producto->id, true)],
             'producto.marca_id' => ['required', 'integer', 'min:1', 'exists:marcas,id'],
-            'producto.modelo' => ['required', 'string'],
+            'producto.modelo' => ['nullable', 'string'],
             'producto.sku' => ['nullable', 'string', 'min:6', new CampoUnique('productos', 'sku', $this->producto->id, true)],
             'producto.partnumber' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', $this->producto->id, true)],
             'producto.unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
@@ -58,13 +60,12 @@ class ShowProducto extends Component
 
     public function mount(Producto $producto)
     {
+        $this->empresa = view()->shared('empresa');
         $this->producto = $producto;
         $this->almacen = new Almacen();
+        $this->subcategories = $this->producto->category->subcategories;
         // $this->almacens = Almacen::whereNotIn('id', $this->producto->almacens->pluck('id'))
         //     ->orderBy('name', 'asc')->get();
-        $this->subcategories = $this->producto->category->subcategories()
-            ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
-
         if ($producto->marca->trashed()) {
             $this->producto->marca_id = null;
         }
@@ -72,6 +73,11 @@ class ShowProducto extends Component
         if ($producto->category->trashed()) {
             $this->producto->category_id = null;
             $this->producto->subcategory_id = null;
+        }
+
+        $this->skuold =  $this->producto->sku;
+        if (empty($this->skuold)) {
+            $this->producto->sku =  Self::generatesku();
         }
     }
 
@@ -92,13 +98,19 @@ class ShowProducto extends Component
         return view('livewire.modules.almacen.productos.show-producto', compact('units', 'categories', 'marcas', 'almacenareas', 'estantes'));
     }
 
-    // public function updatedProductoPublicado($value)
-    // {
-    //     $this->authorize('admin.almacen.productos.edit');
-    //     $this->producto->publicado = $value ? $value : 0;
-    //     $this->producto->save();
-    //     $this->dispatchBrowserEvent('updated');
-    // }
+    public function generatesku()
+    {
+        $sku = str_pad((int)$this->producto->id, 6, '0', STR_PAD_LEFT);
+        $existsku = DB::table('productos')->where('sku', $sku)->whereNot('id', $this->producto->id)->exists();
+        if ($existsku) {
+            $sku = DB::table('productos')->max('id');
+            do {
+                $sku = str_pad((int)$sku + 1, 6, '0', STR_PAD_LEFT);
+            } while (DB::table('productos')->where('sku', $sku)->exists());
+        }
+
+        return $sku;
+    }
 
     public function updatedProductoViewespecificaciones($value)
     {
@@ -116,8 +128,7 @@ class ShowProducto extends Component
 
         if ($value) {
             $category = Category::with('subcategories')->find($value);
-            $this->subcategories = $category->subcategories()
-                ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
+            $this->subcategories = $category->subcategories;
         }
     }
 
@@ -130,6 +141,9 @@ class ShowProducto extends Component
         $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;
         $this->producto->almacenarea_id = !empty(trim($this->producto->almacenarea_id)) ? trim($this->producto->almacenarea_id) : null;
         $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
+        if ($this->empresa->autogenerateSku()) {
+            $this->producto->sku = Self::generatesku();
+        }
         $this->validate();
         $this->producto->save();
         $this->resetValidation();
@@ -166,7 +180,7 @@ class ShowProducto extends Component
                         ->where('producto_id', $this->producto->id))
                     ->ignore($this->almacen_id, 'almacen_id')
             ],
-            'newcantidad' => ['required', 'numeric', 'min:0', 'decimal:0,2']
+            'newcantidad' => ['required', 'numeric', 'integer', 'min:0']
         ]);
 
         $event = 'created';
@@ -226,7 +240,7 @@ class ShowProducto extends Component
         $this->authorize('admin.almacen.productos.almacen');
         $this->almacen = $almacen;
         $this->almacen_id = $almacen->id;
-        $this->newcantidad = $this->producto->almacens()->find($almacen->id)->pivot->cantidad;
+        $this->newcantidad = decimalOrInteger($this->producto->almacens()->find($almacen->id)->pivot->cantidad);
         $this->resetValidation();
         $this->reset(['almacens']);
         $this->open = true;

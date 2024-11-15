@@ -134,19 +134,23 @@
     </div>
 
     @stack('scripts')
-    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
-
 </body>
 
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-<script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
 
 <script>
+    document.addEventListener('readystatechange', () => {
+        // console.log(document.readyState)
+        if (document.readyState == 'interactive') {
+            document.body.style.overflow = 'auto';
+            $('#loading-next').fadeOut();
+        }
+    });
+
     // document.body.style.overflow = 'hidden';
-    document.addEventListener("DOMContentLoaded", () => {
-        document.body.style.overflow = 'auto';
-        $('#loading-next').fadeOut();
-    })
+    // document.addEventListener("DOMContentLoaded", () => {
+    //     document.body.style.overflow = 'auto';
+    //     $('#loading-next').fadeOut();
+    // })
 
     let boxCookies = document.getElementById('cookies');
     cookies();
@@ -164,7 +168,6 @@
         boxCookies.style.display = 'none';
         localStorage.acceptCookies = true;
     }
-
 
     document.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -185,8 +188,6 @@
             });
         });
     })
-
-    // document.addEventListener('Livewire:load', function() {
 
     var toastMixin = Swal.mixin({
         toast: true,
@@ -211,7 +212,6 @@
     })
 
     window.addEventListener('validation', data => {
-        // console.log(data.detail);
         var icon = data.detail.icon ? data.detail.icon : 'info';
         swal.fire({
             title: data.detail.title,

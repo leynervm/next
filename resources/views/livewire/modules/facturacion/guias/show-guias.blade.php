@@ -2,10 +2,6 @@
     selectedcomprobantes: @entangle('selectedcomprobantes').defer,
     checkall: @entangle('checkall')
 }">
-    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
-        <x-loading-next />
-    </div>
-
     <div class="flex flex-col xs:flex-row xs:flex-wrap gap-2">
         <div class="w-full sm:max-w-md">
             <x-label value="Destinatario :" />
@@ -36,11 +32,6 @@
                     class="bg-white p-0.5 text-[9px] rounded-full !tracking-normal font-semibold text-next-500"></span>
             </x-button>
         @endcan
-        @if ($guias->hasPages())
-            <div class="w-full flex-1 flex flex-col justify-end items-center sm:items-end">
-                {{ $guias->onEachSide(0)->links('livewire::pagination-default') }}
-            </div>
-        @endif
     </div>
 
     <x-table class="mt-1">
@@ -332,6 +323,16 @@
             </x-slot>
         @endif
     </x-table>
+
+    @if ($guias->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $guias->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingguias" wire:loading.flex class="loading-overlay rounded fixed hidden">
+        <x-loading-next />
+    </div>
 
     <script>
         document.addEventListener('alpine:init', () => {

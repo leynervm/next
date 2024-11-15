@@ -1,16 +1,15 @@
 <div class="header-marketplace">
     <div class="w-full mx-auto flex items-center relative">
-        @if ($empresa->image)
+        @if ($empresa->logo)
             <div class="hidden xl:flex w-72 items-center h-full">
                 <a href="/" class="w-full p-1 xl:p-2 h-[90%]">
-                    <img class="mx-auto h-full w-full object-scale-down" src="{{ $empresa->image->getLogoEmpresa() }}"
-                        alt="">
+                    <img class="mx-auto h-full w-full object-scale-down" src="{{ getLogoEmpresa($empresa->logo, false) }}" alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
                 </a>
             </div>
         @endif
 
-        <div class="flex-shrink-0 xl:pr-5">
+        <div class="flex-shrink-0 @if (empty($empresa->logo)) pl-4 @endif xl:pr-5">
             <button class="button-sidebar hidden xl:flex items-center" type="button"
                 @click="openSidebar=!openSidebar;backdrop=openSidebar;if(!openSidebar) {document.body.style.overflow = 'auto';}"
                 :class="openSidebar ? 'open' : ''">

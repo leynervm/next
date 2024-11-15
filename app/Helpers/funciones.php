@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
+use function PHPUnit\Framework\fileExists;
+
 function verificarCarpeta($path, $disk = 'public')
 {
 
@@ -472,7 +474,11 @@ function pathURLProductImage($filename = null)
     if (is_null($filename)) {
         return asset('storage/images/productos/');
     } else {
-        return asset('storage/images/productos/' . $filename);
+        if (file_exists(public_path('storage/images/productos/' . $filename))) {
+            return asset('storage/images/productos/' . $filename);
+        } else {
+            return null;
+        }
     }
 }
 

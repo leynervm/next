@@ -84,11 +84,16 @@ class ShowProductos extends Component
             $this->selectedcategorias = explode(',', request('categorias'));
             $this->subcategories = Subcategory::whereHas('categories', function ($query) {
                 $query->whereIn('categories.slug', $this->selectedcategorias);
-            })->get();
+            })->orderBy('orden', 'asc')->get();
         } else {
             $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
                 $query->visibles()->publicados();
-            })->get();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
+            })->orderBy('name', 'asc')->get();
         }
         if (!empty(request('subcategorias'))) {
             $this->selectedsubcategorias = explode(',', request('subcategorias'));
@@ -111,7 +116,12 @@ class ShowProductos extends Component
                 $query->whereHas('subcategory', function ($subcategoryQuery) {
                     $subcategoryQuery->whereIn('slug', $this->selectedsubcategorias);
                 })->visibles()->publicados();
-            })->get();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
+            })->orderBy('name', 'asc')->get();
 
             $this->especificacions = Especificacion::withWhereHas('caracteristica', function ($query) {
                 $query->filterweb()->orderBy('orden', 'asc');
@@ -119,6 +129,11 @@ class ShowProductos extends Component
                 $query->whereHas('subcategory', function ($subQuery) {
                     $subQuery->whereIn('slug', $this->selectedsubcategorias);
                 })->visibles()->publicados();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
             })->get()->groupBy('caracteristica.name')->map(function ($especificaciones) {
                 return $especificaciones->mapWithKeys(function ($especificacion) {
                     return [
@@ -135,11 +150,21 @@ class ShowProductos extends Component
                     $query->whereHas('category', function ($categoryQuery) {
                         $categoryQuery->whereIn('slug', $this->selectedcategorias);
                     })->visibles()->publicados();
-                })->get();
+                    if ($this->empresa->viewOnlyDisponibles()) {
+                        $query->whereHas('almacens', function ($query) {
+                            $query->where('cantidad', '>', 0);
+                        });
+                    }
+                })->orderBy('name', 'asc')->get();
             } else {
                 $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
                     $query->visibles()->publicados();
-                })->get();
+                    if ($this->empresa->viewOnlyDisponibles()) {
+                        $query->whereHas('almacens', function ($query) {
+                            $query->where('cantidad', '>', 0);
+                        });
+                    }
+                })->orderBy('name', 'asc')->get();
             }
         }
 
@@ -164,42 +189,51 @@ class ShowProductos extends Component
     {
         $categories = Category::query()->select('id', 'slug', 'name')->whereHas('productos', function ($query) {
             $query->visibles()->publicados();
-        })->get();
+            if ($this->empresa->viewOnlyDisponibles()) {
+                $query->whereHas('almacens', function ($query) {
+                    $query->where('cantidad', '>', 0);
+                });
+            }
+        })->orderBy('orden', 'asc')->get();
 
-        $productos = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->with(['almacens' => function ($query) {
-                // $query->select('id, almacens.sucursal_id')->groupBy('id');
-                // $query->wherePivot('cantidad', '>', 0);
-            }])->withCount([
-                'almacens as stock' => function ($query) {
-                    $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
-                }
-            ])->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
-            }])->addSelect(['image_2' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')
-                    ->offset(1)->limit(1);
-            }])->withWherehas('category', function ($query) {
-                $query->whereNull('deleted_at');
-                if (count($this->selectedcategorias) > 0) {
-                    $query->whereIn('slug', $this->selectedcategorias);
-                }
-            })->withWherehas('subcategory', function ($query) {
-                if (count($this->selectedsubcategorias) > 0) {
-                    $query->whereIn('slug', $this->selectedsubcategorias);
-                }
-            })->withWhereHas('marca', function ($query) {
-                $query->whereNull('deleted_at');
-                if (count($this->selectedmarcas) > 0) {
-                    $query->whereIn('slug', $this->selectedmarcas);
-                }
+        $productos = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5');
+
+        if ($this->empresa->viewOnlyDisponibles()) {
+            $productos->withWhereHas('almacens', function ($query) {
+                $query->where('cantidad', '>', 0);
             });
+        } else {
+            $productos->with(['almacens']);
+        }
+
+        $productos->withCount(['almacens as stock' => function ($query) {
+            $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+        }])->addSelect(['image' => function ($query) {
+            $query->select('url')->from('images')
+                ->whereColumn('images.imageable_id', 'productos.id')
+                ->where('images.imageable_type', Producto::class)
+                ->orderBy('default', 'desc')->limit(1);
+        }])->addSelect(['image_2' => function ($query) {
+            $query->select('url')->from('images')
+                ->whereColumn('images.imageable_id', 'productos.id')
+                ->where('images.imageable_type', Producto::class)
+                ->orderBy('default', 'desc')
+                ->offset(1)->limit(1);
+        }])->withWherehas('category', function ($query) {
+            $query->whereNull('deleted_at');
+            if (count($this->selectedcategorias) > 0) {
+                $query->whereIn('slug', $this->selectedcategorias);
+            }
+        })->withWherehas('subcategory', function ($query) {
+            if (count($this->selectedsubcategorias) > 0) {
+                $query->whereIn('slug', $this->selectedsubcategorias);
+            }
+        })->withWhereHas('marca', function ($query) {
+            $query->whereNull('deleted_at');
+            if (count($this->selectedmarcas) > 0) {
+                $query->whereIn('slug', $this->selectedmarcas);
+            }
+        });
 
         if (count($this->selectedespecificacions) > 0) {
             $productos->whereHas('especificacions', function ($query) {
@@ -245,6 +279,9 @@ class ShowProductos extends Component
             $order = 'asc';
         }
 
+        // dd($productos->visibles()->publicados()->orderBy($column, $order)
+        // ->paginate(30));
+
         $productos =  $this->readyToLoad ?
             $productos->visibles()->publicados()->orderBy($column, $order)
             ->paginate(30)->through(function ($producto) {
@@ -252,6 +289,7 @@ class ShowProductos extends Component
                 return $producto;
             })
             : [];
+
 
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories',));
@@ -267,7 +305,7 @@ class ShowProductos extends Component
         $this->resetPage();
         $this->subcategories = Subcategory::whereHas('categories', function ($query) {
             $query->whereIn('categories.slug', $this->selectedcategorias);
-        })->get();
+        })->orderBy('orden', 'asc')->get();
         $this->selectedsubcategorias = array_filter($this->selectedsubcategorias, function ($selected) {
             return collect($this->subcategories)->contains('slug', $selected);
         });
@@ -280,11 +318,21 @@ class ShowProductos extends Component
                 $query->whereHas('category', function ($categoryQuery) {
                     $categoryQuery->whereIn('slug', $this->selectedcategorias);
                 })->visibles()->publicados();
-            })->get();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
+            })->orderBy('name', 'asc')->get();
         } else {
             $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
                 $query->visibles()->publicados();
-            })->get();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
+            })->orderBy('name', 'asc')->get();
         }
 
         $this->selectedmarcas = array_filter($this->selectedmarcas, function ($selected) {
@@ -303,13 +351,23 @@ class ShowProductos extends Component
                 $query->whereHas('subcategory', function ($subcategoryQuery) {
                     $subcategoryQuery->whereIn('slug', $this->selectedsubcategorias);
                 })->visibles()->publicados();
-            })->get();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
+            })->orderBy('name', 'asc')->get();
         } else {
             $this->marcas = Marca::query()->select('id', 'name', 'slug')->whereHas('productos', function ($query) {
                 $query->whereHas('category', function ($categoryQuery) {
                     $categoryQuery->whereIn('slug', $this->selectedcategorias);
                 })->visibles()->publicados();
-            })->get();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
+            })->orderBy('name', 'asc')->get();
         }
 
         $this->selectedmarcas = array_filter($this->selectedmarcas, function ($selected) {
@@ -324,6 +382,11 @@ class ShowProductos extends Component
                 $query->whereHas('subcategory', function ($subQuery) {
                     $subQuery->whereIn('slug', $this->selectedsubcategorias);
                 })->visibles()->publicados();
+                if ($this->empresa->viewOnlyDisponibles()) {
+                    $query->whereHas('almacens', function ($query) {
+                        $query->where('cantidad', '>', 0);
+                    });
+                }
             })->get()->groupBy('caracteristica.name')->map(function ($especificaciones) {
                 return $especificaciones->mapWithKeys(function ($especificacion) {
                     return [

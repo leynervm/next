@@ -26,6 +26,10 @@
             </div>
         @endif
 
+        @if (auth()->user())
+        
+        @endif
+
         <div class="w-full">
             @livewire('profile.logout-other-browser-sessions-form')
         </div>

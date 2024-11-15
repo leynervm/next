@@ -1,53 +1,56 @@
 <div class="relative">
-    @if ($subcategories->hasPages())
-        <div class="w-full flex flex-col items-center sm:items-end pb-2">
-            {{ $subcategories->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
-    <div class="flex gap-2 flex-wrap justify-start" id="subcategories">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-1 self-start mt-2" id="subcategories">
         @if (count($subcategories))
             @foreach ($subcategories as $item)
-                <x-minicard :title="$item->name" size="md" data-id="{{ $item->id }}">
-                    <x-slot name="buttons">
-                        <div class="w-full flex gap-2 justify-between items-end">
-                            @can('admin.almacen.subcategorias.edit')
-                                <button
-                                    class="text-next-500 block p-1 cursor-grab handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                        stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
-                                        class="w-4 h-4 scale-150">
-                                        <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
-                                        <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
-                                        <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
-                                        <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
-                                        <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
-                                        <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
-                                        <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
-                                        <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
-                                        <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
-                                    </svg>
-                                </button>
-                            @endcan
-                            @canany(['admin.almacen.subcategorias.edit', 'admin.almacen.subcategorias.delete'])
-                                <div class="">
-                                    @can('admin.almacen.subcategorias.edit')
-                                        <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
-                                            wire:key="editsubcat_{{ $item->id }}" />
-                                    @endcan
-                                    @can('admin.almacen.subcategorias.delete')
-                                        <x-button-delete wire:loading.attr="disabled"
-                                            onclick="confirmDelete({{ $item }})"
-                                            wire.key="delectesubc_{{ $item->id }}" />
-                                    @endcan
-                                </div>
-                            @endcanany
-                        </div>
-                    </x-slot>
-                </x-minicard>
+                <div class="border border-borderminicard p-1 min-h-28 flex flex-col gap-2 justify-between rounded-lg sm:rounded-2xl"
+                    data-id="{{ $item->id }}">
+                    <div class="w-full flex-1 h-full py-1 flex flex-col justify-center items-center">
+                        <h1 class="text-xs font-medium text-colorsubtitleform text-center leading-none">
+                            {{ $item->name }}</h1>
+                    </div>
+
+                    <div class="w-full flex gap-2 justify-between items-end">
+                        @can('admin.almacen.subcategorias.edit')
+                            <button
+                                class="text-next-500 block p-1 cursor-grab handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                                    stroke="none" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+                                    class="w-4 h-4 scale-150">
+                                    <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
+                                    <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
+                                    <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
+                                    <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
+                                    <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
+                                    <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
+                                    <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
+                                    <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
+                                    <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
+                                </svg>
+                            </button>
+                        @endcan
+                        @canany(['admin.almacen.subcategorias.edit', 'admin.almacen.subcategorias.delete'])
+                            <div class="">
+                                @can('admin.almacen.subcategorias.edit')
+                                    <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
+                                        wire:key="editsubcat_{{ $item->id }}" />
+                                @endcan
+                                @can('admin.almacen.subcategorias.delete')
+                                    <x-button-delete wire:loading.attr="disabled" onclick="confirmDelete({{ $item }})"
+                                        wire.key="delectesubc_{{ $item->id }}" />
+                                @endcan
+                            </div>
+                        @endcanany
+                    </div>
+                </div>
             @endforeach
         @endif
     </div>
+
+    @if ($subcategories->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $subcategories->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 
     <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />

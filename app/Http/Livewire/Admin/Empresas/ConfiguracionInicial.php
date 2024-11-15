@@ -9,6 +9,7 @@ use App\Models\Almacen;
 use App\Models\Empresa;
 use App\Models\Producto;
 use App\Models\Sucursal;
+use App\Models\Typecomprobante;
 use App\Models\Typesucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
@@ -49,15 +50,20 @@ class ConfiguracionInicial extends Component
     public $usepricedolar = 0;
     public $tipocambio;
     public $viewpricedolar = 0;
+    public $generatesku = 0;
     public $tipocambioauto = 0;
     public $igv = '18.00';
-    public  $usemarkagua = 0, $markagua, $alignmark = 'center', $widthmark = '100', $heightmark = '100';
-
+    public $usemarkagua = 0, $markagua, $alignmark = 'center', $widthmark = '100', $heightmark = '100';
+    public $viewalmacens = 0, $viewalmacensdetalle = 0;
 
     public $namesucursal, $direccionsucursal, $ubigeosucursal_id, $typesucursal_id, $codeanexo;
     public $defaultsucursal = false;
     public $namealmacen;
-
+    public $editindex;
+    public $boxes = [], $seriecomprobantes = [];
+    public $boxname, $apertura;
+    public $typecomprobante_id, $serie, $seriecompleta, $indicio = '';
+    public $contador = 0;
 
     public function mount()
     {
@@ -84,9 +90,14 @@ class ConfiguracionInicial extends Component
     {
         $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
             ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        // $typesucursals = Typesucursal::orderBy('name', 'asc')->get();
-        return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos'));
+        if (Module::isEnabled('Facturacion')) {
+            $typecomprobantes = Typecomprobante::orderBy('code', 'asc')->get();
+        } else {
+            $typecomprobantes = Typecomprobante::Default()->orderBy('code', 'asc')->get();
+        }
+        return view('livewire.admin.empresas.configuracion-inicial', compact('ubigeos', 'typecomprobantes'));
     }
+
     public function openModal()
     {
         $this->open = true;
@@ -94,15 +105,27 @@ class ConfiguracionInicial extends Component
 
     public function validatestep($step)
     {
+        $acceso = Acceso::first();
+        if (!$acceso || !$acceso->access()) {
+            $mensaje = response()->json([
+                'title' => "ACCESO DENEGADO PARA REGISTRAR DATOS DE LA EMPRESA.",
+                'icon' => 'warning',
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
 
         $this->uselistprice = $this->uselistprice == 1 ?  1 : 0;
         $this->usepricedolar = $this->usepricedolar == true ?  1 : 0;
         $this->viewpricedolar = $this->viewpricedolar == true ?  1 : 0;
         $this->viewpriceantes = $this->viewpriceantes == true ?  1 : 0;
         $this->viewlogomarca = $this->viewlogomarca == true ?  1 : 0;
+        $this->generatesku = $this->generatesku == true ?  1 : 0;
         $this->tipocambioauto = $this->tipocambioauto == true ?  1 : 0;
         $this->usemarkagua = $this->usemarkagua == true ?  1 : 0;
         $this->viewespecificaciones = $this->viewespecificaciones == true ?  1 : 0;
+        $this->viewalmacens = $this->viewalmacens == true ?  1 : 0;
+        $this->viewalmacensdetalle = $this->viewalmacensdetalle == true ?  1 : 0;
 
         if ($this->usepricedolar == 0) {
             $this->usepricedolar = 0;
@@ -129,8 +152,7 @@ class ConfiguracionInicial extends Component
             if (count($this->sucursals) > 0) {
                 $establecimientos = collect($this->sucursals)->map(function ($item) {
                     if ($item['default'] == Sucursal::DEFAULT) {
-
-                        $item['descripcion'] = $this->name;
+                        $item['descripcion'] = 'TIENDA PRINCIPAL'; // . $this->name;
                         $item['direccion'] = $this->direccion;
                         $item['ubigeo_id'] = $this->ubigeo_id;
                         $ubigeo = Ubigeo::find($this->ubigeo_id);
@@ -144,45 +166,39 @@ class ConfiguracionInicial extends Component
                 $this->sucursals = $establecimientos->sortBy('codigo')->values()->toArray();
             }
         } elseif ($step == 2) {
-
-            $this->validate(
-                [
-                    'uselistprice' => ['integer', 'min:0', 'max:1'],
-                    'usepricedolar' => ['integer', 'min:0', 'max:1'],
-                    'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
-                    'viewpricedolar' => ['integer', 'min:0', 'max:1'],
-                    'tipocambioauto' => ['integer', 'min:0', 'max:1'],
-                    'viewpriceantes' => ['integer', 'min:0', 'max:1'],
-                    'viewlogomarca' => ['integer', 'min:0', 'max:1'],
-                    'viewespecificaciones' => ['integer', 'min:0', 'max:1'],
-                    'viewtextopromocion' => ['integer', 'min:0', 'max:2'],
-                    'usemarkagua' => ['integer', 'min:0', 'max:1'],
-                    'markagua' => [
-                        'nullable',
-                        'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
-                        'string',
-                        'regex:/^data:image\/png;base64,([A-Za-z0-9+\/=]+)$/'
-                    ],
-                    'alignmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'string', 'max:25'],
-                    'widthmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'integer', 'min:50', 'max:300'],
-                    'heightmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'integer', 'min:50', 'max:300'],
+            $this->validate([
+                'uselistprice' => ['integer', 'min:0', 'max:1'],
+                'usepricedolar' => ['integer', 'min:0', 'max:1'],
+                'tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
+                'viewpricedolar' => ['integer', 'min:0', 'max:1'],
+                'tipocambioauto' => ['integer', 'min:0', 'max:1'],
+                'viewpriceantes' => ['integer', 'min:0', 'max:1'],
+                'viewlogomarca' => ['integer', 'min:0', 'max:1'],
+                'viewespecificaciones' => ['integer', 'min:0', 'max:1'],
+                'viewalmacens' => ['integer', 'min:0', 'max:1'],
+                'viewalmacensdetalle' => ['integer', 'min:0', 'max:1'],
+                'viewtextopromocion' => ['integer', 'min:0', 'max:2'],
+                'generatesku' => ['integer', 'min:0', 'max:1'],
+                'usemarkagua' => ['integer', 'min:0', 'max:1'],
+                'markagua' => [
+                    'nullable',
+                    'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE,
+                    'string',
+                    'regex:/^data:image\/png;base64,([A-Za-z0-9+\/=]+)$/'
                 ],
-                [
-                    'markagua.required_if'      => 'El campo :attribute es obligatorio.',
-                    'widthmark.required_if'     => 'El campo :attribute es obligatorio.',
-                    'heightmark.required_if'    => 'El campo :attribute es obligatorio.',
-                    'alignmark.required_if'     => 'El campo :attribute es obligatorio.',
-                ]
-            );
+                'alignmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'string', 'max:25'],
+                'widthmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'integer', 'min:50', 'max:300'],
+                'heightmark' => ['nullable', 'required_if:usemarkagua,' . Empresa::OPTION_ACTIVE, 'integer', 'min:50', 'max:300'],
+            ], [
+                'markagua.required_if'      => 'El campo :attribute es obligatorio.',
+                'widthmark.required_if'     => 'El campo :attribute es obligatorio.',
+                'heightmark.required_if'    => 'El campo :attribute es obligatorio.',
+                'alignmark.required_if'     => 'El campo :attribute es obligatorio.',
+            ]);
         } elseif ($step == 3) {
             $this->validate([
-                'almacens' => [
-                    'nullable',
-                    Rule::requiredIf(module::isEnabled('Ventas') || module::isEnabled('Almacen')),
-                    'array',
-                    'min:1'
-                ],
-                'telephones' => ['array', 'min:1'],
+                'almacens' => ['nullable', Rule::requiredIf(module::isEnabled('Ventas') || module::isEnabled('Almacen')), 'array', 'min:1'],
+                'telephones' => ['required', 'array', 'min:1'],
                 'email' => ['nullable', 'email'],
                 'web' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'whatsapp' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
@@ -190,6 +206,9 @@ class ConfiguracionInicial extends Component
                 'youtube' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'instagram' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
                 'tiktok' => ['nullable', 'starts_with:http://,https://,https://www.,http://www.,www.'],
+            ], [
+                'almacens.required' => 'No se han agregado almacenes',
+                'telephones.required' => 'No se han agregado teléfonos de contacto',
             ]);
 
             if (module::isEnabled('Ventas') || module::isEnabled('Almacen')) {
@@ -202,20 +221,43 @@ class ConfiguracionInicial extends Component
             }
         } elseif ($step == 4) {
             $this->validate([
-                'selectedsucursals' => ['array', 'min:1'],
+                'selectedsucursals' => ['required', 'array', 'min:1']
+            ], [
+                'selectedsucursals.required' => 'Por favor seleccione sucursales a registrar',
             ]);
 
-            $acceso = Acceso::first();
-            if (!$acceso) {
-                $this->addError('selectedsucursals', 'No tienes acceso para configurael perfil de empresas.');
-                return false;
-            }
-
-            if (!is_null($acceso->limitsucursals)) {
+            if (!$acceso->unlimit()) {
                 if ($this->document !== '20538954099' && count($this->selectedsucursals) > $acceso->limitsucursals) {
-                    $this->addError('selectedsucursals', 'Límite de sucursales alcanzado ' . $acceso->limitsucursals . ', seleccione sucursales correspondiente a registrar ');
+                    $mensaje = response()->json([
+                        'title' => "SOLO PUEDE SELECCIONR UN MÁXIMO DE " . $acceso->limitsucursals . " SUCURSALES",
+                        'icon' => 'warning',
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
                     return false;
                 }
+            }
+
+            $mensaje = null;
+            foreach ($this->sucursals as $item) {
+                if (in_array($item['codigo'], $this->selectedsucursals)) {
+                    if (count($item['boxes']) == 0) {
+                        $mensaje = "SUCURSAL " . $item['descripcion'] . " NO CONTIENE CAJAS DE PAGO AGREGADAS.";
+                        break;
+                    }
+                    if (count($item['seriecomprobantes']) == 0) {
+                        $mensaje = "SUCURSAL " . $item['descripcion'] . " NO CONTIENE COMPROBANTES DE VENTA AGREGADAS.";
+                        break;
+                    }
+                }
+            }
+
+            if (!empty($mensaje)) {
+                $mensaje = response()->json([
+                    'title' => $mensaje,
+                    'icon' => 'warning',
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
             }
         } else {
             $this->validate([
@@ -258,6 +300,9 @@ class ConfiguracionInicial extends Component
             'viewpriceantes' => $this->viewpriceantes,
             'viewlogomarca' => $this->viewlogomarca,
             'viewespecificaciones'  => $this->viewespecificaciones,
+            'viewalmacens'  => $this->viewalmacens,
+            'viewalmacensdetalle'  => $this->viewalmacensdetalle,
+            'generatesku' => $this->generatesku,
             'viewtextopromocion' => $this->viewtextopromocion,
             'usemarkagua' => $this->usemarkagua,
             'markagua' => $this->markagua,
@@ -285,6 +330,16 @@ class ConfiguracionInicial extends Component
 
     public function save()
     {
+
+        $acceso = Acceso::first();
+        if (!$acceso || !$acceso->access()) {
+            $mensaje = response()->json([
+                'title' => "ACCESO DENEGADO PARA REGISTRAR DATOS DE LA EMPRESA.",
+                'icon' => 'warning',
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
 
         $urlicono = $this->icono ?? null;
         $urlcert = $this->cert ?? null;
@@ -345,6 +400,9 @@ class ConfiguracionInicial extends Component
                 'uselistprice' => $this->uselistprice,
                 'viewpriceantes' => $this->viewpriceantes,
                 'viewlogomarca' => $this->viewlogomarca,
+                'generatesku' => $this->generatesku,
+                'viewalmacens' => $this->viewalmacens,
+                'viewalmacensdetalle' => $this->viewalmacensdetalle,
                 'viewtextopromocion' => $this->viewtextopromocion,
                 'usemarkagua' => $this->usemarkagua,
                 'markagua' => $markURL,
@@ -369,9 +427,7 @@ class ConfiguracionInicial extends Component
 
             if (count($this->almacens) > 0) {
                 foreach ($this->almacens as $item) {
-                    Almacen::create([
-                        'name' => $item
-                    ]);
+                    Almacen::create(['name' => $item]);
                 }
             }
 
@@ -414,9 +470,33 @@ class ConfiguracionInicial extends Component
                     ]);
 
                     if (module::isEnabled('Almacen') || module::isEnabled('Ventas')) {
-                        if (module::isDisabled('Almacen')) {
-                            $almacens = Almacen::pluck('id');
+                        // if (module::isDisabled('Almacen')) {
+                        $almacens = Almacen::all()->pluck('id')->toArray();
+                        if ($sucursal->isDefault()) {
                             $sucursal->almacens()->sync($almacens);
+                        }
+                        // }
+                    }
+
+                    if (count($item['boxes']) > 0) {
+                        foreach ($item['boxes'] as $box) {
+                            $sucursal->boxes()->create([
+                                'name' => $box['name'],
+                                'apertura' => $box['apertura']
+                            ]);
+                        }
+                    }
+
+                    if (count($item['seriecomprobantes']) > 0) {
+                        foreach ($item['seriecomprobantes'] as $serie) {
+                            $sucursal->seriecomprobantes()->create([
+                                'serie' => $serie['serie'],
+                                'code' => $serie['code'],
+                                'contador' => $serie['contador'],
+                                'contadorprueba' => 0,
+                                'default' => $serie['default'],
+                                'typecomprobante_id' => $serie['typecomprobante_id'],
+                            ]);
                         }
                     }
                 }
@@ -488,7 +568,7 @@ class ConfiguracionInicial extends Component
 
             $establecimientos = [];
             $principal = [
-                'descripcion' => 'TIENDA PRINCIPAL',
+                'descripcion' => 'TIENDA PRINCIPAL ' . $this->name,
                 'direccion' => $response->result->direccion,
                 'ubigeo_id' => $response->result->ubigeo_id,
                 'typesucursal_id' => 1,
@@ -499,6 +579,8 @@ class ConfiguracionInicial extends Component
                 'tipo' => 'CASA MATRIZ',
                 'codigo' => '0000',
                 'default' => Sucursal::DEFAULT,
+                'boxes' => [],
+                'seriecomprobantes' => [],
             ];
 
             if (is_array($response->result->establecimientos)) {
@@ -521,6 +603,8 @@ class ConfiguracionInicial extends Component
                     }
 
                     $array['typesucursal_id'] = $typesucursal_id;
+                    $array['boxes'] = [];
+                    $array['seriecomprobantes'] = [];
                     return $array;
                     // return (array) $object;
                 }, $response->result->establecimientos);
@@ -537,7 +621,7 @@ class ConfiguracionInicial extends Component
     public function addalmacen()
     {
         if (module::isEnabled('Ventas') || module::isEnabled('Almacen')) {
-            $this->namealmacen = trim($this->namealmacen);
+            $this->namealmacen =  mb_strtoupper(trim($this->namealmacen), "UTF-8");
             $this->validate([
                 'namealmacen' => ['required', 'string', 'min:3']
             ]);
@@ -581,26 +665,98 @@ class ConfiguracionInicial extends Component
         $this->telephones = array_values($this->telephones);
     }
 
-    public function updatingOpen()
+    public function openmodalsucursal()
     {
-        if (!$this->open) {
-            $this->resetValidation();
-            $this->reset([
-                'defaultsucursal',
-                'typesucursal_id',
-                'namesucursal',
-                'direccionsucursal',
-                'codeanexo',
-                'ubigeosucursal_id'
-            ]);
+        $this->resetValidation();
+        $this->reset([
+            'defaultsucursal',
+            'typesucursal_id',
+            'namesucursal',
+            'direccionsucursal',
+            'codeanexo',
+            'ubigeosucursal_id',
+            'typecomprobante_id',
+            'indicio',
+            'serie',
+            'seriecompleta',
+            'contador',
+            'seriecomprobantes',
+            'boxes',
+            'boxname',
+            'apertura',
+            'editindex'
+        ]);
+        $this->open = true;
+    }
+
+    public function addbox()
+    {
+
+        $this->boxname = mb_strtoupper(trim($this->boxname), "UTF-8");
+        $this->apertura = number_format($this->apertura, 2, '.', '');
+        $this->validate([
+            'boxname' => ['required', 'string', 'min:3'],
+            'apertura' => ['required', 'numeric', 'gt:0', 'decimal:0,2']
+        ]);
+
+        if (count($this->boxes) > 0) {
+            $boxes = collect($this->boxes);
+            $existscode = $boxes->pluck('name')->contains($this->boxname);
+            if ($existscode) {
+                $this->addError('boxname', 'Ya existe una caja de pago con el mismo nombre');
+                return false;
+            }
+        }
+
+        $box = [
+            'name' => $this->boxname,
+            'apertura' => $this->apertura
+        ];
+        $this->boxes[] = $box;
+        $this->reset(['boxname', 'apertura']);
+        $this->resetValidation();
+    }
+
+    public function removebox($indice)
+    {
+        if ($indice >= 0) {
+            unset($this->boxes[$indice]);
+            $this->boxes = array_values($this->boxes);
+
+            if (!is_null($this->editindex)) {
+                $this->sucursals[$this->editindex]["boxes"] = array_values($this->boxes);
+            }
+        }
+        $this->resetValidation();
+    }
+
+    public function editsucursal($codigo)
+    {
+        $this->resetValidation();
+        $this->reset(['typecomprobante_id', 'serie', 'indicio', 'seriecompleta', 'contador', 'boxname', 'apertura']);
+        if (count($this->selectedsucursals) > 0) {
+            // $sucursal = array_filter($this->sucursals, function ($sucursal) use ($codigo) {
+            //     return $sucursal['codigo'] == $codigo;
+            // });
+            $indice = array_search($codigo, array_column($this->sucursals, 'codigo'));
+            if ($indice >= 0) {
+                $this->editindex = $indice;
+                $this->namesucursal =  mb_strtoupper(trim($this->sucursals[$this->editindex]["descripcion"]), "UTF-8");
+                $this->direccionsucursal =  mb_strtoupper(trim($this->sucursals[$this->editindex]["direccion"]), "UTF-8");
+                $this->ubigeosucursal_id = $this->sucursals[$this->editindex]["ubigeo_id"];
+                $this->codeanexo = $this->sucursals[$this->editindex]["codigo"];
+                $this->boxes = $this->sucursals[$this->editindex]["boxes"];
+                $this->seriecomprobantes = $this->sucursals[$this->editindex]["seriecomprobantes"];
+                $this->open = true;
+            }
         }
     }
 
     public function addsucursal($closemodal = false)
     {
 
-        $this->name = trim($this->name);
-        $this->direccion = trim($this->direccion);
+        $this->namesucursal = mb_strtoupper(trim($this->namesucursal), "UTF-8");
+        $this->direccionsucursal = mb_strtoupper(trim($this->direccionsucursal), "UTF-8");
         $this->codeanexo = trim($this->codeanexo);
 
         $this->validate([
@@ -609,20 +765,34 @@ class ConfiguracionInicial extends Component
             'typesucursal_id' => ['nullable', 'integer', 'min:1', 'exists:typesucursals,id',],
             'ubigeosucursal_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id',],
             'codeanexo' => ['required', 'string', 'min:4', 'max:4', new CampoUnique('sucursals', 'codeanexo', null, true),],
-            'defaultsucursal' => ['required', 'boolean', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', null, true)]
+            'defaultsucursal' => ['required', 'boolean', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', null, true)],
+            'seriecomprobantes' => ['required', 'array', 'min:1'],
+            'boxes' => ['required', 'array', 'min:1'],
+        ], [
+            'boxes.required' => 'No se han agregado cajas de pago',
+            'seriecomprobantes.required' => 'No se han agregado comprobantes de venta',
         ]);
 
         if (count($this->sucursals) > 0) {
             $sucursals = collect($this->sucursals);
+
+            if (!is_null($this->editindex)) {
+                $sucursals = $sucursals->except($this->editindex);
+            }
 
             $existscode = $sucursals->pluck('codigo')->contains($this->codeanexo);
             if ($existscode) {
                 $this->addError('codeanexo', 'El valor de código de anexo ya está agregado.');
             }
 
-            // Convertimos todos los nombres del array a minúsculas para hacer la comparación
-            $nombres = array_map('strtolower', array_column($this->sucursals, 'descripcion'));
-            $existsname = in_array(strtolower($this->namesucursal), $nombres);
+            $existsname = $sucursals->pluck('descripcion')->contains($this->namesucursal);
+            // if ($existscode) {
+            //     $this->addError('codeanexo', 'El valor de código de anexo ya está agregado.');
+            // }
+
+            // Convertimos todos los nombres del array a mayusuclas para hacer la comparación
+            // $nombres = array_map('strtoupper', $sucursals->pluck('descripcion')->toArray());
+            // $existsname = in_array(trim(mb_strtoupper($this->namesucursal, "UTF-8")), $nombres);
 
             if ($existsname) {
                 $this->addError('namesucursal', 'El nombre de sucursal ya está agregado.');
@@ -663,7 +833,7 @@ class ConfiguracionInicial extends Component
         //     $codesucursal = $typesucursal->code;
         //     $typesucursal = $typesucursal->name;
         // }
-        $this->sucursals[] = [
+        $sucursal_updated = [
             'descripcion' => $this->namesucursal,
             'direccion' => $this->direccionsucursal,
             'ubigeo_id' => $this->ubigeosucursal_id,
@@ -674,9 +844,29 @@ class ConfiguracionInicial extends Component
             'cod_tipo' => $codesucursal,
             'tipo' => $typesucursal,
             'codigo' => $this->codeanexo,
-            'default' => $this->defaultsucursal,
+            'default' => !is_null($this->editindex) ? $this->sucursals[$this->editindex]['default'] : $this->defaultsucursal,
+            'boxes' => $this->boxes,
+            'seriecomprobantes' => $this->seriecomprobantes
         ];
-        $this->reset(['open', 'defaultsucursal', 'typesucursal_id', 'namesucursal', 'direccionsucursal', 'codeanexo', 'ubigeosucursal_id']);
+
+        if (is_null($this->editindex)) {
+            $this->sucursals[] = $sucursal_updated;
+        } else {
+            $this->sucursals[$this->editindex]["descripcion"] = $this->namesucursal;
+            $this->sucursals[$this->editindex]["direccion"] = $this->direccionsucursal;
+            $this->sucursals[$this->editindex]["codigo"] = $this->codeanexo;
+            $this->sucursals[$this->editindex]["boxes"] = array_values($this->boxes);
+            $this->sucursals[$this->editindex]["seriecomprobantes"] = array_values($this->seriecomprobantes);
+
+            if ($this->sucursals[$this->editindex]["ubigeo_id"] != $this->ubigeosucursal_id) {
+                $this->sucursals[$this->editindex]["ubigeo_id"] = $this->ubigeosucursal_id;
+                $this->sucursals[$this->editindex]["departamento"] = $this->departamento;
+                $this->sucursals[$this->editindex]["provincia"] = $this->provincia;
+                $this->sucursals[$this->editindex]["distrito"] = $this->distrito;
+            }
+        }
+        $this->sucursals = collect($this->sucursals)->sortBy('codigo')->values()->toArray();
+        $this->reset(['open', 'editindex', 'boxes', 'seriecomprobantes', 'defaultsucursal', 'typesucursal_id', 'namesucursal', 'direccionsucursal', 'codeanexo', 'ubigeosucursal_id']);
     }
 
     public function removesucursal($index)
@@ -692,23 +882,137 @@ class ConfiguracionInicial extends Component
         $this->resetValidation();
     }
 
+    public function addseriecomprobante()
+    {
+        $this->serie =  mb_strtoupper(trim($this->serie), "UTF-8");
+        $this->seriecompleta =  mb_strtoupper(trim($this->indicio . $this->serie), "UTF-8");
+        $regex = '';
+        $code = null;
+        $default = 0;
+        $mensaje = 'El campo serie es obligatorio';
+
+        if ($this->typecomprobante_id) {
+            $typecomprobante = Typecomprobante::find($this->typecomprobante_id);
+
+            switch ($typecomprobante->code) {
+                case '01':
+                    $regex = 'regex:/^F[A-Z0-9][0-9][1-9]$/';
+                    $code = null;
+                    $default = count($this->seriecomprobantes) == 0 ? 1 : 0;
+                    $mensaje = 'El campo serie debe tener la combinación F[A-Z0-9][0-9][1-9]';
+                    break;
+                case '03':
+                    $regex = 'regex:/^B[A-Z0-9][0-9][1-9]$/';
+                    $code = null;
+                    $default = count($this->seriecomprobantes) == 0 ? 1 : 0;
+                    $mensaje = 'El campo serie debe tener la combinación B[A-Z0-9][0-9][1-9]';
+                    break;
+                case '07':
+                    $regex = $typecomprobante->referencia == '01' ? 'regex:/^F[A-Z0-9][0-9][1-9]$/' : 'regex:/^B[A-Z0-9][0-9][1-9]$/';
+                    $code = $typecomprobante->referencia;
+                    $mensaje = $typecomprobante->referencia == '01' ? 'El campo serie debe tener la combinación F[A-Z0-9][0-9][1-9]' : 'El campo serie debe tener la combinación B[A-Z0-9][0-9][1-9]';
+                    break;
+                case '09':
+                    $regex = $typecomprobante->sendsunat ? 'regex:/^T[A-Z0-9][0-9][1-9]$/' : 'regex:/^E[A-Z0-9][0-9][1-9]$/';
+                    $mensaje = $typecomprobante->sendsunat ? 'El campo serie debe tener la combinación T[A-Z0-9][0-9][1-9]' : 'El campo serie debe tener la combinación E[A-Z0-9][0-9][1-9]';
+                    $code = null;
+                    break;
+                case 'VT':
+                    $regex = 'regex:/^TK[0-9][1-9]$/';
+                    $default = count($this->seriecomprobantes) == 0 ? 1 : 0;
+                    $mensaje = 'El campo serie debe tener la combinación TK[0-9][1-9]';
+                    $code = null;
+                    break;
+                default:
+                    $regex = '';
+                    $code = null;
+                    $mensaje = 'El campo serie es obligatorio';
+                    break;
+            }
+        }
+
+        $this->validate([
+            'typecomprobante_id' => ['required', 'integer', 'min:1', 'exists:typecomprobantes,id'],
+            'seriecompleta' => ['required', 'string', 'size:4', $regex],
+            'contador' => ['required', 'integer', 'min:0']
+        ], [
+            'serie.regex' => $mensaje
+        ]);
+
+        $existstypecomp = false;
+        $existsserie = false;
+        if (count($this->seriecomprobantes) > 0) {
+            $seriecomprobantes = collect($this->seriecomprobantes);
+            $existstypecomp = $seriecomprobantes->pluck('typecomprobante_id')->contains($this->typecomprobante_id);
+            if ($existstypecomp) {
+                $this->addError('typecomprobante_id', 'Ya se agregó el mismo tipo de comprobante');
+            }
+        }
+
+        //La serie hay que validar en todas las sucursales
+        if (count($this->sucursals) > 0) {
+            $existsserie = collect($this->sucursals)->contains(function ($sucursal) {
+                return collect($sucursal['seriecomprobantes'])->contains('serie', $this->seriecompleta);
+            });
+            if ($existsserie) {
+                $this->addError('seriecompleta', 'Ya existe un comprobante con la misma serie');
+            }
+        }
+
+        if ($existstypecomp || $existsserie) {
+            return false;
+        }
+
+        $seriecomprobante = [
+            'serie' => $this->seriecompleta,
+            'contador' => $this->contador,
+            'code' => $code,
+            'typecomprobante_id' => $this->typecomprobante_id,
+            'typecomprobante' => $typecomprobante,
+            'default' => $default,
+        ];
+        $this->seriecomprobantes[] = $seriecomprobante;
+        if (count($this->sucursals) > 0) {
+            //Asignar default cuando hay mas de 0 sucursals 
+            //xq cuando es first lo hace en swich case
+            Self::setDefaultserie();
+        }
+        $this->reset(['serie', 'seriecompleta', 'indicio', 'contador', 'typecomprobante_id']);
+        $this->resetValidation();
+    }
+
+    public function setDefaultserie()
+    {
+        $exists = collect($this->seriecomprobantes)->pluck('default')->contains('1');
+        if (!$exists) {
+            foreach ($this->seriecomprobantes as $key => $serie) {
+                if (in_array($serie['typecomprobante']['code'], ['01', '03', 'VT'])) {
+                    $this->seriecomprobantes[$key]['default'] = '1';
+                    break;
+                }
+            }
+        }
+    }
+
+    public function removeserie($indice)
+    {
+        if ($indice >= 0) {
+            unset($this->seriecomprobantes[$indice]);
+            $this->seriecomprobantes = array_values($this->seriecomprobantes);
+            Self::setDefaultserie();
+
+            if (!is_null($this->editindex)) {
+                $this->sucursals[$this->editindex]["seriecomprobantes"] = array_values($this->seriecomprobantes);
+            }
+        }
+        $this->resetValidation();
+    }
+
     public function clearCert()
     {
         $this->reset(['cert']);
         $this->resetValidation();
     }
-
-    // public function clearLogo()
-    // {
-    //     $this->reset(['markagua']);
-    //     $this->resetValidation();
-    // }
-
-    // public function clearMark()
-    // {
-    //     $this->reset(['markagua']);
-    //     $this->resetValidation();
-    // }
 
     // 20600129997
 }

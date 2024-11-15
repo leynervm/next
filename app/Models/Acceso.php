@@ -10,13 +10,37 @@ class Acceso extends Model
     use HasFactory;
 
 
-    const ACTIVO = '0';
-    const SUSPENDIDO = '1';
+    const SUSPENDIDO = '0';
+    const ACTIVO = '1';
     const LIMIT_SUCURSALS = '2';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'access', 'limitsucursals', 'validatemail', 'dominio', 'descripcion'
+        'access',
+        'limitsucursals',
+        'validatemail',
+        'dominio',
+        'descripcion'
     ];
+
+    public function access()
+    {
+        return $this->access == self::ACTIVO;
+    }
+
+    public function suspended()
+    {
+        return $this->access != self::ACTIVO;
+    }
+
+    public function verifyemail()
+    {
+        return $this->validatemail == self::ACTIVO;
+    }
+
+    public function unlimit()
+    {
+        return $this->limitsucursals == null;
+    }
 }

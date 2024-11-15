@@ -1,31 +1,19 @@
 <div>
-    <x-loading-web-next class="!hidden" wire:target="gotoPage,previousPage,nextPage,edit,editespecificacion,addespecificacion,search"
-        wire:loading.class.remove="!hidden" />
-
-    <div class="w-full flex flex-col lg:flex-row items-end justify-between gap-2 pb-2">
-        <div class="w-full lg:max-w-sm">
-            <x-label value="Buscar :" />
-            <div class="relative">
-                <x-input class="block w-full disabled:bg-gray-200 pr-6" wire:model.lazy="search" placeholder="Buscar..." />
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                    class="block p-1 w-auto h-full text-next-300 absolute right-1 top-0 bottom-0">
-                    <path
-                        d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
-                </svg>
-            </div>
-            <x-jet-input-error for="searchespecificacion" />
+    <div class="w-full lg:max-w-sm">
+        <x-label value="Buscar :" />
+        <div class="relative">
+            <x-input class="block w-full disabled:bg-gray-200 pr-6" wire:model.lazy="search" placeholder="Buscar..." />
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                class="block p-1 w-auto h-full text-next-300 absolute right-1 top-0 bottom-0">
+                <path
+                    d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
+            </svg>
         </div>
-
-        @if ($caracteristicas->hasPages())
-            <div class="w-full flex-1 flex flex-col items-end py-2">
-                {{ $caracteristicas->onEachSide(0)->links('livewire::pagination-default') }}
-            </div>
-        @endif
+        <x-jet-input-error for="searchespecificacion" />
     </div>
 
-
-    <div class="w-full grid grid-cols-1 relative xl:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5"
+    <div class="w-full mt-1 grid grid-cols-1 relative xl:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5"
         id="caracteristicas">
         @if (count($caracteristicas) > 0)
             @foreach ($caracteristicas as $item)
@@ -109,7 +97,15 @@
         @endif
     </div>
 
+    @if ($caracteristicas->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $caracteristicas->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 
+    <div wire:key="loadingespecificacions" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">

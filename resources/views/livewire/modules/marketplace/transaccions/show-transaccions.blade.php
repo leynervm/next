@@ -1,8 +1,4 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
-        <x-loading-next />
-    </div>
-
     <div class="flex flex-wrap items-center gap-2 mt-4 mb-1">
         <div class="w-full xs:max-w-md">
             <x-label value="Buscar :" />
@@ -28,12 +24,6 @@
             <x-input type="date" wire:model.lazy="dateto" class="w-full" />
         </div>
     </div>
-
-    @if ($transaccions->hasPages())
-        <div class="pb-2 flex flex-col sm:justify-end sm:items-end">
-            {{ $transaccions->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
 
     <x-table>
         <x-slot name="header">
@@ -127,6 +117,16 @@
             </x-slot>
         @endif
     </x-table>
+
+    @if ($transaccions->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $transaccions->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingtransaccions" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     @include('partials.icons-cards')
 </div>

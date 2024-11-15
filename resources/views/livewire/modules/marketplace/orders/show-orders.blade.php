@@ -1,8 +1,4 @@
 <div>
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
     <div class="flex flex-wrap gap-1 mt-3">
         <div class="w-full xs:max-w-sm">
             <x-label value="Buscar N° Orden :" />
@@ -20,22 +16,6 @@
             </div>
         </div>
 
-        {{-- <div class="w-full xs:max-w-xs">
-            <x-label value="Estado pago :" />
-            <div class="relative" x-data="{ pago: @entangle('pago') }" x-init="select2Pago" id="parentpago">
-                <x-select class="block w-full" x-model="pago" x-ref="selectpago" id="pago" data-placeholder="null">
-                    @if (count(getStatusPayWeb()) > 0)
-                        <x-slot name="options">
-                            @foreach (getStatusPayWeb() as $item)
-                                <option value="{{ $item->value }}">{{ str_replace('_', ' ', $item->name) }}</option>
-                            @endforeach
-                        </x-slot>
-                    @endif
-                </x-select>
-                <x-icon-select />
-            </div>
-        </div> --}}
-
         <div class="w-full xs:max-w-[150px]">
             <x-label value="Fecha :" />
             <x-input type="date" wire:model.lazy="date" class="w-full" />
@@ -47,11 +27,6 @@
         </div>
     </div>
 
-    @if ($orders->hasPages())
-        <div class="pt-3 w-full flex flex-col items-center sm:items-end">
-            {{ $orders->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
     @if (count($orders) > 0)
         <x-table class="w-full mt-1">
             <x-slot name="header">
@@ -207,6 +182,16 @@
     @else
         <x-span-text text="NO EXISTEN REGISTROS DE VENTAS EN LÍNEA..." class="mt-3 bg-transparent" />
     @endif
+
+    @if ($orders->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $orders->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingorders" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     @include('partials.icons-cards')
 

@@ -392,5 +392,10 @@ return [
         'seriecompleta'             =>  'serie comprobante',
         'detallepago'               =>  'detalle de pago',
         'seriecomprobante_id'       =>  'tipo de comprobante',
+        'boxname'                   =>  'nombre de caja',
+        'boxes'                     =>  'cajas de pago',
+        'viewalmacens'              =>  'mostrar almacénes',
+        'viewalmacensdetalle'       =>  'mostrar almacénes en detalle',
+        'newcantidad'               =>  'cantidad'
     ],
 ];

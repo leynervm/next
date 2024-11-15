@@ -4,7 +4,7 @@
             <form class="w-full relative flex flex-col gap-2" wire:submit.prevent="update" x-data="showproducto">
                 <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                     <div class="w-full sm:col-span-2">
-                        <x-label value="Descripcion producto :" />
+                        <x-label value="Nombre del producto :" />
                         <x-input class="block w-full" wire:model.defer="producto.name" />
                         <x-jet-input-error for="producto.name" />
                     </div>
@@ -14,7 +14,7 @@
                         <div class="relative" id="parentmrcpdto" x-init="selectMarca" wire:ignore>
                             <x-select class="block w-full" id="mrcpdto" x-ref="selectmarca" data-placeholder="null">
                                 <x-slot name="options">
-                                    @if (count($marcas))
+                                    @if (count($marcas) > 0)
                                         @foreach ($marcas as $item)
                                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                                         @endforeach
@@ -34,8 +34,15 @@
 
                     <div class="w-full">
                         <x-label value="SKU :" />
-                        <x-input class="block w-full" wire:model.defer="producto.sku"
-                            placeholder="sku del producto..." />
+                        @if ($empresa->autogenerateSku())
+                            <x-disabled-text :text="$producto->sku" class="" />
+                        @else
+                            <x-input class="block w-full" wire:model.defer="producto.sku" />
+                        @endif
+                        @if (empty($skuold))
+                            <small class="text-[11px] text-colorerror leading-none font-semibold">
+                                sku pendiente de actualizar</small>
+                        @endif
                         <x-jet-input-error for="producto.sku" />
                     </div>
 
@@ -297,7 +304,7 @@
                 <div class="w-full mt-2">
                     <x-label value="Cantidad (Stock) :" />
                     <x-input class="block w-full input-number-none" wire:model.defer="newcantidad" type="number"
-                        step="0.01" min="0" />
+                        step="1" min="0" />
                     <x-jet-input-error for="newcantidad" />
                 </div>
 

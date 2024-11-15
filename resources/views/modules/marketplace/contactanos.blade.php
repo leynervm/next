@@ -578,7 +578,9 @@
                     </div>
                 </form>
             </div>
-
         </div>
     </div>
+
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </x-app-layout>

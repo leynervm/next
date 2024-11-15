@@ -87,8 +87,8 @@
 
                 <div class="w-full">
                     <x-label value="Descripción :" />
-                    <x-textarea rows="6" class="block w-full"
-                        wire:model.defer="shipmenttype.descripcion"></x-textarea>
+                    <x-text-area rows="6" class="block w-full"
+                        wire:model.defer="shipmenttype.descripcion"></x-text-area>
                     <x-jet-input-error for="shipmenttype.descripcion" />
                 </div>
 

@@ -236,12 +236,10 @@
         </div>
     </form>
 
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <script>
-        // document.addEventListener("DOMContentLoaded", function() {
-        //     console.log("{{ old('menor_edad') }}");
-        // })
-
         document.addEventListener('alpine:init', () => {
             Alpine.data('shipment', () => ({
                 open: false,
@@ -292,6 +290,6 @@
                 '</p>'
             );
             return $option;
-        };
+        }
     </script>
 </x-app-layout>

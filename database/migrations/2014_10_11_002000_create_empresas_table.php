@@ -40,11 +40,13 @@ class CreateEmpresasTable extends Migration
             $table->string('clientid', 100)->nullable();
             $table->string('clientsecret', 100)->nullable();
             $table->decimal('montoadelanto', 10, 2)->nullable();
-            $table->integer('uselistprice')->default(0);
-            $table->integer('viewpriceantes')->default(0);
-            $table->integer('viewlogomarca')->default(0);
-            $table->integer('viewtextopromocion')->default(0);
-            $table->integer('usemarkagua')->default(0);
+            $table->unsignedTinyInteger('uselistprice')->default(0);
+            $table->unsignedTinyInteger('viewpriceantes')->default(0);
+            $table->unsignedTinyInteger('viewlogomarca')->default(0);
+            $table->unsignedTinyInteger('viewalmacens')->default(0);
+            $table->unsignedTinyInteger('viewalmacensdetalle')->default(0);
+            $table->unsignedTinyInteger('viewtextopromocion')->default(0);
+            $table->unsignedTinyInteger('usemarkagua')->default(0);
             $table->string('markagua', 100)->nullable();
             $table->string('alignmark', 25)->nullable()->default('center');
             $table->unsignedTinyInteger('widthmark')->nullable()->default(100);
@@ -52,6 +54,7 @@ class CreateEmpresasTable extends Migration
             $table->unsignedTinyInteger('usepricedolar')->default(0);
             $table->unsignedTinyInteger('viewpricedolar')->default(0);
             $table->unsignedTinyInteger('viewespecificaciones')->default(0);
+            $table->unsignedTinyInteger('generatesku')->default(0);
             $table->decimal('tipocambio', 10, 4)->nullable();
             $table->unsignedTinyInteger('tipocambioauto')->default(0);
             $table->unsignedTinyInteger('sendmode')->default(0);

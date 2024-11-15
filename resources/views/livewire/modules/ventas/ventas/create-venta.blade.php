@@ -5,7 +5,7 @@
         <x-loading-next />
     </div> --}}
 
-    <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
+    <x-loading-web-next wire:key="loadingcreateventa" class="!hidden" wire:loading.class.remove="!hidden" />
 
     <div class="w-full flex flex-col gap-5 lg:flex-shrink-0 lg:w-80 lg:overflow-y-auto soft-scrollbar h-full">
         <x-form-card titulo="GENERAR NUEVA VENTA">
@@ -257,7 +257,8 @@
                                         <x-button @click="showForm = !showForm" class="whitespace-nowrap">
                                             {{ __('VER SERIES') }}</x-button>
                                         <div x-show="showForm" x-cloack style="display: none;" x-transition
-                                            class="block w-full rounded mt-1" wire:key="formseries_{{ $item->id }}">
+                                            class="block w-full rounded mt-1"
+                                            wire:key="formseries_{{ $item->id }}">
                                             <div class="w-full flex flex-wrap gap-1">
                                                 @foreach ($item->carshoopseries as $itemserie)
                                                     <span

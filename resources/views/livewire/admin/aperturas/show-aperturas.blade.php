@@ -4,9 +4,6 @@
     searchmonthbox: @entangle('searchmonthbox'),
     searchsucursal: @entangle('searchsucursal')
 }">
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
 
     <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 2xl:grid-cols-7 gap-1">
         <div class="w-full">
@@ -85,13 +82,6 @@
         @endif
     </div>
 
-
-    @if ($openboxes->hasPages())
-        <div class="">
-            {{ $openboxes->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <div class="block w-full mt-1">
         <x-table>
             <x-slot name="header">
@@ -113,17 +103,17 @@
                 <x-slot name="body">
                     @foreach ($openboxes as $item)
                         <tr>
-                            <td class="p-2">
+                            <td class="p-2 leading-none min-w-28">
                                 {{ $item->box->name }}
                                 <p class="text-[10px] text-colorsubtitleform">
                                     {{ formatDate($item->monthbox->month, 'MMMM Y') }}</p>
                             </td>
-                            <td class="p-2 text-center uppercase">
-                                {{ formatDate($item->startdate, 'DD MMMM Y') }} <br>
+                            <td class="p-2 text-[10px] text-center uppercase min-w-28 leading-none">
+                                {{ formatDate($item->startdate, 'dddd DD \\d\\e MMMM Y') }} <br>
                                 {{ formatDate($item->startdate, 'hh:mm A') }}
                             </td>
-                            <td class="p-2 text-center uppercase">
-                                {{ formatDate($item->expiredate, 'DD MMMM Y') }} <br>
+                            <td class="p-2 text-[10px] text-center leading-none min-w-28 uppercase">
+                                {{ formatDate($item->expiredate, 'dddd DD \\d\\e MMMM Y') }} <br>
                                 {{ formatDate($item->expiredate, 'hh:mm A') }}
                             </td>
                             <td class="p-2 text-center">
@@ -140,20 +130,21 @@
                                     </p>
                                 @endforeach
                             </td>
-                            <td class="p-2 text-center uppercase">
+                            <td class="p-2 text-center min-w-28 text-[10px] uppercase">
                                 @if ($item->isClosed())
-                                    {{ formatDate($item->closedate, 'DD MMMM Y') }} <br>
-                                    {{ formatDate($item->closedate, 'hh:mm A') }}
+                                    <p class="leading-none">
+                                        {{ formatDate($item->closedate, 'dddd DD \\d\\e DD MMMM Y') }} <br>
+                                        {{ formatDate($item->closedate, 'hh:mm A') }}
+                                    </p>
                                 @else
                                     @if (($item->isExpired() && $item->user_id === auth()->user()->id) || auth()->user()->isAdmin())
                                         @canany(['admin.cajas.aperturas.close', 'admin.cajas.aperturas.closeothers'])
-                                            <x-button class="inline-block" onclick="confirmClose({{ $item }})"
-                                                wire:loading.attr="disabled">
-                                                CERRAR CAJA
-                                            </x-button>
+                                            <x-button class="inline-block whitespace-nowrap" onclick="confirmClose({{ $item->id }})"
+                                                wire:loading.attr="disabled">CERRAR CAJA</x-button>
                                         @endcanany
                                     @else
-                                        <x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" type="next" />
+                                        <x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal"
+                                            type="next" />
                                     @endif
                                 @endif
                             </td>
@@ -169,9 +160,9 @@
                                     @endif
                                 @endif
                             </td>
-                            <td class="p-2 text-center">
+                            <td class="p-2 text-center leading-none min-w-40">
                                 {{ $item->sucursal->name }}
-                                <p class="text-[10px] leading-3 text-colorsubtitleform">
+                                <p class="text-[10px] pt-1 leading-3 text-colorsubtitleform">
                                     {{ $item->user->name }}
                                 </p>
                             </td>
@@ -190,6 +181,16 @@
                 </x-slot>
             @endif
         </x-table>
+    </div>
+
+    @if ($openboxes->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $openboxes->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingaperturas" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
     </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
@@ -313,9 +314,9 @@
             });
         }
 
-        function confirmClose(openbox) {
+        function confirmClose(openbox_id) {
             swal.fire({
-                title: 'Cerrar apertura ' + openbox.box.name,
+                title: 'CERRAR APERTURADA DE CAJA',
                 text: "La apertura de caja dejará de estar disponible para realizar cualquier tipo de movimientos de pagos.",
                 icon: 'question',
                 showCancelButton: true,
@@ -325,7 +326,7 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    @this.close(openbox.id);
+                    @this.close(openbox_id);
                 }
             })
         }

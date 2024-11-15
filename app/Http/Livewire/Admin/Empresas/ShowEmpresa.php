@@ -44,40 +44,22 @@ class ShowEmpresa extends Component
             'empresa.igv' => ['required', 'numeric', 'decimal:0,2', 'min:0'],
             'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
-            'mark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)),
-                'file',
-                'mimes:png'
-            ],
+            'mark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)), 'file', 'mimes:png'],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
             'empresa.viewpriceantes' => ['integer', 'min:0', 'max:1'],
             'empresa.viewlogomarca' => ['integer', 'min:0', 'max:1'],
             'empresa.viewtextopromocion' => ['integer', 'min:0', 'max:2'],
             'empresa.usemarkagua' => ['integer', 'min:0', 'max:1'],
             'empresa.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
-            'empresa.alignmark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua()),
-                'string',
-                'max:25'
-            ],
-            'empresa.widthmark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer',
-                'min:50',
-                'max:300'
-            ],
-            'empresa.heightmark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer',
-                'min:50',
-                'max:300'
-            ],
+            'empresa.generatesku' => ['integer', 'min:0', 'max:1'],
+            'empresa.alignmark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua()), 'string', 'max:25'],
+            'empresa.widthmark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua()), 'integer', 'min:50', 'max:300'],
+            'empresa.heightmark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua()), 'integer', 'min:50', 'max:300'],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
-            'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1', 'min:0'],
+            'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1'],
+            'empresa.viewproductosweb' => ['integer', 'min:0', 'max:1'],
+            'empresa.viewalmacens' => ['integer', 'min:0', 'max:1'],
+            'empresa.viewalmacensdetalle' => ['integer', 'min:0', 'max:1'],
             'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'empresa.tipocambioauto' => ['integer', 'min:0', 'max:1'],
             'empresa.montoadelanto' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
@@ -154,6 +136,9 @@ class ShowEmpresa extends Component
         $this->empresa->viewpriceantes = $this->empresa->viewpriceantes == true ?  1 : 0;
         $this->empresa->viewlogomarca = $this->empresa->viewlogomarca == true ?  1 : 0;
         $this->empresa->usemarkagua = $this->empresa->usemarkagua == true ?  1 : 0;
+        $this->empresa->generatesku = $this->empresa->generatesku == true ?  1 : 0;
+        $this->empresa->viewalmacens = $this->empresa->viewalmacens == true ?  1 : 0;
+        $this->empresa->viewalmacensdetalle = $this->empresa->viewalmacensdetalle == true ?  1 : 0;
 
         if ($this->empresa->usepricedolar == 0) {
             $this->empresa->usepricedolar = 0;
@@ -165,43 +150,21 @@ class ShowEmpresa extends Component
         $this->validate([
             'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
-            'mark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)),
-                'file',
-                'mimes:png'
-            ],
+            'mark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)), 'file', 'mimes:png'],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
             'empresa.viewpriceantes' => ['integer', 'min:0', 'max:1'],
             'empresa.viewlogomarca' => ['integer', 'min:0', 'max:1'],
             'empresa.viewtextopromocion' => ['integer', 'min:0', 'max:2'],
             'empresa.usemarkagua' => ['integer', 'min:0', 'max:1'],
-            'empresa.alignmark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua()),
-                'string',
-                'max:25'
-            ],
-            'empresa.widthmark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer',
-                'min:50',
-                'max:300'
-            ],
-            'empresa.heightmark' => [
-                'nullable',
-                Rule::requiredIf($this->empresa->usarMarkagua()),
-                'integer',
-                'min:50',
-                'max:300'
-            ],
+            'empresa.alignmark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua()), 'string', 'max:25'],
+            'empresa.widthmark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua()), 'integer', 'min:50', 'max:300'],
+            'empresa.heightmark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua()), 'integer', 'min:50', 'max:300'],
             'empresa.usepricedolar' => ['integer', 'min:0', 'max:1'],
             'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'empresa.viewpricedolar' => ['integer', 'min:0', 'max:1', 'numeric', 'decimal:0,4', 'min:0'],
             'empresa.tipocambioauto' => ['integer', 'min:0', 'max:1'],
             'empresa.montoadelanto' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
-
+            'empresa.generatesku' => ['integer', 'min:0', 'max:1'],
         ]);
 
         try {

@@ -1,8 +1,4 @@
 <div x-data="configuracion">
-    <div wire:loading.flex class="loading-overlay hidden fixed">
-        <x-loading-next />
-    </div>
-
     <x-form-card titulo="DATOS FACTURACIÓN">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
             <div class="w-full grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
@@ -144,6 +140,10 @@
             </div>
         </form>
     </x-form-card>
+
+    <div wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     <script>
         document.addEventListener('alpine:init', () => {

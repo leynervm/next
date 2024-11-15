@@ -15,7 +15,7 @@
                         </div>
                         <div class="w-full">
                             <x-label value="Monto predeterminado apertura :" />
-                            <x-input class="block w-full" wire:model.defer="apertura" placeholder="0.00" type="number"
+                            <x-input class="block w-full input-number-none" wire:model.defer="apertura" placeholder="0.00" type="number"
                                 onkeypress="return validarDecimal(event, 8)" />
                             <x-jet-input-error for="apertura" />
                         </div>

@@ -239,7 +239,7 @@
     "to": "al",
     "of": "de",
     "results": "resultados",
-    "The field :attribute exist in the table": "El campo :attribute ya existe en la tabla",
+    "The field :attribute exist in the table": "El campo :attribute debe ser único",
     "trackingstates": "estados de seguimiento",
     "There is already a value assigned as :attribute in the table": "Ya existe un valor asignado como :attribute en la tabla",
     "pricetypes": "lista de precios",

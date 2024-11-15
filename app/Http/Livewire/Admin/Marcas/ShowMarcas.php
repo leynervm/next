@@ -29,18 +29,8 @@ class ShowMarcas extends Component
     protected function rules()
     {
         return [
-            'marca.name' => [
-                'required',
-                'min:2',
-                'max:100',
-                new CampoUnique('marcas', 'name', $this->marca->id, true),
-            ],
-            'logo' => [
-                'nullable',
-                'file',
-                'mimes:jpeg,png,gif',
-                'max:5120'
-            ]
+            'marca.name' => ['required', 'min:2', 'max:100', new CampoUnique('marcas', 'name', $this->marca->id, true)],
+            'logo' => ['nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120']
         ];
     }
 
@@ -58,7 +48,7 @@ class ShowMarcas extends Component
                 ->whereColumn('images.imageable_id', 'marcas.id')
                 ->where('images.imageable_type', Marca::class)
                 ->orderBy('default', 'desc')->limit(1);
-        }])->orderBy('name', 'asc')->paginate();
+        }])->orderBy('name', 'asc')->paginate(60);
         return view('livewire.admin.marcas.show-marcas', compact('marcas'));
     }
 
@@ -73,7 +63,7 @@ class ShowMarcas extends Component
         try {
             if ($this->logo) {
                 $compressedImage = Image::make($this->logo->getRealPath())
-                    ->resize(400, 400, function ($constraint) {
+                    ->resize(450, 450, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
                     })->orientate()->encode('jpg', 30);

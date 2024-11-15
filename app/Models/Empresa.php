@@ -42,6 +42,10 @@ class Empresa extends Model
         'viewlogomarca',
         'viewtextopromocion',
         'viewespecificaciones',
+        'viewalmacens',
+        'viewalmacensdetalle',
+        'viewproductosweb',
+        'generatesku',
         'usemarkagua',
         'markagua',
         'alignmark',
@@ -188,6 +192,26 @@ class Empresa extends Model
     public function isTitleLiquidacion()
     {
         return $this->viewtextopromocion == self::TITLE_PROMO_LIQUIDACION;
+    }
+
+    public function viewAlmacens()
+    {
+        return $this->viewalmacens == self::OPTION_ACTIVE;
+    }
+    
+    public function viewAlmacensDetalle()
+    {
+        return $this->viewalmacensdetalle == self::OPTION_ACTIVE;
+    }
+
+    public function viewOnlyDisponibles()
+    {
+        return $this->viewproductosweb == self::OPTION_ACTIVE;
+    }
+
+    public function autogenerateSku()
+    {
+        return $this->generatesku == self::OPTION_ACTIVE;
     }
 
     public function getMarkAguaURL()

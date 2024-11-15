@@ -1,8 +1,4 @@
 <div>
-    <div wire:loading.flex class="loading-overlay rounded fixed hidden">
-        <x-loading-next />
-    </div>
-
     <h1 class="text-xl font-semibold text-colorsubtitleform pb-3">
         MIS COMPRAS</h1>
 
@@ -90,12 +86,19 @@
                 </tbody>
             </table>
         </div>
-        <div class="w-full flex flex-col items-center sm:items-end py-3">
-            {{ $orders->onEachSide(0)->links('vendor.pagination.pagination-default') }}
-        </div>
     @else
         <h1 class="text-[10px] p-5 text-colorsubtitleform">NO TIENES ORDENES REGISTRADAS...</h1>
     @endif
+
+    @if ($orders->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $orders->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingcompras" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     @include('partials.icons-cards')
 

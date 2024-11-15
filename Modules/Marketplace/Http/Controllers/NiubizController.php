@@ -402,6 +402,7 @@ class NiubizController extends Controller
             $purchasenumber = mt_rand(100000000, 999999999);
         } while (DB::table('orders')->where('purchase_number', $purchasenumber)->exists());
 
+        $empresa =  mi_empresa();
         $config = [
             'sessiontoken' => $this->token(),
             'channel' => 'web',
@@ -410,8 +411,8 @@ class NiubizController extends Controller
             'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal()),
             'expirationminutes' => 5,
             'timeouturl' =>  route('carshoop.create'),
-            'merchantlogo' => mi_empresa()->image->getLogoEmpresa(),
-            'merchantname' => mi_empresa()->name,
+            'merchantlogo' => !empty($empresa->logo) ? getLogoEmpresa($empresa->logo, false) : null,
+            'merchantname' => $empresa->name,
             'buttoncolor' => '#ffffff',
             'formbuttoncolor' => '#0e7e7e',
             'usertoken' =>  Str::uuid(),

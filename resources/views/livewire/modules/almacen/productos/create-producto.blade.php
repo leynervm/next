@@ -7,9 +7,9 @@
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 <div class="w-full xs:col-span-2 xl:col-span-3">
-                    <x-label value="Descripcion producto :" />
+                    <x-label value="Nombre del producto :" />
                     <x-input class="block w-full disabled:bg-gray-200" wire:model.defer="name"
-                        placeholder="Descripción del producto..." />
+                        placeholder="Nombre del producto..." />
                     <x-jet-input-error for="name" />
                 </div>
                 <div class="w-full">
@@ -36,7 +36,11 @@
                 </div>
                 <div class="w-full">
                     <x-label value="SKU :" />
-                    <x-input class="block w-full" wire:model.defer="sku" placeholder="sku del producto..." />
+                    @if ($empresa->autogenerateSku())
+                        <x-disabled-text :text="$sku" class="" />
+                    @else
+                        <x-input class="block w-full" wire:model.defer="sku" />
+                    @endif
                     <x-jet-input-error for="sku" />
                 </div>
                 <div class="w-full">
@@ -68,7 +72,7 @@
                         <x-select class="block w-full" id="ctgpdto" x-ref="selectcat"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
-                                @if (count($categories))
+                                @if (count($categories) > 0)
                                     @foreach ($categories as $item)
                                         <option value="{{ $item->id }}">{{ $item->name }}</option>
                                     @endforeach

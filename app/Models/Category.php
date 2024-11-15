@@ -38,7 +38,8 @@ class Category extends Model
 
     public function subcategories(): BelongsToMany
     {
-        return $this->BelongsToMany(Subcategory::class);
+        return $this->BelongsToMany(Subcategory::class)
+            ->orderBy('orden', 'asc')->orderBy('name', 'asc');
     }
 
     public function productos(): HasMany

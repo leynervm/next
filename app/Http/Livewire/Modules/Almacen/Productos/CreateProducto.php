@@ -47,7 +47,7 @@ class CreateProducto extends Component
     {
         return [
             'name' => ['required', 'string', 'min:3', new CampoUnique('productos', 'name', null, true)],
-            'modelo' => ['required', 'string'],
+            'modelo' => ['nullable', 'string'],
             'sku' => ['nullable', 'string', 'min:6', new CampoUnique('productos', 'sku', null, true)],
             'partnumber' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', null, true)],
             'pricebuy' => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
@@ -80,6 +80,7 @@ class CreateProducto extends Component
             $this->viewdetalle = Producto::VER_DETALLES;
             $this->viewespecificaciones = Producto::VER_DETALLES;
         }
+        Self::generatesku();
     }
 
     public function render()
@@ -95,14 +96,21 @@ class CreateProducto extends Component
         return view('livewire.modules.almacen.productos.create-producto', compact('marcas', 'units', 'categories', 'almacenareas', 'estantes', 'almacens'));
     }
 
+    public function generatesku()
+    {
+        $sku = DB::table('productos')->max('id');
+        do {
+            $this->sku = str_pad((int)$sku + 1, 6, '0', STR_PAD_LEFT);
+        } while (DB::table('productos')->where('sku', $sku)->exists());
+    }
+
     public function updatedCategoryId($value)
     {
         $this->reset(['subcategory_id', 'subcategories']);
-
+        $this->resetValidation();
         if ($value) {
             $category = Category::with('subcategories')->find($value);
-            $this->subcategories = $category->subcategories()
-                ->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
+            $this->subcategories = $category->subcategories;
         }
     }
 
@@ -135,6 +143,10 @@ class CreateProducto extends Component
             if (!$confirmsave && $exists) {
                 $this->dispatchBrowserEvent('confirmsave');
                 return false;
+            }
+
+            if ($this->empresa->autogenerateSku()) {
+                Self::generatesku();
             }
             $producto = Producto::create([
                 'name' => $this->name,
@@ -239,6 +251,7 @@ class CreateProducto extends Component
     {
         try {
             $url = $file->temporaryUrl();
+            $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['imagen']);
             $this->addError('imagen', $e->getMessage());

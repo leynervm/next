@@ -817,6 +817,10 @@
     @apply sm:!text-center;
 }
 
+[x-cloak] {
+    display: none !important;
+}
+
 /* .btn-float-whatsapp:before {
     content: "";
     position: absolute;

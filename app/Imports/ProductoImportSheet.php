@@ -106,31 +106,31 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
                     }
                 }
 
-                $producto = Producto::updateOrCreate(
-                    [
-                        'name' => toUTF8Import($row['nombre']),
-                    ],
-                    [
+                if ($this->empresa->autogenerateSku()) {
+                    $sku = Self::generatesku();
+                } else {
+                    $sku = toUTF8Import($row['sku']);
+                }
 
-                        'modelo' => toUTF8Import($row['modelo']),
-                        'sku' => toUTF8Import($row['sku']),
-                        'code' => Str::random(9),
-                        'partnumber' => toUTF8Import($row['numero_parte']),
-                        'pricebuy' => $row['precio_compra'],
-                        'pricesale' => $row['precio_venta'],
-                        'minstock' => !empty($row['stock_minimo']) ? $row['stock_minimo'] : 0,
-                        'publicado' => in_array($row['publicado_web'], ['0', '1']) ? $row['publicado_web'] : 0,
-                        'viewdetalle' => Module::isEnabled('Marketplace') ? Producto::VER_DETALLES : 0,
-                        'viewespecificaciones' => Module::isEnabled('Marketplace') ? Producto::VER_DETALLES : 0,
-                        'marca_id' => $marca->id,
-                        'unit_id' => $unit->id,
-                        'category_id' => $category->id,
-                        'subcategory_id' => $subcategory->id,
-                        'almacenarea_id' => Module::isEnabled('Almacen') && !empty($almacenarea) ? $almacenarea->id : null,
-                        'estante_id' => Module::isEnabled('Almacen') && !empty($estante) ? $estante->id : null,
-                        'user_id'   => auth()->user()->id
-                    ]
-                );
+                $producto = Producto::updateOrCreate(['name' => toUTF8Import($row['nombre'])], [
+                    'modelo' => toUTF8Import($row['modelo']),
+                    'sku' => $sku,
+                    'code' => Str::random(9),
+                    'partnumber' => toUTF8Import($row['numero_parte']),
+                    'pricebuy' => $row['precio_compra'],
+                    'pricesale' => $row['precio_venta'],
+                    'minstock' => !empty($row['stock_minimo']) ? $row['stock_minimo'] : 0,
+                    'publicado' => in_array($row['publicado_web'], ['0', '1']) ? $row['publicado_web'] : 0,
+                    'viewdetalle' => Module::isEnabled('Marketplace') ? Producto::VER_DETALLES : 0,
+                    'viewespecificaciones' => Module::isEnabled('Marketplace') ? Producto::VER_DETALLES : 0,
+                    'marca_id' => $marca->id,
+                    'unit_id' => $unit->id,
+                    'category_id' => $category->id,
+                    'subcategory_id' => $subcategory->id,
+                    'almacenarea_id' => Module::isEnabled('Almacen') && !empty($almacenarea) ? $almacenarea->id : null,
+                    'estante_id' => Module::isEnabled('Almacen') && !empty($estante) ? $estante->id : null,
+                    'user_id'   => auth()->user()->id
+                ]);
 
                 if (Module::isEnabled('Marketplace')) {
                     if (count($this->headers_especificaciones) > 0) {
@@ -164,16 +164,7 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
                     }
                 }
 
-                $producto->load(['promocions' => function ($query) {
-                    $query->with(['itempromos.producto' => function ($subQuery) {
-                        $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                            $q->select('url')->from('images')
-                                ->whereColumn('images.imageable_id', 'productos.id')
-                                ->where('images.imageable_type', Producto::class)
-                                ->orderBy('default', 'desc')->limit(1);
-                        }]);
-                    }])->availables()->disponibles()->take(1);
-                }]);
+                $producto->load('promocions');
                 $producto->assignPrice();
                 $almacensDB = Almacen::get()->pluck('id')->toArray();
                 $newalmacens = array_fill_keys($almacensDB, ['cantidad' => 0]);
@@ -225,6 +216,15 @@ class ProductoImportSheet implements ToModel, WithEvents, WithHeadingRow, WithVa
             'area_almacen' => ['nullable', 'string', 'min:1'],
             'estante_almacen' => ['nullable', 'string', 'min:1',],
         ];
+    }
+
+    public function generatesku()
+    {
+        $sku = DB::table('productos')->max('id');
+        do {
+            $sku = str_pad((int)$sku + 1, 6, '0', STR_PAD_LEFT);
+        } while (DB::table('productos')->where('sku', $sku)->exists());
+        return $sku;
     }
 
     public function customValidationMessages()

@@ -1,20 +1,21 @@
 <div x-data="loadeditimage">
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
-    @if ($marcas->hasPages())
-        <div class="w-full flex flex-col justify-end items-center sm:items-end pb-2">
-            {{ $marcas->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
-    <div class="flex gap-2 flex-wrap justify-around md:justify-start mt-2">
-        @if (count($marcas))
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-1 self-start mt-2">
+        @if (count($marcas) > 0)
             @foreach ($marcas as $item)
-                <x-minicard :title="$item->name" size="lg" :imagen="getMarcaURL($item->url)">
-                    @canany(['admin.almacen.marcas.edit', 'admin.almacen.marcas.delete'])
-                        <x-slot name="buttons">
+                <div
+                    class="border border-borderminicard p-1 min-h-28 flex flex-col gap-2 justify-between rounded-lg sm:rounded-2xl">
+                    <div class="w-full flex-1 h-full py-1 flex flex-col justify-center items-center">
+                        <h1 class="text-xs font-medium text-colorsubtitleform text-center leading-none">
+                            {{ $item->name }}</h1>
+                        @if ($item->url)
+                            <div class="w-full h-auto max-h-16 pt-1">
+                                <img class="block w-full max-w-full h-full object-scale-down"
+                                    src="{{ getMarcaURL($item->url) }}" alt="Logo marca">
+                            </div>
+                        @endif
+                    </div>
+                    <div class="w-full flex justify-end items-end gap-2">
+                        @canany(['admin.almacen.marcas.edit', 'admin.almacen.marcas.delete'])
                             @can('admin.almacen.marcas.edit')
                                 <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
                                     @click="editimage=null" />
@@ -23,11 +24,21 @@
                                 <x-button-delete wire:loading.attr="disabled"
                                     onclick="confirmDeleteMarca({{ $item }})" />
                             @endcan
-                        </x-slot>
-                    @endcanany
-                </x-minicard>
+                        @endcanany
+                    </div>
+                </div>
             @endforeach
         @endif
+    </div>
+
+    @if ($marcas->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $marcas->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingmarcas" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
     </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
@@ -101,7 +112,8 @@
                 <x-jet-input-error for="logo" class="text-center" />
 
                 <x-label class="mt-3" value="Marca :" />
-                <x-input class="block w-full" wire:model.defer="marca.name" placeholder="Ingrese nombre de marca..." />
+                <x-input class="block w-full" wire:model.defer="marca.name"
+                    placeholder="Ingrese nombre de marca..." />
                 <x-jet-input-error for="marca.name" />
 
                 <div class="w-full flex pt-4 justify-end">

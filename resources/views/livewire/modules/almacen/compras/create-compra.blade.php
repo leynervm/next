@@ -179,7 +179,7 @@
                                 </svg>
                                 <x-input class="w-full block p-2 pl-11 pr-4" name="search" aria-label="Search"
                                     @input="getFilteredOptions(search)" x-ref="search" x-model="search"
-                                    placeholder="Search" autocomplete="off" {{--  @input.debounce.300ms="fetchProducts" --}} />
+                                    placeholder="Buscar producto" autocomplete="off" {{--  @input.debounce.300ms="fetchProducts" --}} />
                             </div>
 
                             <ul class="flex max-h-60 p-1 flex-col overflow-y-auto">
@@ -196,7 +196,7 @@
                                         <div class="w-full flex items-center gap-2">
                                             <div class="w-16 xs:w-28 h-16 xs:h-20 rounded-lg">
                                                 <template x-if="item.image_url">
-                                                    <img x-bind:src="item.image_url" alt=""
+                                                    <img x-bind:src="item.image_url" :alt="item.image_url"
                                                         class="object-scale-down w-full h-full overflow-hidden">
                                                 </template>
                                                 <template x-if="item.image_url == null">
@@ -787,7 +787,7 @@
                             }
                         })
                         .catch(() => {
-                            this.error = 'There was an error processing your request.';
+                            this.error = 'Ha ocurrido un error realizando la petición.';
                             // console.log(this.error);
                         });
                 },

@@ -72,6 +72,11 @@ class ShowEspecificaciones extends Component
         return view('livewire.admin.especificaciones.show-especificaciones', compact('caracteristicas'));
     }
 
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
     public function edit(Caracteristica $caracteristica)
     {
         $this->authorize('admin.almacen.caracteristicas.edit');

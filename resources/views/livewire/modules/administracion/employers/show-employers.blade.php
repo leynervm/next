@@ -1,14 +1,4 @@
 <div>
-    <div wire:loading.flex class="loading-overlay fixed hidden">
-        <x-loading-next />
-    </div>
-
-    @if ($employers->hasPages())
-        <div class="pb-2">
-            {{ $employers->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <div class="flex items-center gap-2 mt-4">
         <div class="w-full max-w-sm">
             <x-label value="Buscar personsal :" />
@@ -194,6 +184,16 @@
             </x-slot>
         @endif
     </x-table>
+
+    @if ($employers->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $employers->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:key="loadingemployers" wire:loading.flex class="loading-overlay fixed hidden">
+        <x-loading-next />
+    </div>
 
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">

@@ -1,11 +1,4 @@
 <div class="relative" x-data="updateimagen">
-
-    @if ($categories->hasPages())
-        <div class="w-full flex flex-col justify-end items-center sm:items-end pb-2">
-            {{ $categories->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
-
     <div class="flex flex-col gap-2" id="categories">
         @if (count($categories) > 0)
             @foreach ($categories as $item)
@@ -71,7 +64,13 @@
         @endif
     </div>
 
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
+    @if ($categories->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $categories->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
+
+    <div wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
 
