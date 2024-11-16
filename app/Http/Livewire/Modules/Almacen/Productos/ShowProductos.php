@@ -55,7 +55,38 @@ class ShowProductos extends Component
     public function render()
     {
 
-        $productos = Producto::with(['marca', 'category', 'subcategory', 'unit', 'almacens', 'compraitems.compra.proveedor'])
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'visivility',
+            'publicado',
+            'novedad',
+            'sku',
+            'partnumber',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+            DB::raw(
+                "ts_rank(to_tsvector('spanish', 
+                    COALESCE(productos.name, '') || ' ' || 
+                    COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(categories.name, '')
+                ), plainto_tsquery('spanish', '" . $this->search . "')) AS rank"
+            )
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['unit', 'almacens', 'compraitems.compra.proveedor'])
             ->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
             }])->addSelect(['image' => function ($query) {
@@ -69,21 +100,16 @@ class ShowProductos extends Component
             $productos->with(['almacenarea', 'estante']);
         }
         if (trim($this->search) !== '') {
-            // $searchTerms = explode(' ', $this->search);
-            $productos->where(function ($query) {
-                // foreach ($searchTerms as $term) {
-                $query->orWhere('name', 'ilike', '%' . $this->search . '%')
-                    ->orWhereHas('marca', function ($q) {
-                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
-                    })
-                    ->orWhereHas('category', function ($q) {
-                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
-                    })
-                    ->orWhereHas('especificacions', function ($q) {
-                        $q->where('especificacions.name', 'ilike', '%' . $this->search . '%');
-                    });
-                // }
-            });
+            $productos->whereRaw(
+                "to_tsvector('spanish', 
+                COALESCE(productos.name, '') || ' ' || 
+                COALESCE(marcas.name, '') || ' ' || 
+                COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $this->search . "')",
+            )->orWhereRaw(
+                "similarity(productos.name, '" . $this->search . "') > 0.5 
+                OR similarity(marcas.name, '" . $this->search . "') > 0.5 
+                OR similarity(categories.name, '" . $this->search . "') > 0.5",
+            )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
         }
 
         if (trim($this->searchalmacen) != '') {
@@ -93,15 +119,15 @@ class ShowProductos extends Component
         }
 
         if (trim($this->searchmarca) != '') {
-            $productos->where('marca_id', $this->searchmarca);
+            $productos->where('marcas.slug', $this->searchmarca);
         }
 
         if (trim($this->searchcategory) != '') {
-            $productos->where('category_id', $this->searchcategory);
+            $productos->where('categories.slug', $this->searchcategory);
         }
 
         if (trim($this->searchsubcategory) != '') {
-            $productos->where('subcategory_id', $this->searchsubcategory);
+            $productos->where('subcategories.slug', $this->searchsubcategory);
         }
 
         if ($this->publicado !== '') {
@@ -114,9 +140,15 @@ class ShowProductos extends Component
             $productos->visibles();
         }
 
-        $productos = $productos->orderBy('name', 'asc')->paginate();
-        $marcas = Marca::whereHas('productos')->orderBy('name', 'asc')->get();
-        $categorias = Category::whereHas('productos')->orderBy('orden', 'asc')->get();
+        $productos = $productos->orderBy('novedad', 'DESC')
+            ->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->paginate();
+
+
+        $marcas = Marca::query()->select('id', 'name', 'slug')
+            ->whereHas('productos')->orderBy('name', 'asc')->get();
+        $categorias = Category::query()->select('id', 'name', 'slug')
+            ->whereHas('productos')->orderBy('orden', 'asc')->get();
         $almacens = Almacen::whereHas('productos')->withWhereHas('sucursals', function ($query) {
             if (!auth()->user()->isAdmin()) {
                 $query->where('sucursal_id', auth()->user()->sucursal_id);
@@ -146,7 +178,9 @@ class ShowProductos extends Component
         $this->reseFilters();
         $this->reset(['subcategories', 'searchsubcategory']);
         if (trim($value) !== "") {
-            $this->subcategories = Category::with('subcategories')->find($value)->subcategories;
+            $this->subcategories = Category::with(['subcategories' => function ($query) {
+                $query->whereHas('productos');
+            }])->where('slug', $value)->first()->subcategories;
         }
     }
 

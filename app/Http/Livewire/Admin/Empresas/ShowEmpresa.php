@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Empresas;
 use App\Helpers\FormatoPersonalizado;
 use App\Helpers\GetClient;
 use App\Models\Empresa;
+use App\Models\Producto;
 use App\Models\Telephone;
 use App\Models\Ubigeo;
 use Illuminate\Support\Facades\DB;
@@ -249,6 +250,34 @@ class ShowEmpresa extends Component
         $telephone->deleteOrFail();
         $this->empresa->refresh();
         $this->dispatchBrowserEvent('deleted');
+    }
+
+    public function syncskuproductos()
+    {
+        if (view()->shared('empresa')->autogenerateSku()) {
+            $productos = Producto::select('id', 'sku')
+                ->whereNull('sku')->orWhere('sku', '')->get()->each(function ($item) {
+
+                    $sku = str_pad((int)$item->id, 6, '0', STR_PAD_LEFT);
+                    $existsku = DB::table('productos')->where('sku', $sku)->whereNot('id', $item->id)->exists();
+                    if ($existsku) {
+                        $sku = DB::table('productos')->max('id');
+                        do {
+                            $sku = str_pad((int)$sku + 1, 6, '0', STR_PAD_LEFT);
+                        } while (DB::table('productos')->where('sku', $sku)->exists());
+                    }
+                    $item->sku = $sku;
+                    $item->save();
+                });
+            // dd($productos);
+            $this->dispatchBrowserEvent('updated');
+        } else {
+            $mensaje = response()->json([
+                'title' => "PRIMERO ACTUALIZAR CAMBIOS CON LA OPCION DE AUTOGENERAR SKU ACTIVADA",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+        }
     }
 
     public function searchclient()

@@ -163,7 +163,7 @@
                 @endif
             </div>
 
-            <div class="w-full flex flex-col gap-2 justify-start items-start mt-2">
+            <div class="w-full flex flex-col gap-1 justify-start items-start mt-2">
                 @if (Module::isEnabled('Marketplace'))
                     <div>
                         <x-label-check for="publicado">
@@ -184,6 +184,13 @@
                             <x-input wire:model.defer="viewdetalle" x-model="viewdetalle" name="viewdetalle"
                                 value="1" type="checkbox" id="viewdetalle" />
                             MOSTRAR DETALLES EN TIENDA WEB
+                        </x-label-check>
+                    </div>
+                    <div>
+                        <x-label-check for="novedad">
+                            <x-input wire:model.defer="novedad" x-model="novedad" name="novedad" value="1"
+                                type="checkbox" id="novedad" />
+                            MARCAR COMO NUEVA ENTRADA
                         </x-label-check>
                     </div>
                 @endif
@@ -469,6 +476,7 @@
                 almacenarea_id: @entangle('almacenarea_id').defer,
                 estante_id: @entangle('estante_id').defer,
                 viewdetalle: @entangle('viewdetalle').defer,
+                novedad: @entangle('novedad').defer,
                 // descripcionproducto: @entangle('descripcionproducto').defer,
 
                 init() {},

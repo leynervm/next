@@ -44,6 +44,7 @@ class Producto extends Model
     const PUBLICADO = '1';
     const MOSTRAR = '0';
     const OCULTAR = '1';
+    const ACTIVE = '1';
 
     // protected $appends = ['precio_real_compra'];
     // protected $appends = ['precio_lista'];
@@ -63,6 +64,7 @@ class Producto extends Model
         'pricesale' => 'decimal:2',
         'minstock' => 'integer',
         'viewdetalle' => 'integer',
+        'novedad' => 'integer',
     ];
 
     public function sluggable(): array
@@ -258,6 +260,11 @@ class Producto extends Model
     public function isVisible()
     {
         return $this->visivility == self::MOSTRAR;
+    }
+
+    public function isNovedad()
+    {
+        return $this->novedad == self::ACTIVE;
     }
 
     public function isOculto()

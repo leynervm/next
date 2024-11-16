@@ -21,67 +21,73 @@
             x-transition:leave="opacity-100 transition ease-in-out duration-300"
             x-transition:leave-start="opacity-100 transition ease-in-out duration-300"
             x-transition:leave-end="opacity-100 -translate-x-full ease-in-out duration-300" id="sidebar-filter">
-            <div class="w-full px-2 pb-2 xl:px-0 h-full max-h-full overflow-y-auto !overflow-x-hidden">
+            <div
+                class="w-full flex flex-col gap-3 px-2 pb-2 xl:px-0 h-full max-h-full overflow-y-auto !overflow-x-hidden">
                 <div class="w-full flex justify-end items-end xl:hidden">
                     <button class="p-2.5 font-semibold !leading-none text-colorsubtitleform"
                         @click="sidebar=false;backdrop = false;document.body.style.overflow = 'auto';">✕</button>
                 </div>
 
                 @if (count($productos) > 0)
-                    <x-simple-card x-data="{ openfilter: true }" wire:key="dropdownprices"
-                        class="w-full text-colorsubtitleform">
-                        <button type="button"
-                            class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
-                            @click="openfilter = !openfilter">
-                            <h1 class="pl-2 font-semibold text-[11px]">ORDENAR</h1>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                class="block w-6 h-6">
-                                <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                            </svg>
-                        </button>
-                        <div class="w-full flex flex-col text-xs" x-cloak x-transition>
-                            @if (count($orderfilters) > 0)
-                                <svg style="display:none;">
-                                    <symbol id="precio_asc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m3 8 4-4 4 4" />
-                                        <path d="M7 4v16" />
-                                        <path d="M11 12h4" />
-                                        <path d="M11 16h7" />
-                                        <path d="M11 20h10" />
-                                    </symbol>
-                                    <symbol id="precio_desc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                        stroke-linejoin="round">
-                                        <path d="m3 16 4 4 4-4" />
-                                        <path d="M7 20V4" />
-                                        <path d="M11 4h4" />
-                                        <path d="M11 8h7" />
-                                        <path d="M11 12h10" />
-                                    </symbol>
+                    @if (count($selectedcategorias) > 0 ||
+                            count($selectedsubcategorias) > 0 ||
+                            count($selectedmarcas) > 0 ||
+                            count($selectedespecificacions) > 0 ||
+                            trim($search) !== '')
+                        <x-simple-card x-data="{ openfilter: true }" wire:key="dropdownprices"
+                            class="w-full text-colorsubtitleform">
+                            <button type="button"
+                                class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
+                                @click="openfilter = !openfilter">
+                                <h1 class="pl-2 font-semibold text-[11px]">ORDENAR</h1>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                    stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round" class="block w-6 h-6">
+                                    <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                                 </svg>
+                            </button>
+                            <div class="w-full flex flex-col text-xs" x-cloak x-transition>
+                                @if (count($orderfilters) > 0)
+                                    <svg style="display:none;">
+                                        <symbol id="precio_asc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="m3 8 4-4 4 4" />
+                                            <path d="M7 4v16" />
+                                            <path d="M11 12h4" />
+                                            <path d="M11 16h7" />
+                                            <path d="M11 20h10" />
+                                        </symbol>
+                                        <symbol id="precio_desc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="m3 16 4 4 4-4" />
+                                            <path d="M7 20V4" />
+                                            <path d="M11 4h4" />
+                                            <path d="M11 8h7" />
+                                            <path d="M11 12h10" />
+                                        </symbol>
+                                    </svg>
 
-                                @foreach ($orderfilters as $filter => $item)
-                                    @if ($item['visible'])
-                                        <div>
-                                            <x-input type="radio" wire:model="filterselected"
-                                                id="filter_{{ $filter }}" class="peer"
-                                                value="{{ $filter }}" name="filterselected" style="display: none;"
-                                                wire:key="key_{{ $filter }}" />
-                                            <label for="filter_{{ $filter }}"
-                                                class="w-full peer-checked:bg-fondospancardproduct peer-checked:text-textspancardproduct cursor-pointer block p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                                <svg class="w-4 h-4 inline-block">
-                                                    <use href="#{{ $filter }}"></use>
-                                                </svg>
-                                                {{ $item['text'] }}
-                                            </label>
-                                        </div>
-                                    @endif
-                                @endforeach
-                            @endif
-                            {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}" wire:click="order('precio', 'asc')"
+                                    @foreach ($orderfilters as $filter => $item)
+                                        @if ($item['visible'])
+                                            <div>
+                                                <x-input type="radio" wire:model="filterselected"
+                                                    id="filter_{{ $filter }}" class="peer"
+                                                    value="{{ $filter }}" name="filterselected"
+                                                    style="display: none;" wire:key="key_{{ $filter }}" />
+                                                <label for="filter_{{ $filter }}"
+                                                    class="w-full peer-checked:bg-fondospancardproduct peer-checked:text-textspancardproduct cursor-pointer block p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                                    <svg class="w-4 h-4 inline-block">
+                                                        <use href="#{{ $filter }}"></use>
+                                                    </svg>
+                                                    {{ $item['text'] }}
+                                                </label>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                @endif
+                                {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}" wire:click="order('precio', 'asc')"
                                 wire:loading.attr="disabled"
                                 class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -95,7 +101,7 @@
                                 </svg>
                                 DE MENOR A MAYOR PRECIO
                             </button> --}}
-                            {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}"
+                                {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}"
                                 wire:click="order('precio', 'desc')" wire:loading.attr="disabled"
                                 class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -137,13 +143,14 @@
                                 </svg>
                                 NOMBRE DESCENDENTE
                             </button> --}}
-                        </div>
-                    </x-simple-card>
+                            </div>
+                        </x-simple-card>
+                    @endif
                 @endif
 
                 @if (count($categories) > 0)
                     <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'true' : 'true' }} }" wire:key="dropdowncategories"
-                        class="w-full mt-3 text-colorsubtitleform">
+                        class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
@@ -171,7 +178,7 @@
 
                 @if (count($subcategories) > 0)
                     <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'true' : 'true' }} }" wire:key="dropdownsubcategories"
-                        class="w-full mt-3 text-colorsubtitleform">
+                        class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
@@ -200,7 +207,7 @@
 
                 @if (count($marcas) > 0)
                     <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'true' : 'true' }} }" wire:key="dropdownmarcas"
-                        class="w-full mt-3 text-colorsubtitleform">
+                        class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
@@ -230,7 +237,7 @@
                     @foreach ($especificacions as $caracteristica => $especificacion)
                         <x-simple-card x-data="{ openfilter: true }"
                             wire:key="dropdowncaracteristicas_{{ $caracteristica }}"
-                            class="w-full mt-3 flex flex-col text-colorsubtitleform">
+                            class="w-full flex flex-col text-colorsubtitleform">
                             <button type="button"
                                 class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                                 @click="openfilter = !openfilter">
@@ -272,13 +279,20 @@
                         $combo = $item->getAmountCombo($promocion, $pricetype);
                         $pricesale = $item->obtenerPrecioVenta($pricetype);
                         // $priceCombo = $combo ? $combo->total : 0;
+                        $paddingTop = '';
+                        if ($item->stock > 0 && $empresa->viewAlmacens() == false) {
+                            $paddingTop = 'xl:pb-20';
+                            if (!empty($promocion)) {
+                                $paddingTop = 'xl:pb-12';
+                            }
+                        }
                     @endphp
 
-                    <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name" :partnumber="$item->partnumber"
-                        :image="$image" :secondimage="$secondimage" :promocion="$promocion"
+                    <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->name_marca" :sku="$item->sku"
+                        :novedad="$item->isNovedad()" :image="$image" :secondimage="$secondimage" :promocion="$promocion"
                         wire:key="cardproduct{{ $item->id }}" x-data="{ addcart: isXL ? false : true }"
                         @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
-                        class="w-full pt-0 xl:pb-14 rounded-md md:rounded-xl ring-1 ring-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
+                        class="w-full pt-0 rounded-md md:rounded-xl ring-1 ring-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
                         @if ($combo)
                             @if (count($combo->products) > 0)
@@ -323,53 +337,56 @@
                         @endif
 
                         @if ($pricesale > 0)
-                            @if ($empresa->verDolar())
-                                <h1 class="text-blue-700 font-medium text-[1rem] text-center">
-                                    <small class="text-xs">$. </small>
-                                    {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                            <div class="{{ $paddingTop }}">
+                                @if ($empresa->verDolar())
+                                    <h1 class="text-blue-700 font-medium text-[1rem] text-center">
+                                        <small class="text-xs">$. </small>
+                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                    </h1>
+                                @endif
+                                <h1 class="text-colorlabel font-semibold text-sm sm:text-2xl text-center">
+                                    <small class="text-sm">{{ $moneda->simbolo }}</small>
+                                    {{ decimalOrInteger($pricesale, 2, ', ') }}
                                 </h1>
-                            @endif
-                            <h1 class="text-colorlabel font-semibold text-sm sm:text-2xl text-center">
-                                <small class="text-sm">{{ $moneda->simbolo }}</small>
-                                {{ decimalOrInteger($pricesale, 2, ', ') }}
-                            </h1>
-                            @if ($descuento > 0 && $empresa->verOldprice())
-                                <h1 class="text-colorsubtitleform text-center text-[10px] text-red-600">
-                                    {{ $moneda->simbolo }}
-                                    <small class="text-sm inline-block line-through">
-                                        {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
-                                </h1>
-                            @endif
+                                @if ($descuento > 0 && $empresa->verOldprice())
+                                    <h1 class="text-colorsubtitleform text-center text-[10px] text-red-600">
+                                        {{ $moneda->simbolo }}
+                                        <small class="text-sm inline-block line-through">
+                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
+                                    </h1>
+                                @endif
 
-                            @if (!empty($promocion))
-                                <p class="w-full p-1 -z-[0] text-center text-[10px] leading-3 text-colorsubtitleform">
-                                    @if ($promocion->limit > 0)
-                                        @if ($promocion->expiredate)
-                                            Promoción válida hasta el
-                                            {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
-                                            y/o agotar stock
-                                        @else
-                                            Promoción válida hasta agotar unidades disponibles.
-                                        @endif
-
+                                @if (!empty($promocion))
+                                    <p
+                                        class="w-full p-1 -z-[0] text-center text-[10px] leading-3 text-colorsubtitleform">
                                         @if ($promocion->limit > 0)
-                                            [{{ decimalOrInteger($promocion->limit) }}
-                                            {{ $promocion->producto->unit->name }}]
-                                        @endif
-                                    @else
-                                        @if ($promocion->expiredate)
-                                            Promoción válida hasta el
-                                            {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
-                                            y/o agotar stock
-                                        @else
-                                            Promoción válida hasta agotar stock.
-                                        @endif
-                                    @endif
-                                </p>
-                            @endif
+                                            @if ($promocion->expiredate)
+                                                Promoción válida hasta el
+                                                {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
+                                                y/o agotar stock
+                                            @else
+                                                Promoción válida hasta agotar unidades disponibles.
+                                            @endif
 
-                            @if ($item->stock > 0)
-                                <x-slot name="footer">
+                                            @if ($promocion->limit > 0)
+                                                [{{ decimalOrInteger($promocion->limit) }}
+                                                {{ $promocion->producto->unit->name }}]
+                                            @endif
+                                        @else
+                                            @if ($promocion->expiredate)
+                                                Promoción válida hasta el
+                                                {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
+                                                y/o agotar stock
+                                            @else
+                                                Promoción válida hasta agotar stock.
+                                            @endif
+                                        @endif
+                                    </p>
+                                @endif
+                            </div>
+
+                            <x-slot name="footer">
+                                @if ($item->stock > 0)
                                     <x-button-like class="absolute top-1 right-1" wire:loading.attr="disabled"
                                         wire:click="add_to_wishlist({{ $item->id }}, 1)" />
 
@@ -401,8 +418,22 @@
                                             class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
                                             @click="add_to_cart({{ $item->id }})">AGREGAR</x-button-add-car>
                                     </div>
-                                </x-slot>
-                            @endif
+                                @else
+                                    <span
+                                        class="inline-block p-1 mr-1 mb-1 rounded-lg bg-red-600 text-white text-[10px] float-right">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
+                                            fill="currentColor" stroke="currentColor" stroke-width="0.7"
+                                            stroke-linecap="round" stroke-linejoin="round"
+                                            class="inline-block w-4 h-4">
+                                            <path
+                                                d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
+                                            <path
+                                                d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
+                                        </svg>
+                                        AGOTADO
+                                    </span>
+                                @endif
+                            </x-slot>
                         @else
                             <p class="text-colorerror text-[10px] font-semibold text-center">
                                 PRECIO DE VENTA NO ENCONTRADO</p>
@@ -410,7 +441,7 @@
 
                         @if ($empresa->viewAlmacens())
                             @if (count($item->almacens) > 0)
-                                <div class="w-full flex flex-wrap gap-1">
+                                <div class="w-full flex flex-wrap xl:pt-9 gap-1">
                                     @foreach ($item->almacens as $alm)
                                         <span
                                             class="inline-block p-2.5 rounded-lg text-[10px] text-primary border border-next-300">
@@ -430,21 +461,6 @@
                                     @endforeach
                                 </div>
                             @endif
-                        @endif
-
-                        @if ($item->stock <= 0)
-                            <span
-                                class="inline-block p-1 rounded-lg bg-red-600 text-white text-[10px] float-right xl:absolute xl:bottom-1 xl:right-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor"
-                                    stroke="currentColor" stroke-width="0.7" stroke-linecap="round"
-                                    stroke-linejoin="round" class="inline-block w-4 h-4">
-                                    <path
-                                        d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
-                                    <path
-                                        d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
-                                </svg>
-                                AGOTADO
-                            </span>
                         @endif
                     </x-card-producto-virtual>
                 @endforeach

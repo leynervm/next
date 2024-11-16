@@ -54,6 +54,7 @@ class ShowProducto extends Component
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
             'producto.requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'producto.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
+            'producto.novedad' => ['integer', 'min:0', 'max:1'],
             'producto.viewdetalle' => ['integer', 'min:0', 'max:1'],
         ];
     }
@@ -136,6 +137,7 @@ class ShowProducto extends Component
     {
 
         $this->authorize('admin.almacen.productos.edit');
+        $this->producto->novedad = $this->producto->novedad == false ? 0 : 1;
         $this->producto->viewespecificaciones = $this->producto->viewespecificaciones == false ? 0 : 1;
         // dd($this->producto->viewespecificaciones);
         $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;

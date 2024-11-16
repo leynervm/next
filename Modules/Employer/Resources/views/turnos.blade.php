@@ -16,6 +16,19 @@
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
+        <x-link-breadcrumb text="PERSONAL EMPRESA" route="admin.administracion.employers">
+            <x-slot name="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 9H18" />
+                    <path d="M14 12.5H17" />
+                    <rect x="2" y="3" width="20" height="18" rx="5" />
+                    <path d="M5 16C6.20831 13.4189 10.7122 13.2491 12 16" />
+                    <path
+                        d="M10.5 9C10.5 10.1046 9.60457 11 8.5 11C7.39543 11 6.5 10.1046 6.5 9C6.5 7.89543 7.39543 7 8.5 7C9.60457 7 10.5 7.89543 10.5 9Z" />
+                </svg>
+            </x-slot>
+        </x-link-breadcrumb>
         <x-link-breadcrumb text="TURNOS LABORALES" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none"

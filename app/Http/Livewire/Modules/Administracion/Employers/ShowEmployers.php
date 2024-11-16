@@ -47,12 +47,7 @@ class ShowEmployers extends Component
                 new CampoUnique('employers', 'document', $this->employer->id, true)
             ],
             'employer.name' => ['required', 'string', 'min:6'],
-            'employer.nacimiento' => [
-                'required',
-                'date',
-                'before:today',
-                // new ValidateNacimiento(13)
-            ],
+            'employer.nacimiento' => ['required', 'date', 'before:today'],
             'employer.sexo' => ['required', 'string', 'min:1', 'max:1',  Rule::in(['M', 'F'])],
             'telefono' => ['required', 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
             'employer.sueldo' => ['required', 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
@@ -76,12 +71,12 @@ class ShowEmployers extends Component
 
     public function render()
     {
-        $sucursals = Sucursal::orderBy('name', 'asc')->get();
-        $areaworks = Areawork::orderBy('name', 'asc')->get();
-        $turnos = Turno::orderBy('horaingreso', 'asc')->get();
+        $sucursals = Sucursal::whereHas('employers')->orderBy('name', 'asc')->get();
+        $areaworks = Areawork::whereHas('employers')->orderBy('name', 'asc')->get();
+        $turnos = Turno::whereHas('employers')->orderBy('horaingreso', 'asc')->get();
         $sucursalusers = Sucursal::whereHas('employers')->orderBy('name', 'asc')->get();
 
-        $employers = Employer::withTrashed()->with(['areawork', 'sucursal', 'user']);
+        $employers = Employer::withTrashed()->with(['areawork', 'sucursal', 'user', 'turno', 'telephone']);
         if (trim($this->search) != '') {
             $employers->where('document', 'ilike', '%' . $this->search . '%')
                 ->orWhere('name', 'ilike', '%' . $this->search . '%');

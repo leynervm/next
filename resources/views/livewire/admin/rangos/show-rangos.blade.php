@@ -3,16 +3,8 @@
         <x-loading-next />
     </div>
 
-    <div class="w-full pb-1 flex flex-row flex-wrap gap-1 items-center justify-start">
+    <div class="w-full pb-1 flex flex-row flex-wrap gap-1 items-center justify-between">
         @canany(['admin.administracion.rangos.delete', 'admin.administracion.rangos.sync'])
-            @can('admin.administracion.rangos.delete')
-                <x-button-secondary @click="deleteselecteds" wire:loading.attr="disabled" style="display: none;"
-                    x-show="selectedrangos.length > 0">
-                    {{ __('ELIMINAR SELECCIONADOS') }} <span x-text="selectedrangos.length"
-                        class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
-                        :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
-                </x-button-secondary>
-            @endcan
             @can('admin.administracion.rangos.sync')
                 <x-button @click="syncprices" wire:loading.attr="disabled" style="display: none;"
                     x-show="selectedrangos.length > 0">
@@ -20,6 +12,14 @@
                         class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-fondobutton"
                         :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
                 </x-button>
+            @endcan
+            @can('admin.administracion.rangos.delete')
+                <x-button-secondary @click="deleteselecteds" wire:loading.attr="disabled" style="display: none;"
+                    x-show="selectedrangos.length > 0">
+                    {{ __('ELIMINAR SELECCIONADOS') }} <span x-text="selectedrangos.length"
+                        class="bg-white inline-block p-0.5 ml-1 text-[9px] rounded-full !tracking-normal font-semibold text-red-500"
+                        :class="selectedrangos.length < 10 ? 'px-1.5' : 'px-1'"></span>
+                </x-button-secondary>
             @endcan
         @endcanany
     </div>

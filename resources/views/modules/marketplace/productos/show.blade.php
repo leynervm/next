@@ -92,6 +92,26 @@
                                 </ul>
                             @endif
                         @endif
+
+                        @if ($promocion)
+                            <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
+                                <p class="text-white text-[10px] inline-block font-medium p-2 px-10">
+                                    @if ($empresa->isTitlePromocion())
+                                        PROMOCIÓN
+                                    @elseif($empresa->isTitleLiquidacion())
+                                        LIQUIDACIÓN
+                                    @else
+                                        @if ($promocion->isDescuento())
+                                            - {{ decimalOrInteger($promocion->descuento) }}% DSCT
+                                        @elseif ($promocion->isCombo())
+                                            OFERTA
+                                        @else
+                                            LIQUIDACIÓN
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+                        @endif
                     </div>
 
                     @if ($image)
@@ -534,7 +554,7 @@
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                                 :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image) : null" :promocion="$promocion"
                                 wire:key="cardproduct{{ $item->id }}"
-                                class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
+                                class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 px-3 transition ease-in-out duration-150">
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())
@@ -584,7 +604,7 @@
         @endif
 
         @if (count($interesantes) > 0)
-            <div class="w-full mt-10">
+            <div class="w-full mt-10 pb-10">
                 <h1 class="font-medium uppercase text-xs py-3 text-colorsubtitleform">
                     También podría interesarte</h1>
 
@@ -602,7 +622,7 @@
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                                 :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image) : null" :promocion="$promocion"
                                 wire:key="cardproduct{{ $item->id }}"
-                                class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 pb-7 px-3 transition ease-in-out duration-150">
+                                class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] py-3 px-3 transition ease-in-out duration-150">
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())

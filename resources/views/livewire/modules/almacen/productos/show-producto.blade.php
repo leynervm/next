@@ -200,6 +200,13 @@
                                 MOSTRAR DETALLES EN TIENDA WEB
                             </x-label-check>
                         </div>
+                        <div>
+                            <x-label-check for="novedad_edit">
+                                <x-input wire:model.defer="producto.novedad" name="novedad" value="1"
+                                    type="checkbox" id="novedad_edit" />
+                                MARCAR COMO NUEVA ENTRADA
+                            </x-label-check>
+                        </div>
                     @endif
 
                     <div>

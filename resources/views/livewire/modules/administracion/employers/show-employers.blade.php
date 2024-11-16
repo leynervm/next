@@ -236,14 +236,14 @@
 
                     <div class="w-full">
                         <x-label value="Teléfono :" />
-                        <x-input class="block w-full" wire:model.defer="telefono" placeholder="" type="number"
+                        <x-input class="block w-full input-number-none" wire:model.defer="telefono" type="number"
                             maxlength="9" onkeypress="return validarNumero(event, 9)" />
                         <x-jet-input-error for="telefono" />
                     </div>
 
                     <div class="w-full">
                         <x-label value="Sueldo :" />
-                        <x-input class="block w-full" wire:model.defer="employer.sueldo" type="number"
+                        <x-input class="block w-full input-number-none" wire:model.defer="employer.sueldo" type="number"
                             placeholder="0.00" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="employer.sueldo" />
                     </div>
@@ -445,9 +445,9 @@
         }
 
         function selectSucursal() {
-            this.selectSuc = $(this.$refs.editselectsuc).select2();
-            this.selectSuc.val(this.sucursal_id).trigger("change");
-            this.selectSuc.on("select2:select", (event) => {
+            this.selectEditSuc = $(this.$refs.editselectsuc).select2();
+            this.selectEditSuc.val(this.sucursal_id).trigger("change");
+            this.selectEditSuc.on("select2:select", (event) => {
                 this.sucursal_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -455,7 +455,7 @@
                 $(window).off(evt);
             });
             this.$watch("sucursal_id", (value) => {
-                this.selectSuc.val(value).trigger("change");
+                this.selectEditSuc.val(value).trigger("change");
             });
         }
 
@@ -481,9 +481,9 @@
         }
 
         function selectSexo() {
-            this.selectSexo = $(this.$refs.editselectsexo).select2();
-            this.selectSexo.val(this.sexoedit).trigger("change");
-            this.selectSexo.on("select2:select", (event) => {
+            this.selectEditSexo = $(this.$refs.editselectsexo).select2();
+            this.selectEditSexo.val(this.sexoedit).trigger("change");
+            this.selectEditSexo.on("select2:select", (event) => {
                 this.sexoedit = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -491,17 +491,17 @@
                 $(window).off(evt);
             });
             this.$watch("sexoedit", (value) => {
-                this.selectSexo.val(value).trigger("change");
+                this.selectEditSexo.val(value).trigger("change");
             });
             Livewire.hook('message.processed', () => {
-                this.selectSexo.select2().val(this.sexoedit).trigger('change');
+                this.selectEditSexo.select2().val(this.sexoedit).trigger('change');
             });
         }
 
         function selectAreawork() {
-            this.selectA = $(this.$refs.editselecta).select2();
-            this.selectA.val(this.areawork_id).trigger("change");
-            this.selectA.on("select2:select", (event) => {
+            this.selectAWE = $(this.$refs.editselecta).select2();
+            this.selectAWE.val(this.areawork_id).trigger("change");
+            this.selectAWE.on("select2:select", (event) => {
                 this.areawork_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -509,7 +509,7 @@
                 $(window).off(evt);
             });
             this.$watch("areawork_id", (value) => {
-                this.selectA.val(value).trigger("change");
+                this.selectAWE.val(value).trigger("change");
             });
         }
 

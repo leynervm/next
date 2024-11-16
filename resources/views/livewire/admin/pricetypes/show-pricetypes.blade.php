@@ -5,30 +5,33 @@
         </div>
     @endif
 
-    <div class="flex gap-2 flex-wrap justify-start">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-1 self-start mt-2">
         @if (count($pricetypes) > 0)
             @foreach ($pricetypes as $item)
-                <x-minicard :title="$item->name" :alignFooter="$item->default == 1 || $item->web == 1 ? 'justify-between' : 'justify-end'" size="lg">
-                    @if ($item->rounded > 0)
-                        @php
-                            $stringrounded = $item->rounded == 1 ? '(+0.5)' : '(+1)';
-                        @endphp
-                        <p class="text-center">
-                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green" class="leading-3 inline-block" />
-                        </p>
-                    @endif
+                <div
+                    class="border border-borderminicard p-1 min-h-28 flex flex-col gap-2 justify-between rounded-lg sm:rounded-2xl">
+                    <div class="w-full flex-1 h-full py-1 flex flex-col gap-1 justify-center items-center">
+                        <h1 class="text-xs font-medium text-colorsubtitleform text-center leading-none">
+                            {{ $item->name }}</h1>
+                        @if ($item->rounded > 0)
+                            @php
+                                $stringrounded = $item->rounded == 1 ? '(+0.5)' : '(+1)';
+                            @endphp
+                            <x-span-text :text="'REDONDEAR ' . $stringrounded" type="green" class="leading-none inline-block" />
+                        @endif
 
-                    <div>
                         <x-span-text :text="$item->decimals . ' DECIMALES'" class="leading-3 inline-block" />
                     </div>
 
-                    <x-slot name="buttons">
-                        <div class="inline-flex">
+                    <div class="w-full flex gap-1 justify-between items-end">
+                        <div class="flex items-end">
                             @if ($item->isDefault())
-                                <x-icon-default />
+                                <span class="p-1">
+                                    <x-icon-default class="flex-shrink-0" />
+                                </span>
                             @endif
                             @if ($item->isDefaultLogin())
-                                <span class="text-next-500 @if ($item->default) absolute left-6 @endif">
+                                <span class="text-next-500 block p-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 scale-110"
                                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                         stroke-linecap="round" stroke-linejoin="round">
@@ -41,7 +44,7 @@
                             @endif
                         </div>
 
-                        <div class="inline-flex flex-1 gap-1 items-end justify-end">
+                        <div class="flex flex-1 gap-1 items-end justify-end">
                             @can('admin.administracion.pricetypes.edit')
                                 @if ($item->isActivo())
                                     <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
@@ -55,8 +58,8 @@
                                     x-on:click="confirmDisable({{ $item }})" />
                             @endcan
                         </div>
-                    </x-slot>
-                </x-minicard>
+                    </div>
+                </div>
             @endforeach
         @endif
     </div>
@@ -81,26 +84,30 @@
                             step="0.1" min="0" />
                         <x-jet-input-error for="pricetype.ganancia" />
                     </div> --}}
-                <div class="w-full">
-                    <x-label value="Cantidad decimales :" />
-                    <x-input class="block w-full" wire:model.defer="pricetype.decimals" type="number" step="1"
-                        min="0" max="4" onkeypress="return validarDecimal(event, 1)" />
-                    <x-jet-input-error for="pricetype.decimals" />
-                </div>
 
-                <div class="w-full">
-                    <x-label value="Redondeo decimales :" />
-                    <div id="parentroundededit" class="relative" x-init="select2Rounded">
-                        <x-select class="block w-full" id="roundededit" x-ref="selectrounded">
-                            <x-slot name="options">
-                                <option value="0">NO USAR REDONDEO</option>
-                                <option value="1">REDONDEAR DECIMAL (+0.5)</option>
-                                <option value="2">REDONDEAR DECIMAL A ENTERO (+1)</option>
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
+                <div class="w-full grid xs:grid-cols-2 gap-2">
+                    <div class="w-full">
+                        <x-label value="Cantidad decimales :" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="pricetype.decimals"
+                            type="number" step="1" min="0" max="4"
+                            onkeypress="return validarDecimal(event, 1)" />
+                        <x-jet-input-error for="pricetype.decimals" />
                     </div>
-                    <x-jet-input-error for="pricetype.rounded" />
+
+                    <div class="w-full">
+                        <x-label value="Redondeo decimales :" />
+                        <div id="parentroundededit" class="relative" x-init="select2Rounded">
+                            <x-select class="block w-full" id="roundededit" x-ref="selectrounded">
+                                <x-slot name="options">
+                                    <option value="0">NO USAR REDONDEO</option>
+                                    <option value="1">REDONDEAR DECIMAL (+0.5)</option>
+                                    <option value="2">REDONDEAR DECIMAL A ENTERO (+1)</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="pricetype.rounded" />
+                    </div>
                 </div>
 
                 <div class="">

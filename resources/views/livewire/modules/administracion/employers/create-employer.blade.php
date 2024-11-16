@@ -6,17 +6,13 @@
             <line x1="5" x2="19" y1="12" y2="12" />
         </svg>
     </x-button-next>
-    <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="2xl" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Nuevo personal') }}
         </x-slot>
 
         <x-slot name="content">
-            <div wire:loading.flex class="loading-overlay fixed hidden">
-                <x-loading-next />
-            </div>
-
-            <form wire:submit.prevent="save" class="relative block w-full">
+            <form wire:submit.prevent="save" class="relative block w-full" autocomplete="off">
                 <div class="w-full grid xs:grid-cols-2 gap-2">
                     <div class="w-full">
                         <x-label value="DNI :" />
@@ -28,8 +24,8 @@
                             </div>
                         @else
                             <div class="w-full inline-flex gap-1">
-                                <x-input class="block w-full flex-1 prevent" wire:model.defer="document"
-                                    wire:keydown.enter="getClient" placeholder="DNI..." type="number"
+                                <x-input class="block w-full flex-1 input-number-none" wire:model.defer="document"
+                                    wire:keydown.enter.prevent="getClient" type="number"
                                     onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
                                 <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled"
                                     wire:target="getClient">
@@ -53,8 +49,7 @@
 
                     <div class="w-full">
                         <x-label value="Género :" />
-                        <div class="relative" id="parentsexoemp_id" x-data="{ sexo: @entangle('sexo').defer }" x-init="select2Sexo"
-                            wire:ignore>
+                        <div class="relative" id="parentsexoemp_id" x-init="select2Sexo">
                             <x-select class="block w-full" wire:model.defer="sexo" id="sexoemp_id"
                                 data-dropdown-parent="null" x-ref="select">
                                 <x-slot name="options">
@@ -76,23 +71,22 @@
 
                     <div class="w-full">
                         <x-label value="Teléfono :" />
-                        <x-input class="block w-full" wire:model.defer="telefono" placeholder="" maxlength="9"
-                            onkeypress="return validarNumero(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="telefono" type="number"
+                            maxlength="9" onkeypress="return validarNumero(event, 9)" />
                         <x-jet-input-error for="telefono" />
                     </div>
 
                     <div class="w-full">
                         <x-label value="Sueldo :" />
-                        <x-input class="block w-full" wire:model.defer="sueldo" type="number" placeholder="0.00"
+                        <x-input class="block w-full input-number-none" wire:model.defer="sueldo" type="number"
                             onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="sueldo" />
                     </div>
 
                     <div class="w-full xs:col-span-2">
                         <x-label value="Turno laboral :" />
-                        <div class="relative" id="parentturnoemployer_id" x-data="{ turno_id: @entangle('turno_id').defer }"
-                            x-init="select2Turno">
-                            <x-select class="block w-full" x-ref="selectturno" id="turnoemployer_id"
+                        <div class="relative" id="parentturnoemployer_id" x-init="select2Turno">
+                            <x-select class="block w-full" x-ref="selectturno" wire:model.defer="turno_id" id="turnoemployer_id"
                                 data-dropdown-parent="null">
                                 <x-slot name="options">
                                     @if (count($turnos) > 0)
@@ -111,8 +105,7 @@
 
                     <div class="w-full xs:col-span-2">
                         <x-label value="Área de trabajo :" />
-                        <div class="relative" id="parentareawork" x-data="{ areawork_id: @entangle('areawork_id').defer }" x-init="select2Areawork"
-                            wire:ignore>
+                        <div class="relative" id="parentareawork" x-init="select2Areawork">
                             <x-select class="block w-full" wire:model.defer="areawork_id" x-ref="selecta"
                                 id="areawork" data-dropdown-parent="null">
                                 <x-slot name="options">
@@ -134,7 +127,7 @@
                             @if ($user->sucursal)
                                 <x-disabled-text :text="$user->sucursal->name" />
                             @else
-                                <div class="relative" x-data="{ sucursal_id: @entangle('sucursal_id').defer }" x-init="select2Sucursal" wire:ignore>
+                                <div class="relative" x-init="select2Sucursal">
                                     <x-select class="block w-full" x-ref="selectsuc" wire:model.defer="sucursal_id"
                                         id="sucursal_id" data-minimum-results-for-search="3"
                                         data-dropdown-parent="null">
@@ -152,7 +145,7 @@
                                 </div>
                             @endif
                         @else
-                            <div class="relative" x-data="{ sucursal_id: @entangle('sucursal_id').defer }" x-init="select2Sucursal" wire:ignore>
+                            <div class="relative" x-init="select2Sucursal">
                                 <x-select class="block w-full" x-ref="selectsuc" wire:model.defer="sucursal_id"
                                     id="sucursal_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
                                     <x-slot name="options">
@@ -251,6 +244,9 @@
                         {{ __('Save and close') }}</x-button>
                 </div>
             </form>
+            <div wire:key="loadingcreateemployer" wire:loading.flex class="loading-overlay hidden fixed">
+                <x-loading-next />
+            </div>
         </x-slot>
     </x-jet-dialog-modal>
 
@@ -259,6 +255,33 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('createemployer', () => ({
                 adduser: @entangle('adduser').defer,
+                sexo: @entangle('sexo').defer,
+                turno_id: @entangle('turno_id').defer,
+                sucursal_id: @entangle('sucursal_id').defer,
+                areawork_id: @entangle('areawork_id').defer,
+
+                init() {
+                    this.$watch("sucursal_id", (value) => {
+                        this.selectSuc.val(value).trigger("change");
+                    });
+                    this.$watch("sexo", (value) => {
+                        this.selectS.val(value).trigger("change");
+                    });
+                    this.$watch("turno_id", (value) => {
+                        this.selectTurno.val(value).trigger("change");
+                    });
+                    this.$watch("areawork_id", (value) => {
+                        this.selectA.val(value).trigger("change");
+                    });
+                    Livewire.hook('message.processed', () => {
+                        this.selectTurno.select2({
+                            templateResult: formatOption
+                        }).val(this.turno_id).trigger('change');
+                        this.selectS.select2().val(this.sexo).trigger('change');
+                        this.selectSuc.select2().val(this.sucursal_id).trigger('change');
+                        this.selectA.select2().val(this.areawork_id).trigger('change');
+                    });
+                }
             }))
         })
 
@@ -279,15 +302,12 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("sucursal_id", (value) => {
-                this.selectSuc.val(value).trigger("change");
-            });
         }
 
         function select2Turno() {
             this.selectTurno = $(this.$refs.selectturno).select2({
                 templateResult: formatOption
-            });
+            })
             this.selectTurno.val(this.turno_id).trigger("change");
             this.selectTurno.on("select2:select", (event) => {
                 this.turno_id = event.target.value;
@@ -295,14 +315,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("turno_id", (value) => {
-                this.selectTurno.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectTurno.select2({
-                    templateResult: formatOption
-                }).val(this.turno_id).trigger('change');
             });
         }
 
@@ -316,9 +328,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("sexo", (value) => {
-                this.selectS.val(value).trigger("change");
-            });
         }
 
         function select2Areawork() {
@@ -330,10 +339,7 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("areawork_id", (value) => {
-                this.selectA.val(value).trigger("change");
-            });
+            })
         }
     </script>
 </div>

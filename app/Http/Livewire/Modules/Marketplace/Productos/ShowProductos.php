@@ -196,7 +196,34 @@ class ShowProductos extends Component
             }
         })->orderBy('orden', 'asc')->get();
 
-        $productos = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5');
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'novedad',
+            'sku',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+            DB::raw(
+                "ts_rank(to_tsvector('spanish', 
+                    COALESCE(productos.name, '') || ' ' || 
+                    COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(categories.name, '')
+                ), plainto_tsquery('spanish', '" . $this->search . "')) AS rank"
+            )
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id');
 
         if ($this->empresa->viewOnlyDisponibles()) {
             $productos->withWhereHas('almacens', function ($query) {
@@ -219,21 +246,19 @@ class ShowProductos extends Component
                 ->where('images.imageable_type', Producto::class)
                 ->orderBy('default', 'desc')
                 ->offset(1)->limit(1);
-        }])->withWherehas('category', function ($query) {
-            $query->whereNull('deleted_at');
-            if (count($this->selectedcategorias) > 0) {
-                $query->whereIn('slug', $this->selectedcategorias);
-            }
-        })->withWherehas('subcategory', function ($query) {
-            if (count($this->selectedsubcategorias) > 0) {
-                $query->whereIn('slug', $this->selectedsubcategorias);
-            }
-        })->withWhereHas('marca', function ($query) {
-            $query->whereNull('deleted_at');
-            if (count($this->selectedmarcas) > 0) {
-                $query->whereIn('slug', $this->selectedmarcas);
-            }
-        });
+        }]);
+
+        if (count($this->selectedcategorias) > 0) {
+            $productos->whereIn('categories.slug', $this->selectedcategorias);
+        }
+
+        if (count($this->selectedsubcategorias) > 0) {
+            $productos->whereIn('subcategories.slug', $this->selectedsubcategorias);
+        }
+
+        if (count($this->selectedmarcas) > 0) {
+            $productos->whereIn('marcas.slug', $this->selectedmarcas);
+        }
 
         if (count($this->selectedespecificacions) > 0) {
             $productos->whereHas('especificacions', function ($query) {
@@ -253,44 +278,41 @@ class ShowProductos extends Component
         }]);
 
         if (trim($this->search) !== '') {
-            $searchTerms = explode(' ', $this->search);
-            $productos->where(function ($query) use ($searchTerms) {
-                foreach ($searchTerms as $term) {
-                    $query->orWhere('name', 'ilike', '%' . $term . '%')
-                        ->orWhereHas('marca', function ($q) use ($term) {
-                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        })
-                        ->orWhereHas('category', function ($q) use ($term) {
-                            $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                        });
-                    // ->orWhereHas('especificacions', function ($q) use ($term) {
-                    //     $q->where('especificacions.name', 'ilike', '%' . $term . '%');
-                    // });
-                }
-            });
+            $productos->whereRaw(
+                "to_tsvector('spanish', 
+                COALESCE(productos.name, '') || ' ' || 
+                COALESCE(marcas.name, '') || ' ' || 
+                COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $this->search . "')",
+            )->orWhereRaw(
+                "similarity(productos.name, '" . $this->search . "') > 0.5 
+                OR similarity(marcas.name, '" . $this->search . "') > 0.5 
+                OR similarity(categories.name, '" . $this->search . "') > 0.5",
+            )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
         }
+
+        $productos->visibles()->publicados();
 
         if (isset($this->orderfilters[$this->filterselected])) {
             $column = $this->orderfilters[$this->filterselected]['column'];
             $order = $this->orderfilters[$this->filterselected]['order'];
+            $productos->orderBy($column, $order);
         } else {
             $this->filterselected = 'name_asc';
             $column = 'name';
             $order = 'asc';
+            $productos->orderBy('novedad', 'desc')->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC');
         }
 
-        // dd($productos->visibles()->publicados()->orderBy($column, $order)
-        // ->paginate(30));
-
-        $productos =  $this->readyToLoad ?
-            $productos->visibles()->publicados()->orderBy($column, $order)
-            ->paginate(30)->through(function ($producto) {
+        // dd($productos->toSql());
+        if ($this->readyToLoad) {
+            $productos = $productos->paginate(30)->through(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
                 return $producto;
-            })
-            : [];
-
-
+            });
+        } else {
+            $productos = [];
+        }
         // dd($productos);
         return view('livewire.modules.marketplace.productos.show-productos', compact('productos', 'categories',));
     }
@@ -298,6 +320,7 @@ class ShowProductos extends Component
     public function updatedSearch()
     {
         $this->resetPage();
+        Self::resetfilterorder();
     }
 
     public function updatedSelectedcategorias()
@@ -339,6 +362,7 @@ class ShowProductos extends Component
             return collect($this->marcas)->contains('slug', $selected);
         });
         $this->searchmarcas = implode(',', $this->selectedmarcas);
+        Self::resetfilterorder();
     }
 
     public function updatedSelectedsubcategorias()
@@ -414,18 +438,21 @@ class ShowProductos extends Component
         }
 
         $this->searchespecificaciones = implode(',', $this->selectedespecificacions);
+        Self::resetfilterorder();
     }
 
     public function updatedSelectedmarcas()
     {
         $this->resetPage();
         $this->searchmarcas = implode(',', $this->selectedmarcas);
+        Self::resetfilterorder();
     }
 
     public function updatedSelectedespecificacions()
     {
         $this->resetPage();
         $this->searchespecificaciones = implode(',', $this->selectedespecificacions);
+        Self::resetfilterorder();
     }
 
     public function add_to_cart(Producto $producto, $cantidad)
@@ -550,6 +577,19 @@ class ShowProductos extends Component
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
+        }
+    }
+
+    public function resetfilterorder()
+    {
+        if (
+            count($this->selectedcategorias) == 0 &&
+            count($this->selectedsubcategorias) == 0 &&
+            count($this->selectedmarcas) == 0 &&
+            count($this->selectedespecificacions) == 0
+        ) {
+            $this->reset(['filterselected']);
+            // $this->filterselected = 'name_asc';
         }
     }
 }

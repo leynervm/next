@@ -37,7 +37,7 @@ class CreateProducto extends Component
     public $viewdetalle = 0;
     public $viewespecificaciones = 0;
     public $requireserie = 0;
-    public $minstock = 0;
+    public $minstock = 0, $novedad = 0;
     public $name, $marca_id, $modelo, $partnumber, $sku, $unit_id, $category_id,
         $subcategory_id, $almacenarea_id, $estante_id;
 
@@ -64,6 +64,7 @@ class CreateProducto extends Component
             'publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
             'viewdetalle' => ['nullable', 'integer', 'min:0', 'max:1'],
             'viewespecificaciones' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'novedad' => ['nullable', 'integer', 'min:0', 'max:1'],
             'requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500'],
             'descripcionproducto' => ['nullable', 'string']
@@ -119,6 +120,7 @@ class CreateProducto extends Component
         $this->authorize('admin.almacen.productos.create');
         $this->publicado = trim($this->publicado) == 1 ? 1 : 0;
         $this->viewdetalle = trim($this->viewdetalle) == 1 ? 1 : 0;
+        $this->novedad = trim($this->novedad) == 1 ? 1 : 0;
         $this->viewespecificaciones = trim($this->viewespecificaciones) == 1 ? 1 : 0;
         $this->requireserie = trim($this->requireserie) == 1 ? 1 : 0;
         $this->name = trim(mb_strtoupper($this->name, "UTF-8"));
@@ -160,6 +162,7 @@ class CreateProducto extends Component
                 'publicado' => $this->publicado,
                 'viewdetalle' => $this->viewdetalle,
                 'viewespecificaciones' => $this->viewespecificaciones,
+                'novedad' => $this->novedad,
                 'requireserie' => $this->requireserie,
                 'code' => Str::random(9),
                 'almacenarea_id' => $this->almacenarea_id,

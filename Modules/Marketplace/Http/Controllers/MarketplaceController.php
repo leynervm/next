@@ -561,32 +561,45 @@ class MarketplaceController extends Controller
 
     public function search(Request $request)
     {
-
+        $empresa = view()->shared('empresa');
         $search = $request->input('search');
-        $products = Producto::query()->select('id', 'name', 'slug', 'marca_id')
-            ->with(['images' => function ($query) {
-                $query->default();
-            }])->with('marca');
-
         if (strlen(trim($search)) < 2) {
             return response()->json([]);
         }
+        $products =  Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'marca_id',
+            DB::raw(
+                "ts_rank(to_tsvector('spanish', 
+                    COALESCE(productos.name, '') || ' ' || 
+                    COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(categories.name, '')
+                ), plainto_tsquery('spanish', '" . $search . "')) AS rank"
+            )
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id');
 
-        $searchTerms = explode(' ', $search);
-        $products->where(function ($query) use ($searchTerms) {
-            foreach ($searchTerms as $term) {
-                $query->orWhere('name', 'ilike', '%' . $term . '%')
-                    ->orWhereHas('marca', function ($q) use ($term) {
-                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                    })
-                    ->orWhereHas('category', function ($q) use ($term) {
-                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $term . '%');
-                    })
-                    ->orWhereHas('especificacions', function ($q) use ($term) {
-                        $q->where('especificacions.name', 'ilike', '%' . $term . '%');
-                    });
-            }
-        })->visibles()->publicados()->orderBy('name', 'asc')->limit(10);
+        if ($empresa->viewOnlyDisponibles()) {
+            $products->withWhereHas('almacens', function ($query) {
+                $query->where('cantidad', '>', 0);
+            });
+        }
+
+        $products->whereRaw(
+            "to_tsvector('spanish', 
+            COALESCE(productos.name, '') || ' ' || 
+            COALESCE(marcas.name, '') || ' ' || 
+            COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $search . "')",
+        )->orWhereRaw(
+            "similarity(productos.name, '" . $search . "') > 0.5 
+            OR similarity(marcas.name, '" . $search . "') > 0.5 
+            OR similarity(categories.name, '" . $search . "') > 0.5",
+        )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
+            ->orderBy('subcategories.orden', 'ASC')->orderBy('categories.orden', 'ASC')
+            ->visibles()->publicados()->orderBy('name', 'asc')->limit(10);
 
         return response()->json($products->get());
     }

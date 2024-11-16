@@ -99,12 +99,36 @@ class HomeController extends Controller
             // ]
         ];
         $chart1 = new LaravelChart($chart_options1);
-        $productos = Producto::with(['almacens'])
-            ->whereHas('almacens', function ($query) {
+
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'unit_id',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'visivility',
+            'publicado',
+            'novedad',
+            'sku',
+            'minstock',
+            'partnumber',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['unit', 'almacens', 'compraitems.compra.proveedor'])
+            ->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }])->whereHas('almacens', function ($query) {
                 $query->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
                     ->groupBy('almacen_producto.producto_id')
                     ->havingRaw('SUM(almacen_producto.cantidad) <= productos.minstock');
-            })->paginate();
+            })->visibles()->orderBy('novedad', 'DESC')->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->paginate();
 
         return view('dashboard', compact('empresa', 'chart', 'chart1', 'productos'));
     }
