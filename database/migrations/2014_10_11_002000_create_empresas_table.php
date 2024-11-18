@@ -46,6 +46,7 @@ class CreateEmpresasTable extends Migration
             $table->unsignedTinyInteger('viewalmacens')->default(0);
             $table->unsignedTinyInteger('viewalmacensdetalle')->default(0);
             $table->unsignedTinyInteger('viewtextopromocion')->default(0);
+            $table->string('textnovedad', 50)->nullable();
             $table->unsignedTinyInteger('usemarkagua')->default(0);
             $table->string('markagua', 100)->nullable();
             $table->string('alignmark', 25)->nullable()->default('center');

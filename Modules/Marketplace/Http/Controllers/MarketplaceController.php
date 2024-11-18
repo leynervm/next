@@ -578,7 +578,12 @@ class MarketplaceController extends Controller
                     COALESCE(categories.name, '')
                 ), plainto_tsquery('spanish', '" . $search . "')) AS rank"
             )
-        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+        )->addSelect(['image' => function ($query) {
+            $query->select('url')->from('images')
+                ->whereColumn('images.imageable_id', 'productos.id')
+                ->where('images.imageable_type', Producto::class)
+                ->orderBy('default', 'desc')->limit(1);
+        }])->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id');
 
@@ -599,15 +604,20 @@ class MarketplaceController extends Controller
             OR similarity(categories.name, '" . $search . "') > 0.5",
         )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
             ->orderBy('subcategories.orden', 'ASC')->orderBy('categories.orden', 'ASC')
-            ->visibles()->publicados()->orderBy('name', 'asc')->limit(10);
+            ->visibles()->publicados()->orderBy('name', 'asc')->limit(15);
 
-        return response()->json($products->get());
+        $products = $products->get()->transform(function ($item) {
+            $item->image = pathURLProductImage($item->image);
+            return $item;
+        });
+
+        return response()->json($products);
     }
 
     public function searchsubcategories(Request $request)
     {
         $category_id = $request->input('category_id');
-        $subcategories = Category::find($category_id)->subcategories()->orderBy('name', 'asc')->get();
+        $subcategories = Category::find($category_id)->subcategories()->orderBy('orden', 'asc')->get();
         return response()->json($subcategories);
     }
 }

@@ -580,6 +580,11 @@
                                 </x-label-check>
                                 <x-jet-input-error for="empresa.viewalmacensdetalle" />
                             </div>
+                            <div class="w-full block">
+                                <x-label value="Texto de etiqueta novedad del producto :" />
+                                <x-input class="w-full block" wire:model.defer="empresa.textnovedad" />
+                                <x-jet-input-error for="empresa.textnovedad" />
+                            </div>
                         @endif
 
                         <div class="block">
@@ -594,7 +599,11 @@
                             <x-label-check for="viewlogomarca">
                                 <x-input wire:model.defer="empresa.viewlogomarca" value="1" name="viewlogomarca"
                                     type="checkbox" id="viewlogomarca" />
-                                MOSTRAR LOGO DE MARCA EN PRODUCTOS
+                                <div class="flex flex-col flex-1">
+                                    MOSTRAR LOGO DE MARCA EN PRODUCTOS
+                                    <small class="font-medium text-xs tracking-normal text-colorsubtitleform">
+                                        Se recomienda usar imágen en formato PNG</small>
+                                </div>
                             </x-label-check>
                             <x-jet-input-error for="empresa.viewlogomarca" />
                         </div>
@@ -647,10 +656,10 @@
                                     <x-input wire:model.defer="empresa.usemarkagua" value="1" type="checkbox"
                                         x-on:change="openmark = !openmark" id="usemarca_agua" />
                                     <div class="flex flex-col flex-1">
-                                        AGREGAR MARCA DE AGUA EN IMAGENES DE PRODUCTOS
+                                        AGREGAR MARCA DE AGUA EN IMÁGENES DE PRODUCTOS
                                         <small
                                             class="font-medium leading-none text-xs tracking-normal text-colorsubtitleform">
-                                            Se recomienda usar imagen transparente PNG</small>
+                                            Se recomienda usar imágen en formato PNG</small>
                                     </div>
                                 </x-label-check>
                                 <x-jet-input-error for="usemarkagua" />

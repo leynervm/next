@@ -61,6 +61,7 @@ class ShowEmpresa extends Component
             'empresa.viewproductosweb' => ['integer', 'min:0', 'max:1'],
             'empresa.viewalmacens' => ['integer', 'min:0', 'max:1'],
             'empresa.viewalmacensdetalle' => ['integer', 'min:0', 'max:1'],
+            'empresa.textnovedad' => ['nullable', 'string', 'max:50'],
             'empresa.tipocambio' => ['nullable', 'required_if:usepricedolar,1', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
             'empresa.tipocambioauto' => ['integer', 'min:0', 'max:1'],
             'empresa.montoadelanto' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
@@ -140,6 +141,7 @@ class ShowEmpresa extends Component
         $this->empresa->generatesku = $this->empresa->generatesku == true ?  1 : 0;
         $this->empresa->viewalmacens = $this->empresa->viewalmacens == true ?  1 : 0;
         $this->empresa->viewalmacensdetalle = $this->empresa->viewalmacensdetalle == true ?  1 : 0;
+        $this->empresa->textnovedad = trim($this->empresa->textnovedad);
 
         if ($this->empresa->usepricedolar == 0) {
             $this->empresa->usepricedolar = 0;
@@ -166,6 +168,7 @@ class ShowEmpresa extends Component
             'empresa.tipocambioauto' => ['integer', 'min:0', 'max:1'],
             'empresa.montoadelanto' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
             'empresa.generatesku' => ['integer', 'min:0', 'max:1'],
+            'empresa.textnovedad' => ['nullable', 'string', 'max:50'],
         ]);
 
         try {

@@ -1146,6 +1146,7 @@ input[type=number].input-number-none {
         height: calc(100vh - 96px);
     }
 }
+
 .sidebar-productos {
     position: absolute;
     left: 0px;
@@ -1157,12 +1158,14 @@ input[type=number].input-number-none {
     flex-shrink: 0;
     background-color: var(--body);
 }
+
 @media (min-width: 475px) {
 
     .sidebar-productos {
         max-width: 18rem;
     }
 }
+
 @media (min-width: 1280px) {
 
     .sidebar-productos {
@@ -1172,6 +1175,7 @@ input[type=number].input-number-none {
         max-width: 18rem;
     }
 }
+
 /* .sidebar-productos {
     @apply w-full fixed left-0 top-[108px] xl:top-24 h-[calc(100vh-108px)] xl:h-[calc(100vh-96px)] bg-body max-w-[80%] xs:max-w-72 flex-shrink-0 ;
 } */
@@ -4980,6 +4984,10 @@ select {
 .aspect-square {
   aspect-ratio: 1 / 1;
 }
+.size-16 {
+  width: 4rem;
+  height: 4rem;
+}
 .size-24 {
   width: 6rem;
   height: 6rem;
@@ -6369,6 +6377,10 @@ select {
   padding-top: 0.375rem !important;
   padding-bottom: 0.375rem !important;
 }
+.px-0 {
+  padding-left: 0px;
+  padding-right: 0px;
+}
 .px-1 {
   padding-left: 0.25rem;
   padding-right: 0.25rem;
@@ -6553,6 +6565,9 @@ select {
 .pt-1\.5 {
   padding-top: 0.375rem;
 }
+.pt-12 {
+  padding-top: 3rem;
+}
 .pt-16 {
   padding-top: 4rem;
 }
@@ -6579,6 +6594,9 @@ select {
 }
 .pt-8 {
   padding-top: 2rem;
+}
+.pb-0 {
+  padding-bottom: 0px;
 }
 .text-left {
   text-align: left;
@@ -8428,6 +8446,10 @@ select {
 }
 @media (min-width: 640px) {
 
+  .sm\:relative {
+    position: relative;
+  }
+
   .sm\:-left-\[53\%\] {
     left: -53%;
   }
@@ -8925,8 +8947,20 @@ select {
     padding-top: 0px;
   }
 
+  .sm\:pt-3 {
+    padding-top: 0.75rem;
+  }
+
   .sm\:pt-5 {
     padding-top: 1.25rem;
+  }
+
+  .sm\:pb-3 {
+    padding-bottom: 0.75rem;
+  }
+
+  .sm\:pt-16 {
+    padding-top: 4rem;
   }
 
   .sm\:text-left {

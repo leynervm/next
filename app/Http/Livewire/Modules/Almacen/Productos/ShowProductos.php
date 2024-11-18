@@ -67,6 +67,7 @@ class ShowProductos extends Component
             'novedad',
             'sku',
             'partnumber',
+            'pricebuy',
             'pricesale',
             'precio_1',
             'precio_2',

@@ -46,7 +46,7 @@
         $pricesale = $producto->obtenerPrecioVenta($pricetype ?? null);
     @endphp
 
-    <div class="contenedor w-full" x-data="showproducto">
+    <div class="contenedor w-full relative" x-data="showproducto">
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex">
                 <div class="w-full md:flex-shrink-0 md:w-[50%] lg:w-[60%] md:px-3 py-2">
@@ -153,6 +153,18 @@
 
                 <div class="w-full flex-1 sm:py-2 px-1 md:pl-8">
                     <div class="w-full border-b border-b-borderminicard pb-5">
+                        @if ($producto->novedad)
+                            <div class="inline-block">
+                                @if (!empty($empresa->textnovedad))
+                                    <span
+                                        class="inline-block p-1 px-1.5 rounded-lg sm:rounded-xl text-[11px] bg-purple-700 text-white relative">
+                                        {{ $empresa->textnovedad }}</span>
+                                @endif
+                                <x-icon-novedad class="size-6" />
+                            </div>
+                        @endif
+
+
                         <p class="text-[10px] text-colorsubtitleform font-medium">
                             {{ $producto->category->name }} | {{ $producto->subcategory->name }}</p>
                         <div class="w-full flex gap-2 justify-between items-center flex-wrap">
@@ -178,58 +190,60 @@
                         @endif
                     </div>
 
-                    <div class="w-full pt-3 flex items-center justify-between gap-2">
-                        @if ($pricesale > 0)
-                            <div class="w-full flex-1">
-                                <h1 class="font-semibold text-3xl text-center md:text-start text-colorlabel">
-                                    <small class="text-lg"> {{ $moneda->simbolo }}</small>
-                                    {{ decimalOrInteger($pricesale, 2, ', ') }}
-                                </h1>
+                    <div class="w-full hidden sm:block">
+                        <div class="w-full pt-3 flex items-center justify-between gap-2">
+                            @if ($pricesale > 0)
+                                <div class="w-full flex-1">
+                                    <h1 class="font-semibold text-3xl text-center md:text-start text-colorlabel">
+                                        <small class="text-lg"> {{ $moneda->simbolo }}</small>
+                                        {{ decimalOrInteger($pricesale, 2, ', ') }}
+                                    </h1>
 
-                                @if ($descuento > 0 && $empresa->verOldprice())
-                                    <h1 class="text-colorsubtitleform text-xs text-red-600 text-center md:text-start">
-                                        {{ $moneda->simbolo }}
-                                        <small class="text-lg inline-block line-through">
-                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
-                                    </h1>
-                                @endif
-                                @if ($empresa->verDolar())
-                                    <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
-                                        <small class="text-[10px]">$. </small>
-                                        {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
-                                        <small class="text-[10px]">USD</small>
-                                    </h1>
-                                @endif
-                            </div>
-                            <div class="flex-shrink-0">
-                                <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto" :empresa="$empresa"
+                                    @if ($descuento > 0 && $empresa->verOldprice())
+                                        <h1
+                                            class="text-colorsubtitleform text-xs text-red-600 text-center md:text-start">
+                                            {{ $moneda->simbolo }}
+                                            <small class="text-lg inline-block line-through">
+                                                {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
+                                        </h1>
+                                    @endif
+                                    @if ($empresa->verDolar())
+                                        <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
+                                            <small class="text-[10px]">$. </small>
+                                            {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                            <small class="text-[10px]">USD</small>
+                                        </h1>
+                                    @endif
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto"
+                                        :empresa="$empresa" :moneda="$moneda" :pricetype="$pricetype" />
+                                </div>
+                            @else
+                                <p class="w-full flex-1 text-colorerror text-[10px] font-semibold text-center">
+                                    PRECIO DE VENTA NO ENCONTRADO</p>
+                            @endif
+                        </div>
+
+                        @if ($producto->stock > 0)
+                            @if ($pricesale > 0)
+                                <livewire:modules.marketplace.carrito.add-carrito :producto="$producto" :empresa="$empresa"
                                     :moneda="$moneda" :pricetype="$pricetype" />
-                            </div>
+                            @endif
                         @else
-                            <p class="w-full flex-1 text-colorerror text-[10px] font-semibold text-center">
-                                PRECIO DE VENTA NO ENCONTRADO</p>
+                            <span class="inline-block p-1 rounded-lg bg-red-600 text-white text-[10px] float-right">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor"
+                                    stroke="currentColor" stroke-width="0.7" stroke-linecap="round"
+                                    stroke-linejoin="round" class="inline-block w-4 h-4">
+                                    <path
+                                        d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
+                                    <path
+                                        d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
+                                </svg>
+                                AGOTADO
+                            </span>
                         @endif
                     </div>
-
-                    @if ($producto->stock > 0)
-                        @if ($pricesale > 0)
-                            <livewire:modules.marketplace.carrito.add-carrito :producto="$producto" :empresa="$empresa"
-                                :moneda="$moneda" :pricetype="$pricetype" />
-                        @endif
-                    @else
-                        <span class="inline-block p-1 rounded-lg bg-red-600 text-white text-[10px] float-right">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor"
-                                stroke="currentColor" stroke-width="0.7" stroke-linecap="round"
-                                stroke-linejoin="round" class="inline-block w-4 h-4">
-                                <path
-                                    d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
-                                <path
-                                    d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
-                            </svg>
-                            AGOTADO
-                        </span>
-                    @endif
-
 
                     @if ($combo)
                         @if (count($combo->products) > 0)
@@ -284,17 +298,20 @@
                     @endif
 
                     @if (count($producto->especificacions) > 0)
-                        <ul class="w-full pt-3 text-colorsubtitleform py-3 text-[10px]">
-                            @foreach ($producto->especificacions->take(3) as $item)
-                                <li class="py-1">
-                                    <span class="font-semibold">{{ $item->caracteristica->name }} :
-                                    </span>{{ $item->name }}
-                                </li>
-                            @endforeach
-                        </ul>
+                        <div class="w-full hidden sm:block py-3">
+                            <ul class="w-full pt-3 text-colorsubtitleform text-[10px]">
+                                @foreach ($producto->especificacions->take(3) as $item)
+                                    <li class="py-1">
+                                        <span class="font-semibold">
+                                            {{ $item->caracteristica->name }} :
+                                        </span>{{ $item->name }}
+                                    </li>
+                                @endforeach
+                            </ul>
 
-                        <a href="#especificacions" class="underline pt-3 text-colortitleform text-[10px]">
-                            VER MÁS ESPECIFICACIONES</a>
+                            <a href="#especificacions" class="underline pt-3 text-colortitleform text-[10px]">
+                                VER MÁS ESPECIFICACIONES</a>
+                        </div>
                     @endif
 
                     @if (count($shipmenttypes) > 0)
@@ -420,15 +437,16 @@
         </div>
 
         @if (count($producto->especificacions) > 0)
-            <div class="w-full pt-24 xl:pt-20" id="especificacions">
-                <h1 class="font-semibold text-2xl py-3 text-colorsubtitleform">
+            <div class="w-full sm:pt-16 xl:pt-20" id="especificacions">
+                <h1 class="font-semibold text-lg sm:text-2xl py-3 text-colorsubtitleform">
                     Especificaciones</h1>
-                <table class="w-full text-[10px] mt-5">
+                <table class="w-full text-[10px] sm:mt-5">
                     <tbody class="odd:bg-fondohovertable">
                         @foreach ($producto->especificacions as $item)
                             <tr
                                 class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
-                                <th class="py-3 px-2 text-left max-w-xs md:w-80">{{ $item->caracteristica->name }}
+                                <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
+                                    {{ $item->caracteristica->name }}
                                 </th>
                                 <td class="p-2 py-3 text-left">{{ $item->name }}</td>
                             </tr>
@@ -452,6 +470,63 @@
                 @endif
             @endif
         @endif
+
+
+        <div class="w-full sticky z-[99] bottom-0 left-0 p-1 bg-body sm:hidden">
+            <div class="w-full sm:pt-3 flex items-center justify-between gap-2">
+                @if ($pricesale > 0)
+                    <div class="w-full flex-1">
+                        <h1 class="font-semibold text-2xl text-center md:text-start text-colorlabel">
+                            <small class="text-lg"> {{ $moneda->simbolo }}</small>
+                            {{ decimalOrInteger($pricesale, 2, ', ') }}
+                        </h1>
+
+                        @if ($descuento > 0 && $empresa->verOldprice())
+                            <h1 class="text-colorsubtitleform text-[10px] text-red-600 text-center md:text-start">
+                                {{ $moneda->simbolo }}
+                                <small class="text-xs inline-block line-through">
+                                    {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
+                            </h1>
+                        @endif
+                        @if ($empresa->verDolar())
+                            <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
+                                <small class="text-[10px]">$. </small>
+                                {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                <small class="text-[10px]">USD</small>
+                            </h1>
+                        @endif
+                    </div>
+                    <div class="flex-shrink-0">
+                        <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto" :empresa="$empresa"
+                            :moneda="$moneda" :pricetype="$pricetype" />
+                    </div>
+                @else
+                    <p class="w-full flex-1 text-colorerror text-[10px] font-semibold text-center">
+                        PRECIO DE VENTA NO ENCONTRADO</p>
+                @endif
+            </div>
+
+            @if ($producto->stock > 0)
+                @if ($pricesale > 0)
+                    <livewire:modules.marketplace.carrito.add-carrito :producto="$producto" :empresa="$empresa"
+                        :moneda="$moneda" :pricetype="$pricetype" />
+                @endif
+            @else
+                <div class="w-full flex items-center justify-end">
+                    <span class="inline-block justify-center p-1 rounded-lg bg-red-600 text-white text-[10px]">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor"
+                            stroke="currentColor" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"
+                            class="inline-block w-4 h-4">
+                            <path
+                                d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
+                            <path
+                                d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
+                        </svg>
+                        AGOTADO
+                    </span>
+                </div>
+            @endif
+        </div>
 
 
         {{-- <div @keydown.escape.window="closeModal()"
@@ -800,7 +875,7 @@
             });
         })
 
-        function zoom(e, zoomLevel = 150) {
+        function zoom(e, zoomLevel = 130) {
             var zoomer = e.currentTarget;
             e.offsetX ? offsetX = e.offsetX : offsetX = e.touches ? e.touches[0].pageX : 0
             e.offsetY ? offsetY = e.offsetY : offsetX = e.touches ? e.touches[0].pageX : 0

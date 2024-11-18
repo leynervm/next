@@ -502,7 +502,11 @@ function getMarcaURL($filename = null)
 function getCategoryURL($filename = null)
 {
     if (!is_null($filename)) {
-        return asset('storage/images/categories/' . $filename);
+        if (file_exists(public_path('storage/images/categories/' . $filename))) {
+            return asset('storage/images/categories/' . $filename);
+        } else {
+            return null;
+        }
     }
     return null;
 }

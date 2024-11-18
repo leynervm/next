@@ -76,7 +76,7 @@ class CreateProducto extends Component
 
         $this->empresa = view()->shared('empresa');
         $this->identificador = rand();
-        $this->selectedAlmacens = Almacen::orderBy('default', 'desc')->pluck('id');
+        // $this->selectedAlmacens = Almacen::orderBy('default', 'desc')->pluck('id');
         if (Module::isEnabled('Marketplace')) {
             $this->viewdetalle = Producto::VER_DETALLES;
             $this->viewespecificaciones = Producto::VER_DETALLES;

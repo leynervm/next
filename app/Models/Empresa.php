@@ -65,7 +65,8 @@ class Empresa extends Model
         'clientid',
         'clientsecret',
         'limitsucursals',
-        'afectacionigv'
+        'afectacionigv',
+        'textnovedad'
     ];
 
     const DEFAULT = '1';

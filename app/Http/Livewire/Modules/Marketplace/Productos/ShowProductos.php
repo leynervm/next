@@ -205,6 +205,7 @@ class ShowProductos extends Component
             'subcategory_id',
             'novedad',
             'sku',
+            'pricebuy',
             'pricesale',
             'precio_1',
             'precio_2',
