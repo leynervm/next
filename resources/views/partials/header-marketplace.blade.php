@@ -353,7 +353,7 @@
                             } else {
                                 // console.log(data.length);
                                 this.products = data;
-                                console.log(this.products);
+                                // console.log(this.products);
                                 this.selectedIndex = -1;
                                 if (data.length > 0) {
                                     this.backdrop = true;
