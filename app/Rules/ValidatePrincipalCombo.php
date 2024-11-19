@@ -40,7 +40,7 @@ class ValidatePrincipalCombo implements Rule
         // }
 
         $promocions = Promocion::where('status', Promocion::ACTIVO)->where('producto_id', $this->producto_id)
-            ->disponibles()->exists();
+            ->availables()->disponibles()->exists();
         if ($promocions) {
             $this->mensaje = 'Producto ya tiene promociones activas.';
             return false;

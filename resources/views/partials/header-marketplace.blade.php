@@ -3,8 +3,8 @@
         @if ($empresa->logo)
             <div class="hidden xl:flex w-72 items-center h-full">
                 <a href="/" class="w-full p-1 xl:p-2 h-[90%]">
-                    <img class="mx-auto h-full w-full object-scale-down" src="{{ getLogoEmpresa($empresa->logo, false) }}"
-                        alt="">
+                    <img class="mx-auto h-full w-full object-scale-down"
+                        src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}" alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
                 </a>
             </div>
@@ -25,10 +25,11 @@
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
                 </div>
-                @if ($empresa->image)
+                @if ($empresa->logo)
                     <div class="w-full flex-1 p-1 xl:hidden h-full">
                         <img class="h-full max-w-24 xs:w-auto xs:max-w-28 sm:max-w-32 m-auto object-center object-scale-down"
-                            src="{{ $empresa->image->getLogoEmpresa() }}" alt="">
+                            src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}"
+                            alt="">
                     </div>
                 @endif
             </button>

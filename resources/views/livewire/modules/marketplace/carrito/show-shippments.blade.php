@@ -1,7 +1,4 @@
 <div x-data="shipment">
-
-    {{-- <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" /> --}}
-
     <form @submit.prevent="save" class="w-full " id="register_order" autocomplete="off">
         <div class="w-full grid grid-cols-2 gap-3 items-end border-b border-borderminicard mb-5">
             <p class="text-sm font-medium text-colorsubtitleform">TOTAL</p>
@@ -12,9 +9,6 @@
         </div>
 
         <div class="w-full flex flex-col ">
-            {{-- <h1 class="text-lg font-semibold text-primary">
-                TIPO DE ENTREGA</h1> --}}
-
             @if (count($order) > 0)
                 <div class="w-full">
                     <span class="block w-12 h-12 text-colorsubtitleform">
@@ -497,10 +491,6 @@
         @endif
     </form>
 
-    @push('scripts')
-        <script type="text/javascript" src="{{ config('services.niubiz.url_js') }}"></script>
-    @endpush
-
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('shipment', () => ({
@@ -541,31 +531,32 @@
                     });
 
                     this.$watch("shipmenttype_id", (value) => {
-                        // if (value) {
                         this.local_id = null;
                         this.daterecojo = null;
-                        // }
                     });
-
-                    console.log(this.terms);
-                    // window.addEventListener('popstate', () => {
-                    //     isChecked = false;
-                    // })
-                    this.$watch('terms', (value) => {
-                        console.log(value);
-                    })
+                    this.$watch("lugar_id", (value) => {
+                        this.selectU.val(value).trigger("change");
+                    });
+                    this.$watch("local_id", (value) => {
+                        this.selectSuc.val(value).trigger("change");
+                    });
+                    Livewire.hook('message.processed', () => {
+                        this.selectU.select2().val(this.lugar_id).trigger('change');
+                        this.selectSuc.select2({
+                            templateResult: formatOption
+                        }).val(this.local_id).trigger('change');
+                    });
                 },
                 save() {
                     this.loading = true;
-                    this.processpay = true;
                     this.$wire.validateorder().then(async (data) => {
                         if (data) {
+                            this.processpay = true;
                             const result = data;
                             result.g_recaptcha_response = await obtenerRecaptchaToken();
                             const config = {
                                 ...await getConfigCheckout(result),
                                 complete: function(params) {
-                                    console.log(params);
                                     alert(JSON.stringify(params));
                                 }
                             }
@@ -678,12 +669,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("lugar_id", (value) => {
-                this.selectU.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectU.select2().val(this.lugar_id).trigger('change');
-            });
         }
 
         function select2Local() {
@@ -697,14 +682,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("local_id", (value) => {
-                this.selectSuc.val(value).trigger("change");
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectSuc.select2({
-                    templateResult: formatOption
-                }).val(this.local_id).trigger('change');
             });
         }
 

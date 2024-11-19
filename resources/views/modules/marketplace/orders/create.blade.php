@@ -135,4 +135,9 @@
             </div>
         @endif
     </div>
+
+    {{-- @push('scripts') --}}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
+    <script type="text/javascript" src="{{ config('services.niubiz.url_js') }}"></script>
+    {{-- @endpush --}}
 </x-app-layout>

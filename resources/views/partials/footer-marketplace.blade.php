@@ -4,10 +4,10 @@
         <div class="w-full max-w-sm h-16 mx-auto col-span-2 md:col-span-1">
             @if (!empty($empresa->logo) || !empty($empresa->logofooter))
                 @if (!empty($empresa->logofooter))
-                    <img class="w-full h-full object-scale-down" src="{{ getLogoEmpresa($empresa->logofooter, false) }}"
+                    <img class="w-full h-full object-scale-down" src="{{ getLogoEmpresa($empresa->logofooter,  request()->isSecure() ? true : false) }}"
                         alt="">
                 @else
-                    <img class="w-full h-full object-scale-down" src="{{ getLogoEmpresa($empresa->logo, false) }}"
+                    <img class="w-full h-full object-scale-down" src="{{ getLogoEmpresa($empresa->logo,  request()->isSecure() ? true : false) }}"
                         alt="">
                 @endif
             @else

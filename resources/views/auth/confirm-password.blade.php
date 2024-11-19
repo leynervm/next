@@ -4,7 +4,7 @@
             @if ($empresa)
                 @if ($empresa->logo)
                     <img class="w-full max-w-60 h-auto max-h-40 object-scale-down"
-                        src="{{ getLogoEmpresa($empresa->logo, false) }}" alt="{{ $empresa->name }}">
+                        src="{{ getLogoEmpresa($empresa->logo,  request()->isSecure() ? true : false) }}" alt="{{ $empresa->name }}">
                 @endif
             @endif
         </x-slot>

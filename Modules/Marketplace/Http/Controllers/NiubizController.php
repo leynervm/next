@@ -411,7 +411,7 @@ class NiubizController extends Controller
             'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal()),
             'expirationminutes' => 5,
             'timeouturl' =>  route('carshoop.create'),
-            'merchantlogo' => !empty($empresa->logo) ? getLogoEmpresa($empresa->logo, false) : null,
+            'merchantlogo' => !empty($empresa->logo) ? getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) : null,
             'merchantname' => $empresa->name,
             'buttoncolor' => '#ffffff',
             'formbuttoncolor' => '#0e7e7e',

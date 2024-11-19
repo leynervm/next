@@ -55,7 +55,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
                         <div class="h-12 w-32 hidden ease-in-out duration-100" id="logo-sidebar">
                             @if ($empresa->logo)
                                 <img class="w-full h-full object-scale-down object-center"
-                                    src="{{ getLogoEmpresa($empresa->logo, false) }}" alt="">
+                                    src="{{ getLogoEmpresa($empresa->logo,  request()->isSecure() ? true : false) }}" alt="">
                             @endif
                         </div>
                         <button type="button" id="sidebar-toggle"
