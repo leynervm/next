@@ -496,6 +496,17 @@ function pathURLSlider($filename = null)
 }
 
 
+function imageBase64($filename)
+{
+    if (!is_null($filename)) {
+        if (file_exists(storage_path('app/public/images/company/' . $filename))) {
+            // storage/images/company/
+            return 'data:image/png;base64,' . base64_encode(file_get_contents(storage_path('app/public/images/company/' . $filename)));
+        }
+    }
+    return null;
+}
+
 function getLogoEmpresa($filename = null, $forceHTTPS = true)
 {
     if (!is_null($filename)) {

@@ -273,11 +273,11 @@
                         @if ($compra->sucursal->empresa->image || $compra->sucursal->empresa->logoimpresion)
                             <div class="">
                                 @if ($compra->sucursal->empresa->logoimpresion)
-                                    <img src="{{ getLogoEmpresa($compra->sucursal->empresa->logoimpresion, request()->isSecure() ? true : false) }}"
+                                    <img src="{{ imageBase64($compra->sucursal->empresa->logoimpresion) }}"
                                         alt="" class="image" />
                                 @else
-                                    <img src="{{ getLogoEmpresa($compra->sucursal->empresa->image->url, request()->isSecure() ? true : false) }}"
-                                        alt="" class="image" />
+                                    <img src="{{ imageBase64($compra->sucursal->empresa->image->url) }}" alt=""
+                                        class="image" />
                                 @endif
                             </div>
                         @endif

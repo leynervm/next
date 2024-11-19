@@ -286,11 +286,11 @@
                         @if ($guia->sucursal->empresa->image || $guia->sucursal->empresa->logoimpresion)
                             <div class="">
                                 @if ($guia->sucursal->empresa->logoimpresion)
-                                    <img src="{{ getLogoEmpresa($guia->sucursal->empresa->logoimpresion, request()->isSecure() ? true : false) }}"
+                                    <img src="{{ imageBase64($guia->sucursal->empresa->logoimpresion) }}"
                                         alt="" class="image" />
                                 @else
-                                    <img src="{{ getLogoEmpresa($guia->sucursal->empresa->image->url, request()->isSecure() ? true : false) }}"
-                                        alt="" class="image" />
+                                    <img src="{{ imageBase64($guia->sucursal->empresa->image->url) }}" alt=""
+                                        class="image" />
                                 @endif
                             </div>
                         @endif
