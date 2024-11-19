@@ -214,11 +214,11 @@
     @if ($comprobante->sucursal->empresa->image || $comprobante->sucursal->empresa->logoimpresion)
         <div class="text-center">
             @if ($comprobante->sucursal->empresa->logoimpresion)
-                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->logoimpresion, false) }}" alt=""
-                    class="image" />
+                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->logoimpresion, request()->isSecure() ? true : false) }}"
+                    alt="" class="image" />
             @else
-                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, false) }}" alt=""
-                    class="image" />
+                <img src="{{ getLogoEmpresa($comprobante->sucursal->empresa->image->url, request()->isSecure() ? true : false) }}"
+                    alt="" class="image" />
             @endif
         </div>
     @endif

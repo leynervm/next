@@ -288,10 +288,10 @@
                         @if ($empresa->image || $empresa->logoimpresion)
                             <div class="">
                                 @if ($empresa->logoimpresion)
-                                    <img src="{{ getLogoEmpresa($empresa->logoimpresion, false) }}" alt=""
+                                    <img src="{{ getLogoEmpresa($empresa->logoimpresion, request()->isSecure() ? true : false) }}" alt=""
                                         class="image" />
                                 @else
-                                    <img src="{{ getLogoEmpresa($empresa->image->url, false) }}" alt=""
+                                    <img src="{{ getLogoEmpresa($empresa->image->url, request()->isSecure() ? true : false) }}" alt=""
                                         class="image" />
                                 @endif
                             </div>
