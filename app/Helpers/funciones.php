@@ -482,6 +482,19 @@ function pathURLProductImage($filename = null)
     }
 }
 
+function pathURLSlider($filename = null)
+{
+    if (!is_null($filename)) {
+        if (file_exists(public_path('storage/images/slider/' . $filename))) {
+            return asset('storage/images/slider/' . $filename);
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+}
+
 
 function getLogoEmpresa($filename = null, $forceHTTPS = true)
 {

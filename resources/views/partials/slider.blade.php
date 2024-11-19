@@ -8,9 +8,9 @@
                         <div class="lazyload-wrapper">
                             <picture>
                                 {{-- <source media="(width >= 900px)" srcset="logo-large.png"> --}}
-                                <source media="(min-width : 768px)" srcset="{{ $item->getImageURL() }}">
-                                <source srcset="{{ $item->getImageURLMobile() }}">
-                                <img src="{{ $item->getImageURL() }}" alt="{{ $item->url }}"
+                                <source media="(min-width : 768px)" srcset="{{ pathURLSlider($item->url) }}">
+                                <source srcset="{{ pathURLSlider($item->urlmobile) }}">
+                                <img src="{{ pathURLSlider($item->url) }}" alt="{{ pathURLSlider($item->url) }}"
                                     class="absolute w-full h-full object-cover">
                             </picture>
                             {{-- <img src="{{ $item->getImageURL() }}" alt="home"

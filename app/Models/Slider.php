@@ -39,16 +39,6 @@ class Slider extends Model
             ->whereNull('end');
     }
 
-    public function getImageURL()
-    {
-        return Storage::url('images/slider/' . $this->url);
-    }
-
-    public function getImageURLMobile()
-    {
-        return Storage::url('images/slider/' . $this->urlmobile);
-    }
-
     public function isActivo()
     {
         return $this->status == self::ACTIVO;
