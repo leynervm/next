@@ -81,15 +81,15 @@
                             <path
                                 d="m8.1,30c.28-.58.51-1.06.8-1.67,1.45.67,2.86,1.33,4.39,2.04-.26.56-.49,1.05-.78,1.67-1.45-.67-2.86-1.32-4.41-2.04Z" />
                         </svg> --}}
-                        <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
+                        {{-- <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
                             <picture>
                                 <source srcset="{{ asset('images/home/recursos/icon-productos.png') }}">
                                 <img src="{{ asset('images/home/recursos/icon-productos.png') }}"
                                     alt="{{ asset('images/home/recursos/icon-productos.png') }}"
                                     class="w-full h-full object-scale-down overflow-hidden">
                             </picture>
-                        </div>
-                       <span class="inline-block pl-14"> TODOS LOS PRODUCTOS</span>
+                        </div> --}}
+                       <span class="inline-block {{-- pl-14 --}} tracking-widest text-sm font-medium">TODOS LOS PRODUCTOS</span>
                     </div>
                 </a>
             </div>

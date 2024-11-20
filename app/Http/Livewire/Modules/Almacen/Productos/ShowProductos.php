@@ -48,7 +48,9 @@ class ShowProductos extends Component
     public function mount()
     {
         if (trim($this->searchcategory) !== '') {
-            $this->subcategories = Category::with('subcategories')->find($this->searchcategory)->subcategories;
+            $this->subcategories = Category::with(['subcategories' => function ($query) {
+                $query->whereHas('productos');
+            }])->where('slug', $this->searchcategory)->first()->subcategories;
         }
     }
 

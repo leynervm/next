@@ -296,7 +296,7 @@
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
                         @if ($combo)
                             @if (count($combo->products) > 0)
-                                <div class="w-full my-2">
+                                <div class="w-full my-2 px-1">
                                     @foreach ($combo->products as $itemcombo)
                                         <div class="w-full flex gap-1 rounded relative">
                                             <div
@@ -310,7 +310,7 @@
                                                 @endif
                                             </div>
                                             <div class="p-1 w-full flex-1">
-                                                <h1 class="text-[10px] leading-3 text-left text-colorsubtitleform">
+                                                <h1 class="text-[9px] sm:text-[10px] leading-none text-left text-colorsubtitleform">
                                                     {{ $itemcombo->name }}</h1>
                                             </div>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
@@ -337,7 +337,7 @@
                         @endif
 
                         @if ($pricesale > 0)
-                            <div class="{{ $paddingTop }}">
+                            <div class="{{ $paddingTop }} text-center flex flex-col justify-center">
                                 @if ($empresa->verDolar())
                                     <h1 class="text-blue-700 font-medium text-[1rem] text-center">
                                         <small class="text-xs">$. </small>
@@ -358,7 +358,7 @@
 
                                 @if (!empty($promocion))
                                     <p
-                                        class="w-full p-1 -z-[0] text-center text-[10px] leading-3 text-colorsubtitleform">
+                                        class="w-full p-1 -z-[0] text-center text-[10px] leading-none text-colorsubtitleform">
                                         @if ($promocion->limit > 0)
                                             @if ($promocion->expiredate)
                                                 Promoción válida hasta el
@@ -383,44 +383,44 @@
                                         @endif
                                     </p>
                                 @endif
-                            </div>
 
-                            <x-slot name="footer">
                                 @if ($item->stock > 0)
-                                    <x-button-like class="absolute top-1 right-1" wire:loading.attr="disabled"
-                                        wire:click="add_to_wishlist({{ $item->id }}, 1)" />
+                                    <x-slot name="buttonscart">
+                                        <x-button-like class="absolute top-1 right-1" wire:loading.attr="disabled"
+                                            wire:click="add_to_wishlist({{ $item->id }}, 1)" />
 
-                                    <div x-cloak x-show="addcart"
-                                        class="w-full bg-body z-[2] p-1 flex flex-col {{-- xl:flex-row --}} items-end gap-1 justify-end xl:absolute xl:bottom-0"
-                                        x-data="carshoop"
-                                        x-transition:enter="opacity-0 transition ease-in-out duration-300"
-                                        x-transition:enter-start="opacity-0 translate-y-full"
-                                        x-transition:enter-end="opacity-100 translate-y-0"
-                                        x-transition:leave="transition translate-y-full ease-in-out duration-300"
-                                        x-transition:leave-start="opacity-100 translate-y-0"
-                                        x-transition:leave-end="opacity-0 translate-y-0">
-                                        <div
-                                            class="w-full flex-1 flex justify-center xl:justify-start gap-0.5 gap-x-3">
-                                            <button type="button" wire:loading.attr="disabled"
-                                                @click="parseFloat(qty--)" x-bind:disabled="qty == 1"
-                                                class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">-</button>
-                                            <x-input x-model="qty"
-                                                class="w-full rounded-xl flex-1 text-center text-colorlabel input-number-none"
-                                                type="number" step="1" min="1"
-                                                onkeypress="return validarNumero(event, 4)"
-                                                @blur="if (!qty || qty === '0') qty = '1'" />
-                                            <button type="button" wire:loading.attr="disabled"
-                                                @click="parseFloat(qty++)"
-                                                class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                                        <div x-cloak x-show="addcart"
+                                            class="w-full bg-body z-[2] p-1 flex flex-col {{-- xl:flex-row --}} items-end gap-1 justify-end xl:absolute xl:bottom-0"
+                                            x-data="carshoop"
+                                            x-transition:enter="opacity-0 transition ease-in-out duration-300"
+                                            x-transition:enter-start="opacity-0 translate-y-full"
+                                            x-transition:enter-end="opacity-100 translate-y-0"
+                                            x-transition:leave="transition translate-y-full ease-in-out duration-300"
+                                            x-transition:leave-start="opacity-100 translate-y-0"
+                                            x-transition:leave-end="opacity-0 translate-y-0">
+                                            <div
+                                                class="w-full flex-1 flex justify-center xl:justify-start gap-0.5 gap-x-3">
+                                                <button type="button" wire:loading.attr="disabled"
+                                                    @click="parseFloat(qty--)" x-bind:disabled="qty == 1"
+                                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">-</button>
+                                                <x-input x-model="qty"
+                                                    class="w-full rounded-xl flex-1 text-center text-colorlabel input-number-none"
+                                                    type="number" step="1" min="1"
+                                                    onkeypress="return validarNumero(event, 4)"
+                                                    @blur="if (!qty || qty === '0') qty = '1'" />
+                                                <button type="button" wire:loading.attr="disabled"
+                                                    @click="parseFloat(qty++)"
+                                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                                            </div>
+
+                                            <x-button-add-car type="button" wire:loading.attr="disabled"
+                                                class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
+                                                @click="add_to_cart({{ $item->id }})">AGREGAR</x-button-add-car>
                                         </div>
-
-                                        <x-button-add-car type="button" wire:loading.attr="disabled"
-                                            class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
-                                            @click="add_to_cart({{ $item->id }})">AGREGAR</x-button-add-car>
-                                    </div>
+                                    </x-slot>
                                 @else
                                     <span
-                                        class="inline-block p-1 mr-1 mb-1 rounded-lg bg-red-600 text-white text-[10px] float-right">
+                                        class="inline-block p-1 mx-auto mb-1 rounded-lg bg-red-600 text-white text-[10px] float-right">
                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
                                             fill="currentColor" stroke="currentColor" stroke-width="0.7"
                                             stroke-linecap="round" stroke-linejoin="round"
@@ -429,39 +429,40 @@
                                                 d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
                                             <path
                                                 d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
-                                        </svg>
-                                        AGOTADO
+                                        </svg>AGOTADO
                                     </span>
                                 @endif
-                            </x-slot>
+                            </div>
                         @else
                             <p class="text-colorerror text-[10px] font-semibold text-center">
                                 PRECIO DE VENTA NO ENCONTRADO</p>
                         @endif
 
-                        @if ($empresa->viewAlmacens())
-                            @if (count($item->almacens) > 0)
-                                <div class="w-full flex flex-wrap xl:pt-9 gap-1">
-                                    @foreach ($item->almacens as $alm)
-                                        <span
-                                            class="inline-block p-2.5 rounded-lg text-[10px] text-primary border border-next-300">
-                                            {{ $alm->name }}
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 inline-block"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                                                <path
-                                                    d="M13 22C12.1818 22 11.4002 21.6588 9.83691 20.9764C8.01233 20.18 6.61554 19.5703 5.64648 19H2M13 22C13.8182 22 14.5998 21.6588 16.1631 20.9764C20.0544 19.2779 22 18.4286 22 17V6.5M13 22L13 11M4 6.5L4 9.5" />
-                                                <path
-                                                    d="M9.32592 9.69138L6.40472 8.27785C4.80157 7.5021 4 7.11423 4 6.5C4 5.88577 4.80157 5.4979 6.40472 4.72215L9.32592 3.30862C11.1288 2.43621 12.0303 2 13 2C13.9697 2 14.8712 2.4362 16.6741 3.30862L19.5953 4.72215C21.1984 5.4979 22 5.88577 22 6.5C22 7.11423 21.1984 7.5021 19.5953 8.27785L16.6741 9.69138C14.8712 10.5638 13.9697 11 13 11C12.0303 11 11.1288 10.5638 9.32592 9.69138Z" />
-                                                <path d="M18.1366 4.01563L7.86719 8.98485" />
-                                                <path d="M2 13H5" />
-                                                <path d="M2 16H5" />
-                                            </svg>
-                                        </span>
-                                    @endforeach
-                                </div>
+                        <x-slot name="footer">
+                            @if ($empresa->viewAlmacens())
+                                @if (count($item->almacens) > 0)
+                                    <div class="w-full p-1 pt-0 flex flex-wrap items-end  gap-1">
+                                        @foreach ($item->almacens as $alm)
+                                            <span
+                                                class="inline-block p-2 sm:p-2.5 rounded-lg text-[9px] sm:text-[10px] text-primary border border-next-300">
+                                                {{ $alm->name }}
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 inline-block"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path
+                                                        d="M13 22C12.1818 22 11.4002 21.6588 9.83691 20.9764C8.01233 20.18 6.61554 19.5703 5.64648 19H2M13 22C13.8182 22 14.5998 21.6588 16.1631 20.9764C20.0544 19.2779 22 18.4286 22 17V6.5M13 22L13 11M4 6.5L4 9.5" />
+                                                    <path
+                                                        d="M9.32592 9.69138L6.40472 8.27785C4.80157 7.5021 4 7.11423 4 6.5C4 5.88577 4.80157 5.4979 6.40472 4.72215L9.32592 3.30862C11.1288 2.43621 12.0303 2 13 2C13.9697 2 14.8712 2.4362 16.6741 3.30862L19.5953 4.72215C21.1984 5.4979 22 5.88577 22 6.5C22 7.11423 21.1984 7.5021 19.5953 8.27785L16.6741 9.69138C14.8712 10.5638 13.9697 11 13 11C12.0303 11 11.1288 10.5638 9.32592 9.69138Z" />
+                                                    <path d="M18.1366 4.01563L7.86719 8.98485" />
+                                                    <path d="M2 13H5" />
+                                                    <path d="M2 16H5" />
+                                                </svg>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             @endif
-                        @endif
+                        </x-slot>
                     </x-card-producto-virtual>
                 @endforeach
             </div>

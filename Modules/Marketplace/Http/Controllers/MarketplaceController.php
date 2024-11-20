@@ -47,17 +47,79 @@ class MarketplaceController extends Controller
 
     public function ofertas()
     {
-        $ofertas = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->addSelect(['image' => function ($query) {
+        // $ofertas = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'subcategory_id', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
+        // ->addSelect(['image' => function ($query) {
+        //     $query->select('url')->from('images')
+        //         ->whereColumn('images.imageable_id', 'productos.id')
+        //         ->where('images.imageable_type', Producto::class)
+        //         ->orderBy('default', 'desc')->limit(1);
+        // }])->withCount(['almacens as stock' => function ($query) {
+        //     $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+        // }])->whereHas('promocions', function ($query) {
+        //     $query->availables()->disponibles();
+        // })->with(['marca', 'promocions' => function ($query) {
+        //     $query->with(['itempromos.producto' => function ($itemQuery) {
+        //         $itemQuery->with('unit')->addSelect(['image' => function ($q) {
+        //             $q->select('url')->from('images')
+        //                 ->whereColumn('images.imageable_id', 'productos.id')
+        //                 ->where('images.imageable_type', Producto::class)
+        //                 ->orderBy('default', 'desc')->limit(1);
+        //         }]);
+        //     }])->availables()->disponibles();
+        // }])->publicados()->visibles()->orderBy('views', 'desc')
+        // ->orderBy('name', 'asc')->paginate(30)->through(function ($producto) {
+        //     $producto->promocion = $producto->promocions->first();
+        //     return $producto;
+        // });
+
+        $pricetype = getPricetypeAuth();
+        $ofertas = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'visivility',
+            'publicado',
+            'novedad',
+            'sku',
+            'partnumber',
+            'pricebuy',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory'
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['unit', 'almacens', 'compraitems.compra.proveedor'])
+            ->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }])->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('default', 'desc')->limit(1);
-            }])->withCount(['almacens as stock' => function ($query) {
-                $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
-            }])->whereHas('promocions', function ($query) {
-                $query->availables()->disponibles();
-            })->with(['marca', 'promocions' => function ($query) {
+            }])->with(['almacens'])->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }])->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->addSelect(['image_2' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')
+                    ->offset(1)->limit(1);
+            }])->withWhereHas('promocions', function ($query) {
                 $query->with(['itempromos.producto' => function ($itemQuery) {
                     $itemQuery->with('unit')->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
@@ -66,12 +128,11 @@ class MarketplaceController extends Controller
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
                 }])->availables()->disponibles();
-            }])->publicados()->visibles()->orderBy('views', 'desc')
-            ->orderBy('name', 'asc')->paginate(30)->through(function ($producto) {
+            })->visibles()->publicados()->orderBy('novedad', 'desc')->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->paginate(30)->through(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
                 return $producto;
             });
-        $pricetype = getPricetypeAuth();
 
         return view('modules.marketplace.productos.ofertas', compact('ofertas', 'pricetype'));
     }

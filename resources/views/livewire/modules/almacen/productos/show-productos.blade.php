@@ -232,8 +232,7 @@
                                     @if ($item->isNovedad())
                                         <div class="inline-block">
                                             @if (!empty($empresa->textnovedad))
-                                                <span
-                                                    class="p-1 px-1.5 rounded-lg sm:rounded-xl text-[10px] bg-purple-700 text-white relative">
+                                                <span class="span-novedad">
                                                     {{ $empresa->textnovedad }}</span>
                                             @endif
                                             <x-icon-novedad />

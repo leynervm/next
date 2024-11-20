@@ -72,30 +72,16 @@
 
                         @if ($producto->marca)
                             @if ($producto->marca->image && $empresa->verLogomarca())
-                                <div class="absolute top-0.5 right-0.5 w-28 h-12">
+                                <div class="absolute top-1 right-1 w-28 h-12 rounded overflow-hidden">
                                     <img src="{{ getMarcaURL($producto->marca->image->url) }}"
                                         class="block w-full h-full object-scale-down">
                                 </div>
                             @endif
                         @endif
-                        @if ($producto->verEspecificaciones())
-                            @if (count($producto->especificacions) > 0)
-                                <ul class="text-white py-3 text-[10px] absolute left-1 top-20 hidden md:flex flex-col gap-2 justify-start items-start"
-                                    x-cloak x-show="showesp">
-                                    @foreach ($producto->especificacions->take(5) as $item)
-                                        <li class="badge-especificacion p-1 bg-gray-500 rounded-xl text-[9px] max-w-36">
-                                            <span class="font-medium inline-block">
-                                                {{ $item->caracteristica->name }} : </span>
-                                            {{ $item->name }}
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            @endif
-                        @endif
-
+                        
                         @if ($promocion)
-                            <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
-                                <p class="text-white text-[10px] inline-block font-medium p-2 px-10">
+                            <div class="w-auto h-auto bg-red-600 absolute -left-10 top-7 -rotate-[35deg] leading-none">
+                                <p class="text-white text-sm block font-medium py-2.5 px-20 tracking-widest">
                                     @if ($empresa->isTitlePromocion())
                                         PROMOCIÓN
                                     @elseif($empresa->isTitleLiquidacion())
@@ -111,6 +97,21 @@
                                     @endif
                                 </p>
                             </div>
+                        @endif
+
+                        @if ($producto->verEspecificaciones())
+                            @if (count($producto->especificacions) > 0)
+                                <ul class="text-white py-3 text-[10px] absolute left-1 top-20 hidden md:flex flex-col gap-2 justify-start items-start"
+                                    x-cloak x-show="showesp">
+                                    @foreach ($producto->especificacions->take(5) as $item)
+                                        <li class="badge-especificacion p-1 bg-gray-500 rounded-xl text-[9px] max-w-36">
+                                            <span class="font-medium inline-block">
+                                                {{ $item->caracteristica->name }} : </span>
+                                            {{ $item->name }}
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         @endif
                     </div>
 
@@ -153,11 +154,10 @@
 
                 <div class="w-full flex-1 sm:py-2 px-1 md:pl-8">
                     <div class="w-full border-b border-b-borderminicard pb-5">
-                        @if ($producto->novedad)
+                        @if ($producto->isNovedad())
                             <div class="inline-block">
                                 @if (!empty($empresa->textnovedad))
-                                    <span
-                                        class="inline-block p-1 px-1.5 rounded-lg sm:rounded-xl text-[11px] bg-purple-700 text-white relative">
+                                    <span class="span-novedad p-1.5 px-2">
                                         {{ $empresa->textnovedad }}</span>
                                 @endif
                                 <x-icon-novedad class="size-6" />
