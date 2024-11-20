@@ -112,7 +112,9 @@ class ShowProductos extends Component
                 "similarity(productos.name, '" . $this->search . "') > 0.5 
                 OR similarity(marcas.name, '" . $this->search . "') > 0.5 
                 OR similarity(categories.name, '" . $this->search . "') > 0.5",
-            )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
+            )->orderByDesc('novedad')->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC')->orderByDesc('rank')
+                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
         }
 
         if (trim($this->searchalmacen) != '') {
@@ -143,9 +145,13 @@ class ShowProductos extends Component
             $productos->visibles();
         }
 
-        $productos = $productos->orderBy('novedad', 'DESC')
-            ->orderBy('subcategories.orden', 'ASC')
-            ->orderBy('categories.orden', 'ASC')->paginate();
+        if (trim($this->search) == '') {
+            $productos = $productos->orderByDesc('novedad')
+                ->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC');
+        }
+
+        $productos = $productos->paginate();
 
 
         $marcas = Marca::query()->select('id', 'name', 'slug')

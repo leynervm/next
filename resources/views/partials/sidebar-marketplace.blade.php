@@ -89,7 +89,8 @@
                                     class="w-full h-full object-scale-down overflow-hidden">
                             </picture>
                         </div> --}}
-                       <span class="inline-block {{-- pl-14 --}} tracking-widest text-sm font-medium">TODOS LOS PRODUCTOS</span>
+                        <span class="inline-block {{-- pl-14 --}} tracking-widest text-xs font-medium">
+                            TODOS LOS PRODUCTOS</span>
                     </div>
                 </a>
             </div>

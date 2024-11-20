@@ -663,9 +663,10 @@ class MarketplaceController extends Controller
             "similarity(productos.name, '" . $search . "') > 0.5 
             OR similarity(marcas.name, '" . $search . "') > 0.5 
             OR similarity(categories.name, '" . $search . "') > 0.5",
-        )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
-            ->orderBy('subcategories.orden', 'ASC')->orderBy('categories.orden', 'ASC')
-            ->visibles()->publicados()->orderBy('name', 'asc')->limit(15);
+        )->orderByDesc('novedad')->orderBy('subcategories.orden')
+            ->orderBy('categories.orden')->orderByDesc('rank')
+            ->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
+            ->visibles()->publicados()->limit(30);
 
         $products = $products->get()->transform(function ($item) {
             $item->image = pathURLProductImage($item->image);

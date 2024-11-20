@@ -397,9 +397,9 @@
 
                             @if ($item->producto->isRequiredserie() && count($item->itemseries) < $item->cantidad)
                                 <div class="w-full mt-2" x-data="{ addserie: false }">
-                                    <form class="w-full inline-flex"
+                                    <form class="w-full inline-flex gap-0.5"
                                         wire:submit.prevent="saveserie({{ $item->id }})">
-                                        <x-input class="block w-full" minlength="1" maxlength="255"
+                                        <x-input class="block w-full flex-1" minlength="1" maxlength="255"
                                             wire:model.defer="tvitem.{{ $item->id }}.serie" />
                                         <x-button-add class="px-2" wire:loading.attr="disabled" type="submit">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"

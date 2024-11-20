@@ -288,7 +288,9 @@ class ShowProductos extends Component
                 "similarity(productos.name, '" . $this->search . "') > 0.5 
                 OR similarity(marcas.name, '" . $this->search . "') > 0.5 
                 OR similarity(categories.name, '" . $this->search . "') > 0.5",
-            )->orderByDesc('rank')->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
+            )->orderByDesc('novedad')->orderBy('subcategories.orden')
+                ->orderBy('categories.orden')->orderByDesc('rank')
+                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
         }
 
         $productos->visibles()->publicados();
@@ -301,8 +303,10 @@ class ShowProductos extends Component
             $this->filterselected = 'name_asc';
             $column = 'name';
             $order = 'asc';
-            $productos->orderBy('novedad', 'desc')->orderBy('subcategories.orden', 'ASC')
-                ->orderBy('categories.orden', 'ASC');
+            if (trim($this->search) == '') {
+                $productos->orderBy('novedad', 'desc')->orderBy('subcategories.orden', 'ASC')
+                    ->orderBy('categories.orden', 'ASC');
+            }
         }
 
         // dd($productos->toSql());
