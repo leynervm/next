@@ -1311,7 +1311,10 @@ class CreateVenta extends Component
             $counter = 1;
             $totalAmountCuotas = number_format($this->total - $this->paymentactual, 3, '.', '');
             // $amountCuota = number_format($totalAmountCuotas / $this->countcuotas, 3, '.', '');
-            $percentPay = number_format($this->paymentactual * 100 / ($this->total - $this->amountincrement), 3, '.', '');
+            $percentPay = 0;
+            if ($this->total > 0) {
+                $percentPay = number_format($this->paymentactual * 100 / ($this->total - $this->amountincrement), 3, '.', '');
+            }
             $percentItem = number_format($this->increment - ($this->increment * $percentPay / 100), 3, '.', '');
             // dd($percentPay, $percentItem);
 

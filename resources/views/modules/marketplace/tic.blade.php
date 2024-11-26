@@ -101,11 +101,11 @@
                 <article id="tabpanel-1" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-1"
                     x-show="activeTab === 1"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-x-8"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:-translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-x-12">
+                    x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-x-12">
 
                     <div class="w-full bg-gray-700 py-5 pb-8 rounded-lg md:rounded-3xl">
                         <div class="w-full max-w-[95%] md:max-w-[85%] mx-auto">
@@ -115,25 +115,23 @@
                                 En Next technologies, ofrecemos soluciones de desarrollo de software personalizadas para
                                 satisfacer las necesidades específicas de tu negocio. Nuestro enfoque se basa en la
                                 colaboración y la comprensión profunda de tus objetivos, garantizando que cada proyecto
-                                se
-                                entregue a
-                                tiempo y dentro del presupuesto.
+                                se entregue a tiempo y dentro del presupuesto.
                             </p>
 
                             <div class="w-full relative mt-5 rounded-lg md:rounded-3xl overflow-hidden">
                                 <picture>
-                                    <source srcset="{{ asset('images/home/recursos/recurso_1.png') }}">
-                                    <img src="{{ asset('images/home/recursos/recurso_1.png') }}"
-                                        alt="{{ asset('images/home/recursos/recurso_1.png') }}"
+                                    <source srcset="{{ $data->desarrollo->image }}">
+                                    <img src="{{ $data->desarrollo->image }}"
+                                        alt="{{ $data->desarrollo->image }}"
                                         class="w-full h-full max-h-[28rem] object-scale-down sm:object-cover rounded-lg overflow-hidden">
                                 </picture>
-                                <div
+                                {{-- <div
                                     class="absolute w-full max-w-full left-0 bottom-0 sm:h-[165%] sm:top-[50%] sm:-translate-y-[50%] sm:-left-[53%] sm:rounded-r-[50%] flex justify-center items-center p-2 sm:p-3 bg-next-500 bg-opacity-70 sm:bg-opacity-100 rounded-t-xl">
                                     <h1
                                         class="text-xs xs:text-lg sm:text-2xl lg:text-3xl font-medium sm:pl-[55%] text-white w-full !leading-none">
                                         Transformamos Ideas en Soluciones: La revolución del Desarrollo de Software
                                     </h1>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     </div>
@@ -215,15 +213,15 @@
                 <article id="tabpanel-2" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-2"
                     x-show="activeTab === 2"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-x-8"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:-translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-x-12">
+                    x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-x-12">
                     {{-- <h1 class="heading">Card Flip</h1> --}}
                     <div class="w-full grid grid-cols-2 md:grid-cols-3 gap-1 md:gap-5">
                         @foreach ($data->soporte->content as $item)
-                            <div class="card-solutions support" :key="$i">
+                            <div class="card-solutions security" :key="$i">
                                 <picture>
                                     <source srcset="{{ $item->url }}">
                                     <img src="{{ $item->url }}" alt="{{ $item->url }}" class="">

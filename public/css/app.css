@@ -2696,6 +2696,7 @@ input[type=number].input-number-none {
     position: relative;
 }
 
+
 .card-solutions.security:before {
     position: absolute;
     content: "";
@@ -2703,12 +2704,13 @@ input[type=number].input-number-none {
     left: 0;
     height: 100%;
     width: 100%;
-    /* background: rgb(255, 255, 255); */
+    background: rgb(255, 255, 255);
     background: linear-gradient(
         0deg,
         rgba(255, 255, 255, 0.9) 15%,
         rgba(255, 255, 255, 0) 45%
     );
+    
 }
 
 .list-datacenter li > :not([hidden]) ~ :not([hidden]) {
@@ -5514,6 +5516,14 @@ select {
   --tw-translate-y: 100%;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
+.translate-y-12 {
+  --tw-translate-y: 3rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+.-translate-y-8 {
+  --tw-translate-y: -2rem;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
 .-rotate-180 {
   --tw-rotate: -180deg;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
@@ -5669,14 +5679,8 @@ select {
 .grid-cols-\[repeat\(auto-fill\2c minmax\(180px\2c 1fr\)\)\] {
   grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
 }
-.grid-cols-\[repeat\(auto-fill\2c minmax\(220px\2c 1fr\)\)\] {
-  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
-}
 .grid-cols-\[repeat\(auto-fill\2c minmax\(240px\2c 1fr\)\)\] {
   grid-template-columns: repeat(auto-fill,minmax(240px,1fr));
-}
-.grid-cols-\[repeat\(auto-fill\2c minmax\(190px\2c 1fr\)\)\] {
-  grid-template-columns: repeat(auto-fill,minmax(190px,1fr));
 }
 .flex-row {
   flex-direction: row;
@@ -5808,6 +5812,9 @@ select {
 }
 .divide-dividetable > :not([hidden]) ~ :not([hidden]) {
   border-color: var(--divide-table);
+}
+.place-self-start {
+  place-self: start;
 }
 .self-start {
   align-self: flex-start;
@@ -8412,10 +8419,6 @@ select {
     flex-wrap: wrap;
   }
 
-  .xs\:gap-0 {
-    gap: 0px;
-  }
-
   .xs\:gap-2 {
     gap: 0.5rem;
   }
@@ -8901,6 +8904,10 @@ select {
     padding: 0px;
   }
 
+  .sm\:p-2\.5 {
+    padding: 0.625rem;
+  }
+
   .sm\:p-3 {
     padding: 0.75rem;
   }
@@ -8915,10 +8922,6 @@ select {
 
   .sm\:p-6 {
     padding: 1.5rem;
-  }
-
-  .sm\:p-2\.5 {
-    padding: 0.625rem;
   }
 
   .sm\:px-0 {
@@ -9047,10 +9050,6 @@ select {
   .sm\:text-xs {
     font-size: 0.75rem;
     line-height: 1rem;
-  }
-
-  .sm\:leading-3 {
-    line-height: .75rem;
   }
 }
 @media (min-width: 768px) {
@@ -9221,6 +9220,16 @@ select {
 
   .md\:translate-x-0 {
     --tw-translate-x: 0px;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+
+  .md\:-translate-x-8 {
+    --tw-translate-x: -2rem;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+
+  .md\:translate-x-12 {
+    --tw-translate-x: 3rem;
     transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   }
 
@@ -9536,6 +9545,21 @@ select {
     flex-shrink: 0;
   }
 
+  .lg\:-translate-x-8 {
+    --tw-translate-x: -2rem;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+
+  .lg\:translate-x-0 {
+    --tw-translate-x: 0px;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+
+  .lg\:translate-x-12 {
+    --tw-translate-x: 3rem;
+    transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+  }
+
   .lg\:grid-cols-1 {
     grid-template-columns: repeat(1, minmax(0, 1fr));
   }
@@ -9622,11 +9646,6 @@ select {
   .lg\:py-4 {
     padding-top: 1rem;
     padding-bottom: 1rem;
-  }
-
-  .lg\:px-1 {
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
   }
 
   .lg\:pb-24 {
@@ -9847,10 +9866,6 @@ select {
 
   .xl\:pb-12 {
     padding-bottom: 3rem;
-  }
-
-  .xl\:pb-2 {
-    padding-bottom: 0.5rem;
   }
 
   .xl\:pb-20 {

@@ -448,161 +448,161 @@ class MarketplaceController extends Controller
     public function tic()
     {
         $desarrollo = [
-            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'image' =>   asset('images/tic/ds_principal.jpg'),
             'content' => [
                 [
                     'title' => 'DevOps',
                     'description' => 'Implementamos procesos a través de la configuración de software para la gestión automatizada, pruebas de regresión, otros sistemas software y la nube que impulsan soluciones competitivas en el mercado.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ds_devops.jpg'),
                 ],
                 [
                     'title' => 'Ingeniería de Calidad',
                     'description' => 'Maximizamos la estabilidad de las aplicaciones y optimizamos el tiempo de las pruebas y los costos. Al mismo tiempo que incluimos pruebas unitarias, funcionales, integradas a los sistemas de rendimiento, de seguridad y de aceptación del usuario. El alcance de la automatización inteligente comprende de áreas móviles, web, APIs y servicios.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ds_ingenieria.jpg'),
                 ]
             ]
         ];
         $soporte = [
-            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'image' =>   asset('images/tic/st_principal.jpg'),
             'content' => [
                 [
                     'title' => 'Cambio de Pantalla',
                     'description' => 'Devuélvele la claridad a tu dispositivo: cambio de pantalla para que disfrutes cada detalle de nuevo.',
-                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                    'url' => asset('images/tic/st_cambio_pantalla.jpg'),
                 ],
                 [
                     'title' => 'Repotenciamos tu case',
                     'description' => 'Repotenciamos tu case para que luzca y rinda como nuevo, llevando tu tecnología al siguiente nivel.',
-                    'url' => asset('images/home/recursos/reparacion_hw_sw.jpg'),
+                    'url' => asset('images/tic/st_repotenciamos_pc.jpg'),
                 ],
                 [
                     'title' => 'Cambio de teclado',
                     'description' => 'Renueva tu experiencia de escritura: cambia tu teclado y siente la diferencia en cada pulsación.',
-                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                    'url' => asset('images/tic/st_cambio_teclado.jpg'),
                 ],
                 [
                     'title' => 'Instalación de programas de ingeniería',
                     'description' => 'Instala tus herramientas de ingeniería y transforma ideas en soluciones innovadoras.',
-                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                    'url' => asset('images/tic/st_instalacion_sw.jpg'),
                 ],
                 [
                     'title' => 'Soporte técnico de impresora',
                     'description' => 'Estamos aquí para asegurar que tu impresión fluya sin problemas: ¡tu soporte técnico de confianza para impresoras!.',
-                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                    'url' => asset('images/tic/st_impresora.jpg'),
                 ],
                 [
                     'title' => 'Reparación de case',
                     'description' => 'Devuelve la vida a tu equipo: reparación de cases para que tu tecnología siempre esté protegida y lista para rendir.',
-                    'url' => asset('images/home/recursos/recurso_3.jpg'),
+                    'url' => asset('images/tic/st_reparacion_case.jpg'),
                 ],
             ]
         ];
         $seguridad = [
-            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'image' =>   asset('images/tic/se_principal.jpg'),
             'content' => [
                 [
                     'title' => 'Cámaras de vigilancia (CCTV)',
                     'description' => 'Las cámaras de vigilancia (CCTV) son tus ojos en todo momento, asegurando la seguridad y protección de tus espacios.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/se_camaras.jpg'),
                 ],
                 [
                     'title' => 'Alarmas de intrusión',
                     'description' => 'Las alarmas de intrusión son tu primera línea de defensa, alertando sobre cualquier acceso no autorizado y manteniendo tu hogar o negocio a salvo.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/se_alarmas.jpg'),
                 ],
                 [
                     'title' => 'Control de acceso',
                     'description' => 'El control de acceso garantiza que solo las personas autorizadas ingresen a áreas sensibles, protegiendo tu seguridad y la de tus bienes.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/se_acceso.jpg'),
                 ],
                 [
                     'title' => 'Sensores de humo y fuego',
                     'description' => 'Los sensores de humo y fuego son guardianes silenciosos que salvan vidas al detectar peligros a tiempo.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/se_sensores_humo.jpg'),
                 ],
                 [
                     'title' => 'Sistema de videovigilancia en la nube',
                     'description' => 'El sistema de videovigilancia en la nube te ofrece seguridad y acceso instantáneo a tus grabaciones desde cualquier lugar.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/se_vigilancia_nube.jpg'),
                 ],
                 [
                     'title' => 'Sensores de movimiento',
                     'description' => 'Los sensores de movimiento son la primera alerta ante intrusos, protegiendo tus espacios con precisión.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/se_sensores_movimiento.jpg'),
                 ],
             ]
         ];
         $datacenter = [
-            'image' => asset('images/home/recursos/recurso_5.jpg'),
+            'image' => asset('images/tic/dc_principal.jpg'),
             'content' => []
         ];
         $redes = [
-            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'image' =>   asset('images/tic/rt_principal.jpg'),
             'content' => [
                 [
                     'title' => 'Conectividad a Internet',
                     'description' => 'Ofrecemos acceso a internet de alta velocidad con opciones de redundancia para una conexión ininterrumpida.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/rt_conectividad.jpg'),
                 ],
                 [
                     'title' => 'Redes Privadas Virtuales (VPN)',
                     'description' => 'Conéctate de forma segura a tu red corporativa desde cualquier lugar con nuestras soluciones VPN.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/rt_redes_privadas.jpg'),
                 ],
                 [
                     'title' => 'Servicios de Telefonía IP',
                     'description' => 'Reduce costos y mejora la comunicación con nuestras soluciones de telefonía VoIP avanzadas.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/rt_telefonia.jpg'),
                 ],
                 [
                     'title' => 'Gestión de Redes',
                     'description' => 'Monitorea y optimiza tu red con nuestros servicios de gestión integral y soporte técnico.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/rt_gestion_redes.jpg'),
                 ],
                 [
                     'title' => 'Instalación y Mantenimiento de Infraestructura de Red',
                     'description' => 'Diseñamos e implementamos la infraestructura de red perfecta para tus necesidades, con soporte continuo.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/rt_instalacion.jpg'),
                 ],
                 [
                     'title' => 'Servicios de Seguridad de Redes',
                     'description' => 'Protege tu red y datos con nuestras soluciones avanzadas de ciberseguridad y monitoreo constante.',
-                    'url' => asset('images/home/recursos/recurso_2.jpg'),
+                    'url' => asset('images/tic/rt_seguridad_redes.jpg'),
                 ],
             ]
         ];
         $electricidad = [
-            'image' =>   asset('images/home/recursos/recurso_5.jpg'),
+            'image' =>   asset('images/tic/ea_principal.jpg'),
             'content' => [
                 [
                     'title' => 'Instalación de Iluminación LED',
                     'description' => 'Implementación de soluciones de iluminación LED para mejorar la eficiencia energética y reducir costos de electricidad.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ea_instalaciones_led.jpg'),
                 ],
                 [
                     'title' => 'Control de Climatización Inteligente',
                     'description' => 'Instalación de sistemas de control inteligente para aire acondicionado, permitiendo la programación y el control remoto de la temperatura.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ea_control_climatizacion.jpg'),
                 ],
                 [
                     'title' => 'Actualización de Paneles Eléctricos',
                     'description' => 'Modernización de paneles eléctricos para mejorar la capacidad y seguridad de la instalación eléctrica.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ea_paneles_electricos.jpg'),
                 ],
                 [
                     'title' => 'Inspección de Seguridad Eléctrica',
                     'description' => 'Evaluaciones detalladas de sistemas eléctricos para identificar riesgos y garantizar el cumplimiento de las normativas de seguridad.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ea_inspeccion_seguridad.jpg'),
                 ],
                 [
                     'title' => 'Deshumidificación y Purificación de Aire',
                     'description' => 'Instalación de sistemas adicionales para deshumidificar y purificar el aire en espacios cerrados, mejorando la calidad del aire interior.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ea_deshumidificacion.jpg'),
                 ],
                 [
                     'title' => 'Asesoramiento Energético',
                     'description' => 'Consultoría sobre soluciones energéticas sostenibles y eficientes, ayudando a los clientes a tomar decisiones informadas sobre sus sistemas eléctricos y de aire acondicionado.',
-                    'url' => asset('images/home/recursos/recurso_6.jpg'),
+                    'url' => asset('images/tic/ea_asesoramiento_energetico.jpg'),
                 ]
             ]
         ];

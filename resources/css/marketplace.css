@@ -769,6 +769,7 @@
     position: relative;
 }
 
+
 .card-solutions.security:before {
     position: absolute;
     content: "";
@@ -776,7 +777,7 @@
     left: 0;
     height: 100%;
     width: 100%;
-    /* background: rgb(255, 255, 255); */
+    background: rgb(255, 255, 255);
     background: -moz-linear-gradient(
         0deg,
         rgba(255, 255, 255, 0.9) 15%,
@@ -792,6 +793,7 @@
         rgba(255, 255, 255, 0.9) 15%,
         rgba(255, 255, 255, 0) 45%
     );
+    
 }
 
 .list-datacenter li {
