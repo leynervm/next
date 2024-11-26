@@ -101,11 +101,11 @@
                 <article id="tabpanel-1" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-1"
                     x-show="activeTab === 1"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-y-8 lg:-translate-x-8"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:translate-y-0 lg:-translate-x-8"
                     x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
                     x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-x-12">
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-y-0 lg:translate-x-12">
 
                     <div class="w-full bg-gray-700 py-5 pb-8 rounded-lg md:rounded-3xl">
                         <div class="w-full max-w-[95%] md:max-w-[85%] mx-auto">
@@ -213,11 +213,11 @@
                 <article id="tabpanel-2" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-2"
                     x-show="activeTab === 2"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-y-8 lg:-translate-x-8"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:translate-y-0 lg:-translate-x-8"
                     x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
                     x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-x-12">
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-y-0 lg:translate-x-12">
                     {{-- <h1 class="heading">Card Flip</h1> --}}
                     <div class="w-full grid grid-cols-2 md:grid-cols-3 gap-1 md:gap-5">
                         @foreach ($data->soporte->content as $item)

@@ -6,6 +6,7 @@ use App\Models\Producto;
 use App\Models\Serie;
 use App\Rules\CampoUnique;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -75,29 +76,47 @@ class ShowSeries extends Component
         $this->authorize('admin.almacen.productos.series.edit');
         $this->serie = trim(mb_strtoupper($this->serie, "UTF-8"));
         $this->validate();
+        DB::beginTransaction();
+        try {
+            $seriesDisponibles = $this->producto->seriesdisponibles
+                ->where('almacen_id', $this->almacen_id)->count();
 
-        $seriesDisponibles = $this->producto->seriesdisponibles
-            ->where('almacen_id', $this->almacen_id)->count();
+            $stockAlmacen = $this->producto->almacens
+                ->find($this->almacen_id)->pivot->cantidad;
 
-        $stockAlmacen = $this->producto->almacens
-            ->find($this->almacen_id)->pivot->cantidad;
+            if ($seriesDisponibles >= $stockAlmacen) {
+                $this->addError('serie', 'Serie sobrepase el stock disponible en almacén.');
+                return false;
+            }
 
-        if ($seriesDisponibles >= $stockAlmacen) {
-            $this->addError('serie', 'Serie sobrepase el stock disponible en almacén.');
-            return false;
+            $existSerie = Serie::onlyTrashed()->where('serie', $this->serie)->first();
+            $serie = [
+                'date' => now('America/Lima'),
+                'serie' => $this->serie,
+                'almacen_id' => $this->almacen_id,
+                'user_id' => auth()->user()->id,
+            ];
+
+            if ($existSerie) {
+                $existSerie->restore();
+                $serie['created_at'] = now('America/Lima');
+                $serie['updated_at'] = now('America/Lima');
+                $existSerie->update($serie);
+            } else {
+                $this->producto->series()->create($serie);
+            }
+            DB::commit();
+            $this->resetValidation();
+            $this->reset(['serie', 'almacen_id']);
+            $this->producto->refresh();
+            $this->dispatchBrowserEvent('created');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $this->producto->series()->create([
-            'date' => now('America/Lima'),
-            'serie' => $this->serie,
-            'almacen_id' => $this->almacen_id,
-            'user_id' => auth()->user()->id,
-        ]);
-
-        $this->resetValidation();
-        $this->reset(['serie', 'almacen_id']);
-        $this->producto->refresh();
-        $this->dispatchBrowserEvent('created');
     }
 
     public function delete(Serie $serie)
@@ -109,25 +128,34 @@ class ShowSeries extends Component
             'Items_ventas' => $itemseries,
         ]);
 
-        if ($itemseries > 0) {
-            $mensaje = response()->json([
-                'title' => 'No se puede eliminar registro, ' . $serie->serie,
-                'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-        } else {
-
-            if ($serie->status == 1) {
+        DB::beginTransaction();
+        try {
+            if ($itemseries > 0) {
                 $mensaje = response()->json([
-                    'title' => 'No se puede eliminar serie, ' . $serie->serie,
-                    'text' => "La serie se encuentra agregado al carrito de ventas, eliminarlo causaría un conflicto en la base de datos."
+                    'title' => 'No se puede eliminar registro, ' . $serie->serie,
+                    'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
             } else {
-                $serie->deleteOrFail();
-                $this->producto->refresh();
-                $this->dispatchBrowserEvent('deleted');
+                if ($serie->status == 1) {
+                    $mensaje = response()->json([
+                        'title' => 'No se puede eliminar serie, ' . $serie->serie,
+                        'text' => "La serie se encuentra agregado al carrito de ventas, eliminarlo causaría un conflicto en la base de datos."
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                } else {
+                    $serie->delete();
+                    DB::commit();
+                    $this->producto->refresh();
+                    $this->dispatchBrowserEvent('deleted');
+                }
             }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 
