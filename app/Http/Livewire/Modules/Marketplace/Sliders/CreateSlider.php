@@ -115,7 +115,7 @@ class CreateSlider extends Component
         list($type, $imageSlider) = explode(';', $imageSlider);
         list(, $imageSlider) = explode(',', $imageSlider);
         $imageSlider = base64_decode($imageSlider);
-        $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 70);
+        $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 30);
 
         if ($compressedSlider->width() < $width || $compressedSlider->height() < $height) {
             $this->addError($attribute, "La :imagen debe tener dimensiones de " . $width . 'x' . $height . " píxeles.");

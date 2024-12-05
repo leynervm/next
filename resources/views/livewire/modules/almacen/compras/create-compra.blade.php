@@ -1,6 +1,5 @@
 <div class="w-full flex flex-col gap-3 lg:gap-5" x-data="data">
-    <div wire:loading.flex wire:target="producto_id,addproducto,removeitem,addserie,removeserie,save"
-        class="fixed loading-overlay hidden">
+    <div wire:loading.flex class="fixed loading-overlay hidden">
         <x-loading-next />
     </div>
 
@@ -143,91 +142,27 @@
 
     <x-form-card titulo="AGREGAR PRODUCTOS">
         <form class="w-full flex flex-col gap-2" @submit.prevent="addproducto">
-            <div class="flex w-full flex-col gap-1" x-on:keydown="handleKeydownOnOptions($event)"
-                x-on:keydown.esc.window="isOpen = false, openedWithKeyboard = false">
+            <div class="flex w-full flex-col gap-1">
                 <x-label value="Seleccionar producto :" />
-                <div class="relative">
-                    <button type="button"
-                        class="inline-flex w-full items-center justify-between gap-2 border border-next-300 rounded-lg px-3 pr-6 py-2 text-sm font-medium tracking-wide text-colorinput transition"
-                        role="combobox" aria-controls="statesList" aria-haspopup="listbox"
-                        x-on:click="isOpen = ! isOpen" x-on:keydown.down.prevent="openedWithKeyboard = true"
-                        x-on:keydown.enter.prevent="openedWithKeyboard = true"
-                        x-on:keydown.space.prevent="openedWithKeyboard = true"
-                        x-bind:aria-expanded="isOpen || openedWithKeyboard"
-                        x-bind:aria-label="producto_id ? selectedOption.name : 'Seleccionar'">
-                        <span class="text-xs w-full text-left truncate font-normal text-colorsubtitleform"
-                            x-text="producto_id ? selectedOption.name : 'Seleccionar...'"></span>
-                        <x-icon-select />
-                    </button>
-
-                    <input id="state" name="state" autocomplete="off" x-ref="hiddenTextField"
-                        hidden="" />
-                    <div style="display: none;" x-cloak x-show="isOpen || openedWithKeyboard" id="statesList"
-                        class="absolute left-0 top-0 z-10 w-full overflow-hidden bg-fondodropdown rounded-lg mt-10 shadow-lg"
-                        role="listbox" aria-label="states list"
-                        x-on:click.outside="isOpen = false, openedWithKeyboard = false"
-                        x-on:keydown.down.prevent="$focus.wrap().next()"
-                        x-on:keydown.up.prevent="$focus.wrap().previous()" x-transition x-trap="openedWithKeyboard">
-
-                        <div class="">
-                            <div class="relative p-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                    fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                                    class="absolute left-4 top-1/2 w-5 h-5 -translate-y-1/2 text-colorsubtitleform">
-                                    <path
-                                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                </svg>
-                                <x-input class="w-full block p-2 pl-11 pr-4" name="search" aria-label="Search"
-                                    @input="getFilteredOptions(search)" x-ref="search" x-model="search"
-                                    placeholder="Buscar producto" autocomplete="off" {{--  @input.debounce.300ms="fetchProducts" --}} />
-                            </div>
-
-                            <ul class="flex max-h-60 p-1 flex-col overflow-y-auto">
-                                <li class="hidden p-2 text-colorlabel" x-ref="noResultsMessage">
-                                    <p class="text-colorsubtitleform text-xs">No se encontraron resultados.</p>
-                                </li>
-
-                                <template x-for="(item, index) in filteredProducts" x-bind:key="item.id">
-                                    <li class="combobox-option rounded-md inline-flex cursor-pointer justify-between items-center gap-2 p-1 text-xs text-colorlabel hover:bg-fondohoverselect2 focus-visible:border-none focus-visible:bg-fondohoverselect2 focus-visible:outline-none"
-                                        role="option" x-on:click="setSelectedOption(item)"
-                                        x-on:keydown.enter="setSelectedOption(item)" x-bind:id="'option-' + index"
-                                        tabindex="0"
-                                        :class="(producto_id == item.id) ? 'bg-fondohoverselect2' : 'bg-fondodropdown'">
-
-                                        <div class="w-full flex items-center gap-2">
-                                            <div class="w-16 xs:w-28 h-16 xs:h-20 rounded-lg">
-                                                <template x-if="item.image_url">
-                                                    <img x-bind:src="item.image_url" :alt="item.image_url"
-                                                        class="object-scale-down w-full h-full overflow-hidden">
-                                                </template>
-                                                <template x-if="item.image_url == null">
-                                                    <x-icon-image-unknown
-                                                        class="w-full h-full !text-colorsubtitleform" />
-                                                </template>
-                                            </div>
-
-                                            <div class="flex-1 w-full text-[10px] sm:text-xs">
-                                                <p class="text-colorlabel leading-3"
-                                                    x-bind:class="producto_id == item.id ? 'font-bold' : null"
-                                                    x-text="item.name"></p>
-                                                <p class="text-colorsubtitleform text-[10px] font-semibold"
-                                                    x-text="item.marca"></p>
-                                                <span class="sr-only"
-                                                    x-text="producto_id == item.id ? 'selected' : null"></span>
-                                            </div>
-                                        </div>
-                                        {{-- <svg style="display: none;" x-cloak x-show="producto_id == item.id"
-                                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            stroke="currentColor" fill="none" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round"
-                                            class="w-5 h-5 mr-4 text-next-500">
-                                            <path d="m4.5 12.75 6 6 9-13.5">
-                                        </svg> --}}
-                                    </li>
-                                </template>
-                            </ul>
-                        </div>
-                    </div>
+                <div class="w-full relative" x-init="select2Producto" id="parentproducto_id">
+                    <x-select class="block w-full uppercase" x-ref="selectprod" data-minimum-results-for-search="3"
+                        id="producto_id">
+                        <x-slot name="options">
+                            @if (count($productos) > 0)
+                                @foreach ($productos as $item)
+                                    <option data-marca="{{ $item->name_marca }}"
+                                        data-category="{{ $item->name_category }}"
+                                        data-subcategory="{{ $item->name_subcategory }}"
+                                        data-requireserie="{{ $item->isRequiredserie() }}"
+                                        data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                        value="{{ $item->id }}">
+                                        {{ $item->name }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
                 </div>
                 <x-jet-input-error for="producto_id" />
             </div>
@@ -281,34 +216,32 @@
                 @endif
             </div>
 
-            {{-- @if ($errors->any())
-                @foreach ($errors->keys() as $item)
-                    <x-jet-input-error :for="$item" />
-                @endforeach
-            @endif --}}
-
             @if (count($almacens) > 0)
                 <div class="w-full flex flex-wrap gap-2" wire:target="producto_id" wire:loading.remove>
                     @foreach ($almacens as $key => $item)
-                        <x-simple-card wire:key="{{ $key }}"
+                        <x-simple-card wire:key="{{ $key }}" wire:loading.class="opacity-25"
                             class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
-                            <div class="text-colorsubtitleform text-center">
-                                <small class="w-full block text-center text-[8px] leading-3">STOCK
-                                    ACTUAL</small>
-                                <span
-                                    class="inline-block text-2xl text-center font-semibold">{{ $item['pivot']['cantidad'] }}</span>
-                                <small class="inline-block text-center text-[10px] leading-3"
-                                    x-text="selectedOption != undefined ? selectedOption.unit : ''">UND</small>
-                            </div>
-
                             <h1 class="text-colortitleform text-[10px] text-center font-semibold">
                                 {{ $item['name'] }}</h1>
+
+                            <div class="text-colorsubtitleform text-center">
+                                <small class="w-full block text-center text-[8px] leading-3">
+                                    STOCK ACTUAL</small>
+                                <span
+                                    class="inline-block text-2xl text-center font-semibold">
+                                    {{ $item['stock_actual'] }}</span>
+                                <small
+                                    class="inline-block text-center text-[10px] leading-3">
+                                    {{ $item['unit'] }}</small>
+                            </div>
+
                             <div class="w-full">
                                 <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
-                                <x-input class="block w-full" wire:model="almacens.{{ $key }}.cantidad"
+                                <x-input class="block w-full"
+                                    wire:model.debounce.500ms="almacens.{{ $key }}.cantidad"
                                     x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
                                     onkeypress="return validarDecimal(event, 9)"
-                                    wire:key="cantidad_{{ $item['id'] }}" wire:loading.class="bg-blue-50" />
+                                    wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
                                 <x-jet-input-error for="almacens.{{ $key }}.cantidad" />
                             </div>
 
@@ -326,7 +259,7 @@
 
                                     <p class="text-end text-[9px] font-semibold">
                                         <span>{{ count($item['series']) + 1 }}</span>
-                                        / <span>{{ $almacens[$key]['cantidad'] }}</span>
+                                        <span> / {{ $almacens[$key]['cantidad'] }}</span>
                                     </p>
                                 </div>
 
@@ -435,7 +368,7 @@
         <div
             class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-4">
             @foreach ($itemcompras as $key => $item)
-                <x-card-producto :image="$item['image'] ?? null" :name="$item['name']" id="cardprodbuy_{{ $key }}"
+                <x-card-producto :image="!empty($item['image']) ? pathURLProductImage($item['image']) : null" :name="$item['name']" id="cardprodbuy_{{ $key }}"
                     x-data="{ showForm: false }">
                     <div
                         class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
@@ -450,12 +383,6 @@
                                 <div class="w-full flex flex-wrap gap-1 items-start">
                                     @foreach ($value['series'] as $ser)
                                         <x-span-text :text="$ser" />
-                                        {{-- <div
-                                        class="rounded-lg p-0.5 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
-                                        <small
-                                            class="text-[10px] leading-3 tracking-wider">{{ $ser }}</small>
-                                        <x-button-delete @click="" wire:loading.attr="disabled" />
-                                    </div> --}}
                                     @endforeach
                                 </div>
                             @endif
@@ -638,14 +565,8 @@
                 subtotal: @entangle('subtotal').defer,
                 total: @entangle('total').defer,
 
-                search: '',
-                products: [],
                 almacens: @entangle('almacens').defer,
-                filteredProducts: [],
-                isOpen: false,
-                openedWithKeyboard: false,
-                selectedOption: null,
-                producto_id: @entangle('producto_id').defer,
+                producto_id: @entangle('producto_id'),
                 sumstock: @entangle('sumstock').defer,
                 requireserie: @entangle('requireserie').defer,
                 typedescuento: @entangle('typedescuento').defer,
@@ -663,10 +584,7 @@
                 totalitem: @entangle('totalitem').defer,
 
                 init() {
-                    this.$refs.noResultsMessage.classList.remove('hidden');
-                    this.fetchProducts();
                     this.$watch("almacens", (value) => {
-                        // console.log('watch', value);
                         const almacens = Object.values(value);
                         if (almacens.length > 0) {
                             const cantidad = almacens.reduce((sum, item) =>
@@ -742,17 +660,12 @@
                     }
                 },
                 addproducto() {
-                    this.$wire.call('addproducto', this.selectedOption).then(result => {
-                        // console.log('completed succesfull');
-                    });
+                    this.$wire.call('addproducto').then(result => console.log(result));
                 },
                 clearproducto() {
                     this.search = ''
                     this.product = null
-                    this.selectedOption = null
                     this.almacens = []
-                    this.isOpen = false
-                    this.openedWithKeyboard = false
                     this.sumstock = 0
                     this.producto_id = null
 
@@ -771,90 +684,106 @@
                     this.pricebuysoles = null
                     this.totalitem = 0
                     this.$wire.$refresh()
-                },
-                fetchProducts() {
-                    this.error = '',
-                        fetch(`{{ route('api.producto.all') }}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                search: this.search
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.error) {
-                                this.error = data.error;
-                            } else {
-                                this.products = data;
-                                this.filteredProducts = data;
-                                if (this.products.length > 0) {
-                                    this.$refs.noResultsMessage.classList.add('hidden');
-                                }
-                            }
-                        })
-                        .catch(() => {
-                            this.error = 'Ha ocurrido un error realizando la petición.';
-                            // console.log(this.error);
-                        });
-                },
-                setSelectedOption(option) {
-                    this.producto_id = option.id
-                    this.selectedOption = option
-                    this.isOpen = false
-                    this.openedWithKeyboard = false
-                    this.$refs.hiddenTextField.value = option.value
-                    this.requireserie = option.requireserie
-
-                    const almacens = option.almacens;
-                    almacens.forEach(almacen => {
-                        almacen.cantidad = 0;
-                        almacen.series = [];
-                        almacen.newserie = '';
-                        almacen.addseries = false;
-                    });
-
-                    // this.almacens = almacens;
-                    this.$wire.almacens = almacens
-                    this.$wire.$refresh()
-                },
-                getFilteredOptions(query) {
-                    this.filteredProducts = this.products.filter((product) =>
-                        product.name.toLowerCase().includes(query.toLowerCase()) ||
-                        product.marca.toLowerCase().includes(query.toLowerCase())
-                    );
-
-                    if (this.filteredProducts.length === 0) {
-                        this.$refs.noResultsMessage.classList.remove('hidden');
-                    } else {
-                        this.$refs.noResultsMessage.classList.add('hidden');
-                    }
-                },
-                handleKeydownOnOptions(event) {
-                    // if the user presses backspace or the alpha-numeric keys, focus on the search field
-                    if ((event.keyCode >= 65 && event.keyCode <= 90) || (event.keyCode >= 48 &&
-                            event
-                            .keyCode <=
-                            57) || event.keyCode === 8) {
-                        this.$refs.search.focus()
-                    }
-                },
-                loadimagen(id) {
-                    const img = document.getElementById(id);
-                    if (img) {
-                        img.src = img.dataset.src;
-                    }
                 }
             }))
         })
 
-        function selec2Proveedor() {
-            this.selectP = $(this.$refs.selectproveedor).select2();
-            this.selectP.val(this.proveedor_id).trigger("change");
+        function select2Producto() {
+            this.selectP = $(this.$refs.selectprod).select2({
+                templateResult: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+                    const image = $(data.element).data('image') ?? '';
+                    const marca = $(data.element).data('marca') ?? '';
+                    const category = $(data.element).data('category') ?? '';
+                    const subcategory = $(data.element).data('subcategory') ?? '';
+
+                    let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                    if (image) {
+                        html +=
+                            `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                    } else {
+                        html += `<x-icon-image-unknown class="w-full h-full" />`;
+                    }
+                    html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                    return $(html);
+                }
+            });
+            this.selectP.val(this.producto_id).trigger("change");
             this.selectP.on("select2:select", (event) => {
+                this.producto_id = event.target.value;
+                const selected = event.target.options[event.target.selectedIndex];
+                if (selected.dataset) {
+                    this.requireserie = selected.dataset.requireserie;
+                } else {
+                    this.requireserie = false;
+                }
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("producto_id", (value) => {
+                this.selectP.val(value).trigger("change");
+                if (value == null) {
+                    this.selectP.empty();
+                }
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectP.select2('destroy');
+                this.selectP.select2({
+                    templateResult: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        const image = $(data.element).data('image') ?? '';
+                        const marca = $(data.element).data('marca') ?? '';
+                        const category = $(data.element).data('category') ?? '';
+                        const subcategory = $(data.element).data('subcategory') ?? '';
+
+                        let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                        if (image) {
+                            html +=
+                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                        } else {
+                            html += `<x-icon-image-unknown class="w-full h-full" />`;
+                        }
+                        html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                        return $(html);
+                    }
+                }).val(this.producto_id).trigger('change');
+            });
+        }
+
+        function selec2Proveedor() {
+            this.selectProvC = $(this.$refs.selectproveedor).select2();
+            this.selectProvC.val(this.proveedor_id).trigger("change");
+            this.selectProvC.on("select2:select", (event) => {
                 this.proveedor_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -862,11 +791,12 @@
                 $(window).off(evt);
             });
             this.$watch("proveedor_id", (value) => {
-                this.selectP.val(value).trigger("change");
+                this.selectProvC.val(value).trigger("change");
             });
 
             Livewire.hook('message.processed', () => {
-                this.selectP.select2().val(this.proveedor_id).trigger('change');
+                this.selectProvC.select2('destroy');
+                this.selectProvC.select2().val(this.proveedor_id).trigger('change');
             });
         }
 
@@ -882,6 +812,11 @@
             });
             this.$watch("sucursal_id", (value) => {
                 this.selectS.val(value).trigger("change");
+            });
+
+            Livewire.hook('message.processed', () => {
+                this.selectS.select2('destroy');
+                this.selectS.select2().val(this.sucursal_id).trigger('change');
             });
         }
 

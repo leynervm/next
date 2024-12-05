@@ -284,6 +284,7 @@ class CreateVenta extends Component
             'category_id',
             'subcategory_id',
             'unit_id',
+            'requireserie',
             'novedad',
             'sku',
             'pricebuy',

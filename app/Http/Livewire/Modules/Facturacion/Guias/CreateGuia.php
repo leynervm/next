@@ -264,7 +264,14 @@ class CreateGuia extends Component
         $seriecomprobantes = $seriecomprobantes->orderBy('code', 'asc')->get();
         $almacens = $this->sucursal->almacens()->orderBy('name', 'asc')->get();
 
-        $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen'])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
+        $carshoops = Carshoop::with(['carshoopseries', 'almacen', 'producto' => function ($query) {
+            $query->addSelect(['image' => function ($q) {
+                $q->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->with(['category', 'subcategory'])->visibles();
+        }])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
             ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('id', 'asc')->paginate();
 
         return view('livewire.modules.facturacion.guias.create-guia', compact('modalidadtransportes', 'motivotraslados', 'seriecomprobantes', 'almacens', 'ubigeos', 'carshoops'));
@@ -868,12 +875,41 @@ class CreateGuia extends Component
     {
         $this->reset(['productos', 'producto_id', 'series', 'serie_id']);
         if ($this->almacen_id) {
-            $this->productos = Producto::withWhereHas('almacens', function ($query) use ($value) {
-                $query->where('almacens.id', $this->almacen_id);
-                if ($value) {
-                    $query->where('cantidad', '>', 0);
-                }
-            })->orderBy('name', 'asc')->get();
+
+            $this->productos = Producto::query()->select(
+                'productos.id',
+                'productos.name',
+                'marca_id',
+                'category_id',
+                'subcategory_id',
+                'visivility',
+                'novedad',
+                'pricebuy',
+                'pricesale',
+                'precio_1',
+                'precio_2',
+                'precio_3',
+                'precio_4',
+                'precio_5',
+                'marcas.name as name_marca',
+                'categories.name as name_category',
+                'subcategories.name as name_subcategory',
+            )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+                ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+                ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+                ->addSelect(['image' => function ($query) {
+                    $query->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }])->withWhereHas('almacens', function ($query) use ($value) {
+                    $query->where('almacens.id', $this->almacen_id);
+                    if ($value) {
+                        $query->where('cantidad', '>', 0);
+                    }
+                })->visibles()->orderByDesc('novedad')
+                ->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC')->get();
         }
     }
 
@@ -897,12 +933,40 @@ class CreateGuia extends Component
         $this->reset(['productos', 'almacen_id', 'series', 'serie_id']);
         if ($value) {
             $this->almacen_id = $value;
-            $this->productos = Producto::withWhereHas('almacens', function ($query) use ($value) {
-                $query->where('almacens.id', $value);
-                if ($this->disponibles) {
-                    $query->where('cantidad', '>', 0);
-                }
-            })->orderBy('name', 'asc')->get();
+            $this->productos = Producto::query()->select(
+                'productos.id',
+                'productos.name',
+                'marca_id',
+                'category_id',
+                'subcategory_id',
+                'visivility',
+                'novedad',
+                'pricebuy',
+                'pricesale',
+                'precio_1',
+                'precio_2',
+                'precio_3',
+                'precio_4',
+                'precio_5',
+                'marcas.name as name_marca',
+                'categories.name as name_category',
+                'subcategories.name as name_subcategory',
+            )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+                ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+                ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+                ->addSelect(['image' => function ($query) {
+                    $query->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('default', 'desc')->limit(1);
+                }])->withWhereHas('almacens', function ($query) use ($value) {
+                    $query->where('almacens.id', $value);
+                    if ($this->disponibles) {
+                        $query->where('cantidad', '>', 0);
+                    }
+                })->visibles()->orderByDesc('novedad')
+                ->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC')->get();
         }
     }
 

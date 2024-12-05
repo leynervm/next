@@ -30,7 +30,9 @@
                 <div class="w-full flex gap-2 flex-wrap justify-around xl:justify-start">
                     @foreach ($compra->compraitems as $item)
                         @php
-                            $image = $item->producto->getImageURL();
+                            $image = !empty($item->producto->image)
+                                ? pathURLProductImage($item->producto->image)
+                                : null;
                             $promocion = $item->producto->getPromocionDisponible();
                             $descuento = $item->producto->getPorcentajeDescuento($promocion);
                             $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
@@ -447,7 +449,7 @@
                     }
                     this.pricebuyigv = toDecimal(parseFloat(this.pricebuy) + parseFloat(descuento) +
                         parseFloat(this.igv))
-                   
+
                     this.pricebuysoles = toDecimal(parseFloat(this.pricebuyigv) * parseFloat(this
                         .tipocambio));
                     this.total = toDecimal(parseFloat(this.pricebuyigv) * parseFloat(this.cantidad));

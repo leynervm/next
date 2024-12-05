@@ -506,7 +506,9 @@
                                 }
                             @endphp
 
-                            <x-card-producto :name="$item->producto->name" :image="$item->producto->getImageURL()" :almacen="$item->almacen->name" :class="$class">
+                            <x-card-producto :name="$item->producto->name" :image="!empty($item->producto->image)
+                                ? pathURLProductImage($item->producto->image)
+                                : null" :almacen="$item->almacen->name" :class="$class">
 
                                 <p class="text-center text-colorlabel text-xl">
                                     {{ decimalOrInteger($item->cantidad) }}

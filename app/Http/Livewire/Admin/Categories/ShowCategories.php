@@ -78,7 +78,7 @@ class ShowCategories extends Component
                 $compressedImage = Image::make($imageLogo)->resize(300, 300, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
-                })->orientate()->encode('jpg', 70);
+                })->orientate()->encode('jpg', 30);
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
                     $this->addError('image', 'La imagen excede el tamaño máximo permitido.');

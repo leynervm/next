@@ -302,8 +302,9 @@
 
                                 <div class="w-full" x-show="type == '0'">
                                     <x-label value="Descuento (%) :" />
-                                    <x-input class="block w-full" wire:model.defer="descuento" type="number"
-                                        min="0" step="0.01" />
+                                    <x-input class="block w-full input-number-none" wire:model.defer="descuento"
+                                        type="number" min="0" step="0.01"
+                                        onkeypress="return validarNumero(event, 5)" />
                                     <x-jet-input-error for="descuento" />
                                 </div>
 
@@ -311,7 +312,8 @@
                                     <div>
                                         <x-label value="stock Máximo:" />
                                         <x-input x-show="agotarstock == false" class="block w-full"
-                                            wire:model.defer="limit" type="number" min="0" step="1" />
+                                            wire:model.defer="limit" type="number" min="0" step="1"
+                                            onkeypress="return validarNumero(event, 9)" />
                                         <x-disabled-text x-show="agotarstock" text="AGOTAR STOCK" />
                                         <x-jet-input-error for="limit" />
                                     </div>

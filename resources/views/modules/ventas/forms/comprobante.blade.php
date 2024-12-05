@@ -83,7 +83,7 @@
                 </div>
             @else
                 <div class="w-full inline-flex gap-1">
-                    <x-input class="block w-full flex-1" x-model="document" wire:model.defer="document"
+                    <x-input class="block w-full flex-1 input-number-none" x-model="document" wire:model.defer="document"
                         wire:keydown.enter.prevent="getClient" minlength="8" maxlength="11"
                         onkeypress="return validarNumero(event, 11)" onpaste="return validarPasteNumero(event, 11)" />
                     <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">

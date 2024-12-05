@@ -35,7 +35,7 @@ class ShowGuias extends Component
     public function render()
     {
 
-        $guias = Guia::with(['guiable', 'sucursal', 'tvitems', 'client'])
+        $guias = Guia::with(['guiable', 'sucursal', 'tvitems', 'client', 'motivotraslado', 'modalidadtransporte', 'ubigeoorigen', 'ubigeodestino', 'seriecomprobante.typecomprobante', 'sucursal', 'user'])
             ->where('sucursal_id',  auth()->user()->sucursal_id);
 
         if ($this->serie !== '') {

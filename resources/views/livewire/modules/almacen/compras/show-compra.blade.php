@@ -199,9 +199,10 @@
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                     @foreach ($compra->compraitems as $item)
                         @php
-                            $image = !empty($item->producto->image)
-                                ? pathURLProductImage($item->producto->image)
-                                : null;
+                            $image =
+                                count($item->producto->images) > 0
+                                    ? pathURLProductImage($item->producto->images->first()->url)
+                                    : null;
                             $promocion = verifyPromocion($item->producto->promocions->first());
                             $descuento = getDscto($promocion);
                             $combo = $item->producto->getAmountCombo($promocion, $pricetype);
@@ -216,19 +217,13 @@
                                         class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
                                         {{ decimalOrInteger($almac->cantidad) }}
                                         <small class="text-[10px] font-medium">
-                                            {{ $almac->compraitem->producto->unit->name }} \
+                                            {{ $item->producto->unit->name }} \
                                             {{ $almac->almacen->name }}</small>
                                     </div>
                                     @if (count($almac->series) > 0)
                                         <div class="w-full flex flex-wrap gap-1 items-start">
                                             @foreach ($almac->series as $ser)
                                                 <x-span-text :text="$ser->serie" />
-                                                {{-- <div
-                                                    class="rounded-lg p-0.5 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
-                                                    <small
-                                                        class="text-[10px] leading-3 tracking-wider">{{ $ser }}</small>
-                                                    <x-button-delete @click="" wire:loading.attr="disabled" />
-                                                </div> --}}
                                             @endforeach
                                         </div>
                                     @endif
@@ -442,7 +437,8 @@
                             this.calcularsoles();
                         },
                     }">
-                    <h1 class="text-xs">{{ $compraitem->producto->name }}</h1>
+                    <h1 class="text-xs sm:text-sm text-colorlabel md:text-xl !leading-none font-medium pb-3">
+                        {{ $compraitem->producto->name }}</h1>
 
                     <div class="w-full grid grid-cols-2 md:grid-cols-3 gap-2">
                         <div class="w-full">
@@ -484,7 +480,7 @@
                             <x-jet-input-error for="descuentounitario" />
                         </div>
 
-                        @if (!mi_empresa()->usarLista())
+                        @if (!$compra->sucursal->empresa->usarLista())
                             <div class="w-full">
                                 <x-label value="Precio venta unitario (SOLES):" />
                                 <x-input class="block w-full" x-model="priceventa" placeholder="0.00"
@@ -500,22 +496,20 @@
                     <div class="w-full flex gap-2 justify-end">
                         <x-button type="submit" wire:loading.attr="disabled" wire:loading.remove>
                             {{ __('Save') }}</x-button>
-                        {{-- <x-button wire:click="updateitem(true)" wire:loading.attr="disabled" wire:loading.remove>
-                            {{ __('Save and close') }}</x-button> --}}
                     </div>
 
                     @if (count($almacens) > 0)
                         <div class="w-full flex flex-wrap gap-2">
                             @foreach ($almacens as $key => $item)
-                                <x-simple-card wire:key="{{ $key }}"
+                                <x-simple-card wire:key="almacencompraitem{{ $compraitem->id }}_{{ $item['id'] }}"
                                     class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
                                     <div class="text-colorsubtitleform text-center">
-                                        <small class="w-full block text-center text-[8px] leading-3">STOCK
-                                            ACTUAL</small>
+                                        <small class="w-full block text-center text-[8px] leading-3">
+                                            STOCK ACTUAL</small>
                                         <span class="inline-block text-2xl text-center font-semibold">
-                                            {{ decimalOrInteger($item['pivot']['cantidad']) }}</span>
-                                        <small
-                                            class="inline-block text-center text-[10px] leading-3">{{ $compraitem->producto->unit->name }}</small>
+                                            {{ decimalOrInteger($item['stock_actual']) }}</span>
+                                        <small class="inline-block text-center text-[10px] leading-3">
+                                            {{ $compraitem->producto->unit->name }}</small>
                                     </div>
 
                                     <h1 class="text-colortitleform text-[10px] text-center font-semibold">
@@ -523,15 +517,14 @@
                                     <div class="w-full">
                                         <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
                                         <x-input class="block w-full"
-                                            wire:model="almacens.{{ $key }}.cantidad"
+                                            wire:model.debounce.500="almacens.{{ $key }}.cantidad"
                                             x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
                                             onkeypress="return validarDecimal(event, 9)"
-                                            wire:key="cantidad_{{ $item['id'] }}"
-                                            wire:loading.class="bg-blue-50" />
-                                        {{-- <x-jet-input-error for="almacens.{{ $key }}.cantidad" /> --}}
+                                            wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
                                     </div>
 
                                     <div x-cloak x-show="requireserie" style="display: none;" x-transition>
+                                        <x-label value="SERIE :" textSize="[10px]" />
                                         <x-input class="block w-full"
                                             wire:keydown.enter.prevent="addserie('{{ $key }}')"
                                             onkeypress="return validarSerie(event)" placeholder="Ingresar serie..."
@@ -643,97 +636,32 @@
         <x-slot name="content">
             <form class="w-full flex flex-col gap-2 min-h-[400px]" @submit.prevent="addproducto(false)"
                 x-data="addproducto">
-                <div class="flex w-full flex-col gap-1" x-on:keydown="handleKeydownOnOptions($event)"
-                    x-on:keydown.esc.window="isOpen = false, openedWithKeyboard = false">
+                <div class="flex w-full flex-col gap-1">
                     <x-label value="Seleccionar producto :" />
-                    <div class="relative">
-                        <button type="button"
-                            class="inline-flex w-full items-center justify-between gap-2 border border-next-300 rounded-lg px-3 pr-6 py-2 text-sm font-medium tracking-wide text-colorinput transition"
-                            role="combobox" aria-controls="statesList" aria-haspopup="listbox"
-                            x-on:click="isOpen = ! isOpen" x-on:keydown.down.prevent="openedWithKeyboard = true"
-                            x-on:keydown.enter.prevent="openedWithKeyboard = true"
-                            x-on:keydown.space.prevent="openedWithKeyboard = true"
-                            x-bind:aria-expanded="isOpen || openedWithKeyboard"
-                            x-bind:aria-label="producto_id ? selectedOption.name : 'Seleccionar'">
-                            <span class="text-xs w-full text-left truncate font-normal text-colorsubtitleform"
-                                x-text="producto_id ? selectedOption.name : 'Seleccionar...'"></span>
-                            <x-icon-select />
-                        </button>
-
-                        <input id="state" name="state" autocomplete="off" x-ref="hiddenTextField"
-                            hidden="" />
-                        <div style="display: none;" x-cloak x-show="isOpen || openedWithKeyboard" id="statesList"
-                            class="absolute left-0 top-0 z-10 w-full overflow-hidden bg-fondodropdown rounded-lg mt-10 shadow-lg"
-                            role="listbox" aria-label="states list"
-                            x-on:click.outside="isOpen = false, openedWithKeyboard = false"
-                            x-on:keydown.down.prevent="$focus.wrap().next()"
-                            x-on:keydown.up.prevent="$focus.wrap().previous()" x-transition
-                            x-trap="openedWithKeyboard">
-
-                            <div class="">
-                                <div class="relative p-1">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                        fill="none" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="absolute left-4 top-1/2 w-5 h-5 -translate-y-1/2 text-colorsubtitleform">
-                                        <path
-                                            d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-                                    </svg>
-                                    <x-input class="w-full block p-2 pl-11 pr-4" name="search" aria-label="Search"
-                                        @input="getFilteredOptions(search)" x-ref="search" x-model="search"
-                                        placeholder="Search" autocomplete="off" {{--  @input.debounce.300ms="fetchProducts" --}} />
-                                </div>
-
-                                <ul class="flex max-h-60 p-1 flex-col overflow-y-auto">
-                                    <li class="hidden px-4 py-2 text-sm text-colorlabel " x-ref="noResultsMessage">
-                                        <span>No matches found</span>
-                                    </li>
-                                    <template x-for="(item, index) in filteredProducts" x-bind:key="item.id">
-                                        <li class="combobox-option rounded-md inline-flex cursor-pointer justify-between items-center gap-2 p-1 text-xs text-colorlabel hover:bg-fondohoverselect2 focus-visible:border-none focus-visible:bg-fondohoverselect2 focus-visible:outline-none"
-                                            role="option" x-on:click="setSelectedOption(item)"
-                                            x-on:keydown.enter="setSelectedOption(item)" x-bind:id="'option-' + index"
-                                            tabindex="0"
-                                            :class="(producto_id == item.id) ? 'bg-fondohoverselect2' : 'bg-fondodropdown'">
-
-                                            <div class="w-full flex items-center gap-2">
-                                                <div class="w-16 xs:w-28 h-16 xs:h-20 rounded-lg">
-                                                    <template x-if="item.image_url">
-                                                        <img x-bind:src="item.image_url" alt=""
-                                                            class="object-scale-down w-full h-full overflow-hidden">
-                                                    </template>
-                                                    <template x-if="item.image_url == null">
-                                                        <x-icon-image-unknown
-                                                            class="w-full h-full !text-colorsubtitleform" />
-                                                    </template>
-                                                </div>
-
-                                                <div class="flex-1 w-full text-[10px] sm:text-xs">
-                                                    <p class="text-colorlabel leading-3"
-                                                        x-bind:class="producto_id == item.id ? 'font-bold' : null"
-                                                        x-text="item.name"></p>
-                                                    <p class="text-colorsubtitleform text-[10px] font-semibold"
-                                                        x-text="item.marca"></p>
-                                                    <span class="sr-only"
-                                                        x-text="producto_id == item.id ? 'selected' : null"></span>
-                                                </div>
-                                            </div>
-                                            {{-- <svg style="display: none;" x-cloak x-show="producto_id == item.id"
-                                                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                    stroke="currentColor" fill="none" stroke-width="2"
-                                                    stroke-linecap="round" stroke-linejoin="round"
-                                                    class="w-5 h-5 mr-4 text-next-500">
-                                                    <path d="m4.5 12.75 6 6 9-13.5">
-                                                </svg> --}}
-                                        </li>
-                                    </template>
-                                </ul>
-                            </div>
-                        </div>
+                    <div class="w-full relative" x-init="select2Producto" id="parentproducto_id">
+                        <x-select class="block w-full uppercase" x-ref="selectprod"
+                            data-minimum-results-for-search="3" id="producto_id">
+                            <x-slot name="options">
+                                @if (count($productos) > 0)
+                                    @foreach ($productos as $item)
+                                        <option data-marca="{{ $item->name_marca }}"
+                                            data-category="{{ $item->name_category }}"
+                                            data-subcategory="{{ $item->name_subcategory }}"
+                                            data-requireserie="{{ $item->isRequiredserie() }}"
+                                            data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                            value="{{ $item->id }}">
+                                            {{ $item->name }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </x-slot>
+                        </x-select>
+                        <x-icon-select />
                     </div>
                     <x-jet-input-error for="producto_id" />
                 </div>
 
-                <div class="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+                <div class="w-full grid grid-cols-2 sm:grid-cols-3 gap-2">
                     <div class="w-full">
                         <x-label value="Precio unitario sin IGV :" />
                         <x-input class="block w-full" x-mask:dynamic="$money($input, '.', '', 2)"
@@ -773,7 +701,7 @@
                         <x-jet-input-error for="typedescuento" />
                     </div>
 
-                    @if (!mi_empresa()->usarLista())
+                    @if (!$compra->sucursal->empresa->usarLista())
                         <div class="w-full">
                             <x-label value="Precio venta unitario (SOLES):" />
                             <x-input class="block w-full" x-model="priceventa" placeholder="0.00"
@@ -784,39 +712,33 @@
                     @endif
                 </div>
 
-                {{-- @if ($errors->any())
-                        @foreach ($errors->keys() as $item)
-                            <x-jet-input-error :for="$item" />
-                        @endforeach
-                    @endif --}}
-
                 @if (count($almacens) > 0)
-                    <div class="w-full flex flex-wrap gap-2" wire:target="producto_id" wire:loading.remove>
+                    <div class="w-full flex flex-wrap gap-2">
                         @foreach ($almacens as $key => $item)
-                            <x-simple-card wire:key="{{ $key }}"
+                            <x-simple-card wire:key="{{ $key }}" wire:loading.class="opacity-25"
                                 class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
+                                <h1 class="text-colortitleform text-[10px] text-center font-semibold">
+                                    {{ $item['name'] }}</h1>
                                 <div class="text-colorsubtitleform text-center">
                                     <small class="w-full block text-center text-[8px] leading-3">STOCK
                                         ACTUAL</small>
-                                    <span
-                                        class="inline-block text-2xl text-center font-semibold">{{ $item['pivot']['cantidad'] }}</span>
-                                    <small class="inline-block text-center text-[10px] leading-3"
-                                        x-text="selectedOption != undefined ? selectedOption.unit : ''">UND</small>
+                                    <span class="inline-block text-2xl text-center font-semibold">
+                                        {{ $item['stock_actual'] }}</span>
+                                    <small class="inline-block text-center text-[10px] leading-3">
+                                        {{ $item['unit'] }}</small>
                                 </div>
 
-                                <h1 class="text-colortitleform text-[10px] text-center font-semibold">
-                                    {{ $item['name'] }}</h1>
                                 <div class="w-full">
                                     <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
-                                    <x-input class="block w-full" wire:model="almacens.{{ $key }}.cantidad"
+                                    <x-input class="block w-full"
+                                        wire:model.debounce.500="almacens.{{ $key }}.cantidad"
                                         x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
                                         onkeypress="return validarDecimal(event, 9)"
-                                        wire:key="cantidad_{{ $item['id'] }}" wire:loading.class="bg-blue-50" />
+                                        wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
                                     <x-jet-input-error for="almacens.{{ $key }}.cantidad" />
                                 </div>
 
                                 <div x-cloak x-show="requireserie" style="display: none;" x-transition>
-
                                     <x-input class="block w-full"
                                         wire:keydown.enter.prevent="addserie('{{ $key }}')"
                                         onkeypress="return validarSerie(event)" placeholder="Ingresar serie..."
@@ -829,7 +751,7 @@
 
                                         <p class="text-end text-[9px] font-semibold">
                                             <span>{{ count($item['series']) + 1 }}</span>
-                                            / <span>{{ $almacens[$key]['cantidad'] }}</span>
+                                            <span> / {{ $almacens[$key]['cantidad'] }}</span>
                                         </p>
                                     </div>
 
@@ -863,11 +785,11 @@
 
                 <div class="flex flex-col gap-2">
                     <div class="w-full flex gap-1 justify-end">
-                        <x-button type="button" wire:loading.attr="disabled" wire:loading.remove
+                        <x-button type="button" wire:loading.attr="disabled" wire:loading.attr="disabled"
                             @click="clearproducto">{{ __('Limpiar') }}</x-button>
-                        <x-button type="submit" wire:loading.attr="disabled" wire:loading.remove>
+                        <x-button type="submit" wire:loading.attr="disabled" wire:loading.attr="disabled">
                             {{ __('Save') }}</x-button>
-                        <x-button type="button" wire:loading.attr="disabled" wire:loading.remove
+                        <x-button type="button" wire:loading.attr="disabled" wire:loading.attr="disabled"
                             @click="addproducto(true)">{{ __('Save and close') }}</x-button>
                     </div>
 
@@ -1049,13 +971,7 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('addproducto', () => ({
-                search: '',
-                products: [],
-                filteredProducts: [],
-                isOpen: false,
-                openedWithKeyboard: false,
-                selectedOption: null,
-                producto_id: @entangle('producto_id').defer,
+                producto_id: @entangle('producto_id'),
                 almacens: @entangle('almacens').defer,
                 sumstock: @entangle('sumstock').defer,
 
@@ -1074,7 +990,6 @@
                 codemoneda: "{{ $compra->moneda->code }}",
 
                 init() {
-                    this.fetchProducts();
                     this.$watch("almacens", (value) => {
                         const almacens = Object.values(value);
                         if (almacens.length > 0) {
@@ -1152,17 +1067,11 @@
                     }
                 },
                 addproducto(closemodal) {
-                    this.$wire.call('addproducto', this.selectedOption, closemodal).then(result => {
-                        // console.log('completed succesfull');
-                    });
+                    this.$wire.call('addproducto', closemodal).then(result => console.log(result));
                 },
                 clearproducto() {
-                    this.search = ''
                     this.product = null
-                    this.selectedOption = null
                     this.almacens = []
-                    this.isOpen = false
-                    this.openedWithKeyboard = false
                     this.sumstock = 0
                     this.producto_id = null
                     this.requireserie = false
@@ -1178,72 +1087,6 @@
                     this.pricebuysoles = null
                     this.totalitem = 0
                     this.$wire.$refresh()
-                },
-                fetchProducts() {
-                    this.error = '',
-                        fetch(`{{ route('api.producto.all') }}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                search: this.search
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            // console.log(data);
-                            if (data.error) {
-                                this.error = data.error;
-                            } else {
-                                this.products = data;
-                                this.filteredProducts = data;
-                            }
-                        })
-                        .catch(() => {
-                            this.error = 'There was an error processing your request.';
-                        });
-                },
-                setSelectedOption(option) {
-                    this.producto_id = option.id
-                    this.selectedOption = option
-                    this.isOpen = false
-                    this.openedWithKeyboard = false
-                    this.$refs.hiddenTextField.value = option.value
-                    this.requireserie = option.requireserie
-
-                    const almacens = option.almacens;
-                    almacens.forEach(almacen => {
-                        almacen.cantidad = 0;
-                        almacen.series = [];
-                        almacen.newserie = '';
-                        almacen.addseries = false;
-                    });
-
-                    this.$wire.almacens = almacens
-                    this.$wire.$refresh()
-                },
-                getFilteredOptions(query) {
-                    this.filteredProducts = this.products.filter((product) =>
-                        product.name.toLowerCase().includes(query.toLowerCase()) ||
-                        product.marca.toLowerCase().includes(query.toLowerCase())
-                    );
-
-                    if (this.filteredProducts.length === 0) {
-                        this.$refs.noResultsMessage.classList.remove('hidden');
-                    } else {
-                        this.$refs.noResultsMessage.classList.add('hidden');
-                    }
-                },
-                handleKeydownOnOptions(event) {
-                    // if the user presses backspace or the alpha-numeric keys, focus on the search field
-                    if ((event.keyCode >= 65 && event.keyCode <= 90) || (event.keyCode >= 48 &&
-                            event
-                            .keyCode <=
-                            57) || event.keyCode === 8) {
-                        this.$refs.search.focus()
-                    }
                 },
             }))
         })
@@ -1306,6 +1149,99 @@
                 }
             }))
         })
+
+
+        function select2Producto() {
+            this.selectP = $(this.$refs.selectprod).select2({
+                templateResult: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+                    const image = $(data.element).data('image') ?? '';
+                    const marca = $(data.element).data('marca') ?? '';
+                    const category = $(data.element).data('category') ?? '';
+                    const subcategory = $(data.element).data('subcategory') ?? '';
+
+                    let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                    if (image) {
+                        html +=
+                            `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                    } else {
+                        html += `<x-icon-image-unknown class="w-full h-full" />`;
+                    }
+                    html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                    return $(html);
+                }
+            });
+            this.selectP.val(this.producto_id).trigger("change");
+            this.selectP.on("select2:select", (event) => {
+                this.producto_id = event.target.value;
+                const selected = event.target.options[event.target.selectedIndex];
+                if (selected.dataset) {
+                    this.requireserie = selected.dataset.requireserie;
+                } else {
+                    this.requireserie = false;
+                }
+            }).on('select2:open', function(e) {
+                const evt = "scroll.select2";
+                $(e.target).parents().off(evt);
+                $(window).off(evt);
+            });
+            this.$watch("producto_id", (value) => {
+                this.selectP.val(value).trigger("change");
+                if (value == null) {
+                    this.selectP.empty();
+                }
+            });
+            Livewire.hook('message.processed', () => {
+                this.selectP.select2('destroy');
+                this.selectP.select2({
+                    templateResult: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        const image = $(data.element).data('image') ?? '';
+                        const marca = $(data.element).data('marca') ?? '';
+                        const category = $(data.element).data('category') ?? '';
+                        const subcategory = $(data.element).data('subcategory') ?? '';
+
+                        let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                        if (image) {
+                            html +=
+                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                        } else {
+                            html += `<x-icon-image-unknown class="w-full h-full" />`;
+                        }
+                        html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                        return $(html);
+                    }
+                }).val(this.producto_id).trigger('change');
+            });
+        }
 
         function select2Methodpayment() {
             this.selectF = $(this.$refs.selectmp).select2();

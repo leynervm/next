@@ -3,6 +3,7 @@
 namespace Modules\Facturacion\Http\Controllers;
 
 use App\Models\Guia;
+use App\Models\Producto;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
@@ -36,10 +37,26 @@ class GuiaController extends Controller
     public function show(Guia $guia)
     {
         $this->authorize('sucursal', $guia);
-
-        $guia = Guia::with(['tvitems' => function ($query) {
-            $query->withTrashed()->orderBy('date', 'asc');
-        }])->find($guia->id);
+        $guia->load([
+            'tvitems' => function ($query) {
+                $query->with(['almacen', 'producto'  => function ($q) {
+                    $q->addSelect(['image' => function ($subQuery) {
+                        $subQuery->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderBy('default', 'desc')->limit(1);
+                    }]);
+                }])->withTrashed()->orderBy('date', 'asc');
+            },
+            'client',
+            'motivotraslado',
+            'modalidadtransporte',
+            'ubigeoorigen',
+            'ubigeodestino',
+            'seriecomprobante.typecomprobante',
+            'sucursal',
+            'user'
+        ]);
         return view('facturacion::guias.show', compact('guia'));
     }
 

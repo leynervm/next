@@ -36,25 +36,32 @@ class CompraController extends Controller
     {
 
         $this->authorize('sucursal', $compra);
-        $compra->load(['sucursal.empresa', 'compraitems' => function ($query) {
-            $query->with(['producto' => function ($subQuery) {
-                $subQuery->with(['unit', 'promocions' => function ($queryPrm) {
-                    $queryPrm->with(['itempromos.producto' => function ($queryItemprm) {
-                        $queryItemprm->with('unit')->addSelect(['image' => function ($q) {
-                            $q->select('url')->from('images')
-                                ->whereColumn('images.imageable_id', 'productos.id')
-                                ->where('images.imageable_type', Producto::class)
-                                ->orderBy('default', 'desc')->limit(1);
-                        }]);
-                    }])->availables()->disponibles();
-                }])->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
+        $compra->load([
+            'sucursal.empresa',
+            'typepayment',
+            'moneda',
+            'proveedor',
+            'cuotas',
+            'cajamovimientos',
+            'compraitems' => function ($query) {
+                $query->with(['almacencompras' => function ($subQuery) {
+                    $subQuery->with(['almacen', 'series']);
+                }, 'producto' => function ($subQuery) {
+                    $subQuery->with(['unit', 'promocions' => function ($queryPrm) {
+                        $queryPrm->with(['itempromos.producto' => function ($queryItemprm) {
+                            $queryItemprm->with('unit')->addSelect(['image' => function ($q) {
+                                $q->select('url')->from('images')
+                                    ->whereColumn('images.imageable_id', 'productos.id')
+                                    ->where('images.imageable_type', Producto::class)
+                                    ->orderBy('default', 'desc')->limit(1);
+                            }]);
+                        }])->availables()->disponibles();
+                    }, 'images' => function ($sql) {
+                        $sql->orderByDesc('default');
+                    }]);
                 }]);
-            }]);
-        }]);
+            }
+        ]);
 
         $pricetype = null;
         if ($compra->sucursal->empresa->usarlista()) {

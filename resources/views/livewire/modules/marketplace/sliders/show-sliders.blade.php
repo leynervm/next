@@ -12,7 +12,7 @@
                     data-id="{{ $item->id }}">
                     <div class="w-full">
                         <div class="w-full max-w-md h-36">
-                            <img src="{{ $item->getImageURL() }}" alt=""
+                            <img src="{{ pathURLSlider($item->url) }}" alt=""
                                 class="w-full h-full {{ $item->isActivo() ? '' : 'grayscale' }}">
                         </div>
 
@@ -105,7 +105,7 @@
                         @else
                             @if ($slider->url)
                                 <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                    src="{{ $slider->getImageURL() }}" />
+                                    src="{{ pathURLSlider($slider->url) }}" />
                             @else
                                 <x-icon-file-upload type="file" class="w-full h-full text-gray-300" />
                             @endif
@@ -152,7 +152,7 @@
                             <template x-if="!imagemobile">
                                 @if ($slider->urlmobile)
                                     <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
-                                        src="{{ $slider->getImageURLMobile() }}" />
+                                        src="{{ pathURLSlider($slider->urlmobile) }}" />
                                 @else
                                     <x-icon-file-upload type="file"
                                         class="!w-full !h-full text-colorsubtitleform !border-0" />

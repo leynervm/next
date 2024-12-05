@@ -138,7 +138,6 @@
                 extencionimagemobile: null,
                 init() {
                     window.addEventListener('created', event => {
-                        console.log(event);
                         this.image = null;
                     })
                 },

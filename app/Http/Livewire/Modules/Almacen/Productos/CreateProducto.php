@@ -183,11 +183,13 @@ class CreateProducto extends Component
                     Storage::makeDirectory('images/productos');
                 }
 
+                // $compressedImage = Image::make($this->imagen->getRealPath())
+                //     ->resize(1500, 1500, function ($constraint) {
+                //         $constraint->aspectRatio();
+                //         $constraint->upsize();
+                //     })->orientate()->encode('jpg', 30);
                 $compressedImage = Image::make($this->imagen->getRealPath())
-                    ->resize(1500, 1500, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })->orientate()->encode('jpg', 30);
+                    ->orientate()->encode('jpg', 60);
 
 
                 if ($this->empresa->usarMarkagua()) {

@@ -88,7 +88,7 @@
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     CENTRO AUTORIZADO</h1>
             </a>
-            {{-- <a href="{{ route('tic') }}"
+            <a href="https://soporte.next.net.pe/buscar" target="_blank"
                 class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
@@ -102,7 +102,7 @@
                 <h1
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     ORDEN DE TRABAJO</h1>
-            </a> --}}
+            </a>
         </section>
 
         <section class="w-full">

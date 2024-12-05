@@ -109,7 +109,41 @@ class ShowCompra extends Component
             $diferenciasbytype = [];
         }
 
-        return view('livewire.modules.almacen.compras.show-compra', compact('methodpayments', 'typepayments', 'proveedores', 'sucursals', 'diferencias', 'pricetypes', 'diferenciasbytype'));
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'requireserie',
+            'visivility',
+            'novedad',
+            'pricebuy',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])
+            ->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }])->with(['unit', 'almacens'])->visibles()->orderByDesc('novedad')
+            ->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->get();
+
+        return view('livewire.modules.almacen.compras.show-compra', compact('productos', 'methodpayments', 'typepayments', 'proveedores', 'sucursals', 'diferencias', 'pricetypes', 'diferenciasbytype'));
     }
 
     public function update()
@@ -349,10 +383,11 @@ class ShowCompra extends Component
 
     public function setAlmacens($compraitem)
     {
+        $unit = $compraitem->producto->unit->name ?? '';
         $arrayalmacens = $compraitem->almacencompras()->with(['almacen', 'series' => function ($query) {
             $query->select('id', 'serie', 'dateout', 'status', 'almacencompra_id');
         }])->get()->toArray();
-        $combined = $compraitem->producto->almacens->map(function ($item) use ($arrayalmacens) {
+        $combined = $compraitem->producto->almacens->map(function ($item) use ($arrayalmacens, $unit) {
             $almacencompra = collect($arrayalmacens)->firstWhere('almacen_id', $item['id']);
             if ($almacencompra) {
                 $almacencompra['cantidad'] = decimalOrInteger($almacencompra['cantidad']);
@@ -363,7 +398,8 @@ class ShowCompra extends Component
             }
             $almacencompra['id'] = $item->id;
             $almacencompra['name'] =  $item->name;
-            $almacencompra['pivot'] =  $item->pivot;
+            $almacencompra['unit'] =  $unit;
+            $almacencompra['stock_actual'] =  $item->pivot->cantidad;
             $almacencompra['newserie'] = '';
             return $almacencompra;
         })->toArray();
@@ -757,12 +793,33 @@ class ShowCompra extends Component
         }
     }
 
-    public function addproducto($producto = null, $closemodal = false)
+    public function updatedProductoId()
+    {
+        $this->resetValidation();
+        $almacens = [];
+        if (!empty($this->producto_id)) {
+            $producto = Producto::with(['almacens', 'unit'])->find($this->producto_id);
+            foreach ($producto->almacens as $item) {
+                $almacens[] = [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'stock_actual' => $item->pivot->cantidad,
+                    'cantidad' => 0,
+                    'series' => [],
+                    'newserie' => '',
+                    'addseries' => $producto->isRequiredserie(),
+                    'unit' => $producto->unit->name
+                ];
+            }
+        }
+        $this->almacens = $almacens;
+    }
+
+    public function addproducto($closemodal = false)
     {
         DB::beginTransaction();
         try {
-
-            $data = $this->validate([
+            $this->validate([
                 'producto_id' => [
                     'required',
                     'integer',
@@ -780,23 +837,21 @@ class ShowCompra extends Component
                 'subtotaligvitem' => ['required', 'numeric', 'min:0'],
                 'subtotalitem' => ['required', 'numeric', 'gt:0'],
                 'subtotaldsctoitem' => ['nullable', 'numeric', 'min:0'],
-                'priceventa' => !mi_empresa()->usarlista() ? [
-                    'required',
-                    'numeric',
-                    'decimal:0,2',
-                    'gt:0'
-                ] : [
-                    'nullable',
-                    'min:0'
-                ]
+                'priceventa' => !$this->compra->sucursal->empresa->usarlista() ? ['required', 'numeric', 'decimal:0,2', 'gt:0'] : ['nullable', 'min:0']
             ]);
 
-            // $almacens = collect($this->almacens);
             $myalmacens = collect($this->almacens)->filter(function ($item) {
                 return $item['cantidad'] > 0;
             })->toArray();
 
-            if ($producto['requireserie']) {
+            $producto = Producto::with(['unit'])->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->find($this->producto_id);
+
+            if ($producto->requireserie) {
                 foreach ($myalmacens as $key => $item) {
                     if (count($item['series']) != $item['cantidad']) {
                         $this->addError("almacens.$key.cantidad", 'Series agregadas no coinciden con la cantidad entrante.');
@@ -820,8 +875,6 @@ class ShowCompra extends Component
             if ($this->compra->moneda->isDolar()) {
                 $pricebuysoles = $this->pricebuy * $this->tipocambio ?? 1;
             }
-
-            $producto = Producto::with('almacens')->find($this->producto_id);
 
             $compraitem = $this->compra->compraitems()->create([
                 'cantidad' => $this->sumstock,
@@ -919,5 +972,10 @@ class ShowCompra extends Component
             $this->pricetype = Pricetype::find($value);
             $this->pricetype_id = $this->pricetype->id;
         }
+    }
+
+    public function hydrate()
+    {
+        $this->compra->refresh();
     }
 }

@@ -94,13 +94,45 @@ class CreateCompra extends Component
             $sucursals = auth()->user()->sucursal()->get();
         }
 
-        return view('livewire.modules.almacen.compras.create-compra', compact('proveedores', 'typepayments', 'monedas', 'methodpayments', 'sucursals'));
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'requireserie',
+            'visivility',
+            'novedad',
+            'pricebuy',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('default', 'desc')->limit(1);
+            }])->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }])->with('unit', 'almacens')->visibles()->orderByDesc('novedad')
+            ->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->get();
+
+        return view('livewire.modules.almacen.compras.create-compra', compact('proveedores', 'productos', 'typepayments', 'monedas', 'methodpayments', 'sucursals'));
     }
 
     public function save()
     {
 
-        // dd($this->itemcompras);
         $this->authorize('admin.almacen.compras.create');
         if ($this->moneda_id) {
             $this->moneda = Moneda::find($this->moneda_id);
@@ -199,26 +231,45 @@ class CreateCompra extends Component
         }
     }
 
+    public function updatedProductoId()
+    {
+        $this->resetValidation();
+        $almacens = [];
+        if (!empty($this->producto_id)) {
+            $producto = Producto::with(['almacens', 'unit'])->find($this->producto_id);
+            foreach ($producto->almacens as $item) {
+                $almacens[] = [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'stock_actual' => $item->pivot->cantidad,
+                    'cantidad' => 0,
+                    'series' => [],
+                    'newserie' => '',
+                    'addseries' => $producto->isRequiredserie(),
+                    'unit' => $producto->unit->name
+                ];
+            }
+        }
+        $this->almacens = $almacens;
+    }
+
     public function updatedAlmacens()
     {
         $this->resetValidation();
     }
 
-    public function addproducto($producto = null)
+    public function addproducto()
     {
 
         if ($this->moneda_id) {
             $this->moneda = Moneda::find($this->moneda_id);
         }
 
-        $data = $this->validate([
+        $empresa = view()->shared('empresa');
+        $this->validate([
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'tipocambio' => [
-                'nullable',
-                Rule::requiredIf($this->moneda->isDolar()),
-                'regex:/^\d{0,3}(\.\d{0,3})?$/'
-            ],
+            'tipocambio' => ['nullable', Rule::requiredIf($this->moneda->isDolar()), 'regex:/^\d{0,3}(\.\d{0,3})?$/'],
             'afectacion' => ['required', 'string', 'in:S,E'],
             'almacens' => ['required', 'array', 'min:1'],
             'sumstock' => ['required', 'integer', 'gt:0'],
@@ -230,20 +281,18 @@ class CreateCompra extends Component
             'subtotaligvitem' => ['required', 'numeric', 'min:0'],
             'subtotalitem' => ['required', 'numeric', 'gt:0'],
             'subtotaldsctoitem' => ['nullable', 'numeric', 'min:0'],
-            'priceventa' => !mi_empresa()->usarlista() ? [
-                'required',
-                'numeric',
-                'decimal:0,2',
-                'gt:0'
-            ] : [
-                'nullable',
-                'min:0'
-            ]
+            'priceventa' => !$empresa->usarlista() ? ['required', 'numeric', 'decimal:0,2', 'gt:0'] : ['nullable', 'min:0']
         ]);
 
-        if ($producto['requireserie']) {
+        $producto = Producto::with(['unit'])->addSelect(['image' => function ($query) {
+            $query->select('url')->from('images')
+                ->whereColumn('images.imageable_id', 'productos.id')
+                ->where('images.imageable_type', Producto::class)
+                ->orderBy('default', 'desc')->limit(1);
+        }])->find($this->producto_id);
+
+        if ($producto->requireserie) {
             foreach ($this->almacens as $key => $item) {
-                // dd($item, $key, $producto, count($item['series']) !== $item['cantidad']);
                 if ($item['cantidad'] > 0 && count($item['series']) != $item['cantidad']) {
                     $this->addError("almacens.$key.cantidad", 'Series agregadas no coinciden con la cantidad entrante.');
                     return false;
@@ -282,8 +331,8 @@ class CreateCompra extends Component
         $this->itemcompras[] = [
             'id' => uniqid(),
             'producto_id' => $this->producto_id,
-            'name' => $producto['name'],
-            'unit' => $producto['unit'],
+            'name' => $producto->name,
+            'unit' => $producto->unit->name,
             'sumstock' => $this->sumstock,
             'priceunitario' => $this->priceunitario,
             'igvunitario' => $this->igvunitario,
@@ -296,7 +345,7 @@ class CreateCompra extends Component
             'subtotaldsctoitem' => $this->subtotaldsctoitem,
             'priceventa' => $this->priceventa,
             'almacens' => $myalmacens,
-            'image' => $producto['image_url'],
+            'image' => $producto->image,
             'requireserie' => $this->requireserie,
             'typedescuento' => $this->typedescuento,
         ];
@@ -432,8 +481,9 @@ class CreateCompra extends Component
             }
             $almacen['id'] = $item->id;
             $almacen['name'] =  $item->name;
+            $almacen['unit'] =  $item->unit;
             $almacen['newserie'] = '';
-            $almacen['pivot'] =  $item->pivot->toArray();
+            $almacen['stock_actual'] =  $item->pivot->cantidad;
             return $almacen;
         })->toArray();
         // dd($combined);

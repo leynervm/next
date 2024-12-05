@@ -29,7 +29,16 @@
     <!-- Scripts -->
 </head>
 
-<body class="{{ config('app.theme') }}" x-data="{ openSidebar: false }" x-init="openSidebar = localStorage.getItem('isSidebarOpen') === 'true';
+<body class="{{ config('app.theme') }}" x-data="{
+    openSidebar: false,
+    lazy(id) {
+        const img = document.getElementById(id);
+        //console.log(img);
+        if (img) {
+            img.src = img.dataset.src;
+        }
+    }
+}" x-init="openSidebar = localStorage.getItem('isSidebarOpen') === 'true';
 $watch('openSidebar', value => console.log(openSidebar))">
     <div class="relative flex h-screen min-h-screen overflow-hidden">
         @auth
@@ -487,6 +496,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
                 input.dispatchEvent(new Event("input"));
             });
         })
+
     })
 </script>
 

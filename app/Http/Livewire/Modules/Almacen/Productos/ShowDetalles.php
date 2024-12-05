@@ -132,11 +132,13 @@ class ShowDetalles extends Component
             Storage::makeDirectory('images/productos');
         }
 
+        // $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
+        //     ->resize(1500, 1500, function ($constraint) {
+        //         $constraint->aspectRatio();
+        //         $constraint->upsize();
+        //     })->orientate()->encode('jpg', 30);
         $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
-            ->resize(1500, 1500, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })->orientate()->encode('jpg', 30);
+            ->orientate()->encode('jpg', 60);
 
 
         $empresa = view()->shared('empresa');

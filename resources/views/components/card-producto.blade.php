@@ -12,7 +12,7 @@
     {{ $attributes->merge(['class' => 'w-full border border-borderminicard flex flex-col justify-between text-xs relative group rounded-lg md:rounded-xl']) }}>
 
     <div class="w-full flex flex-col gap-2">
-        <div class="w-full px-1 relative h-40 rounded overflow-hidden" wire:ignore x-data="{ loadImage: false }" x-init="loadimagen('{{ $id }}')">
+        <div class="w-full px-1 relative h-40 rounded overflow-hidden" x-data="{ loadImage: false }" x-init="$nextTick(() => { lazy('{{ $id }}') });">
             @if (isset($image))
                 <x-loading-lazy-image x-show="loadImage == false" x-cloak />
 
@@ -84,13 +84,4 @@
             </h1>
         @endif
     @endif
-
-    <script>
-        function loadimagen(id) {
-            const img = document.getElementById(id);
-            if (img) {
-                img.src = img.dataset.src;
-            };
-        }
-    </script>
 </div>

@@ -1,5 +1,5 @@
 <div x-data="loader">
-    <div wire:loading.flex class="loading-overlay hidden fixed">
+    <div wire:loading.flex class="loading-overlay hidden fixed" wire:key="loadincreateguia">
         <x-loading-next />
     </div>
 
@@ -76,8 +76,8 @@
 
                     <div class="w-full">
                         <x-label value="Peso bruto total (KILOGRAMO) :" />
-                        <x-input class="block w-full" wire:model.defer="peso" min="0" step="0.01"
-                            type="number" />
+                        <x-input class="block w-full input-number-none" type="number" wire:model.defer="peso"
+                            min="0" step="0.01" onkeypress="return validarNumero(event, 11)" type="number" />
                         <x-jet-input-error for="peso" />
                     </div>
 
@@ -158,9 +158,10 @@
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 numeric" x-model="documentdestinatario"
-                            wire:model.defer="documentdestinatario" wire:keydown.enter.prevent="getDestinatario"
-                            minlength="0" maxlength="11" />
+                        <x-input class="block w-full flex-1 input-number-none" type="number"
+                            x-model="documentdestinatario" wire:model.defer="documentdestinatario"
+                            wire:keydown.enter.prevent="getDestinatario" minlength="0" maxlength="11"
+                            onkeypress="return validarNumero(event, 11)" />
                         <x-button-add class="px-2" wire:click="getDestinatario" wire:target="getDestinatario"
                             wire:loading.attr="disable">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
@@ -188,9 +189,10 @@
                 <div class="w-full">
                     <x-label value="DNI / RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 prevent numeric" x-model="documentcomprador"
-                            wire:model.defer="documentcomprador" wire:keydown.enter="getComprador" minlength="0"
-                            maxlength="11" />
+                        <x-input class="block w-full flex-1 input-number-none prevent" type="number"
+                            x-model="documentcomprador" wire:model.defer="documentcomprador"
+                            wire:keydown.enter="getComprador" minlength="0" maxlength="11"
+                            onkeypress="return validarNumero(event, 11)" />
                         <x-button-add class="px-2" wire:click="getComprador" wire:loading.attr="disable">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -217,7 +219,8 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 prevent numeric" x-model="rucproveedor"
+                        <x-input class="block w-full flex-1 prevent input-number-none"
+                            onkeypress="return validarNumero(event, 11)" x-model="rucproveedor" type="number"
                             wire:model.defer="rucproveedor" wire:keydown.enter="getProveedor" minlength="0"
                             maxlength="11" />
                         <x-button-add class="px-2" wire:click="getProveedor" wire:target="getDestinatario"
@@ -247,8 +250,9 @@
                 <div class="w-full xs:col-span-2 lg:col-span-1">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="ructransport"
-                            wire:keydown.enter="getTransport" minlength="0" maxlength="11" />
+                        <x-input class="block w-full flex-1 prevent input-number-none"
+                            onkeypress="return validarNumero(event, 11)" wire:model.defer="ructransport"
+                            type="number" wire:keydown.enter="getTransport" minlength="0" maxlength="11" />
                         <x-button-add class="px-2" wire:click="getTransport" wire:loading.attr="disable">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -532,7 +536,11 @@
                                 <x-slot name="options">
                                     @if (count($productos) > 0)
                                         @foreach ($productos as $item)
-                                            <option value="{{ $item->id }}">
+                                            <option data-marca="{{ $item->name_marca }}"
+                                                data-category="{{ $item->name_category }}"
+                                                data-subcategory="{{ $item->name_subcategory }}"
+                                                data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                                value="{{ $item->id }}">
                                                 {{ $item->name }}
                                             </option>
                                         @endforeach
@@ -565,8 +573,9 @@
                     @else
                         <div class="w-full">
                             <x-label value="Cantidad :" />
-                            <x-input class="block w-full" wire:key="{{ rand() }}" wire:model.defer="cantidad"
-                                placeholder="0" type="number" min="1" step="1" />
+                            <x-input class="block w-full input-number-none" wire:key="{{ rand() }}"
+                                wire:model.defer="cantidad" placeholder="0" type="number" min="1"
+                                step="1" onkeypress="return validarNumero(event, 11)" />
                             <x-jet-input-error for="cantidad" />
                         </div>
                     @endif
@@ -592,11 +601,8 @@
                 <div
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                     @foreach ($carshoops as $item)
-                        @php
-                            $image = $item->producto->getImageURL();
-                        @endphp
-
-                        <x-card-producto :name="$item->producto->name" :image="$image" :almacen="$item->almacen->name" :category="$item->producto->category->name">
+                        <x-card-producto :name="$item->producto->name" :image="!empty($item->producto->image) ? pathURLProductImage($item->producto->image) : null" :almacen="$item->almacen->name" :category="$item->producto->category->name"
+                            id="carshoopguia_{{ $item->id }}" {{-- x-data="lazyload" --}}>
                             <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
                                 <x-span-text :text="$item->cantidad . ' ' . $item->producto->unit->name" class="leading-3 !tracking-normal" />
 
@@ -716,7 +722,6 @@
             });
         }
 
-
         function select2Stock() {
             this.selectSTK = $(this.$refs.selectstock).select2();
             this.selectSTK.val(this.mode).trigger("change");
@@ -791,7 +796,39 @@
         }
 
         function select2Producto() {
-            this.selectP = $(this.$refs.selectprod).select2();
+            this.selectP = $(this.$refs.selectprod).select2({
+                templateResult: function(data) {
+                    if (!data.id) {
+                        return data.text;
+                    }
+                    const image = $(data.element).data('image') ?? '';
+                    const marca = $(data.element).data('marca') ?? '';
+                    const category = $(data.element).data('category') ?? '';
+                    const subcategory = $(data.element).data('subcategory') ?? '';
+
+                    let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                    if (image) {
+                        html +=
+                            `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                    } else {
+                        html += `<x-icon-image-unknown class="w-full h-full" />`;
+                    }
+                    html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                    return $(html);
+                }
+            });
             this.selectP.val(this.producto_id).trigger("change");
             this.selectP.on("select2:select", (event) => {
                 this.producto_id = event.target.value;
@@ -808,7 +845,39 @@
             });
             Livewire.hook('message.processed', () => {
                 this.selectP.select2('destroy');
-                this.selectP.select2().val(this.producto_id).trigger('change');
+                this.selectP.select2({
+                    templateResult: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        const image = $(data.element).data('image') ?? '';
+                        const marca = $(data.element).data('marca') ?? '';
+                        const category = $(data.element).data('category') ?? '';
+                        const subcategory = $(data.element).data('subcategory') ?? '';
+
+                        let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                        if (image) {
+                            html +=
+                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                        } else {
+                            html += `<x-icon-image-unknown class="w-full h-full" />`;
+                        }
+                        html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                        return $(html);
+                    }
+                }).val(this.producto_id).trigger('change');
             });
         }
 
