@@ -26,8 +26,8 @@
             </div>
         @endif
 
-        @if (auth()->user())
-        
+        @if (Module::isEnabled('Marketplace') && auth()->user())
+            <livewire:modules.marketplace.usersweb.show-adress />
         @endif
 
         <div class="w-full">

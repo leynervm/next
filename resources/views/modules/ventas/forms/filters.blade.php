@@ -1,5 +1,6 @@
-<div class="w-full" x-data="loadselect2">
-    <div class="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 gap-2">
+<div class="w-full relative" x-data="loadselect2">
+    <div x-bind:style="{ opacity: loadingfilters ? '0' : '1' }" style="opacity: 0"
+        class="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 gap-2">
         <div class="w-full col-span-2 xl:col-span-3">
             <x-label value="Buscar producto :" />
             <x-input class="block w-full disabled:bg-gray-200" wire:model.debounce.700ms="search"
@@ -15,7 +16,8 @@
         </div>
     </div>
 
-    <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 mt-2">
+    <div x-bind:style="{ opacity: loadingfilters ? '0' : '1' }" style="opacity: 0"
+        class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 mt-2">
 
         @if ($empresa->usarLista())
             {{-- @if (count($pricetypes) > 1) --}}
@@ -74,6 +76,42 @@
         </x-label-check>
     </div>
 
+    <div class="w-full h-full bg-body flex flex-col gap-2 absolute top-0 rounded-lg" x-show="loadingfilters" x-cloak
+        style="display: none">
+        <div class="w-full flex gap-2">
+            <div class="w-full flex-1 skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+            <div class="w-full max-w-64 skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+        </div>
+        <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
+            <div class="w-full skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+            <div class="w-full skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+            <div class="w-full skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+            <div class="w-full skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+            <div class="w-full skeleton-box">
+                <div class="p-1.5 rounded-sm bg-neutral-400 max-w-24"></div>
+                <div class="w-full p-4 bg-neutral-200 rounded-lg mt-1"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function loadselect2() {
             return {
@@ -82,6 +120,7 @@
                 subcategories: [],
                 subcategories: [],
                 pricetypes: [],
+                loadingfilters: true,
 
                 init() {
                     this.fetchMultipleDatos();
@@ -106,6 +145,7 @@
                         this.select2Pricetype()
                         this.select2Marca()
                         this.select2Category()
+                        this.loadingfilters = false;
                     } catch (error) {
                         console.error('Error en una de las peticiones:', error);
                         return null;

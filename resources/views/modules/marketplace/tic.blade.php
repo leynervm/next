@@ -121,8 +121,7 @@
                             <div class="w-full relative mt-5 rounded-lg md:rounded-3xl overflow-hidden">
                                 <picture>
                                     <source srcset="{{ $data->desarrollo->image }}">
-                                    <img src="{{ $data->desarrollo->image }}"
-                                        alt="{{ $data->desarrollo->image }}"
+                                    <img src="{{ $data->desarrollo->image }}" alt="{{ $data->desarrollo->image }}"
                                         class="w-full h-full max-h-[28rem] object-scale-down sm:object-cover rounded-lg overflow-hidden">
                                 </picture>
                                 {{-- <div
@@ -291,11 +290,11 @@
                 <article id="tabpanel-3" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-3"
                     x-show="activeTab === 3"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-x-8"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:translate-y-0 lg:-translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-x-12">
+                    x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-y-0 lg:translate-x-12">
                     <div class="w-full grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 gap-1 md:gap-5">
                         @foreach ($data->seguridad->content as $item)
                             <div class="card-solutions security" :key="$i">
@@ -330,11 +329,11 @@
                 <article id="tabpanel-4" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-4"
                     x-show="activeTab === 4"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-x-8"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:translate-y-0 lg:-translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-x-12">
+                    x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-y-0 lg:translate-x-12">
 
                     <div class="w-full bg-gray-700 rounded-lg md:rounded-3xl py-5">
                         <div class="w-full max-w-[95%] md:max-w-[85%] mx-auto">
@@ -485,11 +484,11 @@
                 <article id="tabpanel-5" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-5"
                     x-show="activeTab === 5"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-x-8"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:translate-y-0 lg:-translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-x-12">
+                    x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-y-0 lg:translate-x-12">
                     <div class="w-full grid grid-cols-2 xs:grid-cols-2 md:grid-cols-3 gap-1 md:gap-5">
                         @foreach ($data->redes->content as $item)
                             <div class="card-solutions security" :key="$i">
@@ -525,11 +524,11 @@
                 <article id="tabpanel-6" class="w-full" role="tabpanel" tabindex="0" aria-labelledby="tab-6"
                     x-show="activeTab === 6"
                     x-transition:enter="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-700 transform order-first"
-                    x-transition:enter-start="opacity-0 -translate-x-8"
-                    x-transition:enter-end="opacity-100 translate-x-0"
+                    x-transition:enter-start="opacity-0 -translate-y-8 lg:translate-y-0 lg:-translate-x-8"
+                    x-transition:enter-end="opacity-100 translate-y-0 lg:translate-x-0"
                     x-transition:leave="transition ease-[cubic-bezier(0.68,-0.3,0.32,1)] duration-300 transform absolute"
-                    x-transition:leave-start="opacity-100 translate-x-0"
-                    x-transition:leave-end="opacity-0 translate-x-12">
+                    x-transition:leave-start="opacity-100 translate-y-0 translate-x-0"
+                    x-transition:leave-end="opacity-0 translate-y-12 lg:translate-y-0 lg:translate-x-12">
 
                     <div class="w-full bg-gray-700 py-5 pb-8 rounded-lg md:rounded-3xl">
                         <div class="w-full max-w-[95%] md:max-w-[85%] mx-auto">
@@ -591,7 +590,8 @@
                     </div>
 
                     <div class="w-full bg-gray-700 py-3 md:py-5 rounded-2xl xs:rounded-3xl">
-                        <div class="w-full max-w-[95%] md:max-w-[85%] mx-auto grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-5">
+                        <div
+                            class="w-full max-w-[95%] md:max-w-[85%] mx-auto grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-5">
                             @foreach ($data->electricidad->content as $item)
                                 <div
                                     class="w-full flex flex-col gap-1 md:gap-5 bg-white rounded-2xl md:rounded-3xl p-2 sm:p-3 md:p-5 py-3 md:py-8">
@@ -603,7 +603,8 @@
                                         <img src="{{ $item->url }}" alt="{{ $item->url }}"
                                             class="w-full h-full min-h-28 object-cover rounded-lg">
                                     </picture>
-                                    <p class="text-xs sm:text-sm text-justify sm:text-center text-colorsubtitleform font-normal">
+                                    <p
+                                        class="text-xs sm:text-sm text-justify sm:text-center text-colorsubtitleform font-normal">
                                         {{ $item->description }}</p>
                                 </div>
                             @endforeach

@@ -26,9 +26,9 @@ class ShowOrders extends Component
 
     public function render()
     {
-        $orders = Order::where('user_id', auth()->user()->id);
-        if (trim($this->status) !== '') {
-        }
+        $orders = Order::with(['direccion', 'moneda', 'client', 'shipmenttype', 'user'])->where('user_id', auth()->user()->id);
+        // if (trim($this->status) !== '') {
+        // }
 
         if (trim($this->date) !== '') {
             if ($this->dateto) {

@@ -55,7 +55,8 @@ $watch('openSidebar', value => console.log(openSidebar))">
                         <div class="h-12 w-32 hidden ease-in-out duration-100" id="logo-sidebar">
                             @if ($empresa->logo)
                                 <img class="w-full h-full object-scale-down object-center"
-                                    src="{{ getLogoEmpresa($empresa->logo,  request()->isSecure() ? true : false) }}" alt="">
+                                    src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}"
+                                    alt="">
                             @endif
                         </div>
                         <button type="button" id="sidebar-toggle"
@@ -93,39 +94,39 @@ $watch('openSidebar', value => console.log(openSidebar))">
                             <x-jet-dropdown align="right" width="48" contentClasses="p-2 bg-fondodropdown">
                                 <x-slot name="trigger">
                                     <button type="button"
-                                        class="bg-fondodropdown shadow shadow-shadowminicard relative inline-flex p-1.5 justify-center items-center text-textspancardproduct cursor-pointer font-semibold rounded-lg hover:shadow-md hover:shadow-shadowminicard focus:shadow-md focus:shadow-shadowminicard transition-all ease-in-out duration-150">
-                                        <div class="text-xs px-3">
-                                            <p class="text-right">{{ Auth::user()->name }}</p>
+                                        class="bg-fondodropdown shadow max-w-48 shadow-shadowminicard relative inline-flex p-1.5 px-2.5 justify-center items-center text-textspancardproduct cursor-pointer font-semibold rounded-lg hover:shadow-md hover:shadow-shadowminicard transition-all ease-in-out duration-150">
+                                        <div class="w-full flex-1 text-xs px-3">
+                                            <p class="text-right max-w-full truncate">
+                                                {{ Auth::user()->name }}</p>
 
                                             @if (Auth::user()->sucursal)
                                                 <small
-                                                    class="font-medium text-[10px]">[{{ Auth::user()->sucursal->name }}]</small>
+                                                    class="font-medium text-[10px] text-colorsubtitleform w-full max-w-full block truncate">
+                                                    {{ Auth::user()->sucursal->name }}</small>
                                             @else
                                                 <small class="font-medium text-[10px] text-next-500">
-                                                    [SUCURSAL NO ASIGNADA]</small>
+                                                    SUCURSAL NO ASIGNADA</small>
                                             @endif
-
                                         </div>
 
                                         @if (Laravel\Jetstream\Jetstream::managesProfilePhotos())
-                                            <img class="h-8 w-8 rounded-full object-cover"
+                                            <img class="h-8 w-8 rounded-full object-scale-down flex-shrink-0"
                                                 src="{{ Auth::user()->profile_photo_url }}"
                                                 alt="{{ Auth::user()->name }}" />
                                         @else
-                                            <svg class="h-8 w-8 p-1.5" xmlns="http://www.w3.org/2000/svg"
+                                            <svg class="h-8 w-8 p-1.5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg"
                                                 viewBox="0 0 20 20" fill="currentColor">
                                                 <path fill-rule="evenodd"
                                                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
                                                     clip-rule="evenodd" />
                                             </svg>
                                         @endif
-
                                     </button>
                                 </x-slot>
 
                                 <x-slot name="content">
                                     <div
-                                        class="px-4 py-2 flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
+                                        class="px-4 py-2 pt-0 flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
                                         <button title="Light" theme="theme-next"
                                             class="inline-block theme-switcher-button rounded-full bg-transparent text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -160,10 +161,9 @@ $watch('openSidebar', value => console.log(openSidebar))">
                                     </div>
 
                                     @if (Module::isEnabled('Marketplace'))
-                                        <x-nav-link
-                                            class="px-5 gap-2 shadow-none !justify-start font-normal w-full !text-colordropdown hover:!bg-fondohoverdropdown"
+                                        <a class="block w-ful text-sm font-medium p-2.5 rounded-lg text-colorsubtitleform hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
                                             href="/">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                                            {{-- <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round"
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round">
                                                 <path
@@ -172,26 +172,10 @@ $watch('openSidebar', value => console.log(openSidebar))">
                                                     d="M7.5 8L7.66782 5.98618C7.85558 3.73306 9.73907 2 12 2C14.2609 2 16.1444 3.73306 16.3322 5.98618L16.5 8" />
                                                 <path
                                                     d="M15 11C14.87 12.4131 13.5657 13.5 12 13.5C10.4343 13.5 9.13002 12.4131 9 11" />
-                                            </svg>
-                                            {{ __('Store') }}
-                                        </x-nav-link>
+                                            </svg> --}}
+                                            {{ __('Webshop') }}
+                                        </a>
                                     @endif
-
-                                    <x-nav-link
-                                        class="px-5 gap-2 shadow-none !justify-start font-normal w-full !text-colordropdown hover:!bg-fondohoverdropdown"
-                                        href="{{ route('admin.profile') }}">
-                                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg" stroke-linejoin="round"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                                            <path
-                                                d="M10.5 22H6.59087C5.04549 22 3.81631 21.248 2.71266 20.1966C0.453365 18.0441 4.1628 16.324 5.57757 15.4816C8.12805 13.9629 11.2057 13.6118 14 14.4281" />
-                                            <path
-                                                d="M16.5 6.5C16.5 8.98528 14.4853 11 12 11C9.51472 11 7.5 8.98528 7.5 6.5C7.5 4.01472 9.51472 2 12 2C14.4853 2 16.5 4.01472 16.5 6.5Z" />
-                                            <path
-                                                d="M18.4332 13.8485C18.7685 13.4851 18.9362 13.3035 19.1143 13.1975C19.5442 12.9418 20.0736 12.9339 20.5107 13.1765C20.6918 13.2771 20.8646 13.4537 21.2103 13.8067C21.5559 14.1598 21.7287 14.3364 21.8272 14.5214C22.0647 14.9679 22.0569 15.5087 21.8066 15.9478C21.7029 16.1298 21.5251 16.3011 21.1694 16.6437L16.9378 20.7194C16.2638 21.3686 15.9268 21.6932 15.5056 21.8577C15.0845 22.0222 14.6214 22.0101 13.6954 21.9859L13.5694 21.9826C13.2875 21.9752 13.1466 21.9715 13.0646 21.8785C12.9827 21.7855 12.9939 21.6419 13.0162 21.3548L13.0284 21.1988C13.0914 20.3906 13.1228 19.9865 13.2807 19.6232C13.4385 19.2599 13.7107 18.965 14.2552 18.375L18.4332 13.8485Z" />
-                                        </svg>
-                                        {{ __('Profile') }}
-                                    </x-nav-link>
 
                                     {{-- @if (Laravel\Jetstream\Jetstream::hasApiFeatures())
                                     <x-jet-dropdown-link href="{{ route('api-tokens.index') }}">
@@ -199,29 +183,26 @@ $watch('openSidebar', value => console.log(openSidebar))">
                                     </x-jet-dropdown-link>
                                 @endif --}}
 
-                                    {{-- <div class="border-t border-colorlinknav"></div> --}}
+                                    <div class="w-full flex gap-1">
+                                        <a class="block w-full flex-1 text-sm font-medium p-2.5 rounded-lg text-colorsubtitleform hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150"
+                                            href="{{ route('admin.profile') }}">{{ __('Profile') }}</a>
 
-                                    <!-- Authentication -->
-                                    <form method="POST" action="{{ route('logout') }}" x-data>
-                                        @csrf
-                                        <x-nav-link
-                                            class="px-5 gap-2 shadow-none !justify-start font-normal w-full !text-colordropdown hover:!bg-fondohoverdropdown"
-                                            href="{{ route('logout') }}" @click.prevent="$root.submit();">
-                                            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                fill="currentColor" stroke="currentColor" stroke-width=".5"
-                                                fill-rule="evenodd" clip-rule="evenodd">
-                                                <path
-                                                    d="M7.95964 5.18436C8.25778 5.63184 8.13597 6.23577 7.68756 6.53329C5.58339 7.92941 4.2 10.3139 4.2 13.0203C4.2 17.3192 7.69218 20.8041 12 20.8041C16.3078 20.8041 19.8 17.3192 19.8 13.0203C19.8 10.3139 18.4166 7.92941 16.3124 6.53329C15.864 6.23577 15.7422 5.63184 16.0404 5.18436C16.3385 4.73689 16.9437 4.61533 17.3921 4.91285C20.0168 6.65432 21.75 9.63513 21.75 13.0203C21.75 18.3939 17.3848 22.75 12 22.75C6.61522 22.75 2.25 18.3939 2.25 13.0203C2.25 9.63513 3.98323 6.65432 6.60789 4.91285C7.0563 4.61533 7.6615 4.73689 7.95964 5.18436Z" />
-                                                <path
-                                                    d="M12 1.25C12.5523 1.25 13 1.69772 13 2.25V10.25C13 10.8023 12.5523 11.25 12 11.25C11.4477 11.25 11 10.8023 11 10.25V2.25C11 1.69772 11.4477 1.25 12 1.25Z" />
-                                            </svg>
-                                            {{ __('Log Out') }}
-                                            {{-- <x-jet-dropdown-link href="{{ route('logout') }}"
-                                        @click.prevent="$root.submit();">
-                                        {{ __('Log Out') }}
-                                    </x-jet-dropdown-link> --}}
-                                        </x-nav-link>
-                                    </form>
+                                        <form class="flex-shrink-0" method="POST" action="{{ route('logout') }}"
+                                            x-data>
+                                            @csrf
+                                            <a href="{{ route('logout') }}" title="{{ __('Log Out') }}"
+                                                @click.prevent="$root.submit();"
+                                                class="block w-full text-center text-sm font-medium p-2.5 rounded-lg text-colorerror hover:bg-fondohoverdropdown hover:text-textohoverdropdown transition ease-in-out duration-150">
+                                                {{-- {{ __('Log Out') }} --}}
+                                                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                                                    stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                    stroke-width="1.5" fill="none" class="w-6 h-6 block">
+                                                    <path
+                                                        d="M20 12h-9.5m7.5 3l3-3-3-3m-5-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2h5a2 2 0 002-2v-1" />
+                                                </svg>
+                                            </a>
+                                        </form>
+                                    </div>
                                 </x-slot>
                             </x-jet-dropdown>
                         </div>

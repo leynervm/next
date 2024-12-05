@@ -158,7 +158,7 @@
                 </template>
                 <x-jet-input-error class="px-3 pb-1" for="direccionenvio_id" />
 
-                <div class="flex flex-col gap-2 p-1 xs:p-3" style="display: none;" x-show="showaddadress" x-cloak>
+                <div class="flex flex-col gap-2" style="display: none;" x-show="showaddadress" x-cloak>
                     <div class="w-full">
                         <div class="relative" x-data="{ lugar_id: @entangle('lugar_id').defer }" x-init="select2Ubigeo" id="parentlugar_id">
                             <x-select class="block w-full" x-ref="select" id="lugar_id"
@@ -692,6 +692,6 @@
                 '</p>'
             );
             return $option;
-        };
+        }
     </script>
 </div>

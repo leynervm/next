@@ -62,7 +62,7 @@
 }
 
 .btn-next:before {
-    box-shadow: 0px 0px 0px 2px theme("colors.next.500") inset;
+    box-shadow: 0px 0px 0px 2px theme('colors.next.500') inset;
     @apply content-[''] rounded-[5px] sm:rounded-[8px] absolute left-0 top-0 block w-full h-full skew-x-[12deg] sm:skew-x-[15deg] -translate-x-[4px] sm:-translate-x-[6px] translate-y-[4px] sm:translate-y-[6px] transition-colors ease-in-out duration-300;
 }
 
@@ -96,7 +96,7 @@
 }
 
 .btn-next.btn-white:before {
-    box-shadow: 0px 0px 0px 2px theme("colors.white") inset;
+    box-shadow: 0px 0px 0px 2px theme('colors.white') inset;
 }
 
 /* HOVER TRANSPARENT BUTTON */
@@ -180,25 +180,31 @@
     @apply bg-fondofooter text-[10px] lg:text-xs text-colorlinkfooter;
 }
 
-.footer-marketplace ul {
-    @apply w-full block p-3;
-}
-
-.footer-marketplace ul li {
+.footer-marketplace .list-footer-marketplace {
     @apply w-full block;
 }
 
-.footer-marketplace ul li a {
-    @apply block p-1.5 text-center font-medium transition duration-300;
+.footer-marketplace .list-footer-marketplace .item-footer-marketplace {
+    @apply w-full block;
 }
 
-.footer-marketplace ul li a.item-footer,
+.footer-marketplace
+    .list-footer-marketplace
+    .item-footer-marketplace
+    .item-link-footer {
+    @apply block p-1.5 text-xs sm:text-sm font-light text-center transition duration-300;
+}
+
+.footer-marketplace
+    .list-footer-marketplace
+    .item-footer-marketplace
+    .item-link-footer,
 .footer-social .social-footer {
-    @apply w-full p-1 text-center tracking-wide font-medium hover:text-hoverlinkfooter transition duration-300;
+    @apply w-full p-1 text-left tracking-wide hover:text-hoverlinkfooter transition duration-300;
 }
 
 .footer-social .social-footer {
-    @apply block bg-white rounded-full w-8 h-8 transition-transform ease-linear duration-300;
+    @apply block bg-white rounded-full w-8 h-8 sm:w-10 sm:h-10 transition-transform ease-linear duration-300;
 }
 
 .footer-social .email {
@@ -268,7 +274,7 @@
 }
 
 .card {
-    @apply absolute bg-cover bg-center bg-no-repeat w-full h-full rounded-3xl shadow-md hover:shadow-xl shadow-shadowminicard transition-transform ease-in-out duration-700;
+    @apply absolute bg-cover bg-center bg-no-repeat w-full h-full rounded-3xl shadow shadow-shadowminicard transition-transform ease-in-out duration-700;
     transform-style: preserve-3d;
 }
 
@@ -298,7 +304,11 @@
 
 .card .title-card-front,
 .card .title-card-back {
-    @apply md:-skew-x-[8deg] block text-sm lg:text-4xl font-semibold relative tracking-widest rounded;
+    @apply md:-skew-x-[8deg] block text-lg lg:text-4xl font-semibold relative tracking-widest rounded;
+}
+
+.card.back .card-depth {
+    @apply flex flex-col justify-center gap-3 h-full;
 }
 
 .card .title-card-front {
@@ -310,15 +320,15 @@
 }
 
 .back .fondo .fondo-img::before {
-    @apply absolute top-0 left-0 content-[''] w-full h-full bg-neutral-700 rounded-xl bg-opacity-70;
+    @apply absolute top-0 left-0 content-[''] w-full h-full bg-black rounded-xl bg-opacity-70;
 }
 
 .card .title-card-back {
-    @apply p-1 pt-5 text-white;
+    @apply p-1 pt-5 text-next-500 text-2xl;
 }
 
 .card .texto-card-back {
-    @apply block md:-skew-x-[8deg] text-[10px] lg:text-sm p-3 px-5 text-white font-semibold;
+    @apply block md:-skew-x-[8deg] max-w-xs text-center text-xs lg:text-lg p-3 px-5 text-white font-light !leading-none;
 }
 
 .flip3D:hover > .front {
@@ -440,7 +450,7 @@
     border-color: transparent transparent #fff;
     border-style: solid;
     border-width: 0 9px 7px;
-    content: "";
+    content: '';
     height: 0;
     right: 68px;
     top: -7px;
@@ -522,7 +532,7 @@
 .custom-btn:before,
 .custom-btn:after {
     position: absolute;
-    content: "";
+    content: '';
     right: 0;
     bottom: 0;
     background: rgb(15, 185, 185);
@@ -555,7 +565,7 @@
 .custom-btn span:before,
 .custom-btn span:after {
     position: absolute;
-    content: "";
+    content: '';
     left: 0;
     top: 0;
     background: rgb(15, 185, 185);
@@ -705,7 +715,7 @@
 }
 .heading:after {
     display: block;
-    content: "";
+    content: '';
     position: absolute;
     width: 60px;
     height: 4px;
@@ -769,10 +779,9 @@
     position: relative;
 }
 
-
 .card-solutions.security:before {
     position: absolute;
-    content: "";
+    content: '';
     top: 0;
     left: 0;
     height: 100%;
@@ -793,7 +802,6 @@
         rgba(255, 255, 255, 0.9) 15%,
         rgba(255, 255, 255, 0) 45%
     );
-    
 }
 
 .list-datacenter li {
@@ -817,7 +825,7 @@
     animation-iteration-count: infinite;
 }
 
-.paginator-marketplace-productos .text-descripcion-paginator{
+.paginator-marketplace-productos .text-descripcion-paginator {
     @apply sm:!text-center;
 }
 
@@ -825,6 +833,38 @@
     display: none !important;
 }
 
+.button-tab-network {
+    @apply flex-1 text-xs sm:text-xl lg:text-2xl font-semibold p-3 sm:p-5 leading-none rounded-tl-2xl rounded-br-2xl sm:rounded-tl-3xl sm:rounded-br-3xl whitespace-nowrap focus-visible:outline-none focus-visible:ring focus-visible:ring-next-300 transition-colors duration-150 ease-in-out;
+}
+
+.card-network {
+    @apply w-full flex flex-col gap-3 sm:gap-5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-fondominicard hover:shadow-md hover:shadow-shadowminicard border border-borderminicard hover:border-primary transition ease-in-out duration-150 /* bg-gradient-to-br from-next-800 to-next-400 */;
+}
+
+.card-network .header-card-network,
+.card-network .footer-card-network {
+    @apply w-full bg-fondominicard p-1 sm:p-3;
+}
+
+.card-network .header-card-network {
+    @apply rounded-xl sm:rounded-xl bg-primary;
+}
+
+.card-network .header-card-network .title-header-card-network,
+.card-network .footer-card-network .title-footer-card-network {
+    @apply text-sm sm:text-xl font-semibold text-center text-primary sm:leading-none;
+}
+.card-network .header-card-network .title-header-card-network {
+    @apply text-white;
+}
+
+.card-network .header-card-network .subtitle-header-card-network {
+    @apply text-[10px] sm:text-sm font-medium text-center text-neutral-100 pt-1 !leading-none;
+}
+
+.card-network .footer-card-network {
+    @apply font-semibold rounded-tl-xl sm:rounded-tl-2xl rounded-br-xl sm:rounded-br-2xl border border-primary;
+}
 /* .btn-float-whatsapp:before {
     content: "";
     position: absolute;

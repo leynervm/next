@@ -254,11 +254,6 @@ class CreateVenta extends Component
         $this->pricetype = $pricetype;
         $this->pricetype_id = $pricetype->id ?? null;
 
-        if (trim($this->searchcategory) !== '') {
-            $this->subcategories = Category::with('subcategories')->find($this->searchcategory)->subcategories()
-                ->whereHas('productos')->orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
-        }
-
         if (count($this->sucursal->almacens) > 0) {
             $this->almacen_id = $this->sucursal->almacens->first()->id;
         }
@@ -281,22 +276,46 @@ class CreateVenta extends Component
     public function render()
     {
 
-        $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'marca_id', 'category_id', 'subcategory_id', 'unit_id')
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'unit_id',
+            'novedad',
+            'sku',
+            'pricebuy',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+            DB::raw(
+                "ts_rank(to_tsvector('spanish', 
+                    COALESCE(productos.name, '') || ' ' || 
+                    COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(categories.name, '')
+                ), plainto_tsquery('spanish', '" . $this->search . "')) AS rank"
+            )
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
             ->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('default', 'desc')->limit(1);
             }])->with([
-                'marca',
                 'unit',
                 'garantiaproductos.typegarantia',
                 'seriesdisponibles' => function ($query) {
                     $query->with(['almacen']);
-                    // $query->where('almacen_id', $this->almacen_id);
-                },
-                'category' => function ($query) {
-                    $query->select('id', 'name');
                 },
                 'promocions' => function ($query) {
                     $query->with(['itempromos.producto' => function ($subQuery) {
@@ -313,37 +332,39 @@ class CreateVenta extends Component
                 if ($this->disponibles) {
                     $query->where('cantidad', '>', 0);
                 }
-            });
+            })->withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+            }]);
 
         if (trim($this->search) !== '') {
-            $searchTerms = explode(' ', $this->search);
-            $productos->where(function ($query) {
-                // foreach ($searchTerms as $term) {
-                $query->orWhere('name', 'ilike', '%' . $this->search . '%')
-                    ->orWhereHas('marca', function ($q) {
-                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
-                    })->orWhereHas('category', function ($q) {
-                        $q->whereNull('deleted_at')->where('name', 'ilike', '%' . $this->search . '%');
-                    })->orWhereHas('especificacions', function ($q) {
-                        $q->where('especificacions.name', 'ilike', '%' . $this->search . '%');
-                    });
-                // }
-            });
+            $productos->whereRaw(
+                "to_tsvector('spanish', 
+                COALESCE(productos.name, '') || ' ' || 
+                COALESCE(marcas.name, '') || ' ' || 
+                COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $this->search . "')",
+            )->orWhereRaw(
+                "similarity(productos.name, '" . $this->search . "') > 0.5 
+                OR similarity(marcas.name, '" . $this->search . "') > 0.5 
+                OR similarity(categories.name, '" . $this->search . "') > 0.5",
+            )->orderByDesc('novedad')->orderBy('subcategories.orden')
+                ->orderBy('categories.orden')->orderByDesc('rank')
+                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
         }
 
         if (trim($this->searchmarca) !== "") {
-            $productos->where('marca_id', $this->searchmarca);
+            $productos->where('marcas.slug', $this->searchmarca);
         }
 
         if (trim($this->searchcategory) !== "") {
-            $productos->where('category_id', $this->searchcategory);
+            $productos->where('categories.slug', $this->searchcategory);
         }
 
         if (trim($this->searchsubcategory) !== "") {
-            $productos->where('subcategory_id', $this->searchsubcategory);
+            $productos->where('subcategories.slug', $this->searchsubcategory);
         }
 
-        $productos = $productos->visibles()->orderBy('name', 'asc')->paginate(20)
+        $productos = $productos->visibles()->orderBy('novedad', 'desc')->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->paginate(20)
             ->through(function ($producto) {
                 $producto->promocion = $producto->promocions->first();
                 return $producto;

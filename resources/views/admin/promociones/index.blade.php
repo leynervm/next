@@ -19,21 +19,6 @@
             </x-link-breadcrumb>
         @endif
 
-        @if (Module::isEnabled('Ventas') || Module::isEnabled('Almacen'))
-            <x-link-breadcrumb text="PRODUCTOS" route="admin.almacen.productos">
-                <x-slot name="icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" stroke-width="1"
-                        stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4.5 17V6H19.5V17H4.5Z" />
-                        <path d="M4.5 6L6.5 2.00001L17.5 2L19.5 6" />
-                        <path d="M10 9H14" />
-                        <path
-                            d="M11.9994 19.5V22M11.9994 19.5L6.99939 19.5M11.9994 19.5H16.9994M6.99939 19.5H1.99939V22M6.99939 19.5V22M16.9994 19.5H22L21.9994 22M16.9994 19.5V22" />
-                    </svg>
-                </x-slot>
-            </x-link-breadcrumb>
-        @endif
-
         <x-link-breadcrumb text="PROMOCIONES" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"

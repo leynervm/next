@@ -183,9 +183,10 @@
                             </div>
 
                             <ul class="flex max-h-60 p-1 flex-col overflow-y-auto">
-                                <li class="hidden px-4 py-2 text-sm text-colorlabel " x-ref="noResultsMessage">
-                                    <span>No se encontraron resultados.</span>
+                                <li class="hidden p-2 text-colorlabel" x-ref="noResultsMessage">
+                                    <p class="text-colorsubtitleform text-xs">No se encontraron resultados.</p>
                                 </li>
+
                                 <template x-for="(item, index) in filteredProducts" x-bind:key="item.id">
                                     <li class="combobox-option rounded-md inline-flex cursor-pointer justify-between items-center gap-2 p-1 text-xs text-colorlabel hover:bg-fondohoverselect2 focus-visible:border-none focus-visible:bg-fondohoverselect2 focus-visible:outline-none"
                                         role="option" x-on:click="setSelectedOption(item)"
@@ -555,7 +556,9 @@
                     <small>EXONERADO : </small>
                 </td>
                 <td class="text-end w-40">
-                    <span x-text="(exonerado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <span
+                        x-text="(exonerado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"
+                        class="text-sm font-semibold"></span>
                     <small x-text="namemoneda"></small>
                 </td>
             </tr>
@@ -564,7 +567,9 @@
                     <small>GRAVADO : </small>
                 </td>
                 <td class="text-end">
-                    <span x-text="(gravado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <span
+                        x-text="(gravado).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"
+                        class="text-sm font-semibold"></span>
                     <small x-text="namemoneda"></small>
                 </td>
             </tr>
@@ -573,7 +578,9 @@
                     <small>IGV : </small>
                 </td>
                 <td class="text-end">
-                    <span x-text="(igv).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <span
+                        x-text="(igv).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"
+                        class="text-sm font-semibold"></span>
                     <small x-text="namemoneda"></small>
                 </td>
             </tr>
@@ -582,7 +589,9 @@
                     <small>SUBTOTAL : </small>
                 </td>
                 <td class="text-end">
-                    <span x-text="(subtotal).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <span
+                        x-text="(subtotal).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"
+                        class="text-sm font-semibold"></span>
                     <small x-text="namemoneda"></small>
                 </td>
             </tr>
@@ -591,7 +600,9 @@
                     <small>DESCUENTOS : </small>
                 </td>
                 <td class="text-end">
-                    <span x-text="(descuento).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })" class="text-sm font-semibold"></span>
+                    <span
+                        x-text="(descuento).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })"
+                        class="text-sm font-semibold"></span>
                     <small x-text="namemoneda"></small>
                 </td>
             </tr>
@@ -652,11 +663,8 @@
                 totalitem: @entangle('totalitem').defer,
 
                 init() {
+                    this.$refs.noResultsMessage.classList.remove('hidden');
                     this.fetchProducts();
-                    // this.$watch("typedescuento", (value) => {
-                    //     console.log(value);
-                    // })
-
                     this.$watch("almacens", (value) => {
                         // console.log('watch', value);
                         const almacens = Object.values(value);
@@ -778,12 +786,14 @@
                         })
                         .then(response => response.json())
                         .then(data => {
-                            // console.log(data);
                             if (data.error) {
                                 this.error = data.error;
                             } else {
                                 this.products = data;
                                 this.filteredProducts = data;
+                                if (this.products.length > 0) {
+                                    this.$refs.noResultsMessage.classList.add('hidden');
+                                }
                             }
                         })
                         .catch(() => {
@@ -792,7 +802,6 @@
                         });
                 },
                 setSelectedOption(option) {
-                    // console.log(option);
                     this.producto_id = option.id
                     this.selectedOption = option
                     this.isOpen = false
@@ -811,13 +820,6 @@
                     // this.almacens = almacens;
                     this.$wire.almacens = almacens
                     this.$wire.$refresh()
-                    // console.log(this.almacens)
-                    // console.log(this.$wire.get('almacens'));
-                    // this.$wire.set('almacens', almacens);
-                    // this.almacens = almacens
-                    // this.$wire.call('setalmacens', almacens).then(result => {
-                    // this.almacens = @this.get('almacens');
-                    // });
                 },
                 getFilteredOptions(query) {
                     this.filteredProducts = this.products.filter((product) =>

@@ -134,6 +134,12 @@ module.exports = {
                 fondobadgemarketplace: "var(--fondo-badge-marketplace)",
                 colorbadgemarketplace: "var(--color-badge-marketplace)",
 
+                fondologoasus: "var(--fondo-logo-asus)",
+                colorlogoasus: "var(--color-logo-asus)",
+
+                colorlogobrother: "var(--color-logo-brother)",
+                colorlogolenovo: "var(--color-logo-lenovo)",
+
 
                 next: {
                     50: "#f0f9f9",

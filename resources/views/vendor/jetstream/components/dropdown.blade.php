@@ -17,7 +17,7 @@
             $alignmentClasses = 'origin-top-right right-0';
             break;
     }
-    
+
     switch ($width) {
         case '48':
             $width = 'w-48';
@@ -34,9 +34,9 @@
         x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100"
         x-transition:leave-end="transform opacity-0 scale-95"
-        class="absolute z-50 mt-2 {{ $width }} rounded-md shadow shadow-shadowminicard {{ $alignmentClasses }} {{ $dropdownClasses }}"
+        class="absolute z-50 mt-2 {{ $width }} rounded-lg sm:rounded-xl shadow shadow-shadowminicard {{ $alignmentClasses }} {{ $dropdownClasses }}"
         style="display: none;" @click.away="open = false">
-        <div class="rounded-md ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
+        <div class="rounded-lg sm:rounded-xl ring-1 ring-black ring-opacity-5 {{ $contentClasses }}">
             {{ $content }}
         </div>
     </div>

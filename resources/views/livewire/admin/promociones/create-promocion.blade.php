@@ -117,7 +117,12 @@
                                         @if (count($productos) > 0)
                                             <x-slot name="options">
                                                 @foreach ($productos as $item)
-                                                    <option value="{{ $item->id }}">{{ $item->name }}</option>
+                                                    <option data-marca="{{ $item->name_marca }}"
+                                                        data-category="{{ $item->name_category }}"
+                                                        data-subcategory="{{ $item->name_subcategory }}"
+                                                        data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                                        value="{{ $item->id }}">
+                                                        {{ $item->name }}</option>
                                                 @endforeach
                                             </x-slot>
                                         @endif
@@ -268,8 +273,12 @@
                                             @if (count($productos) > 0)
                                                 <x-slot name="options">
                                                     @foreach ($productos as $item)
-                                                        <option value="{{ $item->id }}">{{ $item->name }}
-                                                        </option>
+                                                        <option data-marca="{{ $item->name_marca }}"
+                                                            data-category="{{ $item->name_category }}"
+                                                            data-subcategory="{{ $item->name_subcategory }}"
+                                                            data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                                            value="{{ $item->id }}">
+                                                            {{ $item->name }}</option>
                                                     @endforeach
                                                 </x-slot>
                                             @endif
@@ -408,7 +417,39 @@
             })
 
             function select2Producto() {
-                this.selectP = $(this.$refs.select).select2();
+                this.selectP = $(this.$refs.select).select2({
+                    templateResult: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        const image = $(data.element).data('image') ?? '';
+                        const marca = $(data.element).data('marca') ?? '';
+                        const category = $(data.element).data('category') ?? '';
+                        const subcategory = $(data.element).data('subcategory') ?? '';
+
+                        let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                        if (image) {
+                            html +=
+                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                        } else {
+                            html += `<x-icon-image-unknown class="w-full h-full" />`;
+                        }
+                        html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                        return $(html);
+                    }
+                });
                 this.selectP.val(this.producto_id).trigger("change");
                 this.selectP.on("select2:select", (event) => {
                     this.producto_id = event.target.value;
@@ -423,7 +464,39 @@
             }
 
             function selectProductoSec() {
-                this.selectPS = $(this.$refs.selectps).select2();
+                this.selectPS = $(this.$refs.selectps).select2({
+                    templateResult: function(data) {
+                        if (!data.id) {
+                            return data.text;
+                        }
+                        const image = $(data.element).data('image') ?? '';
+                        const marca = $(data.element).data('marca') ?? '';
+                        const category = $(data.element).data('category') ?? '';
+                        const subcategory = $(data.element).data('subcategory') ?? '';
+
+                        let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                        if (image) {
+                            html +=
+                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                        } else {
+                            html += `<x-icon-image-unknown class="w-full h-full" />`;
+                        }
+                        html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                        return $(html);
+                    }
+                });
                 this.selectPS.val(this.productosec_id).trigger("change");
                 this.selectPS.on("select2:select", (event) => {
                     this.productosec_id = event.target.value;

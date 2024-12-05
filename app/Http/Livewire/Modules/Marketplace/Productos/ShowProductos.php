@@ -224,14 +224,15 @@ class ShowProductos extends Component
             )
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
-            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id');
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['almacens' => function ($query) {
+                $query->where('cantidad', '>', 0);
+            }]);
 
         if ($this->empresa->viewOnlyDisponibles()) {
-            $productos->withWhereHas('almacens', function ($query) {
+            $productos->whereHas('almacens', function ($query) {
                 $query->where('cantidad', '>', 0);
             });
-        } else {
-            $productos->with(['almacens']);
         }
 
         $productos->withCount(['almacens as stock' => function ($query) {

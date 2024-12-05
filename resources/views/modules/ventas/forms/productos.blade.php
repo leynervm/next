@@ -13,8 +13,18 @@
                 $pricesale = $item->obtenerPrecioVenta($pricetype);
             @endphp
 
-            <x-card-producto :name="$item->name" :image="$image" :category="$item->category->name" :marca="$item->marca->name" :promocion="$promocion"
+            <x-card-producto :name="$item->name" :image="$image" :category="$item->name_category" :marca="$item->name_marca" :promocion="$promocion"
                 class="w-full h-full" id="card_{{ $item->id }}">
+
+                @if ($item->isNovedad())
+                    <div class="w-full flex justify-end">
+                        @if (!empty($empresa->textnovedad))
+                            <span class="span-novedad">
+                                {{ $empresa->textnovedad }}</span>
+                        @endif
+                        <x-icon-novedad />
+                    </div>
+                @endif
 
                 @if ($combo)
                     @if (count($combo->products) > 0)

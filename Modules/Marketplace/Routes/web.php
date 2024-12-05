@@ -46,7 +46,7 @@ Route::middleware(['web', 'verifyproductocarshoop'])->group(function () {
     Route::get('/libro-reclamaciones/{claimbook}/resumen', [ClaimbookController::class, 'resumen'])->name('claimbook.resumen');
     Route::get('/libro-reclamaciones/{claimbook}/print', [ClaimbookController::class, 'print'])->name('claimbook.print.pdf');
 
-    Route::get('/nosotros', [MarketplaceController::class, 'nosotros'])->name('nosotros');
+    Route::get('/quienes-somos', [MarketplaceController::class, 'quiensomos'])->name('quiensomos');
     Route::get('/contactanos', [MarketplaceController::class, 'contactanos'])->name('contactanos');
     Route::post('/contactanos/store', [ContactController::class, 'store'])->name('contactanos.store');
     Route::get('/centro-autorizado', [MarketplaceController::class, 'centroautorizado'])->name('centroautorizado');
@@ -54,6 +54,7 @@ Route::middleware(['web', 'verifyproductocarshoop'])->group(function () {
     Route::get('/trabaja-con-nosotros', [MarketplaceController::class, 'trabaja'])->name('trabaja');
 
     Route::get('/soluciones-integrales', [MarketplaceController::class, 'tic'])->name('tic');
+    Route::get('/servicio-internet', [MarketplaceController::class, 'servicesnetwork'])->name('servicesnetwork');
 });
 
 

@@ -7,7 +7,7 @@
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
                         @if (auth()->user()->isAdmin())
-                            <x-input class="flex-1 block w-full" wire:keydown.enter="searchclient" type="number"
+                            <x-input class="flex-1 block w-full input-number-none" wire:keydown.enter="searchclient" type="number"
                                 wire:model.defer="empresa.document" onkeypress="return validarNumero(event, 11)"
                                 onkeydown="disabledEnter(event)" />
                         @else

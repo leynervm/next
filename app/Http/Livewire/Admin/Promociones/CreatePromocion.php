@@ -43,24 +43,10 @@ class CreatePromocion extends Component
                 'exists:productos,id',
                 new ValidatePrincipalCombo($this->producto_id, $this->type),
             ],
-            'pricebuy' => [
-                'required',
-                'numeric',
-                'decimal:0,4',
-            ],
+            'pricebuy' => ['required', 'numeric', 'decimal:0,4'],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1',  'max:' . $this->limitstock, 'decimal:0,2',],
-            'startdate' => [
-                'nullable',
-                'date',
-                'after_or_equal:' . now('America/Lima')->format('Y-m-d')
-            ],
-            'expiredate' => [
-                'nullable',
-                Rule::requiredIf(!empty($this->startdate)),
-                'date',
-                'after_or_equal:' . now('America/Lima')->format('Y-m-d'),
-                'after_or_equal:startdate'
-            ],
+            'startdate' => ['nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')],
+            'expiredate' => ['nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'), 'after_or_equal:startdate'],
             'type' => ['required', 'integer', 'min:0', 'max:2'],
             'itempromos' => ['required', 'array', 'min:1', new ValidateStockCombo($this->producto_id, $this->limit)],
         ];
@@ -73,7 +59,36 @@ class CreatePromocion extends Component
 
     public function render()
     {
-        $productos = Producto::query()->select('id', 'name', 'slug')->whereHas('almacens')->orderBy('name', 'asc')->get();
+
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'productos.slug',
+            'productos.novedad',
+            'productos.pricebuy',
+            'productos.pricesale',
+            'requireserie',
+            'novedad',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'unit_id',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+        )->addSelect(['image' => function ($query) {
+            $query->select('url')->from('images')
+                ->whereColumn('images.imageable_id', 'productos.id')
+                ->where('images.imageable_type', Producto::class)
+                ->orderBy('default', 'desc')->limit(1);
+        }])->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['unit'])
+            ->withWhereHas('almacens')->visibles()->orderByDesc('novedad')
+            ->orderBy('subcategories.orden')->orderBy('categories.orden')->get();
+
+
         return view('livewire.admin.promociones.create-promocion', compact('productos'));
     }
 

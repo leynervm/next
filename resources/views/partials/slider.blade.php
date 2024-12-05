@@ -13,8 +13,6 @@
                                 <img src="{{ pathURLSlider($item->url) }}" alt="{{ pathURLSlider($item->url) }}"
                                     class="absolute w-full h-full object-cover">
                             </picture>
-                            {{-- <img src="{{ $item->getImageURL() }}" alt="home"
-                                class="absolute w-full h-full object-cover"> --}}
                         </div>
                         <div class="carousel-item-link">
                             @if ($item->link)

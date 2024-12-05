@@ -5,6 +5,7 @@ namespace Modules\Marketplace\Http\Controllers;
 use App\Enums\MethodPaymentOnlineEnum;
 use App\Enums\StatusPayWebEnum;
 use App\Models\Category;
+use App\Models\Employer;
 use App\Models\Moneda;
 use App\Models\Producto;
 use App\Models\Sucursal;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
+use Nwidart\Modules\Facades\Module;
 use Nwidart\Modules\Routing\Controller;
 
 class MarketplaceController extends Controller
@@ -419,9 +421,13 @@ class MarketplaceController extends Controller
         return view('marketplace::admin.sliders.index');
     }
 
-    public function nosotros()
+    public function quiensomos()
     {
-        return view('modules.marketplace.nosotros');
+        $employers = [];
+        if (Module::isEnabled('Employer')) {
+            $employers = Employer::orderBy('name')->get();
+        }
+        return view('modules.marketplace.quienes-somos', compact('employers'));
     }
 
     public function contactanos()
@@ -431,7 +437,110 @@ class MarketplaceController extends Controller
 
     public function centroautorizado()
     {
-        return view('modules.marketplace.centro-autorizado');
+        $brother = [
+            'requisitos' => [
+                [
+                    'id' => 1,
+                    'titulo' => "Validez de la Garantía",
+                    'descripcion' => "su producto se mantenga válida, es fundamental que el equipo no haya sido manipulado. Cualquier daño causado por reparaciones no autorizadas
+                                    o modificaciones puede anular la garantía."
+                ],
+                [
+                    'id' => 2,
+                    'titulo' => "Comprobante de Compra",
+                    'descripcion' => "Se requiere presentar el comprobante de compra original, que debe incluir la fecha de adquisición y los datos del vendedor."
+                ],
+                [
+                    'id' => 3,
+                    'titulo' => "Accesorios Incluidos",
+                    'descripcion' => "Si corresponde, asegúrese de incluir todos los accesorios originales que venían con el producto al solicitar el servicio (tintas, cable de datos, cable de energía, caja y otros)."
+                ],
+                [
+                    'id' => 4,
+                    'titulo' => "Estado del Producto",
+                    'descripcion' => "El equipo debe estar en condiciones adecuadas para su evaluación, sin daños visibles que no estén cubiertos por la garantía."
+                ],
+                [
+                    'id' => 5,
+                    'titulo' => "Periodo de Garantía",
+                    'descripcion' => "Asegúrese de que el producto se encuentre dentro del período de garantía estipulado, que generalmente es de un año a partir de la fecha de compra, aunque puede variar según el modelo."
+                ],
+                [
+                    'id' => 6,
+                    'titulo' => "Uso Adecuado",
+                    'descripcion' => "El producto debe haber sido utilizado conforme a las instrucciones del fabricante y no debe haber sido sometido a modificaciones no autorizadas."
+                ],
+            ]
+        ];
+        $lenovo = [
+            'requisitos' => [
+                [
+                    'id' => 1,
+                    'titulo' => "Registro del Producto",
+                    'descripcion' => " Si su compra ha sido realizada en algun centro o negocio, crear N° caso llamando al 0800-55-98."
+                ],
+                [
+                    'id' => 2,
+                    'titulo' => "Validez de la Garantía",
+                    'descripcion' => "Para que la garantía de su producto se mantenga válida, es fundamental que el equipo no haya sido manipulado. Cualquier daño causado por reparaciones no autorizadas o modificaciones puede anular la garantía."
+                ],
+                [
+                    'id' => 3,
+                    'titulo' => "Período de Garantía",
+                    'descripcion' => "Verifique que el producto esté dentro del período de garantía, que generalmente es de un año, aunque puede variar según el modelo."
+                ],
+                [
+                    'id' => 4,
+                    'titulo' => "Comprobante de Compra",
+                    'descripcion' => "Presente el comprobante de compra original, que debe incluir la fecha de adquisición y el nombre del vendedor."
+                ],
+                [
+                    'id' => 5,
+                    'titulo' => "Uso Correcto",
+                    'descripcion' => ": El producto debe haber sido utilizado de acuerdo con las instrucciones del fabricante y no debe haber sido sometido a modificaciones no autorizadas."
+                ],
+                [
+                    'id' => 6,
+                    'titulo' => "Accesorios Originales",
+                    'descripcion' => " Si aplica, incluya todos los accesorios originales que vinieron con el dispositivo al solicitar el servicio (cargador, cable de energía, caja y otros)."
+                ],
+            ]
+        ];
+        $asus = [
+            'requisitos' => [
+                [
+                    'id' => 1,
+                    'titulo' => "Comprobante de Compra",
+                    'descripcion' => "Debes presentar la factura o recibo de compra que demuestre la fecha de adquisición del producto."
+                ],
+                [
+                    'id' => 2,
+                    'titulo' => "Accesorios Originales",
+                    'descripcion' => "Si aplica, incluya todos los accesorios originales que vinieron con el dispositivo al solicitar el servicio (cargador, cable de energía, caja y otros)."
+                ],
+                [
+                    'id' => 3,
+                    'titulo' => "Condiciones de Uso",
+                    'descripcion' => "El producto debe haber sido utilizado de acuerdo con las instrucciones del fabricante y no debe mostrar daños por mal uso."
+                ],
+                [
+                    'id' => 4,
+                    'titulo' => "Plazo de Garantía",
+                    'descripcion' => "Verificar que el producto esté dentro del período de garantía especificado, que varía según el tipo de producto."
+                ],
+                [
+                    'id' => 5,
+                    'titulo' => "Documentación Adicional",
+                    'descripcion' => "En algunos casos, puede ser necesario completar formularios o proporcionar información adicional."
+                ]
+            ]
+        ];
+        $garantias = response()->json([
+            'brother' => $brother,
+            'lenovo' => $lenovo,
+            'asus' => $asus,
+        ])->getData();
+        return view('modules.marketplace.centro-autorizado', compact('garantias'));
     }
 
     public function ubicanos()
@@ -618,6 +727,289 @@ class MarketplaceController extends Controller
         ])->getData();
 
         return view('modules.marketplace.tic', ['data' => $data]);
+    }
+
+    public function servicesnetwork()
+    {
+        $zonas = [
+            [
+                'id' => 1,
+                'name' => 'ZONA RURAL',
+            ],
+            [
+                'id' => 2,
+                'name' => 'ZONA URBANA',
+            ]
+        ];
+
+        $zona_rural = [
+            'dedicado' => [
+                'lugar' => "Jaén - San Ignacio - Bagua Capital - Bagua Grande",
+                'planes' => [
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "20MB",
+                        'upload' => "20MB",
+                        'price' => 1640
+                    ],
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "40MB",
+                        'upload' => "40MB",
+                        'price' => 2890
+                    ]
+                ],
+                'costos' => [
+                    'titulos' => [
+                        '*Las distancias se calculan de ciudad Jaén a zona rural',
+                        '*Contrato minimo 01 año'
+                    ],
+                    'descripcion' => [
+                        [
+                            'descripcion' => "Distancias menores a 1 hora",
+                            'price' => 500
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 1 - 2 horas",
+                            'price' => 600
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 2 - 3 horas",
+                            'price' => 700
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 3 - 4 horas",
+                            'price' => 800
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 4 - 5 horas",
+                            'price' => 900
+                        ],
+                        [
+                            'descripcion' => "Distancias mayores a 5 horas",
+                            'price' => 1000
+                        ]
+                    ]
+                ],
+                'soporte' => [
+                    [
+                        'icono' => 1,
+                        'titulo' => "Atención al cliente",
+                        'descripcion' => "Reporte de averías 8:00 am a 6:00 pm (10 horas)"
+                    ],
+                    [
+                        'icono' => 2,
+                        'titulo' => "Tiempo de respuesta",
+                        'descripcion' => "Reporte de avería: Máximo 24 horas"
+                    ]
+                ]
+            ],
+            'convencional' => [
+                'lugar' => "Jaén - San Ignacio - Bagua Capital - Bagua Grande",
+                'planes' => [
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "10MB",
+                        'upload' => "1MB",
+                        'price' => 180
+                    ],
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "20MB",
+                        'upload' => "2MB",
+                        'price' => 340
+                    ]
+                ],
+                'costos' => [
+                    'titulos' => ['*Las distancias se calculan de ciudad Jaén a zona rural'],
+                    'descripcion' => [
+                        [
+                            'descripcion' => "Distancias menores a 1 hora",
+                            'price' => 200
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 1 - 2 horas",
+                            'price' => 300
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 2 - 3 horas",
+                            'price' => 400
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 3 - 4 horas",
+                            'price' => 500
+                        ],
+                        [
+                            'descripcion' => "Distancias entre 4 - 5 horas",
+                            'price' => 600
+                        ],
+                        [
+                            'descripcion' => "Distancias mayores a 5 horas",
+                            'price' => 800
+                        ]
+                    ]
+                ],
+                'soporte' => [
+                    [
+                        'icono' => 1,
+                        'titulo' => "Atención al cliente",
+                        'descripcion' => "Reporte de averías 8:00 am a 6:00 pm (10 horas)"
+                    ],
+                    [
+                        'icono' => 2,
+                        'titulo' => "Tiempo de respuesta",
+                        'descripcion' => "Reporte de avería: Máximo 72 horas"
+                    ]
+                ]
+            ]
+        ];
+        $zona_urbana = [
+            'dedicado' => [
+                'lugar' => "Jaén - San Ignacio - Bagua Capital - Bagua Grande",
+                'planes' => [
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "20MB",
+                        'upload' => "20MB",
+                        'price' => 800
+                    ],
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "40MB",
+                        'upload' => "40MB",
+                        'price' => 1500
+                    ],
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "60MB",
+                        'upload' => "60MB",
+                        'price' => 2100
+                    ],
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "100MB",
+                        'upload' => "100MB",
+                        'price' => 3300
+                    ],
+                    [
+                        'type' => "Ilimitado/Empresarial",
+                        'download' => "200MB",
+                        'upload' => "200MB",
+                        'price' => 5800
+                    ],
+                ],
+                'costos' => [
+                    'titulos' => ['*Las distancias se calculan de ciudad Jaén a zona rural'],
+                    'descripcion' => [
+                        [
+                            'descripcion' => "Contrato 6 meses",
+                            'price' => 1000
+                        ],
+                        [
+                            'descripcion' => "*Tiempo de instalación 20 días hábiles",
+                            'price' => ""
+                        ],
+                        [
+                            'descripcion' => "Contrato minimo 1 año",
+                            'price' => "*Cero costo de instalación"
+                        ],
+                        [
+                            'descripcion' => "*Tiempo de instalación 20 días hábiles",
+                            'price' => ""
+                        ]
+                    ]
+                ],
+                'soporte' => [
+                    [
+                        'icono' => 1,
+                        'titulo' => "Atención al cliente",
+                        'descripcion' => "Reporte de averías 8:00 am a 6:00 pm (10 horas)"
+                    ],
+                    [
+                        'icono' => 2,
+                        'titulo' => "Tiempo de respuesta",
+                        'descripcion' => "Reporte de avería: Máximo 72 horas"
+                    ]
+                ]
+            ],
+            'convencional' => [
+                'lugar' => "Jaén - San Ignacio - Bagua Capital - Bagua Grande",
+                'planes' => [
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "40MB",
+                        'upload' => "4MB",
+                        'price' => 70
+                    ],
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "80MB",
+                        'upload' => "8MB",
+                        'price' => 120
+                    ],
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "120MB",
+                        'upload' => "12MB",
+                        'price' => 170
+                    ],
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "160MB",
+                        'upload' => "16MB",
+                        'price' => 220
+                    ],
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "200MB",
+                        'upload' => "20MB",
+                        'price' => 260
+                    ],
+                    [
+                        'type' => "Ilimitado/Hogar - Negocio",
+                        'download' => "400MB",
+                        'upload' => "40MB",
+                        'price' => 490
+                    ]
+                ],
+                'costos' => [
+                    'titulos' => ['*Las distancias se calculan de ciudad Jaén a zona rural'],
+                    'descripcion' => [
+                        [
+                            'descripcion' => "Contrato 6 meses",
+                            'price' => 200
+                        ],
+                        [
+                            'descripcion' => "Contrato minimo 1 año",
+                            'price' => "*Cero costo de instalación"
+                        ],
+                        [
+                            'descripcion' => "*Tiempo de instalación 5 días hábiles",
+                            'price' => ""
+                        ]
+                    ]
+                ],
+                'soporte' => [
+                    [
+                        'icono' => 1,
+                        'titulo' => "Atención al cliente",
+                        'descripcion' => "Reporte de averías 8:00 am a 6:00 pm (10 horas)"
+                    ],
+                    [
+                        'icono' => 2,
+                        'titulo' => "Tiempo de respuesta",
+                        'descripcion' => "Reporte de avería: Máximo 72 horas"
+                    ]
+                ]
+            ]
+        ];
+
+        $networks =  response()->json([
+            'zona_rural' => $zona_rural,
+            'zona_urbana' => $zona_urbana
+        ])->getData();
+
+        return view('modules.marketplace.services-network', compact('networks', 'zonas'));
     }
 
     public function search(Request $request)

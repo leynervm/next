@@ -243,6 +243,13 @@ class CreateProducto extends Component
         }
     }
 
+    public function hydrate()
+    {
+        if ($this->empresa->autogenerateSku()) {
+            Self::generatesku();
+        }
+    }
+
     public function clearImage()
     {
         $this->reset(['imagen']);

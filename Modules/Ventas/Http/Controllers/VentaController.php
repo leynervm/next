@@ -12,6 +12,7 @@ use App\Models\Monthbox;
 use App\Models\Openbox;
 use App\Models\Pricetype;
 use App\Models\Producto;
+use App\Models\Subcategory;
 use App\Models\Typepayment;
 use App\Models\Ubigeo;
 use Barryvdh\DomPDF\Facade\Pdf as PDF;
@@ -146,10 +147,12 @@ class VentaController extends Controller
     public function marcas()
     {
 
-        $marcas = Marca::whereHas('productos')->orderBy('name', 'asc');
+        $marcas = Marca::whereHas('productos', function ($query) {
+            $query->visibles();
+        })->orderBy('name', 'asc');
         $marcas = $marcas->get()->map(function ($item) {
             return [
-                'id' => $item->id,
+                'id' => $item->slug,
                 'text' => $item->name,
             ];
         });
@@ -160,10 +163,12 @@ class VentaController extends Controller
     public function categories()
     {
 
-        $categories = Category::whereHas('productos')->orderBy('orden', 'asc');
+        $categories = Category::whereHas('productos', function ($query) {
+            $query->visibles();
+        })->orderBy('orden', 'asc');
         $categories = $categories->get()->map(function ($item) {
             return [
-                'id' => $item->id,
+                'id' => $item->slug,
                 'text' => $item->name,
             ];
         });
@@ -175,15 +180,17 @@ class VentaController extends Controller
     {
 
         $subcategories = [];
-        $category_id = $request->input('category_id');
+        $category_slug = $request->input('category_id');
 
-        if (!empty($category_id)) {
-            $subcategories = Category::with(['subcategories' => function ($query) {
-                $query->whereHas('productos')->orderBy('orden', 'asc');
-            }])->find($category_id)->subcategories;
-            $subcategories = $subcategories->map(function ($item) use ($category_id) {
+        if (!empty($category_slug)) {
+            $subcategories = Subcategory::whereHas('categories', function ($query) use ($category_slug) {
+                $query->where('categories.slug', $category_slug);
+            })->whereHas('productos', function ($query) {
+                $query->visibles();
+            })->orderBy('orden', 'asc')->get();
+            $subcategories = $subcategories->map(function ($item) {
                 return [
-                    'id' => $item->id,
+                    'id' => $item->slug,
                     'text' => $item->name,
                 ];
             });

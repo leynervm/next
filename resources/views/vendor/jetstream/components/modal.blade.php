@@ -37,10 +37,12 @@ $maxWidth = [
     x-init="$watch('show', value => {
         if (!document.body) return;
         if (value) {
-            document.body.classList.add('overflow-y-hidden');
+            //document.body.classList.add('overflow-hidden');
+            document.body.style.overflow = 'hidden';
             {{ $attributes->has('focusable') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
         } else {
-            document.body.classList.remove('overflow-y-hidden');
+            document.body.style.overflow = 'auto';
+            //document.body.classList.remove('overflow-hidden');
         }
     })"
     x-on:close.stop="show = false"

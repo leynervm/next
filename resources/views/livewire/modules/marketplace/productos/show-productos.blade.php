@@ -310,7 +310,8 @@
                                                 @endif
                                             </div>
                                             <div class="p-1 w-full flex-1">
-                                                <h1 class="text-[9px] sm:text-[10px] leading-none text-left text-colorsubtitleform">
+                                                <h1
+                                                    class="text-[9px] sm:text-[10px] leading-none text-left text-colorsubtitleform">
                                                     {{ $itemcombo->name }}</h1>
                                             </div>
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"

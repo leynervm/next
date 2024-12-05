@@ -7,13 +7,13 @@
 
     <div class="contenedor {{ count($sliders) > 0 ? '-mt-[108px] xl:-mt-24' : '' }} w-full py-5">
         @if (count($categories))
-            <h1 class="text-center font-semibold text-xl text-colorsubtitleform">
+            <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">
                 Nuestros Productos</h1>
             <section
-                class="w-full pt-4 pb-6 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+                class="w-full py-6 pb-10 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
                 @foreach ($categories as $item)
                     <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
-                        class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                        class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                         <div
                             class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                             @if ($item->image)
@@ -39,12 +39,12 @@
             </section>
         @endif
 
-        {{-- <h1 class="text-center font-semibold text-xl text-colorsubtitleform">
+        <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">
             Nuestros Servicios</h1>
         <section
-            class="w-full pt-4 pb-6 md:pb-12 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+            class="w-full pt-6 pb-10 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
             <a href="{{ route('tic') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
@@ -58,8 +58,8 @@
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     SOLUCIONES INTEGRALES EN TI</h1>
             </a>
-            <a href="{{ route('tic') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+            <a href="{{ route('servicesnetwork') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
@@ -73,8 +73,8 @@
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     SERVICIO DE INTERNET</h1>
             </a>
-            <a href="{{ route('tic') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+            <a x-on:click="localStorage.setItem('activeTabCE', 1);" href="{{ route('centroautorizado') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
@@ -88,8 +88,8 @@
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     CENTRO AUTORIZADO</h1>
             </a>
-            <a href="{{ route('tic') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-2 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+            {{-- <a href="{{ route('tic') }}"
+                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
@@ -102,8 +102,8 @@
                 <h1
                     class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     ORDEN DE TRABAJO</h1>
-            </a>
-        </section> --}}
+            </a> --}}
+        </section>
 
         <section class="w-full">
             <a href="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}"

@@ -204,10 +204,11 @@
     });
 
     window.addEventListener('toast', event => {
+        let timer = event.detail.timer ? event.detail.timer : 1000;
         toastMixin.fire({
             title: event.detail.title,
             icon: event.detail.icon,
-            timer: 1000,
+            timer: timer,
         });
     })
 
