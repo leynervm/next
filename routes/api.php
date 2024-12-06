@@ -29,11 +29,8 @@ Route::post('sort/caracteristicas', [SortController::class, 'caracteristicas'])-
 Route::post('sort/especificacions', [SortController::class, 'especificacions'])->name('api.sort.especificacions');
 Route::post('sort/sliders', [SortController::class, 'sliders'])->name('api.sort.sliders');
 
-
-Route::post('productos', [ApiController::class, 'productos'])->name('api.producto.all');
 Route::post('search', [MarketplaceController::class, 'search'])->name('api.producto.search');
 Route::post('searchsubcategories', [MarketplaceController::class, 'searchsubcategories'])->name('api.producto.subcategories');
-
 
 Route::get('tipocambio', [HomeController::class, 'tipocambio'])->name('api.tipocambio');
 Route::get('consulta-ruc/{ruc}', [HomeController::class, 'consultaruc'])->name('api.ruc');
