@@ -419,6 +419,15 @@
                     <td class="p-1 font-bold">
                         : {{ $comprobante->moneda->currency }}</td>
                 </tr>
+
+                @if (!empty($comprobante->observaciones))
+                    <tr>
+                        <td class="p-1 font-medium" style="width: 100px;">
+                            OBSERVACIONES </td>
+                        <td class="p-1 font-bold">
+                            : {{ $comprobante->observaciones }}</td>
+                    </tr>
+                @endif
             </tbody>
         </table>
 

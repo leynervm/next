@@ -45,6 +45,10 @@ class createXML
          $xml .= '<cbc:Note languageLocaleID="2001">BIENES TRANSFERIDOS EN LA AMAZONÍA REGIÓN SELVA PARA SER CONSUMIDOS EN LA MISMA</cbc:Note>';
       }
 
+      if (!empty($comprobante->observaciones)) {
+         $xml .= '<cbc:Note>' . $comprobante->observaciones . '</cbc:Note>';
+      }
+
       $xml .= '<cbc:DocumentCurrencyCode listID="ISO 4217 Alpha" listName="Currency" listAgencyName="United Nations Economic Commission for Europe">' . $comprobante->moneda->code . '</cbc:DocumentCurrencyCode>
            <cbc:LineCountNumeric>' . count($comprobante->facturableitems) . '</cbc:LineCountNumeric>
            <cac:Signature>

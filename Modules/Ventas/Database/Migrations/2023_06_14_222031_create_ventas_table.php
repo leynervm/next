@@ -31,6 +31,7 @@ class CreateVentasTable extends Migration
             $table->decimal('tipocambio', 7, 4)->nullable();
             $table->decimal('increment', 4, 2)->default(0);
             $table->decimal('paymentactual', 18, 4);
+            $table->text('observaciones')->nullable();
             $table->bigInteger('moneda_id');
             $table->unsignedTinyInteger('typepayment_id');
             $table->bigInteger('seriecomprobante_id');

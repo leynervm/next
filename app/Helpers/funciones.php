@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use CodersFree\Shoppingcart\Facades\Cart;
 use Hashids\Hashids;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;

@@ -268,6 +268,14 @@
                     <td class="font-bold" style="text-align: left; vertical-align:middle;">
                         : {{ $venta->moneda->currency }}</td>
                 </tr>
+                @if (!empty($venta->observaciones))
+                    <tr>
+                        <td class="p-1 font-medium" style="width: 100px;">
+                            OBSERVACIONES </td>
+                        <td class="p-1 font-bold">
+                            : {{ $venta->observaciones }}</td>
+                    </tr>
+                @endif
             </tbody>
         </table>
 

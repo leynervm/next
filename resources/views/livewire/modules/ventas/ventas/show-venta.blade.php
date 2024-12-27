@@ -37,7 +37,7 @@
 
                 <h1 class="font-medium text-xs">
                     MONEDA : {{ $venta->moneda->currency }}
-                    @if ($venta->moneda->code == 'USD')
+                    @if ($venta->moneda->isDolar())
                         / {{ number_format($venta->tipocambio, 3, '.', '') }}
                     @endif
                 </h1>
@@ -47,6 +47,10 @@
                     @if ($venta->sucursal->trashed())
                         <x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal inline-block" />
                     @endif
+                </h1>
+
+                <h1 class="font-medium text-xs">
+                    OBSERVACIONES : {{ $venta->observaciones }}
                 </h1>
             </div>
             <div class="w-full text-colorlabel mt-3 sm:mt-0">

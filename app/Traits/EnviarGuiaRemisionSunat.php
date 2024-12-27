@@ -109,7 +109,10 @@ trait EnviarGuiaRemisionSunat
             $xml->guiaRemisionXML($ruta . $nombreXML, $this->sucursal->empresa, $this->client, $this);
 
             $objApi = new SendXML();
-            $response = $objApi->enviarGuia($this->isProduccion(), $this->sucursal->empresa, $nombreXML, $this->sucursal->empresa->isProduccion() ? storage_path('app/company/cert/' . $this->sucursal->empresa->cert) : storage_path('app/company/cert/demo.pfx'), storage_path('app/' . $ruta), storage_path('app/' . $ruta));
+            $host = request()->getHost();
+            $subdomain = explode('.', $host)[0];
+
+            $response = $objApi->enviarGuia($subdomain === 'demo' ? false : $this->isProduccion(), $this->sucursal->empresa, $nombreXML, $this->sucursal->empresa->isProduccion() ? storage_path('app/company/cert/' . $this->sucursal->empresa->cert) : storage_path('app/company/cert/demo.pfx'), storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
             if ($response->codRespuesta == '0') {
                 $this->descripcion = $response->descripcion;

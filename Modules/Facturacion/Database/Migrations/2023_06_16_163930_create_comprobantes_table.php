@@ -39,6 +39,7 @@ class CreateComprobantesTable extends Migration
             $table->text('descripcion')->nullable();
             $table->text('notasunat')->nullable();
             $table->string('leyenda', 255);
+            $table->text('observaciones')->nullable();
             $table->string('sendmode', 1)->default(Empresa::PRUEBA);
             $table->bigInteger('client_id')->nullable();
             $table->tinyInteger('typepayment_id');
