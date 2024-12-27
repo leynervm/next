@@ -4,15 +4,9 @@ namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
 use App\Models\Client;
 use App\Models\Direccion;
-use App\Models\Moneda;
-use App\Models\Promocion;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
-use App\Rules\Recaptcha;
-use Gloudemans\Shoppingcart\Facades\Cart;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
@@ -22,8 +16,7 @@ use Modules\Marketplace\Entities\Shipmenttype;
 class ShowShippments extends Component
 {
 
-    public Moneda $moneda;
-
+    public $moneda;
     public $showaddadress = false;
     public $receiver = Order::EQUAL_RECEIVER;
     public $order = [];
@@ -45,31 +38,14 @@ class ShowShippments extends Component
         return [
             'moneda.id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'shipmenttype_id' => ['required', 'integer', 'min:1', 'exists:shipmenttypes,id'],
-            'local_id' => [
-                'nullable',
-                Rule::requiredIf($this->shipmenttype->isRecojotienda()),
-                'integer',
-                'min:1',
-                'exists:sucursals,id'
-            ],
-            'daterecojo' => [
-                'nullable',
-                Rule::requiredIf($this->shipmenttype->isRecojotienda()),
-                'date',
-                'after_or_equal:today'
-            ],
-            'direccionenvio_id' => [
-                'nullable',
-                Rule::requiredIf($this->shipmenttype->isEnviodomicilio()),
-                'integer',
-                'min:1',
-                'exists:direccions,id'
-            ],
+            'local_id' => ['nullable', Rule::requiredIf($this->shipmenttype->isRecojotienda()), 'integer', 'min:1', 'exists:sucursals,id'],
+            'daterecojo' => ['nullable', Rule::requiredIf($this->shipmenttype->isRecojotienda()), 'date', 'after_or_equal:today'],
+            'direccionenvio_id' => ['nullable', Rule::requiredIf($this->shipmenttype->isEnviodomicilio()), 'integer', 'min:1', 'exists:direccions,id'],
             'receiver' => ['required', 'integer', Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])],
             'receiver_info.document' => ['required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'],
             'receiver_info.name' => ['required', 'string', 'min:8',],
             'receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
-            'cart' => ['required', 'array', 'min:1'],
+            // 'cart' => [],
             // 'g_recaptcha_response' => ['required', new Recaptcha()],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
         ];
@@ -77,8 +53,8 @@ class ShowShippments extends Component
 
     public function mount($pricetype = null)
     {
-
         $this->pricetype = $pricetype;
+        $this->moneda = view()->shared('moneda');
         $this->shipmenttype = new Shipmenttype();
         // $this->phoneuser = auth()->user()->telephones()
         //     ->orderBy('default', 'desc')->orderBy('id', 'desc')->first();
@@ -105,98 +81,71 @@ class ShowShippments extends Component
         $direccions = auth()->user()->direccions()->with('ubigeo')->orderBy('default', 'desc')->orderBy('name', 'asc')->get();
         $shipmenttypes = Shipmenttype::orderBy('name', 'asc')->get();
         $locals = mi_empresa()->sucursals()->with('ubigeo')->orderBy('default', 'desc')->orderBy('codeanexo', 'asc')->get();
-        return view('livewire.modules.marketplace.carrito.show-shippments', compact('shipmenttypes', 'direccions', 'ubigeos', 'locals'));
+        $shoppings = getCartRelations('shopping', true);
+
+        return view('livewire.modules.marketplace.carrito.show-shippments', compact('shoppings', 'shipmenttypes', 'direccions', 'ubigeos', 'locals'));
     }
 
     public function validateorder($recaptcha = null)
     {
 
         $this->g_recaptcha_response = $recaptcha;
-        if (Cart::instance('shopping')->count() > 0) {
-            $count = 0;
-            foreach (Cart::instance('shopping')->content() as $item) {
-                if (is_null($item->model)) {
-                    Cart::instance('shopping')->get($item->rowId);
-                    Cart::instance('shopping')->remove($item->rowId);
-                    $count++;
-                }
-
-                // dd(is_null($item->options->promocion_id));
-                if (!is_null($item->options->promocion_id)) {
-                    $promocion = Promocion::find($item->options->promocion_id);
-                    $isPrmdisponible = !empty(verifyPromocion($promocion)) ? true : false;
-                    if ($isPrmdisponible) {
-                        if ($promocion->limit > 0 && (($promocion->outs + $item->qty) > $promocion->limit)) {
-                            $isPrmdisponible = false;
-                            $mensaje = response()->json([
-                                'title' => "CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN.",
-                                'text' => null,
-                                'type' => 'warning'
-                            ])->getData();
-                            $this->dispatchBrowserEvent('validation', $mensaje);
-                            return false;
-                        }
-                    } else {
-                        $mensaje = response()->json([
-                            'title' => "STOCK DE PRODUCTOS AGREGADOS EN PROMOCIÓN AGOTADOS, LOS PRECIOS SE HAN ACTUALIZADO.",
-                            'text' => null, //'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
-                            'type' => 'warning'
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-                }
-
-                if ($item->model) {
-                    $producto = $item->model;
-                    $producto->loadCount(['almacens as stock' => function ($query) {
-                        $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
-                    }]);
-
-                    if ($producto->stock <= 0 || $producto->stock < $item->qty) {
-                        $mensaje = response()->json([
-                            'title' => 'LÍMITE DE STOCK EN PRODUCTO ALCANZADO !',
-                            'text' => null,
-                            'icon' => 'warning'
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-                }
-            }
-            if (auth()->check()) {
-                Cart::instance('shopping')->store(auth()->id());
-            }
-            if ($count > 0) {
-                $mensaje = response()->json([
-                    'title' => "PRODUCTOS NO SE ENCUENTRAN DISPONIBLES FUERON REMOVIDOS DEL CARRITO, , INTENTE NUEVAMENTE.",
-                    'text' => null, //'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
-                    'type' => 'warning'
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-        }
-
-        $this->cart = Cart::instance('shopping')->content()->toArray();
-        $monedascart_id = Arr::pluck($this->cart, 'options.moneda_id');
-        $diferencia = array_diff($monedascart_id, [$this->moneda->id ?? 0]);
-        // dd($this->cart);
-        if (count($diferencia) > 0) {
+        // try {
+        // $this->cart = $carshoop;
+        $validateData = $this->validate();
+        $carshoop = getCartRelations('shopping', true);
+        if (count($carshoop) == 0) {
             $mensaje = response()->json([
-                'title' => 'EXISTEN PRODUCTOS EN EL CARRITO CON EL PRECIO DE UNA MONEDA DIFERENTE A LA COMPRA !',
-                'text' => 'No se puede realizar compra de productos con distintos tipos de moneda en una sola compra.',
+                'title' => 'CARRITO DE COMPRAS ESTÁ VACÍO !',
+                'text' => null,
                 'type' => 'warning'
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
         }
 
+        foreach ($carshoop as $item) {
+            if (!$item->options->is_disponible) {
+                if (!empty($item->options->promocion_id)) {
+                    $mensaje = response()->json([
+                        'title' => 'PROMOCIÓN NO SE ENCUENTRA DISPONIBLE !',
+                        'text' => null,
+                        'type' => 'warning'
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                } else {
+                    $mensaje = response()->json([
+                        'title' => 'PRODUCTO NO SE ENCUENTRA DISPONIBLE !',
+                        'text' => null,
+                        'type' => 'warning'
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+            }
+        }
+
+        $monedascart_id = $carshoop->map(fn($item) => $item->options->moneda_id)->unique()->values()->toArray();
+        $diferencia = array_diff($monedascart_id, [$this->moneda->id ?? 0]);
+
+        if (count($diferencia) > 0) {
+            $mensaje = response()->json([
+                'title' => 'EXISTEN PRODUCTOS EN EL CARRITO CON DISTINTAS MONEDAS !',
+                'text' => null,
+                'type' => 'warning'
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+
+        // $this->cart = $cartshoop;
         $this->direccionenvio_id = auth()->user()->direccions()->default()->first()->id ?? null;
         if ($this->shipmenttype_id) {
             $this->shipmenttype = Shipmenttype::find($this->shipmenttype_id);
         }
-        $validateData = $this->validate();
+
         $direccion_envio = $this->shipmenttype->isEnviodomicilio() ? Direccion::with('ubigeo')->find($this->direccionenvio_id) : null;
         $local_entrega = $this->shipmenttype->isRecojotienda() ? Sucursal::with('ubigeo')->find($this->local_id) : null;
 
@@ -211,6 +160,23 @@ class ShowShippments extends Component
             'terms' => $this->terms,
         ];
         return $this->order;
+        // } catch (\Exception $e) {
+        //     $mensaje = response()->json([
+        //         'title' => $e->getMessage(),
+        //         'text' => null,
+        //         'type' => 'warning'
+        //     ])->getData();
+        //     $this->dispatchBrowserEvent('validation', $mensaje);
+        //     return false;
+        // } catch (\Throwable $e) {
+        //     $mensaje = response()->json([
+        //         'title' => $e->getMessage(),
+        //         'text' => null,
+        //         'type' => 'warning'
+        //     ])->getData();
+        //     $this->dispatchBrowserEvent('validation', $mensaje);
+        //     return false;
+        // }
     }
 
     public function savedireccion()

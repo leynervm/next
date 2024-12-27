@@ -2,11 +2,13 @@
 
 namespace App\Http\Livewire\Admin\Promociones;
 
+use App\Enums\PromocionesEnum;
 use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Promocion;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,11 +22,29 @@ class ShowPromociones extends Component
         'estado' => ['except' => Promocion::ACTIVO],
     ];
     protected $listeners = ['render'];
-    public $pricetype_id, $pricetype;
+    public $promocion, $pricetype_id, $pricetype;
     public $estado = Promocion::ACTIVO;
+    public $open = false;
+    public $agotarstock = false;
+    public $limitstock;
+
+    protected function rules()
+    {
+        return [
+            'limitstock' => ['required', 'numeric', 'gt:0'],
+            'promocion.limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1',  'max:' . $this->limitstock],
+            'promocion.titulo' => ['nullable', Rule::requiredIf($this->promocion->isCombo()), 'string', 'min:6'],
+            'promocion.type' => ['required', 'integer', Rule::in(PromocionesEnum::values())],
+            'promocion.descuento' => ['nullable', Rule::requiredIf($this->promocion->isDescuento()), 'numeric', 'gt:0', 'max:100', 'decimal:0,2'],
+            'promocion.startdate' => ['nullable', 'date', /* 'after_or_equal:' . now('America/Lima')->format('Y-m-d') */],
+            'promocion.expiredate' => ['nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'), 'after_or_equal:startdate'],
+        ];
+    }
 
     public function mount()
     {
+        $this->estado = Promocion::ACTIVO;
+        $this->promocion = new Promocion();
         $empresa = view()->shared('empresa');
         if ($empresa->usarLista()) {
             $pricetypes = Pricetype::activos()->default();
@@ -44,7 +64,7 @@ class ShowPromociones extends Component
         $promociones = Promocion::query()->with([
             'producto' => function ($query) {
                 $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'unit_id')
-                    ->with(['unit'])->addSelect(['image' => function ($q) {
+                    ->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
@@ -53,11 +73,11 @@ class ShowPromociones extends Component
             },
             'itempromos' => function ($query) {
                 $query->with(['producto' => function ($subQuery) {
-                    $subQuery->with(['unit'])->addSelect(['image' => function ($q) {
+                    $subQuery->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
+                            ->orderByDesc('default')->limit(1);
                     }]);
                 }]);
             }
@@ -77,24 +97,24 @@ class ShowPromociones extends Component
     public function delete(Promocion $promocion)
     {
         $this->authorize('admin.promociones.delete');
-        $producto = $promocion->producto;
-        $producto = $promocion->producto->load(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
-                }]);
-            }])->availables()->disponibles()->take(1);
-        }]);
+        // $producto = $promocion->producto;
+        // $producto = $promocion->producto->load(['promocions' => function ($query) {
+        //     $query->with(['itempromos.producto' => function ($subQuery) {
+        //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
+        //             $q->select('url')->from('images')
+        //                 ->whereColumn('images.imageable_id', 'productos.id')
+        //                 ->where('images.imageable_type', Producto::class)
+        //                 ->orderBy('default', 'desc')->limit(1);
+        //         }]);
+        //     }])->availables()->disponibles()->take(1);
+        // }]);
 
 
         if ($promocion->itempromos()->exists()) {
             $promocion->itempromos()->delete();
         }
         $promocion->delete();
-        $producto->assignPrice();
+        // $producto->assignPrice();
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción eliminado correctamente'));
     }
 
@@ -103,17 +123,17 @@ class ShowPromociones extends Component
         $this->authorize('admin.promociones.edit');
         $promocion->status = Promocion::FINALIZADO;
         $promocion->save();
-        $promocion->producto->load(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
-                }]);
-            }])->availables()->disponibles()->take(1);
-        }]);
-        $promocion->producto->assignPrice($promocion);
+        // $promocion->producto->load(['promocions' => function ($query) {
+        //     $query->with(['itempromos.producto' => function ($subQuery) {
+        //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
+        //             $q->select('url')->from('images')
+        //                 ->whereColumn('images.imageable_id', 'productos.id')
+        //                 ->where('images.imageable_type', Producto::class)
+        //                 ->orderBy('default', 'desc')->limit(1);
+        //         }]);
+        //     }])->availables()->disponibles()->take(1);
+        // }]);
+        // $promocion->producto->assignPrice($promocion);
         $this->dispatchBrowserEvent('toast', toastJSON('Promoción finalizado correctamente'));
     }
 
@@ -157,17 +177,17 @@ class ShowPromociones extends Component
             }
         }
         $promocion->save();
-        $promocion->producto->load(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
-                }]);
-            }])->availables()->disponibles()->take(1);
-        }]);
-        $promocion->producto->assignPrice($promocion);
+        // $promocion->producto->load(['promocions' => function ($query) {
+        //     $query->with(['itempromos.producto' => function ($subQuery) {
+        //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
+        //             $q->select('url')->from('images')
+        //                 ->whereColumn('images.imageable_id', 'productos.id')
+        //                 ->where('images.imageable_type', Producto::class)
+        //                 ->orderBy('default', 'desc')->limit(1);
+        //         }]);
+        //     }])->availables()->disponibles()->take(1);
+        // }]);
+        // $promocion->producto->assignPrice($promocion);
         $this->dispatchBrowserEvent('updated');
     }
 
@@ -176,6 +196,114 @@ class ShowPromociones extends Component
         if ($value) {
             $this->pricetype = Pricetype::find($value);
             $this->pricetype_id = $this->pricetype->id;
+        }
+    }
+
+    public function edit(Promocion $promocion)
+    {
+        $this->resetValidation();
+        // $this->reset(['promocion']);
+        $promocion->load([
+            'itempromos' => function ($db) {
+                $db->with(['producto' => function ($query) {
+                    $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                        ->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
+                            $q->select('url')->from('images')
+                                ->whereColumn('images.imageable_id', 'productos.id')
+                                ->where('images.imageable_type', Producto::class)
+                                ->orderByDesc('default')->limit(1);
+                        }]);
+                }]);
+            },
+            'producto' => function ($query) {
+                $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                    ->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
+                        $q->select('url')->from('images')
+                            ->whereColumn('images.imageable_id', 'productos.id')
+                            ->where('images.imageable_type', Producto::class)
+                            ->orderByDesc('default')->limit(1);
+                    }]);
+            }
+        ]);
+
+        $this->promocion = $promocion;
+        $this->agotarstock = is_null($promocion->limit) ? true : false;
+        if (!is_null($this->promocion->startdate)) {
+            $this->promocion->startdate = formatDate($promocion->startdate, 'Y-MM-DD');
+        }
+        if (!is_null($this->promocion->expiredate)) {
+            $this->promocion->expiredate = formatDate($promocion->expiredate, 'Y-MM-DD');
+        }
+        $this->open = true;
+    }
+
+    public function update()
+    {
+        $this->limitstock =  decimalOrInteger(Producto::find($this->promocion->producto_id)->almacens()->sum('cantidad'));
+        $this->promocion->limit = $this->agotarstock ? $this->limitstock : $this->promocion->limit;
+        if (empty($this->promocion->startdate)) {
+            $this->promocion->startdate = null;
+        }
+        if (empty($this->promocion->expiredate)) {
+            $this->promocion->expiredate = null;
+        }
+        $this->validate();
+
+        // if ($this->promocion->isCombo()) {
+        //     foreach ($this->promocion->itempromos as $item) {
+        //         $stocksec = $item->producto->almacens()->sum('cantidad') ?? 0;
+        // if ($stocksec < $this->limitstock) {
+        //     $mensaje =  response()->json([
+        //         'title' => "STOCK DEL PRODUCTO ",
+        //         'text' => null
+        //     ])->getData();
+        //     $this->dispatchBrowserEvent('validation', $mensaje);
+        //     return false;
+        // }
+        //     }
+        // }
+
+        $this->promocion->save();
+        $this->resetValidation();
+        $this->open = false;
+    }
+
+    public function hydrate()
+    {
+        if ($this->promocion) {
+            $this->promocion->load([
+                'itempromos' => function ($db) {
+                    $db->with(['producto' => function ($query) {
+                        $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                            ->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
+                                $q->select('url')->from('images')
+                                    ->whereColumn('images.imageable_id', 'productos.id')
+                                    ->where('images.imageable_type', Producto::class)
+                                    ->orderByDesc('default')->limit(1);
+                            }]);
+                    }]);
+                },
+                'producto' => function ($query) {
+                    $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
+                        ->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
+                            $q->select('url')->from('images')
+                                ->whereColumn('images.imageable_id', 'productos.id')
+                                ->where('images.imageable_type', Producto::class)
+                                ->orderByDesc('default')->limit(1);
+                        }]);
+                }
+            ]);
+
+            if (empty($this->promocion->startdate)) {
+                $this->promocion->startdate = null;
+            } else {
+                // $this->promocion->startdate = ;
+            }
+            if (empty($this->promocion->expiredate)) {
+                $this->promocion->expiredate = null;
+            } else {
+                // $this->promocion->startdate = ;
+            }
         }
     }
 }

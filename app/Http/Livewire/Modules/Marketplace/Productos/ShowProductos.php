@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Productos;
 
+use App\Enums\PromocionesEnum;
 use App\Models\Category;
 use App\Models\Empresa;
 use App\Models\Especificacion;
@@ -9,7 +10,7 @@ use App\Models\Marca;
 use App\Models\Moneda;
 use App\Models\Producto;
 use App\Models\Subcategory;
-use Gloudemans\Shoppingcart\Facades\Cart;
+use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -53,6 +54,7 @@ class ShowProductos extends Component
     public $view = '';
     public $qty = 1;
 
+    public $producto;
     public $search = '', $searchcategorias = '', $searchsubcategorias = '',
         $searchmarcas = '', $searchespecificaciones = '';
     public $selectedcategorias = [];
@@ -62,7 +64,6 @@ class ShowProductos extends Component
     public $especificacions = [];
     public $stock_locals = [];
     public $matches = [];
-    public $producto;
     public $subcategories = [];
     public $marcas = [];
 
@@ -70,6 +71,7 @@ class ShowProductos extends Component
 
     public $orderfilters = [];
     public $filterselected = '';
+    public $open = false;
 
     public function loadProductos()
     {
@@ -203,6 +205,7 @@ class ShowProductos extends Component
             'marca_id',
             'category_id',
             'subcategory_id',
+            'unit_id',
             'novedad',
             'sku',
             'pricebuy',
@@ -225,7 +228,7 @@ class ShowProductos extends Component
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->with(['almacens' => function ($query) {
+            ->with(['unit', 'almacens' => function ($query) {
                 $query->where('cantidad', '>', 0);
             }]);
 
@@ -241,13 +244,12 @@ class ShowProductos extends Component
             $query->select('url')->from('images')
                 ->whereColumn('images.imageable_id', 'productos.id')
                 ->where('images.imageable_type', Producto::class)
-                ->orderBy('default', 'desc')->limit(1);
+                ->orderByDesc('default')->limit(1);
         }])->addSelect(['image_2' => function ($query) {
             $query->select('url')->from('images')
                 ->whereColumn('images.imageable_id', 'productos.id')
                 ->where('images.imageable_type', Producto::class)
-                ->orderBy('default', 'desc')
-                ->offset(1)->limit(1);
+                ->orderByDesc('default')->offset(1)->limit(1);
         }]);
 
         if (count($this->selectedcategorias) > 0) {
@@ -274,7 +276,7 @@ class ShowProductos extends Component
                     $q->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
+                        ->orderByDesc('default')->limit(1);
                 }]);
             }])->availables()->disponibles();
         }]);
@@ -312,8 +314,9 @@ class ShowProductos extends Component
 
         // dd($productos->toSql());
         if ($this->readyToLoad) {
-            $productos = $productos->paginate(30)->through(function ($producto) {
-                $producto->promocion = $producto->promocions->first();
+            $productos = $productos->paginate(50)->through(function ($producto) {
+                $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
                 return $producto;
             });
         } else {
@@ -474,9 +477,9 @@ class ShowProductos extends Component
         $cart = Cart::instance('shopping')->content()->firstWhere('id', $producto->id);
         $qtyexistente = !empty($cart) ? $cart->qty : 0;
         $promocion = verifyPromocion($producto->promocions->first());
-        $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null);
+        $combo = getAmountCombo($promocion, $this->pricetype ?? null);
         $carshoopitems = !is_null($combo) ? $combo->products : [];
-        $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
+        $pricesale = $producto->getPrecioVentaDefault($this->pricetype ?? null);
 
         if ($promocion) {
             if ($promocion->limit > 0 && (($promocion->outs + $cantidad + $qtyexistente) > $promocion->limit)) {
@@ -547,9 +550,9 @@ class ShowProductos extends Component
         }]);
 
         $promocion = verifyPromocion($producto->promocions->first());
-        $combo = $producto->getAmountCombo($promocion, $this->pricetype);
+        $combo = getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = !is_null($combo) ? $combo->products : [];
-        $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
+        $pricesale = $producto->getPrecioVentaDefault($this->pricetype ?? null);
 
         if ($pricesale > 0) {
             Cart::instance('wishlist')->add([
@@ -597,5 +600,28 @@ class ShowProductos extends Component
             $this->reset(['filterselected']);
             // $this->filterselected = 'name_asc';
         }
+    }
+
+    public function getcombos(Producto $producto)
+    {
+        $producto->load(['marca', 'category', 'subcategory', 'unit', 'images' => function ($query) {
+            $query->orderByDesc('default');
+        }, 'promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderByDesc('default')->limit(1);
+                }]);
+            }])->availables()->disponibles();
+        }])->loadCount(['almacens as stock' => function ($query) {
+            $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+        }]);
+        $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
+        $this->producto = $producto;
+        $this->open =  true;
+        // dd($producto);
     }
 }

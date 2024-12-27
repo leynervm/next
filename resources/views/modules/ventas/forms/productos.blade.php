@@ -1,20 +1,30 @@
 <div
     class="w-full grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
     @foreach ($productos as $item)
-        <form id="cardproduct{{ $item->id }}" class="w-full block" x-data="{ serie_id: null, seriealmacen_id: null }"
-            @submit.prevent="addtocarrito($event, {{ $item->id }}, serie_id, seriealmacen_id)" autocomplete="off"
-            novalidate>
-            @php
-                $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
-                $promocion = verifyPromocion($item->promocion);
-                $descuento = getDscto($promocion);
-                $combo = $item->getAmountCombo($promocion, $pricetype, $almacen_id);
-                $almacen = null;
-                $pricesale = $item->obtenerPrecioVenta($pricetype);
-            @endphp
+        @php
+            $almacen = null;
+            $promocion = null;
+            $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
+            $priceold = $item->getPrecioVentaDefault($pricetype);
+            $pricesale = $item->getPrecioVenta($pricetype);
 
+            if ($item->descuento > 0 || $item->liquidacion) {
+                $promocion = $item->promocions->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)->first();
+            }
+        @endphp
+
+        <form id="cardproduct{{ $item->id }}" class="w-full block" x-data="{ serie_id: null, seriealmacen_id: null, promocion_id: '{{ $promocion->id ?? null }}' }"
+            @submit.prevent="enviarFormulario($event)" autocomplete="off" novalidate>
             <x-card-producto :name="$item->name" :image="$image" :category="$item->name_category" :marca="$item->name_marca" :promocion="$promocion"
                 class="w-full h-full" id="card_{{ $item->id }}">
+
+                <input type="hidden" name="producto_id" value="{{ $item->id }}" />
+                {{-- @if (!empty($promocion)) --}}
+                <input type="hidden" name="promocion_id" value="{{ !empty($promocion) ? $promocion->id : null }}" />
+                <input type="hidden" name="moneda_id" x-model="moneda_id" />
+                <input type="hidden" name="pricetype_id" x-model="pricetype_id">
+                <input type="hidden" name="open_modal" value="true" />
+                {{-- @endif --}}
 
                 @if ($item->isNovedad())
                     <div class="w-full flex justify-end">
@@ -26,50 +36,59 @@
                     </div>
                 @endif
 
-                @if ($combo)
-                    @if (count($combo->products) > 0)
-                        <div class="w-full my-2">
-                            @foreach ($combo->products as $itemcombo)
-                                <div class="w-full flex gap-2 bg-body rounded relative">
-                                    <div
-                                        class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 shadow relative hover:shadow-lg cursor-pointer">
-                                        @if ($itemcombo->image)
-                                            <img src="{{ $itemcombo->image }}" alt=""
-                                                class="w-full h-full object-scale-down">
-                                        @else
-                                            <x-icon-image-unknown class="w-full h-full text-neutral-500" />
-                                        @endif
-                                    </div>
-                                    <div class="p-1 w-full flex-1">
-                                        <h1 class="text-[10px] leading-3 text-left">
-                                            {{ $itemcombo->name }}
-                                            <b>[{{ $itemcombo->stock }}
-                                                {{ $itemcombo->unit }}]</b>
-                                        </h1>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                @endif
-
-                <div class="w-full py-2">
+                <div class="w-full flex flex-col gap-1 py-2">
                     @if ($pricesale > 0)
-                        @if ($descuento > 0)
+                        @if ($promocion && $empresa->verOldprice())
                             <p class="block w-full line-through text-red-600 text-center">
                                 {{ $moneda->simbolo }}
-                                {{ decimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
+                                {{ decimalOrInteger($priceold, $pricetype->decimals ?? 2, ', ') }}
+                            </p>
+
+                            <p
+                                class="block w-full text-center pt-1 xs:pt-0 text-xs leading-none text-colorsubtitleform">
+                                Promoción válida hasta agotar stock.
+                                [{{ decimalOrInteger($promocion->limit - $promocion->outs) }}
+                                {{ $item->unit->name }}] disponibles
+
+                                @if (!empty($promocion->expiredate))
+                                    <br>
+                                    @if ($promocion->expiredate)
+                                        Promoción válida hasta el
+                                        {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
+                                    @endif
+                                @endif
                             </p>
                         @endif
 
-                        <div class="w-full relative">
-                            <x-input class="block pl-7 w-full text-end disabled:bg-gray-200 input-number-none"
-                                name="price" type="number" min="0" step="0.001"
-                                value="{{ $moneda->isDolar() ? convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) : $pricesale }}"
-                                onkeypress="return validarDecimal(event, 12)" />
-                            <small
-                                class="text-xs left-2.5 absolute top-[50%] -translate-y-[50%] font-medium text-left text-colorsubtitleform">
-                                {{ $moneda->simbolo }}</small>
+                        @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
+                            <x-slot name="buttoncombos">
+                                <ul
+                                    class="w-full list-disc list-inside text-xs flex flex-col gap-1 text-colorsubtitleform">
+                                    @foreach ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value) as $prom)
+                                        @php
+                                            $combo_promo = getAmountCombo($prom, $pricetype);
+                                        @endphp
+                                        @if ($combo_promo->is_disponible && $combo_promo->stock_disponible)
+                                            <li class="leading-none text-justify">
+                                                [combo]
+                                                {{ $prom->titulo }}</li>
+                                        @endif
+                                    @endforeach
+                                </ul>
+                            </x-slot>
+                        @endif
+
+                        <div class="w-full">
+                            <x-label value="Precio  venta" />
+                            <div class="w-full relative">
+                                <x-input class="block pl-7 w-full text-end disabled:bg-gray-200 input-number-none"
+                                    name="price" type="number" min="0" step="0.001"
+                                    value="{{ $moneda->isDolar() ? convertMoneda($pricesale, 'USD', $empresa->tipocambio, 3) : $pricesale }}"
+                                    onkeypress="return validarDecimal(event, 12)" />
+                                <small
+                                    class="text-xs left-2.5 absolute top-[50%] -translate-y-[50%] font-medium text-left text-colorsubtitleform">
+                                    {{ $moneda->simbolo }}</small>
+                            </div>
                         </div>
                     @else
                         <p class="text-colorerror text-[10px] font-semibold text-center">
@@ -134,7 +153,7 @@
                     @endif
                 @endif
 
-                @if (Module::isEnabled('Almacen'))
+                {{-- @if (Module::isEnabled('Almacen'))
                     @if (count($item->garantiaproductos) > 0)
                         <div class="absolute right-1 flex flex-col gap-1 top-1">
                             @foreach ($item->garantiaproductos as $garantia)
@@ -158,7 +177,7 @@
                             @endforeach
                         </div>
                     @endif
-                @endif
+                @endif --}}
 
                 @if ($pricesale > 0)
                     <x-slot name="footer">
@@ -166,23 +185,17 @@
                             <div class="w-full flex-1 flex justify-center xl:justify-start gap-0.5"
                                 x-data="{ cantidad: 1 }">
                                 <button type="button" wire:loading.attr="disabled" @click="parseFloat(cantidad--)"
-                                    x-bind:disabled="cantidad == 1"
-                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-neutral-300 transition ease-in-out duration-150">-</button>
+                                    x-bind:disabled="cantidad == 1" class="btn-increment-cart">-</button>
                                 <x-input x-model="cantidad"
                                     class="w-full rounded-xl flex-1 text-center text-colorlabel input-number-none numeric_onpaste_number"
                                     type="number" step="1" min="1" name="cantidad"
                                     onkeypress="return validarNumero(event, 4)"
                                     @blur="if (!cantidad || cantidad === '0') cantidad = '1'" />
                                 <button type="button" wire:loading.attr="disabled" @click="parseFloat(cantidad++)"
-                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                                    class="btn-increment-cart">+</button>
                             </div>
-                            {{-- <div class="w-full flex-1">
-                                <x-label value="Cantidad :" />
-                                <x-input class="block w-full disabled:bg-gray-200 input-number-none" name="cantidad"
-                                    type="number" min="1" required value="1"
-                                    onkeypress="return validarDecimal(event, 12)" />
-                            </div> --}}
                         @endif
+
                         <x-button-add-car
                             class="{{ $item->isRequiredserie() ? 'flex-1 text-[10px] flex items-center justify-center gap-3' : '' }}"
                             type="submit" wire:loading.attr="disabled">
@@ -197,6 +210,7 @@
                     <x-jet-input-error for="cart.{{ $item->id }}.price" />
                     <x-jet-input-error for="cart.{{ $item->id }}.almacen_id" />
                     <x-jet-input-error for="cart.{{ $item->id }}.cantidad" />
+                    <x-jet-input-error for="cart.{{ $item->id }}.promocion_id" />
                 </x-slot>
 
                 {{-- <div wire:loading.flex

@@ -149,7 +149,7 @@
                     </li>
                 @endauth
                 <li class="group relative h-[68%] flex self-center transition ease-out duration-150">
-                    <livewire:modules.marketplace.carrito.counter-carrito :empresa="$empresa" :moneda="$moneda" />
+                    <livewire:modules.marketplace.carrito.counter-carrito />
                 </li>
                 <li class="relative h-[68%] flex items-center self-center">
                     @auth

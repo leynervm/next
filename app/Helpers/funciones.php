@@ -4,8 +4,13 @@ use App\Enums\DefaultConceptsEnum;
 use App\Models\Empresa;
 use App\Models\Guia;
 use App\Models\Pricetype;
+use App\Models\Producto;
+use App\Models\Promocion;
 use Illuminate\Support\Facades\Config;
 use Carbon\Carbon;
+use CodersFree\Shoppingcart\Facades\Cart;
+use Hashids\Hashids;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -573,7 +578,7 @@ function verifyPromocion($promocion)
     if (empty($promocion) || is_null($promocion)) {
         return null;
     }
-    return ($promocion->isDisponible() && $promocion->isAvailable()) ? $promocion : null;
+    return ($promocion->isActivo() && $promocion->isDisponible() && $promocion->isAvailable()) ? $promocion : null;
 }
 
 /**
@@ -584,14 +589,15 @@ function verifyPromocion($promocion)
  * @param $pricetype Instancia del modelo Pricetype cuando se usa en modo lista de precios
  * @return string valor convertido a la moneda enviada
  */
-function getPriceDscto($amount, $dsct, $pricetype = null, $modo = 0,)
+function getPriceDscto($amount, $dsct, $pricetype = null)
 {
-    $precio = number_format($amount - ($amount * ($dsct / 100)), 3, '.', '');
+    $decimals = !empty($pricetype) ? $pricetype->decimals : 3;
+    $precio = number_format($amount - (($amount * $dsct) / 100), $decimals, '.', '');
     if (!empty($pricetype) && $pricetype->rounded > 0) {
         return $precio = round_decimal($precio, $pricetype->rounded);
     }
 
-    return number_format($precio, 3, '.', '');
+    return number_format($precio, $decimals, '.', '');
 }
 
 
@@ -621,11 +627,11 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
                 $precio_venta = number_format($precio_venta - ($precio_venta * $promocion->descuento / 100), $decimals, '.', '');
             }
 
-            if ($promocion->isRemate()) {
+            if ($promocion->isLiquidacion()) {
                 $precio_venta = number_format($precio_real_compra, $decimals, '.', '');
             }
 
-            if ($promocion->isDescuento() || $promocion->isRemate()) {
+            if ($promocion->isDescuento() || $promocion->isLiquidacion()) {
                 if ($rounded > 0) {
                     $precio_venta = round_decimal($precio_venta, $rounded);
                 }
@@ -638,29 +644,51 @@ function getPriceDinamic($pricebuy, $ganancia, $incremento = 0, $rounded = 0, $d
     return 0;
 }
 
+function getPrecioventa($producto, $pricetype = null)
+{
+    if (!empty($pricetype)) {
+        $price = number_format($producto->{$pricetype->campo_table}, $pricetype->decimals, '.', '');
+    } else {
+        $price = number_format($producto->pricesale, 2, '.', '');
+    }
+    return (float) $price;
+}
+
 function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
 {
     $total = 0;
+    $total_normal = 0;
     $products = [];
 
     if (!empty($promocion) && $promocion->isCombo()) {
         $type = null;
+        $is_stock_disponible = true;
         foreach ($promocion->itempromos as $itempromo) {
             if ($almacen_id) {
                 $stockCombo = decimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
             } else {
-                $stockCombo = null;
+                // $stockCombo = null;
+                $stockCombo = decimalOrInteger($itempromo->producto->almacens->sum('pivot.cantidad') ?? 0);
             }
 
-            $price = $pricetype ? $itempromo->producto->obtenerPrecioVenta($pricetype) : $itempromo->producto->pricesale;
+            if ($stockCombo <= 0) {
+                $is_stock_disponible = false;
+            }
+
+            $price = getPrecioventa($itempromo->producto, $pricetype);
             $pricenormal = $price;
 
             if ($itempromo->isDescuento()) {
                 $price = getPriceDscto($price, $itempromo->descuento, $pricetype);
                 $type = decimalOrInteger($itempromo->descuento) . '% DSCT';
             }
+            if ($itempromo->isLiquidacion()) {
+                $price = !empty($pricetype) ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy;
+                $type = 'LIQUIDACIÓN';
+            }
+
             if ($itempromo->isGratuito()) {
-                $price = $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy;
+                $price = 0;
                 $type = 'GRATIS';
             }
 
@@ -671,21 +699,149 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
             }
 
             $total = $total + number_format($price, !empty($pricetype) ? $pricetype->decimals : 2, '.', '');
+            $total_normal = $total_normal + number_format($pricenormal, !empty($pricetype) ? $pricetype->decimals : 2, '.', '');
             $products[] = [
                 'producto_id' => $itempromo->producto_id,
+                'producto_slug' => $itempromo->producto->slug,
                 'name' => $itempromo->producto->name,
                 'image' => $itempromo->producto->image ? pathURLProductImage($itempromo->producto->image) : null,
                 'price' => $price,
                 'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,
-                'pricenormal' => $pricenormal,
+                'precio_normal' => $pricenormal,
                 'stock' => $stockCombo,
                 'unit' => $itempromo->producto->unit->name,
-                'type' => $type
+                'type' => $type,
             ];
         }
-        return response()->json(['total' => $total, 'products' => $products])->getData();
+        return response()->json([
+            'total' => $total,
+            'total_normal' => $total_normal,
+            'stock_disponible' => $is_stock_disponible,
+            'is_disponible' => empty(verifyPromocion($promocion)) ? false : true,
+            // 'promocion' => $promocion,
+            'unit' => $promocion->producto->unit->name,
+            'products' => $products
+        ])->getData();
     } else {
         return null;
         // return response()->json(['total' => $total, 'products' => $products])->getData();
     }
+}
+
+function getCartRelations(string $instance, $onlyDisponibles = false)
+{
+    $cart = Cart::instance($instance)->content();
+    $shoppings = $cart->transform(function ($item) {
+        $is_disponible = true;
+        $options = collect($item->options)->toArray();
+
+        if (!is_null($item->model)) {
+            $producto = Producto::withCount(['almacens as stock' => function ($query) {
+                $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
+            }])->find($item->id);
+            if (!$producto->isVisible() || !$producto->isPublicado()) {
+                $is_disponible = false;
+            }
+
+            $producto->load(['unit', 'images' => function ($query) {
+                $query->orderByDesc('default')->take(1);
+            }]);
+            $options['stock_disponible'] = $producto->stock;
+
+            if (!empty($item->options->promocion_id)) {
+                $promocion = Promocion::with(['itempromos' => function ($query) {
+                    $query->with(['producto' => function ($q) {
+                        $q->addSelect(['image' => function ($db) {
+                            $db->select('url')->from('images')
+                                ->whereColumn('images.imageable_id', 'productos.id')
+                                ->where('images.imageable_type', Producto::class)
+                                ->orderByDesc('default')->limit(1);
+                        }])->with(['unit', 'almacens']);
+                    }]);
+                }])->find($item->options->promocion_id);
+                $options['promocion'] = $promocion;
+                $combo = getAmountCombo($promocion);
+                if ($combo) {
+                    if (!$combo->stock_disponible || !$combo->is_disponible) {
+                        $is_disponible = false;
+                    }
+                }
+                $options['is_disponible'] = $is_disponible;
+            } else {
+
+                $producto = Producto::withCount(['almacens as stock' => function ($query) {
+                    $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
+                }])->find($item->id);
+
+                if ($producto->stock <= 0 || $producto->stock < $item->qty) {
+                    $is_disponible = false;
+                }
+
+                $options['promocion'] = null;
+                $options['is_disponible'] = $is_disponible;
+                $options['stock_disponible'] = $producto->stock;
+            }
+        } else {
+            $options['promocion'] = null;
+            $options['is_disponible'] = false;
+            $options['stock_disponible'] = 0;
+        }
+
+        $item->options = (object) $options;
+        return $item;
+    });
+
+    if ($onlyDisponibles) {
+        return $shoppings->filter(fn($item) => $item->options->is_disponible === true)
+            ->sortByDesc(fn($item) => [$item->options->is_disponible, $item->options->date]);
+        // ->sortByDesc(fn($item) => $item->options->is_disponible);
+    } else {
+        return $shoppings->sortByDesc(fn($item) => [$item->options->is_disponible, $item->options->date]);
+        // return $shoppings->sortByDesc(fn($item) => $item->options->is_disponible);
+    }
+    // dd($shoppings);
+    // ->sortByDesc(fn($item) => $item->options->date);
+}
+
+function getAmountCart($shoppings)
+{
+    $total = 0;
+    $subtotal = 0;
+    if (count($shoppings) > 0) {
+        //Cuando un itempromo is_disponible = false mostrar agotado y no sumar el precio del item
+        $total = $shoppings->filter(fn($item) => $item->options->is_disponible == true)
+            ->map(fn($item) => $item->qty * $item->price)->sum();
+        $subtotal = $shoppings->filter(fn($item) => $item->options->is_disponible == true)
+            ->map(fn($item) => $item->qty * $item->price)->sum();
+    }
+    // foreach ($shoppings as $item) {
+    //     $total_item = 0;
+    //     $subtotal_item = 0;
+    //     if ($item->options->is_disponible) {
+    //         $total_item = $item->price * $item->qty;
+    //         $subtotal_item = $item->price * $item->qty;
+    //     }
+
+    //     $total = $total + $total_item;
+    //     $subtotal = $subtotal + $subtotal_item;
+    // }
+
+    return response()->json([
+        'total' => number_format($total, 2, '.', ''),
+        'subtotal' => number_format($subtotal, 2, '.', '')
+    ])->getData();
+}
+
+function encryptText($text, $length = null)
+{
+    $length = empty($length) ? config('services.hashids.length') : $length;
+    $hashids = new Hashids(config('services.hashids.password'), $length);
+    return $hashids->encode($text);
+}
+
+function decryptText($text, $length = null)
+{
+    $length = empty($length) ? config('services.hashids.length') : $length;
+    $hashids = new Hashids(config('services.hashids.password'), $length);
+    return $hashids->decode($text)[0];
 }

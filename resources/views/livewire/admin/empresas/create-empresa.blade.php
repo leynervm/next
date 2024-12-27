@@ -179,7 +179,7 @@
                                     src="{{ $logo->temporaryUrl() }}" />
                             </x-simple-card>
                         @else
-                            <x-icon-file-upload class="w-36 h-36 text-gray-300" />
+                            <x-icon-file-upload class="size-36" />
                         @endif
 
                         <div class="w-full flex gap-2 flex-wrap justify-center">
@@ -222,7 +222,7 @@
                                 </x-simple-card>
                             </div>
                         @else
-                            <x-icon-file-upload class="w-36 h-36 text-gray-300" />
+                            <x-icon-file-upload class="size-36" />
                         @endif
 
                         <div class="w-full flex gap-1 flex-wrap justify-center">
@@ -310,10 +310,9 @@
                             </div>
 
                             @if (isset($cert))
-                                <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()"
-                                    class="w-36 h-36 text-gray-300 animate__animated animate__fadeIn animate__faster" />
+                                <x-icon-file-upload type="filesuccess" class="size-36" :uploadname="$cert->getClientOriginalName()" />
                             @else
-                                <x-icon-file-upload type="code" text="PFX" class="w-36 h-36 text-gray-300" />
+                                <x-icon-file-upload type="code" text="PFX" class="size-36" />
                             @endif
 
                             <div class="w-full flex gap-1 flex-wrap justify-center">

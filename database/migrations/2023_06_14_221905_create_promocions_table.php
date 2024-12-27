@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('promocions', function (Blueprint $table) {
             $table->id();
+            $table->text('titulo')->nullable();
             $table->unsignedDecimal('pricebuy', 18, 4);
             $table->char('type', 1)->default(0);
             $table->unsignedDecimal('limit', 10, 2)->nullable();

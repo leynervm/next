@@ -4,15 +4,12 @@ namespace Modules\Marketplace\Http\Controllers;
 
 use App\Enums\StatusPayWebEnum;
 use App\Models\Almacen;
-use App\Models\Pricetype;
-use App\Models\Producto;
 use App\Models\Promocion;
 use App\Models\Tvitem;
 use App\Rules\Recaptcha;
 use Illuminate\Support\Str;
-use Gloudemans\Shoppingcart\Facades\Cart;
+use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
-// use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -29,33 +26,39 @@ class NiubizController extends Controller
     public function checkout(Request $request)
     {
 
-        $isPrmdisponible = true;
+        $is_disponible = true;
         $msjPrm = '';
-        foreach (Cart::instance('shopping')->content() as $item) {
-            // dd(is_null($item->options->promocion_id));
-            if (!is_null($item->options->promocion_id)) {
-                $promocion = Promocion::find($item->options->promocion_id);
-                $isPrmdisponible = !empty(verifyPromocion($promocion)) ? true : false;
+        $shoppings = getCartRelations('shopping', true);
+        if (count($shoppings) == 0) {
+            $mensaje = [
+                'title' => 'CARRITO DE COMPRAS ESTÁ VACÍO',
+                'text' => null,
+                'type' => 'error',
+            ];
+            Log::info('Mensaje de validación al registar venta virtual: ', $mensaje);
+            return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+        }
 
-                if ($isPrmdisponible) {
-                    if ($promocion->limit > 0 && (($promocion->outs + $item->qty) > $promocion->limit)) {
-                        $isPrmdisponible = false;
-                        $msjPrm = 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN';
-                    }
+        foreach ($shoppings as $item) {
+            if (!$item->options->is_disponible) {
+                $is_disponible = false;
+                if (!empty($item->options->promocion_id)) {
+                    $msjPrm = "PROMOCIÓN NO SE ENCUENTRA DISPONIBLE";
+                } else {
+                    $msjPrm = "PRODUCTO NO SE ENCUENTRA DISPONIBLE";
                 }
             }
         }
 
-        if (!$isPrmdisponible) {
+        if (!$is_disponible) {
             $mensaje = [
-                'title' => !empty($msjPrm) ? $msjPrm : 'STOCK DE PRODUCTOS AGREGADOS EN PROMOCIÓN AGOTADOS, LOS PRECIOS SE HAN ACTUALIZADO.',
+                'title' => $msjPrm,
                 'text' => null,
                 'type' => 'error',
             ];
-            Log::info('Productos en promocion no disponible: ', $mensaje);
+            Log::info('Mensaje de validación al registar venta virtual: ', $mensaje);
             return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
         }
-
 
         $auth = base64_encode(config('services.niubiz.user') . ':' . config('services.niubiz.password'));
         $accessToken = Http::withHeaders([
@@ -73,7 +76,7 @@ class NiubizController extends Controller
             'order' => [
                 'tokenId' => $request->transactionToken,
                 'purchaseNumber' => $request->purchaseNumber,
-                'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal(), 2),
+                'amount' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
                 'currency' => config('services.niubiz.currency'),
             ],
             'yape' => [
@@ -84,7 +87,7 @@ class NiubizController extends Controller
 
         if (isset($response)) {
             if (isset($response['dataMap']) && $response['dataMap']['ACTION_CODE'] == '000') {
-                Log::info('Response del pago: ', $response);
+                Log::info('Mensaje de validación al registar venta virtual: ', $response);
                 DB::beginTransaction();
                 try {
 
@@ -93,7 +96,7 @@ class NiubizController extends Controller
                         [
                             'name' => auth()->user()->name,
                             'email' => auth()->user()->email,
-                            'pricetype_id' => mi_empresa()->usarLista() ? Pricetype::default()->first()->id ?? null : null,
+                            'pricetype_id' => getPricetypeAuth()->id ?? null,
                         ]
                     );
 
@@ -112,12 +115,12 @@ class NiubizController extends Controller
                         'date' => now('America/Lima'),
                         'seriecompleta' => 'ORDER-',
                         'purchase_number' => $request->input('purchaseNumber'),
-                        'exonerado' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
+                        'exonerado' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
                         'gravado' => 0,
                         'igv' => 0,
-                        'subtotal' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
-                        'total' => number_format(Cart::instance('shopping')->subtotal(), 3, '.', ''),
-                        'tipocambio' => number_format(mi_empresa()->tipocambio ?? 0, 3, '.', ''),
+                        'subtotal' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
+                        'total' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
+                        'tipocambio' => number_format(view()->shared('empresa')->tipocambio ?? 0, 3, '.', ''),
                         'receiverinfo' => [
                             'document' => $request->input('receiver_document'),
                             'name' => $request->input('receiver_name'),
@@ -176,11 +179,11 @@ class NiubizController extends Controller
                         ]);
                     }
 
-                    foreach (Cart::instance('shopping')->content() as $item) {
+                    foreach ($shoppings as $item) {
                         $order->tvitems()->create([
                             'date' => now('America/Lima'),
                             'cantidad' => decimalOrInteger($item->qty),
-                            'pricebuy' => number_format($item->options->pricebuy, 2, '.', ''),
+                            'pricebuy' => number_format($item->model->pricebuy, 2, '.', ''),
                             'price' => number_format($item->price, 2, '.', ''),
                             'igv' => number_format($item->options->igv, 2, '.', ''),
                             'subtotaligv' => number_format($item->options->subtotaligv, 2, '.', ''),
@@ -195,57 +198,47 @@ class NiubizController extends Controller
                             'user_id' => auth()->user()->id
                         ]);
 
-                        if (!is_null($item->options->promocion_id)) {
+                        if (count($item->options->carshoopitems) > 0) {
+                            foreach ($item->options->carshoopitems as $carshoopitem) {
+                                $itemcombo = [
+                                    'date' => now('America/Lima'),
+                                    'cantidad' => $item->qty,
+                                    'pricebuy' => $carshoopitem->pricebuy,
+                                    // 'price' => number_format($carshoopitem->price, 3, '.', ''),
+                                    // 'igv' => number_format($carshoopitem->igv, 3, '.', ''),
+                                    // 'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
+                                    // 'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
+                                    // 'total' => number_format($totalItemCombo, 3, '.', ''),
+                                    'price' => $item->price,
+                                    'igv' => 0,
+                                    'subtotaligv' => 0,
+                                    'subtotal' => 0,
+                                    'total' => 0,
+                                    'status' => 0,
+                                    'alterstock' => Almacen::DISMINUIR_STOCK,
+                                    'gratuito' => Tvitem::GRATUITO,
+                                    'increment' => 0,
+                                    'promocion_id' => $item->options->promocion_id,
+                                    'almacen_id' => null,
+                                    'producto_id' => $carshoopitem->producto_id,
+                                    'user_id' => auth()->user()->id
+                                ];
+                                $order->tvitems()->create($itemcombo);
+                            }
+                        }
 
+                        if (!empty($item->options->promocion_id)) {
                             $promocion = Promocion::find($item->options->promocion_id);
                             $promocion->outs = $promocion->outs + $item->qty;
                             $promocion->save();
-                            if ($promocion->limit == $promocion->outs) {
-                                $producto = Producto::with(['promocions' => function ($query) {
-                                    $query->with(['itempromos.producto' => function ($subQuery) {
-                                        $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                                            $q->select('url')->from('images')
-                                                ->whereColumn('images.imageable_id', 'productos.id')
-                                                ->where('images.imageable_type', Producto::class)
-                                                ->orderBy('default', 'desc')->limit(1);
-                                        }]);
-                                    }])->availables()->disponibles()->take(1);
-                                }])->find($item->id,);
-                                $producto->assignPrice($promocion);
-                            }
-
-                            if (count($item->options->carshoopitems) > 0) {
-                                foreach ($item->options->carshoopitems as $carshoopitem) {
-                                    $itemcombo = [
-                                        'date' => now('America/Lima'),
-                                        'cantidad' => $item->qty,
-                                        'pricebuy' => $carshoopitem->pricebuy,
-                                        // 'price' => number_format($carshoopitem->price, 3, '.', ''),
-                                        // 'igv' => number_format($carshoopitem->igv, 3, '.', ''),
-                                        // 'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
-                                        // 'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
-                                        // 'total' => number_format($totalItemCombo, 3, '.', ''),
-                                        'price' => 0,
-                                        'igv' => 0,
-                                        'subtotaligv' => 0,
-                                        'subtotal' => 0,
-                                        'total' => 0,
-                                        'status' => 0,
-                                        'alterstock' => Almacen::DISMINUIR_STOCK,
-                                        'gratuito' => Tvitem::GRATUITO,
-                                        'increment' => 0,
-                                        'promocion_id' => $item->options->promocion_id,
-                                        'almacen_id' => null,
-                                        'producto_id' => $carshoopitem->producto_id,
-                                        'user_id' => auth()->user()->id
-                                    ];
-                                    $order->tvitems()->create($itemcombo);
-                                }
-                            }
                         }
+                        Cart::instance('shopping')->remove($item->rowId);
                     }
                     DB::commit();
-                    Cart::instance('shopping')->destroy();
+                    // Cart::instance('shopping')->destroy();
+                    if (auth()->check()) {
+                        Cart::instance('shopping')->store(auth()->id());
+                    }
                     $mensaje = [
                         'title' => $response['dataMap']['ACTION_DESCRIPTION'],
                         'text' => null,
@@ -275,14 +268,35 @@ class NiubizController extends Controller
                     return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
                 }
             } else {
-                $mensaje = [
-                    'title' => isset($response) && $response['data']['ACTION_DESCRIPTION'] ?  $response['data']['ACTION_DESCRIPTION'] : 'NO SE PUDO PROCESAR EL PAGO',
-                    'text' => null,
-                    'type' => 'warning',
-                    'timer' => 3000,
-                ];
-                Log::info('Respuesta del pago: ', $mensaje);
-                return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+                if (isset($response['data']) && isset($response['data']['ACTION_DESCRIPTION'])) {
+                    $mensaje = [
+                        'title' => $response['data']['ACTION_DESCRIPTION'],
+                        'text' => null,
+                        'type' => 'warning',
+                        'timer' => 3000,
+                    ];
+                    Log::info('Respuesta del pago: ', $mensaje);
+                    return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+                } else if (isset($response['errorCode']) && isset($response['errorMessage'])) {
+                    $mensaje = [
+                        'title' => $response['errorMessage'],
+                        'text' => null,
+                        'type' => 'warning',
+                        'timer' => 3000,
+                    ];
+                    Log::info('Respuesta del pago: ', $mensaje);
+                    return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+                } else {
+                    // dd($response);
+                    $mensaje = [
+                        'title' => 'ERROR DESCONOCIDO AL PROCESAR PAGO',
+                        'text' => null,
+                        'type' => 'warning',
+                        'timer' => 3000,
+                    ];
+                    Log::info('Respuesta del pago: ', $mensaje);
+                    return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
+                }
             }
         } else {
             $mensaje = [
@@ -298,6 +312,8 @@ class NiubizController extends Controller
 
     public function token()
     {
+
+        $shoppings = getCartRelations('shopping', true);
         $auth = base64_encode(config('services.niubiz.user') . ':' . config('services.niubiz.password'));
         $accessToken = Http::withHeaders([
             'Authorization' => "Basic $auth",
@@ -310,7 +326,7 @@ class NiubizController extends Controller
             'Content-Type' => "application/json",
         ])->post(config('services.niubiz.url_api') . 'api.ecommerce/v2/ecommerce/token/session/' . config('services.niubiz.merchant_id'), [
             'channel' => 'web',
-            'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal()),
+            'amount' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
             'antifraud' => [
                 'clientIp' => request()->ip(),
                 'merchantDefineData' => [
@@ -402,13 +418,14 @@ class NiubizController extends Controller
             $purchasenumber = mt_rand(100000000, 999999999);
         } while (DB::table('orders')->where('purchase_number', $purchasenumber)->exists());
 
-        $empresa =  mi_empresa();
+        $empresa =  view()->shared('empresa');
+        $shoppings = getCartRelations('shopping', true);
         $config = [
             'sessiontoken' => $this->token(),
             'channel' => 'web',
             'merchantid' => config('services.niubiz.merchant_id'),
             'purchasenumber' => $purchasenumber,
-            'amount' => decimalOrInteger(Cart::instance('shopping')->subtotal()),
+            'amount' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
             'expirationminutes' => 5,
             'timeouturl' =>  route('carshoop.create'),
             'merchantlogo' => !empty($empresa->logo) ? getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) : null,

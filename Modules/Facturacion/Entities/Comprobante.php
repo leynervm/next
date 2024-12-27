@@ -39,6 +39,11 @@ class Comprobante extends Model
         $this->attributes['direccion'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function setObservacionesAttribute($value)
+    {
+        $this->attributes['observaciones'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
     public function setLeyendaAttribute($value)
     {
         $this->attributes['leyenda'] = trim(mb_strtoupper($value, "UTF-8"));

@@ -408,8 +408,9 @@
         })
 
         function confirmHiddenProducto(producto) {
+            let mensaje = producto.visivility ? 'OCULTO' : 'VISIBLE';
             swal.fire({
-                title: 'EL PRODUCTO ' + producto.name + ' DEJARÁ DE ESTAR VISIBLE',
+                title: 'EL PRODUCTO ' + producto.name + ' DEJARÁ DE ESTAR ' + mensaje,
                 text: null,
                 icon: 'question',
                 showCancelButton: true,

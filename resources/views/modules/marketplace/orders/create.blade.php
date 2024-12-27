@@ -37,90 +37,117 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="contenedor flex flex-col lg:flex-row gap-10">
-        <div class="w-full flex-1 xl:pr-16">
-            <div class="w-full mb-6">
-                <h1 class="text-lg font-semibold text-primary">RESUMEN DEL PEDIDO</h1>
-            </div>
+    <div class="contenedor flex flex-col lg:flex-row gap-3 lg:gap-6 my-6">
+        <div class="w-full flex-1">
+            {{-- <div class="w-full mb-6">
+                <h1 class="text-lg font-semibold text-primary">
+                    RESUMEN DEL PEDIDO</h1>
+            </div> --}}
 
-            @if (Cart::instance('shopping')->count() > 0)
-                <div class="w-full overflow-x-auto {{-- rounded-xl border border-borderminicard --}}">
-                    <table class="w-full min-w-full text-[10px] md:text-xs">
-                        <tbody class="divide-y">
-                            @foreach (Cart::instance('shopping')->content() as $item)
-                                <tr class="text-colorlabel">
-                                    <td class="text-left py-2 align-middle">
-                                        <div class="flex items-center gap-2">
-                                            <div
-                                                class="flex-shrink-0 w-16 h-16 xl:w-24 xl:h-24 rounded overflow-hidden">
-                                                @if ($item->model->getImageURL())
-                                                    <img src="{{ $item->model->getImageURL() }}" alt=""
-                                                        class="block w-full h-full object-scale-down aspect-square">
-                                                @else
-                                                    <x-icon-file-upload
-                                                        class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform"
-                                                        type="unknown" />
-                                                @endif
-                                            </div>
-                                            <div
-                                                class="w-full flex-1 sm:flex justify-between gap-3 items-center text-colorsubtitleform">
-                                                <div class="w-full text-xs sm:flex-1">
-                                                    <p class="w-full">
-                                                        {{ $item->model->name }}</p>
+            @if (count($shoppings) > 0)
+                <div class="w-full flex flex-col gap-3">
+                    @foreach ($shoppings as $item)
+                        @php
+                            $combo = getAmountCombo($item->options->promocion, $pricetype);
+                            $image =
+                                !is_null($item->model) && count($item->model->images) > 0
+                                    ? pathURLProductImage($item->model->images->first()->url)
+                                    : null;
+                        @endphp
 
-                                                    @if (count($item->options->carshoopitems) > 0)
-                                                        <div class="w-full mb-2 mt-1">
-                                                            @foreach ($item->options->carshoopitems as $itemcarshop)
-                                                                <h1
-                                                                    class="text-primary text-[10px] leading-3 text-left">
-                                                                    <span
-                                                                        class="w-1.5 h-1.5 bg-primary inline-block rounded-full"></span>
-                                                                    {{ $itemcarshop->name }}
-                                                                </h1>
-                                                            @endforeach
-                                                        </div>
+                        <div class="relative w-full flex flex-col gap-2 text-xs p-1 sm:p-2 border border-borderminicard shadow-md shadow-shadowminicard rounded-lg md:rounded-2xl"
+                            wire:key="{{ $item->rowId }}">
+                            <div
+                                class="{{ $item->options->is_disponible ? '' : 'opacity-50' }} w-full flex flex-col xs:flex-row gap-2 text-xs">
+                                <div class="w-full h-48 xs:size-32 sm:size-40 rounded overflow-hidden">
+                                    @if ($image)
+                                        <img src="{{ $image }}" alt=""
+                                            class="block w-full h-full object-scale-down object-center overflow-hidden">
+                                    @else
+                                        <x-icon-file-upload class="w-full h-full" type="unknown" />
+                                    @endif
+                                </div>
+                                <div class="w-ful flex-1">
+                                    <p class="leading-tight text-xs text-colorlabel text-justify">
+                                        {{ !is_null($item->model) ? $item->model->name : $item->name }}</p>
+                                    @if ($combo)
+                                        <div class="w-full flex items-center flex-wrap gap-1 sm:gap-3">
+                                            @foreach ($combo->products as $itemcombo)
+                                                <span class="block w-5 h-5 text-colorsubtitleform">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                        color="currentColor" fill="none" stroke="currentColor"
+                                                        stroke-width="2.5" stroke-linecap="round"
+                                                        stroke-linejoin="round" class="w-full h-full block">
+                                                        <path d="M12 4V20M20 12H4" />
+                                                    </svg>
+                                                </span>
+
+                                                <a class="size-16 sm:size-20 block rounded-lg relative"
+                                                    href="{{ route('productos.show', $itemcombo->producto_slug) }}">
+                                                    @if ($itemcombo->image)
+                                                        <img src="{{ $itemcombo->image }}" alt="{{ $itemcombo->image }}"
+                                                            class="block w-full h-auto object-scale-down overflow-hidden rounded-lg">
+                                                    @else
+                                                        <x-icon-image-unknown
+                                                            class="w-full h-full text-colorsubtitleform" />
                                                     @endif
 
-
-                                                    @if (!is_null($item->options->promocion_id))
-                                                        @php
-                                                            $prm = \App\Models\Promocion::find(
-                                                                $item->options->promocion_id,
-                                                            );
-                                                            $prm = verifyPromocion($prm);
-                                                        @endphp
-                                                        @if (is_null($prm))
-                                                            <span
-                                                                class="text-red-600 inline-block ring-1 ring-red-600 text-[10px] p-0.5 px-1 rounded-lg mt-1">
-                                                                PROMOCIÓN AGOTADO</span>
-                                                        @else
-                                                            <span
-                                                                class="text-green-600 inline-block ring-1 ring-green-600 text-[10px] p-0.5 px-1 rounded-lg mt-1">
-                                                                PROMOCIÓN</span>
-                                                        @endif
+                                                    @if ($itemcombo->price <= 0)
+                                                        <x-span-text text="GRATIS" type="green"
+                                                            class="text-nowrap absolute bottom-0 left-[50%] -translate-x-[50%] !text-[9px] py-0.5" />
                                                     @endif
-                                                </div>
-
-
-                                                <div class="flex items-end sm:items-center sm:w-60 sm:flex-shrink-0 ">
-                                                    <span
-                                                        class="text-left p-2 text-xs sm:text-end font-semibold whitespace-nowrap">
-                                                        x{{ decimalOrInteger($item->qty) }}
-                                                        {{ $item->model->unit->name }}
-                                                    </span>
-                                                    <span
-                                                        class="p-2 font-semibold text-lg flex-1 text-end text-colorlabel whitespace-nowrap">
-                                                        {{ $item->options->simbolo }}
-                                                        {{ number_format($item->price * $item->qty, 2, '.', ', ') }}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                                </a>
+                                            @endforeach
                                         </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+                                        <p class="leading-tight text-xs text-colorlabel">
+                                            {{ $item->options->promocion->titulo }}</p>
+                                    @endif
+
+                                    @if ($item->options->is_disponible)
+                                        <h1
+                                            class="text-colorlabel text-sm sm:text-lg md:text-xl font-semibold text-end !leading-none">
+                                            @if ($item->options->promocion)
+                                                <span
+                                                    class="text-[10px] md:text-xs p-0.5 rounded text-colorerror font-medium line-through">
+                                                    @if ($combo)
+                                                        {{ number_format(getPrecioventa($item->model, $pricetype) + $combo->total_normal, 2, '.', ', ') }}
+                                                    @else
+                                                        {{ number_format(getPrecioventa($item->model, $pricetype), 2, '.', ', ') }}
+                                                    @endif
+                                                </span>
+                                                <br>
+                                            @endif
+
+                                            <small
+                                                class="text-[10px] font-medium">{{ $item->options->simbolo }}</small>
+                                            {{ number_format($item->price, 2, '.', ', ') }}
+                                        </h1>
+
+                                        <h1
+                                            class="text-colorlabel text-sm sm:text-lg md:text-xl font-semibold text-end !leading-tight">
+                                            <small class="text-[10px] font-medium">TOTAL :
+                                                {{ $item->options->simbolo }}</small>
+                                            {{ number_format($item->price * $item->qty, 2, '.', ', ') }}
+                                        </h1>
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if (!$item->options->is_disponible)
+                                <div
+                                    class="absolute top-0 left-0 bg-body w-full h-full opacity-50 rounded-lg md:rounded-2xl">
+                                </div>
+                                <div
+                                    class="absolute w-full h-full flex flex-col xs:flex-row flex-wrap justify-center gap-2 items-center top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
+                                    <span class="btn-outline-secondary bg-inherit inline-block text-center">
+                                        PROMOCIÓN NO DISPONIBLE</span>
+                                    <x-button-secondary wire:click="deleteitem('{{ $item->rowId }}')"
+                                        wire:loading.attr="disabled" class="inline-block text-center">
+                                        ELIMINAR</x-button-secondary>
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
                 </div>
             @else
                 <h1 class="text-xs p-3 font-medium text-colorerror">
@@ -129,9 +156,20 @@
         </div>
 
         @if (auth()->user())
-            <div class="w-full lg:w-96 lg:flex-shrink-0">
-                <livewire:modules.marketplace.carrito.show-shippments :empresa="$empresa" :moneda="$moneda"
-                    :pricetype="$pricetype" />
+            <div class="w-full lg:w-96 lg:flex-shrink-0 relative">
+                <div class="w-full lg:sticky lg:top-28">
+                    <div class="w-full border-b border-borderminicard mb-5">
+                        <p class="text-sm font-medium text-colorsubtitleform">
+                            RESUMEN DEL CARRITO</p>
+                        <p class="text-3xl text-right font-semibold text-colorlabel">
+                            <small class="text-[10px] font-medium">{{ $moneda->simbolo }}</small>
+                            {{ decimalOrInteger(getAmountCart($shoppings)->total, 2, ', ') }}
+                        </p>
+                    </div>
+
+                    <livewire:modules.marketplace.carrito.show-shippments :pricetype="$pricetype" />
+
+                </div>
             </div>
         @endif
     </div>

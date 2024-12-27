@@ -35,7 +35,7 @@
                                 : null;
                             $promocion = $item->producto->getPromocionDisponible();
                             $descuento = $item->producto->getPorcentajeDescuento($promocion);
-                            $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
+                            $pricesale = $item->producto->getPrecioVentaDefault($pricetype);
                         @endphp
 
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" x-data="{ showForm: false }">

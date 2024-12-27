@@ -61,4 +61,13 @@ return [
         'currency' => env('NIUBIZ_CURRENCY')
     ],
 
+    'hashids' => [
+        'password' => env('HASHIDS_PASSWORD', 'next2024*'),
+        'length' => env('HASHIDS_LENGTH', 12),
+    ],
+
+    'apisnet' => [
+        'token' => env('TOKEN_APIS_NET'),
+    ]
+
 ];

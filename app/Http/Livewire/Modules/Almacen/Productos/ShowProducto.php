@@ -52,6 +52,7 @@ class ShowProducto extends Component
             'producto.almacenarea_id' => ['nullable', 'integer', 'min:1', 'exists:almacenareas,id'],
             'producto.estante_id' => ['nullable', 'integer', 'min:1', 'exists:estantes,id'],
             'producto.publicado' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'producto.maxstockweb' => ['nullable', 'integer', 'min:1', 'max:' . $this->producto->almacens->sum('pivot.cantidad')],
             'producto.requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'producto.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
             'producto.novedad' => ['integer', 'min:0', 'max:1'],
@@ -138,6 +139,7 @@ class ShowProducto extends Component
 
         $this->authorize('admin.almacen.productos.edit');
         $this->producto->novedad = $this->producto->novedad == false ? 0 : 1;
+        $this->producto->maxstockweb = empty($this->producto->maxstockweb) ? null : $this->producto->maxstockweb;
         $this->producto->viewespecificaciones = $this->producto->viewespecificaciones == false ? 0 : 1;
         // dd($this->producto->viewespecificaciones);
         $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;
@@ -147,11 +149,15 @@ class ShowProducto extends Component
             $this->producto->sku = Self::generatesku();
         }
         $this->validate();
-        $this->producto->save();
-        $this->resetValidation();
+        $isDirty = false;
         if ($this->producto->isDirty('pricebuy')) {
+            $isDirty = true;
+        }
+        $this->producto->save();
+        if ($isDirty) {
             $this->producto->assignPrice();
         }
+        $this->resetValidation();
         $this->dispatchBrowserEvent('updated');
         return redirect()->route('admin.almacen.productos.edit', $this->producto);
     }

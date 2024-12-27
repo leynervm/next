@@ -166,8 +166,8 @@
 
         function confirmDeleteSerie(serie) {
             swal.fire({
-                title: 'Eliminar serie ' + serie.serie,
-                text: "Se eliminará un registro de la base de datos, incluyendo todos los datos relacionados.",
+                title: `¿ ELIMINAR SERIE ${serie.serie} ?`,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

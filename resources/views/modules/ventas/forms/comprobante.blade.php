@@ -83,10 +83,11 @@
                 </div>
             @else
                 <div class="w-full inline-flex gap-1">
-                    <x-input class="block w-full flex-1 input-number-none" x-model="document" wire:model.defer="document"
-                        wire:keydown.enter.prevent="getClient" minlength="8" maxlength="11"
-                        onkeypress="return validarNumero(event, 11)" onpaste="return validarPasteNumero(event, 11)" />
-                    <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled">
+                    <x-input class="block w-full flex-1 input-number-none" x-model="document"
+                        wire:model.defer="document" x-on:keydown.enter.prevent="consultaCliente()" minlength="8"
+                        maxlength="11" onkeypress="return validarNumero(event, 11)"
+                        onpaste="return validarPasteNumero(event, 11)" />
+                    <x-button-add class="px-2" x-on:click="consultaCliente()" wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8" />
@@ -99,12 +100,12 @@
         </div>
         <div class="w-full">
             <x-label value="Cliente / Razón Social :" />
-            <x-input class="block w-full" wire:model.defer="name" placeholder="" />
+            <x-input class="block w-full" x-model="name" placeholder="" />
             <x-jet-input-error for="name" />
         </div>
         <div class="w-full {{ $empresa->usarLista() ? '' : 'sm:col-span-2' }} lg:col-span-1">
             <x-label value="Dirección :" />
-            <x-input class="block w-full" wire:model.defer="direccion" placeholder="" />
+            <x-input class="block w-full" x-model="direccion" placeholder="" />
             <x-jet-input-error for="direccion" />
         </div>
         @if ($empresa->usarLista())
@@ -193,7 +194,6 @@
             <x-label value="Método pago :" />
             <div id="parenttmpym" class="relative">
                 <x-select class="block w-full" id="tmpym" x-ref="selectmethodpayment" data-placeholder="null">
-
                 </x-select>
                 <x-icon-select />
             </div>
@@ -214,11 +214,11 @@
     </div>
 
     <div class="w-full grid grid-cols-1 gap-1">
-        {{-- <div class="w-full" x-show="!paymentcuotas">
-            <x-label value="Detalle pago :" />
-            <x-input class="block w-full" wire:model.defer="detallepago" />
-            <x-jet-input-error for="detallepago" />
-        </div> --}}
+        <div class="w-full">
+            <x-label value="Observaciones :" />
+            <x-input class="block w-full" wire:model.defer="observaciones" />
+            <x-jet-input-error for="observaciones" />
+        </div>
     </div>
 
     <script>

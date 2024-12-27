@@ -5,7 +5,7 @@ namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 use App\Models\Empresa;
 use App\Models\Moneda;
 use App\Models\Producto;
-use Gloudemans\Shoppingcart\Facades\Cart;
+use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -41,9 +41,9 @@ class AddCarrito extends Component
         $cart = Cart::instance('shopping')->content()->firstWhere('id', $producto->id);
         $qtyexistente = !empty($cart) ? $cart->qty : 0;
         $promocion = verifyPromocion($producto->promocions->first());
-        $combo = $producto->getAmountCombo($promocion, $this->pricetype);
+        $combo = getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
-        $pricesale = $producto->obtenerPrecioVenta($this->pricetype ?? null);
+        $pricesale = $producto->getPrecioVentaDefault($this->pricetype ?? null);
 
         if ($promocion) {
             if ($promocion->limit > 0 && (($promocion->outs + $cantidad + $qtyexistente) > $promocion->limit)) {

@@ -34,10 +34,29 @@ class Venta extends Model
     use RegistrarCuotas;
 
     protected $fillable = [
-        'date', 'seriecompleta', 'direccion', 'exonerado', 'gravado', 'gratuito',
-        'descuento', 'otros', 'inafecto', 'igv', 'igvgratuito',
-        'subtotal', 'total', 'tipocambio', 'increment', 'paymentactual',
-        'moneda_id', 'typepayment_id', 'client_id', 'seriecomprobante_id', 'user_id', 'sucursal_id'
+        'date',
+        'seriecompleta',
+        'direccion',
+        'exonerado',
+        'gravado',
+        'gratuito',
+        'descuento',
+        'otros',
+        'inafecto',
+        'igv',
+        'igvgratuito',
+        'subtotal',
+        'total',
+        'tipocambio',
+        'increment',
+        'paymentactual',
+        'observaciones',
+        'moneda_id',
+        'typepayment_id',
+        'client_id',
+        'seriecomprobante_id',
+        'user_id',
+        'sucursal_id'
     ];
 
     protected static function newFactory()
@@ -54,6 +73,11 @@ class Venta extends Model
     public function setDireccionAttribute($value)
     {
         $this->attributes['direccion'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
+    public function setObservacionesAttribute($value)
+    {
+        $this->attributes['observaciones'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
     public function cuotas(): MorphMany

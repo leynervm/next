@@ -27,20 +27,24 @@
                     @php
                         $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
                         $secondimage = !empty($item->image_2) ? pathURLProductImage($item->image_2) : null;
-
-                        $mensajeprecios = null;
                         $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
-                        $promocion = verifyPromocion($item->promocion);
-                        $descuento = getDscto($promocion);
-                        $combo = $item->getAmountCombo($promocion, $pricetype);
-                        $pricesale = $item->obtenerPrecioVenta($pricetype);
+                        $pricesale = $item->getPrecioVenta($pricetype);
+                        $priceold = $item->getPrecioVentaDefault($pricetype);
+                        $promocion = null;
                         $paddingTop = '';
+
+                        if ($item->descuento > 0 || $item->liquidacion) {
+                            $promocion = $item->promocions
+                                ->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)
+                                ->first();
+                        }
                         if ($item->stock > 0 && $empresa->viewAlmacens() == false) {
                             $paddingTop = 'xl:pb-20';
                             if (!empty($promocion)) {
                                 $paddingTop = 'xl:pb-12';
                             }
                         }
+
                     @endphp
 
                     <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->name_marca" :sku="$item->sku"
@@ -49,47 +53,6 @@
                         @mouseleave="isXL && (addcart = false)"
                         class="w-full pt-0 rounded-md md:rounded-xl ring-1 ring-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
-                        @if ($combo)
-                            @if (count($combo->products) > 0)
-                                <div class="w-full my-2 px-1">
-                                    @foreach ($combo->products as $itemcombo)
-                                        <div class="w-full flex gap-1 rounded relative">
-                                            <div class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 relative">
-                                                @if ($itemcombo->image)
-                                                    <img src="{{ $itemcombo->image }}" alt=""
-                                                        class="w-full h-full object-scale-down">
-                                                @else
-                                                    <x-icon-image-unknown
-                                                        class="!w-full !h-full text-colorsubtitleform" />
-                                                @endif
-                                            </div>
-                                            <div class="p-1 w-full flex-1">
-                                                <h1
-                                                    class="text-[9px] sm:text-[10px] leading-none text-left text-colorsubtitleform">
-                                                    {{ $itemcombo->name }}</h1>
-                                            </div>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
-                                                fill="currentColor" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round"
-                                                class="block opacity-60 absolute right-0 top-0 w-6 h-6 text-primary">
-                                                <path
-                                                    d="M46.4,10.9C30.9,13.5,20,20.5,14.8,31.1c-3.8,7.6-4.8,13-4.8,25.1c0.1,11.1,1.4,20.4,4.8,32.9c2.6,9.8,7.2,23.2,10.3,29.7l2.6,5.5l60.1,60.1c52,51.9,60.5,60.1,62.8,60.7c3.6,1,6.1,0.9,9.8-0.3c2.9-1,6.9-4.8,42.8-40.6c30.3-30.2,39.9-40.3,41.2-42.7c1.9-3.8,2.2-8.9,0.7-12.6c-0.7-1.7-18.6-20-60.1-61.6c-65.7-65.8-59.7-60.5-75.4-66.4C87.1,12.4,61.7,8.4,46.4,10.9z M76,22.1c8.3,1.4,19.7,4.3,27.7,7.1c13.5,4.7,7.8-0.5,72.8,64.7c55.5,55.6,59.1,59.3,59.1,61.4c0,2.1-2.5,4.7-37.6,39.9c-20.7,20.7-38.5,38.3-39.5,39c-1,0.7-2.6,1.3-3.5,1.3c-2.4,0-119.5-116.9-121.4-121.3c-4.3-9.4-9.8-28.9-12.1-42c-1.5-8.9-1.6-24-0.1-29.4c2.1-7.9,5.8-13,12.2-16.9c2.9-1.8,9.6-4,14.3-4.8C53,20.3,68.6,20.8,76,22.1z" />
-                                                <path
-                                                    d="M39.1,31.8c-5.3,2.5-8.3,7.2-8.3,13.1c-0.1,13.4,15.8,20,25.2,10.6c5.9-5.9,5.8-15.3-0.3-21.1C51.1,30,45,29.1,39.1,31.8z M48.8,41.8c1.4,1.3,1.6,5,0.1,6.3c-3.3,3.3-8.9,0.5-7.8-3.8C41.9,40.8,46.2,39.4,48.8,41.8z" />
-                                                <path
-                                                    d="M83,82.9l-25.2,25.2l3.9,3.9l3.9,3.9L76,105.5L86.4,95l5.2,5.2l5.2,5.1l3.6-3.5l3.6-3.5l-4.9-5c-2.7-2.7-4.9-5.2-4.9-5.5c0-0.4,3.4-4,7.5-8.1l7.5-7.5l6.5,6.5l6.5,6.4l3.6-3.5l3.6-3.6l-10.2-10.2c-5.7-5.7-10.4-10.3-10.6-10.3S96.8,68.9,83,82.9z" />
-                                                <path
-                                                    d="M108.2,107.7l-25.4,25.4l3.9,3.9l3.9,3.9l10.5-10.5l10.5-10.5l2.3,2.8c4.5,5.2,3.3,8.1-7.7,18.8c-2.7,2.7-5.4,5.7-5.9,6.6c-0.8,1.6-0.8,1.8,3,5.5l4,3.8l1-1.6c0.6-0.9,4.6-5.3,9-9.8c8.5-8.8,9.7-10.9,9.2-15.9l-0.2-2.9l3.6,0.1c4.9,0,7.9-1.8,14.7-8.9c4.3-4.5,5.5-6.2,6.3-9c1-3.2,1-3.8,0-7c-0.9-3.2-2-4.5-9.2-11.9l-8.3-8.4L108.2,107.7z M139.8,104.7c0,2.7-2,5.7-6.6,9.8c-5.8,5.3-7.9,5.3-13.1,0.5l-1.8-1.7l7.9-8l7.9-8l2.8,2.7C139,102.1,139.8,103.3,139.8,104.7z" />
-                                                <path
-                                                    d="M137.5,137.1l-25.4,25.4l10.7,10.7l10.7,10.7l3.6-3.6l3.6-3.6L134,170l-6.8-6.8l7.5-7.5l7.5-7.5l5.5,5.5l5.6,5.5l3.5-3.6l3.5-3.6l-5.5-5.5l-5.5-5.5l7.2-7.2l7.2-7.2l6.8,6.8l6.9,6.8l3.5-3.6l3.6-3.6l-10.7-10.7L163,111.7L137.5,137.1z" />
-                                                <path
-                                                    d="M164.3,163.8l-25.4,25.4l10.9,10.9l10.9,10.9l3.6-3.6l3.6-3.5l-7-7l-7-7l7.5-7.5l7.5-7.5l5.5,5.5l5.6,5.5l3.5-3.6l3.5-3.6l-5.5-5.5l-5.5-5.5l7.2-7.2l7.2-7.2l7,7l7,7l3.6-3.6l3.6-3.6l-10.9-10.9l-10.9-10.9L164.3,163.8z" />
-                                            </svg>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        @endif
 
                         @if ($pricesale > 0)
                             <div class="{{ $paddingTop }} text-center flex flex-col justify-center">
@@ -103,48 +66,39 @@
                                     <small class="text-sm">{{ $moneda->simbolo }}</small>
                                     {{ decimalOrInteger($pricesale, 2, ', ') }}
                                 </h1>
-                                @if ($descuento > 0 && $empresa->verOldprice())
+                                @if (!empty($promocion) && $empresa->verOldprice())
                                     <h1 class="text-colorsubtitleform text-center text-[10px] text-red-600">
                                         {{ $moneda->simbolo }}
                                         <small class="text-sm inline-block line-through">
-                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
+                                            {{ decimalOrInteger($item->getPrecioVentaDefault($pricetype), 2, ', ') }}</small>
                                     </h1>
-                                @endif
-
-                                @if (!empty($promocion))
-                                    <p
-                                        class="w-full p-1 -z-[0] text-center text-[10px] leading-none text-colorsubtitleform">
-                                        @if ($promocion->limit > 0)
-                                            @if ($promocion->expiredate)
-                                                Promoción válida hasta el
-                                                {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
-                                                y/o agotar stock
-                                            @else
-                                                Promoción válida hasta agotar unidades disponibles.
-                                            @endif
-
-                                            @if ($promocion->limit > 0)
-                                                [{{ decimalOrInteger($promocion->limit) }}
-                                                {{ $promocion->producto->unit->name }}]
-                                            @endif
-                                        @else
-                                            @if ($promocion->expiredate)
-                                                Promoción válida hasta el
-                                                {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
-                                                y/o agotar stock
-                                            @else
-                                                Promoción válida hasta agotar stock.
-                                            @endif
-                                        @endif
-                                    </p>
                                 @endif
 
                                 @if ($item->stock > 0)
                                     <x-slot name="buttonscart">
                                         <div class="w-full p-1">
-                                            <x-link-button href="{{ route('productos.show', $item) }}" wire:loading.attr="disabled"
-                                                class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]">
-                                                VER PROMOCIÓN</x-link-button>
+                                            @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
+                                                <x-link-button href="{{ route('productos.show', $item) }}"
+                                                    wire:loading.attr="disabled"
+                                                    class="!rounded-xl w-full !flex gap-2 items-center justify-center text-[10px]">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
+                                                        fill="currentColor" stroke="currentColor" stroke-width=".5"
+                                                        class="block w-4 h-4 text-inherit">
+                                                        <path
+                                                            d="m19.534 11.063.88-1.253L24 4.709c.21-.297.418-.599.64-.887a1 1 0 0 1 .576-.411 1.28 1.28 0 0 1 1.065.224l2.336 1.717 3.694 2.715 4.071 2.994q1.371 1.006 2.738 2.016a.9.9 0 0 0 .562.178c.464-.002.93-.025 1.39.025 1.611.183 2.798 1.481 2.896 2.891q.082 1.207.174 2.414c.114 1.513.238 3.022.343 4.533.082 1.131.142 2.261.219 3.39.069 1.01.151 2.021.226 3.031l.217 2.944q.091 1.211.171 2.43.119 1.81.215 3.625c.041.791.053 1.582.089 2.373.021.443.069.882.091 1.326q.009.336-.034.672a7 7 0 0 1-.142.768 2.22 2.22 0 0 1-.974 1.342c-.64.434-1.351.686-2.135.688q-2.011.005-4.025 0l-10.745.005H15.223c-3.129 0-6.256-.009-9.385.005a3.7 3.7 0 0 1-2.528-.901c-.759-.654-1.074-1.495-1.017-2.482q.062-1.031.133-2.062c.053-.754.114-1.511.167-2.267q.039-.613.069-1.223l.133-2.24q.064-1.243.137-2.489.069-1.193.153-2.386l.169-2.443q.105-1.495.199-2.99c.057-.928.103-1.856.16-2.784q.126-2.011.258-4.023c.03-.45.03-.907.096-1.353.185-1.255.894-2.11 2.066-2.59q.64-.256 1.328-.235c.439.009.88-.002 1.319.005.133 0 .174-.037.174-.174q-.009-2.56-.009-5.125c0-1.509.016-3.022-.002-4.533-.009-.663.443-1.12 1.109-1.129q1.063-.01 2.13-.007l6.245.007c.279 0 .539.053.766.224a.91.91 0 0 1 .389.667q.023.183.025.366v7.504zm4.537 32.482h18.087c.233 0 .469 0 .693-.041.491-.094.882-.633.843-1.131l-.032-.265q-.151-2.002-.293-4.002c-.075-1.125-.139-2.249-.21-3.374q-.089-1.474-.185-2.949c-.069-.976-.155-1.95-.222-2.926-.096-1.429-.181-2.857-.274-4.286l-.261-3.961-.304-4.418c-.034-.48-.423-.93-.907-.965-.539-.037-1.083-.016-1.623-.011-.263 0-.523.032-.784.03-.24-.002-.48-.046-.72-.046q-9.029-.007-18.057 0c-.315 0-.629.046-.944.064-.215.011-.43.023-.645.011-.295-.016-.587-.075-.882-.075q-3.271-.007-6.54-.005a2 2 0 0 0-.279.018 4.6 4.6 0 0 1-1.131.023 18 18 0 0 0-2.039-.027 1.2 1.2 0 0 0-1.143 1.127q-.082 1.287-.176 2.576l-.265 3.845-.265 4.034-.208 3.093q-.133 1.874-.261 3.755c-.085 1.287-.16 2.571-.245 3.858l-.315 4.699a1.37 1.37 0 0 0 .094.722c.229.455.608.626 1.099.624l7.623.002h10.775ZM10.997 13.236q.069.009.13.011h6.069c.107 0 .13-.034.13-.137l.005-2.805q0-2.841.009-5.685c0-.139-.037-.183-.183-.183q-3.003.007-6.009.005l-.151.007zm9.653 0h15.054l-9.897-7.278z" />
+                                                        <path
+                                                            d="m19.534 11.063.88-1.253L24 4.709c.21-.297.418-.599.64-.887a1 1 0 0 1 .576-.411 1.28 1.28 0 0 1 1.065.224l2.336 1.717 3.694 2.715 4.071 2.994q1.371 1.006 2.738 2.016a.9.9 0 0 0 .562.178c.464-.002.93-.025 1.39.025 1.611.183 2.798 1.481 2.896 2.891q.082 1.207.174 2.414c.114 1.513.238 3.022.343 4.533.082 1.131.142 2.261.219 3.39.069 1.01.151 2.021.226 3.031l.217 2.944q.091 1.211.171 2.43.119 1.81.215 3.625c.041.791.053 1.582.089 2.373.021.443.069.882.091 1.326q.009.336-.034.672a7 7 0 0 1-.142.768 2.22 2.22 0 0 1-.974 1.342c-.64.434-1.351.686-2.135.688q-2.011.005-4.025 0l-10.745.005H15.223c-3.129 0-6.256-.009-9.385.005a3.7 3.7 0 0 1-2.528-.901c-.759-.654-1.074-1.495-1.017-2.482q.062-1.031.133-2.062c.053-.754.114-1.511.167-2.267q.039-.613.069-1.223l.133-2.24q.064-1.243.137-2.489.069-1.193.153-2.386l.169-2.443q.105-1.495.199-2.99c.057-.928.103-1.856.16-2.784q.126-2.011.258-4.023c.03-.45.03-.907.096-1.353.185-1.255.894-2.11 2.066-2.59q.64-.256 1.328-.235c.439.009.88-.002 1.319.005.133 0 .174-.037.174-.174q-.009-2.56-.009-5.125c0-1.509.016-3.022-.002-4.533-.009-.663.443-1.12 1.109-1.129q1.063-.01 2.13-.007l6.245.007c.279 0 .539.053.766.224a.91.91 0 0 1 .389.667q.023.183.025.366v7.504zm4.537 32.482h18.087c.233 0 .469 0 .693-.041.491-.094.882-.633.843-1.131l-.032-.265q-.151-2.002-.293-4.002c-.075-1.125-.139-2.249-.21-3.374q-.089-1.474-.185-2.949c-.069-.976-.155-1.95-.222-2.926-.096-1.429-.181-2.857-.274-4.286l-.261-3.961-.304-4.418c-.034-.48-.423-.93-.907-.965-.539-.037-1.083-.016-1.623-.011-.263 0-.523.032-.784.03-.24-.002-.48-.046-.72-.046q-9.029-.007-18.057 0c-.315 0-.629.046-.944.064-.215.011-.43.023-.645.011-.295-.016-.587-.075-.882-.075q-3.271-.007-6.54-.005a2 2 0 0 0-.279.018 4.6 4.6 0 0 1-1.131.023 18 18 0 0 0-2.039-.027 1.2 1.2 0 0 0-1.143 1.127q-.082 1.287-.176 2.576l-.265 3.845-.265 4.034-.208 3.093q-.133 1.874-.261 3.755c-.085 1.287-.16 2.571-.245 3.858l-.315 4.699a1.37 1.37 0 0 0 .094.722c.229.455.608.626 1.099.624l7.623.002h10.775ZM10.997 13.236q.069.009.13.011h6.069c.107 0 .13-.034.13-.137l.005-2.805q0-2.841.009-5.685c0-.139-.037-.183-.183-.183q-3.003.007-6.009.005l-.151.007zm9.653 0h15.054l-9.897-7.278z" />
+                                                        <path
+                                                            d="M32.923 22.329c.19-.274.432-.48.773-.521l-19.177-.261a1.44 1.44 0 0 0-.841.046 1.2 1.2 0 0 0-.608.558 1.44 1.44 0 0 0 .023 1.506c.672 1.111 1.586 1.982 2.619 2.706 1.559 1.09 3.31 1.696 5.134 2.041a16 16 0 0 0 2.846.265v.078l.37-.032q.386-.03.777-.055a29 29 0 0 0 1.831-.169 13.7 13.7 0 0 0 3.671-.992c1.552-.67 2.914-1.6 4.007-2.923q.496-.603.791-1.326a1.05 1.05 0 0 0-.037-.937 1.65 1.65 0 0 0-.869-.777 1.4 1.4 0 0 0-.576-.069 1.42 1.42 0 0 0-1.015.667m.281.194-.281-.194m.281.194-.144.215a7 7 0 0 1-.389.544zm-.281-.194-.16.235a5 5 0 0 1-.354.496m.514-.731-.514.731m0 0c-.754.896-1.705 1.531-2.789 1.995zm-10.665 2.762a16.7 16.7 0 0 0 3.801.16 12.1 12.1 0 0 0 4.071-.926zm0 0c-1.378-.231-2.681-.645-3.854-1.378zm-3.854-1.378a7.3 7.3 0 0 1-2.233-2.128zm-2.233-2.13a1.33 1.33 0 0 0-.859-.571z" />
+                                                    </svg>
+                                                    VER COMBOS
+                                                </x-link-button>
+                                            @else
+                                                <x-link-button href="{{ route('productos.show', $item) }}"
+                                                    wire:loading.attr="disabled"
+                                                    class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]">
+                                                    VER PROMOCIÓN</x-link-button>
+                                            @endif
                                         </div>
                                     </x-slot>
                                 @else

@@ -16,6 +16,7 @@ trait GenerarComprobante
             'expire' => Carbon::parse($this->date)->format('Y-m-d'),  //NO BIENE DE VENTA
             'seriecompleta' => $this->seriecompleta,
             'direccion' => $this->direccion,
+            'observaciones' => $this->observaciones,
             'exonerado' => number_format($this->exonerado, 3, '.', ''),
             'gravado' => number_format($this->gravado, 3, '.', ''),
             'gratuito' => number_format($this->gratuito, 3, '.', ''),

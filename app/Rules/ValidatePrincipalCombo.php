@@ -38,23 +38,26 @@ class ValidatePrincipalCombo implements Rule
         //     $promocions = Promocion::whereIn('type', [Promocion::COMBO, Promocion::REMATE])->activos()
         //         ->where('producto_id', $this->producto_id);
         // }
-
-        $promocions = Promocion::where('status', Promocion::ACTIVO)->where('producto_id', $this->producto_id)
-            ->availables()->disponibles()->exists();
-        if ($promocions) {
-            $this->mensaje = 'Producto ya tiene promociones activas.';
-            return false;
+        if ($this->type != Promocion::COMBO) {
+            $promocions = Promocion::where('status', Promocion::ACTIVO)
+                ->where('producto_id', $this->producto_id)
+                ->where('type', '<>', Promocion::COMBO)
+                ->availables()->disponibles()->exists();
+            if ($promocions) {
+                $this->mensaje = 'Producto ya tiene promociones activas.';
+                return false;
+            }
         }
 
-        $itemcombos = Promocion::where('status', Promocion::ACTIVO)
-            ->disponibles()->withWhereHas('itempromos', function ($query) {
-                $query->where('producto_id', $this->producto_id);
-            })->exists();
+        // $itemcombos = Promocion::where('status', Promocion::ACTIVO)
+        //     ->disponibles()->withWhereHas('itempromos', function ($query) {
+        //         $query->where('producto_id', $this->producto_id);
+        //     })->exists();
 
-        if ($itemcombos) {
-            $this->mensaje = 'Producto ya se encuentra dentro de una promoción activa.';
-            return false;
-        }
+        // if ($itemcombos) {
+        //     $this->mensaje = 'Producto ya se encuentra dentro de una promoción activa.';
+        //     return false;
+        // }
         return true;
 
         // return $promocions || $itemcombos === false;

@@ -1,6 +1,6 @@
 <div wire:init="loadProductos" x-data="carshoop">
 
-    <x-loading-web-next class="!hidden" wire:loading.class.remove="!hidden" />
+    <x-loading-web-next wire:key="loadingproductosweb" wire:loading />
 
     <div class="w-full mb-2 xl:hidden">
         <button @click="sidebar = true, backdrop = true"
@@ -274,12 +274,16 @@
                     @php
                         $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
                         $secondimage = !empty($item->image_2) ? pathURLProductImage($item->image_2) : null;
-                        $promocion = verifyPromocion($item->promocion);
-                        $descuento = getDscto($promocion);
-                        $combo = $item->getAmountCombo($promocion, $pricetype);
-                        $pricesale = $item->obtenerPrecioVenta($pricetype);
-                        // $priceCombo = $combo ? $combo->total : 0;
+                        $priceold = $item->getPrecioVentaDefault($pricetype);
+                        $pricesale = $item->getPrecioVenta($pricetype);
                         $paddingTop = '';
+                        $promocion = null;
+
+                        if ($item->descuento > 0 || $item->liquidacion) {
+                            $promocion = $item->promocions
+                                ->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)
+                                ->first();
+                        }
                         if ($item->stock > 0 && $empresa->viewAlmacens() == false) {
                             $paddingTop = 'xl:pb-20';
                             if (!empty($promocion)) {
@@ -294,49 +298,6 @@
                         @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
                         class="w-full pt-0 rounded-md md:rounded-xl ring-1 ring-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
-                        @if ($combo)
-                            @if (count($combo->products) > 0)
-                                <div class="w-full my-2 px-1">
-                                    @foreach ($combo->products as $itemcombo)
-                                        <div class="w-full flex gap-1 rounded relative">
-                                            <div
-                                                class="block rounded overflow-hidden flex-shrink-0 w-10 h-10 relative">
-                                                @if ($itemcombo->image)
-                                                    <img src="{{ $itemcombo->image }}" alt=""
-                                                        class="w-full h-full object-scale-down">
-                                                @else
-                                                    <x-icon-image-unknown
-                                                        class="!w-full !h-full text-colorsubtitleform" />
-                                                @endif
-                                            </div>
-                                            <div class="p-1 w-full flex-1">
-                                                <h1
-                                                    class="text-[9px] sm:text-[10px] leading-none text-left text-colorsubtitleform">
-                                                    {{ $itemcombo->name }}</h1>
-                                            </div>
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"
-                                                fill="currentColor" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round"
-                                                class="block opacity-60 absolute right-0 top-0 w-6 h-6 text-primary">
-                                                <path
-                                                    d="M46.4,10.9C30.9,13.5,20,20.5,14.8,31.1c-3.8,7.6-4.8,13-4.8,25.1c0.1,11.1,1.4,20.4,4.8,32.9c2.6,9.8,7.2,23.2,10.3,29.7l2.6,5.5l60.1,60.1c52,51.9,60.5,60.1,62.8,60.7c3.6,1,6.1,0.9,9.8-0.3c2.9-1,6.9-4.8,42.8-40.6c30.3-30.2,39.9-40.3,41.2-42.7c1.9-3.8,2.2-8.9,0.7-12.6c-0.7-1.7-18.6-20-60.1-61.6c-65.7-65.8-59.7-60.5-75.4-66.4C87.1,12.4,61.7,8.4,46.4,10.9z M76,22.1c8.3,1.4,19.7,4.3,27.7,7.1c13.5,4.7,7.8-0.5,72.8,64.7c55.5,55.6,59.1,59.3,59.1,61.4c0,2.1-2.5,4.7-37.6,39.9c-20.7,20.7-38.5,38.3-39.5,39c-1,0.7-2.6,1.3-3.5,1.3c-2.4,0-119.5-116.9-121.4-121.3c-4.3-9.4-9.8-28.9-12.1-42c-1.5-8.9-1.6-24-0.1-29.4c2.1-7.9,5.8-13,12.2-16.9c2.9-1.8,9.6-4,14.3-4.8C53,20.3,68.6,20.8,76,22.1z" />
-                                                <path
-                                                    d="M39.1,31.8c-5.3,2.5-8.3,7.2-8.3,13.1c-0.1,13.4,15.8,20,25.2,10.6c5.9-5.9,5.8-15.3-0.3-21.1C51.1,30,45,29.1,39.1,31.8z M48.8,41.8c1.4,1.3,1.6,5,0.1,6.3c-3.3,3.3-8.9,0.5-7.8-3.8C41.9,40.8,46.2,39.4,48.8,41.8z" />
-                                                <path
-                                                    d="M83,82.9l-25.2,25.2l3.9,3.9l3.9,3.9L76,105.5L86.4,95l5.2,5.2l5.2,5.1l3.6-3.5l3.6-3.5l-4.9-5c-2.7-2.7-4.9-5.2-4.9-5.5c0-0.4,3.4-4,7.5-8.1l7.5-7.5l6.5,6.5l6.5,6.4l3.6-3.5l3.6-3.6l-10.2-10.2c-5.7-5.7-10.4-10.3-10.6-10.3S96.8,68.9,83,82.9z" />
-                                                <path
-                                                    d="M108.2,107.7l-25.4,25.4l3.9,3.9l3.9,3.9l10.5-10.5l10.5-10.5l2.3,2.8c4.5,5.2,3.3,8.1-7.7,18.8c-2.7,2.7-5.4,5.7-5.9,6.6c-0.8,1.6-0.8,1.8,3,5.5l4,3.8l1-1.6c0.6-0.9,4.6-5.3,9-9.8c8.5-8.8,9.7-10.9,9.2-15.9l-0.2-2.9l3.6,0.1c4.9,0,7.9-1.8,14.7-8.9c4.3-4.5,5.5-6.2,6.3-9c1-3.2,1-3.8,0-7c-0.9-3.2-2-4.5-9.2-11.9l-8.3-8.4L108.2,107.7z M139.8,104.7c0,2.7-2,5.7-6.6,9.8c-5.8,5.3-7.9,5.3-13.1,0.5l-1.8-1.7l7.9-8l7.9-8l2.8,2.7C139,102.1,139.8,103.3,139.8,104.7z" />
-                                                <path
-                                                    d="M137.5,137.1l-25.4,25.4l10.7,10.7l10.7,10.7l3.6-3.6l3.6-3.6L134,170l-6.8-6.8l7.5-7.5l7.5-7.5l5.5,5.5l5.6,5.5l3.5-3.6l3.5-3.6l-5.5-5.5l-5.5-5.5l7.2-7.2l7.2-7.2l6.8,6.8l6.9,6.8l3.5-3.6l3.6-3.6l-10.7-10.7L163,111.7L137.5,137.1z" />
-                                                <path
-                                                    d="M164.3,163.8l-25.4,25.4l10.9,10.9l10.9,10.9l3.6-3.6l3.6-3.5l-7-7l-7-7l7.5-7.5l7.5-7.5l5.5,5.5l5.6,5.5l3.5-3.6l3.5-3.6l-5.5-5.5l-5.5-5.5l7.2-7.2l7.2-7.2l7,7l7,7l3.6-3.6l3.6-3.6l-10.9-10.9l-10.9-10.9L164.3,163.8z" />
-                                            </svg>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            @endif
-                        @endif
-
                         @if ($pricesale > 0)
                             <div class="{{ $paddingTop }} text-center flex flex-col justify-center">
                                 @if ($empresa->verDolar())
@@ -349,37 +310,27 @@
                                     <small class="text-sm">{{ $moneda->simbolo }}</small>
                                     {{ decimalOrInteger($pricesale, 2, ', ') }}
                                 </h1>
-                                @if ($descuento > 0 && $empresa->verOldprice())
+                                @if ($promocion && $empresa->verOldprice())
                                     <h1 class="text-colorsubtitleform text-center text-[10px] text-red-600">
                                         {{ $moneda->simbolo }}
                                         <small class="text-sm inline-block line-through">
-                                            {{ getPriceAntes($pricesale, $descuento, null, ', ') }}</small>
+                                            {{ decimalOrInteger($priceold, 2, ', ') }}</small>
                                     </h1>
                                 @endif
 
                                 @if (!empty($promocion))
                                     <p
-                                        class="w-full p-1 -z-[0] text-center text-[10px] leading-none text-colorsubtitleform">
-                                        @if ($promocion->limit > 0)
-                                            @if ($promocion->expiredate)
-                                                Promoción válida hasta el
-                                                {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
-                                                y/o agotar stock
-                                            @else
-                                                Promoción válida hasta agotar unidades disponibles.
-                                            @endif
+                                        class="w-full text-center pt-1 xs:pt-0 text-xs leading-none text-colorsubtitleform">
+                                        Promoción válida hasta agotar stock.
+                                        <br>
+                                        [{{ decimalOrInteger($promocion->limit - $promocion->outs) }}
+                                        {{ $item->unit->name }}] disponibles
 
-                                            @if ($promocion->limit > 0)
-                                                [{{ decimalOrInteger($promocion->limit) }}
-                                                {{ $promocion->producto->unit->name }}]
-                                            @endif
-                                        @else
+                                        @if (!empty($promocion->expiredate))
+                                            <br>
                                             @if ($promocion->expiredate)
                                                 Promoción válida hasta el
                                                 {{ formatDate($promocion->expiredate, 'DD MMMM Y') }}
-                                                y/o agotar stock
-                                            @else
-                                                Promoción válida hasta agotar stock.
                                             @endif
                                         @endif
                                     </p>
@@ -414,9 +365,24 @@
                                                     class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
                                             </div>
 
-                                            <x-button-add-car type="button" wire:loading.attr="disabled"
+                                            @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
+                                                <x-button-add-car type="button" wire:loading.attr="disabled"
+                                                    class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
+                                                    wire:click="getcombos({{ $item->id }})">
+                                                    AGREGAR</x-button-add-car>
+                                            @else
+                                                <x-button-add-car type="button" wire:loading.attr="disabled"
+                                                    class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
+                                                    x-on:click="addproductocart('{{ encryptText($item->id) }}', '{{ $promocion ? encryptText($promocion->id) : null }}', qty)">
+                                                    AGREGAR</x-button-add-car>
+                                            @endif
+
+
+
+                                            {{-- <x-button-add-car type="button" wire:loading.attr="disabled"
                                                 class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
-                                                @click="add_to_cart({{ $item->id }})">AGREGAR</x-button-add-car>
+                                                x-on:click="addproductocart('{{ encryptText($item->id) }}', '{{ $promocion ? encryptText($promocion->id) : null }}', qty)">
+                                                AGREGAR</x-button-add-car> --}}
                                         </div>
                                     </x-slot>
                                 @else
@@ -469,7 +435,7 @@
             </div>
             @if (count($productos) > 0 && $productos->hasPages())
                 <div
-                    class="paginator-marketplace-productos w-full flex justify-center items-center p-1 mt-2 sticky bottom-0 right-0 bg-body">
+                    class="paginator-marketplace-productos w-full flex justify-center items-center p-1 mt-2 sticky bottom-0 right-0 bg-body z-10">
                     {{ $productos->onEachSide(0)->links('livewire::pagination-default') }}
                 </div>
             @endif
@@ -477,8 +443,313 @@
     </div>
 
     @if (count($productos) == 0)
-        <p class="text-xs py-12 block w-full text-colorlabel">NO SE ENCONTRARON REGISTROS DE PRODUCTOS...</p>
+        <p class="text-xs py-12 block w-full text-colorlabel">
+            NO SE ENCONTRARON REGISTROS DE PRODUCTOS...</p>
     @endif
+
+    <x-jet-dialog-modal wire:model="open" maxWidth="5xl" footerAlign="justify-end">
+        <x-slot name="title">
+            {{ __('Add product to cart') }}
+        </x-slot>
+
+        <x-slot name="content">
+            @if (!empty($producto->id))
+                @php
+                    $pricesale = $producto->getPrecioVenta($pricetype);
+                    $priceold = $producto->getPrecioVentaDefault($pricetype);
+                    $image = count($producto->images) > 0 ? pathURLProductImage($producto->images->first()->url) : null;
+                    $promocion_producto = null;
+                    if ($producto->descuento > 0 || $producto->liquidacion) {
+                        $promocion_producto = $producto->promocions
+                            ->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)
+                            ->first();
+                    }
+                @endphp
+
+                <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div class="w-full max-w-full h-48 sm:h-64 rounded-lg md:rounded-xl overflow-hidden relative">
+                        @if ($image)
+                            <picture>
+                                <img src="{{ $image }}" alt=""
+                                    class="block w-full h-full object-scale-down">
+                            </picture>
+                        @else
+                            <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
+                        @endif
+
+                        @if ($producto->descuento > 0 || $producto->liquidacion)
+                            <div class="w-auto h-auto bg-red-600 absolute -left-7 top-5 -rotate-[35deg] leading-none">
+                                <p class="text-white text-xs block font-medium py-1.5 px-10 tracking-widest">
+                                    @if ($empresa->isTitlePromocion())
+                                        PROMOCIÓN
+                                    @elseif($empresa->isTitleLiquidacion())
+                                        LIQUIDACIÓN
+                                    @else
+                                        @if ($producto->descuento > 0)
+                                            - {{ decimalOrInteger($producto->descuento) }}% DSCT
+                                        @else
+                                            LIQUIDACIÓN
+                                        @endif
+                                    @endif
+                                </p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="w-full">
+                        <div class="w-full md:border-b border-b-borderminicard pb-2 md:pb-5">
+                            @if ($producto->isNovedad())
+                                <div class="inline-block">
+                                    @if (!empty($empresa->textnovedad))
+                                        <span class="span-novedad p-1.5 px-2">
+                                            {{ $empresa->textnovedad }}</span>
+                                    @endif
+                                    <x-icon-novedad class="size-6" />
+                                </div>
+                            @endif
+
+                            <p class="text-[10px] text-colorsubtitleform font-medium">
+                                {{ $producto->category->name }} | {{ $producto->subcategory->name }}</p>
+
+                            <div class="w-full flex gap-2 justify-between items-center flex-wrap">
+                                <div>
+                                    <p class="text-colorsubtitleform font-semibold">
+                                        {{ $producto->marca->name }}</p>
+                                </div>
+                                <div class="text-[10px] text-colorsubtitleform flex gap-3">
+                                    @if (!empty($producto->partnumber))
+                                        <span>N° PARTE: {{ $producto->partnumber }}</span>
+                                    @endif
+
+                                    @if (!empty($producto->sku))
+                                        <span>SKU: {{ $producto->sku }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <p class="text-colorlabel text-[10px] leading-3 xs:text-sm xs:leading-5">
+                                {{ $producto->name }}</p>
+                            @if (!empty($producto->modelo))
+                                <span class="text-[10px] text-colorsubtitleform inline-block">
+                                    MODELO : {{ $producto->modelo }}</span>
+                            @endif
+                        </div>
+
+                        <div class="w-full relative">
+                            <div class="w-full sm:pt-3 flex items-center justify-between gap-2">
+                                @if ($pricesale > 0)
+                                    <div class="w-full flex-1">
+                                        <h1
+                                            class="font-semibold text-2xl sm:text-3xl text-center md:text-start text-colorlabel">
+                                            <small class="text-lg"> {{ $moneda->simbolo }}</small>
+                                            {{ decimalOrInteger($pricesale, 2, ', ') }}
+                                        </h1>
+
+                                        @if ($priceold > $pricesale && $empresa->verOldprice())
+                                            <h1
+                                                class="text-colorsubtitleform text-[10px] sm:text-xs text-red-600 text-center md:text-start !leading-none">
+                                                {{ $moneda->simbolo }}
+                                                <small class="text-sm sm:text-lg inline-block line-through">
+                                                    {{ decimalOrInteger($priceold, 2, ', ') }}</small>
+                                            </h1>
+                                        @endif
+
+                                        @if ($empresa->verDolar())
+                                            <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
+                                                <small class="text-[10px]">$. </small>
+                                                {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
+                                                <small class="text-[10px]">USD</small>
+                                            </h1>
+                                        @endif
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto"
+                                            :pricetype="$pricetype" />
+                                    </div>
+                                @else
+                                    <p class="w-full flex-1 text-colorerror text-[10px] font-semibold text-center">
+                                        PRECIO DE VENTA NO ENCONTRADO</p>
+                                @endif
+                            </div>
+
+                            @if ($producto->stock > 0)
+                                @if ($pricesale > 0)
+                                    <div class="w-full flex items-center gap-1 justify-end mt-1 sm:mt-5"
+                                        x-data="{ qty: 1 }">
+                                        <div class="flex-1 w-full">
+                                            <button type="button" x-on:click="qty = qty-1"
+                                                x-bind:disabled="qty == 1"
+                                                class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">
+                                                -</button>
+                                            <span x-text="qty"
+                                                class="font-medium text-sm px-2 text-colorlabel inline-block w-8 text-center"></span>
+                                            <button type="button" wire:loading.attr="disabled"
+                                                x-on:click="qty = qty+1"
+                                                class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">
+                                                +</button>
+                                        </div>
+
+                                        <x-button-add-car type="button"
+                                            x-on:click="addproductocart('{{ encryptText($producto->id) }}', '{{ $promocion_producto ? encryptText($promocion_producto->id) : null }}', qty)"
+                                            class="px-2.5 !flex gap-1 items-center text-xs flex-shrink-0"
+                                            classIcon="!w-6 !h-6">AGREGAR</x-button-add-car>
+                                    </div>
+
+                                    @if ($promocion_producto)
+                                        <p
+                                            class="w-full text-center pt-1 xs:pt-0 xs:text-justify text-xs leading-none text-colorsubtitleform">
+                                            Promoción válida hasta agotar stock.
+                                            <br>
+                                            [{{ decimalOrInteger($promocion_producto->limit - $promocion_producto->outs) }}
+                                            {{ $producto->unit->name }}] disponibles
+
+                                            @if (!empty($promocion_producto->expiredate))
+                                                <br>
+                                                @if ($promocion_producto->expiredate)
+                                                    Promoción válida hasta el
+                                                    {{ formatDate($promocion_producto->expiredate, 'DD MMMM Y') }}
+                                                @endif
+                                            @endif
+                                        </p>
+                                    @endif
+                                @endif
+                            @else
+                                <div class="flex justify-end">
+                                    <span class="inline-block p-1 rounded-lg bg-red-600 text-white text-[10px]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
+                                            fill="currentColor" stroke="currentColor" stroke-width="0.7"
+                                            stroke-linecap="round" stroke-linejoin="round"
+                                            class="inline-block w-4 h-4">
+                                            <path
+                                                d="m13.58,16.14c-2.68-5.62-.35-11.07,3.31-13.8,3.93-2.94,9.38-3.15,13.53-.47,1.56,1.01,2.8,2.31,3.71,3.9.92,1.6,1.4,3.33,1.44,5.16.05,1.81-.37,3.53-1.19,5.2,1.38.67,2.69,1.38,4.05,1.95,1.82.76,3.34,1.86,4.69,3.26,1.41,1.48,2.94,2.87,4.41,4.29.7.68.61,1.19-.28,1.63-1.81.88-3.62,1.77-5.45,2.63-.32.15-.44.32-.44.68.02,2.79,0,5.57.02,8.36,0,.56-.2.89-.72,1.14-5.35,2.58-10.69,5.16-16.02,7.76-.46.23-.86.2-1.31-.02-5.34-2.6-10.68-5.18-16.02-7.76-.48-.23-.69-.54-.68-1.06.01-2.79,0-5.57.02-8.36,0-.38-.1-.59-.47-.76-1.83-.86-3.64-1.75-5.45-2.63-.85-.41-.94-.93-.26-1.6,2.06-2,4.12-3.99,6.18-5.98.2-.2.45-.36.71-.49,1.9-.93,3.81-1.85,5.72-2.78.17-.08.33-.17.52-.27Zm-5.26,14.82c-.02.09-.04.13-.04.18,0,2.43,0,4.87.01,7.3,0,.16.18.38.34.46,5.01,2.44,10.02,4.87,15.04,7.28.18.08.47.08.65,0,5.01-2.41,10.01-4.83,15.01-7.24.29-.14.38-.31.38-.62-.01-2.32,0-4.64,0-6.95,0-.12-.02-.25-.03-.41-.21.1-.36.16-.52.24-2.65,1.28-5.29,2.56-7.94,3.84-.66.32-.89.28-1.41-.23-1.8-1.75-3.6-3.49-5.41-5.24-.13-.13-.27-.24-.47-.43-.14.17-.25.32-.38.45-1.79,1.74-3.58,3.47-5.37,5.2-.55.53-.77.56-1.46.23-2.63-1.27-5.26-2.55-7.89-3.82-.16-.08-.33-.15-.52-.23ZM24.01,1.6c-5.41-.03-9.9,4.26-9.94,9.49-.04,5.33,4.37,9.7,9.81,9.72,5.56.03,10.02-4.24,10.04-9.59.02-5.29-4.42-9.6-9.91-9.62Zm-1.5,26.63c-.06-.04-.14-.09-.23-.14-4.78-2.32-9.57-4.63-14.34-6.95-.29-.14-.42-.05-.61.13-1.61,1.57-3.24,3.14-4.85,4.71-.07.06-.12.14-.21.24,5.01,2.42,9.97,4.82,14.88,7.2,1.81-1.75,3.58-3.47,5.37-5.19Zm8.35,5.19c4.91-2.38,9.88-4.78,14.9-7.21-1.71-1.66-3.38-3.25-5.02-4.87-.27-.27-.47-.31-.82-.14-3.87,1.89-7.74,3.76-11.62,5.63-.95.46-1.9.92-2.83,1.38,1.8,1.74,3.57,3.45,5.39,5.21Zm7.82-13.4c-1.78-.86-3.45-1.67-5.11-2.47-4.8,6.58-14.71,6.38-19.17,0-1.66.8-3.33,1.61-5.07,2.45.17.1.25.15.34.19,4.68,2.26,9.35,4.53,14.03,6.78.17.08.47.05.65-.03,3.01-1.44,6.01-2.89,9.01-4.34,1.74-.84,3.47-1.68,5.32-2.58Z" />
+                                            <path
+                                                d="m24.04,12.31c-1.42,1.37-2.75,2.65-4.07,3.94-.11.11-.21.22-.33.32-.4.33-.88.32-1.2-.01-.31-.32-.31-.77.03-1.13.51-.52,1.05-1.02,1.57-1.52.91-.89,1.82-1.77,2.77-2.7-.13-.13-.25-.27-.38-.39-1.29-1.25-2.59-2.5-3.87-3.75-.43-.42-.46-.89-.1-1.23.36-.34.84-.32,1.27.1,1.28,1.23,2.56,2.48,3.83,3.72.13.13.24.28.38.45.22-.2.37-.33.51-.47,1.25-1.21,2.51-2.43,3.76-3.65.47-.45.94-.51,1.31-.17.39.35.34.84-.14,1.31-1.39,1.35-2.77,2.69-4.2,4.07.14.14.26.27.39.4,1.22,1.18,2.44,2.36,3.66,3.54.09.08.17.16.25.25.38.41.41.87.06,1.2-.35.33-.83.32-1.24-.07-1.15-1.1-2.29-2.21-3.43-3.33-.28-.27-.54-.56-.84-.87Z" />
+                                        </svg>
+                                        AGOTADO
+                                    </span>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                @if ($producto->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
+                    <div class="w-full">
+                        <h1 class="font-semibold text-lg sm:text-2xl py-3 text-colorsubtitleform">
+                            Combos sugeridos para tí</h1>
+
+                        <div class="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))] gap-2">
+                            @foreach ($producto->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->all() as $item)
+                                @php
+                                    $combo = getAmountCombo($item, $pricetype);
+                                @endphp
+                                @if ($combo->is_disponible && $combo->stock_disponible)
+                                    <div
+                                        class="w-full flex flex-col justify-between border border-borderminicard shadow-md shadow-shadowminicard p-1 md:p-2 rounded-lg md:rounded-2xl">
+                                        <div class="w-full">
+                                            <h1
+                                                class="text-colorlabel font-medium text-xs md:text-[1rem] !leading-none pb-2">
+                                                {{ $item->titulo }}</h1>
+
+                                            <div class="w-full flex items-center flex-wrap gap-1">
+                                                <div class="w-20 flex flex-col justify-center items-center opacity-50">
+                                                    <div class="w-full block rounded-lg relative">
+                                                        @if ($image)
+                                                            <img src="{{ $image }}" alt="{{ $image }}"
+                                                                class="block w-full h-auto max-h-16 object-scale-down overflow-hidden rounded-lg">
+                                                        @else
+                                                            <x-icon-image-unknown
+                                                                class="w-full h-full max-h-16 text-colorsubtitleform" />
+                                                        @endif
+                                                    </div>
+                                                </div>
+
+                                                @foreach ($combo->products as $itemcombo)
+                                                    @php
+                                                        $opacidad =
+                                                            $itemcombo->stock > 0 ? '' : 'opacity-50 saturate-0';
+                                                    @endphp
+
+                                                    <span class="block w-5 h-5 text-colorsubtitleform">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                            color="currentColor" fill="none" stroke="currentColor"
+                                                            stroke-width="2.5" stroke-linecap="round"
+                                                            stroke-linejoin="round" class="w-full h-full block">
+                                                            <path d="M12 4V20M20 12H4" />
+                                                        </svg>
+                                                    </span>
+
+                                                    <div class="w-20 flex flex-col justify-center items-center">
+                                                        <a class="w-full block rounded-lg relative"
+                                                            href="{{ route('productos.show', $itemcombo->producto_slug) }}">
+                                                            @if ($itemcombo->image)
+                                                                <img src="{{ $itemcombo->image }}"
+                                                                    alt="{{ $itemcombo->image }}"
+                                                                    class="{{ $opacidad }} block w-full h-auto max-h-16 object-scale-down overflow-hidden rounded-lg">
+                                                            @else
+                                                                <x-icon-image-unknown
+                                                                    class="w-full h-full max-h-16 text-colorsubtitleform {{ $opacidad }}" />
+                                                            @endif
+
+                                                            @if ($itemcombo->stock > 0)
+                                                                @if ($itemcombo->price <= 0)
+                                                                    <x-span-text text="GRATIS" type="green"
+                                                                        class="text-nowrap absolute bottom-0 left-[50%] -translate-x-[50%] !text-[9px] py-0.5" />
+                                                                @endif
+                                                            @else
+                                                                <x-span-text text="AGOTADO"
+                                                                    class="text-nowrap absolute bottom-0 left-[50%] -translate-x-[50%] !text-[9px] py-0.5" />
+                                                            @endif
+
+                                                        </a>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        <div class="w-full pt-2 flex flex-wrap gap-3 items-end justify-end">
+                                            <div class="w-full flex-1">
+                                                <h1
+                                                    class="text-colorlabel text-lg md:text-xl font-semibold text-center !leading-tight">
+                                                    <small class="text-[10px] font-medium">S/.</small>
+                                                    {{ number_format($pricesale + $combo->total, 2, '.', ', ') }}
+
+                                                    <span
+                                                        class="text-[10px] md:text-xs p-0.5 rounded text-colorerror font-medium line-through">
+                                                        {{ number_format($priceold + $combo->total_normal, 2, '.', ', ') }}</span>
+                                                </h1>
+
+                                                <p
+                                                    class="w-full text-center text-[10px] leading-none text-colorsubtitleform">
+                                                    Promoción válida hasta agotar stock.
+                                                    <br>
+                                                    [{{ decimalOrInteger($item->limit - $item->outs) }}
+                                                    {{ $combo->unit }}] disponibles
+
+                                                    @if (!empty($item->expiredate))
+                                                        <br>
+                                                        @if ($item->expiredate)
+                                                            Promoción válida hasta el
+                                                            {{ formatDate($item->expiredate, 'DD MMMM Y') }}
+                                                        @endif
+                                                    @endif
+                                                </p>
+                                            </div>
+
+                                            <x-button-add-car type="button"
+                                                wire:key="promocion_id_{{ $item->id }}"
+                                                class="px-2.5 !flex gap-1 items-center text-xs flex-shrink-0"
+                                                onclick="addproductocart(null, '{{ encryptText($item->id) }}')">
+                                                AGREGAR</x-button-add-car>
+                                        </div>
+                                    </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            @endif
+        </x-slot>
+    </x-jet-dialog-modal>
+
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -503,15 +774,10 @@
                             this.isSticky = true;
                         }
                     }
-
                     window.addEventListener('scroll', () => {
                         this.isSticky = window.scrollY > 47;
                         // console.log(window.scrollY);
                     });
-                },
-                add_to_cart(producto_id) {
-                    // console.log(producto_id, this.qty);
-                    @this.add_to_cart(producto_id, this.qty);
                 },
             }))
         })
@@ -529,9 +795,6 @@
                     // @this.set('selectedcategorias', selectedOptions);
                 });
             });
-
-
-
 
             // Inputs for price range
             // const priceRangeMin = document.querySelector('input[wire\\:model="priceRange.0"]');

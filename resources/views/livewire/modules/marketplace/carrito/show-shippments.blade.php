@@ -1,13 +1,5 @@
-<div x-data="shipment">
+<div class="" x-data="shipment">
     <form @submit.prevent="save" class="w-full " id="register_order" autocomplete="off">
-        <div class="w-full grid grid-cols-2 gap-3 items-end border-b border-borderminicard mb-5">
-            <p class="text-sm font-medium text-colorsubtitleform">TOTAL</p>
-            <p class="text-3xl text-right font-semibold text-colorlabel">
-                <small class="text-[10px] font-medium">{{ $moneda->simbolo }}</small>
-                {{ decimalOrInteger(Cart::instance('shopping')->subtotal(), 2, ', ') }}
-            </p>
-        </div>
-
         <div class="w-full flex flex-col ">
             @if (count($order) > 0)
                 <div class="w-full">
@@ -293,7 +285,7 @@
             </div>
         </div>
 
-        @if (Cart::instance('shopping')->count() > 0)
+        @if (count($shoppings) > 0)
             <div class="w-full flex flex-col gap-2 mt-2">
                 @if (Laravel\Jetstream\Jetstream::hasTermsAndPrivacyPolicyFeature())
                     <div class="w-full mt-2">
@@ -323,8 +315,6 @@
                         <x-jet-input-error for="terms" />
                     </div>
                 @endif
-                {{-- <x-jet-input-error for="g_recaptcha_response" /> --}}
-
 
                 @if (session('message'))
                     <div class="w-full" x-data="{ open: true }" x-show="open" x-cloack style="display: none;"
@@ -348,31 +338,18 @@
                     </div>
                 @endif
 
-                {{-- <template x-if="processpay == false"> --}}
                 <div x-show="processpay == false" wire:key="form_buttons"
                     class="my-2 w-full grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-1 gap-2">
-                    @if (count($order) > 0)
-                        <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
-                            x-bind:disabled="!terms" wire:loading.attr="disabled"
-                            class="block w-full p-3 text-sm">
+                    <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
+                        x-bind:disabled="!terms" wire:loading.attr="disabled" class="block w-full p-3 text-sm">
                             PAGAR</x-button>
+
+                    @if (count($order) > 0)
                         <button wire:key="buttoncancel" type="button" @click="edit"
                             class="block w-full p-2 lg:p-3 lg:py-4 text-xs font-semibol tracking-widest text-white bg-orange-500 rounded-xl hover:ring-2 hover:ring-orange-300 hover:bg-orange-700 transition-all ease-in-out duration-300">
                             EDITAR</button>
-                    @else
-                        <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
-                            x-bind:disabled="!terms" wire:loading.attr="disabled"
-                            class="block w-full p-3 text-sm">
-                            PAGAR</x-button>
                     @endif
                 </div>
-                {{-- </template> --}}
-
-                {{-- <div class="p-5 opacity-80 w-full flex justify-center items-center" x-show="processpay" x-cloak
-                    style="display: none;">
-                    <span class="text-[10px] font-medium tracking-widest text-colorsubtitleform">
-                        CARGANDO VENTANA CHECKOUT DE PAGO ...</span>
-                </div> --}}
 
                 <div x-show="processpay" x-cloak style="display: none;"
                     class="w-full z-[199] h-screen fixed top-0 left-0 flex justify-center items-center bg-neutral-800 bg-opacity-85">
@@ -548,8 +525,9 @@
                     });
                 },
                 save() {
-                    this.loading = true;
+                    $(componentloading).fadeIn();
                     this.$wire.validateorder().then(async (data) => {
+                        console.log(data);
                         if (data) {
                             this.processpay = true;
                             const result = data;
@@ -562,10 +540,13 @@
                             }
                             VisanetCheckout.configure(config);
                             VisanetCheckout.open();
-                            this.processpay = false;
-                            this.loading = false;
+                            // this.processpay = false;
+                            setTimeout(() => {
+                                this.processpay = false;
+                            }, 2000);
+                            $(componentloading).fadeOut();
                         } else {
-                            this.loading = false;
+                            $(componentloading).fadeOut();
                             this.processpay = false;
                         }
                     })
@@ -613,50 +594,34 @@
                 const data = await response.json();
                 if (data.errors) {
                     Object.values(data.errors).forEach(error => {
-                        swal.fire({
-                            title: error[0].toUpperCase(),
-                            text: null,
-                            icon: 'info',
-                            confirmButtonColor: '#0FB9B9',
-                            confirmButtonText: 'Cerrar',
-                        })
+                        window.dispatchEvent(new CustomEvent('validation', {
+                            detail: {
+                                title: error[0].toUpperCase(),
+                                icon: 'error'
+                            }
+                        }))
                     });
                     return null;
                 } else if (data.message) {
-                    swal.fire({
-                        title: data.exception + ', error al leer datos.',
-                        text: null,
-                        icon: 'info',
-                        confirmButtonColor: '#0FB9B9',
-                        confirmButtonText: 'Cerrar',
-                    })
+                    window.dispatchEvent(new CustomEvent('validation', {
+                        detail: {
+                            title: data.exception + ', error al leer datos.',
+                            icon: 'error'
+                        }
+                    }))
                 } else {
                     // console.log(data);
                     return data;
                 }
             } catch (error) {
-                console.log(error);
+                window.dispatchEvent(new CustomEvent('validation', {
+                    detail: {
+                        title: e.message,
+                        icon: 'error'
+                    }
+                }));
                 return null;
             }
-
-            // await fetch(`{{ route('orders.niubiz.config') }}`, {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            //     },
-            //     body: JSON.stringify({})
-            // }).then(response => response.json()).then(data => {
-            //     if (data.error) {
-            //         this.error = data.error;
-            //     } else {
-            //         this.loading = false;
-            //         console.log(data);
-            //         return data;
-            //     }
-            // }).catch(() => {
-            //     this.error = 'There was an error processing your request.';
-            // });
         }
 
         function select2Ubigeo() {

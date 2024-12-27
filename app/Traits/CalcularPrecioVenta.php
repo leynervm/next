@@ -2,8 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\Empresa;
-use App\Models\Pricetype;
+use App\Enums\PromocionesEnum;
 use App\Models\Rango;
 
 trait CalcularPrecioVenta
@@ -54,9 +53,9 @@ trait CalcularPrecioVenta
                     $lista->decimals,
                     $promocion
                 );
-                
+
                 if ($promocion && $promocion->isCombo()) {
-                    $combo = $this->getAmountCombo($promocion, $lista);
+                    $combo = getAmountCombo($promocion, $lista);
                     $precio_venta = $precio_venta + $combo->total;
                 }
 
@@ -74,7 +73,7 @@ trait CalcularPrecioVenta
                 $precio_venta = getPriceDinamic($pricesale, 0, 0, 0, 2, $promocion);
 
                 if ($promocion && $promocion->isCombo()) {
-                    $combo = $this->getAmountCombo($promocion);
+                    $combo = getAmountCombo($promocion);
                     $precio_venta = $precio_venta + $combo->total;
                 }
 
@@ -85,77 +84,14 @@ trait CalcularPrecioVenta
     }
 
 
-    public function obtenerPrecioVenta($pricetype = null)
+    public function getPrecioVentaDefault($pricetype = null)
     {
         if (!empty($pricetype)) {
-            // if ($pricetype->rounded > 0) {
-            //     $precioVenta = round_decimal($this->{$pricetype->campo_table}, $pricetype->rounded);
-            // } else {
-            //     $precioVenta = $this->{$pricetype->campo_table};
-            // }
             return number_format($this->{$pricetype->campo_table}, $pricetype->decimals, '.', '');
         } else {
             return number_format($this->pricesale, 2, '.', '');
         }
     }
-
-    public function obtenerPrecioByPricebuy($pricebuy, $promocion = null, $pricetype = null, $validatePrm = true)
-    {
-
-        if (!empty($promocion) && $validatePrm) {
-            $promocion = verifyPromocion($promocion);
-        }
-
-        if (!empty($pricetype)) {
-            $rango = Rango::query()->with(['pricetypes' => function ($query) use ($pricetype) {
-                $query->select('pricetypes.id', 'rounded', 'decimals', 'campo_table')
-                    ->addSelect('pricetype_rango.ganancia')->where('pricetypes.id', $pricetype->id);
-            }])->whereRangoBetween($pricebuy)->first();
-            $lista = $rango->pricetypes->first();
-            $precio_venta = getPriceDinamic(
-                $this->pricebuy,
-                $lista->ganancia,
-                $rango->incremento,
-                $lista->rounded,
-                $lista->decimals,
-                $promocion
-            );
-
-            // if ($this->{$pricetype->campo_table} == '47.00') {
-            //     dd($pricebuy, $this->pricebuy);
-            // }
-
-            if ($promocion && $promocion->isCombo()) {
-                $combo = $this->getAmountCombo($promocion, $lista);
-                $precio_venta = $precio_venta + $combo->total;
-            }
-
-            return $precio_venta;
-
-            // $listaprecio = Pricetype::activos()->with(['rangos' => function ($query) use ($pricebuy) {
-            //     $query->whereRangoBetween($pricebuy);
-            // }])->find($pricetype->id);
-
-            // if (count($listaprecio->rangos) > 0) {
-            //     return getPriceDinamic(
-            //         $pricebuy,
-            //         $listaprecio->rangos->first()->pivot->ganancia,
-            //         $listaprecio->rangos->first()->incremento,
-            //         $pricetype->rounded,
-            //         $pricetype->decimals,
-            //         $promocion
-            //     );
-            // }
-        } else {
-            if ($promocion && $promocion->isRemate()) {
-                //En caso de remate debe tomar precio de compra del producto
-                return number_format($this->pricebuy, 2, '.', '');
-            }
-
-            return getPriceDinamic($pricebuy, 0, 0, 0, 2, $promocion);
-        }
-    }
-
 
     //siempre traer las relacione cargadas con with en el producto
     private function getPromocion()
@@ -163,53 +99,27 @@ trait CalcularPrecioVenta
         return ($this->promocions && count($this->promocions) > 0) ? verifyPromocion($this->promocions->first()) : null;
     }
 
-    public function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
+    public function getPrecioVenta($pricetype = null)
     {
-        if (!empty($promocion) && $promocion->isCombo()) {
-            $total = 0;
-            $products = [];
-            $type = null;
-            foreach ($promocion->itempromos as $itempromo) {
-                if ($almacen_id) {
-                    $stockCombo = decimalOrInteger($itempromo->producto->almacens->find($almacen_id)->pivot->cantidad ?? 0);
-                } else {
-                    $stockCombo = null;
-                }
+        $descuento = $this->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $liquidacion = $this->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
 
-                $price = $pricetype ? $itempromo->producto->obtenerPrecioVenta($pricetype) : $itempromo->producto->pricesale;
-                $pricenormal = $price;
-
-                if ($itempromo->isDescuento()) {
-                    $price = getPriceDscto($price, $itempromo->descuento, $pricetype);
-                    $type = decimalOrInteger($itempromo->descuento) . '% DSCT';
-                }
-                if ($itempromo->isGratuito()) {
-                    $price = $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy;
-                    $type = 'GRATIS';
-                }
-
-                if ($pricetype) {
-                    if ($pricetype->rounded > 0) {
-                        $price = round_decimal($price, $pricetype->rounded);
-                    }
-                }
-
-                $total = $total + number_format($price, $pricetype ? $pricetype->decimals : 3, '.', '');
-                $products[] = [
-                    'producto_id' => $itempromo->producto_id,
-                    'name' => $itempromo->producto->name,
-                    'image' => $itempromo->producto->image ? pathURLProductImage($itempromo->producto->image) : null,
-                    'price' => $price,
-                    'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,
-                    'pricenormal' => $pricenormal,
-                    'stock' => $stockCombo,
-                    'unit' => $itempromo->producto->unit->name,
-                    'type' => $type
-                ];
-            }
-            return response()->json(['total' => $total, 'products' => $products])->getData();
-        } else {
-            return null;
+        if ($liquidacion) {
+            $precio_venta = getPriceDinamic($this->pricebuy, 0, !empty($pricetype) ? $pricetype->incremento : 2, 0, !empty($pricetype) ? $pricetype->decimals : 2);
+            return $precio_venta;
         }
+
+        if (!empty($pricetype)) {
+            $precio_venta = number_format($this->{$pricetype->campo_table}, $pricetype->decimals, '.', '');
+        } else {
+            $precio_venta = number_format($this->pricesale, 2, '.', '');
+        }
+
+        if ($descuento > 0) {
+            $precio_venta = getPriceDscto($precio_venta, $descuento, $pricetype ?? null);
+            return $precio_venta;
+        }
+
+        return $precio_venta;
     }
 }

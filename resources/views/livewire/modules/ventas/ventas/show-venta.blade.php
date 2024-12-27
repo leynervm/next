@@ -287,8 +287,8 @@
                         <form class="w-full relative flex flex-col" wire:submit.prevent="calcularcuotas">
                             <div class="w-full">
                                 <x-label value="Cuotas :" />
-                                <x-input class="block w-full" type="number" min="1" step="1"
-                                    max="10" wire:model.defer="countcuotas" />
+                                <x-input class="block w-full" type="number" min="1" step="1" max="10"
+                                    wire:model.defer="countcuotas" />
                                 <x-jet-input-error for="countcuotas" />
                             </div>
 
@@ -359,8 +359,7 @@
                                 : null;
                         @endphp
                         <x-card-producto :image="$image" :name="$item->producto->name" :marca="$item->producto->marca->name" :category="$item->producto->category->name"
-                            :increment="$item->increment" :promocion="$item->promocion_id" id="card_{{ $item->producto->id }}"
-                            class="overflow-hidden">
+                            :increment="$item->increment" :promocion="$item->promocion" class="overflow-hidden">
 
                             @if ($item->isGratuito())
                                 <x-span-text text="GRATUITO" type="green" class="!py-0.5" />

@@ -295,7 +295,7 @@ class ShowProductos extends Component
     public function hiddenproducto(Producto $producto)
     {
         $this->authorize('admin.almacen.productos.delete');
-        $mensaje = $producto->isVisible() ? 'ocultado' : 'mostrado';
+        $mensaje = $producto->isVisible() ? 'OCULTADO' : 'MOSTRADO';
         $producto->visivility = $producto->isVisible() ? Producto::OCULTAR : Producto::MOSTRAR;
         $producto->save();
         $this->dispatchBrowserEvent('toast', toastJSON('Producto ' . $mensaje . ' corrrectamnente'));

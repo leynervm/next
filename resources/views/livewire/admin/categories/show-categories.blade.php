@@ -110,8 +110,7 @@
                             <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
                                 src="{{ getCategoryURL($category->image->url) }}" />
                         @else
-                            <x-icon-file-upload x-cloak x-show="!image"
-                                class="!w-full !h-full !border-0 text-colorsubtitleform" />
+                            <x-icon-file-upload x-cloak x-show="!image" class="w-full h-full" />
                         @endif
                     </template>
                 </x-simple-card>

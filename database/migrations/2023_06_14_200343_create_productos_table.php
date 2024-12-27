@@ -32,6 +32,7 @@ class CreateProductosTable extends Migration
             $table->char('viewespecificaciones', 1)->default(0);
             $table->char('viewdetalle', 1)->default(Producto::VER_DETALLES);
             $table->char('visivility', 1)->default(0);
+            $table->unsignedInteger('maxstockweb', 12, 2)->nullable();
             $table->decimal('precio_1', 12, 4)->nullable();
             $table->decimal('precio_2', 12, 4)->nullable();
             $table->decimal('precio_3', 12, 4)->nullable();

@@ -361,15 +361,16 @@
                         <tr class="font-regular">
                             <td class="p-1 text-9 leading-5 text-start" style="width:100%">
                                 <p>
-                                    <small class="font-medium">[
-                                        {{ decimalOrInteger($item->cantidad) }} {{ $item->unit }}
-                                        ]</small>
-                                    {{ $item->descripcion }}
+                                    <small class="font-medium">
+                                        [{{ decimalOrInteger($item->cantidad) }}
+                                        {{ $item->unit }}]
+                                    </small>
+                                    {!! nl2br($item->descripcion) !!}
                                 </p>
                             </td>
-                            <td class="p-1 text-9 text-end" style="width: 45px;">
+                            <td class="p-1 text-9 text-end align-middle" style="width: 45px;">
                                 {{ number_format($item->price + $item->igv, 2, '.', ', ') }}</td>
-                            <td class="p-1 text-9 text-end" style="width: 45px;">
+                            <td class="p-1 text-9 text-end align-middle" style="width: 45px;">
                                 {{ number_format($item->total, 2, '.', ', ') }}</td>
                         </tr>
                     @endforeach

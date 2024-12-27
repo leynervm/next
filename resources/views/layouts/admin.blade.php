@@ -227,6 +227,8 @@ $watch('openSidebar', value => console.log(openSidebar))">
         @endauth
     </div>
 
+    <x-loading-web-next x-cloak x-ref="loadingnext" />
+
     @stack('modals')
     @livewireScripts
 
@@ -244,6 +246,14 @@ $watch('openSidebar', value => console.log(openSidebar))">
 
 </body>
 <script>
+    const componentloading = document.querySelector('[x-ref="loadingnext"]');
+    document.addEventListener('readystatechange', () => {
+        if (document.readyState == 'interactive') {
+            // document.body.style.overflow = 'auto';
+            $(componentloading).fadeOut();
+        }
+    });
+
     var toastMixin = Swal.mixin({
         toast: true,
         icon: "success",
@@ -342,8 +352,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
         }
     }
 
-    // SI FUNCIONA PROVADO EN ONKEYPRERSS DEL INPUT
-    //onkeypress="return validarNumeroDecimal(event)"
+    //onkeypress="return validarNumeroDecimal(event)" en input
     function validarDecimal(event, maxlenth = 0) {
         var charCode = (event.which) ? event.which : event.keyCode;
         var charTyped = String.fromCharCode(charCode);
@@ -496,8 +505,35 @@ $watch('openSidebar', value => console.log(openSidebar))">
                 input.dispatchEvent(new Event("input"));
             });
         })
-
     })
+
+    function sendRequest(route, headers, data, onSuccess = () => {}, onError = () => {}) {
+        $(componentloading).fadeIn();
+
+        fetch(route, {
+                method: 'POST',
+                headers: headers,
+                body: data
+            }).then(result => result.json())
+            .then(response => {
+                console.log(response);
+                if (response.success) {
+                    onSuccess(response);
+                } else {
+                    onError(response);
+                }
+                $(componentloading).fadeOut();
+            }).catch(error => {
+                $(componentloading).fadeOut();
+                swal.fire({
+                    title: error.message,
+                    text: null,
+                    icon: 'error',
+                    confirmButtonColor: '#0FB9B9',
+                    confirmButtonText: 'Cerrar',
+                })
+            }).finally(() => {});
+    }
 </script>
 
 </html>

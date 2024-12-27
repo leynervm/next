@@ -4,7 +4,7 @@ namespace App\Http\Livewire\Modules\Marketplace\Wishlist;
 
 use App\Models\Moneda;
 use App\Models\Producto;
-use Gloudemans\Shoppingcart\Facades\Cart;
+use CodersFree\Shoppingcart\Facades\Cart;
 use Livewire\Component;
 
 class ShowWishlists extends Component

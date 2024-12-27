@@ -41,6 +41,16 @@ class Serie extends Model
         return $this->belongsTo(Almacencompra::class);
     }
 
+    public function carshoopserie(): HasOne
+    {
+        return $this->hasOne(Carshoopserie::class);
+    }
+
+    public function itemserie(): HasOne
+    {
+        return $this->hasOne(Itemserie::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withTrashed();
@@ -64,11 +74,6 @@ class Serie extends Model
     public function scopeAlmacen($query, $almacen_id)
     {
         return $query->where('almacen_id', $almacen_id);
-    }
-
-    public function itemserie(): HasOne
-    {
-        return $this->hasOne(Itemserie::class);
     }
 
     public function isDisponible()

@@ -121,34 +121,40 @@ class ShowSeries extends Component
 
     public function delete(Serie $serie)
     {
-
         $this->authorize('admin.almacen.productos.series.edit');
-        $itemseries = $serie->itemserie()->exists();
-        $cadena = extraerMensaje([
-            'Items_ventas' => $itemseries,
-        ]);
+        $serie->load(['carshoopserie', 'itemserie']);
+
+        if (!empty($serie->itemserie)) {
+            $mensaje = response()->json([
+                'title' => "LA SERIE " . $serie->serie . " SE ENCUENTRA VINCULADO A OTROS REGISTROS",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!empty($serie->carshoopserie)) {
+            $mensaje = response()->json([
+                'title' => "LA SERIE " . $serie->serie . " SE ENCUENTRA AGREGADO EN EL CARRITO DE VENTAS",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
 
         DB::beginTransaction();
         try {
-            if ($itemseries > 0) {
+            if ($serie->isDisponible()) {
+                $serie->forceDelete();
+                DB::commit();
+                $this->producto->refresh();
+                $this->dispatchBrowserEvent('deleted');
+            } else {
                 $mensaje = response()->json([
-                    'title' => 'No se puede eliminar registro, ' . $serie->serie,
-                    'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
+                    'title' => 'LA SERIE ' . $serie->serie . ' SE ENCUENTRA VINCULADO A OTROS REGISTROS',
+                    'text' => null,
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
-            } else {
-                if ($serie->status == 1) {
-                    $mensaje = response()->json([
-                        'title' => 'No se puede eliminar serie, ' . $serie->serie,
-                        'text' => "La serie se encuentra agregado al carrito de ventas, eliminarlo causaría un conflicto en la base de datos."
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                } else {
-                    $serie->delete();
-                    DB::commit();
-                    $this->producto->refresh();
-                    $this->dispatchBrowserEvent('deleted');
-                }
             }
         } catch (\Exception $e) {
             DB::rollBack();

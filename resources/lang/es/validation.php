@@ -331,7 +331,7 @@ return [
         'serieguia_id'              =>  'serie guia',
         'typemovement'              =>  'tipo movimiento',
         'limit'                     =>  'límite de stock',
-        'productosec_id'            =>  'producto',
+        'productosec_id'            =>  'producto secundario',
         'limitstocksec'             =>  'límite',
         'typecombo'                 =>  'tipo combo',
         'itempromos'                =>  'items promociones',
@@ -396,6 +396,7 @@ return [
         'boxes'                     =>  'cajas de pago',
         'viewalmacens'              =>  'mostrar almacénes',
         'viewalmacensdetalle'       =>  'mostrar almacénes en detalle',
-        'newcantidad'               =>  'cantidad'
+        'newcantidad'               =>  'cantidad',
+        'maxstockweb'               =>  'límite de stock web',
     ],
 ];

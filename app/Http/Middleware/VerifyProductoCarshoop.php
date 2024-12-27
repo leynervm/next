@@ -3,7 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Gloudemans\Shoppingcart\Facades\Cart;
+use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

@@ -17,6 +17,7 @@ class Tvitem extends Model
 
     protected $guarded = ['created_at', 'updated_at'];
 
+    const NO_GRATUITO = '0';
     const GRATUITO = '1';
 
     protected static function newFactory()

@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Models\Producto;
+use Illuminate\Support\Facades\DB;
 
 class ValidateStock implements Rule
 {
@@ -38,23 +39,20 @@ class ValidateStock implements Rule
             $this->mensaje = "El campo almacen es obligatorio.";
             return;
         }
-        $producto = Producto::with(['unit', 'almacens'])->find($this->producto_id);
-        $query = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
+        $producto = Producto::with(['unit'])->withCount(['almacens as stock' => function ($query) {
+            // if (empty($cart['almacen_id'])) {
+            $query->where('almacen_id', $this->almacen_id)->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
+            // } else {
+            //     $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+            // }
+        }])->find($this->producto_id);
+        // $query = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
 
         $this->mensaje = $this->cantidad > 0
-            ? "Cantidad supera al stock disponible [" . decimalOrInteger($query) . " " . $producto->unit->name . "]."
-            : "Stock no disponible en almacén seleccionado [" . decimalOrInteger($query) . " " . $producto->unit->name . "].";
-        $query = $this->cantidad > 0 ? $query - $this->cantidad : $query;
-        return $this->cantidad > 0 ? $query >= 0 : $query > 0;
-
-        // if ($this->cantidad > 0) {
-        //     $query = $query - $this->cantidad;
-        //     $this->mensaje = "Cantidad supera al stock disponible [].";
-        //     return $query >= 0;
-        // } else {
-        //     return $query > 0;
-        // }
-
+            ? "Cantidad supera al stock disponible [" . decimalOrInteger($producto->stock) . " " . $producto->unit->name . "]."
+            : "Stock no disponible en almacén seleccionado [" . decimalOrInteger($producto->stock) . " " . $producto->unit->name . "].";
+        $restantes = $this->cantidad > 0 ? $producto->stock - $this->cantidad : $producto->stock;
+        return $this->cantidad > 0 ? $restantes >= 0 : $restantes > 0;
     }
 
     /**

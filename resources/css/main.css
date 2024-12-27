@@ -42,6 +42,12 @@
     --fondo-hover-button-close: theme('colors.next.700');
     --ring-button-close: theme('colors.next.300');
 
+    --color-button-increment: theme('colors.neutral.500');
+    --fondo-button-increment: theme('colors.neutral.200');
+    --color-hover-button-increment: theme('colors.neutral.700');
+    --fondo-hover-button-increment: theme('colors.neutral.200');
+    --ring-button-increment: theme('colors.neutral.200');
+
     --color-button: theme('colors.white');
     --fondo-button: theme('colors.next.500');
     --color-hover-button: theme('colors.white');
@@ -163,6 +169,12 @@
     --color-hover-button-close: theme('colors.white');
     --fondo-hover-button-close: theme('colors.neutral.600');
     --ring-button-close: theme('colors.neutral.600');
+
+    --color-button-increment: theme('colors.next.500');
+    --fondo-button-increment: theme('colors.white');
+    --color-hover-button-increment: theme('colors.neutral.500');
+    --fondo-hover-button-increment: theme('colors.white');
+    --ring-button-increment: theme('colors.neutral.300');
 
     --color-button: theme('colors.white');
     --fondo-button: theme('colors.next.500');
@@ -301,6 +313,13 @@
     z-index: 9999; */
 }
 
+.btn-combos {
+    @apply p-2.5 text-[10px] rounded-lg ring-1 ring-borderminicard text-colorsubtitleform hover:bg-fondohoverbutton hover:text-colorhoverbutton shadow shadow-shadowminicard flex items-center justify-center gap-3 transition ease-in-out duration-150;
+}
+.btn-combos:hover svg {
+    @apply !text-colorhoverbutton;
+}
+
 input[type='checkbox']:checked,
 input[type='radio']:checked {
     @apply text-fondobutton;
@@ -378,6 +397,10 @@ input[type='number'].input-number-none {
     text-align-last: center;
 }
 
+.btn-outline-secondary {
+    @apply text-red-500 ring-1 ring-red-500 text-xs p-2.5 rounded-lg font-medium tracking-widest disabled:opacity-25;
+}
+
 /* 20600129997 */
 
 /* .label-checkbox input[type="checkbox"]{
@@ -395,7 +418,7 @@ input[type='number'].input-number-none {
 } */
 
 .span-novedad {
-    @apply p-1 px-1.5 rounded-lg sm:rounded-xl text-[10px] bg-gradient-to-tr from-amber-300 to-orange-600 text-white font-medium tracking-widest;
+    @apply p-1 px-1.5 rounded-lg sm:rounded-xl text-[10px] bg-gradient-to-tr from-amber-300 to-orange-600 text-white font-medium tracking-widest transition ease-in-out duration-150;
 }
 
 .lista-requisitos-asus {

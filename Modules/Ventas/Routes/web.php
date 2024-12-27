@@ -18,6 +18,13 @@ use Nwidart\Modules\Facades\Module;
 
 Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verifysucursal'])->group(function () {
     Route::prefix('/ventas')->group(function () {
+
+
+        Route::post('/addcarshoop', [VentaController::class, 'addcarshoop'])->name('admin.ventas.addcarshoop');
+        Route::post('/getproductobyserie', [VentaController::class, 'getproductobyserie'])->name('admin.ventas.getproductobyserie');
+
+
+
         Route::get('/', [VentaController::class, 'index'])->name('admin.ventas');
         Route::get('/create', [VentaController::class, 'create'])->name('admin.ventas.create')->middleware(['verifyserieventas', 'openbox', 'verifymethodpayment', 'verifyconcept', 'verifypricetype']);
         Route::get('/{venta:seriecompleta}/show', [VentaController::class, 'show'])->name('admin.ventas.edit')->middleware(['verifymethodpayment']);

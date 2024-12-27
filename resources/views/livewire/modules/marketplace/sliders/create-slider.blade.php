@@ -22,7 +22,7 @@
                                 class="w-full h-full object-scale-down rounded animate__animated animate__fadeIn animate__faster">
                         </template>
                         <template x-if="!image">
-                            <x-icon-file-upload type="file" class="w-full h-full text-gray-300 !border-0" />
+                            <x-icon-file-upload type="file" class="w-full h-full" />
                         </template>
                     </x-simple-card>
 
@@ -65,7 +65,7 @@
                                     class="w-full h-full object-scale-down rounded animate__animated animate__fadeIn animate__faster">
                             </template>
                             <template x-if="!imagemobile">
-                                <x-icon-file-upload type="file" class="w-full h-full text-gray-300 !border-0" />
+                                <x-icon-file-upload type="file" class="w-full h-full" />
                             </template>
                         </x-simple-card>
 

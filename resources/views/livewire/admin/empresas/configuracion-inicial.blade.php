@@ -348,7 +348,7 @@
                                             :src="markagua" />
                                     </template>
                                     <template x-if="!markagua">
-                                        <x-icon-file-upload class="w-full h-full !my-0" />
+                                        <x-icon-file-upload class="w-full h-full" />
                                     </template>
                                 </x-simple-card>
                                 <x-jet-input-error for="markagua" />
@@ -426,7 +426,7 @@
                                         :src="image" />
                                 </template>
                                 <template x-if="!image">
-                                    <x-icon-file-upload class="w-full h-full !my-0" />
+                                    <x-icon-file-upload class="w-full h-full" />
                                 </template>
                             </div>
 
@@ -461,7 +461,7 @@
                                         :src="icono" />
                                 </template>
                                 <template x-if="!icono">
-                                    <x-icon-file-upload class="w-full h-full !my-0" />
+                                    <x-icon-file-upload class="w-full h-full" />
                                 </template>
                             </div>
 
@@ -873,10 +873,10 @@
                             <div x-cloak x-show="sendmode == 1" class="relative w-full xs:max-w-xs text-center">
                                 @if (isset($cert))
                                     <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()"
-                                        class="w-40 h-full text-gray-300" />
+                                        class="w-40 h-full" />
                                 @else
                                     <x-icon-file-upload type="code" text="PFX"
-                                        class="w-40 h-full text-gray-300" />
+                                        class="w-40 h-full" />
                                 @endif
 
                                 <div class="w-full flex gap-1 flex-wrap justify-center">
@@ -1356,7 +1356,7 @@
                                 @if (isset($cert))
                                     <div class="relative w-32 text-center">
                                         <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()"
-                                            class="w-full h-full text-gray-300" />
+                                            class="w-full h-full" />
                                     </div>
                                 @endif
                             </x-simple-card>

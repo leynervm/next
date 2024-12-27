@@ -295,7 +295,7 @@
                                         {{ decimalOrInteger($item->cantidad) }}
                                         {{ $item->producto->unit->code }}
                                         ]</small>
-                                    {{ $item->producto->name }}
+                                    {!! nl2br($item->producto->name) !!}
                                 </p>
                             </td>
                             <td class="p-1 text-9 text-end" style="width: 45px;">

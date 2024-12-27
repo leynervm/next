@@ -60,27 +60,9 @@
             <div class="item-sidebar group">
                 <a class="itemlink-sidebar-principal" href="{{ route('productos') }}"
                     @click="sidebar=false,openSidebar=false,backdrop=false">
-                    <div class="title-category-sidebar group-hover:text-hovercolorlinknav">
-                        {{-- <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 48 48"
-                            stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="0.3"
-                            class="w-9 h-9 p-1">
-                            <path
-                                d="m4.54,14.08c-1.03-1.25-1.99-2.41-2.94-3.59-.87-1.08-.69-1.86.58-2.45C7.75,5.51,13.31,2.97,18.88.45c1.15-.52,1.66-.39,2.47.58.88,1.05,1.75,2.12,2.71,3.29.94-1.14,1.82-2.22,2.71-3.3.94-1.14,1.46-1.26,2.8-.66,5.45,2.47,10.89,4.95,16.33,7.44,1.51.69,1.67,1.41.62,2.7-.93,1.14-1.87,2.28-2.87,3.51,1.18,1.32,2.33,2.62,3.48,3.91,1.3,1.46,1.16,2.07-.62,2.91-.76.36-1.51.74-2.3,1.03-.67.25-.9.62-.89,1.34.04,3.62,0,10.94.03,14.56.01,1.13-.45,1.8-1.45,2.26-5.49,2.54-10.97,5.1-16.45,7.67-.93.43-1.78.41-2.7-.02-5.44-2.56-10.89-5.11-16.35-7.63-1.06-.49-1.5-1.18-1.48-2.34.05-3.45,0-10.61.03-14.06,0-.71-.22-1.09-.89-1.35-1-.38-1.97-.87-2.94-1.32-1.27-.6-1.46-1.39-.55-2.43,1.28-1.46,2.59-2.9,3.97-4.45Zm35.43-.03c-.26-.16-.39-.26-.54-.33-4.92-2.16-9.83-4.33-14.76-6.46-.34-.15-.86-.1-1.22.06-4.8,2.09-9.59,4.21-14.39,6.33-.22.1-.41.23-.65.37.14.1.19.15.25.17,5,2.14,10,4.29,15.01,6.4.33.14.85.05,1.21-.1,4.15-1.74,8.28-3.52,12.42-5.29.86-.37,1.71-.74,2.66-1.15Zm1.53,9.06c-.58.25-.94.41-1.31.57-3.15,1.42-6.31,2.85-9.46,4.27-1.48.67-1.86.58-2.97-.66-.81-.91-1.63-1.81-2.62-2.92v21.27c.2-.04.34-.04.45-.09,5.12-2.38,10.23-4.76,15.33-7.19.29-.14.53-.66.54-1.01.06-1.64.03-6.99.03-8.63,0-1.8,0-3.6,0-5.61Zm-18.38,22.62v-21.34c-1.11,1.23-2.07,2.29-3.03,3.35-.93,1.02-1.47,1.14-2.75.56-3.15-1.42-6.3-2.85-9.45-4.28-.32-.15-.66-.26-1.08-.42-.02.43-.05.72-.05,1.02,0,2.95.03,9.6-.02,12.54-.01.77.28,1.11.95,1.41,4.42,2.03,8.83,4.11,13.24,6.16.69.32,1.39.63,2.19.99ZM2.25,19.44c5.36,2.42,10.52,4.76,15.7,7.08.2.09.6.1.71-.02,1.29-1.38,2.55-2.8,3.79-4.19-.1-.14-.12-.19-.14-.2-5.24-2.26-10.48-4.52-15.73-6.75-.21-.09-.63,0-.78.16-1.17,1.24-2.29,2.52-3.54,3.91Zm43.47-.31c-1.05-1.17-2-2.17-2.86-3.23-.49-.6-.91-.68-1.62-.37-4.81,2.09-9.63,4.13-14.45,6.19-.33.14-.66.3-1.07.5,1.03,1.16,2.04,2.19,2.93,3.32.6.76,1.12.87,2,.45,3.19-1.51,6.41-2.93,9.62-4.39,1.77-.8,3.54-1.6,5.44-2.46Zm-.73-9.71c-5.44-2.48-10.72-4.88-16.01-7.27-.2-.09-.6-.09-.71.03-.94,1.07-1.83,2.18-2.81,3.36,5.51,2.42,10.85,4.78,16.2,7.11.2.09.63,0,.77-.16.84-.95,1.62-1.94,2.55-3.07Zm-22.29-3.82c-.81-.98-1.58-1.86-2.27-2.8-.44-.6-.83-.67-1.51-.35-4.97,2.3-9.96,4.56-14.95,6.83-.2.09-.38.22-.64.37.75.92,1.48,1.76,2.14,2.64.39.53.73.6,1.34.32,3.31-1.5,6.64-2.93,9.96-4.4,1.93-.85,3.87-1.71,5.93-2.62Z" />
-                            <path
-                                d="m16.4,35.38c-.27.59-.5,1.09-.77,1.69-2.52-1.18-4.96-2.31-7.51-3.5.25-.56.48-1.06.76-1.69,2.52,1.17,4.98,2.32,7.52,3.5Z" />
-                            <path
-                                d="m8.1,30c.28-.58.51-1.06.8-1.67,1.45.67,2.86,1.33,4.39,2.04-.26.56-.49,1.05-.78,1.67-1.45-.67-2.86-1.32-4.41-2.04Z" />
-                        </svg> --}}
-                        {{-- <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
-                            <picture>
-                                <source srcset="{{ asset('images/home/recursos/icon-productos.png') }}">
-                                <img src="{{ asset('images/home/recursos/icon-productos.png') }}"
-                                    alt="{{ asset('images/home/recursos/icon-productos.png') }}"
-                                    class="w-full h-full object-scale-down overflow-hidden">
-                            </picture>
-                        </div> --}}
-                        <span class="inline-block {{-- pl-14 --}} tracking-widest text-xs font-medium">
-                            TODOS LOS PRODUCTOS</span>
+                    <div class="title-category-sidebar justify-center group-hover:text-hovercolorlinknav">
+                        <span class="inline-block tracking-widest text-sm font-medium relative title-channel-sidebar">
+                            NUESTROS PRODUCTOS</span>
                     </div>
                 </a>
             </div>
@@ -187,6 +169,14 @@
                 @endforeach
             @endif
 
+            <div class="item-sidebar group">
+                <div class="itemlink-sidebar-principal hover:!bg-inherit hover:!text-colorsubtitleform !cursor-default">
+                    <div class="title-category-sidebar !justify-center">
+                        <span class="inline-block relative tracking-widest text-sm font-medium title-channel-sidebar">
+                           NUESTROS SERVICIOS</span>
+                    </div>
+                </div>
+            </div>
 
             <div class="item-sidebar" x-data="{ submenu: false }" @click.stop="(submenu=!submenu)">
                 <div class="itemlink-sidebar-principal relative">
@@ -214,7 +204,8 @@
                     <ul class="w-full flex flex-col">
                         <li class="w-full block">
                             <a class="item-subcategory !flex justify-between font-medium gap-1 items-center"
-                                href="{{ route('tic') }}" @click="localStorage.setItem('activeTab', 1),sidebar=false,openSidebar=false,backdrop=false">
+                                href="{{ route('tic') }}"
+                                @click="localStorage.setItem('activeTab', 1),sidebar=false,openSidebar=false,backdrop=false">
                                 VER TODO
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 p-0.5 block flex-shrink-0"
                                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"

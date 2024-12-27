@@ -39,6 +39,6 @@ class ValidateDocument implements Rule
      */
     public function message()
     {
-        return __("The campo") . " :attribute " . __("is incorrect.");
+        return "El :attribute ingresado es incorrecto";
     }
 }

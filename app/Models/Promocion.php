@@ -20,17 +20,25 @@ class Promocion extends Model
     const DESCUENTO = '0';
     const COMBO = '1';
     const REMATE = '2';
+    const LIQUIDACION = '2';
 
     const ACTIVO = '0';
     const DESACTIVADO = '1';
     const FINALIZADO = '2';
 
     protected $casts = [
-        'outs' => 'decimal:2',
-        'limit' => 'decimal:2',
+        'outs' => 'integer',
+        'limit' => 'integer',
+        // 'startdate' => 'date:Y-m-d',
+        // 'expiredate' => 'date:Y-m-d'
     ];
 
-    protected $fillable = ['pricebuy', 'status', 'type', 'descuento', 'limit', 'outs', 'startdate', 'expiredate', 'producto_id'];
+    protected $fillable = ['titulo', 'pricebuy', 'status', 'type', 'descuento', 'limit', 'outs', 'startdate', 'expiredate', 'producto_id'];
+
+    public function setTituloAttribute($value)
+    {
+        $this->attributes['titulo'] = trim(mb_convert_case(mb_strtolower($value, "UTF-8"), MB_CASE_TITLE, "UTF-8"));
+    }
 
     public function producto(): BelongsTo
     {
@@ -59,7 +67,12 @@ class Promocion extends Model
 
     public function scopeRemates($query)
     {
-        return $query->where('type', self::REMATE);
+        return $query->where('type', self::LIQUIDACION);
+    }
+
+    public function scopeLiquidaciones($query)
+    {
+        return $query->where('type', self::LIQUIDACION);
     }
 
     public function scopeAvailables($query)
@@ -76,13 +89,30 @@ class Promocion extends Model
             ->orderBy('startdate', 'desc');
     }
 
+
+    // public function scopeCombosDisponibles($query, $almacenId = null)
+    // {
+    //     return $query->combos()->disponibles()->whereHas('itempromos', function ($query) use ($almacenId) {
+    //         $query->whereHas('producto', function ($query) use ($almacenId) {
+    //             $query->whereHas('almacens', function ($query) use ($almacenId) {
+    //                 $query->selectRaw('almacen_id, SUM(almacen_producto.cantidad) as stock_total, almacen_id')
+    //                     ->groupBy('almacen_id') // Aseguramos que almacen_id esté en GROUP BY
+    //                     ->when($almacenId, function ($query) use ($almacenId) {
+    //                         $query->where('almacen_id', $almacenId); // Filtra por almacén si se especifica
+    //                     })
+    //                     ->havingRaw('SUM(almacen_producto.cantidad) > 0');
+    //             });
+    //         });
+    //     });
+    // }
+
     public function isDisponible()
     {
         return
-            $this->status == self::ACTIVO && $this->startdate == null && $this->expiredate == null ||
-            $this->status == self::ACTIVO && $this->startdate == null && $this->expiredate >= Carbon::now('America/Lima')->format('Y-m-d') ||
-            $this->status == self::ACTIVO && $this->startdate <= Carbon::now('America/Lima')->format('Y-m-d') && $this->expiredate == null ||
-            $this->status == self::ACTIVO && Carbon::parse($this->startdate)->lte(Carbon::now('America/Lima')->format('Y-m-d')) && Carbon::parse($this->expiredate)->gte(Carbon::now('America/Lima')->format('Y-m-d'));
+            $this->startdate == null && $this->expiredate == null ||
+            $this->startdate == null && $this->expiredate >= Carbon::now('America/Lima')->format('Y-m-d') ||
+            $this->startdate <= Carbon::now('America/Lima')->format('Y-m-d') && $this->expiredate == null ||
+            Carbon::parse($this->startdate)->lte(Carbon::now('America/Lima')->format('Y-m-d')) && Carbon::parse($this->expiredate)->gte(Carbon::now('America/Lima')->format('Y-m-d'));
     }
 
     public function isAvailable()
@@ -94,7 +124,6 @@ class Promocion extends Model
     {
         return $this->limit > 0 && $this->outs >= $this->limit;
     }
-
 
     public function isDescuento()
     {
@@ -108,7 +137,12 @@ class Promocion extends Model
 
     public function isRemate()
     {
-        return $this->type == self::REMATE;
+        return $this->type == self::LIQUIDACION;
+    }
+
+    public function isLiquidacion()
+    {
+        return $this->type == self::LIQUIDACION;
     }
 
     public function isDesactivado()

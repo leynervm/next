@@ -10,7 +10,7 @@
 
         <div class="w-full">
             <x-label value="Buscar serie :" />
-            <x-input class="block w-full" wire:keydown.enter="getProductoBySerie" wire:model.defer="searchserie"
+            <x-input class="block w-full" @keydown.enter.prevent="searchBySerie" x-model="searchserie"
                 placeholder="Buscar serie..." />
             <x-jet-input-error for="searchserie" />
         </div>

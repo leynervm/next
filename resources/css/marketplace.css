@@ -505,6 +505,14 @@
     @apply text-textselect2 whitespace-nowrap rounded-md p-3 py-3.5 pl-5 w-full block hover:bg-fondohoverselect2 hover:text-texthoverselect2 text-xs transition ease-in-out duration-150;
 }
 
+.title-channel-sidebar {
+    @apply transition ease-in-out duration-150;
+}
+
+.title-channel-sidebar:before {
+    @apply absolute left-[50%] -bottom-1 -translate-x-[50%] content-[''] w-[40%] h-[3px] bg-hoverlinknav rounded-full;
+}
+
 /* @media (min-width: 640px) { 
     .item-sidebar:hover > .menu-subcategories {
         @apply flex relative top-0 left-0;
@@ -592,9 +600,21 @@
 
 /* END BUTTTON PERSONALIZADO */
 
+/* BTN INCREMENTAR CARRRITO */
+.btn-increment-cart {
+    @apply font-medium bg-fondobuttonincrement text-colorbuttonincrement hover:ring-2 hover:ring-ringbuttonincrement hover:bg-fondohoverbuttonincrement hover:text-colorhoverbuttonincrement text-xl w-9 h-9 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 disabled:ring-0 disabled:hover:bg-fondobuttonincrement transition ease-in-out duration-150;
+}
+
+.btn-increment-cart.disabled {
+    @apply opacity-75 text-colorhoverbuttonincrement ring-0 hover:ring-0;
+}
+/* END */
+
+/* BADGE ESPECIFICACIONES */
 .badge-especificacion {
     box-shadow: 0px 1px 3px 3px #aaa;
 }
+/* END */
 
 /* MARQUEE */
 .marquee-container {
@@ -696,7 +716,6 @@
 }
 
 /*Buttons Soluciones Integrales */
-
 .button-tic {
     @apply size-[5.5rem] md:size-28 flex flex-col gap-1 justify-center items-center p-2 xs:p-2 md:p-3 rounded-full border border-borderminicard text-[8px] md:text-[10px] font-medium transition-colors duration-150 ease-in-out;
 }
@@ -886,43 +905,5 @@
         box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
     }
 }
-
-/* @keyframes pulse-border {
-    0% {
-        padding: 25px;
-        opacity: 0.75;
-    }
-    75% {
-        padding: 50px;
-        opacity: 0;
-    }
-    100% {
-        opacity: 0;
-    }
-} */
-
-/* .animate-marquee {
-    animation: marquee 28320ms linear infinite;
-}
-
-.animate-fade-in {
-    animation: fade-in .5s linear forwards;
-}
-
-@keyframes marquee {
-    100% {
-        transform: translateY(-50%);
-    }
-}
-
-@keyframes fade-in {
-    0% {
-        opacity: 0;
-    }
-
-    100% {
-        opacity: 1;
-    }
-} */
 
 /* EBD MARQUEE */

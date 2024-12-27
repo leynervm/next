@@ -26,11 +26,11 @@
             <form wire:submit.prevent="import" class="w-full flex flex-col justify-center items-center gap-2">
                 <label class="">
                     <x-icon-file-upload type="excel"
-                        class="w-24 h-24 p-3 {{ $file ? 'border-fondobutton text-colorsubtitleform shadow-fondobutton animate-pulse' : '' }}  text-colorsubtitleform cursor-pointer hover:border-fondobutton hover:text-fondobutton hover:shadow-fondobutton transition ease-in-out duration-150" />
+                        class="size-28 border {{ $file ? 'border-fondobutton text-primary animate-pulse' : '' }} cursor-pointer hover:text-fondobutton transition ease-in-out duration-150" />
                     <input type="file" class="hidden" wire:model="file" id="{{ $identificador }}"
                         accept=".xlsx, .csv" />
 
-                    <p class="text-[9px] mt-2 text-center leading-3 font-semibold tracking-widest">
+                    <p class="block w-full max-w-28 text-wrap text-[10px] mt-2 text-center leading-none font-semibold">
                         @if ($file)
                             ARCHIVO CARGADO CORRECTAMENTE
                         @else

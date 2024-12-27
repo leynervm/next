@@ -2,22 +2,22 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
-use App\Models\Empresa;
-use App\Models\Moneda;
 use App\Models\Producto;
-use Gloudemans\Shoppingcart\Facades\Cart;
+use CodersFree\Shoppingcart\Facades\Cart;
 use Livewire\Component;
 
 class AddWishlist extends Component
 {
 
-    public Empresa $empresa;
-    public Moneda $moneda;
+    public $empresa;
+    public $moneda;
     public Producto $producto;
     public $pricetype;
 
     public function mount($pricetype = null)
     {
+        $this->empresa = view()->shared('empresa');
+        $this->moneda = view()->shared('moneda');
         $this->pricetype = $pricetype;
     }
 
@@ -40,9 +40,9 @@ class AddWishlist extends Component
 
 
         $promocion = verifyPromocion($this->producto->promocions->first());
-        $combo = $this->producto->getAmountCombo($promocion, $this->pricetype);
+        $combo = getAmountCombo($promocion, $this->pricetype);
         $carshoopitems = (!is_null($combo) && count($combo->products) > 0) ? $combo->products : [];
-        $pricesale = $this->producto->obtenerPrecioVenta($this->pricetype ?? null);
+        $pricesale = $this->producto->getPrecioVentaDefault($this->pricetype ?? null);
 
         if ($promocion) {
             if ($promocion->limit > 0 && ($promocion->outs + $cantidad > $promocion->limit)) {

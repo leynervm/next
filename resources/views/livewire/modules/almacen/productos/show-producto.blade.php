@@ -5,7 +5,7 @@
                 <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                     <div class="w-full sm:col-span-2">
                         <x-label value="Nombre del producto :" />
-                        <x-input class="block w-full" wire:model.defer="producto.name" />
+                        <x-text-area class="block w-full" wire:model.defer="producto.name"></x-text-area>
                         <x-jet-input-error for="producto.name" />
                     </div>
 
@@ -130,11 +130,20 @@
                     </div> --}}
 
                     <div class="w-full">
-                        <x-label value="Stock Mínimo :" />
-                        <x-input class="block w-full" wire:model.defer="producto.minstock" type="number"
-                            step="1" min="0" />
+                        <x-label value="Stock mínimo :" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="producto.minstock"
+                            type="number" step="1" min="0" />
                         <x-jet-input-error for="producto.minstock" />
                     </div>
+
+                    @if (Module::isEnabled('Marketplace'))
+                        <div class="w-full">
+                            <x-label value="Límite de stock en tienda web :" />
+                            <x-input class="block w-full input-number-none" wire:model.defer="producto.maxstockweb"
+                                type="number" step="1" min="0" />
+                            <x-jet-input-error for="producto.maxstockweb" />
+                        </div>
+                    @endif
 
                     @if (Module::isEnabled('Almacen'))
                         <div class="w-full">

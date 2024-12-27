@@ -17,8 +17,7 @@
                                 <img src="{{ $item->model->getImageURL() }}" alt="{{ $item->model->getImageURL() }}"
                                     class="w-full h-full object-scale-down object-center">
                             @else
-                                <x-icon-file-upload class="!w-full !h-full !m-0 !border-0 text-colorsubtitleform"
-                                    type="unknown" />
+                                <x-icon-file-upload class="w-full h-full" type="unknown" />
                             @endif
                         </div>
                         <div class="w-full flex flex-col gap-1 flex-1 xs:h-full justify-between p-1 px-2">

@@ -57,7 +57,7 @@
                             <img id="editimage" class="object-scale-down block w-full h-full"
                                 src="{{ getMarcaURL($marca->image->url) }}" />
                         @else
-                            <x-icon-file-upload class="w-full h-full !my-0" />
+                            <x-icon-file-upload class="w-full h-full" />
                         @endif
                     </template>
                 </div>

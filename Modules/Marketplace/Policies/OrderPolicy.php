@@ -3,7 +3,6 @@
 namespace Modules\Marketplace\Policies;
 
 use App\Models\User;
-use Gloudemans\Shoppingcart\Facades\Cart;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Modules\Marketplace\Entities\Order;
 

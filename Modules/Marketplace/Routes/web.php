@@ -11,9 +11,11 @@
 |
 */
 
+use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Modules\Marketplace\Http\Controllers\AdminController;
 use Modules\Marketplace\Http\Controllers\ClaimbookController;
 use Modules\Marketplace\Http\Controllers\ContactController;
 use Modules\Marketplace\Http\Controllers\MarketplaceController;
@@ -31,6 +33,21 @@ Route::post('/completar-perfil/store', [UserController::class, 'storeprofilecomp
 
 Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile')
     ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+
+Route::post('/search-cliente', [ApiController::class, 'consultacliente'])->name('consultacliente')
+    ->middleware(['web']);
+
+
+// CART
+Route::post('marketplace/addproducto', [MarketplaceController::class, 'additemtocart'])->name('marketplace.addproducto')
+    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+Route::post('marketplace/updatecart', [MarketplaceController::class, 'updatecart'])->name('marketplace.updatecart')
+    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+Route::post('marketplace/updateqty', [MarketplaceController::class, 'updateqty'])->name('marketplace.updateqty')
+    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+Route::post('marketplace/deletecart', [MarketplaceController::class, 'deletecart'])->name('marketplace.deletecart')
+    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+
 
 
 
@@ -67,7 +84,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         ->middleware(['verifyproductocarshoop', 'verified', 'verifydatauser']);
 
     Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
-    Route::get('/orders/{order:purchase_number}/resumen', [MarketplaceController::class, 'payment'])->name('orders.payment');
+    Route::get('/orders/{order:purchase_number}/resumen', [MarketplaceController::class, 'resumenorder'])->name('orders.payment');
     // Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');
 
 
@@ -75,15 +92,15 @@ Route::middleware(['web', 'auth'])->group(function () {
     Route::post('/orders/niubiz/checkout', [NiubizController::class, 'checkout'])->name('orders.niubiz.checkout')->middleware(['verified']);
 
 
-    Route::get('/admin/productos/caracteristicas-especificaciones', [MarketplaceController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
+    Route::get('/admin/productos/caracteristicas-especificaciones', [AdminController::class, 'caracteristicas'])->name('admin.almacen.caracteristicas');
 
     Route::prefix('admin/marketplace')->middleware(['verifysucursal'])->name('admin.marketplace')->group(function () {
-        Route::get('/', [MarketplaceController::class, 'index']);
-        Route::get('/estados-seguimiento-pedido', [MarketplaceController::class, 'trackingstates'])->name('.trackingstates');
-        Route::get('/transacciones-web', [MarketplaceController::class, 'transacciones'])->name('.transacciones');
-        Route::get('/tipos-envio', [MarketplaceController::class, 'shipmenttypes'])->name('.shipmenttypes');
-        Route::get('/usuarios-web', [MarketplaceController::class, 'usersweb'])->name('.usersweb');
-        Route::get('/sliders', [MarketplaceController::class, 'sliders'])->name('.sliders');
+        Route::get('/', [AdminController::class, 'index']);
+        Route::get('/estados-seguimiento-pedido', [AdminController::class, 'trackingstates'])->name('.trackingstates');
+        Route::get('/transacciones-web', [AdminController::class, 'transacciones'])->name('.transacciones');
+        Route::get('/tipos-envio', [AdminController::class, 'shipmenttypes'])->name('.shipmenttypes');
+        Route::get('/usuarios-web', [AdminController::class, 'usersweb'])->name('.usersweb');
+        Route::get('/sliders', [AdminController::class, 'sliders'])->name('.sliders');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('.orders');
         Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('.orders.show');

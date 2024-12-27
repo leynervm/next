@@ -205,8 +205,8 @@
                                     : null;
                             $promocion = verifyPromocion($item->producto->promocions->first());
                             $descuento = getDscto($promocion);
-                            $combo = $item->producto->getAmountCombo($promocion, $pricetype);
-                            $pricesale = $item->producto->obtenerPrecioVenta($pricetype);
+                            $combo = getAmountCombo($promocion, $pricetype);
+                            $pricesale = $item->producto->getPrecioVentaDefault($pricetype);
                         @endphp
 
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" class="overflow-hidden">
@@ -517,7 +517,7 @@
                                     <div class="w-full">
                                         <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
                                         <x-input class="block w-full"
-                                            wire:model.debounce.500="almacens.{{ $key }}.cantidad"
+                                            wire:model.debounce.500ms="almacens.{{ $key }}.cantidad"
                                             x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
                                             onkeypress="return validarDecimal(event, 9)"
                                             wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
@@ -731,7 +731,7 @@
                                 <div class="w-full">
                                     <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
                                     <x-input class="block w-full"
-                                        wire:model.debounce.500="almacens.{{ $key }}.cantidad"
+                                        wire:model.debounce.500ms="almacens.{{ $key }}.cantidad"
                                         x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
                                         onkeypress="return validarDecimal(event, 9)"
                                         wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />

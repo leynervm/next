@@ -107,7 +107,7 @@
                                 <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
                                     src="{{ pathURLSlider($slider->url) }}" />
                             @else
-                                <x-icon-file-upload type="file" class="w-full h-full text-gray-300" />
+                                <x-icon-file-upload type="file" class="w-full h-full" />
                             @endif
                         @endif
                     </x-simple-card>
@@ -154,8 +154,7 @@
                                     <img class="w-full h-full object-scale-down animate__animated animate__fadeIn animate__faster"
                                         src="{{ pathURLSlider($slider->urlmobile) }}" />
                                 @else
-                                    <x-icon-file-upload type="file"
-                                        class="!w-full !h-full text-colorsubtitleform !border-0" />
+                                    <x-icon-file-upload type="file" class="w-full h-full" />
                                 @endif
                             </template>
                         </x-simple-card>

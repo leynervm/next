@@ -14,7 +14,7 @@
                             @if ($image)
                                 <img class="w-full h-full object-scale-down object-center" src="{{ $image }}" />
                             @else
-                                <x-icon-file-upload class="!w-full !h-full !m-0 !border-0" type="unknown" />
+                                <x-icon-file-upload class="w-full h-full" type="unknown" />
                             @endif
                         </div>
                         <div class="w-full flex-1">

@@ -32,13 +32,13 @@ class Client extends Model
     public function direccion(): MorphOne
     {
         return $this->morphOne(Direccion::class, 'direccionable')
-            ->orderBy('default', 'desc')->orderBy('id', 'desc');
+            ->orderByDesc('default')->orderBy('id', 'desc');
     }
 
     public function direccions(): MorphMany
     {
         return $this->morphMany(Direccion::class, 'direccionable')
-            ->orderBy('default', 'desc')->orderBy('id', 'desc');
+            ->orderByDesc('default')->orderBy('id', 'desc');
     }
 
     public function ventas(): HasMany

@@ -8,8 +8,8 @@
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 <div class="w-full xs:col-span-2 xl:col-span-3">
                     <x-label value="Nombre del producto :" />
-                    <x-input class="block w-full disabled:bg-gray-200" wire:model.defer="name"
-                        placeholder="Nombre del producto..." />
+                    <x-text-area class="block w-full disabled:bg-gray-200" wire:model.defer="name"
+                        placeholder="Nombre del producto..."></x-text-area>
                     <x-jet-input-error for="name" />
                 </div>
                 <div class="w-full">
@@ -233,7 +233,7 @@
                         @if (isset($imagen))
                             <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down ">
                         @else
-                            <x-icon-file-upload class="!w-full !h-full text-colorsubtitleform !border-none" />
+                            <x-icon-file-upload class="w-full h-full" />
                         @endif
                     </x-simple-card>
                     <p class="text-[10px] text-center text-colorsubtitleform">

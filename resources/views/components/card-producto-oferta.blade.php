@@ -5,8 +5,8 @@
     $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
     $promocion = verifyPromocion($producto->promocion);
     $descuento = getDscto($promocion);
-    $combo = $producto->getAmountCombo($promocion, $pricetype);
-    $pricesale = $producto->obtenerPrecioVenta($pricetype);
+    $combo = getAmountCombo($promocion, $pricetype);
+    $pricesale = $producto->getPrecioVentaDefault($pricetype);
 @endphp
 
 

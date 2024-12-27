@@ -275,5 +275,6 @@
     "Welcome" : "Bienvenido",
     "not found" : "No encontrado",
     "Shipping Addresses" : "Direcciones de envío",
-    "Update the shipping address for your purchases." : "Actualiza la dirección de envió de tus compras"
+    "Update the shipping address for your purchases." : "Actualiza la dirección de envió de tus compras",
+    "Add product to cart" : "Agregar producto al carrito"
 }

@@ -81,6 +81,11 @@ class Producto extends Model
     //     return $this->calcularPrecioVentaLista($pricetype_id, $descuento);
     // }
 
+    // public function getDescuento()
+    // {
+    //     return $this->promocions()->descuentos()->disponibles()->availables()->first();
+    // }
+
     public function setCodeAttribute($value)
     {
         $this->attributes['code'] = trim(mb_strtoupper($value, "UTF-8"));

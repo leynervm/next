@@ -2,6 +2,9 @@
 
 namespace App\Http\Livewire\Admin\Promociones;
 
+use App\Enums\PromocionesEnum;
+use App\Models\Combo;
+use App\Models\Itempromo;
 use App\Models\Producto;
 use App\Models\Promocion;
 use App\Rules\ValidatePrincipalCombo;
@@ -19,10 +22,12 @@ class CreatePromocion extends Component
     use AuthorizesRequests;
 
     public $open = false;
+    public $loadingalmacens = true;
     public $agotarstock = false;
 
     public $producto;
-    public $producto_id, $almacen_id, $type, $typecombo, $startdate, $expiredate;
+    public $producto_id, $almacen_id, $titulo, $type,
+        $typecombo, $startdate, $expiredate;
     public $limit;
 
     public $pricebuy;
@@ -36,6 +41,7 @@ class CreatePromocion extends Component
     protected function rules()
     {
         return [
+            'titulo' => ['required', 'string', 'min:6'],
             'producto_id' => [
                 'required',
                 'integer',
@@ -50,11 +56,6 @@ class CreatePromocion extends Component
             'type' => ['required', 'integer', 'min:0', 'max:2'],
             'itempromos' => ['required', 'array', 'min:1', new ValidateStockCombo($this->producto_id, $this->limit)],
         ];
-    }
-
-    public function mount()
-    {
-        // $this->productosec = new Producto();
     }
 
     public function render()
@@ -88,8 +89,8 @@ class CreatePromocion extends Component
             ->withWhereHas('almacens')->visibles()->orderByDesc('novedad')
             ->orderBy('subcategories.orden')->orderBy('categories.orden')->get();
 
-
-        return view('livewire.admin.promociones.create-promocion', compact('productos'));
+        $typepromociones = response()->json(PromocionesEnum::all())->getData();
+        return view('livewire.admin.promociones.create-promocion', compact('productos', 'typepromociones'));
     }
 
     public function updatingOpen()
@@ -99,26 +100,6 @@ class CreatePromocion extends Component
             $this->resetExcept(['open']);
             Session::forget('combo');
             $comboCollect = getCombo();
-
-            $comboitems = collect($comboCollect->get('comboitems') ?? []);
-            $newscomboitems = $comboitems->push([
-                'producto_id' => 34,
-                'name' => 'PRODUCTO GRATIS',
-                'category' => 'XXX',
-                'descuento' => null
-            ]);
-
-            // dd($newscomboitems->all());
-            // $comboCollect = $comboCollect->merge([
-            //     'comboitems' => $newscomboitems,
-            // ]);
-
-            // $comboCollect = $comboCollect->merge([
-            //     'comboitems' => [
-            //         ['producto_id' => 401],
-            //     ]
-            // ]);
-            // dd($comboCollect);
             $comboJSON = response()->json($comboCollect)->getData();
             Session::put('combo', $comboJSON);
             $this->resetValidation();
@@ -186,11 +167,14 @@ class CreatePromocion extends Component
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],
             'startdate' => ['nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')],
             'expiredate' => ['nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'), 'after_or_equal:startdate'],
-            'type' => ['required', 'integer', 'min:0', 'max:2'],
-            'descuento' => ['nullable', 'required_if:type,' . Promocion::DESCUENTO, 'numeric', 'min:0', 'gt:0', 'max:100', 'decimal:0,2'],
-        ], ['descuento.required_if' => 'El campo :attribute es obligatorio cuando la promoción es un descuento.'],);
+            'type' => ['required', 'integer', Rule::in(PromocionesEnum::values())],
+            'descuento' => ['nullable', Rule::requiredIf($this->type == Promocion::DESCUENTO), 'numeric', 'gt:0', 'max:100', 'decimal:0,2'],
+        ], [
+            'descuento.required_if' => 'El campo :attribute es obligatorio cuando la promoción es un descuento.'
+        ]);
 
         $promocion = [
+            'titulo' => $this->type != Promocion::COMBO ? null : $this->titulo,
             'producto_id' => $this->producto_id,
             'pricebuy' => $this->pricebuy,
             'limit' => $this->limit,
@@ -208,17 +192,17 @@ class CreatePromocion extends Component
             Session::put('combo', $comboJSON);
         } else {
             $promocion = Promocion::create($promocion);
-            $promocion->producto->load(['promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($subQuery) {
-                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
-                }])->availables()->disponibles()->take(1);
-            }]);
-            $promocion->producto->assignPrice();
+            // $promocion->producto->load(['promocions' => function ($query) {
+            //     $query->with(['itempromos.producto' => function ($subQuery) {
+            //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
+            //             $q->select('url')->from('images')
+            //                 ->whereColumn('images.imageable_id', 'productos.id')
+            //                 ->where('images.imageable_type', Producto::class)
+            //                 ->orderBy('default', 'desc')->limit(1);
+            //         }]);
+            //     }])->availables()->disponibles()->take(1);
+            // }]);
+            // $promocion->producto->assignPrice();
             $this->reset();
             $this->dispatchBrowserEvent('created');
             $this->emitTo('admin.promociones.show-promociones', 'render');
@@ -243,18 +227,18 @@ class CreatePromocion extends Component
                 ]);
             }
             DB::commit();
-            $promocion->producto->load(['promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($subQuery) {
-                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
-                }])->availables()->disponibles()->take(1);
-            }]);
+            // $promocion->producto->load(['promocions' => function ($query) {
+            //     $query->with(['itempromos.producto' => function ($subQuery) {
+            //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
+            //             $q->select('url')->from('images')
+            //                 ->whereColumn('images.imageable_id', 'productos.id')
+            //                 ->where('images.imageable_type', Producto::class)
+            //                 ->orderBy('default', 'desc')->limit(1);
+            //         }]);
+            //     }])->availables()->disponibles()->take(1);
+            // }]);
             // dd($promocion->producto);
-            $promocion->producto->assignPrice();
+            // $promocion->producto->assignPrice();
             $this->emitTo('admin.promociones.show-promociones', 'render');
             $this->resetValidation();
             $this->dispatchBrowserEvent('created');
@@ -288,6 +272,17 @@ class CreatePromocion extends Component
             ])->find($this->productosec_id)->stock;
         }
 
+        $comboCollect = getCombo();
+        $comboitems = collect($comboCollect->get('comboitems') ?? []);
+        $filtered = $comboitems->filter(function ($item) {
+            return $item->producto_id == $this->productosec_id;
+        });
+
+        if ($filtered->count() > 0) {
+            $this->addError('productosec_id', "El campo producto secudario ya existe en el combo.");
+            return false;
+        }
+
         $this->validate([
             'producto_id' => [
                 'required',
@@ -302,13 +297,15 @@ class CreatePromocion extends Component
                 'min:1',
                 'exists:productos,id',
                 'different:producto_id',
-                new ValidateSecondaryCombo()
+                // new ValidateSecondaryCombo()
             ],
             'limit' => ['nullable', Rule::requiredIf(!$this->agotarstock), 'numeric', 'min:1', 'max:' . $this->limitstock, 'decimal:0,2'],
             'limitstock' => ['required', 'numeric', 'min:0', 'gt:0'],
             'limitstocksec' => ['required', 'numeric', 'min:0', 'gt:0'],
-            'typecombo' => ['required', 'numeric', 'integer', 'min:0', 'max:2'],
-            'descuento' => ['nullable', 'required_if:typecombo,1', 'numeric', 'min:1', 'max:100', 'decimal:0,2']
+            'typecombo' => ['required', 'numeric', 'integer', 'min:0', 'max:3'],
+            'descuento' => ['nullable', Rule::requiredIf($this->typecombo == Itempromo::DESCUENTO), 'numeric', 'gt:0', 'max:100', 'decimal:0,2']
+        ], [
+            'descuento.required_if' => 'El campo :attribute es obligatorio cuando la promoción es un descuento.'
         ]);
 
         if ($this->limit > 0) {
@@ -321,18 +318,6 @@ class CreatePromocion extends Component
                 $this->addError('productosec_id', 'Stock del producto no disponible [' . $stockitem . ' UND].');
                 return false;
             }
-        }
-
-        // $producto = Producto::with('category')->find($this->productosec_id);
-        $comboCollect = getCombo();
-        $comboitems = collect($comboCollect->get('comboitems') ?? []);
-        $filtered = $comboitems->filter(function ($item) {
-            return $item->producto_id == $this->productosec_id;
-        });
-
-        if ($filtered->count() > 0) {
-            $this->addError('productosec_id', 'Producto ya se encuentra agregado.');
-            return false;
         }
 
         $newscomboitems = $comboitems->push([
@@ -373,7 +358,7 @@ class CreatePromocion extends Component
         Session::put('combo', $comboJSON);
     }
 
-    public function  cancelcombo()
+    public function cancelcombo()
     {
         $this->authorize('admin.promociones.create');
         Session::forget('combo');

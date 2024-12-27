@@ -25,9 +25,27 @@
 
             @if (isset($promocion))
                 <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
+                    <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
+                        @if ($empresa->isTitlePromocion())
+                            PROMOCIÓN
+                        @elseif($empresa->isTitleLiquidacion())
+                            LIQUIDACIÓN
+                        @else
+                            @if ($promocion->isDescuento())
+                                - {{ decimalOrInteger($promocion->descuento) }}% DSCT
+                            @elseif ($promocion->isCombo())
+                                OFERTA
+                            @else
+                                LIQUIDACIÓN
+                            @endif
+                        @endif
+                    </p>
+                </div>
+
+                {{-- <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
                     <p class=" text-white text-[8px] inline-block font-semibold p-1 px-10">
                         PROMOCIÓN</p>
-                </div>
+                </div> --}}
             @endif
         </div>
 
@@ -60,11 +78,18 @@
         </div>
     </div>
 
-    @if (isset($footer))
-        <div class="w-full flex flex-col gap-0.5 p-1 mt-1">
-            <div class="w-full flex items-end gap-1 justify-between">
-                {{ $footer }}
-            </div>
+    @if (isset($footer) || isset($buttoncombos) || isset($messages))
+        <div class="w-full flex flex-col gap-1 p-1 mt-1">
+            @if (isset($buttoncombos))
+                {{ $buttoncombos }}
+            @endif
+
+            @if (isset($footer))
+                <div class="w-full flex items-end gap-1 justify-between">
+                    {{ $footer }}
+                </div>
+            @endif
+
             @if (isset($messages))
                 {{ $messages }}
             @endif

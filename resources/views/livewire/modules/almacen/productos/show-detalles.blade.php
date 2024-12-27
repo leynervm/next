@@ -193,7 +193,7 @@
                             <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down">
                         </x-simple-card>
                     @else
-                        <x-icon-file-upload class="w-full h-80 text-gray-300" />
+                        <x-icon-file-upload class="w-full h-80" />
                     @endif
 
                     <div class="w-full flex flex-wrap gap-2 justify-center">

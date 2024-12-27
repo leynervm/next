@@ -1,90 +1,92 @@
-<div {{ $attributes->merge() }}
-    style="z-index: 999999;background-color:rgba(255,255,255);background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,255,255,0.75) 100%); position: fixed;top: 0;left: 0; width: 100%;height: 100vh;display: flex;flex-direction:column;justify-content: center;align-items: center;">
+<div {{ $attributes->merge(['class' => '']) }}>
     <style>
-        @keyframes spin3D {
-            from {
-                transform: rotate3d(.5, .5, .5, 360deg);
-            }
-
-            to {
-                transform: rotate3d(0deg);
-            }
+        .preloader {
+            /* display: none; */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            background-color: rgba(255, 255, 255);
+            background: radial-gradient(circle, rgba(255, 255, 255, .7) 0%, rgba(255, 255, 255, 0.75) 100%);
         }
 
-        .spinner-box {
-            width: 300px;
-            height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: transparent;
-            margin: auto;
-        }
-
-        .leo {
-            position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 50%;
-        }
-
-        .blue-orbit {
-            width: 165px;
-            height: 165px;
-            border: 1px solid #91daff;
-            -webkit-animation: spin3D 3s linear .2s infinite;
-        }
-
-        .green-orbit {
+        .loader {
+            display: block;
+            position: relative;
+            top: 50%;
+            left: 50%;
+            transform: translateX(-50%);
+            transform: translateY(-50%);
             width: 120px;
             height: 120px;
-            border: 1px solid #0fb9b9;
-            -webkit-animation: spin3D 2s linear 0s infinite;
+            margin: -75px 0 0 -75px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            /* opacity: 75%; */
+            border-top-color: #0fb9b9;
+            -webkit-animation: spin 2s linear infinite;
+            animation: spin 2s linear infinite;
         }
 
-        .red-orbit {
-            width: 90px;
-            height: 90px;
-            border: 1px solid #0fb9b9;
-            -webkit-animation: spin3D 1s linear 0s infinite;
+        .loader:before {
+            content: "";
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #6e6e6e;
+            -webkit-animation: spin 3s linear infinite;
+            animation: spin 3s linear infinite;
         }
 
-        .white-orbit {
-            width: 60px;
-            height: 60px;
-            border: 2px solid #c5c5c5;
-            -webkit-animation: spin3D 5s linear 0s infinite;
+        .loader:after {
+            content: "";
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #0fb9b9;
+            -webkit-animation: spin 1.5s linear infinite;
+            animation: spin 1.5s linear infinite;
         }
 
-        .w1 {
-            transform: rotate3D(1, 1, 1, 90deg);
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+
+            100% {
+                -webkit-transform: rotate(360deg);
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
         }
 
-        .w2 {
-            transform: rotate3D(1, 2, .5, 90deg);
-        }
+        @keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
 
-        .w3 {
-            transform: rotate3D(.5, 1, 2, 90deg);
+            100% {
+                -webkit-transform: rotate(360deg);
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
         }
     </style>
-
-    <div class="spinner-box">
-        <div class="blue-orbit leo">
-        </div>
-        <div class="green-orbit leo">
-        </div>
-        <div class="red-orbit leo">
-        </div>
-        <div class="white-orbit w1 leo">
-        </div>
-        <div class="white-orbit w2 leo">
-        </div>
-        <div class="white-orbit w3 leo">
-        </div>
+    <div class="preloader">
+        <div class="loader"></div>
     </div>
-
-    {{-- <p class="animate-pulse text-[8px] leading-3 font-semibold tracking-widest text-next-500">
-        CARGANDO...</p> --}}
 </div>

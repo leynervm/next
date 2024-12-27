@@ -42,6 +42,11 @@ module.exports = {
                 fondohoverbuttonclose: "var(--fondo-hover-button-close)",
                 ringbuttonclose: "var(--ring-button-close)",
 
+                colorbuttonincrement: "var(--color-button-increment)",
+                fondobuttonincrement: "var(--fondo-button-increment)",
+                colorhoverbuttonincrement: "var(--color-hover-button-increment)",
+                fondohoverbuttonincrement: "var(--fondo-hover-button-increment)",
+                ringbuttonincrement: "var(--ring-button-increment)",
 
                 colorbutton: "var(--color-button)",
                 fondobutton: "var(--fondo-button)",

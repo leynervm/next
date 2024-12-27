@@ -439,7 +439,7 @@
                                 {{ $item->item }}
                             </td>
                             <td class="p-2 align-middle text-start leading-3">
-                                {{ $item->descripcion }}</td>
+                                {!! nl2br($item->descripcion) !!}</td>
                             <td class="p-2 text-center" style="width: 70px;">
                                 {{ decimalOrInteger($item->cantidad) }} {{ $item->unit }}</td>
                             <td class="p-2 text-center" style="width: 70px;">

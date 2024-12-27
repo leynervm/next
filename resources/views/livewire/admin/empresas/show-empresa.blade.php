@@ -200,7 +200,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
                             @endif
                         @endif
                     </x-simple-card>
@@ -281,7 +280,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
                             @endif
                         @endif
                     </x-simple-card>
@@ -374,7 +372,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
                             @endif
                         </template>
                     </x-simple-card>
@@ -449,7 +446,6 @@
                                         <div class="w-full p-0.5 bg-gray-400 mt-1 rounded"></div>
                                     </div>
                                 </div>
-                                {{-- <x-icon-file-upload class="!w-full !h-full !border-0 text-colorsubtitleform" /> --}}
                             @endif
                         </template>
                     </x-simple-card>
@@ -717,7 +713,7 @@
                                                         class="object-scale-down block w-full max-w-full h-full"
                                                         src="{{ $empresa->getMarkAguaURL() }}" />
                                                 @else
-                                                    <x-icon-file-upload class="w-full h-full !border-none !my-0" />
+                                                    <x-icon-file-upload class="w-full h-full" />
                                                 @endif
                                             </template>
                                         </x-simple-card>

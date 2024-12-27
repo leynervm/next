@@ -21,9 +21,24 @@ class Carshoop extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'date', 'cantidad', 'pricebuy', 'price',  'igv', 'alterstock', 'promocion_id',
-        'subtotal', 'total', 'gratuito', 'status', 'producto_id', 'almacen_id',
-        'moneda_id', 'user_id', 'sucursal_id', 'cartable_id', 'cartable_type'
+        'date',
+        'cantidad',
+        'pricebuy',
+        'price',
+        'igv',
+        'alterstock',
+        'promocion_id',
+        'subtotal',
+        'total',
+        'gratuito',
+        'status',
+        'producto_id',
+        'almacen_id',
+        'moneda_id',
+        'user_id',
+        'sucursal_id',
+        'cartable_id',
+        'cartable_type'
     ];
 
     public function cartable(): MorphTo
@@ -66,5 +81,16 @@ class Carshoop extends Model
         return $query->where('cartable_type', Venta::class);
     }
 
-    
+    public function scopeExistsInCartVenta($query, $productoId, $almacenId, $monedaId, $promocionId)
+    {
+        return $query->where('producto_id', $productoId)
+            ->where('almacen_id', $almacenId)
+            ->where('moneda_id', $monedaId)
+            ->where('promocion_id', $promocionId)
+            ->where('gratuito', Tvitem::NO_GRATUITO)
+            ->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)
+            ->where('alterstock', Almacen::DISMINUIR_STOCK)
+            ->where('cartable_type', Venta::class);
+    }
 }

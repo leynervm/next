@@ -3,11 +3,11 @@
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
 use App\Enums\MovimientosEnum;
+use App\Enums\PromocionesEnum;
 use App\Helpers\GetClient;
 use App\Models\Category;
 use App\Models\Moneda;
 use App\Models\Serie;
-use App\Rules\ValidateStock;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -42,7 +42,7 @@ class CreateVenta extends Component
     use WithPagination;
 
     public $empresa, $sucursal, $pricetype, $moneda, $producto;
-    public $open, $istransferencia = false;
+    public $open, $istransferencia = false, $opencombos = false;
     public $disponibles = 1;
     public $producto_id, $serie_id, $almacen_id, $pricetype_id;
 
@@ -66,7 +66,7 @@ class CreateVenta extends Component
     public $typepayment, $modalidadtransporte, $motivotraslado;
     public $cotizacion_id, $client_id, $direccion_id, $mensaje;
     public $moneda_id, $monthbox, $openbox, $methodpayment_id, $typepayment_id, $detallepago, $concept;
-    public $typecomprobante, $typecomprobante_id, $seriecomprobante_id, $tribute_id;
+    public $typecomprobante, $typecomprobante_id, $seriecomprobante_id, $observaciones;
     public $document = '', $name, $direccion, $pricetypeasigned;
 
     public $serieguia_id, $ructransport, $nametransport,
@@ -237,7 +237,8 @@ class CreateVenta extends Component
     protected $validationAttributes = [
         'items' => 'carrito de ventas',
         'document' => 'dni / ruc',
-        'searchgre' =>  'serie guía remisión'
+        'searchgre' =>  'serie guía remisión',
+        'cart.*.serie_id' =>  'serie'
     ];
 
 
@@ -311,10 +312,10 @@ class CreateVenta extends Component
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
+                    ->orderByDesc('default')->limit(1);
             }])->with([
                 'unit',
-                'garantiaproductos.typegarantia',
+                // 'garantiaproductos.typegarantia',
                 'seriesdisponibles' => function ($query) {
                     $query->with(['almacen']);
                 },
@@ -324,7 +325,7 @@ class CreateVenta extends Component
                             $q->select('url')->from('images')
                                 ->whereColumn('images.imageable_id', 'productos.id')
                                 ->where('images.imageable_type', Producto::class)
-                                ->orderBy('default', 'desc')->limit(1);
+                                ->orderByDesc('default')->limit(1);
                         }]);
                     }])->availables()->disponibles();
                 }
@@ -334,7 +335,8 @@ class CreateVenta extends Component
                     $query->where('cantidad', '>', 0);
                 }
             })->withCount(['almacens as stock' => function ($query) {
-                $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+                $query->whereIn('almacen_id', $this->sucursal->almacens->pluck('id'))
+                    ->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
             }]);
 
         if (trim($this->search) !== '') {
@@ -367,7 +369,8 @@ class CreateVenta extends Component
         $productos = $productos->visibles()->orderBy('novedad', 'desc')->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->paginate(20)
             ->through(function ($producto) {
-                $producto->promocion = $producto->promocions->first();
+                $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
                 return $producto;
             });
 
@@ -396,10 +399,24 @@ class CreateVenta extends Component
 
         // $typecomprobantes = $typecomprobantes->orderBy('code', 'asc')->get();
         $comprobantesguia = $comprobantesguia->orderBy('code', 'asc')->get();
-        $carshoops = Carshoop::with(['carshoopitems.producto.almacens', 'carshoopseries.serie', 'producto', 'almacen', 'promocion' => function ($query) {
-            $query->with('itempromos.producto');
+        $carshoops = Carshoop::with(['almacen', 'promocion', 'carshoopitems.producto' => function ($query) {
+            $query->addSelect(['image' => function ($q) {
+                $q->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderByDesc('default')->limit(1);
+            }]);
+        }, 'producto' => function ($query) {
+            $query->addSelect(['image' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderByDesc('default')->limit(1);
+            }]);
+        }, 'carshoopseries.serie' => function ($query) {
+            $query->orderByDesc('dateout');
         }])->ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)
-            ->orderBy('id', 'asc')->paginate();
+            ->orderBy('id', 'asc')->paginate(15, ['*'], 'carshoopPage');
 
         if ($this->empresa->usepricedolar) {
             $monedas = Moneda::orderBy('currency', 'asc')->get();
@@ -439,506 +456,6 @@ class CreateVenta extends Component
         $this->resetValidation();
         $this->pricetype = Pricetype::find($value);
         $this->updatecartpricelist($this->pricetype);
-    }
-
-    public function getProductoBySerie()
-    {
-
-        $this->resetValidation();
-        $this->searchserie = trim(mb_strtoupper($this->searchserie, "UTF-8"));
-        $this->validate([
-            'searchserie' => ['required', 'string', 'min:4'],
-            'moneda.id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
-        ]);
-
-        $cantidad = 1;
-        $existskardex = false;
-        $date = now('America/Lima');
-        $promocion_id = null;
-        $carshoopitems = collect([]);
-
-        DB::beginTransaction();
-        try {
-            $serie = Serie::with(['almacen', 'producto' => function ($query) {
-                $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'unit_id')
-                    ->with(['unit', 'promocions' => function ($subQuery) {
-                        $subQuery->with(['itempromos.producto' => function ($q) {
-                            $q->with('unit');
-                        }])->availables()->disponibles()->take(1);
-                    }])->visibles();
-            }])->disponibles()->whereRaw('UPPER(serie) = ?', $this->searchserie)
-                ->whereIn('almacen_id', $this->sucursal->almacens->pluck('id'))->first();
-
-            if (empty($serie)) {
-                $mensaje =  response()->json([
-                    'title' => "SERIE $this->searchserie NO SE ENCUENTRA DISPONIBLE !",
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-
-            // if (Carshoopserie::where('serie_id', $serie->id)->exists()) {
-            //     $mensaje =  response()->json([
-            //         'title' => 'SERIE YA SE ENCUENTRA REGISTRADO EN EL CARRITO !',
-            //         'text' => null
-            //     ])->getData();
-            //     $this->dispatchBrowserEvent('validation', $mensaje);
-            //     return false;
-            // }
-
-            if ($serie->isDisponible()) {
-                $serie->status = Serie::SALIDA;
-                $serie->dateout = $date;
-                $serie->save();
-            } else {
-                $mensaje =  response()->json([
-                    'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-            $stock = $serie->producto->almacens->find($serie->almacen_id)->pivot->cantidad;
-
-            if ($stock && $stock > 0) {
-                if (($stock - $cantidad) < 0) {
-                    $mensaje =  response()->json([
-                        'title' => 'CANTIDAD SUPERA EL STOCK DISPONIBLE DEL PRODUCTO !',
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-            }
-
-            $promocion = verifyPromocion($serie->producto->promocions->first());
-            $combo = $serie->producto->getAmountCombo($promocion, $this->pricetype ?? null, $this->almacen_id);
-            $pricesale = $serie->producto->obtenerPrecioVenta($this->pricetype ?? null);
-
-            if ($this->moneda->isDolar()) {
-                $pricesale = convertMoneda($pricesale, 'USD', $this->empresa->tipocambio, 2);
-            } else {
-                $pricesale = decimalOrInteger($pricesale, 2);
-            }
-
-            if ($promocion) {
-                if ($promocion->limit > 0 && $cantidad + $promocion->outs > $promocion->limit) {
-                    $mensaje =  response()->json([
-                        'title' => "CANTIDAD SOBREPASA EL STOCK DEL PRODUCTO EN PROMOCIÓN !",
-                        'text' => "La cantidad sobrepasa el límite de unidades en promoción del producto [" . $promocion->limit - $promocion->outs . " " . $promocion->producto->unit->name . " DISPONIBLES]."
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-
-                if ($promocion->limit > 0 && $promocion->outs >= $promocion->limit) {
-                    $mensaje =  response()->json([
-                        'title' => "STOCK DEL PRODUCTO EN PROMOCIÓN AGOTADO !",
-                        'text' => "Límite de unidades en promoción del producto agotado."
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-
-                if ($combo) {
-                    if (count($combo->products) > 0) {
-                        foreach ($combo->products as $itemcombo) {
-                            if (($itemcombo->stock - $cantidad) < 0) {
-                                $mensaje =  response()->json([
-                                    'title' => "CANTIDAD DEL PRODUCTO EN COMBO SUPERA EL STOCK DISPONIBLE EN ALMACÉN !",
-                                    'text' => "La cantidad del producto $itemcombo->name ,supera stock disponible en almacén seleccionado."
-                                ])->getData();
-                                $this->dispatchBrowserEvent('validation', $mensaje);
-                                return false;
-                            }
-
-                            $carshoopitems->push([
-                                'date' => now('America/Lima'),
-                                'pricebuy' => $itemcombo->pricebuy,
-                                // 'price' => $itemcombo->price,
-                                'price' => 0,
-                                'igv' => 0,
-                                'stock' => $itemcombo->stock,
-                                'newstock' => $itemcombo->stock - $cantidad,
-                                'producto_id' => $itemcombo->producto_id
-                            ]);
-
-                            Producto::find($itemcombo->producto_id)->almacens()->updateExistingPivot($this->almacen_id, [
-                                'cantidad' => $itemcombo->stock - $cantidad,
-                            ]);
-                        }
-                    }
-                }
-
-                $promocion_id = $promocion->id;
-                $promocion->outs = $promocion->outs + $cantidad;
-                $promocion->save();
-                if ($promocion->limit ==  $promocion->outs) {
-                    $serie->producto->assignPrice($promocion);
-                }
-            }
-
-            $pricesaleNew = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->price : $pricesale;
-            $igvsale = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->igv : 0;
-            $existsInCart = Carshoop::where('producto_id', $serie->producto_id)
-                ->where('almacen_id', $serie->almacen_id)
-                ->where('moneda_id', $this->moneda->id)
-                ->where('gratuito', '0')
-                ->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)
-                ->where('alterstock', Almacen::DISMINUIR_STOCK)
-                ->where('promocion_id', $promocion_id)
-                ->where('cartable_type', Venta::class);
-
-            if ($existsInCart->exists()) {
-                $carshoop = $existsInCart->first();
-                $carshoop->cantidad = $carshoop->cantidad + $cantidad;
-                $carshoop->pricebuy = $serie->producto->pricebuy;
-                $carshoop->price = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->price : $pricesale;
-                $carshoop->igv = $this->empresa->isAfectacionIGV() ? getPriceIGV($pricesale, $this->empresa->igv)->igv : 0;
-                $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
-                $carshoop->total = $pricesale * $carshoop->cantidad;
-                $carshoop->save();
-
-                if ($carshoop->kardex) {
-                    $existskardex = true;
-                    $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
-                    $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
-                    $carshoop->kardex->save();
-                }
-
-                if ($carshoopitems->count() > 0) {
-                    if (count($carshoop->carshoopitems) == 0) {
-                        foreach ($carshoopitems as $itemcombo) {
-                            $carshoop->carshoopitems()->create([
-                                'pricebuy' => $itemcombo["pricebuy"],
-                                // 'price' => $itemcombo["price"],
-                                // 'igv' => $itemcombo["igv"],
-                                'price' => 0,
-                                'igv' => 0,
-                                'producto_id' => $itemcombo["producto_id"]
-                            ]);
-                        }
-                    }
-                }
-            } else {
-                $carshoop = Carshoop::create([
-                    'date' => $date,
-                    'cantidad' => $cantidad,
-                    'pricebuy' => $serie->producto->pricebuy,
-                    'price' => $pricesaleNew,
-                    'igv' => $igvsale,
-                    'subtotal' => $pricesaleNew * $cantidad,
-                    'total' => $pricesale * $cantidad,
-                    'gratuito' => 0,
-                    'status' => 0,
-                    'promocion_id' => $promocion_id,
-                    'producto_id' => $serie->producto_id,
-                    'almacen_id' => $serie->almacen_id,
-                    'moneda_id' => $this->moneda->id,
-                    'user_id' => auth()->user()->id,
-                    'sucursal_id' => $this->sucursal->id,
-                    'alterstock' => Almacen::DISMINUIR_STOCK,
-                    'cartable_type' => Venta::class,
-                ]);
-
-                if ($carshoopitems->count() > 0) {
-                    foreach ($carshoopitems as $itemcombo) {
-                        $carshoop->carshoopitems()->create([
-                            'pricebuy' => $itemcombo["pricebuy"],
-                            // 'price' => $itemcombo["price"],
-                            // 'igv' => $itemcombo["igv"],
-                            'price' => 0,
-                            'igv' => 0,
-                            'producto_id' => $itemcombo["producto_id"]
-                        ]);
-                    }
-                }
-            }
-
-            $carshoop->carshoopseries()->create([
-                'date' =>  $date,
-                'serie_id' => $serie->id,
-                'user_id' => auth()->user()->id
-            ]);
-
-            if (!$existskardex) {
-                $carshoop->saveKardexOutCarshoop($stock, $promocion_id);
-            }
-
-            $carshoop->updateStockAlmacen($stock, $cantidad);
-            DB::commit();
-            $this->reset(['searchserie']);
-            $this->resetValidation();
-            $datos =  response()->json(['mensaje' => 'AGREGADO CORRECTAMENTE', 'form_id' => NULL])->getData();
-            $this->dispatchBrowserEvent('show-resumen-venta', $datos);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    public function addtocar(Producto $producto, $cart, $serie_id = null, $seriealmacen_id = null)
-    {
-
-        $this->resetValidation();
-        $this->cart[$producto->id] = $cart;
-        if (!empty($seriealmacen_id)) {
-            $this->cart[$producto->id]["almacen_id"] = $seriealmacen_id;
-        }
-
-        $producto->load(['unit', 'promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
-                }]);
-            }])->availables()->disponibles()->take(1);
-        }]);
-
-        $validatedCart = $this->validate([
-            "cart.$producto->id.price" => ['required', 'numeric', 'decimal:0,4', 'gt:0'],
-            "cart.$producto->id.almacen_id" => ($producto->isRequiredserie() && empty($this->cart[$producto->id]['serie_id'])) ? [] : ['required', 'integer', 'min:1', 'exists:almacens,id', $producto->isRequiredserie() ? '' : new ValidateStock($producto->id, $this->cart[$producto->id]["almacen_id"])],
-            "cart.$producto->id.cantidad" => ['required', 'numeric', 'min:1', 'integer', empty($this->cart[$producto->id]['almacen_id']) ? '' : new ValidateStock($producto->id, $this->cart[$producto->id]["almacen_id"], $this->cart[$producto->id]["cantidad"])],
-            // "cart.$producto->id.serie" => ['nullable', Rule::requiredIf($producto->isRequiredserie()), 'string', 'min:4'],
-            "cart.$producto->id.serie_id" => ['nullable', Rule::requiredIf($producto->isRequiredserie()), 'integer', 'min:1', 'exists:series,id'],
-            "moneda.id" => ['required', 'integer', 'min:1', 'exists:monedas,id'],
-        ], [], [
-            "cart.$producto->id.price" => 'precio',
-            "cart.$producto->id.almacen_id" => 'almacen',
-            "cart.$producto->id.cantidad" => 'cantidad',
-            "cart.$producto->id.serie" => 'serie',
-            "cart.$producto->id.serie_id" => 'serie',
-        ]);
-
-        $price = $this->cart[$producto->id]['price'];
-        $cantidad = $this->cart[$producto->id]['cantidad'];
-        $almacen_id = $this->cart[$producto->id]['almacen_id'];
-        $serie_id = $this->cart[$producto->id]['serie_id'];
-        $promocion_id = null;
-        $carshoopitems = collect([]);
-        $carshoopserie = [];
-        // dd($validatedCart);
-        DB::beginTransaction();
-        try {
-            if (!empty($serie_id)) {
-                // if (Carshoopserie::where('serie_id', $serie_id)->exists()) {
-                //     $mensaje =  response()->json([
-                //         'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN EL CARRITO !',
-                //         'text' => null
-                //     ])->getData();
-                //     $this->dispatchBrowserEvent('validation', $mensaje);
-                //     return false;
-                // }
-
-                $serie = Serie::find($serie_id);
-                if ($serie->isDisponible()) {
-                    $serie->status = Serie::SALIDA;
-                    $serie->dateout = now('America/Lima');
-                    $serie->save();
-                    $carshoopserie = [
-                        'date' =>  now('America/Lima'),
-                        'serie_id' => $serie->id,
-                        'user_id' => auth()->user()->id
-                    ];
-                } else {
-                    $mensaje =  response()->json([
-                        'title' => "SERIE $serie->serie NO SE ENCUENTRA DISPONIBLE !",
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-            }
-
-
-            $stock = $producto->almacens->find($almacen_id)->pivot->cantidad;
-            $promocion = verifyPromocion($producto->promocions->first());
-            $combo = $producto->getAmountCombo($promocion, $this->pricetype ?? null, $almacen_id);
-
-            if ($stock && $stock > 0) {
-                if (($stock - $cantidad) < 0) {
-                    $mensaje =  response()->json([
-                        'title' => 'CANTIDAD SUPERA EL STOCK DISPONIBLE DEL PRODUCTO !',
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-            } else {
-                $mensaje =  response()->json([
-                    'title' => 'STOCK DEL PRODUCTO EN ALMACÉN AGOTADO !',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-
-            if ($promocion) {
-                if ($promocion->limit > 0 && ($promocion->outs + $cantidad) > $promocion->limit) {
-                    $mensaje =  response()->json([
-                        'title' => "CANTIDAD SUPERA STOCK DISPONIBLE EN PROMOCIÓN [" . $promocion->limit - $promocion->outs . " " . $producto->unit->name . "] DISPONIBLES",
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-
-                if ($promocion->limit > 0 && $promocion->outs >= $promocion->limit) {
-                    $mensaje =  response()->json([
-                        'title' => "STOCK DEL PRODUCTO EN PROMOCIÓN AGOTADO !",
-                        'text' => "Límite de unidades en promoción del producto agotado."
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-
-                if ($combo) {
-                    if (count($combo->products) > 0) {
-                        foreach ($combo->products as $itemcombo) {
-                            if (($itemcombo->stock - $cantidad) < 0) {
-                                $mensaje =  response()->json([
-                                    'title' => "CANTIDAD DEL PRODUCTO EN COMBO SUPERA EL STOCK DISPONIBLE EN ALMACÉN !",
-                                    'text' => "La cantidad del producto $itemcombo->name ,supera stock disponible en almacén seleccionado."
-                                ])->getData();
-                                $this->dispatchBrowserEvent('validation', $mensaje);
-                                return false;
-                            }
-
-                            $carshoopitems->push([
-                                'date' => now('America/Lima'),
-                                'pricebuy' => $itemcombo->pricebuy,
-                                'price' => $itemcombo->price,
-                                'stock' => $itemcombo->stock,
-                                'newstock' => $itemcombo->stock - $cantidad,
-                                'producto_id' => $itemcombo->producto_id
-                            ]);
-
-                            Producto::find($itemcombo->producto_id)->almacens()->updateExistingPivot($almacen_id, [
-                                'cantidad' => $itemcombo->stock - $cantidad,
-                            ]);
-                        }
-                    }
-                }
-
-                $promocion_id = $promocion->id;
-                $promocion->outs = $promocion->outs + $cantidad;
-                $promocion->save();
-                if ($promocion->limit == $promocion->outs) {
-                    $producto->assignPrice($promocion);
-                }
-            }
-
-            $existskardex = false;
-            $date = now('America/Lima');
-            $pricesale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->price : $price;
-            $igvsale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->igv : 0;
-            $existsInCart = Carshoop::where('producto_id', $producto->id)
-                ->where('almacen_id', $almacen_id)
-                ->where('moneda_id', $this->moneda->id)
-                ->where('promocion_id', $promocion_id)
-                ->where('gratuito', '0')
-                ->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)
-                ->where('alterstock', Almacen::DISMINUIR_STOCK)
-                ->where('cartable_type', Venta::class);
-
-
-
-            if ($existsInCart->exists()) {
-                $carshoop = $existsInCart->first();
-                $carshoop->cantidad = $carshoop->cantidad + $cantidad;
-                $carshoop->pricebuy = $producto->pricebuy;
-                $carshoop->price = $pricesale;
-                $carshoop->igv = $igvsale;
-                $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
-                $carshoop->total = $price * $carshoop->cantidad;
-                $carshoop->save();
-
-                if ($carshoop->kardex) {
-                    $existskardex = true;
-                    $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
-                    $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
-                    $carshoop->kardex->save();
-                }
-
-                if ($carshoopitems->count() > 0) {
-                    if (count($carshoop->carshoopitems) == 0) {
-                        foreach ($carshoopitems as $itemcombo) {
-                            $carshoop->carshoopitems()->create([
-                                'pricebuy' => $itemcombo["pricebuy"],
-                                // 'price' => $itemcombo["price"],
-                                'price' => 0,
-                                'producto_id' => $itemcombo["producto_id"]
-                            ]);
-                        }
-                    }
-                }
-            } else {
-                $carshoop = Carshoop::create([
-                    'date' => $date,
-                    'cantidad' => $cantidad,
-                    'pricebuy' => $producto->pricebuy,
-                    'price' => $pricesale,
-                    'igv' => $igvsale,
-                    'subtotal' => $pricesale * $cantidad,
-                    'total' => $price * $cantidad,
-                    'gratuito' => 0,
-                    'status' => 0,
-                    'producto_id' => $producto->id,
-                    'almacen_id' => $almacen_id,
-                    'moneda_id' => $this->moneda->id,
-                    'user_id' => auth()->user()->id,
-                    'sucursal_id' => $this->sucursal->id,
-                    'alterstock' => Almacen::DISMINUIR_STOCK,
-                    'promocion_id' => $promocion_id,
-                    'cartable_type' => Venta::class,
-                ]);
-
-                if ($carshoopitems->count() > 0) {
-                    foreach ($carshoopitems as $itemcombo) {
-                        $carshoop->carshoopitems()->create([
-                            'pricebuy' => $itemcombo["pricebuy"],
-                            // 'price' => $itemcombo["price"],
-                            'price' => 0,
-                            'igv' => 0,
-                            'producto_id' => $itemcombo["producto_id"]
-                        ]);
-                    }
-                }
-            }
-
-            if (!$existskardex) {
-                $carshoop->saveKardexOutCarshoop($stock, $promocion_id);
-            }
-
-            if (count($carshoopserie) > 0) {
-                $carshoop->carshoopseries()->create($carshoopserie);
-            }
-
-            $carshoop->updateStockAlmacen($stock, $cantidad);
-            $this->setTotal();
-            // $producto->almacens()->updateExistingPivot($almacen_id, [
-            //     'cantidad' => $stock - $cantidad,
-            // ]);
-            DB::commit();
-            $this->reset(['searchserie']);
-            $this->resetValidation();
-            $datos =  response()->json(['mensaje' => 'AGREGADO CORRECTAMENTE', 'form_id' => $producto->id])->getData();
-            $this->dispatchBrowserEvent('show-resumen-venta', $datos);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
     }
 
     public function limpiarcliente()
@@ -999,6 +516,7 @@ class CreateVenta extends Component
     public function setTotal()
     {
 
+        $this->resetValidation();
         $results = Carshoop::select(
             DB::raw("COALESCE(SUM(subtotal),0) as subtotal"),
             DB::raw("COALESCE(SUM(total),0) as total"),
@@ -1099,6 +617,7 @@ class CreateVenta extends Component
         $this->lastname = trim($this->lastname);
         $this->licencia = trim($this->licencia);
         $this->placa = trim($this->placa);
+        $this->observaciones = !empty(trim($this->observaciones)) ? trim($this->observaciones) : null;
 
         if ($this->typepayment_id) {
             $this->typepayment = Typepayment::find($this->typepayment_id);
@@ -1195,6 +714,7 @@ class CreateVenta extends Component
                 'date' => now('America/Lima'),
                 'seriecompleta' => $seriecomprobante->serie . '-' . $numeracion,
                 'direccion' => $this->direccion,
+                'observaciones' => $this->observaciones,
                 'exonerado' => number_format($this->exonerado, 34, '.', ''),
                 'gravado' => number_format($this->gravado, 3, '.', ''),
                 'gratuito' => number_format($this->gratuito, 3, '.', ''),
@@ -1454,16 +974,16 @@ class CreateVenta extends Component
                             'date' => now('America/Lima'),
                             'cantidad' => $item->cantidad,
                             'pricebuy' => $carshoopitem->pricebuy,
-                            // 'price' => number_format($carshoopitem->price, 3, '.', ''),
-                            // 'igv' => number_format($carshoopitem->igv, 3, '.', ''),
-                            // 'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
-                            // 'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
-                            // 'total' => number_format($totalItemCombo, 3, '.', ''),
-                            'price' => 0,
-                            'igv' => 0,
-                            'subtotaligv' => 0,
-                            'subtotal' => 0,
-                            'total' => 0,
+                            'price' => number_format($carshoopitem->price, 3, '.', ''),
+                            'igv' => number_format($carshoopitem->igv, 3, '.', ''),
+                            'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
+                            'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
+                            'total' => number_format($totalItemCombo, 3, '.', ''),
+                            // 'price' => 0,
+                            // 'igv' => 0,
+                            // 'subtotaligv' => 0,
+                            // 'subtotal' => 0,
+                            // 'total' => 0,
                             'status' => 0,
                             'alterstock' => Almacen::DISMINUIR_STOCK,
                             'gratuito' => Tvitem::GRATUITO,
@@ -1512,18 +1032,7 @@ class CreateVenta extends Component
                         // SOLAMENTE DESCUENTA STOCK MAS NO REGISTRA EN KARDEX
                         // LE AUMENTO EL STOCK EN KARDEX PORQUE SE SUPONE QUE HUBO 
                         // EN ALMACEN EL STOCK ACTUAL MAS LO DESCONTADO Y ESTOCK ES EL ACTUAL
-                        $tvitem->saveKardex(
-                            $carshoopitem->producto_id,
-                            $item->almacen_id,
-                            $stockCombo + $item->cantidad,
-                            $stockCombo,
-                            $item->cantidad,
-                            Almacen::SALIDA_ALMACEN,
-                            Kardex::SALIDA_COMBO_VENTA,
-                            $seriecomprobante->serie . '-' . $numeracion,
-                            $item->promocion_id,
-                        );
-
+                        $tvitem->saveKardexTvitem($stockCombo + $item->cantidad, null, Kardex::SALIDA_COMBO_VENTA, $seriecomprobante->serie . '-' . $numeracion);
                         $carshoopitem->delete();
                         $counter++;
                     }
@@ -1578,7 +1087,8 @@ class CreateVenta extends Component
                 'ubigeoorigen_id',
                 'direccionorigen',
                 'motivotraslado',
-                'modalidadtransporte'
+                'modalidadtransporte',
+                'carshoopPage'
             ]);
             $this->dispatchBrowserEvent('toast', toastJSON('Venta registrado correctamente'));
             if (auth()->user()->hasPermissionTo('admin.ventas.edit')) {
@@ -1607,44 +1117,6 @@ class CreateVenta extends Component
             $carshoop->save();
         }
         $this->setTotal();
-    }
-
-    public function deleteserie(Carshoopserie $carshoopserie)
-    {
-        DB::beginTransaction();
-        try {
-            if ($carshoopserie->carshoop->isDiscountStock() || $carshoopserie->carshoop->isReservedStock()) {
-                $carshoopserie->serie->dateout = null;
-                $carshoopserie->serie->status = 0;
-                $carshoopserie->serie->save();
-                $carshoopserie->carshoop->cantidad = $carshoopserie->carshoop->cantidad - 1;
-                $carshoopserie->carshoop->subtotal = $carshoopserie->carshoop->price * $carshoopserie->carshoop->cantidad;
-                $carshoopserie->carshoop->total = $carshoopserie->carshoop->price * $carshoopserie->carshoop->cantidad;
-                $carshoopserie->carshoop->save();
-
-                $stock = $carshoopserie->carshoop->producto->almacens->find($carshoopserie->carshoop->almacen_id)->pivot->cantidad;
-                $carshoopserie->carshoop->producto->almacens()->updateExistingPivot($carshoopserie->carshoop->almacen_id, [
-                    'cantidad' => $stock + 1,
-                ]);
-            }
-
-            if ($carshoopserie->carshoop->kardex) {
-                $carshoopserie->carshoop->kardex->cantidad = $carshoopserie->carshoop->kardex->cantidad - 1;
-                $carshoopserie->carshoop->kardex->newstock = $carshoopserie->carshoop->kardex->newstock + 1;
-                $carshoopserie->carshoop->kardex->save();
-            }
-
-            $carshoopserie->delete();
-            DB::commit();
-            $this->setTotal();
-            $this->dispatchBrowserEvent('deleted');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
     }
 
     public function getGRE()
@@ -1724,7 +1196,7 @@ class CreateVenta extends Component
 
         foreach ($tvitems as $item) {
             $date = now('America/Lima');
-            $pricesale = $item->producto->obtenerPrecioVenta($this->pricetype ?? null);
+            $pricesale = $item->producto->getPrecioVentaDefault($this->pricetype ?? null);
 
             if ($this->moneda->isDolar()) {
                 $pricesale = convertMoneda($pricesale, 'USD', $this->empresa->tipocambio, 2);
@@ -1777,142 +1249,182 @@ class CreateVenta extends Component
         $this->reset(['searchgre', 'sincronizegre', 'guiaremision']);
     }
 
-    public function getClient()
+    public function validatesearchcliente($property)
     {
-
-        $this->document = trim($this->document);
-        $this->validate([
-            'document' => [
-                'required',
-                'numeric',
-                new ValidateDocument,
-                'regex:/^\d{8}(?:\d{3})?$/',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
-            ],
-        ]);
-
-        $client = new GetClient();
-        $response = $client->getClient($this->document);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                // dd($response->getData());
-                $this->resetValidation(['client_id', 'document', 'name', 'direccion']);
-                $this->name = $response->getData()->name;
-
-                $this->client_id = $response->getData()->client_id;
-
-                if (!empty($response->getData()->direccion)) {
-                    $this->direccion = $response->getData()->direccion;
-                }
-
-                if ($this->empresa->usarLista()) {
-                    if ($response->getData()->pricetype_id) {
-                        $this->pricetypeasigned = $response->getData()->pricetypeasigned;
-                        // $this->pricetype = $pricetype;
-                        $this->pricetype_id = $response->getData()->pricetype_id;
-                        $this->pricetype = Pricetype::find($this->pricetype_id);
-                        $this->updatecartpricelist($this->pricetype);
-                    }
-                }
-
-                if ($response->getData()->birthday) {
-                    $this->dispatchBrowserEvent('birthday', $response->getData()->name);
-                }
-            } else {
-                $this->resetValidation(['document']);
-                $this->addError('document', $response->getData()->message);
-            }
-        }
-    }
-
-    public function getTransport()
-    {
-
-        $this->ructransport = trim($this->ructransport);
-        $this->validate([
-            'ructransport' => [
+        $this->$property = trim($this->$property);
+        if ($property == 'ructransport') {
+            $this->validate(['ructransport' => [
                 'nullable',
                 Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
                 'numeric',
                 'digits:11',
                 'regex:/^\d{11}$/',
                 $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
-            ],
-        ]);
-
-        $client = new GetClient();
-        $response = $client->getClient($this->ructransport);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['ructransport', 'nametransport']);
-                $this->nametransport = $response->getData()->name;
-            } else {
-                $this->resetValidation(['ructransport']);
-                $this->addError('ructransport', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
-
-    public function getDestinatario()
-    {
-
-        $this->documentdestinatario = trim($this->documentdestinatario);
-        $this->validate([
-            'documentdestinatario' => [
+            ]]);
+        } else if ($property == 'documentdestinatario') {
+            $this->validate(['documentdestinatario' => [
                 'nullable',
                 Rule::requiredIf($this->incluyeguia),
                 'numeric',
                 'regex:/^\d{8}(?:\d{3})?$/',
                 $this->incluyeguia && $this->motivotraslado->code == '03' ? 'different:document' : '',
                 // 'different:document',
-            ],
-        ]);
-
-        $client = new GetClient();
-        $response = $client->getClient($this->documentdestinatario);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentdestinatario', 'namedestinatario']);
-                $this->namedestinatario = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentdestinatario']);
-                $this->addError('documentdestinatario', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
-
-    public function getDriver()
-    {
-
-        $this->documentdriver = trim($this->documentdriver);
-        $this->validate([
-            'documentdriver' => [
+            ]]);
+        } else if ($property == 'documentdriver') {
+            $this->validate(['documentdriver' => [
                 'nullable',
                 Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02'),
                 'numeric',
                 'regex:/^\d{8}(?:\d{3})?$/'
-            ],
-        ]);
-
-        $client = new GetClient();
-        $response = $client->getClient($this->documentdriver, false);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentdriver', 'namedriver']);
-                $this->namedriver = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentdriver']);
-                $this->addError('documentdriver', $response->getData()->message);
-            }
+            ]]);
         } else {
-            dd($response);
+            $this->validate(['document' => [
+                'required',
+                'numeric',
+                new ValidateDocument,
+                'regex:/^\d{8}(?:\d{3})?$/',
+                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
+            ]]);
         }
+        return true;
     }
+
+    // public function getClient()
+    // {
+
+    //     $this->document = trim($this->document);
+    //     $this->validate([
+    //         'document' => [
+    //             'required',
+    //             'numeric',
+    //             new ValidateDocument,
+    //             'regex:/^\d{8}(?:\d{3})?$/',
+    //             in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
+    //         ],
+    //     ]);
+
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->document);
+
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             // dd($response->getData());
+    //             $this->resetValidation(['client_id', 'document', 'name', 'direccion']);
+    //             $this->name = $response->getData()->name;
+
+    //             $this->client_id = $response->getData()->client_id;
+
+    //             if (!empty($response->getData()->direccion)) {
+    //                 $this->direccion = $response->getData()->direccion;
+    //             }
+
+    //             if ($this->empresa->usarLista()) {
+    //                 if ($response->getData()->pricetype_id) {
+    //                     $this->pricetypeasigned = $response->getData()->pricetypeasigned;
+    //                     // $this->pricetype = $pricetype;
+    //                     $this->pricetype_id = $response->getData()->pricetype_id;
+    //                     $this->pricetype = Pricetype::find($this->pricetype_id);
+    //                     $this->updatecartpricelist($this->pricetype);
+    //                 }
+    //             }
+
+    //             if ($response->getData()->birthday) {
+    //                 $this->dispatchBrowserEvent('birthday', $response->getData()->name);
+    //             }
+    //         } else {
+    //             $this->resetValidation(['document']);
+    //             $this->addError('document', $response->getData()->message);
+    //         }
+    //     }
+    // }
+
+    // public function getTransport()
+    // {
+
+    //     $this->ructransport = trim($this->ructransport);
+    //     $this->validate([
+    //         'ructransport' => [
+    //             'nullable',
+    //             Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
+    //             'numeric',
+    //             'digits:11',
+    //             'regex:/^\d{11}$/',
+    //             $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
+    //         ],
+    //     ]);
+
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->ructransport);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['ructransport', 'nametransport']);
+    //             $this->nametransport = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['ructransport']);
+    //             $this->addError('ructransport', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
+
+    // public function getDestinatario()
+    // {
+
+    //     $this->documentdestinatario = trim($this->documentdestinatario);
+    //     $this->validate([
+    //         'documentdestinatario' => [
+    //             'nullable',
+    //             Rule::requiredIf($this->incluyeguia),
+    //             'numeric',
+    //             'regex:/^\d{8}(?:\d{3})?$/',
+    //             $this->incluyeguia && $this->motivotraslado->code == '03' ? 'different:document' : '',
+    //             // 'different:document',
+    //         ],
+    //     ]);
+
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->documentdestinatario);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['documentdestinatario', 'namedestinatario']);
+    //             $this->namedestinatario = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['documentdestinatario']);
+    //             $this->addError('documentdestinatario', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
+
+    // public function getDriver()
+    // {
+
+    //     $this->documentdriver = trim($this->documentdriver);
+    //     $this->validate([
+    //         'documentdriver' => [
+    //             'nullable',
+    //             Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02'),
+    //             'numeric',
+    //             'regex:/^\d{8}(?:\d{3})?$/'
+    //         ],
+    //     ]);
+
+    //     $client = new GetClient();
+    //     $response = $client->getClient($this->documentdriver, false);
+    //     if ($response->getData()) {
+    //         if ($response->getData()->success) {
+    //             $this->resetValidation(['documentdriver', 'namedriver']);
+    //             $this->namedriver = $response->getData()->name;
+    //         } else {
+    //             $this->resetValidation(['documentdriver']);
+    //             $this->addError('documentdriver', $response->getData()->message);
+    //         }
+    //     } else {
+    //         dd($response);
+    //     }
+    // }
 
     public function updatecartpricelist($pricetype)
     {
@@ -1922,17 +1434,38 @@ class CreateVenta extends Component
             ->orderBy('id', 'asc')->get();
 
         foreach ($carshoops as $item) {
-            $price = $item->producto->{$pricetype->campo_table};
-            $pricesale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->price : $price;
-            $igvsale = $this->empresa->isAfectacionIGV() ? getPriceIGV($price, $this->empresa->igv)->igv : 0;
+            $pricesale = $item->producto->getPrecioVentaDefault($pricetype);
+            $igvsale = 0;
+
+            if ($item->promocion) {
+                if ($item->promocion->isCombo()) {
+                    $promocion = $item->promocion->load(['itempromos.producto.unit', 'producto']);
+                    $combo = getAmountCombo($promocion, $pricetype);
+                    $pricesale = $pricesale + $combo->total;
+                }
+
+                if ($item->promocion->isDescuento()) {
+                    $pricesale = getPriceDscto($pricesale, $item->promocion->descuento, $pricetype ?? null);
+                }
+
+                if ($item->promocion->isLiquidacion()) {
+                    $pricesale = getPriceDinamic($item->producto->pricebuy, 0, !empty($pricetype) ? $pricetype->incremento : 2, 0, !empty($pricetype) ? $pricetype->decimals : 2);
+                }
+            }
+
+            if ($this->empresa->isAfectacionIGV()) {
+                $pricesale = getPriceIGV($pricesale, $this->empresa->igv)->price;
+                $igvsale = getPriceIGV($pricesale, $this->empresa->igv)->igv;
+            }
+
             $item->pricebuy = $item->producto->pricebuy;
             $item->price = $pricesale;
             $item->igv = $igvsale;
-            $item->subtotal =  $price * $item->cantidad;
+            $item->subtotal =  $pricesale * $item->cantidad;
             if ($item->isGratuito()) {
                 $item->total = 0;
             } else {
-                $item->total = $pricesale * $item->cantidad;
+                $item->total = ($pricesale + $igvsale) * $item->cantidad;
             }
             $item->save();
             // if ($carshoopitems->count() > 0) {
@@ -1970,11 +1503,14 @@ class CreateVenta extends Component
             'pricetype',
             'pricetype_id',
             'typepayment',
-            'typepayment_id'
+            'typepayment_id',
+            'carshoopPage'
         ]);
-        self::deleteall();
-        self::setTotal();
 
+        Carshoop::ventas()->where('user_id', auth()->user()->id)
+            ->where('sucursal_id', auth()->user()->sucursal_id)->get()->map(function ($carshoop) {
+                self::delete($carshoop, true);
+            });
         $pricetype = null;
         if ($this->empresa->usarlista()) {
             $this->pricetype = Pricetype::activos()->orderBy('default', 'desc')->orderBy('id', 'asc')->first();
@@ -1987,16 +1523,18 @@ class CreateVenta extends Component
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
         $this->typepayment_id = Typepayment::default()->first()->id ?? null;
 
+        self::setTotal();
         $this->resetValidation();
         $this->resetPage();
+        $this->dispatchBrowserEvent('toast', toastJSON('Venta limpiado correctamente'));
     }
 
     public function deleteall()
     {
         try {
             DB::beginTransaction();
-            Carshoop::ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)
-                ->get()->map(function ($carshoop) {
+            Carshoop::ventas()->where('user_id', auth()->user()->id)
+                ->where('sucursal_id', auth()->user()->sucursal_id)->get()->map(function ($carshoop) {
                     self::delete($carshoop, true);
                 });
             DB::commit();
@@ -2015,7 +1553,11 @@ class CreateVenta extends Component
     public function delete(Carshoop $carshoop, $isDeleteAll = false)
     {
         DB::beginTransaction();
-        $carshoop->load(['carshoopitems.producto.almacens', 'producto', 'almacen', 'promocion', 'carshoopseries.serie']);
+        $carshoop->load(['carshoopitems.producto.almacens', 'producto' => function ($query) {
+            $query->withTrashed()->with('almacens');
+        }, 'almacen', 'promocion', 'carshoopseries.serie' => function ($query) {
+            $query->withTrashed();
+        }]);
 
         try {
             if (count($carshoop->carshoopitems) > 0) {
@@ -2048,7 +1590,7 @@ class CreateVenta extends Component
                             $query->with(['itempromos.producto.unit'])->availables()
                                 ->disponibles()->take(1);
                         }]);
-                        $carshoop->producto->assignPrice($carshoop->promocion);
+                        // $carshoop->producto->assignPrice($carshoop->promocion);
                     }
                 }
             }
@@ -2065,10 +1607,11 @@ class CreateVenta extends Component
             }
 
             if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
-                $qStock = $carshoop->producto->almacens->find($carshoop->almacen_id);
-                if ($qStock) {
+                $stockProd = $carshoop->producto->almacens->find($carshoop->almacen_id);
+                if ($stockProd) {
+                    // dd($stockProd->pivot->cantidad + $carshoop->cantidad);
                     $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
-                        'cantidad' => $qStock->pivot->cantidad + $carshoop->cantidad,
+                        'cantidad' => $stockProd->pivot->cantidad + $carshoop->cantidad,
                     ]);
                 }
             }
@@ -2089,6 +1632,92 @@ class CreateVenta extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+    }
+
+    public function deleteserie(Carshoopserie $carshoopserie)
+    {
+        DB::beginTransaction();
+        try {
+            if ($carshoopserie->carshoop->isDiscountStock() || $carshoopserie->carshoop->isReservedStock()) {
+                $carshoopserie->load(['serie' => function ($query) {
+                    $query->withTrashed();
+                }]);
+                $carshoopserie->serie->dateout = null;
+                $carshoopserie->serie->status = 0;
+                $carshoopserie->serie->save();
+                $carshoopserie->carshoop->cantidad = $carshoopserie->carshoop->cantidad - 1;
+                $carshoopserie->carshoop->subtotal = $carshoopserie->carshoop->price * $carshoopserie->carshoop->cantidad;
+                $carshoopserie->carshoop->total = $carshoopserie->carshoop->price * $carshoopserie->carshoop->cantidad;
+                $carshoopserie->carshoop->save();
+
+                $stock = $carshoopserie->carshoop->producto->almacens->find($carshoopserie->carshoop->almacen_id)->pivot->cantidad;
+                $carshoopserie->carshoop->producto->almacens()->updateExistingPivot($carshoopserie->carshoop->almacen_id, [
+                    'cantidad' => $stock + 1,
+                ]);
+            }
+
+            if ($carshoopserie->carshoop->kardex) {
+                $carshoopserie->carshoop->kardex->cantidad = $carshoopserie->carshoop->kardex->cantidad - 1;
+                $carshoopserie->carshoop->kardex->newstock = $carshoopserie->carshoop->kardex->newstock + 1;
+                $carshoopserie->carshoop->kardex->save();
+            }
+
+            if ($carshoopserie->carshoop->promocion) {
+                $carshoopserie->carshoop->promocion->outs = $carshoopserie->carshoop->promocion->outs - 1;
+                $carshoopserie->carshoop->promocion->save();
+            }
+
+            $carshoopserie->delete();
+            DB::commit();
+            $this->setTotal();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function getcombos(Producto $producto)
+    {
+        $this->resetValidation();
+        $producto->load(['marca', 'category', 'subcategory', 'unit', 'images' => function ($query) {
+            $query->orderByDesc('default');
+        }, 'promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subQuery) {
+                $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
+                    $q->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderByDesc('default')->limit(1);
+                }]);
+            }])->availables()->disponibles();
+        }])->loadCount(['almacens as stock' => function ($query) {
+            $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+        }]);
+        $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
+        $this->producto = $producto;
+        $this->opencombos =  true;
+    }
+
+    public function seterrors($errors, $index = null)
+    {
+        $this->resetValidation();
+        if (count($errors) > 0) {
+            foreach ($errors as $key => $value) {
+                if (str_starts_with($key, 'selectedalmacen_')) {
+                    $key = 'almacen_id';
+                }
+                if (empty($index)) {
+                    $this->addError($key, $value);
+                } else {
+                    $this->addError("cart.$index.$key", $value);
+                }
+            }
         }
     }
 }

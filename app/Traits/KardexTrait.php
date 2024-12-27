@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Almacen;
 use App\Models\Kardex;
 use App\Models\Producto;
+use App\Models\Serie;
 use App\Models\Tvitem;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,6 +37,87 @@ trait KardexTrait
                 'kardeable_type' => get_class($this),
             ]);
         }
+    }
+
+    public function updateCantidad($instance, $new_qty, $newstock)
+    {
+        if ($instance->kardex) {
+            $instance->kardex->cantidad = $new_qty;
+            $instance->kardex->newstock = $newstock;
+            $instance->kardex->save();
+        } else {
+        }
+    }
+
+    public function saveKardexTvitem($stock, $cantidad = null, $detalle, $referencia = null)
+    {
+        if ($this->kardex) {
+        } else {
+            $kardex = $this->kardex()->create([
+                'date' =>  now('America/Lima'),
+                'cantidad' => $this->cantidad,
+                'oldstock' => $stock,
+                'newstock' => $stock - $this->cantidad,
+                'simbolo' => Almacen::SALIDA_ALMACEN,
+                'detalle' => $detalle,
+                'reference' => $referencia,
+                'producto_id' => $this->producto_id,
+                'almacen_id' => $this->almacen_id,
+                'sucursal_id' => auth()->user()->sucursal_id ?? null,
+                'user_id' => auth()->user()->id,
+                'promocion_id' => $this->promocion_id,
+            ]);
+        }
+
+        return $kardex;
+    }
+
+    public function saveKardexCarshoop($stock = null, $outspromocion)
+    {
+        if ($this->kardex) {
+            $this->kardex->cantidad = $this->cantidad;
+            $this->kardex->newstock = $this->kardex->oldstock - $this->cantidad;
+            $this->kardex->save();
+            if ($this->promocion) {
+                $this->promocion->outs = $this->promocion->outs + $outspromocion;
+                $this->promocion->save();
+            }
+        } else {
+            $kardex = $this->kardex()->create([
+                'date' => now('America/Lima'),
+                'cantidad' => $this->cantidad,
+                'oldstock' => $stock,
+                'newstock' => $stock - $this->cantidad,
+                'simbolo' => Almacen::SALIDA_ALMACEN,
+                'detalle' => Kardex::ADD_VENTAS,
+                'reference' => null,
+                'producto_id' => $this->producto_id,
+                'almacen_id' => $this->almacen_id,
+                'sucursal_id' => auth()->user()->sucursal_id ?? null,
+                'user_id' => auth()->user()->id,
+                'promocion_id' => $this->promocion_id,
+                // 'kardeable_id' => $this->id,
+                // 'kardeable_type' => get_class($this),
+            ]);
+
+            if ($kardex->promocion) {
+                $kardex->promocion->outs = $kardex->promocion->outs + $outspromocion;
+                $kardex->promocion->save();
+            }
+            return $kardex;
+        }
+    }
+
+    public function descontarSerieCarshoop($serie_id)
+    {
+        $carshoopserie = $this->carshoopseries()->create([
+            'date' =>  $this->date,
+            'serie_id' => $serie_id,
+            'user_id' => auth()->user()->id
+        ]);
+        $carshoopserie->serie->status = Serie::SALIDA;
+        $carshoopserie->serie->save();
+        return $carshoopserie;
     }
 
     public function updateKardex($compraitem_id, $cantidad)

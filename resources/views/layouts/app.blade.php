@@ -54,8 +54,6 @@
     })">
     <x-jet-banner />
 
-    <x-loading-web-next id="loading-next" />
-
     @if ($empresa)
         @if (Module::isEnabled('Marketplace'))
 
@@ -119,6 +117,7 @@
     @endif
 
     <x-cookies class="" />
+    <x-loading-web-next x-cloak x-ref="loadingnext" {{-- id="loading-next" --}} />
 
     @stack('modals')
     @livewireScripts
@@ -138,11 +137,13 @@
 
 
 <script>
+    const componentloading = document.querySelector('[x-ref="loadingnext"]');
+
     document.addEventListener('readystatechange', () => {
         // console.log(document.readyState)
         if (document.readyState == 'interactive') {
             document.body.style.overflow = 'auto';
-            $('#loading-next').fadeOut();
+            $(componentloading).fadeOut();
         }
     });
 
@@ -291,6 +292,139 @@
         input.setSelectionRange(newLength, newLength);
         input.dispatchEvent(new Event("input"));
         return true;
+    }
+
+
+    function addproductocart(producto_id = null, promocion_id = null, cantidad = 1) {
+        const data = {
+            promocion_id: promocion_id,
+            producto_id: producto_id,
+            cantidad: cantidad
+        }
+
+        sendRequest(`{{ route('marketplace.addproducto') }}`, data, (response) => {
+            window.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    title: response.mensaje,
+                    icon: 'success',
+                }
+            }))
+            window.dispatchEvent(new CustomEvent('updatecart'));
+        }, (errorData) => {
+            toastMixin.fire({
+                title: errorData.error,
+                icon: 'error',
+                timer: 5000,
+            });
+        });
+    }
+
+    function updatecart(event, rowId, cantidad = 1) {
+        const data = {
+            rowId: rowId,
+            cantidad: cantidad,
+            type: event.getAttribute('data-function')
+        }
+
+        sendRequest(`{{ route('marketplace.updatecart') }}`, data, () => window.dispatchEvent(new CustomEvent(
+                'updatecart')),
+            (errorData) => {
+                toastMixin.fire({
+                    title: errorData.error,
+                    icon: 'error',
+                    timer: 5000,
+                });
+            }
+        );
+    }
+
+    function updateqty(event, rowId, cantidad = 1) {
+        const data = {
+            rowId: rowId,
+            cantidad: Math.trunc(event.value ?? 1)
+        }
+
+        sendRequest(`{{ route('marketplace.updateqty') }}`, data, () => window.dispatchEvent(new CustomEvent(
+                'updatecart')),
+            (errorData) => {
+                if (errorData.qty) {
+                    event.value = errorData.qty;
+                }
+                toastMixin.fire({
+                    title: errorData.error,
+                    icon: 'error',
+                    timer: 5000,
+                });
+            });
+    }
+
+    function deleteitemcart(rowId, cantidad = 1) {
+        const data = {
+            rowId: rowId
+        }
+
+        sendRequest(`{{ route('marketplace.deletecart') }}`, data, (response) => {
+            window.dispatchEvent(new CustomEvent('toast', {
+                detail: {
+                    title: response.mensaje,
+                    icon: 'success',
+                }
+            }))
+            window.dispatchEvent(new CustomEvent('updatecart'));
+        }, (errorData) => {
+            toastMixin.fire({
+                title: errorData.error,
+                icon: 'error',
+                timer: 5000,
+            });
+        });
+    }
+
+    function sendRequest(route, data, onSuccess = () => {}, onError = () => {}) {
+        $(componentloading).fadeIn();
+
+        fetch(route, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            }).then(response => response.json())
+            .then(responseData => {
+                if (responseData.success) {
+                    onSuccess(responseData);
+                } else {
+                    console.log(responseData);
+                    $(componentloading).fadeOut();
+                    onError(responseData);
+                }
+            }).catch(error => {
+                $(componentloading).fadeOut();
+                console.error(error);
+                window.dispatchEvent(new CustomEvent('validation', {
+                    detail: {
+                        title: error.message,
+                        icon: 'error'
+                    }
+                }));
+            }).finally(() => {
+                // $(componentloading).fadeOut();
+            });
+    }
+
+
+    const buttons = document.querySelectorAll('.button-add-to-cart');
+    if (buttons.length > 0) {
+        buttons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const promocion_id = e.currentTarget.getAttribute(
+                    'data-promocion-id');
+                const producto_id = e.currentTarget.getAttribute(
+                    'data-producto-id');
+                addproductocart(producto_id, promocion_id);
+            })
+        });
     }
 </script>
 

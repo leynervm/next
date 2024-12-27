@@ -22,9 +22,7 @@
                                             <img src="{{ $image }}" alt=""
                                                 class="w-full h-full object-scale-down rounded aspect-square overflow-hidden">
                                         @else
-                                            <x-icon-file-upload
-                                                class="!w-full !h-full !m-0 text-colorsubtitleform !border-0"
-                                                type="unknown" />
+                                            <x-icon-file-upload class="w-full h-full" type="unknown" />
                                         @endif
                                     </div>
                                     <div
