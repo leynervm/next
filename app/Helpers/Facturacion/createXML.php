@@ -482,6 +482,7 @@ class createXML
            </cac:LegalMonetaryTotal>';
 
       foreach ($comprobante->facturableitems as $item) {
+         $descripcion = strlen($item->descripcion) > 500 ? substr($item->descripcion, 0, 495) . "[...]" : $item->descripcion;
 
          $xml .= '<cac:CreditNoteLine>
                   <cbc:ID>' . $item->item . '</cbc:ID>
@@ -511,7 +512,7 @@ class createXML
                      </cac:TaxSubtotal>
                   </cac:TaxTotal>
                   <cac:Item>
-                     <cbc:Description><![CDATA[' . $item->descripcion . ']]></cbc:Description>
+                     <cbc:Description><![CDATA[' . $descripcion . ']]></cbc:Description>
                      <cac:SellersItemIdentification>
                         <cbc:ID>' . $item->code . '</cbc:ID>
                      </cac:SellersItemIdentification>
@@ -789,6 +790,7 @@ class createXML
 
       $i = 1;
       foreach ($guia->tvitems as $item) {
+         $descripcion = strlen($item->producto->name) > 250 ? substr($item->producto->name, 0, 245) . "[...]" : $item->descripcion;
 
          $xml .= '<cac:DespatchLine>
                <cbc:ID>' . $i . '</cbc:ID>
@@ -797,7 +799,7 @@ class createXML
                   <cbc:LineID>' . $i . '</cbc:LineID>
                </cac:OrderLineReference>
                <cac:Item>
-                  <cbc:Description><![CDATA[' . $item->producto->name . ']]></cbc:Description>
+                  <cbc:Description><![CDATA[' . $descripcion . ']]></cbc:Description>
                   <cac:SellersItemIdentification>
                      <cbc:ID>' . $item->producto->code . '</cbc:ID>
                   </cac:SellersItemIdentification>
