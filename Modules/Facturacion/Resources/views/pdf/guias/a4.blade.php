@@ -626,7 +626,8 @@
                                 {{ $loop->iteration }}
                             </td>
                             <td class="p-2 align-middle text-start leading-3" style="">
-                                {{ $item->producto->name }}</td>
+                                {!! nl2br($item->producto->name) !!}
+                            </td>
                             <td class="p-2 text-center align-middle" style="width: 30px;">
                                 {{ decimalOrInteger($item->cantidad) }}</td>
                             <td class="p-2 font-normal text-center align-middle" style="width: 30px;">
