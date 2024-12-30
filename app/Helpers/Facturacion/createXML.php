@@ -218,6 +218,7 @@ class createXML
            </cac:LegalMonetaryTotal>';
 
       foreach ($comprobante->facturableitems as $item) {
+         $descripcion = strlen($item->descripcion) > 500 ? substr($item->descripcion, 0, 495) . "[...]" : $item->descripcion;
 
          $xml .= '<cac:InvoiceLine>
                   <cbc:ID>' . $item->item . '</cbc:ID>
@@ -247,7 +248,7 @@ class createXML
                      </cac:TaxSubtotal>
                   </cac:TaxTotal>
                   <cac:Item>
-                     <cbc:Description><![CDATA[' . $item->descripcion . ']]></cbc:Description>
+                     <cbc:Description><![CDATA[' . $descripcion . ']]></cbc:Description>
                      <cac:SellersItemIdentification>
                         <cbc:ID>' . $item->code . '</cbc:ID>
                      </cac:SellersItemIdentification>
