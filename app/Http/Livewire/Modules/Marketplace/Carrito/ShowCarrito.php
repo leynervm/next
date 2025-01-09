@@ -67,7 +67,7 @@ class ShowCarrito extends Component
                 ]
             ])->associate(Producto::class);
         } else {
-            Cart::instance('wishlist')->update($rowId, ['price' => number_format($carshoop->price, 2, '.', '')]);
+            Cart::instance('wishlist')->update($favorito->rowId, ['price' => number_format($carshoop->price, 2, '.', '')]);
         }
 
         $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
