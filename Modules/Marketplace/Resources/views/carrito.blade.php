@@ -13,6 +13,6 @@
     </x-slot>
 
     <div class="contenedor w-full">
-        <livewire:modules.marketplace.carrito.show-carrito :moneda="$moneda" :pricetype="$pricetype" wire:key="carshoop" />
+        <livewire:modules.marketplace.carrito.show-carrito :pricetype="$pricetype" wire:key="carshoop" />
     </div>
 </x-app-layout>

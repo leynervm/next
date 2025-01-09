@@ -160,10 +160,11 @@
                     <div class="w-full inline-flex gap-1">
                         <x-input class="block w-full flex-1 input-number-none" type="number"
                             x-model="documentdestinatario" wire:model.defer="documentdestinatario"
-                            wire:keydown.enter.prevent="getDestinatario" minlength="0" maxlength="11"
+                            wire:keydown.enter.prevent="searchclient('documentdestinatario','namedestinatario')"
                             onkeypress="return validarNumero(event, 11)" />
-                        <x-button-add class="px-2" wire:click="getDestinatario" wire:target="getDestinatario"
-                            wire:loading.attr="disable">
+                        <x-button-add class="px-2"
+                            wire:click="searchclient('documentdestinatario','namedestinatario')"
+                            wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -191,9 +192,10 @@
                     <div class="w-full inline-flex gap-1">
                         <x-input class="block w-full flex-1 input-number-none prevent" type="number"
                             x-model="documentcomprador" wire:model.defer="documentcomprador"
-                            wire:keydown.enter="getComprador" minlength="0" maxlength="11"
-                            onkeypress="return validarNumero(event, 11)" />
-                        <x-button-add class="px-2" wire:click="getComprador" wire:loading.attr="disable">
+                            wire:keydown.enter.prevent="searchclient('documentcomprador','namecomprador')"
+                            maxlength="11" onkeypress="return validarNumero(event, 11)" />
+                        <x-button-add class="px-2" wire:click="searchclient('documentcomprador','namecomprador')"
+                            wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -219,12 +221,10 @@
                 <div class="w-full">
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
-                        <x-input class="block w-full flex-1 prevent input-number-none"
+                        <x-input class="block w-full flex-1 input-number-none"
                             onkeypress="return validarNumero(event, 11)" x-model="rucproveedor" type="number"
-                            wire:model.defer="rucproveedor" wire:keydown.enter="getProveedor" minlength="0"
-                            maxlength="11" />
-                        <x-button-add class="px-2" wire:click="getProveedor" wire:target="getDestinatario"
-                            wire:loading.attr="disable">
+                            wire:model.defer="rucproveedor" wire:keydown.enter.prevent="searchclient('rucproveedor','nameproveedor')" />
+                        <x-button-add class="px-2" wire:click="searchclient('rucproveedor','nameproveedor')" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -252,8 +252,8 @@
                     <div class="w-full inline-flex gap-1">
                         <x-input class="block w-full flex-1 prevent input-number-none"
                             onkeypress="return validarNumero(event, 11)" wire:model.defer="ructransport"
-                            type="number" wire:keydown.enter="getTransport" minlength="0" maxlength="11" />
-                        <x-button-add class="px-2" wire:click="getTransport" wire:loading.attr="disable">
+                            type="number" wire:keydown.enter.prevent="searchclient('ructransport','nametransport')" minlength="0" maxlength="11" />
+                        <x-button-add class="px-2" wire:click="searchclient('ructransport','nametransport')" wire:loading.attr="disabled">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                 fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                 stroke-linejoin="round">
@@ -359,11 +359,13 @@
                 <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                     <div class="w-full">
                         <x-label value="Documento :" />
-                        <div class="w-full inline-flex gap-1" x-data="{ documentdriver: '' }">
-                            <x-input class="block w-full flex-1" wire:model.defer="documentdriver"
-                                wire:keydown.enter.prevent="getDriver" minlength="0" maxlength="11"
-                                @input="event.target.value = event.target.value.replace(/[^0-9]/g, '')" />
-                            <x-button-add class="px-2" wire:click="getDriver" wire:loading.attr="disable">
+                        <div class="w-full inline-flex gap-1">
+                            <x-input class="block w-full flex-1 input-number-none" type="number"
+                                wire:model.defer="documentdriver"
+                                wire:keydown.enter.prevent="searchclient('documentdriver','namedriver')"
+                                onkeypress="return validarNumero(event, 11)" />
+                            <x-button-add class="px-2" wire:click="searchclient('documentdriver','namedriver')"
+                                wire:loading.attr="disabled">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round">

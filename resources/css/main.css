@@ -416,6 +416,27 @@ input[type='number'].input-number-none {
 	border: 2px solid #ccc;
 	background: #fff;
 } */
+.favorito {
+    @apply bg-white text-red-600 p-1 rounded-xl disabled:opacity-25 transition-all ease-in-out duration-150;
+}
+
+.favorito:hover {
+    @apply animate-pulse;
+}
+
+.favorito.activo {
+    background: rgb(255, 20, 20);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 20, 20, 1) 30%,
+        rgba(156, 20, 0, 1) 100%
+    );
+    color: white;
+}
+
+.favorito.activo:hover {
+    @apply animate-none;
+}
 
 .span-novedad {
     @apply p-1 px-1.5 rounded-lg sm:rounded-xl text-[10px] bg-gradient-to-tr from-amber-300 to-orange-600 text-white font-medium tracking-widest transition ease-in-out duration-150;

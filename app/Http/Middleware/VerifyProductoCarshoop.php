@@ -19,35 +19,19 @@ class VerifyProductoCarshoop
     public function handle(Request $request, Closure $next)
     {
 
-        $count = 0;
-        $cart = Cart::instance('shopping');
-        if ($cart->count() > 0) {
-            foreach ($cart->content() as $item) {
-                if (is_null($item->model)) {
-                    $cart->get($item->rowId);
-                    $cart->remove($item->rowId);
-                    $count++;
-                }
-            }
+        if (auth()->check()) {
+            Cart::instance('shopping')->destroy();
+            Cart::instance('shopping')->restore(auth()->id());
 
-            if ($count > 0) {
-                if (auth()->check()) {
-                    Cart::instance('shopping')->store(auth()->id());
-                }
-
-                $mensaje = response()->json([
-                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO.",
-                    'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
-                    'type' => 'warning'
-                ])->getData();
-                session()->now('message', $mensaje);
-            }
+            Cart::instance('wishlist')->destroy();
+            Cart::instance('wishlist')->restore(auth()->id());
         }
 
-        if (Cart::instance('shopping')->count() == 0 && Route::currentRouteName() == 'carshoop.create') {
+        $carshoop_disponibles = getCartRelations('shopping', true);
+        if (count($carshoop_disponibles) == 0 && Route::currentRouteName() == 'carshoop.create') {
             $mensaje = response()->json([
-                'title' => "NO EXISTEN PRODUCTOS AGREGADOS AL CARRITO",
-                'text' => 'Carrito de compras actualizado.',
+                'title' => "EL CARRITO ESTÁ VACÍO",
+                'text' => null,
                 'type' => 'warning',
                 'timer' => 3000,
             ])->getData();

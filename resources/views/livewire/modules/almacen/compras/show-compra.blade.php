@@ -2,7 +2,7 @@
     proveedor_id: @entangle('compra.proveedor_id').defer,
     sucursal_id: @entangle('compra.sucursal_id').defer,
     typepayment_id: @entangle('compra.typepayment_id').defer,
-    tipocambio: @entangle('compra.tipocambio').defer,
+    compratipocambio: @entangle('compra.tipocambio').defer,
     pricetype_id: @entangle('pricetype_id'),
     typedescuento: @entangle('typedescuento').defer,
     afectacion: '{{ $compra->afectacion }}',
@@ -41,7 +41,7 @@
                 @if ($compra->moneda->isDolar())
                     <div class="w-full">
                         <x-label value="Tipo Cambio :" />
-                        <x-input class="block w-full" wire:model.defer="compra.tipocambio" placeholder="0.00"
+                        <x-input class="block w-full" x-model="compratipocambio" 
                             x-mask:dynamic="$money($input, '.', '', 3)" onkeypress="return validarDecimal(event, 7)" />
                         <x-jet-input-error for="compra.tipocambio" />
                     </div>
@@ -82,7 +82,7 @@
                 <div class="w-full xs:col-span-2">
                     <x-label value="Proveedor :" />
                     <div id="parentproveedorcompra_id" class="relative" x-init="selec2Proveedor">
-                        <x-select class="block w-full" x-ref="selectproveedor" id="proveedorcompra_id"
+                        <x-select class="block w-full" x-ref="selectproveedoredit" id="proveedorcompra_id"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
                                 @if (count($proveedores))
@@ -117,6 +117,12 @@
                         <x-icon-select />
                     </div>
                     <x-jet-input-error for="compra.sucursal_id" />
+                </div>
+
+                <div class="w-full xs:col-span-2">
+                    <x-label value="Observaciones / Detalles :" />
+                    <x-text-area class="block w-full" rows="1" wire:model.defer="compra.detalle"></x-text-area>
+                    <x-jet-input-error for="compra.detalle" />
                 </div>
             </div>
 
@@ -206,7 +212,7 @@
                             $promocion = verifyPromocion($item->producto->promocions->first());
                             $descuento = getDscto($promocion);
                             $combo = getAmountCombo($promocion, $pricetype);
-                            $pricesale = $item->producto->getPrecioVentaDefault($pricetype);
+                            $pricesale = $item->producto->getPrecioVenta($pricetype);
                         @endphp
 
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" class="overflow-hidden">
@@ -234,24 +240,24 @@
                                 <tr>
                                     <td class="align-middle">P. U. C. </td>
                                     <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}</span>
+                                        <span class="text-sm font-medium">
+                                            {{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="align-middle">SUBTOTAL</td>
                                     <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ decimalOrInteger($item->subtotal, 2, ', ') }}</span>
+                                        <span class="text-sm font-medium">
+                                            {{ decimalOrInteger($item->subtotal, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td class="align-middle">DESCUENTOS</td>
                                     <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ decimalOrInteger($item->subtotaldescuento, 2, ', ') }}</span>
+                                        <span class="text-sm font-medium">
+                                            {{ decimalOrInteger($item->subtotaldescuento, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
@@ -259,8 +265,8 @@
                                 <tr>
                                     <td class="align-middle">TOTAL </td>
                                     <td class="text-end">
-                                        <span
-                                            class="text-sm font-medium">{{ decimalOrInteger($item->total, 2, ', ') }}</span>
+                                        <span class="text-sm font-medium">
+                                            {{ decimalOrInteger($item->total, 2, ', ') }}</span>
                                         <small>{{ $compra->moneda->currency }}</small>
                                     </td>
                                 </tr>
@@ -268,25 +274,23 @@
                                 @if ($compra->moneda->isDolar())
                                     <tr class="text-colorlabel">
                                         <td class="align-middle">P. U. C.</td>
-                                        <td class="text-end">
-                                            <span
-                                                class="text-sm font-semibold">{{ decimalOrInteger(($item->price + $item->igv) * $compra->tipocambio, 2, ', ') }}</span>
-                                            <small>SOLES</small>
+                                        <td class="text-end text-sm font-semibold">
+                                            {{ convertMoneda($item->price + $item->igv, 'PEN', $compra->tipocambio, 2, ', ') }}
+                                            <small class="text-[10px]">SOLES</small>
                                         </td>
                                     </tr>
                                 @endif
                                 <tr class="text-colorlabel">
                                     <td class="align-middle"> P. U. V. </td>
-                                    <td class="text-end">
-                                        <span
-                                            class="text-sm font-semibold">{{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}</span>
-                                        SOLES
+                                    <td class="text-end text-sm font-semibold">
+                                        {{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
+                                        <small class="text-[10px]">SOLES</small>
                                     </td>
                                 </tr>
                             </table>
 
-                            @if ($promocion)
-                                @if ($promocion->isDescuento() || $promocion->isRemate())
+                            {{-- @if ($promocion)
+                                @if ($promocion->isDescuento() || $promocion->isLiquidacion())
                                     @if ($descuento > 0)
                                         <span class="block w-full line-through text-red-600 text-center">
                                             S/.
@@ -294,7 +298,7 @@
                                         </span>
                                     @endif
                                 @endif
-                            @endif
+                            @endif --}}
 
                             @can('admin.almacen.compras.create')
                                 <x-slot name="footer">
@@ -437,7 +441,7 @@
                             this.calcularsoles();
                         },
                     }">
-                    <h1 class="text-xs sm:text-sm text-colorlabel md:text-xl !leading-none font-medium pb-3">
+                    <h1 class="text-xs sm:text-sm text-colorlabel md:text-sm !leading-normal font-medium pb-3">
                         {{ $compraitem->producto->name }}</h1>
 
                     <div class="w-full grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -852,7 +856,7 @@
     </x-jet-dialog-modal>
 
 
-    <x-jet-dialog-modal wire:model="open" maxWidth="xl" footerAlign="justify-end">
+    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Realizar pago compra') }}
         </x-slot>
@@ -912,7 +916,7 @@
                         <x-label value="Tipo cambio :" />
                         <x-input class="block w-full input-number-none" x-model="tipocambio" @input="calcular"
                             type="number" onkeypress="return validarDecimal(event, 7)" step="0.001"
-                            min="0.001" />
+                            min="0.001" wire:key="tipo_cambio" />
                         <x-jet-input-error for="tipocambio" />
                     </div>
 
@@ -949,8 +953,8 @@
                 </div>
 
                 <div class="w-full" x-show="istransferencia" x-cloak style="display: none;" x-transition>
-                    <x-label value="Otros (N° operación , Banco, etc) :" />
-                    <x-input class="block w-full" wire:model.defer="detalle" />
+                    <x-label value="Observaciones / N° operación, etc :" />
+                    <x-text-area class="block w-full" wire:model.defer="detalle"></x-text-area>
                     <x-jet-input-error for="detalle" />
                 </div>
 
@@ -1355,9 +1359,9 @@
         }
 
         function selec2Proveedor() {
-            this.selectP = $(this.$refs.selectproveedor).select2();
-            this.selectP.val(this.proveedor_id).trigger("change");
-            this.selectP.on("select2:select", (event) => {
+            this.selectPRV = $(this.$refs.selectproveedoredit).select2();
+            this.selectPRV.val(this.proveedor_id).trigger("change");
+            this.selectPRV.on("select2:select", (event) => {
                 this.proveedor_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
@@ -1365,11 +1369,11 @@
                 $(window).off(evt);
             });
             this.$watch("proveedor_id", (value) => {
-                this.selectP.val(value).trigger("change");
+                this.selectPRV.val(value).trigger("change");
             });
 
             Livewire.hook('message.processed', () => {
-                this.selectP.select2().val(this.proveedor_id).trigger('change');
+                this.selectPRV.select2().val(this.proveedor_id).trigger('change');
             });
         }
 

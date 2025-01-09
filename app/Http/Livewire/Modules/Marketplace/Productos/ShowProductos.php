@@ -9,6 +9,7 @@ use App\Models\Especificacion;
 use App\Models\Marca;
 use App\Models\Moneda;
 use App\Models\Producto;
+use App\Models\Promocion;
 use App\Models\Subcategory;
 use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\DB;
@@ -72,6 +73,7 @@ class ShowProductos extends Component
     public $orderfilters = [];
     public $filterselected = '';
     public $open = false;
+    public $favoritos = [];
 
     public function loadProductos()
     {
@@ -464,128 +466,16 @@ class ShowProductos extends Component
         Self::resetfilterorder();
     }
 
-    public function add_to_cart(Producto $producto, $cantidad)
-    {
-        $producto->load(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($query) {
-                $query->with('unit');
-            }])->availables()->disponibles()->take(1);
-        }])->loadCount(['almacens as stock' => function ($query) {
-            $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
-        }]);
-
-        $cart = Cart::instance('shopping')->content()->firstWhere('id', $producto->id);
-        $qtyexistente = !empty($cart) ? $cart->qty : 0;
-        $promocion = verifyPromocion($producto->promocions->first());
-        $combo = getAmountCombo($promocion, $this->pricetype ?? null);
-        $carshoopitems = !is_null($combo) ? $combo->products : [];
-        $pricesale = $producto->getPrecioVentaDefault($this->pricetype ?? null);
-
-        if ($promocion) {
-            if ($promocion->limit > 0 && (($promocion->outs + $cantidad + $qtyexistente) > $promocion->limit)) {
-                $mensaje = response()->json([
-                    'title' => 'CANTIDAD SUPERA LAS UNIDADES DISPONIBLES EN PROMOCIÓN',
-                    'text' => null,
-                    'type' => 'warning'
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-        }
-
-        if ($producto->stock <= 0 || $producto->stock < ($cantidad + $qtyexistente)) {
-            $mensaje = response()->json([
-                'title' => 'LÍMITE DE STOCK EN PRODUCTO ALCANZADO !',
-                'text' => null,
-                'icon' => 'warning'
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
-
-        if ($pricesale > 0) {
-            Cart::instance('shopping')->add([
-                'id' => $producto->id,
-                'name' => $producto->name,
-                'qty' => $cantidad,
-                'price' => number_format($pricesale, 2, '.', ''),
-                'options' => [
-                    // 'pricebuy' => number_format($this->empresa->usarLista() ? $producto->precio_real_compra : $producto->pricebuy, 2, '.', ''),
-                    'moneda_id' => $this->moneda->id,
-                    'currency' => $this->moneda->currency,
-                    'simbolo' => $this->moneda->simbolo,
-                    'modo_precios' => $this->empresa->usarlista() ? $this->pricetype->name : 'PRECIO MANUAL',
-                    'carshoopitems' => $carshoopitems,
-                    'promocion_id' => $promocion ?  $promocion->id : null,
-                    'igv' => 0,
-                    'subtotaligv' => 0
-                ]
-            ])->associate(Producto::class);
-
-            $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
-            if (auth()->check()) {
-                Cart::instance('shopping')->store(auth()->id());
-            }
-            $this->dispatchBrowserEvent('toast', toastJSON('AGREGADO CORRECTAMENTE'));
-        } else {
-            $mensaje = response()->json([
-                'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
-                'text' => 'No se pudo obtener el precio de venta, configurar correctamente el modo de precios de los productos.',
-                'type' => 'warning'
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
-    }
-
-    public function add_to_wishlist(Producto $producto, $cantidad)
+    public function addfavoritos(Producto $producto)
     {
         if (!auth()->user()) {
             return redirect()->route('login')->with('activeForm', 'login');
         }
-        $producto->load(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($query) {
-                $query->with('unit');
-            }])->availables()->disponibles()->take(1);
-        }]);
 
-        $promocion = verifyPromocion($producto->promocions->first());
-        $combo = getAmountCombo($promocion, $this->pricetype);
-        $carshoopitems = !is_null($combo) ? $combo->products : [];
-        $pricesale = $producto->getPrecioVentaDefault($this->pricetype ?? null);
-
-        if ($pricesale > 0) {
-            Cart::instance('wishlist')->add([
-                'id' => $producto->id,
-                'name' => $producto->name,
-                'qty' => $cantidad,
-                'price' => number_format($pricesale, 2, '.', ''),
-                'options' => [
-                    'moneda_id' => $this->moneda->id,
-                    'currency' => $this->moneda->currency,
-                    'simbolo' => $this->moneda->simbolo,
-                    'modo_precios' => $this->empresa->usarLista() ? $this->pricetype->name : 'DEFAUL PRICESALE',
-                    'carshoopitems' => $carshoopitems,
-                    'promocion_id' => $promocion ?  $promocion->id : null,
-                    'igv' => 0,
-                    'subtotaligv' => 0
-                ]
-            ])->associate(Producto::class);
-
-            $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
-
-            if (auth()->check()) {
-                Cart::instance('wishlist')->store(auth()->id());
-            }
-            $this->dispatchBrowserEvent('toast', toastJSON('AGREGADO CORRECTAMENTE'));
-        } else {
-            $mensaje = response()->json([
-                'title' => 'CONFIGURAR PRECIOS DE VENTA PARA TIENDA VIRTUAL !',
-                'text' => 'No se pudo obtener el precio de venta, configurar correctamente el modo de precios de los productos.',
-                'type' => 'warning'
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
+        $response = $producto->addfavorito();
+        if ($response->getData()->success) {
+            $this->dispatchBrowserEvent('updatewishlist', $response->getData()->counter);
+            $this->dispatchBrowserEvent('toast', toastJSON($response->getData()->mensaje));
         }
     }
 
@@ -623,5 +513,13 @@ class ShowProductos extends Component
         $this->producto = $producto;
         $this->open =  true;
         // dd($producto);
+    }
+
+    public function hydrate()
+    {
+        if (auth()->check()) {
+            Cart::instance('wishlist')->restore(auth()->id());
+        }
+        $this->favoritos = Cart::instance('wishlist')->content()->pluck('id')->toArray();
     }
 }

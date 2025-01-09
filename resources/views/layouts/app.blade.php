@@ -295,21 +295,29 @@
     }
 
 
-    function addproductocart(producto_id = null, promocion_id = null, cantidad = 1) {
+    function addproductocart(producto_id = null, promocion_id = null, cantidad = 1, open_modal = false) {
         const data = {
             promocion_id: promocion_id,
             producto_id: producto_id,
-            cantidad: cantidad
+            cantidad: cantidad,
+            open_modal: open_modal
         }
 
         sendRequest(`{{ route('marketplace.addproducto') }}`, data, (response) => {
-            window.dispatchEvent(new CustomEvent('toast', {
-                detail: {
+            // console.log(response);
+            if (response.open_modal) {
+                window.dispatchEvent(new CustomEvent('getcombos', {
+                    detail: {
+                        producto_id: response.producto_id,
+                    }
+                }))
+            } else {
+                toastMixin.fire({
                     title: response.mensaje,
                     icon: 'success',
-                }
-            }))
-            window.dispatchEvent(new CustomEvent('updatecart'));
+                });
+                window.dispatchEvent(new CustomEvent('updatecart'));
+            }
         }, (errorData) => {
             toastMixin.fire({
                 title: errorData.error,
@@ -320,6 +328,9 @@
     }
 
     function updatecart(event, rowId, cantidad = 1) {
+        event.disabled = true;
+        event.textContent = '...';
+
         const data = {
             rowId: rowId,
             cantidad: cantidad,
@@ -334,7 +345,7 @@
                     icon: 'error',
                     timer: 5000,
                 });
-            }
+            }, () => console.log('Finally ', close)
         );
     }
 
@@ -358,7 +369,10 @@
             });
     }
 
-    function deleteitemcart(rowId, cantidad = 1) {
+    function deleteitemcart(event, rowId, cantidad = 1) {
+        event.disabled = true;
+        event.textContent = 'Eliminando...';
+
         const data = {
             rowId: rowId
         }
@@ -380,7 +394,35 @@
         });
     }
 
-    function sendRequest(route, data, onSuccess = () => {}, onError = () => {}) {
+    function addfavoritos(event, producto_id) {
+        sendRequest(`{{ route('marketplace.addfavoritos') }}`, {
+            producto_id: producto_id
+        }, (response) => {
+            window.dispatchEvent(new CustomEvent('updatewishlist', {
+                detail: response.counter
+            }))
+
+            toastMixin.fire({
+                title: response.mensaje,
+                icon: 'success',
+            });
+            
+            if (response.favorito) {
+                event.classList.add('activo');
+            } else {
+                event.classList.remove('activo');
+            }
+            $(componentloading).fadeOut();
+        }, (errorData) => {
+            toastMixin.fire({
+                title: errorData.error,
+                icon: 'error',
+                timer: 5000,
+            });
+        });
+    }
+
+    function sendRequest(route, data, onSuccess = () => {}, onError = () => {}, onFinally = () => {}) {
         $(componentloading).fadeIn();
 
         fetch(route, {
@@ -390,29 +432,33 @@
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify(data)
-            }).then(response => response.json())
+            }).then(response => {
+                // console.log(response);
+                if (!response.ok) {
+                    throw new Error('Error al procesar solicitud');
+                }
+                return response.json();
+            })
             .then(responseData => {
                 if (responseData.success) {
                     onSuccess(responseData);
                 } else {
-                    console.log(responseData);
                     $(componentloading).fadeOut();
                     onError(responseData);
+                    console.log(responseData);
                 }
             }).catch(error => {
                 $(componentloading).fadeOut();
-                console.error(error);
+                console.log(error);
                 window.dispatchEvent(new CustomEvent('validation', {
                     detail: {
                         title: error.message,
                         icon: 'error'
                     }
                 }));
-            }).finally(() => {
-                // $(componentloading).fadeOut();
-            });
+            })
+            .finally(() => onFinally());
     }
-
 
     const buttons = document.querySelectorAll('.button-add-to-cart');
     if (buttons.length > 0) {

@@ -239,8 +239,9 @@
     "to": "al",
     "of": "de",
     "results": "resultados",
-    "The field :attribute exist in the table": "El campo :attribute debe ser único",
+    "The field :attribute already exist": "El campo :attribute ya se encuentra registrado",
     "trackingstates": "estados de seguimiento",
+    "There is already a value assigned as :attribute.": "Ya existe un valor asignado como :attribute.",
     "There is already a value assigned as :attribute in the table": "Ya existe un valor asignado como :attribute en la tabla",
     "pricetypes": "lista de precios",
     "almacens": "almacenes",
@@ -276,5 +277,6 @@
     "not found" : "No encontrado",
     "Shipping Addresses" : "Direcciones de envío",
     "Update the shipping address for your purchases." : "Actualiza la dirección de envió de tus compras",
-    "Add product to cart" : "Agregar producto al carrito"
+    "Add product to cart" : "Agregar producto al carrito",
+    "save" : "Guardar"
 }

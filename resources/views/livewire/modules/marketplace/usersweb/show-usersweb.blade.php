@@ -1,8 +1,4 @@
 <div>
-    <div wire:loading.flex class="loading-overlay hidden overflow-hidden fixed">
-        <x-loading-next />
-    </div>
-
     @if ($users->hasPages())
         <div class="pb-2">
             {{ $users->onEachSide(0)->links('livewire::pagination-default') }}
@@ -56,8 +52,7 @@
                     STATUS</th>
                 @canany(['admin.marketplace.userweb.edit', 'admin.marketplace.userweb.delete'])
                     <th scope="col" class="p-2 relative">
-                        <span class="sr-only">OPCIONES</span>
-                    </th>
+                        OPCIONES</th>
                 @endcanany
             </tr>
         </x-slot>
@@ -66,8 +61,17 @@
                 @foreach ($users as $item)
                     <tr>
                         <td class="p-2 uppercase">
-                            <h1 class="w-full">{{ $item->document }}</h1>
-                            <p>{{ $item->name }}</p>
+                            @can('admin.marketplace.userweb.edit')
+                                <a class="inline-block text-linktable hover:text-hoverlinktable transition-all ease-in-out duration-150"
+                                    href="{{ route('admin.marketplace.usersweb.show', $item->id) }}">
+                                    {{ $item->document }} <br>{{ $item->name }}
+                                </a>
+                            @endcan
+                            @cannot('admin.marketplace.userweb.edit')
+                                <p class="text-colorlabel text-xs">
+                                    {{ $item->document }} <br>{{ $item->name }}
+                                </p>
+                            @endcannot
                         </td>
 
                         <td class="p-2">
@@ -101,9 +105,6 @@
                                                 wire:loading.attr="disabled" wire:key="restoreuser{{ $item->id }}"
                                                 :checked="false" />
                                         @else
-                                            <x-button-edit wire:loading.attr="disabled" wire:click="edit({{ $item->id }})"
-                                                wire:key="editeuser_{{ $item->id }}" />
-
                                             <x-button-toggle onclick="confirmDelete({{ $item }})"
                                                 wire:loading.attr="disabled" wire:key="deleteuser_{{ $item->id }}" />
                                         @endif
@@ -117,41 +118,9 @@
         @endif
     </x-table>
 
-    <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
-        <x-slot name="title">
-            {{ __('Actualizar usuario web') }}
-        </x-slot>
-
-        <x-slot name="content">
-            <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
-                <div class="w-full">
-                    <x-label value="Documento :" />
-                    <x-input class="block w-full" onkeypress="return validarNumero(event, 11)"
-                        wire:model.defer="user.document" placeholder="Documento del usuario..." />
-                    <x-jet-input-error for="user.document" />
-                </div>
-
-                <div class="w-full">
-                    <x-label value="Nombres :" />
-                    <x-input class="block w-full" wire:model.defer="user.name" placeholder="Nombres del usuario..." />
-                    <x-jet-input-error for="user.name" />
-                </div>
-
-                <div class="w-full">
-                    <x-label value="Correo electrónico :" />
-                    <x-input class="block w-full" type="email" wire:model.defer="user.email"
-                        placeholder="correo electrónico..." />
-                    <x-jet-input-error for="user.email" />
-                </div>
-
-                <div class="w-full flex pt-4 justify-end">
-                    <x-button type="submit" wire:loading.attr="disabled">
-                        {{ __('Save') }}
-                    </x-button>
-                </div>
-            </form>
-        </x-slot>
-    </x-jet-dialog-modal>
+    <div wire:key="loadingcreateuserweb" wire:loading.flex class="loading-overlay hidden overflow-hidden fixed">
+        <x-loading-next />
+    </div>
 
     <script>
         function confirmDelete(user) {

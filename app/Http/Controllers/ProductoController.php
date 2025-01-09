@@ -39,11 +39,13 @@ class ProductoController extends Controller
                 $query->select('id', 'name', 'slug');
             },
             'subcategory',
-            'especificacions.caracteristica',
+            'especificacions' => function ($query) {
+                $query->with('caracteristica');
+            },
             'detalleproducto',
             'garantiaproductos.typegarantia',
             'images' => function ($query) {
-                $query->orderBy('default', 'desc');
+                $query->orderByDesc('default');
             },
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($subQuery) {
@@ -53,7 +55,7 @@ class ProductoController extends Controller
                             ->where('images.imageable_type', Producto::class)
                             ->orderBy('default', 'desc')->limit(1);
                     }]);
-                }])->availables()->disponibles()->take(1);
+                }])->availables()->disponibles();
             }
         ])->loadCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));

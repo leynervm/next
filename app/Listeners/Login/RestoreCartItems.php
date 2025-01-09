@@ -27,7 +27,11 @@ class RestoreCartItems
      */
     public function handle(Login $event): void
     {
+
         Cart::instance('shopping')->restore($event->user->id);
         Cart::instance('wishlist')->restore($event->user->id);
+
+        Cart::instance('shopping')->store($event->user->id);
+        Cart::instance('wishlist')->store($event->user->id);
     }
 }

@@ -61,6 +61,11 @@ class Compra extends Model
         $this->attributes['referencia'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
+    public function setDetalleAttribute($value)
+    {
+        $this->attributes['detalle'] = trim(mb_strtoupper($value, "UTF-8"));
+    }
+
     public function setGuiaAttribute($value)
     {
         $this->attributes['guia'] = trim(mb_strtoupper($value, "UTF-8"));

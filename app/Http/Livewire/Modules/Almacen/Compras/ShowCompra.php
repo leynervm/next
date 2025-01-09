@@ -49,7 +49,7 @@ class ShowCompra extends Component
             'compra.proveedor_id' => ['required', 'integer', 'min:1', 'exists:proveedors,id'],
             'compra.date' => ['required', 'date', 'before_or_equal:today'],
             'compra.moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
-            'compra.tipocambio' => ['nullable', Rule::requiredIf($this->compra->moneda->isDolar()), 'regex:/^\d{0,3}(\.\d{0,3})?$/'],
+            'compra.tipocambio' => ['nullable', Rule::requiredIf($this->compra->moneda->isDolar()), 'numeric', 'gt:0', 'decimal:0,3'],
             'compra.referencia' => [
                 'required',
                 'string',
@@ -65,6 +65,7 @@ class ShowCompra extends Component
             // 'otros' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             // 'total' => ['required', 'numeric', 'gt:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'compra.typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
+            'compra.detalle' => ['nullable', 'string']
         ];
     }
 
@@ -300,7 +301,7 @@ class ShowCompra extends Component
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'concept_id' => ['required', 'integer', 'min:1', 'exists:concepts,id'],
             'methodpayment_id' => ['required', 'integer', 'min:1', 'exists:methodpayments,id'],
-            'detalle' => [Rule::requiredIf($istransferencia)],
+            'detalle' => [Rule::requiredIf($istransferencia), 'string'],
         ]);
 
         try {
@@ -488,11 +489,12 @@ class ShowCompra extends Component
                         $almacencompra->kardex->cantidad = $almacen['cantidad'];
                         $almacencompra->kardex->save();
                     } else {
+                        // dd( $almacen);
                         $almacencompra->saveKardex(
                             $this->compraitem->producto_id,
                             $almacen['id'],
-                            $almacen['pivot']['cantidad'],
-                            $almacen['pivot']['cantidad'] +  $almacen['cantidad'],
+                            $almacen['stock_actual'],
+                            $almacen['stock_actual'] +  $almacen['cantidad'],
                             $almacen['cantidad'],
                             '+',
                             Kardex::ENTRADA_ALMACEN,
@@ -928,7 +930,7 @@ class ShowCompra extends Component
             $producto->pricebuy =  $this->compra->moneda->isDolar() ?
                 number_format($this->pricebuy * $this->compra->tipocambio, 2, '.', '') :
                 number_format($this->pricebuy, 2, '.', '');
-            if (!mi_empresa()->usarLista()) {
+            if (!view()->shared('empresa')->usarLista()) {
                 $producto->pricesale = $this->priceventa;
             }
 

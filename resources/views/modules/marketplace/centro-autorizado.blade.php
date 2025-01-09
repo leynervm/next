@@ -140,7 +140,7 @@
 
                 <div class="w-full contenedor px-0">
                     <div
-                        class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8 pt-0 md:pt-3">
+                        class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8">
                         <div class="block w-full h-full">
                             <picture>
                                 <source srcset="{{ asset('images/home/recursos/tintas_brother.jpg') }}">
@@ -150,7 +150,7 @@
                             </picture>
                         </div>
                         <ul
-                            class="w-full indent-3 sm:indent-5 text-colorlabel text-xs sm:text-sm lg:text-lg font-light flex flex-col gap-3 lg:gap-5 text-justify px-1">
+                            class="w-full indent-3 sm:indent-5 text-colorlabel text-xs sm:text-sm lg:text-lg font-light flex flex-col gap-3 lg:gap-5 text-justify px-1 xs:px-3 md:px-5">
                             <li>
                                 <p class="leading-tight">Nos enorgullece ser un Centro Autorizado Brother, lo que
                                     significa
@@ -302,7 +302,7 @@
 
                 <div class="w-full contenedor px-0">
                     <div
-                        class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8 pt-0 md:pt-3">
+                        class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8">
                         <div class="block w-full">
                             <picture>
                                 <source srcset="{{ asset('images/home/recursos/lenovo_presentacion.jpg') }}">
@@ -312,7 +312,7 @@
                             </picture>
                         </div>
                         <ul
-                            class="w-full indent-3 sm:indent-5 text-colorlabel text-xs sm:text-sm xl:text-lg font-light flex flex-col gap-3 lg:gap-5 text-justify px-1">
+                            class="w-full indent-3 sm:indent-5 text-colorlabel text-xs sm:text-sm xl:text-lg font-light flex flex-col gap-3 lg:gap-5 text-justify px-1 xs:px-3 sm:px-5">
                             <li>
                                 <p class="leading-tight">
                                     Nos complace ser un Centro Autorizado Lenovo, lo que nos permite
@@ -346,7 +346,7 @@
 
                 <div class="w-full grid grid-cols-1 lg:grid-cols-2 pt-3 sm:pt-5 md:pt-8">
                     <div class="w-full bg-colorlogolenovo flex flex-col justify-center items-center p-1 sm:p-3">
-                        <ul class="w-full flex flex-col gap-3 md:gap-5 max-w-xl">
+                        <ul class="w-full flex flex-col gap-3 md:gap-5 md:max-w-xl xs:p-3 md:p-5">
                             @foreach ($garantias->lenovo->requisitos as $item)
                                 <li class="w-full">
                                     <p
@@ -390,7 +390,7 @@
 
                 <div class="w-full contenedor px-0">
                     <div
-                        class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8 pt-0 md:pt-3">
+                        class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8">
                         <div class="block w-full">
                             <picture>
                                 <source srcset="{{ asset('images/home/recursos/asus_presentacion.jpg') }}">
@@ -400,7 +400,7 @@
                             </picture>
                         </div>
                         <ul
-                            class="w-full indent-3 sm:indent-5 text-colorlabel text-xs sm:text-sm xl:text-lg font-light flex flex-col gap-3 lg:gap-5 text-justify px-1">
+                            class="w-full indent-3 sm:indent-5 text-colorlabel text-xs sm:text-sm xl:text-lg font-light flex flex-col gap-3 lg:gap-5 text-justify px-1 xs:px-3 md:px-5">
                             <li>
                                 <p class="leading-tight">
                                     Es un honor para nosotros ser un Centro Autorizado ASUS, lo que
@@ -435,8 +435,8 @@
 
                 <div class="w-full flex flex-col gap-5 lg:gap-0 lg:flex-row pt-3 sm:pt-5 lg:pt-8 lg:overflow-hidden">
                     <div
-                        class="w-full lg:max-w-[60%] flex flex-col justify-start items-center gap-3 lg:gap-5 px-1 sm:px-3 lg:px-5">
-                        <ol class="w-full lista-requisitos-asus flex flex-col gap-3 max-w-lg">
+                        class="w-full lg:max-w-[60%] flex flex-col justify-start items-center gap-3 lg:gap-5 px-1 xs:px-3 sm:px-5 pb-3 sm:pb-3 lg:pb-5">
+                        <ol class="w-full lista-requisitos-asus flex flex-col gap-3 md:max-w-lg">
                             @foreach ($garantias->asus->requisitos as $item)
                                 <li class="">
                                     <p class=" text-xs sm:text-sm xl:text-lg font-light text-justify !leading-tight">

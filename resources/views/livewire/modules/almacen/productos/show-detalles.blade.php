@@ -1,21 +1,18 @@
 <div>
-    <div wire:loading.flex class="loading-overlay hidden fixed z-[299]">
-        <x-loading-next />
-    </div>
-
     <div class="w-full grid {{ Module::isEnabled('Marketplace') ? 'xl:grid-cols-2 gap-8' : '' }}">
         @if (Module::isEnabled('Marketplace'))
-            <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto.">
-                <div class="w-full flex flex-col">
-                    @if (count($producto->especificacions))
-                        <div
-                            class="w-full flex gap-2 text-[10px] bg-fondoheadertable text-textheadertable rounded-t-md p-2">
-                            <div class="w-full flex-1">ESPECIFICACION</div>
-                            <div class="flex-shrink-0">OPCIONES</div>
-                        </div>
-                    @endif
-
-                    <ul class="w-full max-h-60 overflow-x-auto" id="especificacions">
+            <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto."
+                class="flex-1 justify-between">
+                <div class="w-full flex flex-col flex-1 justify-between">
+                    <ul class="w-full flex flex-col max-h-60 overflow-x-auto" id="especificacions">
+                        @if (count($producto->especificacions) > 0)
+                            <li
+                                class="w-full flex items-center bg-fondoheadertable text-textheadertable rounded-t-md text-[10px] p-2">
+                                <div class="w-full flex flex-1 gap-2">
+                                    ESPECIFICACION</div>
+                                <div class="flex-shrink-0">OPCIONES</div>
+                            </li>
+                        @endif
                         @foreach ($producto->especificacions as $item)
                             <li data-id="{{ $item->id }}"
                                 class="w-full p-1 flex gap-2 rounded text-textbodytable bg-fondobodytable text-[10px] hover:bg-fondohovertable">
@@ -49,8 +46,29 @@
                         @endforeach
                     </ul>
 
+                    @if (Module::isEnabled('Marketplace'))
+                        <div class="w-full mt-2" x-data="{
+                            comment: '',
+                            init() {
+                                this.adjustHeight(this.$refs.comentario);
+                                Livewire.hook('message.processed', () => {
+                                    this.adjustHeight(this.$refs.comentario);
+                                });
+                            },
+                            adjustHeight($el) {
+                                $el.style.height = 'auto';
+                                $el.style.height = $el.scrollHeight + 'px';
+                            }
+                        }">
+                            <x-label value="Comentario :" />
+                            <x-text-area class="block w-full" rows="1" style="overflow:hidden;resize:none;"
+                                x-ref="comentario" x-on:input="adjustHeight($el)" id="comentario"
+                                wire:model.defer="producto.comentario"></x-text-area>
+                            <x-jet-input-error for="producto.comentario" />
+                        </div>
+                    @endif
 
-                    <div class="w-full pt-4 flex flex-wrap sm:flex-nowrap items-end gap-1 justify-end mt-auto">
+                    <div class="w-full pt-4 flex flex-wrap sm:flex-nowrap items-end gap-1 justify-end">
                         @if (count($caracteristicas) > 0)
                             @can('admin.almacen.productos.especificaciones')
                                 <x-button wire:click="openmodal" wire:loading.attr="disabled">
@@ -66,16 +84,16 @@
             </x-form-card>
         @endif
 
-        <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto.">
+        <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto."
+            class="flex-1 justify-between">
             <div class="w-full flex h-full flex-1 flex-col justify-between gap-3">
                 @if (count($producto->images) > 0)
                     <div class="w-full flex flex-wrap gap-1">
                         @foreach ($producto->images as $item)
-                            <div
-                                class="w-48 group shadow border border-borderminicard shadow-shadowminicard rounded-md relative overflow-hidden hover:shadow-md hover:shadow-shadowminicard">
-                                <div class="w-full h-24 block">
+                            <div class="w-48 group border border-borderminicard rounded-lg relative overflow-hidden">
+                                <div class="w-full h-32 block">
                                     <img src="{{ pathURLProductImage($item->url) }}" alt=""
-                                        class="w-full h-full object-cover">
+                                        class="w-full h-full object-scale-down object-center">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">
                                     <x-span-text :text="$item->url" class="truncate leading-3 flex-1" />
@@ -102,15 +120,15 @@
                         @endforeach
                     </div>
                 @endif
-
-                @can('admin.almacen.productos.images')
-                    <div class="w-full pt-4 gap-2 flex justify-between items-end">
-                        <p class="text-[10px] text-center text-colorsubtitleform">
-                            Resolución Mínima : 500px X 500px</p>
-                        <x-button wire:click="openmodalimage" wire:loading.attr="disabled">AÑADIR IMAGEN</x-button>
-                    </div>
-                @endcan
             </div>
+
+            @can('admin.almacen.productos.images')
+                <div class="w-full pt-4 gap-2 flex justify-between items-end">
+                    <p class="text-[10px] text-center text-colorsubtitleform">
+                        Resolución Mínima : 500px X 500px</p>
+                    <x-button wire:click="openmodalimage" wire:loading.attr="disabled">AÑADIR IMAGEN</x-button>
+                </div>
+            @endcan
         </x-form-card>
     </div>
 
@@ -156,7 +174,7 @@
                                             <x-input-radio :for="'especificacion_' . $especificacion->id" :text="$especificacion->name" class="text-wrap">
                                                 <x-input wire:model.defer="selectedEspecificacion.{{ $item->id }}"
                                                     class="sr-only peer" type="radio" :id="'especificacion_' . $especificacion->id"
-                                                    :name="'especificaciones_' . $item->id . '[]'" value="{{ $especificacion->id }}" />
+                                                    :name="'especificaciones_' . $item->id . '[]'" value="{{ strval($especificacion->id) }}" />
                                             </x-input-radio>
                                         @endforeach
                                     @endif

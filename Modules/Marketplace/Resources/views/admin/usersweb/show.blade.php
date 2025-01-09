@@ -12,7 +12,16 @@
                 </svg>
             </x-slot>
         </x-link-breadcrumb>
-        <x-link-breadcrumb text="USUARIOS WEB" active>
+        <x-link-breadcrumb text="USUARIOS WEB" route="admin.marketplace.usersweb">
+            <x-slot name="icon">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                    <path
+                        d="M18.505 19h.44c1.035 0 1.859-.471 2.598-1.13 1.877-1.676-2.536-3.37-4.043-3.37M15 5.069Q15.341 5 15.705 5C17.525 5 19 6.343 19 8s-1.475 3-3.295 3q-.364 0-.705-.069m-10.217 4.18c-1.1.632-3.986 1.922-2.229 3.536C3.413 19.436 4.37 20 5.571 20h6.858c1.202 0 2.158-.564 3.017-1.353 1.757-1.614-1.128-2.904-2.229-3.536-2.58-1.481-5.854-1.481-8.434 0M13 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0" />
+                </svg>
+            </x-slot>
+        </x-link-breadcrumb>
+        <x-link-breadcrumb text="VER USUARIO" active>
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -23,16 +32,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-
-    @can('admin.marketplace.userweb.create')
-        <div class="">
-            <livewire:modules.marketplace.usersweb.create-userweb />
-        </div>
-    @endcan
-
-    @can('admin.marketplace.userweb')
-        <div class="w-full ">
-            <livewire:modules.marketplace.usersweb.show-usersweb />
-        </div>
-    @endcan
+    <div class="w-full mx-auto xl:max-w-lg lg:px-3">
+        <livewire:modules.marketplace.usersweb.show-user :user="$user" />
+    </div>
 </x-admin-layout>

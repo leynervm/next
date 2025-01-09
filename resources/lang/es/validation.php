@@ -398,5 +398,8 @@ return [
         'viewalmacensdetalle'       =>  'mostrar almacénes en detalle',
         'newcantidad'               =>  'cantidad',
         'maxstockweb'               =>  'límite de stock web',
+        'empresa.document'          =>  'ruc empresa',
+        'ructransport'              =>  'ruc transportista',
+        'nametransport'             =>  'nombre transportista'
     ],
 ];

@@ -69,14 +69,10 @@
                     MODALIDAD TRANSPORTE</th>
                 <th scope="col" class="p-2 font-medium text-left">
                     DESTINATARIO</th>
-                <th scope="col" class="p-2 font-medium text-left">
-                    DATOS TRANSPORTE</th>
                 <th scope="col" class="p-2 font-medium">
                     PESO</th>
                 <th scope="col" class="p-2 font-medium">
                     FECHA TRASLADO</th>
-                {{-- <th scope="col" class="p-2 font-medium">
-                    LUGAR EMISIÓN</th> --}}
                 <th scope="col" class="p-2 font-medium">
                     LUGAR DE ENVÍO</th>
                 <th scope="col" class="p-2 font-medium">
@@ -111,7 +107,7 @@
                                 @endif
                             </td>
                         @endcan
-                        <td class="p-2 text-[10px]">
+                        <td class="p-2 text-[10px] min-w-28">
                             @can('admin.facturacion.guias.create')
                                 <a href="{{ route('admin.facturacion.guias.edit', $item) }}"
                                     class="text-linktable leading-3 hover:text-hoverlinktable inline-block transition-colors ease-out duration-150">
@@ -128,11 +124,19 @@
                                     {{ $item->seriecomprobante->typecomprobante->descripcion }}
                                 </p>
                             @endcannot
+
+                            @if ($item->isProduccion())
+                                <x-span-text class="leading-none font-semibold text-[8px] inline-block" type="green"
+                                    text="PRODUCCIÓN" />
+                            @else
+                                <x-span-text class="leading-none font-semibold text-[8px] inline-block"
+                                    text="PRUEBAS" />
+                            @endif
                         </td>
-                        <td class="p-2 uppercase">
+                        <td class="p-2 leading-none min-w-32">
                             {{ formatdate($item->date) }}
                         </td>
-                        <td class="p-2 text-[10px] text-center leading-3">
+                        <td class="p-2 text-[10px] text-center leading-none min-w-40">
                             {{ $item->motivotraslado->name }}
 
                             @if ($item->motivotraslado->code == '02')
@@ -149,17 +153,22 @@
                                 </p>
                             @endif
                         </td>
-                        <td class="p-2 text-[10px] text-center uppercase leading-3">
-                            {{ $item->modalidadtransporte->name }}
+                        <td class="p-2 text-[10px] text-center uppercase min-w-40">
+                            <b>{{ $item->modalidadtransporte->name }}</b>
+
+                            @if (!empty($item->ructransport))
+                                <p class="leading-none">
+                                    {{ $item->ructransport }} <br> {{ $item->nametransport }}</p>
+                            @endif
                         </td>
-                        <td class="p-2 text-[10px] text-left">
+                        <td class="p-2 text-[10px] text-left min-w-32">
                             <p>{{ $item->documentdestinatario }}</p>
                             <p class="leading-3">{{ $item->namedestinatario }}</p>
                         </td>
-                        <td class="p-2 text-[10px]">
+                        {{-- <td class="p-2 text-[10px] min-w-32">
                             <p>{{ $item->ructransport }}</p>
                             <p class="leading-3">{{ $item->nametransport }}</p>
-                        </td>
+                        </td> --}}
                         <td class="p-2 text-center whitespace-nowrap">
                             <p>{{ decimalOrInteger($item->peso) }} {{ $item->unit }}</p>
 
@@ -167,16 +176,10 @@
                                 <p>{{ $item->packages }} {{ $item->packages > 1 ? 'BULTOS' : 'BULTO' }}</p>
                             @endif
                         </td>
-                        <td class="p-2 text-center">
+                        <td class="p-2 text-center leading-none min-w-28">
                             {{ formatdate($item->datetraslado, 'DD MMMM Y') }}
                         </td>
-                        {{-- <td class="p-2 text-[10px]">
-                            <p>{{ $item->direccionorigen }}</p>
-                            <p class="whitespace-nowrap">{{ $item->ubigeoorigen->region }},
-                                {{ $item->ubigeoorigen->provincia }},
-                                {{ $item->ubigeoorigen->distrito }}</p>
-                        </td> --}}
-                        <td class="p-2 text-[10px]">
+                        <td class="p-2 text-[10px] leading-none">
                             <p>{{ $item->direcciondestino }}</p>
                             <p class="whitespace-nowrap">{{ $item->ubigeodestino->region }},
                                 {{ $item->ubigeodestino->provincia }},
@@ -209,7 +212,7 @@
                                 {{ $item->guiable->seriecompleta }}
                             @endif
                         </td>
-                        <td class="p-2 text-center min-w-[120px]">
+                        <td class="p-2 text-center min-w-48">
                             <p class="leading-3">{{ $item->sucursal->name }}</p>
                             @if ($item->sucursal->trashed())
                                 <p><x-span-text text="NO DISPONIBLE" class="leading-3 !tracking-normal" /></p>
@@ -233,7 +236,7 @@
                             @endif
                         </td>
                         <td class="p-2 text-center w-48">
-                            <p class="text-center text-wrap leading-3">
+                            <p class="text-center text-wrap leading-none max-w-48">
                                 {{ $item->descripcion }}</p>
 
                             @if (!$item->isSendSunat())

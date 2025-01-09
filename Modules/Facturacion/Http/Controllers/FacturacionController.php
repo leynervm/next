@@ -60,7 +60,7 @@ class FacturacionController extends Controller
         if (Module::isEnabled('Facturacion')) {
             // 1 mm = 2.8346 Points;
             $heightHeader = 250;
-            $heightBody = (count($comprobante->facturableitems) * 3 * 12) * 2.8346;
+            $heightBody = (count($comprobante->facturableitems) * 16 * 12) * 2.8346;
             $heightFooter = 400; #Incl. Totales, QR, Leyenda, Info, Web
             $heightPage = number_format($heightHeader + $heightBody + $heightFooter, 2, '.', '');
             $tmp = public_path('fonts/');

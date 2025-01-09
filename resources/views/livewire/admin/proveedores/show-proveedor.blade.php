@@ -7,10 +7,9 @@
                         <x-label value="RUC :" />
                         <div class="w-full inline-flex gap-1">
                             <x-disabled-text :text="$proveedor->document" class="w-full flex-1" />
-                            {{-- <x-input class="block w-full prevent" wire:model.defer="proveedor.document"
-                                wire:keydown.enter="searchclient" /> --}}
-                            <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled"
-                                wire:target="searchclient">
+                            <x-button-add class="px-2"
+                                wire:click="searchclient('proveedor.document', 'proveedor.name')"
+                                wire:loading.attr="disabled">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -46,8 +45,7 @@
                                     @if (count($ubigeos))
                                         @foreach ($ubigeos as $item)
                                             <option value="{{ $item->id }}">
-                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }} /
-                                                {{ $item->ubigeo_reniec }}
+                                                {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
                                             </option>
                                         @endforeach
                                     @endif
@@ -182,15 +180,15 @@
             <form x-data="{ searchingcontacto: false }" wire:submit.prevent="saverepresentante"
                 class="relative w-full flex flex-col gap-2">
 
-                <div class="w-full flex flex-wrap sm:flex-nowrap gap-2">
-                    <div class="w-full sm:w-64 flex-shrink-0">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                    <div class="w-full">
                         <x-label value="DNI :" />
-                        <div class="w-full inline-flex gap-1">
-                            <x-input class="block w-full prevent" wire:model.defer="document2" maxlength="8"
-                                wire:keydown.enter="searchcontacto" onkeypress="return validarNumero(event, 8)"
-                                onkeydown="disabledEnter(event)" />
-                            <x-button-add class="px-2" wire:click="searchcontacto" wire:loading.attr="disabled"
-                                wire:target="searchcontacto">
+                        <div class="w-full flex gap-1">
+                            <x-input class="block w-full flex-1 prevent" wire:model.defer="document2" maxlength="8"
+                                wire:keydown.enter="searchclient('document2', 'name2')"
+                                onkeypress="return validarNumero(event, 8)" onkeydown="disabledEnter(event)" />
+                            <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient('document2', 'name2')"
+                                wire:loading.attr="disabled">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round">
@@ -201,24 +199,24 @@
                         </div>
                         <x-jet-input-error for="document2" />
                     </div>
-                    <div class="w-full flex-shrink-1">
+
+                    <div class="w-full md:col-span-2">
                         <x-label value="Nombres representante :" />
-                        <x-input class="block w-full" wire:model.defer="name2"
-                            placeholder="Nombres del representante..." />
+                        <x-input class="block w-full" wire:model.defer="name2" />
                         <x-jet-input-error for="name2" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label value="Teléfono :" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="telefono2" type="number"
+                            onkeypress="return validarNumero(event, 9)" min="0" />
+                        <x-jet-input-error for="telefono2" />
                     </div>
                 </div>
 
-                <div class="w-full sm:w-64">
-                    <x-label value="Teléfono :" />
-                    <x-input class="block w-full" wire:model.defer="telefono2" type="number"
-                        onkeypress="return validarNumero(event, 9)" />
-                    <x-jet-input-error for="telefono2" />
-                </div>
-
-                <div class="w-full flex flex-row pt-4 gap-2 justify-end text-right">
+                <div class="w-full flex pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled" wire:target="saverepresentante">
-                        {{ __('save') }}</x-button>
+                        REGISTRAR</x-button>
                 </div>
 
                 <div wire:loading.flex class="loading-overlay fixed hidden">

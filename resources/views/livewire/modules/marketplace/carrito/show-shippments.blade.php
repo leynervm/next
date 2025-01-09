@@ -248,15 +248,15 @@
                     <div class="w-full flex gap-1">
                         <x-input-radio class="py-2" for="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}"
                             text="YO MISMO">
-                            <input x-model="receiver" class="sr-only peer peer-disabled:opacity-25" type="radio"
-                                id="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}" name="receiver"
-                                value="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}" />
+                            <input wire:model.lazy="receiver" wire:loading.attr="disabled" class="sr-only peer peer-disabled:opacity-25"
+                                type="radio" id="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}"
+                                name="receiver" value="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}" />
                         </x-input-radio>
                         <x-input-radio class="py-2" for="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}"
                             text="OTRA PERSONA">
-                            <input x-model="receiver" class="sr-only peer peer-disabled:opacity-25" type="radio"
-                                id="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}" name="receiver"
-                                value="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}" />
+                            <input wire:model.lazy="receiver" wire:loading.attr="disabled" class="sr-only peer peer-disabled:opacity-25"
+                                type="radio" id="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}"
+                                name="receiver" value="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}" />
                         </x-input-radio>
                     </div>
                     <x-jet-input-error for="receiver" />
@@ -264,9 +264,22 @@
                     <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-2">
                         <div class="w-full">
                             <x-label value="Documento :" />
-                            <x-input class="block w-full input-number-none" type="number"
-                                x-model="receiver_info.document" onkeypress="return validarNumero(event, 11)" />
+                            <div class="w-full flex gap-1">
+                                <x-input class="block w-full flex-1 input-number-none" type="number"
+                                    x-model="receiver_info.document" wire:keydown.enter.prevent="searchclient()"
+                                    onkeypress="return validarNumero(event, 11)" />
+                                <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient()"
+                                    wire:loading.attr="disabled">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8" />
+                                        <path d="m21 21-4.3-4.3" />
+                                    </svg>
+                                </x-button-add>
+                            </div>
                             <x-jet-input-error for="receiver_info.document" />
+                            <x-jet-input-error for="document" />
                         </div>
                         <div class="w-full">
                             <x-label value="Nombre completo :" />
@@ -342,7 +355,7 @@
                     class="my-2 w-full grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-1 gap-2">
                     <x-button x-show="processpay== false" wire:key="buttonpay" type="submit"
                         x-bind:disabled="!terms" wire:loading.attr="disabled" class="block w-full p-3 text-sm">
-                            PAGAR</x-button>
+                        PAGAR</x-button>
 
                     @if (count($order) > 0)
                         <button wire:key="buttoncancel" type="button" @click="edit"
@@ -468,6 +481,9 @@
         @endif
     </form>
 
+    <x-loading-web-next x-cloak wire:loading.flex wire:key="loadingregisterorder"
+        wire:target="receiver,searchclient" />
+
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('shipment', () => ({
@@ -478,7 +494,6 @@
                 showlocales: false,
                 terms: false,
                 showaddadress: @entangle('showaddadress').defer,
-                receiver: @entangle('receiver').defer,
                 receiver_info: @entangle('receiver_info').defer,
                 shipmenttype_id: @entangle('shipmenttype_id').defer,
                 local_id: @entangle('local_id').defer,
@@ -495,18 +510,6 @@
                     }
                 },
                 init() {
-                    this.$watch("receiver", (value) => {
-                        if (value == '0') {
-                            this.receiver_info.document = '{{ auth()->user()->document }}';
-                            this.receiver_info.name = '{{ auth()->user()->name }}';
-                            this.receiver_info.telefono = '{{ $phoneuser->phone ?? null }}';
-                        } else {
-                            this.receiver_info.document = '';
-                            this.receiver_info.name = '';
-                            this.receiver_info.telefono = '';
-                        }
-                    });
-
                     this.$watch("shipmenttype_id", (value) => {
                         this.local_id = null;
                         this.daterecojo = null;
@@ -527,7 +530,7 @@
                 save() {
                     $(componentloading).fadeIn();
                     this.$wire.validateorder().then(async (data) => {
-                        console.log(data);
+                        // console.log(data);
                         if (data) {
                             this.processpay = true;
                             const result = data;

@@ -60,7 +60,7 @@
                             </p>
                         @endif
 
-                        @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
+                        {{-- @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
                             <x-slot name="buttoncombos">
                                 <ul
                                     class="w-full list-disc list-inside text-xs flex flex-col gap-1 text-colorsubtitleform">
@@ -76,7 +76,7 @@
                                     @endforeach
                                 </ul>
                             </x-slot>
-                        @endif
+                        @endif --}}
 
                         <div class="w-full">
                             <x-label value="Precio  venta" />

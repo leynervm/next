@@ -359,10 +359,11 @@
                                     <div class="w-full">
                                         <x-label value="Documento :" />
                                         <div class="w-full inline-flex gap-1">
-                                            <x-input class="block w-full flex-1 prevent numeric"
-                                                wire:model.defer="documentdriver" wire:keydown.enter="getDriver"
-                                                minlength="0" maxlength="11" />
-                                            <x-button-add class="px-2" wire:click="getDriver"
+                                            <x-input class="block w-full flex-1 input-number-none"
+                                                wire:model.defer="documentdriver"
+                                                wire:keydown.enter.prevent="searchclient"
+                                                onkeypress="return validarNumero(event, 11)" />
+                                            <x-button-add class="px-2" wire:click="searchclient"
                                                 wire:loading.attr="disable">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
                                                     viewBox="0 0 24 24" fill="none" stroke="currentColor"

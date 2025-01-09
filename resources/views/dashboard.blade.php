@@ -6,12 +6,12 @@
                     PRODUCTOS AGOTADOS & PRÓXIMOS AGOTAR
                 </div>
                 @foreach ($productos as $item)
+                    @php
+                        $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
+                    @endphp
                     <div class="w-full flex p-1 text-[10px] border border-borderminicard gap-2">
-                        @php
-                            $image = $item->getImageURL();
-                        @endphp
                         <div class="w-20 h-20 flex-shrink-0 overflow-hidden">
-                            @if ($image)
+                            @if (!empty($image))
                                 <img class="w-full h-full object-scale-down object-center" src="{{ $image }}" />
                             @else
                                 <x-icon-file-upload class="w-full h-full" type="unknown" />

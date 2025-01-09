@@ -12,7 +12,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="save" class="relative" x-data="data">
+            <form wire:submit.prevent="save" class="relative flex flex-col gap-2" x-data="data">
                 <div class="w-full grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <div class="w-full">
                         <x-label value="DNI / RUC :" />
@@ -26,9 +26,10 @@
                             <div class="w-full inline-flex gap-1">
                                 <x-input class="block flex-1 w-full inpunt-number-none" x-model="document"
                                     @keyup="togglecontact($event.target.value)" wire:model.defer="document"
-                                    wire:keydown.enter.prevent="searchclient"
+                                    wire:keydown.enter.prevent="searchclient('document','name')"
                                     onkeypress="return validarNumero(event, 11)" />
-                                <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
+                                <x-button-add class="px-2" wire:click="searchclient('document','name')"
+                                    wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                         stroke-linejoin="round">
@@ -44,33 +45,6 @@
                         <x-label value="Cliente (Razón Social) :" />
                         <x-input class="block w-full" wire:model.defer="name" />
                         <x-jet-input-error for="name" />
-                    </div>
-
-                    <div class="w-full sm:col-span-3">
-                        <x-label value="Dirección, calle, avenida :" />
-                        <x-input class="block w-full" wire:model.defer="direccion"
-                            placeholder="Dirección del cliente..." />
-                        <x-jet-input-error for="direccion" />
-                    </div>
-
-                    <div class="w-full sm:col-span-2 relative">
-                        <x-label value="Ubigeo :" />
-                        <div class="relative" x-init="select2Ubigeo" wire:ignore>
-                            <x-select class="block w-full" x-ref="select" wire:model.defer="ubigeo_id"
-                                id="ubigeoclient_id" data-minimum-results-for-search="3" data-dropdown-parent="null">
-                                <x-slot name="options">
-                                    @if (count($ubigeos))
-                                        @foreach ($ubigeos as $item)
-                                            <option value="{{ $item->id }}">{{ $item->region }} /
-                                                {{ $item->provincia }}
-                                                / {{ $item->distrito }}</option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="ubigeo_id" />
                     </div>
 
                     <div class="w-full">
@@ -102,13 +76,12 @@
                     </div>
 
                     @if (Module::isEnabled('Ventas'))
-                        @if (mi_empresa()->usarlista())
+                        @if (view()->shared('empresa')->usarlista())
                             <div class="w-full">
                                 <x-label value="Lista precio :" />
-                                <div class="w-full relative" x-data="{ pricetype_id: @entangle('pricetype_id').defer }" x-init="pricetype"
-                                    wire:ignore>
-                                    <x-select class="block w-full iconselect" x-ref="selectpricetype"
-                                        id="pricetype_id" data-dropdown-parent="null">
+                                <div class="w-full relative" x-init="pricetype">
+                                    <x-select class="block w-full iconselect" x-ref="selectpricetype" id="pricetype_id"
+                                        data-dropdown-parent="null">
                                         <x-slot name="options">
                                             @if (count($pricetypes) > 0)
                                                 @foreach ($pricetypes as $item)
@@ -130,13 +103,89 @@
                             onkeypress="return validarNumero(event, 9)" />
                         <x-jet-input-error for="telefono" />
                     </div>
+                </div>
 
-                    <div class="w-full" x-show="contact" x-cloak style="display: none;">
-                        <x-label-check for="addcontacto">
-                            <x-input x-model="addcontacto" type="checkbox" id="addcontacto" />
-                            AGREGAR CONTACTO
-                        </x-label-check>
+                <x-form-card titulo="DIRECCIONES DEL CLIENTE" class="gap-1">
+                    <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div class="w-full relative">
+                            <x-label value="Ubigeo :" />
+                            <div class="relative" x-init="select2Ubigeo">
+                                <x-select class="block w-full" x-ref="selectubigeo" id="ubigeoclient_id"
+                                    data-minimum-results-for-search="3" data-dropdown-parent="null">
+                                    <x-slot name="options">
+                                        @if (count($ubigeos) > 0)
+                                            @foreach ($ubigeos as $item)
+                                                <option value="{{ $item->id }}">
+                                                    {{ $item->region }} / {{ $item->provincia }} / {{ $item->distrito }}
+                                                </option>
+                                            @endforeach
+                                        @endif
+                                    </x-slot>
+                                </x-select>
+                                <x-icon-select />
+                            </div>
+                            <x-jet-input-error for="ubigeo_id" />
+                        </div>
+                        <div class="w-full">
+                            <x-label value="Dirección, calle, avenida :" />
+                            <x-input class="block w-full" wire:model.defer="direccion"
+                                placeholder="Dirección del cliente..." wire:keydown.enter.prevent="adddireccion" />
+                            <x-jet-input-error for="direccion" />
+                        </div>
                     </div>
+                    <div class="w-full sm:col-span-2 flex justify-end">
+                        <x-button wire:click="adddireccion" wire:loading.attr="disabled">AGREGAR
+                            DRECCION</x-button>
+                    </div>
+                    @if (count($direccions) > 0)
+                        <x-table class="w-full max-h-72">
+                            <x-slot name="header">
+                                <tr>
+                                    {{-- <th class="p-2">GUARDAR</th> --}}
+                                    <th class="p-2">DIRECCIÓN</th>
+                                    <th class="p-2">LUGAR</th>
+                                    <th class="p-2">OPCIONES</th>
+                                </tr>
+                            </x-slot>
+                            <x-slot name="body">
+                                @foreach ($direccions as $item)
+                                    <tr>
+                                        {{-- <td class="align-middle text-center">
+                                            <x-input type="checkbox" name="selecteddireccions"
+                                                class="p-2 !rounded-none cursor-pointer" id="{{ $loop->index }}"
+                                                wire:key="{{ rand() }}" wire:loading.attr="disabled"
+                                                wire:model.defer="direccions.{{ $loop->index }}.save" />
+                                        </td> --}}
+                                        <td class="align-middle p-1 text-[10px]">
+                                            {{ $item['direccion'] }} <br>
+                                            @if ($item['principal'])
+                                                <small
+                                                    class="text-colortitleform text-[10px] font-medium">PRINCIPAL</small>
+                                            @endif
+                                        </td>
+                                        <td class="align-middle p-1 text-[10px]">
+                                            {{ $item['distrito'] }},
+                                            {{ $item['provincia'] }},
+                                            {{ $item['region'] }}</td>
+                                        <td class="align-middle p-1 flex gap-2 items-center justify-center">
+                                            <x-button-delete wire:key="{{ rand() }}"
+                                                wire:click="deletedireccion('{{ $loop->index }}')"
+                                                wire:loading.attr="disabled" />
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </x-slot>
+                        </x-table>
+                    @endif
+
+
+                </x-form-card>
+
+                <div class="block w-full py-2" x-show="contact" x-cloak style="display: none;">
+                    <x-label-check for="addcontacto">
+                        <x-input x-model="addcontacto" type="checkbox" id="addcontacto" />
+                        AGREGAR CONTACTO
+                    </x-label-check>
                 </div>
 
                 <x-form-card x-show="addcontacto" titulo="AGREGAR CONTACTO">
@@ -145,9 +194,11 @@
                             <x-label value="DNI :" />
                             <div class="w-full inline-flex gap-1">
                                 <x-input class="block w-full flex-1 input-number-none"
-                                    wire:model.defer="documentContact" wire:keydown.enter.prevent="searchcontacto"
+                                    wire:model.defer="documentContact"
+                                    wire:keydown.enter.prevent="searchclient('documentContact','nameContact')"
                                     onkeypress="return validarNumero(event, 8)" type="number" />
-                                <x-button-add class="px-2" wire:click="searchcontacto"
+                                <x-button-add class="px-2"
+                                    wire:click="searchclient('documentContact','nameContact')"
                                     wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -187,7 +238,6 @@
                     @endif
                 @endif
 
-
                 <div class="w-full flex flex-wrap gap-2 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
@@ -210,9 +260,26 @@
                 contact: false,
                 document: @entangle('document').defer,
                 ubigeo_id: @entangle('ubigeo_id').defer,
+                pricetype_id: @entangle('pricetype_id').defer,
                 sexo: @entangle('sexo').defer,
                 addcontacto: @entangle('addcontacto').defer,
+                init() {
+                    this.$watch("ubigeo_id", (value) => {
+                        this.selectUB.val(value).trigger("change");
+                    });
+                    this.$watch("sexo", (value) => {
+                        this.selectS.val(value).trigger("change");
+                    });
+                    this.$watch("pricetype_id", (value) => {
+                        this.selectP.val(value).trigger("change");
+                    });
 
+                    Livewire.hook('message.processed', () => {
+                        this.selectUB.select2().val(this.ubigeo_id).trigger('change');
+                        this.selectP.select2().val(this.pricetype_id).trigger('change');
+                    });
+
+                },
                 togglecontact(value) {
                     if (value.trim().length == 11) {
                         this.contact = true;
@@ -225,17 +292,14 @@
         });
 
         function select2Ubigeo() {
-            this.select = $(this.$refs.select).select2();
-            this.select.val(this.ubigeo_id).trigger("change");
-            this.select.on("select2:select", (event) => {
+            this.selectUB = $(this.$refs.selectubigeo).select2();
+            this.selectUB.val(this.ubigeo_id).trigger("change");
+            this.selectUB.on("select2:select", (event) => {
                 this.ubigeo_id = event.target.value;
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("ubigeo_id", (value) => {
-                this.select.val(value).trigger("change");
             });
         }
 
@@ -249,9 +313,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("sexo", (value) => {
-                this.selectS.val(value).trigger("change");
-            });
         }
 
         function pricetype() {
@@ -263,9 +324,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("pricetype_id", (value) => {
-                this.selectP.val(value).trigger("change");
             });
         }
     </script>

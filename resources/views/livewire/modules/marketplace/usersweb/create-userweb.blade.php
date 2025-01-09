@@ -25,11 +25,10 @@
                         </div>
                     @else
                         <div class="w-full inline-flex gap-1">
-                            <x-input class="block w-full flex-1 prevent" wire:model.defer="document"
-                                wire:keydown.enter="getClient" placeholder="DNI..." type="number"
+                            <x-input class="block w-full flex-1 input-number-none" wire:model.defer="document"
+                                wire:keydown.enter.prevent="searchclient" type="number"
                                 onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
-                            <x-button-add class="px-2" wire:click="getClient" wire:loading.attr="disabled"
-                                wire:target="getClient">
+                            <x-button-add class="px-2" wire:click="searchclient" wire:loading.attr="disabled">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round">

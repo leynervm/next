@@ -2,16 +2,17 @@
 
 namespace App\Http\Livewire\Admin\Proveedores;
 
-use App\Helpers\GetClient;
 use App\Models\Contact;
 use App\Models\Proveedor;
 use App\Models\Proveedortype;
 use App\Models\Telephone;
 use App\Models\Ubigeo;
+use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
 use App\Rules\ValidatePhoneClient;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -73,8 +74,8 @@ class ShowProveedor extends Component
         $this->authorize('admin.proveedores.delete');
         if ($proveedor->compras()->exists()) {
             $mensaje = response()->json([
-                'title' => 'No se puede eliminar proveedor ' . $proveedor->name,
-                'text' => "El proveedor contiene compras vinculadas, eliminar causará conflictos en la base de datos."
+                'title' => 'NO SE PUEDE ELIMINAR ' . $proveedor->name,
+                'text' => null
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
@@ -232,63 +233,62 @@ class ShowProveedor extends Component
         $this->dispatchBrowserEvent('deleted');
     }
 
-    public function searchclient()
+    public function searchclient($property, $name)
     {
+        $this->authorize('admin.clientes.create');
+        $this->resetValidation();
 
-        $this->authorize('admin.proveedores.edit');
-        $this->proveedor->document = trim($this->proveedor->document);
-        $this->validate([
-            'proveedor.document' => ['required', 'numeric', new ValidateDocument]
-        ]);
-
-        $this->proveedor->name = null;
-        $this->proveedor->direccion = null;
-        $this->proveedor->ubigeo_id = null;
-
-        $this->resetValidation(['proveedor.document', 'proveedor.name', 'proveedor.direccion', 'telefono', 'proveedor.proveedor->ubigeo_id']);
-
-        $http = new GetClient();
-        $response = $http->getClient($this->proveedor->document);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->proveedor->name = $response->getData()->name;
-                $this->proveedor->direccion = $response->getData()->direccion;
-                $this->proveedor->telefono = $response->getData()->telefono;
-                $this->proveedor->ubigeo_id = $response->getData()->ubigeo_id ?? null;
-            } else {
-                $this->addError('proveedor.document', $response->getData()->message);
-            }
+        if ($property == 'proveedor.document') {
+            $this->proveedor->document = trim($this->proveedor->document);
         } else {
-            $this->addError('proveedor.document', 'Error al buscar cliente.');
+            $this->$property = trim($this->$property);
         }
-    }
 
-    public function searchcontacto()
-    {
+        if ($property == 'proveedor.document') {
+            $rules = [
+                'proveedor.document' => ['required', 'numeric', 'regex:/^\d{11}$/']
+            ];
+        } else {
+            $rules = [
+                'document2' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/']
+            ];
+        }
 
-        $this->authorize('admin.proveedores.contacts.edit');
-        $this->document2 = trim($this->document2);
-        $this->validate([
-            'document2' => ['required', 'numeric', 'digits:8']
+        $this->validate($rules);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $property == 'proveedor.document' ? $this->proveedor->document : $this->$property,
+            'searchbd' => true,
         ]);
 
-        $this->name2 = null;
-        $this->telefono2 = null;
-        $this->resetValidation(['document2', 'name2', 'telefono2']);
-
-        $http = new GetClient();
-        $response = $http->getClient($this->document2);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name2 = $response->getData()->name;
-                $this->telefono2 = $response->getData()->telefono;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                if ($property == 'proveedor.document') {
+                    $this->proveedor->name = $cliente->name;
+                    $this->proveedor->direccion = $cliente->direccion;
+                    $this->proveedor->ubigeo_id = $cliente->ubigeo_id;
+                } else {
+                    $this->$name = $cliente->name;
+                    $this->telefono2 = $cliente->telefono;
+                }
             } else {
-                $this->addError('document2', $response->getData()->message);
+                if ($property == 'proveedor.document') {
+                    $this->proveedor->refresh();
+                } else {
+                    $this->$name = '';
+                    $this->telefono2 = '';
+                }
+                $this->addError($property, $cliente->error);
             }
         } else {
-            $this->addError('document2', 'Error al buscar datos del representante.');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 }

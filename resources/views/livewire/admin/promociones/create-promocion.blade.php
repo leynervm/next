@@ -322,7 +322,7 @@
                                     <x-label value="Descuento (%) :" />
                                     <x-input class="block w-full input-number-none" wire:model.defer="descuento"
                                         type="number" min="0" step="0.01"
-                                        onkeypress="return validarNumero(event, 5)" />
+                                        onkeypress="return validarDecimal(event, 7)" />
                                     <x-jet-input-error for="descuento" />
                                 </div>
 

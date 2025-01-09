@@ -17,6 +17,7 @@ use App\Rules\DefaultValue;
 use App\Rules\ValidateFileKey;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -531,6 +532,7 @@ class ConfiguracionInicial extends Component
             'document' => 'required|numeric|digits:11|regex:/^\d{11}$/'
         ]);
 
+        $this->resetValidation();
         $this->reset([
             'name',
             'direccion',
@@ -543,78 +545,92 @@ class ConfiguracionInicial extends Component
             'condicion',
             'selectedsucursals'
         ]);
-        $this->resetValidation([
-            'document',
-            'name',
-            'direccion',
-            'telefono',
-            'ubigeo_id',
-            'estado',
-            'condicion'
+
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->document,
         ]);
 
-        $http = new GetClient();
-        $response = $http->consultaRUC($this->document);
-        // dd(is_array($response->result->establecimientos));
-        if ($response->success) {
-            $this->name = $response->result->razon_social;
-            $this->direccion = $response->result->direccion;
-            $this->estado = $response->result->estado;
-            $this->condicion = $response->result->condicion;
-            $this->ubigeo_id = $response->result->ubigeo_id;
-            $this->departamento = $response->result->departamento;
-            $this->provincia = $response->result->provincia;
-            $this->distrito = $response->result->distrito;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->name = $cliente->name;
+                $this->direccion = $cliente->direccion;
+                $this->estado = $cliente->estado;
+                $this->condicion = $cliente->condicion;
+                $this->ubigeo_id = $cliente->ubigeo_id;
+                $this->departamento = $cliente->region;
+                $this->provincia = $cliente->provincia;
+                $this->distrito = $cliente->distrito;
 
-            $establecimientos = [];
-            $principal = [
-                'descripcion' => 'TIENDA PRINCIPAL ' . $this->name,
-                'direccion' => $response->result->direccion,
-                'ubigeo_id' => $response->result->ubigeo_id,
-                'typesucursal_id' => 1,
-                'departamento' => $response->result->departamento,
-                'provincia' => $response->result->provincia,
-                'distrito' => $response->result->distrito,
-                'cod_tipo' => 'MA',
-                'tipo' => 'CASA MATRIZ',
-                'codigo' => '0000',
-                'default' => Sucursal::DEFAULT,
-                'boxes' => [],
-                'seriecomprobantes' => [],
-            ];
+                $establecimientos = [];
+                $principal = [
+                    'descripcion' => 'TIENDA PRINCIPAL ' . $cliente->name,
+                    'direccion' => $cliente->direccion,
+                    'ubigeo_id' => $cliente->ubigeo_id,
+                    'typesucursal_id' => 1,
+                    'departamento' => $cliente->region,
+                    'provincia' => $cliente->provincia,
+                    'distrito' => $cliente->distrito,
+                    'cod_tipo' => 'MA',
+                    'tipo' => 'CASA MATRIZ',
+                    'codigo' => '0000',
+                    'default' => Sucursal::DEFAULT,
+                    'boxes' => [],
+                    'seriecomprobantes' => [],
+                ];
 
-            if (is_array($response->result->establecimientos)) {
-                $establecimientos = array_map(function ($object) {
-                    $array = (array) $object;
-                    $array['default'] = false;
-                    $array['descripcion'] = $array['tipo'] . ' ' . $array['codigo'];
+                if (is_array($cliente->establecimientos)) {
+                    $establecimientos = array_map(function ($object) {
+                        $array = (array) $object;
+                        $array['default'] = false;
+                        $array['descripcion'] = $array['tipo'] . ' ' . $array['codigo'];
 
-                    $ubigeo_id = null;
-                    if (!empty($array['distrito'])) {
-                        $ubigeo_id = Ubigeo::where('distrito', 'ilike', trim($array['distrito']))
-                            ->where('provincia', 'ilike', trim($array['provincia']))
-                            ->first()->id ?? null;
-                    }
-                    $array['ubigeo_id'] = $ubigeo_id;
+                        $ubigeo_id = null;
+                        if (!empty($array['distrito'])) {
+                            $ubigeo_id = Ubigeo::where('distrito', 'ilike', trim($array['distrito']))
+                                ->where('provincia', 'ilike', trim($array['provincia']))
+                                ->first()->id ?? null;
+                        }
+                        $array['ubigeo_id'] = $ubigeo_id;
 
-                    $typesucursal_id = null;
-                    if ($array['cod_tipo']) {
-                        $typesucursal_id = Typesucursal::where('code', $array['cod_tipo'])->first()->id ?? null;
-                    }
+                        $typesucursal_id = null;
+                        if ($array['cod_tipo']) {
+                            $typesucursal_id = Typesucursal::where('code', $array['cod_tipo'])->first()->id ?? null;
+                        }
 
-                    $array['typesucursal_id'] = $typesucursal_id;
-                    $array['boxes'] = [];
-                    $array['seriecomprobantes'] = [];
-                    return $array;
-                    // return (array) $object;
-                }, $response->result->establecimientos);
+                        $array['typesucursal_id'] = $typesucursal_id;
+                        $array['boxes'] = [];
+                        $array['seriecomprobantes'] = [];
+                        return $array;
+                        // return (array) $object;
+                    }, $cliente->establecimientos);
+                }
+                $establecimientos[] = $principal;
+                $collect = collect($establecimientos);
+                $this->selectedsucursals[] = '0000';
+                $this->sucursals = $collect->sortBy('codigo')->values()->toArray();
+            } else {
+                $this->name = '';
+                $this->direccion = '';
+                $this->estado = '';
+                $this->condicion = '';
+                $this->ubigeo_id = null;
+                $this->departamento = '';
+                $this->provincia = '';
+                $this->distrito = '';
+                $this->selectedsucursals = [];
+                $this->sucursals = [];
+                $this->addError('document', $cliente->error);
             }
-            $establecimientos[] = $principal;
-            $collect = collect($establecimientos);
-            $this->selectedsucursals[] = '0000';
-            $this->sucursals = $collect->sortBy('codigo')->values()->toArray();
         } else {
-            $this->addError('document', $response->message);
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 

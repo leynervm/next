@@ -84,10 +84,11 @@
             @else
                 <div class="w-full inline-flex gap-1">
                     <x-input class="block w-full flex-1 input-number-none" x-model="document"
-                        wire:model.defer="document" x-on:keydown.enter.prevent="consultaCliente()" minlength="8"
-                        maxlength="11" onkeypress="return validarNumero(event, 11)"
+                        wire:model.defer="document" wire:keydown.enter.prevent="searchcliente('document', 'name')"
+                        minlength="8" maxlength="11" onkeypress="return validarNumero(event, 11)"
                         onpaste="return validarPasteNumero(event, 11)" />
-                    <x-button-add class="px-2" x-on:click="consultaCliente()" wire:loading.attr="disabled">
+                    <x-button-add class="px-2" wire:click="searchcliente('document', 'name')"
+                        wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8" />
@@ -201,8 +202,8 @@
         </div>
 
         <div class="w-full" x-show="istransferencia" x-cloak style="display: none;">
-            <x-label value="Detalle, N° transacción, etc :" />
-            <x-input class="block w-full" wire:model.defer="detallepago" />
+            <x-label value="Observaciones / Detalle, etc :" />
+            <x-text-area class="block w-full" wire:model.defer="detallepago"></x-text-area>
             <x-jet-input-error for="detallepago" />
         </div>
 
@@ -216,7 +217,7 @@
     <div class="w-full grid grid-cols-1 gap-1">
         <div class="w-full">
             <x-label value="Observaciones :" />
-            <x-input class="block w-full" wire:model.defer="observaciones" />
+            <x-text-area class="block w-full" wire:model.defer="observaciones"></x-text-area>
             <x-jet-input-error for="observaciones" />
         </div>
     </div>

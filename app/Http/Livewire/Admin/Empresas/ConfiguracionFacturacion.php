@@ -57,14 +57,14 @@ class ConfiguracionFacturacion extends Component
                 $urlOld = 'company/cert/' . $this->empresa->cert;
                 $extcert = FormatoPersonalizado::getExtencionFile($this->cert->getClientOriginalName());
                 $urlcert = 'cert_' . $this->empresa->document . '.' . $extcert;
-                $this->cert->storeAs('company/cert/', $urlcert, 'local');
                 if (Storage::disk('local')->exists($urlOld)) {
                     Storage::disk('local')->delete($urlOld);
                 }
+                $this->cert->storeAs('company/cert/', $urlcert, 'local');
             }
 
             if (empty($urlcert)) {
-                $this->addError('cert', 'El campo certificado es obligatorio.');
+                $this->addError('cert', 'El campo certificado digital es obligatorio.');
                 return false;
             }
 

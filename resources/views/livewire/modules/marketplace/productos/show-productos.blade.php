@@ -1,4 +1,5 @@
-<div wire:init="loadProductos" x-data="carshoop">
+<div @getcombos.window ="(data) => $wire.getcombos(data.detail.producto_id)" wire:init="loadProductos"
+    x-data="carshoop">
 
     <x-loading-web-next wire:key="loadingproductosweb" wire:loading />
 
@@ -338,8 +339,16 @@
 
                                 @if ($item->stock > 0)
                                     <x-slot name="buttonscart">
-                                        <x-button-like class="absolute top-1 right-1" wire:loading.attr="disabled"
-                                            wire:click="add_to_wishlist({{ $item->id }}, 1)" />
+                                        @auth
+                                            <x-button-like class="absolute top-1 right-1 {{ in_array($item->id, $favoritos) ? 'activo' : '' }}" wire:loading.attr="disabled"
+                                               onclick="addfavoritos(this, '{{ encryptText($item->id) }}')" x-show="addcart"
+                                                x-transition:enter="opacity-0 transition ease-in-out duration-300"
+                                                x-transition:enter-start="opacity-0 translate-x-full"
+                                                x-transition:enter-end="opacity-100 translate-y-0"
+                                                x-transition:leave="transition translate-x-full ease-in-out duration-300"
+                                                x-transition:leave-start="opacity-100 translate-x-0"
+                                                x-transition:leave-end="opacity-0 translate-y-0" />
+                                        @endauth
 
                                         <div x-cloak x-show="addcart"
                                             class="w-full bg-body z-[2] p-1 flex flex-col {{-- xl:flex-row --}} items-end gap-1 justify-end xl:absolute xl:bottom-0"
@@ -350,39 +359,34 @@
                                             x-transition:leave="transition translate-y-full ease-in-out duration-300"
                                             x-transition:leave-start="opacity-100 translate-y-0"
                                             x-transition:leave-end="opacity-0 translate-y-0">
+
                                             <div
-                                                class="w-full flex-1 flex justify-center xl:justify-start gap-0.5 gap-x-3">
-                                                <button type="button" wire:loading.attr="disabled"
-                                                    @click="parseFloat(qty--)" x-bind:disabled="qty == 1"
-                                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">-</button>
+                                                class="w-full flex-1 flex justify-center xl:justify-start gap-0.5 gap-x-1">
+                                                <template x-if="parseFloat(qty)>1">
+                                                    <button x-on:click="parseFloat(qty--)" class="btn-increment-cart"
+                                                        type="button" wire:loading.attr="disabled"
+                                                        :key="{{ $item->id }}">-</button>
+                                                </template>
+                                                <template x-if="parseFloat(qty)==1">
+                                                    <span class="btn-increment-cart disabled"
+                                                        :key="{{ rand() }}">-</span>
+                                                </template>
+
                                                 <x-input x-model="qty"
                                                     class="w-full rounded-xl flex-1 text-center text-colorlabel input-number-none"
                                                     type="number" step="1" min="1"
-                                                    onkeypress="return validarNumero(event, 4)"
-                                                    @blur="if (!qty || qty === '0') qty = '1'" />
-                                                <button type="button" wire:loading.attr="disabled"
-                                                    @click="parseFloat(qty++)"
-                                                    class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">+</button>
+                                                    onpaste="return validarPasteNumero(event, 12)"
+                                                    onkeypress="return validarNumero(event, 5)"
+                                                    x-on:blur="if (!qty || qty === '0') qty = '1'" />
+
+                                                <button class="btn-increment-cart" x-on:click="parseFloat(qty++)"
+                                                    type="button" wire:loading.attr="disabled">+</button>
                                             </div>
 
-                                            @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
-                                                <x-button-add-car type="button" wire:loading.attr="disabled"
-                                                    class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
-                                                    wire:click="getcombos({{ $item->id }})">
-                                                    AGREGAR</x-button-add-car>
-                                            @else
-                                                <x-button-add-car type="button" wire:loading.attr="disabled"
-                                                    class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
-                                                    x-on:click="addproductocart('{{ encryptText($item->id) }}', '{{ $promocion ? encryptText($promocion->id) : null }}', qty)">
-                                                    AGREGAR</x-button-add-car>
-                                            @endif
-
-
-
-                                            {{-- <x-button-add-car type="button" wire:loading.attr="disabled"
+                                            <x-button-add-car type="button" wire:loading.attr="disabled"
                                                 class="!rounded-xl w-full !flex gap-0.5 items-center justify-center text-[10px]"
-                                                x-on:click="addproductocart('{{ encryptText($item->id) }}', '{{ $promocion ? encryptText($promocion->id) : null }}', qty)">
-                                                AGREGAR</x-button-add-car> --}}
+                                                x-on:click="addproductocart('{{ encryptText($item->id) }}', '{{ $promocion ? encryptText($promocion->id) : null }}', qty, true)">
+                                                AGREGAR</x-button-add-car>
                                         </div>
                                     </x-slot>
                                 @else
@@ -561,10 +565,15 @@
                                             </h1>
                                         @endif
                                     </div>
-                                    <div class="flex-shrink-0">
-                                        <livewire:modules.marketplace.carrito.add-wishlist :producto="$producto"
-                                            :pricetype="$pricetype" />
-                                    </div>
+
+                                    @auth
+                                        <div class="flex-shrink-0">
+                                            <x-button-like
+                                                class="{{ in_array($producto->id, $favoritos) ? 'activo' : '' }}"
+                                                wire:loading.attr="disabled"
+                                                onclick="addfavoritos(this, '{{ encryptText($producto->id) }}')" />
+                                        </div>
+                                    @endauth
                                 @else
                                     <p class="w-full flex-1 text-colorerror text-[10px] font-semibold text-center">
                                         PRECIO DE VENTA NO ENCONTRADO</p>
@@ -573,19 +582,29 @@
 
                             @if ($producto->stock > 0)
                                 @if ($pricesale > 0)
-                                    <div class="w-full flex items-center gap-1 justify-end mt-1 sm:mt-5"
+                                    <div wire:ignore class="w-full flex items-center gap-1 justify-end mt-1 sm:mt-5"
                                         x-data="{ qty: 1 }">
-                                        <div class="flex-1 w-full">
-                                            <button type="button" x-on:click="qty = qty-1"
-                                                x-bind:disabled="qty == 1"
-                                                class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">
-                                                -</button>
-                                            <span x-text="qty"
-                                                class="font-medium text-sm px-2 text-colorlabel inline-block w-8 text-center"></span>
-                                            <button type="button" wire:loading.attr="disabled"
-                                                x-on:click="qty = qty+1"
-                                                class="font-medium hover:bg-neutral-400 hover:ring-2 hover:ring-neutral-300 text-xl w-9 h-9 bg-neutral-300 text-gray-500 p-2.5 pt-1.5 align-middle inline-flex items-center justify-center rounded-xl disabled:opacity-25 transition ease-in-out duration-150">
-                                                +</button>
+                                        <div
+                                            class="w-full flex-1 flex justify-center xl:justify-start gap-0.5 gap-x-1">
+                                            <template x-if="parseFloat(qty)>1">
+                                                <button x-on:click="parseFloat(qty--)" class="btn-increment-cart"
+                                                    type="button" wire:loading.attr="disabled"
+                                                    :key="{{ $item->id }}">-</button>
+                                            </template>
+                                            <template x-if="parseFloat(qty)==1">
+                                                <span class="btn-increment-cart disabled"
+                                                    :key="{{ rand() }}">-</span>
+                                            </template>
+
+                                            <x-input x-model="qty"
+                                                class="w-20 rounded-xl text-center text-colorlabel input-number-none"
+                                                type="number" step="1" min="1"
+                                                onpaste="return validarPasteNumero(event, 12)"
+                                                onkeypress="return validarNumero(event, 5)"
+                                                x-on:blur="if (!qty || qty === '0') qty = '1'" />
+
+                                            <button class="btn-increment-cart" x-on:click="parseFloat(qty++)"
+                                                type="button" wire:loading.attr="disabled">+</button>
                                         </div>
 
                                         <x-button-add-car type="button"
@@ -678,7 +697,8 @@
                                                         </svg>
                                                     </span>
 
-                                                    <div class="w-20 flex flex-col justify-center items-center">
+                                                    <div wire:ignore
+                                                        class="w-20 flex flex-col justify-center items-center">
                                                         <a class="w-full block rounded-lg relative"
                                                             href="{{ route('productos.show', $itemcombo->producto_slug) }}">
                                                             @if ($itemcombo->image)
@@ -699,7 +719,6 @@
                                                                 <x-span-text text="AGOTADO"
                                                                     class="text-nowrap absolute bottom-0 left-[50%] -translate-x-[50%] !text-[9px] py-0.5" />
                                                             @endif
-
                                                         </a>
                                                     </div>
                                                 @endforeach

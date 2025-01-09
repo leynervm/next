@@ -17,7 +17,7 @@ class ShowUsersweb extends Component
     use WithPagination, AuthorizesRequests;
 
     public $open = false;
-    public  $user, $emai, $password, $terms;
+    public $emai, $password, $terms;
     public $search = '';
 
     protected $listeners = ['render'];
@@ -28,26 +28,6 @@ class ShowUsersweb extends Component
             'as' => 'buscar'
         ]
     ];
-
-    protected function rules()
-    {
-        return [
-            'user.document' => [
-                'required', 'numeric', 'regex:/^\d{8}(?:\d{3})?$/',
-                new ValidateDocument(), new CampoUnique('users', 'document', $this->user->id, true)
-            ],
-            'user.name' => ['required', 'string', 'min:3', 'max:255'],
-            'user.email' => [
-                'required', 'email',
-                new CampoUnique('users', 'email', $this->user->id, true)
-            ],
-        ];
-    }
-
-    public function mount()
-    {
-        $this->user = new User();
-    }
 
     public function render()
     {
@@ -64,25 +44,6 @@ class ShowUsersweb extends Component
         return view('livewire.modules.marketplace.usersweb.show-usersweb', compact('users'));
     }
 
-    public function edit(User $user)
-    {
-        $this->authorize('admin.marketplace.userweb.edit');
-        $this->user = $user;
-        $this->resetValidation();
-        $this->resetExcept(['user']);
-        $this->open = true;
-    }
-
-    public function update()
-    {
-        $this->authorize('admin.marketplace.userweb.edit');
-        $this->validate();
-        $this->user->save();
-        $this->dispatchBrowserEvent('updated');
-        $this->resetValidation();
-        $this->resetExcept(['user']);
-    }
-
     public function delete(User $user)
     {
         $this->authorize('admin.marketplace.userweb.delete');
@@ -93,7 +54,6 @@ class ShowUsersweb extends Component
     public function restoreuser($user_id)
     {
 
-        // $this->authorize('admin.users.restore');
         DB::beginTransaction();
         try {
             $user = User::withTrashed()->find($user_id);

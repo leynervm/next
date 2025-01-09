@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Client;
+use App\Models\Direccion;
 use App\Models\Pricetype;
 use App\Models\Producto;
+use App\Models\Ubigeo;
 use App\Rules\ValidateDocument;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
+use jossmp\sunat\ruc;
+use jossmp\sunat\tipo_cambio;
 use Nwidart\Modules\Facades\Module;
 
 class ApiController extends Controller
@@ -80,16 +85,9 @@ class ApiController extends Controller
     public function consultacliente(Request $request)
     {
 
-        $rules = [
-            'document'  => [
-                'required',
-                'numeric',
-                new ValidateDocument,
-                'regex:/^\d{8}(?:\d{3})?$/',
-            ]
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
+        $validator = Validator::make($request->all(), [
+            'document'  => ['required', 'numeric', new ValidateDocument, 'regex:/^\d{8}(?:\d{3})?$/']
+        ]);
         // $validator->setAttributeNames($attributes);
         if ($validator->fails()) {
             return response()->json([
@@ -100,31 +98,51 @@ class ApiController extends Controller
         }
 
         $document = trim($request->input('document'));
-        $autosaved = filter_var($request->input('autosaved'), FILTER_VALIDATE_BOOLEAN);
-        $searchbd = filter_var($request->input('searchbd'), FILTER_VALIDATE_BOOLEAN);
+        $autosaved = filter_var($request->input('autosaved'), FILTER_VALIDATE_BOOLEAN) ?? false;
+        $obtenerlista = filter_var($request->input('obtenerlista'), FILTER_VALIDATE_BOOLEAN) ?? false;
+        $searchbd = filter_var($request->input('searchbd'), FILTER_VALIDATE_BOOLEAN) ?? false;
+        $savedireccions = filter_var($request->input('savedireccions'), FILTER_VALIDATE_BOOLEAN) ?? false;
 
         if ($searchbd) {
-            $cliente = self::consulta_cliente_bd($document);
+            $cliente = self::consulta_cliente_bd($document, $obtenerlista, $autosaved);
             if (!empty($cliente)) {
                 return $cliente;
             }
         }
 
         if (strlen(trim($document)) == 8) {
-            return self::consulta_dni($document, $autosaved);
+            return self::consulta_dni($document, $obtenerlista, $autosaved);
         }
 
-        if (strlen(trim($document)) == 11) {
-            return self::consulta_ruc($document, $autosaved);
-        }
+        try {
+            if (strlen(trim($document)) == 11) {
+                $cliente = self::consulta_solo_ruc($document, $obtenerlista,  $autosaved, $savedireccions);
+                if ($cliente->success) {
+                    return $cliente;
+                }
+                return self::consulta_ruc($document, $obtenerlista,  $autosaved);
+            }
 
-        return response()->json([
-            'success' => false,
-            'error' => "Documento inválido",
-        ])->getData();
+            return response()->json([
+                'success' => false,
+                'error' => "Documento inválido",
+            ])->getData();
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ])->getData();
+            return false;
+            throw $e;
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ])->getData();
+            return false;
+            throw $e;
+        }
     }
 
-    public function consulta_dni($dni, $autosaved = false)
+    public function consulta_dni($dni, $obtenerlista = false, $autosaved = false)
     {
         try {
             $empresa = view()->shared('empresa');
@@ -151,7 +169,7 @@ class ApiController extends Controller
                     ])->getData();
                 }
 
-                if ($empresa->usarLista()) {
+                if ($obtenerlista && $empresa->usarLista()) {
                     $pricetype = Pricetype::activos()->orderByDesc('default')
                         ->orderBy('id', 'asc')->first();
                 }
@@ -171,6 +189,11 @@ class ApiController extends Controller
                         'pricetype' => $cliente->pricetype,
                         'telefono' => null,
                         'direccion' => null,
+                        'ubigeo_id' => null,
+                        'distrito' => null,
+                        'provincia' => null,
+                        'region' => null,
+                        'birthday' => false
                     ])->getData();
                 }
 
@@ -180,6 +203,11 @@ class ApiController extends Controller
                     'pricetype' => $pricetype,
                     'telefono' => null,
                     'direccion' => null,
+                    'ubigeo_id' => null,
+                    'distrito' => null,
+                    'provincia' => null,
+                    'region' => null,
+                    'birthday' => false
                 ])->getData();
             }
 
@@ -202,7 +230,7 @@ class ApiController extends Controller
         }
     }
 
-    public function consulta_ruc($ruc, $autosaved = false)
+    public function consulta_ruc($ruc, $obtenerlista = false, $autosaved = false)
     {
         try {
             $empresa = view()->shared('empresa');
@@ -229,18 +257,37 @@ class ApiController extends Controller
                     ])->getData();
                 }
 
-                if ($empresa->usarLista()) {
+                if ($obtenerlista && $empresa->usarLista()) {
                     $pricetype = Pricetype::activos()->orderByDesc('default')
                         ->orderBy('id', 'asc')->first();
+                }
+
+                $ubigeo = null;
+                if (isset($result['ubigeo']) && !empty($result['ubigeo'])) {
+                    $ubigeo = Ubigeo::query()->select('id', 'distrito', 'provincia', 'region', 'ubigeo_inei')
+                        ->where('ubigeo_inei', $result['ubigeo'])->take(1)->first();
                 }
 
                 if ($autosaved) {
                     $cliente = Client::firstOrCreate(['document' => $ruc], [
                         'name' => $name,
-                        'sexo' => null,
+                        'sexo' => Client::EMPRESA,
                         'pricetype_id' => $empresa->usarLista() ? $pricetype->id : null
                     ]);
-                    $cliente->load('pricetype');
+
+                    if (isset($result['direccion']) && !empty($result['direccion'])) {
+                        $cliente->direccions()->create([
+                            'name' => mb_strtoupper($result['direccion'], "UTF-8"),
+                            'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
+                            'default' => Direccion::DEFAULT,
+                        ]);
+                    }
+                    $cliente->load(['pricetype', 'direccions.ubigeo']);
+
+                    $direccion = null;
+                    if (count($cliente->direccions) > 0) {
+                        $direccion = $cliente->direccions->first();
+                    }
 
                     return response()->json([
                         'success' => true,
@@ -248,7 +295,12 @@ class ApiController extends Controller
                         'name' => $cliente->name,
                         'pricetype' => $cliente->pricetype,
                         'telefono' => null,
-                        'direccion' => null,
+                        'direccion' => empty($direccion) ? $direccion->name : null,
+                        'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
+                        'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
+                        'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
+                        'region' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->region : null,
+                        'birthday' => false
                     ])->getData();
                 }
 
@@ -257,7 +309,12 @@ class ApiController extends Controller
                     'name' => $name,
                     'pricetype' => $pricetype,
                     'telefono' => null,
-                    'direccion' => null,
+                    'direccion' => isset($result['direccion']) && !empty($result['direccion']) ? $result['direccion'] : null,
+                    'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
+                    'distrito' => !empty($ubigeo) ? $ubigeo->distrito : null,
+                    'provincia' => !empty($ubigeo) ? $ubigeo->provincia : null,
+                    'region' => !empty($ubigeo) ? $ubigeo->region : null,
+                    'birthday' => false
                 ])->getData();
             }
 
@@ -280,38 +337,54 @@ class ApiController extends Controller
         }
     }
 
-    public function consulta_cliente_bd($document)
+    public function consulta_cliente_bd($document, $obtenerlista = false, $autosaved = false,)
     {
         try {
             $empresa = view()->shared('empresa');
             $pricetype = null;
+            $birthday = false;
 
-            $cliente = Client::withTrashed()->with(['pricetype' => function ($query) {
-                $query->select('id', 'name', 'decimals', 'rounded');
-            }, 'direccions' => function ($query) {
-                $query->withTrashed()->orderByDesc('default');
+            $cliente = Client::withTrashed()->with(['direccions' => function ($query) {
+                $query->withTrashed()->with('ubigeo')->orderByDesc('default');
             }])->where('document', $document)->first();
 
-            if ($empresa->usarLista()) {
+            if ($obtenerlista && $empresa->usarLista()) {
                 $pricetype = Pricetype::activos()->orderByDesc('default')
                     ->orderBy('id', 'asc')->first();
             }
 
             if ($cliente) {
-                if ($cliente->trashed()) {
-                    $cliente->pricetype_id = $empresa->usarLista() ? $pricetype->id : null;
-                    $cliente->save();
+                if ($autosaved && $cliente->trashed()) {
+                    $cliente->restore();
                     $cliente->direccions()->restore();
-                    $cliente->telephones()->restore();
                 }
 
+                if ($autosaved && is_null($cliente->pricetype_id)) {
+                    $cliente->pricetype_id = $empresa->usarLista() ? $pricetype->id : null;
+                    $cliente->save();
+                }
+                if ($cliente->nacimiento) {
+                    $birthday = Carbon::parse($cliente->nacimiento)->format('m-d') == Carbon::now()->format('m-d') ? true : false;
+                }
+
+                $direccion = null;
+                if (count($cliente->direccions) > 0) {
+                    $direccion = $cliente->direccions->first();
+                }
+
+                // $cliente->load(['pricetype', 'direccions']);
                 return response()->json([
                     'success' => true,
                     'id' => $cliente->id,
                     'name' => $cliente->name,
                     'pricetype' => $cliente->pricetype,
-                    'telefono' => count($cliente->telephones) > 0 ? $cliente->telephones->first()->name : null,
-                    'direccion' => count($cliente->direccions) > 0 ? $cliente->direccions->first()->name : null,
+                    'telefono' => count($cliente->telephones) > 0 ? $cliente->telephones->first()->phone : null,
+                    'direccion' => !empty($direccion) ? $direccion->name : null,
+                    'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
+                    'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
+                    'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
+                    'region' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->region : null,
+                    'birthday' => $birthday
                 ])->getData();
             }
             return null;
@@ -328,5 +401,156 @@ class ApiController extends Controller
             return false;
             throw $e;
         }
+    }
+
+    public function consulta_solo_ruc($ruc, $obtenerlista = false, $autosaved = false, $savedireccions = false)
+    {
+
+        $empresa = view()->shared('empresa');
+        $pricetype = null;
+        $config = [
+            'representantes_legales'     => true,
+            'cantidad_trabajadores'     => false,
+            'establecimientos'             => true,
+            'deuda'                     => false,
+        ];
+
+        $sunat = new ruc($config);
+        $response = $sunat->consulta($ruc);
+        // return json_decode($response, true);
+
+        if (isset($response->success) && $response->success) {
+            $ubigeo = null;
+            if (!empty($response->result->distrito)) {
+                $ubigeo = Ubigeo::query()->select('id', 'distrito', 'provincia', 'region')
+                    ->whereRaw('LOWER(distrito) = ?', [strtolower(trim($response->result->distrito))])
+                    ->whereRaw('LOWER(provincia) = ?', [strtolower(trim($response->result->provincia))])
+                    ->take(1)->first();
+            }
+
+            if ($obtenerlista && $empresa->usarLista()) {
+                $pricetype = Pricetype::activos()->orderByDesc('default')
+                    ->orderBy('id', 'asc')->first();
+            }
+
+            if ($autosaved) {
+                $cliente = Client::firstOrCreate(['document' => $ruc], [
+                    'name' => $response->result->razon_social,
+                    'sexo' => Client::EMPRESA,
+                    'pricetype_id' => $empresa->usarLista() ? $pricetype->id : null
+                ]);
+
+                if (array_key_exists('direccion', (array) $response->result) && !empty($response->result->direccion)) {
+                    $cliente->direccions()->firstOrCreate([
+                        'name' => mb_strtoupper($response->result->direccion, "UTF-8")
+                    ], [
+                        'default' => $cliente->direccions()->default()->exists() ? 0 : Direccion::DEFAULT,
+                        'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
+                    ]);
+                }
+
+                if ($savedireccions && array_key_exists('establecimientos', (array) $response->result) && count((array) $response->result->establecimientos) > 0) {
+                    foreach ($response->result->establecimientos as $local) {
+                        $ubigeolocal = null;
+                        if (!empty($local->distrito)) {
+                            $ubigeolocal = Ubigeo::query()->select('id', 'distrito', 'provincia')
+                                ->whereRaw('LOWER(distrito) = ?', [strtolower(trim($local->distrito))])
+                                ->whereRaw('LOWER(provincia) = ?', [strtolower(trim($local->provincia))])
+                                ->take(1)->first();
+                        }
+
+                        $cliente->direccions()->firstOrCreate([
+                            'name' => mb_strtoupper($local->direccion, "UTF-8")
+                        ], [
+                            'ubigeo_id' => !empty($ubigeolocal) ? $ubigeolocal->id : null,
+                        ]);
+                    }
+                }
+                $cliente->load(['pricetype', 'direccions.ubigeo']);
+
+                $direccion = null;
+                if (count($cliente->direccions) > 0) {
+                    $direccion = $cliente->direccions->first();
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'id' => $cliente->id,
+                    'name' => $cliente->name,
+                    'pricetype' => $cliente->pricetype,
+                    'telefono' => null,
+                    'estado' => $response->result->estado ?? null,
+                    'condicion' => $response->result->condicion ?? null,
+                    'direccion' => !empty($direccion) ? $direccion->name : null,
+                    'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
+                    'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
+                    'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
+                    'region' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->region : null,
+                    'birthday' => false,
+                    'establecimientos' => $response->result->establecimientos,
+                ])->getData();
+            }
+
+            return response()->json([
+                'success' => true,
+                'name' => $response->result->razon_social,
+                'pricetype' => $pricetype,
+                'telefono' => null,
+                'estado' => $response->result->estado ?? null,
+                'condicion' => $response->result->condicion ?? null,
+                'direccion' => $response->result->direccion ?? null,
+                'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
+                'distrito' => !empty($ubigeo) ? $ubigeo->distrito : null,
+                'provincia' => !empty($ubigeo) ? $ubigeo->provincia : null,
+                'region' => !empty($ubigeo) ? $ubigeo->region : null,
+                'birthday' => false,
+                'establecimientos' => $response->result->establecimientos,
+            ])->getData();
+
+            // return response()->json([
+            //     'success' => true,
+            //     'result' => [
+            //         'ruc' => $response->result->ruc,
+            //         'razon_social' => $response->result->razon_social,
+            //         'nombre_comercial' => $response->result->nombre_comercial,
+            //         'direccion' => $response->result->direccion,
+            //         'departamento' => $response->result->departamento,
+            //         'provincia' => $response->result->provincia,
+            //         'distrito' => $response->result->distrito,
+            //         'estado' => $response->result->estado,
+            //         'condicion' => $response->result->condicion,
+            //         'establecimientos' => $response->result->establecimientos,
+            //         'ubigeo_id' => $ubigeo_id,
+            //     ]
+            // ])->getData();
+        } else {
+            return response()->json([
+                'success' => false,
+                'error' => $response->message ?? 'No se encontraron resultados',
+            ])->getData();
+        }
+
+        return $response;
+    }
+
+    public function tipocambio()
+    {
+        $tc = new tipo_cambio();
+        $result = $tc->ultimo_tc();
+
+        if ($result->success) {
+            $json = [
+                'success' => true,
+                'compra' => $result->result->compra,
+                'venta' => $result->result->venta,
+                'fecha' => $result->result->fecha,
+            ];
+        } else {
+            $json = [
+                'success' => false,
+                'message' => $result->message
+            ];
+        }
+        return response()->json($json);
     }
 }

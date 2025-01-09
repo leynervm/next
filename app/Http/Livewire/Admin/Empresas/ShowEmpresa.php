@@ -3,12 +3,12 @@
 namespace App\Http\Livewire\Admin\Empresas;
 
 use App\Helpers\FormatoPersonalizado;
-use App\Helpers\GetClient;
 use App\Models\Empresa;
 use App\Models\Producto;
 use App\Models\Telephone;
 use App\Models\Ubigeo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
@@ -297,23 +297,33 @@ class ShowEmpresa extends Component
         $this->empresa->ubigeo_id = null;
         $this->empresa->estado = null;
         $this->empresa->condicion = null;
-        $this->resetValidation(['empresa.document', 'empresa.name', 'empresa.direccion', 'empresa.telefono', 'empresa.ubigeo_id', 'empresa.estado', 'condicion']);
+        $this->resetValidation();
 
-        $http = new GetClient();
-        $response = $http->getSunat($this->empresa->document);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->empresa->document,
+        ]);
 
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->empresa->name = $response->getData()->name;
-                $this->empresa->direccion = $response->getData()->direccion;
-                $this->empresa->estado = $response->getData()->estado;
-                $this->empresa->condicion = $response->getData()->condicion;
-                $this->empresa->ubigeo_id = trim($response->getData()->ubigeo_id);
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->empresa->name = $cliente->name;
+                $this->empresa->direccion = $cliente->direccion;
+                $this->empresa->estado = $cliente->estado;
+                $this->empresa->condicion = $cliente->condicion;
+                $this->empresa->ubigeo_id = trim($cliente->ubigeo_id);
             } else {
-                $this->addError('empresa.document', $response->getData()->message);
+                $this->empresa->refresh();
+                $this->addError('empresa.document', $cliente->error);
             }
         } else {
-            $this->addError('empresa.document', 'Error al buscar cliente.');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 

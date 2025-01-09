@@ -3,7 +3,10 @@
 namespace App\Traits;
 
 use App\Enums\PromocionesEnum;
+use App\Models\Pricetype;
+use App\Models\Promocion;
 use App\Models\Rango;
+use CodersFree\Shoppingcart\Facades\Cart;
 
 trait CalcularPrecioVenta
 {
@@ -43,6 +46,28 @@ trait CalcularPrecioVenta
                 $query->select('pricetypes.id', 'rounded', 'decimals', 'campo_table')
                     ->addSelect('pricetype_rango.ganancia')->orderBy('id', 'asc');
             }])->whereRangoBetween($this->pricebuy)->first();
+
+            if (empty($rango)) {
+                $pricetypes = Pricetype::activos()->get();
+                foreach ($pricetypes as $lista) {
+                    $precio_venta = getPriceDinamic(
+                        $this->pricebuy,
+                        $lista->ganancia,
+                        0,
+                        $lista->rounded,
+                        $lista->decimals
+                    );
+
+                    // if ($promocion && $promocion->isCombo()) {
+                    //     $combo = getAmountCombo($promocion, $lista);
+                    //     $precio_venta = $precio_venta + $combo->total;
+                    // }
+
+                    $this->{$lista->campo_table} = $precio_venta;
+                    $this->save();
+                }
+                return;
+            }
 
             foreach ($rango->pricetypes as $lista) {
                 $precio_venta = getPriceDinamic(
@@ -103,7 +128,7 @@ trait CalcularPrecioVenta
     {
         $descuento = $this->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
         $liquidacion = $this->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
-
+// dd($descuento, $liquidacion);
         if ($liquidacion) {
             $precio_venta = getPriceDinamic($this->pricebuy, 0, !empty($pricetype) ? $pricetype->incremento : 2, 0, !empty($pricetype) ? $pricetype->decimals : 2);
             return $precio_venta;
@@ -121,5 +146,87 @@ trait CalcularPrecioVenta
         }
 
         return $precio_venta;
+    }
+
+    public function addfavorito()
+    {
+        $this->load(['promocions' => function ($query) {
+            $query->where('type', '<>', PromocionesEnum::COMBO->value)
+                ->availables()->disponibles();
+        }]);
+
+        $this->descuento = $this->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $this->liquidacion = $this->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
+        $promocion = null;
+        $pricetype = null;
+        $empresa = view()->shared('empresa');
+        $moneda = view()->shared('moneda');
+
+        if ($this->descuento > 0 || $this->liquidacion) {
+            $promocion = verifyPromocion($this->promocions->first());
+        }
+
+        if ($empresa->usarLista()) {
+            $pricetype = getPricetypeAuth();
+        }
+
+        $promocion_id = !empty($promocion) ? $promocion->id : null;
+        $pricesale = $this->getPrecioVenta($pricetype);
+        $igvsale = 0;
+
+        if ($pricesale <= 0) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => "ERROR AL OBTENER PRECIO DE VENTA"
+            ]);
+            return false;
+        }
+
+        $wishlist = Cart::instance('wishlist')->search(function ($item) use ($promocion_id) {
+            return $item->id == $this->id && $item->options->promocion_id == $promocion_id;
+        });
+
+        $favorito = $wishlist->first();
+        if (empty($favorito)) {
+            $cart = Cart::instance('wishlist')->add([
+                'id' => $this->id,
+                'name' => $this->name,
+                'qty' => 1,
+                'price' => number_format($pricesale, 2, '.', ''),
+                'options' => [
+                    'moneda_id' => $moneda->id,
+                    'currency' => $moneda->currency,
+                    'simbolo' => $moneda->simbolo,
+                    'modo_precios' => $pricetype->name ?? 'DEFAUL PRICESALE',
+                    'carshoopitems' => [],
+                    'promocion_id' => $promocion_id,
+                    'igv' => 0,
+                    'subtotaligv' => 0
+                ]
+            ])->associate($this::class);
+
+            if (auth()->check()) {
+                Cart::instance('wishlist')->store(auth()->id());
+            }
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => "AÑADIDO A FAVORITOS",
+                'counter' => Cart::instance('wishlist')->count(),
+                'favorito' => true
+            ]);
+        } else {
+            Cart::instance('wishlist')->remove($favorito->rowId);
+            if (auth()->check()) {
+                Cart::instance('wishlist')->store(auth()->id());
+            }
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => "QUITADO DE FAVORITOS",
+                'counter' => Cart::instance('wishlist')->count(),
+                'favorito' => false
+            ]);
+        }
     }
 }

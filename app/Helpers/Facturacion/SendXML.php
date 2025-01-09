@@ -198,13 +198,16 @@ class SendXML
                         ]
                     ]);
 
-                    $http = Http::withOptions([
-                        'verify' => true,
-                        'timeout' => 30,
-                        'curl' => [
-                            // CURLOPT_CAINFO => storage_path('app/company/cert/cacert.pem'),
-                        ],
-                    ])->withToken($token)->acceptJson()->post($ws1, $json->getData());
+                    $http = Http::withToken($token)->acceptJson()
+                        ->withOptions([
+                            'verify' => true,
+                            'timeout' => 30,
+                            'curl' => [
+                                // CURLOPT_CAINFO => storage_path('app/company/cert/cacert.pem'),
+                            ],
+                        ])->post($ws1, $json);
+                    // dd($http, $ws1, $json->getContent());
+
                     if ($http->status() == 200) {
                         $ticket = json_decode($http->body())->numTicket ?? null;
                         // $fecRecepcion = json_decode($http->body())->fecRecepcion;
@@ -252,12 +255,23 @@ class SendXML
                         }
                     } else {
                         // dd($http->body());
+                        $responseArray = json_decode($http->body(), true);
+                        $cod = isset($responseArray['cod']) ? $responseArray['cod'] : $http->status();
+                        $msg = isset($responseArray['msg']) ? $responseArray['msg'] : json_decode($http->body())->message;
                         $mensaje = response()->json([
                             'codRespuesta' => $http->status(),
-                            'code' => json_decode($http->body())->cod,
-                            'descripcion' => json_decode($http->body())->msg
+                            'code' => $cod,
+                            'descripcion' => $msg
                         ]);
                     }
+                    //  else {
+                    // dd($http->body());
+                    //     $mensaje = response()->json([
+                    //         'codRespuesta' => $http->status(),
+                    //         'code' => json_decode($http->body())->cod,
+                    //         'descripcion' => json_decode($http->body())->msg
+                    //     ]);
+                    // }
                 } else {
                     // dd($response->body());
                     $mensaje = response()->json([
@@ -268,10 +282,13 @@ class SendXML
                 }
             } else {
                 // dd($response->body(), $response->status());
+                $responseArray = json_decode($response->body(), true);
+                $cod = isset($responseArray['error']) ? $responseArray['error'] : $response->status();
+                $msg = isset($responseArray['error_description']) ? $responseArray['error_description'] : json_decode($response->body());
                 $mensaje = response()->json([
                     'codRespuesta' => $response->status(),
-                    'code' => $response->status(),
-                    'descripcion' => $response->body()
+                    'code' => $cod,
+                    'descripcion' => $msg
                 ]);
             }
         } else {

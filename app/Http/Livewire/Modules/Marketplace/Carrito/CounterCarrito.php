@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
+use CodersFree\Shoppingcart\Facades\Cart;
 use Livewire\Component;
 
 class CounterCarrito extends Component

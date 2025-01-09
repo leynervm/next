@@ -790,7 +790,7 @@ class createXML
 
       $i = 1;
       foreach ($guia->tvitems as $item) {
-         $descripcion = strlen($item->producto->name) > 250 ? substr($item->producto->name, 0, 245) . "[...]" : $item->descripcion;
+         $descripcion = strlen($item->producto->name) > 250 ? substr($item->producto->name, 0, 245) . "[...]" : $item->producto->name;
 
          $xml .= '<cac:DespatchLine>
                <cbc:ID>' . $i . '</cbc:ID>

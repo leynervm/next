@@ -18,8 +18,8 @@
                         @php
                             $combo = getAmountCombo($item->options->promocion, $pricetype);
                             $image =
-                                !is_null($item->model) && count($item->model->images) > 0
-                                    ? pathURLProductImage($item->model->images->first()->url)
+                                !is_null($item->model) && !empty($item->model->imagen)
+                                    ? pathURLProductImage($item->model->imagen->url)
                                     : null;
                         @endphp
 
@@ -74,7 +74,7 @@
                                     @if ($item->options->is_disponible)
                                         <h1
                                             class="text-colorlabel text-sm sm:text-lg md:text-xl font-semibold text-end !leading-none">
-                                            @if ($item->options->promocion)
+                                            @if (!empty($item->options->promocion))
                                                 <span
                                                     class="text-[10px] md:text-xs p-0.5 rounded text-colorerror font-medium line-through">
                                                     @if ($combo)
@@ -89,6 +89,7 @@
                                             <small
                                                 class="text-[10px] font-medium">{{ $item->options->simbolo }}</small>
                                             {{ number_format($item->price, 2, '.', ', ') }}
+                                            <br>
                                         </h1>
 
                                         <h1
@@ -128,10 +129,25 @@
                                             class="btn-increment-cart">+</button>
                                     </div>
 
-                                    <button onclick="deleteitemcart('{{ $item->rowId }}')"
-                                        wire:loading.attr="disabled"
-                                        class="btn-outline-secondary !p-2 !text-[10px] ring-2 font-semibold hover:bg-red-700 hover:text-white hover:ring-red-300">
-                                        ELIMINAR</button>
+                                    <div class="inline-flex gap-1">
+                                        <x-button type="button" wire:loading.attr="disabled" class=""
+                                            wire:click="movetocarshoop('{{ $item->rowId }}')"
+                                            wire:key="add_{{ $item->rowId }}">MOVER A FAVORITOS
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
+                                                fill="currentColor" stroke="currentColor" fill-rule="evenodd"
+                                                class="size-4 inline-block scale-110">
+                                                <path
+                                                    d="M42.901 18.156c.042 3.031-1.306 6.262-4.341 9.297-3.039 3.039-6.445 6.066-9.084 8.328a219 219 0 0 1-4.199 3.507l-.252.204-.066.053-.022.018-.938-1.17.938 1.17a1.5 1.5 0 0 1-1.875-2.341l.019-.015.063-.051.244-.198.922-.754a216 216 0 0 0 3.212-2.7c2.612-2.238 5.955-5.21 8.916-8.171 2.591-2.592 3.492-5.079 3.464-7.134-.03-2.064-.996-3.896-2.529-5.191-3.051-2.583-8.293-2.988-12.236 1.611a1.5 1.5 0 1 1-2.277-1.951c5.058-5.901 12.191-5.556 16.451-1.95 2.124 1.797 3.549 4.419 3.589 7.44" />
+                                                <path
+                                                    d="M18.57 9.876a1.5 1.5 0 0 1 1.989-.74c1.635.748 3.195 1.912 4.579 3.53a1.5 1.5 0 1 1-2.277 1.951c-1.123-1.309-2.337-2.198-3.55-2.754a1.5 1.5 0 0 1-.74-1.987M7.279 21.954a1.5 1.5 0 0 1 2.05.54 14 14 0 0 0 2.232 2.838c2.961 2.961 6.305 5.933 8.916 8.171a215 215 0 0 0 4.378 3.652l.061.05.019.015a1.5 1.5 0 0 1-1.874 2.345l.938-1.171-.938 1.17-.022-.018-.066-.053-.254-.204a213 213 0 0 1-4.196-3.507c-2.64-2.262-6.046-5.289-9.085-8.328a17 17 0 0 1-2.703-3.449 1.5 1.5 0 0 1 .541-2.05M11.1 8.1a1.5 1.5 0 1 0-3 0v3h-3a1.5 1.5 0 0 0 0 3h3v3a1.5 1.5 0 1 0 3 0v-3h3a1.5 1.5 0 1 0 0-3h-3z" />
+                                            </svg>
+                                        </x-button>
+
+                                        <button onclick="deleteitemcart(this, '{{ $item->rowId }}')"
+                                            wire:loading.attr="disabled"
+                                            class="btn-outline-secondary !p-2 !text-[10px] ring-0 border-2 border-red-500 hover:bg-red-700 hover:text-white hover:ring-red-300 font-semibold">
+                                            ELIMINAR</button>
+                                    </div>
                                 </div>
                             @else
                                 <div
@@ -141,7 +157,7 @@
                                     class="absolute w-full h-full flex flex-col xs:flex-row flex-wrap justify-center gap-2 items-center top-[50%] left-[50%] -translate-x-[50%] -translate-y-[50%]">
                                     <span class="btn-outline-secondary bg-inherit inline-block text-center">
                                         {{ !empty($item->options->promocion_id) ? 'PROMOCIÓN NO DISPONIBLE' : 'PRODUCTO NO DISPONIBLE' }}</span>
-                                    <x-button-secondary wire:click="deleteitem('{{ $item->rowId }}')"
+                                    <x-button-secondary onclick="deleteitemcart(this, '{{ $item->rowId }}')"
                                         wire:loading.attr="disabled" class="inline-block text-center">
                                         ELIMINAR</x-button-secondary>
                                 </div>

@@ -125,12 +125,11 @@
                     <x-jet-input-error for="sucursal_id" />
                 </div>
 
-                {{-- <div class="w-full">
-                    <x-label value="Descripción compra, detalle :" />
-                    <x-input class="block w-full" wire:model.defer="detalle"
-                        placeholder="Descripción de compra..." />
+                <div class="w-full xs:col-span-2">
+                    <x-label value="Observaciones / Detalles :" />
+                    <x-text-area class="block w-full" rows="1" wire:model.defer="detalle"></x-text-area>
                     <x-jet-input-error for="detalle" />
-                </div> --}}
+                </div>
             </div>
 
             <div class="w-full flex pt-4 justify-end">
@@ -227,11 +226,9 @@
                             <div class="text-colorsubtitleform text-center">
                                 <small class="w-full block text-center text-[8px] leading-3">
                                     STOCK ACTUAL</small>
-                                <span
-                                    class="inline-block text-2xl text-center font-semibold">
+                                <span class="inline-block text-2xl text-center font-semibold">
                                     {{ $item['stock_actual'] }}</span>
-                                <small
-                                    class="inline-block text-center text-[10px] leading-3">
+                                <small class="inline-block text-center text-[10px] leading-3">
                                     {{ $item['unit'] }}</small>
                             </div>
 

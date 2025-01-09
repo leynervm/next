@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Modules\Marketplace\Orders;
 use App\Models\Almacen;
 use App\Models\Itemserie;
 use App\Models\Kardex;
+use App\Models\Producto;
 use App\Models\Serie;
 use App\Models\Tvitem;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;

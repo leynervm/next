@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Administracion\Employers;
 
-use App\Helpers\GetClient;
 use App\Models\Areawork;
 use App\Models\Employer;
 use App\Models\Sucursal;
@@ -12,6 +11,7 @@ use App\Rules\CampoUnique;
 use App\Rules\ValidateNacimiento;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Spatie\Permission\Models\Role;
@@ -213,23 +213,33 @@ class CreateEmployer extends Component
             ],
         ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->document, false);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->document,
+            'searchbd' => true,
+        ]);
 
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['document', 'name']);
-                $this->name = $response->getData()->name;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->name = $cliente->name;
                 $this->exists = true;
-                if ($response->getData()->birthday) {
-                    $this->dispatchBrowserEvent('birthday', $response->getData()->name);
+                if ($cliente->birthday) {
+                    $this->dispatchBrowserEvent('birthday', $cliente->name);
                 }
             } else {
-                $this->resetValidation(['document']);
-                $this->addError('document', $response->getData()->message);
+                $this->name = '';
+                $this->exists = false;
+                $this->addError('document', $cliente->error);
             }
         } else {
-            $this->addError('document', 'Error de respuesta');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
 
         $user = User::whereDoesntHave('employer', function ($query) {

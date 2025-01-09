@@ -40,13 +40,14 @@ class NiubizController extends Controller
         }
 
         foreach ($shoppings as $item) {
-            if (!$item->options->is_disponible) {
+            if (!$item->options->is_disponible || !$item->options->stock_disponible) {
                 $is_disponible = false;
                 if (!empty($item->options->promocion_id)) {
                     $msjPrm = "PROMOCIÓN NO SE ENCUENTRA DISPONIBLE";
                 } else {
                     $msjPrm = "PRODUCTO NO SE ENCUENTRA DISPONIBLE";
                 }
+                break;
             }
         }
 
@@ -79,10 +80,10 @@ class NiubizController extends Controller
                 'amount' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
                 'currency' => config('services.niubiz.currency'),
             ],
-            'yape' => [
-                'phoneNumber' => '969929157',
-                'otp' => '557454'
-            ]
+            // 'yape' => [
+            //     'phoneNumber' => '969929157',
+            //     'otp' => '557454'
+            // ]
         ])->json();
 
         if (isset($response)) {

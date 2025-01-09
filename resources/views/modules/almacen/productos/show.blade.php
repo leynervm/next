@@ -49,7 +49,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full mx-auto xl:max-w-7xl flex flex-col gap-8">
+    <div class="w-full mx-auto xl:max-w-7xl flex flex-col gap-8 mb-16" x-data="{ ckeditor_descripcion: '' }">
         <div>
             <livewire:modules.almacen.productos.show-producto :producto="$producto" />
         </div>
@@ -71,4 +71,37 @@
             </div>
         @endif
     </div>
+
+    <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
+
+    <script>
+        window.addEventListener('update-url', event => {
+            const currentUrl = new URL(window.location);
+            const newPathname = currentUrl.pathname.replace(/\/[^\/]+\/edit$/, `/${event.detail}/edit`);
+            currentUrl.pathname = newPathname;
+            // window.history.pushState({}, '', currentUrl.href);
+            window.history.replaceState({}, '', currentUrl.href);
+            window.location.reload();
+        });
+
+        function getValueCKEditor(editor) {
+            if (editor) {
+                const contenido = editor.getData();
+                console.log(contenido);
+                return contenido;
+            } else {
+                console.log('CKEditor no está inicializado aún');
+                return '';
+            }
+        }
+
+        document.addEventListener('livewire:load', function() {
+            Livewire.hook('message.sent', () => {
+                $(componentloading).fadeIn();
+            });
+            Livewire.hook('message.processed', () => {
+                $(componentloading).fadeOut();
+            });
+        })
+    </script>
 </x-admin-layout>

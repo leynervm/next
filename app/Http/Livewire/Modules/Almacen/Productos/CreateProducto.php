@@ -41,7 +41,7 @@ class CreateProducto extends Component
     public $name, $marca_id, $modelo, $partnumber, $sku, $unit_id, $category_id,
         $subcategory_id, $almacenarea_id, $estante_id;
 
-    public $descripcionproducto = '';
+    public $descripcionproducto = '', $comentario;
 
     protected function rules()
     {
@@ -67,7 +67,8 @@ class CreateProducto extends Component
             'novedad' => ['nullable', 'integer', 'min:0', 'max:1'],
             'requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
             'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500'],
-            'descripcionproducto' => ['nullable', 'string']
+            'descripcionproducto' => ['nullable', 'string'],
+            'comentario' => ['nullable', 'string']
         ];
     }
 
@@ -91,7 +92,6 @@ class CreateProducto extends Component
         $categories = Category::orderBy('orden', 'asc')->orderBy('name', 'asc')->get();
         $almacenareas = Almacenarea::orderBy('name', 'asc')->get();
         $estantes = Estante::orderBy('name', 'asc')->get();
-        // $almacens = auth()->user()->sucursal->almacens;
         $almacens = Almacen::orderBy('default', 'desc')->get();
 
         return view('livewire.modules.almacen.productos.create-producto', compact('marcas', 'units', 'categories', 'almacenareas', 'estantes', 'almacens'));
@@ -164,6 +164,7 @@ class CreateProducto extends Component
                 'viewespecificaciones' => $this->viewespecificaciones,
                 'novedad' => $this->novedad,
                 'requireserie' => $this->requireserie,
+                'comentario' => $this->comentario,
                 'code' => Str::random(9),
                 'almacenarea_id' => $this->almacenarea_id,
                 'estante_id' => $this->estante_id,

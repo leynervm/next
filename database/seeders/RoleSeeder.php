@@ -116,7 +116,7 @@ class RoleSeeder extends Seeder
         // CLIENTES
         Permission::firstOrCreate([
             'name' => 'admin.clientes',
-            'descripcion' => 'Adminisrar clientes',
+            'descripcion' => 'Administrar clientes',
             'table' => 'Clientes',
             'module' => 'Principal',
             'orden' => '1'

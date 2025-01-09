@@ -1396,7 +1396,7 @@
         <div class="sticky bottom-0 left-0 right-0 bg-fondominicard rounded-t-lg">
             <div class="w-full py-2 md:pt-3 px-3 md:px-0 grid grid-cols-2 gap-2 justify-between">
                 <div class="">
-                    <x-button wire:loading.attr="disabled" class="inline-flex " x-show="step > 1" x-cloak
+                    <x-button wire:loading.attr="disabled" class="inline-flex items-center gap-2" x-show="step > 1" x-cloak
                         @click="step--">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
@@ -1409,7 +1409,7 @@
                 </div>
 
                 <div class=" text-right">
-                    <x-button class="inline-flex " wire:loading.attr="disabled" x-show="step < 6"
+                    <x-button class="inline-flex items-center gap-2" wire:loading.attr="disabled" x-show="step < 6"
                         @click="$wire.validatestep(step)">
                         {{ __('Next') }}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"

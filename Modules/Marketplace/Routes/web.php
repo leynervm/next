@@ -40,18 +40,18 @@ Route::post('/search-cliente', [ApiController::class, 'consultacliente'])->name(
 
 // CART
 Route::post('marketplace/addproducto', [MarketplaceController::class, 'additemtocart'])->name('marketplace.addproducto')
-    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+    ->middleware(['web']);
 Route::post('marketplace/updatecart', [MarketplaceController::class, 'updatecart'])->name('marketplace.updatecart')
-    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+    ->middleware(['web']);
 Route::post('marketplace/updateqty', [MarketplaceController::class, 'updateqty'])->name('marketplace.updateqty')
-    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+    ->middleware(['web']);
 Route::post('marketplace/deletecart', [MarketplaceController::class, 'deletecart'])->name('marketplace.deletecart')
-    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
+    ->middleware(['web']);
+Route::post('marketplace/addfavoritos', [MarketplaceController::class, 'addfavoritos'])->name('marketplace.addfavoritos')
+    ->middleware(['web']);
 
 
-
-
-Route::middleware(['web', 'verifyproductocarshoop'])->group(function () {
+Route::middleware(['web', 'verifycarshoop'])->group(function () {
     Route::get('/productos', [MarketplaceController::class, 'productos'])->name('productos');
     Route::get('/productos/{producto:slug}', [MarketplaceController::class, 'showproducto'])->name('productos.show');
     Route::get('/ofertas', [MarketplaceController::class, 'ofertas'])->name('ofertas');
@@ -81,7 +81,7 @@ Route::middleware(['web', 'verifyproductocarshoop'])->group(function () {
 Route::middleware(['web', 'auth'])->group(function () {
 
     Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.create')
-        ->middleware(['verifyproductocarshoop', 'verified', 'verifydatauser']);
+        ->middleware(['verifycarshoop', 'verified', 'verifydatauser']);
 
     Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
     Route::get('/orders/{order:purchase_number}/resumen', [MarketplaceController::class, 'resumenorder'])->name('orders.payment');
@@ -99,8 +99,10 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/estados-seguimiento-pedido', [AdminController::class, 'trackingstates'])->name('.trackingstates');
         Route::get('/transacciones-web', [AdminController::class, 'transacciones'])->name('.transacciones');
         Route::get('/tipos-envio', [AdminController::class, 'shipmenttypes'])->name('.shipmenttypes');
-        Route::get('/usuarios-web', [AdminController::class, 'usersweb'])->name('.usersweb');
         Route::get('/sliders', [AdminController::class, 'sliders'])->name('.sliders');
+
+        Route::get('/usuarios-web', [AdminController::class, 'usersweb'])->name('.usersweb');
+        Route::get('/usuarios-web/{user}/show', [AdminController::class, 'showuserweb'])->name('.usersweb.show');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('.orders');
         Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('.orders.show');

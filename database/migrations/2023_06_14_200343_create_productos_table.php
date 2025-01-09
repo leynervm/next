@@ -38,6 +38,7 @@ class CreateProductosTable extends Migration
             $table->decimal('precio_3', 12, 4)->nullable();
             $table->decimal('precio_4', 12, 4)->nullable();
             $table->decimal('precio_5', 12, 4)->nullable();
+            $table->text('comentario')->nullable();
             $table->unsignedSmallInteger('almacenarea_id')->nullable();
             $table->unsignedSmallInteger('estante_id')->nullable();
             $table->bigInteger('marca_id')->nullable();

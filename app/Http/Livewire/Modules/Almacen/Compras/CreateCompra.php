@@ -52,7 +52,7 @@ class CreateCompra extends Component
             'proveedor_id' => ['required', 'integer', 'min:1', 'exists:proveedors,id'],
             'date' => ['required', 'date', 'before_or_equal:today'],
             'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
-            'tipocambio' => ['nullable', Rule::requiredIf($this->moneda->isDolar()), 'regex:/^\d{0,3}(\.\d{0,3})?$/'],
+            'tipocambio' => ['nullable', Rule::requiredIf($this->moneda->isDolar()), 'numeric', 'gt:0', 'decimal:0,3', 'regex:/^\d{0,3}(\.\d{0,3})?$/'],
             'referencia' => [
                 'required',
                 'string',
@@ -68,7 +68,7 @@ class CreateCompra extends Component
             'otros' => ['required', 'numeric', 'min:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'total' => ['required', 'numeric', 'gt:0', 'decimal:0,4', 'regex:/^\d{0,8}(\.\d{0,4})?$/'],
             'typepayment_id' => ['required', 'integer', 'min:1', 'exists:typepayments,id'],
-            // 'detalle' => ['nullable', 'string'],
+            'detalle' => ['nullable', 'string'],
             'afectacion' => ['required', 'in:S,E'],
             'itemcompras' => ['required', 'array', 'min:1']
         ];
@@ -89,7 +89,7 @@ class CreateCompra extends Component
         $methodpayments = Methodpayment::orderBy('name', 'asc')->get();
 
         if (auth()->user()->isAdmin()) {
-            $sucursals = mi_empresa()->sucursals()->orderBy('codeanexo', 'asc')->get();
+            $sucursals = mi_empresa(true)->sucursals;
         } else {
             $sucursals = auth()->user()->sucursal()->get();
         }
@@ -203,18 +203,13 @@ class CreateCompra extends Component
                     ]);
                 }
 
-                if (!mi_empresa()->usarLista()) {
+                if (!view()->shared('empresa')->usarLista()) {
                     $producto->pricesale = $item['priceventa'];
                 }
                 $producto->pricebuy =  $this->moneda->isDolar() ?
                     number_format(($item['pricebuy']) * $this->tipocambio, 2, '.', '') :
                     number_format($item['pricebuy'], 2, '.', '');
                 $producto->save();
-                $producto->load(['promocions' => function ($query) {
-                    $query->with(['itempromos.producto' => function ($query) {
-                        $query->with('unit');
-                    }])->availables()->disponibles()->take(1);
-                }]);
                 $producto->assignPrice();
             }
             DB::commit();

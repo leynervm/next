@@ -6,12 +6,24 @@
     <form wire:submit.prevent="save" class="w-full flex flex-col gap-8">
         <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del nuevo producto a registrar.">
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                <div class="w-full xs:col-span-2 xl:col-span-3">
+                <div class="w-full xs:col-span-2 md:col-span-3 lg:col-span-4">
                     <x-label value="Nombre del producto :" />
-                    <x-text-area class="block w-full disabled:bg-gray-200" wire:model.defer="name"
-                        placeholder="Nombre del producto..."></x-text-area>
+                    <x-text-area rows="1" class="block w-full disabled:bg-gray-200" wire:model.defer="name"
+                        x-ref="name_producto" style="overflow:hidden;resize:none;"
+                        x-on:input="adjustHeight($el)"></x-text-area>
                     <x-jet-input-error for="name" />
                 </div>
+
+                <div class="w-full">
+                    <x-label value="SKU :" />
+                    @if ($empresa->autogenerateSku())
+                        <x-disabled-text :text="$sku" class="" />
+                    @else
+                        <x-input class="block w-full" wire:model.defer="sku" />
+                    @endif
+                    <x-jet-input-error for="sku" />
+                </div>
+
                 <div class="w-full">
                     <x-label value="Marca :" />
                     <div class="relative" id="parentmrcpdto" x-init="selectMarca">
@@ -29,20 +41,13 @@
                     </div>
                     <x-jet-input-error for="marca_id" />
                 </div>
+
                 <div class="w-full">
                     <x-label value="Modelo :" />
                     <x-input class="block w-full" wire:model.defer="modelo" placeholder="Modelo..." />
                     <x-jet-input-error for="modelo" />
                 </div>
-                <div class="w-full">
-                    <x-label value="SKU :" />
-                    @if ($empresa->autogenerateSku())
-                        <x-disabled-text :text="$sku" class="" />
-                    @else
-                        <x-input class="block w-full" wire:model.defer="sku" />
-                    @endif
-                    <x-jet-input-error for="sku" />
-                </div>
+
                 <div class="w-full">
                     <x-label value="N° parte :" />
                     <x-input class="block w-full" wire:model.defer="partnumber"
@@ -102,25 +107,9 @@
                 </div>
 
                 <div class="w-full">
-                    <x-label value="Precio compra :" />
-                    <x-input class="block w-full input-number-none" wire:model.defer="pricebuy" type="number"
-                        step="0.001" onkeypress="return validarDecimal(event, 9)" />
-                    <x-jet-input-error for="pricebuy" />
-                </div>
-
-                @if (!$empresa->usarLista())
-                    <div class="w-full">
-                        <x-label value="Precio venta :" />
-                        <x-input class="block w-full input-number-none" wire:model.defer="pricesale" type="number"
-                            min="0" onkeypress="return validarDecimal(event, 9)" step="0.001" />
-                        <x-jet-input-error for="pricesale" />
-                    </div>
-                @endif
-
-                <div class="w-full">
                     <x-label value="Stock Mínimo :" />
-                    <x-input class="block w-full" wire:model.defer="minstock" type="number" step="1"
-                        min="0" />
+                    <x-input class="block w-full input-number-none" wire:model.defer="minstock" type="number"
+                        step="1" min="0" onkeypress="return validarDecimal(event, 9)" />
                     <x-jet-input-error for="minstock" />
                 </div>
 
@@ -128,8 +117,7 @@
                     <div class="w-full">
                         <x-label value="Area :" />
                         <div class="relative" id="parentarea" x-init="selectArea" wire:ignore>
-                            <x-select class="block w-full" id="area" x-ref="selectarea"
-                                data-placeholder="null">
+                            <x-select class="block w-full" id="area" x-ref="selectarea" data-placeholder="null">
                                 <x-slot name="options">
                                     @if (count($almacenareas))
                                         @foreach ($almacenareas as $item)
@@ -161,6 +149,33 @@
                         <x-jet-input-error for="estante_id" />
                     </div>
                 @endif
+
+                <div class="w-full">
+                    <x-label value="Precio compra :" />
+                    <x-input class="block w-full input-number-none" wire:model.defer="pricebuy" type="number"
+                        step="0.001" onkeypress="return validarDecimal(event, 9)" />
+                    <x-jet-input-error for="pricebuy" />
+                </div>
+
+                @if (!$empresa->usarLista())
+                    <div class="w-full">
+                        <x-label value="Precio venta :" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="pricesale" type="number"
+                            min="0" onkeypress="return validarDecimal(event, 9)" step="0.001" />
+                        <x-jet-input-error for="pricesale" />
+                    </div>
+                @endif
+
+                {{-- @if (Module::isEnabled('Marketplace'))
+                    <div
+                        class="w-full xs:col-span-2 {{ $empresa->usarLista() ? 'lg:col-span-3' : 'md:col-span-3 lg:col-span-2' }}  xl:col-span-5">
+                        <x-label value="Comentario :" />
+                        <x-text-area class="block w-full" rows="1" wire:model.defer="comentario"
+                            x-ref="comentario" x-on:input="adjustHeight($el)"
+                            style="overflow:hidden;resize:none;"></x-text-area>
+                        <x-jet-input-error for="comentario" />
+                    </div>
+                @endif --}}
             </div>
 
             <div class="w-full flex flex-col gap-1 justify-start items-start mt-2">
@@ -220,10 +235,6 @@
                 @endif
                 <x-jet-input-error for="selectedAlmacens" />
             </x-simple-card>
-
-            <div class="w-full flex pt-4 gap-2 justify-end">
-                <x-button type="submit" wire:loading.attr="disabled">{{ __('Save') }}</x-button>
-            </div>
         </x-form-card>
 
         <x-form-card titulo="IMÁGEN REFERENCIAL">
@@ -272,195 +283,9 @@
             </div>
         @endif
 
-        {{-- <x-form-card titulo="DETALLE PRODUCTO">
-            <div wire:ignore>
-                <x-textarea class="w-full" id="descripcionproducto" rows="6">
-                </x-textarea>
-            </div>
-        </x-form-card> --}}
-
-        {{-- <div wire:ignore>
-            <textarea class="w-full" x-init="CKEDITOR.ClassicEditor.create($refs.ckEditor, {
-                    toolbar: {
-                        items: [
-                            'undo', 'redo', '|',
-                            'exportPDF', 'exportWord', '|',
-                            'findAndReplace', 'selectAll', '|',
-                            'heading', '|',
-                            'bold', 'italic', 'strikethrough', 'underline', 'code',
-                            'subscript',
-                            'superscript', 'removeFormat', '|',
-                            'bulletedList', 'numberedList', 'todoList', '|',
-                            'outdent', 'indent', '|',
-                            'fontSize', 'fontFamily', 'fontColor', 'fontBackgroundColor',
-                            'highlight',
-                            '|',
-                            'alignment', '|',
-                            'link', 'insertImage', 'blockQuote', 'insertTable',
-                            'mediaEmbed',
-                            'codeBlock',
-                            'htmlEmbed', '|',
-                            'specialCharacters', 'horizontalLine', 'pageBreak', '|',
-                            'textPartLanguage', '|',
-                            'sourceEditing'
-                        ],
-                        shouldNotGroupWhenFull: true
-                    },
-                    language: 'es',
-                    list: {
-                        properties: {
-                            styles: true,
-                            startIndex: true,
-                            reversed: true
-                        }
-                    },
-                    heading: {
-                        options: [{
-                                model: 'paragraph',
-                                title: 'Paragraph',
-                                class: 'ck-heading_paragraph'
-                            },
-                            {
-                                model: 'heading1',
-                                view: 'h1',
-                                title: 'Heading 1',
-                                class: 'ck-heading_heading1'
-                            },
-                            {
-                                model: 'heading2',
-                                view: 'h2',
-                                title: 'Heading 2',
-                                class: 'ck-heading_heading2'
-                            },
-                            {
-                                model: 'heading3',
-                                view: 'h3',
-                                title: 'Heading 3',
-                                class: 'ck-heading_heading3'
-                            },
-                            {
-                                model: 'heading4',
-                                view: 'h4',
-                                title: 'Heading 4',
-                                class: 'ck-heading_heading4'
-                            },
-                            {
-                                model: 'heading5',
-                                view: 'h5',
-                                title: 'Heading 5',
-                                class: 'ck-heading_heading5'
-                            },
-                            {
-                                model: 'heading6',
-                                view: 'h6',
-                                title: 'Heading 6',
-                                class: 'ck-heading_heading6'
-                            }
-                        ]
-                    },
-                    placeholder: 'Ingresar contenido...',
-                    fontFamily: {
-                        options: [
-                            'default',
-                            'Arial, Helvetica, sans-serif',
-                            'Courier New, Courier, monospace',
-                            'Georgia, serif',
-                            'Lucida Sans Unicode, Lucida Grande, sans-serif',
-                            'Tahoma, Geneva, sans-serif',
-                            'Times New Roman, Times, serif',
-                            'Trebuchet MS, Helvetica, sans-serif',
-                            'Verdana, Geneva, sans-serif'
-                        ],
-                        supportAllValues: true
-                    },
-                    fontSize: {
-                        options: [8, 9, 10, 11, 12, 13, 14, 'default', 18, 20, 22],
-                        supportAllValues: true
-                    },
-                    htmlSupport: {
-                        allow: [{
-                            name: /.*/,
-                            attributes: true,
-                            classes: true,
-                            styles: true
-                        }]
-                    },
-                    htmlEmbed: {
-                        showPreviews: true
-                    },
-                    link: {
-                        decorators: {
-                            addTargetToExternalLinks: true,
-                            defaultProtocol: 'https://',
-                            toggleDownloadable: {
-                                mode: 'manual',
-                                label: 'Downloadable',
-                                attributes: {
-                                    download: 'file'
-                                }
-                            }
-                        }
-                    },
-                    mention: {
-                        feeds: [{
-                            marker: '@',
-                            feed: [
-                                '@apple', '@bears', '@brownie', '@cake', '@cake',
-                                '@candy',
-                                '@canes', '@chocolate', '@cookie', '@cotton',
-                                '@cream',
-                                '@cupcake', '@danish', '@donut', '@dragée',
-                                '@fruitcake',
-                                '@gingerbread', '@gummi', '@ice', '@jelly-o',
-                                '@liquorice', '@macaroon', '@marzipan', '@oat',
-                                '@pie',
-                                '@plum',
-                                '@pudding', '@sesame', '@snaps', '@soufflé',
-                                '@sugar', '@sweet', '@topping', '@wafer'
-                            ],
-                            minimumCharacters: 1
-                        }]
-                    },
-                    removePlugins: [
-                        'CKBox',
-                        'CKFinder',
-                        'EasyImage',
-                        'RealTimeCollaborativeComments',
-                        'RealTimeCollaborativeTrackChanges',
-                        'RealTimeCollaborativeRevisionHistory',
-                        'PresenceList',
-                        'Comments',
-                        'TrackChanges',
-                        'TrackChangesData',
-                        'RevisionHistory',
-                        'Pagination',
-                        'WProofreader',
-                        'MathType',
-                        'SlashCommand',
-                        'Template',
-                        'DocumentOutline',
-                        'FormatPainter',
-                        'TableOfContents'
-                    ],
-                    locale: {
-                        dateTimeFormat: date => format(date, 'dd/MM/yyyy')
-                    },
-                    table: {
-                        addClassToAllCells: true,
-                    }
-                })
-                .then(function(editor) {
-                    editor.model.document.on('change:data', () => {
-                        $dispatch('input', editor.getData())
-                    })
-                })
-                .catch(error => {
-                    console.error(error);
-                });" wire:key="ckEditor" x-ref="ckEditor"
-                wire:model.defer="descripcionproducto">
-            {!! $descripcionproducto !!}
-        </textarea>
-        </div> --}}
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            <x-button type="submit" wire:loading.attr="disabled">{{ __('Save') }}</x-button>
+        </div>
     </form>
     {{-- <script src="{{ asset('assets/vendor/ckeditor5/build/ckeditor.js') }}"></script> --}}
     <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
@@ -478,8 +303,16 @@
                 viewdetalle: @entangle('viewdetalle').defer,
                 novedad: @entangle('novedad').defer,
                 // descripcionproducto: @entangle('descripcionproducto').defer,
-
-                init() {},
+                init() {
+                    this.adjustHeight(this.$refs.name_producto);
+                    Livewire.hook('message.processed', () => {
+                        this.adjustHeight(this.$refs.name_producto);
+                    });
+                },
+                adjustHeight($el) {
+                    $el.style.height = 'auto';
+                    $el.style.height = $el.scrollHeight + 'px';
+                },
                 confirmsave() {
                     swal.fire({
                         title: "YA EXISTE UN PRODUCTO CON EL MISMO MODELO Y MARCA",

@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Admin\Proveedores;
 
-use App\Helpers\GetClient;
 use App\Models\Proveedor;
 use App\Models\Proveedortype;
 use App\Models\Ubigeo;
@@ -10,6 +9,7 @@ use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -26,7 +26,7 @@ class CreateProveedor extends Component
     protected function rules()
     {
         return [
-            'document' => ['required', 'numeric', 'digits:11', 'regex:/^\d{11}$/', new CampoUnique('proveedors', 'document', null, true)],
+            'document' => ['required', 'numeric', 'digits:11', 'regex:/^\d{11}$/', new ValidateDocument, new CampoUnique('proveedors', 'document', null, true)],
             'name' => ['required', 'string', 'min:3'],
             'direccion' => ['required', 'string', 'min:3'],
             'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
@@ -101,64 +101,58 @@ class CreateProveedor extends Component
         }
     }
 
-    public function searchclient()
+    public function searchclient($property, $name)
     {
+        $this->authorize('admin.clientes.create');
+        $this->resetValidation();
+        $this->$property = trim($this->$property);
 
-        $this->authorize('admin.proveedores.create');
-        $this->document = trim($this->document);
-        $this->validate([
-            'document' => ['required', 'numeric', new ValidateDocument]
-        ]);
-
-        $this->name = null;
-        $this->direccion = null;
-        $this->telefono = null;
-        $this->ubigeo_id = null;
-
-        $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'ubigeo_id']);
-
-        $http = new GetClient();
-        $response = $http->getClient($this->document);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name = $response->getData()->name;
-                $this->direccion = $response->getData()->direccion;
-                $this->telefono = $response->getData()->telefono;
-                $this->ubigeo_id = $response->getData()->ubigeo_id ?? null;
-            } else {
-                $this->addError('document', $response->getData()->message);
-            }
+        if ($property == 'document') {
+            $rules = [
+                'document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/', new ValidateDocument, new CampoUnique('clients', 'document', null, true)]
+            ];
         } else {
-            $this->addError('document', 'Error al buscar cliente.');
+            $rules = [
+                'document2' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/']
+            ];
         }
-    }
 
-    public function searchcontacto()
-    {
-
-        $this->authorize('admin.proveedores.create');
-        $this->document2 = trim($this->document2);
-        $this->validate([
-            'document2' => ['required', 'numeric', 'digits:8']
+        $this->validate($rules);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->$property,
+            'searchbd' => true,
         ]);
 
-        $this->name2 = null;
-        $this->telefono2 = null;
-        $this->resetValidation(['document2', 'name2', 'telefono2']);
-
-        $http = new GetClient();
-        $response = $http->getClient($this->document2);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name2 = $response->getData()->name;
-                $this->telefono2 = $response->getData()->telefono;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->$name = $cliente->name;
+                if ($property == 'document') {
+                    $this->telefono = $cliente->telefono;
+                    $this->direccion = $cliente->direccion;
+                    $this->ubigeo_id = $cliente->ubigeo_id;
+                } else {
+                    $this->telefono2 = $cliente->telefono;
+                }
             } else {
-                $this->addError('document2', $response->getData()->message);
+                $this->$name = '';
+                if ($property == 'document') {
+                    $this->telefono = '';
+                    $this->ubigeo_id = '';
+                } else {
+                    $this->telefono2 = '';
+                }
+                $this->addError($property, $cliente->error);
             }
         } else {
-            $this->addError('document2', 'Error al buscar datos del representante.');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 }

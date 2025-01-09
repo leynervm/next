@@ -10,7 +10,7 @@
                 <tbody class="divide-y">
                     @foreach ($order->tvitems as $item)
                         @php
-                            $image = $item->producto->getImageURL();
+                            $image = !empty($item->producto->imagen) ? pathURLProductImage($item->producto->imagen->url) : null;
                         @endphp
 
                         <tr class="text-colorlabel">

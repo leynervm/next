@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Admin\Users;
 
-use App\Helpers\GetClient;
 use App\Models\Areawork;
 use App\Models\Employer;
 use App\Models\Sucursal;
@@ -12,6 +11,7 @@ use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Nwidart\Modules\Facades\Module;
@@ -235,17 +235,31 @@ class CreateUser extends Component
             ]
         ]);
 
-        $http = new GetClient();
-        $response = $http->getClient($this->document);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->document,
+            'searchbd' => true,
+        ]);
 
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name = $response->getData()->name;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->name = $cliente->name;
+                if ($cliente->birthday) {
+                    $this->dispatchBrowserEvent('birthday', $cliente->name);
+                }
             } else {
-                $this->addError('document', $response->getData()->message);
+                $this->name = '';
+                $this->addError('document', $cliente->error);
             }
         } else {
-            $this->addError('document', 'Error al buscar cliente.');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
 
         if (Module::isEnabled('Employer')) {
@@ -256,8 +270,8 @@ class CreateUser extends Component
                 $this->addemployer = true;
                 $this->sucursal_id = $this->employer->sucursal_id;
                 $mensaje = response()->json([
-                    'title' => 'DATOS DEL PERSONAL ENCONTRADO !',
-                    'text' => 'Los datos del personal se vincularán al usuario de acceso a registrar.',
+                    'title' => 'DATOS DEL PERSONAL ENCONTRADO, SE VINCULARÁ CON EL USUARIO DE ACCESO',
+                    'text' => null,
                     'type' => 'warning'
                 ])->getData();
                 $this->dispatchBrowserEvent('validation', $mensaje);
@@ -272,48 +286,4 @@ class CreateUser extends Component
             $this->reset(['employer']);
         }
     }
-
-    // public function buscarusuario()
-    // {
-
-    //     $this->searchemail = trim($this->searchemail);
-    //     $this->validate([
-    //         'searchemail' => ['required', 'string', 'min:6', 'email']
-    //     ]);
-
-    //     $user = User::where('email',  $this->searchemail)->first();
-
-    //     if ($user) {
-    //         if ($user->sucursal) {
-    //             $mensaje = response()->json([
-    //                 'title' => 'USUARIO DEL CORREO INGRESADO SE ENCUENTRA ASOCIADO A SUCURSAL !',
-    //                 'text' => 'Se encontraron registros de usuario asociados a una sucursal.',
-    //                 'type' => 'warning'
-    //             ])->getData();
-    //             $this->resetValidation('searchemail');
-    //             $this->dispatchBrowserEvent('validation', $mensaje);
-    //             return false;
-    //         } else {
-    //             $this->userasign = $user;
-    //         }
-    //     } else {
-    //         $mensaje = response()->json([
-    //             'title' => 'NO SE ENCONTRARON RESULTADOS DE USUARIOS !',
-    //             'text' => 'No existen registros de usuarios con el correo ingresado en la base de datos.',
-    //             'type' => 'warning'
-    //         ])->getData();
-    //         $this->resetValidation('searchemail');
-    //         $this->dispatchBrowserEvent('validation', $mensaje);
-    //         return false;
-    //     }
-    // }
-
-    // public function limpiaruserasign()
-    // {
-    //     $this->reset(['userasign', 'searchemail']);
-    // }
-
-    // public function asignarsucursal()
-    // {
-    // }
 }

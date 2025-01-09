@@ -20,7 +20,7 @@
             if (img) {
                 img.src = img.dataset.src;
             }"
-                class="w-full h-60 max-w-full sm:h-40 overflow-hidden rounded md:rounded-xl relative {{ isset($image) ? 'bg-white' : '' }}">
+                class="w-full h-36 max-w-full sm:h-40 overflow-hidden rounded md:rounded-xl relative {{ isset($image) ? 'bg-white' : '' }}">
                 @if (isset($image))
                     <x-loading-lazy-image x-show="imageLoaded == false" x-cloak />
 

@@ -3,13 +3,13 @@
 namespace App\Http\Livewire\Admin\Empresas;
 
 use App\Helpers\FormatoPersonalizado;
-use App\Helpers\GetClient;
 use App\Models\Almacen;
 use App\Models\Empresa;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use App\Rules\ValidateFileKey;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManagerStatic as Image;
 use Livewire\Component;
@@ -238,36 +238,37 @@ class CreateEmpresa extends Component
         $this->ubigeo_id = null;
         $this->estado = null;
         $this->condicion = null;
-        $this->resetValidation(['document', 'name', 'direccion', 'telefono', 'ubigeo_id', 'estado', 'condicion']);
+        $this->resetValidation();
 
-        $http = new GetClient();
-        $response = $http->getSunat($this->document);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->document,
+        ]);
 
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name = $response->getData()->name;
-                $this->direccion = $response->getData()->direccion;
-                $this->estado = $response->getData()->estado;
-                $this->condicion = $response->getData()->condicion;
-                $this->ubigeo_id = $response->getData()->ubigeo_id;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->name = $cliente->name;
+                $this->direccion = $cliente->direccion;
+                $this->estado = $cliente->estado;
+                $this->condicion = $cliente->condicion;
+                $this->ubigeo_id = $cliente->ubigeo_id;
             } else {
-                $this->addError('document', $response->getData()->message);
+                $this->name = '';
+                $this->direccion = '';
+                $this->estado = '';
+                $this->condicion = '';
+                $this->ubigeo_id = null;
+                $this->addError('document', $cliente->error);
             }
         } else {
-            $this->addError('document', 'Error al buscar cliente.');
-        }
-    }
-
-    public function searchpricedolar()
-    {
-
-        $this->resetValidation(['tipocambio']);
-
-        $http = new GetClient();
-        $response = $http->getTipoCambio();
-
-        if ($response->precioVenta) {
-            $this->tipocambio = $response->precioVenta;
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 

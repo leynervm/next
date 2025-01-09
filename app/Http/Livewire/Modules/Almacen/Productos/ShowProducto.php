@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Estante;
 use App\Models\Kardex;
 use App\Models\Marca;
+use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Unit;
 use App\Rules\CampoUnique;
@@ -33,6 +34,7 @@ class ShowProducto extends Component
     public $subcategories = [];
     public $empresa;
     public $skuold;
+    public $descripcion;
 
     protected function rules()
     {
@@ -44,7 +46,7 @@ class ShowProducto extends Component
             'producto.partnumber' => ['nullable', 'string', 'min:4', new CampoUnique('productos', 'partnumber', $this->producto->id, true)],
             'producto.unit_id' => ['required', 'integer', 'min:1', 'exists:units,id'],
             'producto.pricebuy' => ['required', 'numeric', 'decimal:0,4', 'min:0', 'gt:0'],
-            'producto.pricesale' => mi_empresa()->usarLista() ? ['nullable', 'numeric', 'min:0', 'decimal:0,4'] : ['required', 'numeric', 'decimal:0,4', 'gt:0'],
+            'producto.pricesale' => $this->empresa->usarLista() ? ['nullable', 'numeric', 'min:0', 'decimal:0,4'] : ['required', 'numeric', 'decimal:0,4', 'gt:0'],
             'producto.igv' => ['required', 'numeric', 'decimal:0,4', 'min:0'],
             'producto.minstock' => ['required', 'integer', 'min:0'],
             'producto.category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
@@ -57,6 +59,14 @@ class ShowProducto extends Component
             'producto.viewespecificaciones' => ['integer', 'min:0', 'max:1'],
             'producto.novedad' => ['integer', 'min:0', 'max:1'],
             'producto.viewdetalle' => ['integer', 'min:0', 'max:1'],
+
+            'producto.precio_1' => $this->empresa->usarLista() ? ['required', 'numeric', 'decimal:0,4', 'gt:0'] : ['nullable'],
+            'producto.precio_2' => $this->empresa->usarLista() ? ['required', 'numeric', 'decimal:0,4', 'gt:0'] : ['nullable'],
+            'producto.precio_3' => $this->empresa->usarLista() ? ['required', 'numeric', 'decimal:0,4', 'gt:0'] : ['nullable'],
+            'producto.precio_4' => $this->empresa->usarLista() ? ['required', 'numeric', 'decimal:0,4', 'gt:0'] : ['nullable'],
+            'producto.precio_5' => $this->empresa->usarLista() ? ['required', 'numeric', 'decimal:0,4', 'gt:0'] : ['nullable'],
+            'producto.comentario' => ['nullable', 'string'],
+            'descripcion' => ['nullable', 'string']
         ];
     }
 
@@ -81,6 +91,12 @@ class ShowProducto extends Component
         if (empty($this->skuold)) {
             $this->producto->sku =  Self::generatesku();
         }
+
+        if (Module::isEnabled('Marketplace')) {
+            if ($this->producto->detalleproducto) {
+                $this->descripcion = $this->producto->detalleproducto->descripcion;
+            }
+        }
     }
 
     public function render()
@@ -88,6 +104,7 @@ class ShowProducto extends Component
         $units = Unit::orderBy('name', 'asc')->get();
         $categories = Category::orderBy('name', 'asc')->get();
         $marcas = Marca::orderBy('name', 'asc')->get();
+        $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->orderBy('name', 'asc')->get();
 
         if (Module::isEnabled('Almacen')) {
             $almacenareas = Almacenarea::orderBy('name', 'asc')->get();
@@ -97,7 +114,7 @@ class ShowProducto extends Component
             $estantes = [];
         }
 
-        return view('livewire.modules.almacen.productos.show-producto', compact('units', 'categories', 'marcas', 'almacenareas', 'estantes'));
+        return view('livewire.modules.almacen.productos.show-producto', compact('units', 'categories', 'marcas', 'almacenareas', 'estantes', 'pricetypes'));
     }
 
     public function generatesku()
@@ -117,10 +134,8 @@ class ShowProducto extends Component
     public function updatedProductoViewespecificaciones($value)
     {
         $this->authorize('admin.almacen.productos.edit');
-        // dd($value ? $value : 0);
         $this->producto->viewespecificaciones = $value ? $value : 0;
         $this->producto->save();
-        // $this->dispatchBrowserEvent('updated');
     }
 
     public function setCategory($value)
@@ -134,14 +149,15 @@ class ShowProducto extends Component
         }
     }
 
-    public function update()
+    public function update($descripcion = '')
     {
 
         $this->authorize('admin.almacen.productos.edit');
+        $this->descripcion = $descripcion;
+        // dd($this->descripcion);
         $this->producto->novedad = $this->producto->novedad == false ? 0 : 1;
         $this->producto->maxstockweb = empty($this->producto->maxstockweb) ? null : $this->producto->maxstockweb;
         $this->producto->viewespecificaciones = $this->producto->viewespecificaciones == false ? 0 : 1;
-        // dd($this->producto->viewespecificaciones);
         $this->producto->subcategory_id = !empty(trim($this->producto->subcategory_id)) ? trim($this->producto->subcategory_id) : null;
         $this->producto->almacenarea_id = !empty(trim($this->producto->almacenarea_id)) ? trim($this->producto->almacenarea_id) : null;
         $this->producto->estante_id = !empty(trim($this->producto->estante_id)) ? trim($this->producto->estante_id) : null;
@@ -149,17 +165,29 @@ class ShowProducto extends Component
             $this->producto->sku = Self::generatesku();
         }
         $this->validate();
-        $isDirty = false;
-        if ($this->producto->isDirty('pricebuy')) {
-            $isDirty = true;
-        }
+        $isDirty = $this->producto->isDirty('pricebuy') ? true : false;
+        $reload = $this->producto->isDirty('name') ? true : false;
         $this->producto->save();
+
+        if (Module::isEnabled('Marketplace')) {
+            $this->producto->detalleproducto()->updateOrCreate(
+                ['id' => $this->producto->detalleproducto->id ?? null],
+                ['descripcion' => $this->descripcion]
+            );
+        }
+
         if ($isDirty) {
             $this->producto->assignPrice();
         }
         $this->resetValidation();
         $this->dispatchBrowserEvent('updated');
-        return redirect()->route('admin.almacen.productos.edit', $this->producto);
+        $this->producto->refresh();
+
+        if ($reload) {
+            return route('admin.almacen.productos.edit', $this->producto);
+            // return redirect()->route('admin.almacen.productos.edit', $this->producto);
+            // $this->dispatchBrowserEvent('update-url', $this->producto->slug);
+        }
     }
 
     public function openmodal()

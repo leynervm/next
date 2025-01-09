@@ -18,9 +18,9 @@ class ShowDetalles extends Component
 
     use WithPagination, WithFileUploads, AuthorizesRequests;
 
+    public Producto $producto;
     public $open = false;
     public $openimage = false;
-    public $producto;
     public $imagen, $identificador;
     public $searchcaracteristica = '';
 
@@ -30,10 +30,16 @@ class ShowDetalles extends Component
     //     'searchcaracteristica' => ['except' => '', 'as' => 'search_especificacion'],
     // ];
 
-    public function mount(Producto $producto)
+    protected function rules()
+    {
+        return [
+            'producto.comentario' => ['nullable', 'string']
+        ];
+    }
+
+    public function mount()
     {
         $this->identificador = rand();
-        $this->producto = $producto;
     }
 
     public function render()
@@ -70,14 +76,24 @@ class ShowDetalles extends Component
     public function saveespecificacion()
     {
         $this->authorize('admin.almacen.productos.especificaciones');
-        $orden = 1;
+
         $arrayPivotValues = [];
+        $especif_in_bd = $this->producto->especificacions()
+            ->pluck('especificacion_id')->toArray();
+        $orden = ($this->producto->especificacions()->max('orden') ?? 0) + 1;
         foreach ($this->selectedEspecificacion as $item) {
-            $arrayPivotValues[$item] = [
-                'orden' => $orden
-            ];
-            $orden++;
+            if (in_array($item, $especif_in_bd)) {
+                $arrayPivotValues[(int) $item] = [
+                    'orden' => array_search((int) $item, $especif_in_bd) + 1
+                ];
+            } else {
+                $arrayPivotValues[(int) $item] = [
+                    'orden' => $orden
+                ];
+                $orden++;
+            }
         }
+
         // dd($this->selectedEspecificacion, $arrayPivotValues);
         // dd($this->selectedEspecificacion, $item, $value);
         $this->producto->especificacions()->sync($arrayPivotValues);

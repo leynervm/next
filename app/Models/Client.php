@@ -15,6 +15,8 @@ class Client extends Model
 {
     use HasFactory;
     use SoftDeletes;
+    const EMPRESA = 'E';
+
     public $timestamps = false;
 
     protected $fillable = ['document', 'name', 'email', 'nacimiento', 'sexo', 'pricetype_id', 'user_id'];
@@ -32,13 +34,13 @@ class Client extends Model
     public function direccion(): MorphOne
     {
         return $this->morphOne(Direccion::class, 'direccionable')
-            ->orderByDesc('default')->orderBy('id', 'desc');
+            ->orderByDesc('default')->orderByDesc('id');
     }
 
     public function direccions(): MorphMany
     {
         return $this->morphMany(Direccion::class, 'direccionable')
-            ->orderByDesc('default')->orderBy('id', 'desc');
+            ->orderByDesc('default')->orderByDesc('id');
     }
 
     public function ventas(): HasMany

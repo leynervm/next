@@ -69,28 +69,27 @@
 
         <div class="w-full">
             <x-label value="Bultos / Paquetes :" />
-            <x-input class="block w-full input-number-none" wire:model.defer="packages" min="0" step="1" type="number"
-                onkeypress="return validarDecimal(event, 12)" />
+            <x-input class="block w-full input-number-none" wire:model.defer="packages" min="0" step="1"
+                type="number" onkeypress="return validarDecimal(event, 12)" />
             <x-jet-input-error for="packages" />
         </div>
 
         <div class="w-full">
             <x-label value="Peso bruto total (KILOGRAMO) :" />
-            <x-input class="block w-full input-number-none" wire:model.defer="peso" min="0" step="0.01" type="number"
-                onkeypress="return validarDecimal(event, 12)" />
+            <x-input class="block w-full input-number-none" wire:model.defer="peso" min="0" step="0.01"
+                type="number" onkeypress="return validarDecimal(event, 12)" />
             <x-jet-input-error for="peso" />
         </div>
 
         <div class="w-full lg:col-span-1" :class="vehiculosml ? 'sm:col-span-2 ' : 'xs:col-span-2 sm:col-span-3'">
             <x-label value="Notas de la guía :" />
-            <x-input class="block w-full" wire:model.defer="note" placeholder="(Opcional). Notas de la guía" />
+            <x-text-area class="block w-full" wire:model.defer="note" placeholder="Opcional"></x-text-area>
             <x-jet-input-error for="note" />
         </div>
 
         <div class="w-full" x-cloak x-show="vehiculosml" style="display:none" x-transition>
             <x-label value="Placa vehículo (Opcional) :" />
-            <x-input class="block w-full" wire:model.defer="placavehiculo"
-                placeholder="Placa del vehículo de transporte..." />
+            <x-input class="block w-full" wire:model.defer="placavehiculo" />
             <x-jet-input-error for="placavehiculo" />
         </div>
     </div>
@@ -110,10 +109,11 @@
             <div class="w-full">
                 <x-label value="DNI / RUC :" />
                 <div class="w-full inline-flex gap-1">
-                    <x-input class="block w-full flex-1 prevent numeric" x-model="documentdestinatario"
-                        x-on:keydown.enter.prevent="consultaRUC('documentdestinatario', 'namedestinatario')" minlength="0"
-                        maxlength="11" onkeypress="return validarNumero(event, 11)" />
-                    <x-button-add class="px-2" x-on:click="consultaRUC('documentdestinatario', 'namedestinatario')"
+                    <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="documentdestinatario"
+                        wire:keydown.enter.prevent="searchcliente('documentdestinatario', 'namedestinatario')"
+                        minlength="0" maxlength="11" onkeypress="return validarNumero(event, 11)" />
+                    <x-button-add class="px-2"
+                        wire:click="searchcliente('documentdestinatario', 'namedestinatario')"
                         wire:target="getDestinatario" wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -128,7 +128,7 @@
 
             <div class="w-full md:col-span-2 lg:col-span-1">
                 <x-label value="Nombres :" />
-                <x-input class="block w-full" x-model="namedestinatario"
+                <x-input class="block w-full" wire:model.defer="namedestinatario"
                     placeholder="Nombres / razón social del destinatario" />
                 <x-jet-input-error for="namedestinatario" />
             </div>
@@ -142,10 +142,10 @@
             <div class="w-full">
                 <x-label value="RUC transportista :" />
                 <div class="w-full inline-flex gap-1">
-                    <x-input class="block w-full flex-1 prevent numeric" x-model="ructransport"
-                        x-on:keydown.enter.prevent="consultaRUC('ructransport', 'nametransport')" minlength="0"
+                    <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="ructransport"
+                        wire:keydown.enter.prevent="searchcliente('ructransport', 'nametransport')" minlength="0"
                         maxlength="11" onkeypress="return validarNumero(event, 11)" />
-                    <x-button-add class="px-2" x-on:click="consultaRUC('ructransport', 'nametransport')"
+                    <x-button-add class="px-2" wire:click="searchcliente('ructransport', 'nametransport')"
                         wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -160,7 +160,7 @@
 
             <div class="w-full lg:col-span-2 xl:col-span-1">
                 <x-label value="Razón social transportista :" />
-                <x-input class="block w-full" x-model="nametransport" placeholder="Razón social del transportista" />
+                <x-input class="block w-full" wire:model.defer="nametransport" />
                 <x-jet-input-error for="nametransport" />
             </div>
         </div>
@@ -173,10 +173,10 @@
             <div class="w-full">
                 <x-label value="Documento conductor :" />
                 <div class="w-full inline-flex gap-1">
-                    <x-input class="block w-full flex-1 prevent numeric" x-model="documentdriver"
-                        x-on:keydown.enter.prevent="consultaRUC('documentdriver','namedriver')" minlength="0"
+                    <x-input class="block w-full flex-1 prevent numeric" wire:model.defer="documentdriver"
+                        wire:keydown.enter.prevent="searchcliente('documentdriver','namedriver')" minlength="0"
                         maxlength="11" onkeypress="return validarNumero(event, 8)" />
-                    <x-button-add class="px-2" x-on:click="consultaRUC('documentdriver','namedriver')"
+                    <x-button-add class="px-2" wire:click="searchcliente('documentdriver','namedriver')"
                         wire:loading.attr="disabled">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -191,26 +191,25 @@
 
             <div class="w-full">
                 <x-label value="Nombres conductor :" />
-                <x-input class="block w-full" x-model="namedriver" placeholder="Nombres del conductor" />
+                <x-input class="block w-full" wire:model.defer="namedriver" />
                 <x-jet-input-error for="namedriver" />
             </div>
 
             <div class="w-full">
                 <x-label value="Apellidos :" />
-                <x-input class="block w-full" wire:model.defer="lastname" placeholder="Apellidos del conductor..." />
+                <x-input class="block w-full" wire:model.defer="lastname" />
                 <x-jet-input-error for="lastname" />
             </div>
 
             <div class="w-full">
                 <x-label value="Licencia conducir:" />
-                <x-input class="block w-full" wire:model.defer="licencia"
-                    placeholder="Licencia del conductor del vehículo..." />
+                <x-input class="block w-full" wire:model.defer="licencia" />
                 <x-jet-input-error for="licencia" />
             </div>
 
             <div class="w-full">
                 <x-label value="Placa vehículo :" />
-                <x-input class="block w-full" wire:model.defer="placa" placeholder="placa del vehículo..." />
+                <x-input class="block w-full" wire:model.defer="placa" />
                 <x-jet-input-error for="placa" />
             </div>
         </div>
@@ -244,8 +243,7 @@
 
             <div class="w-full">
                 <x-label value="Direccion origen :" />
-                <x-input class="block w-full" wire:model.defer="direccionorigen"
-                    placeholder="Dirección del punto de partida..." />
+                <x-text-area class="block w-full" wire:model.defer="direccionorigen"></x-text-area>
                 <x-jet-input-error for="direccionorigen" />
             </div>
         </div>
@@ -278,8 +276,7 @@
 
             <div class="w-full">
                 <x-label value="Direccion destino :" />
-                <x-input class="block w-full" wire:model.defer="direcciondestino"
-                    placeholder="Direccion del punto de llegada.." />
+                <x-text-area class="block w-full" wire:model.defer="direcciondestino"></x-text-area>
                 <x-jet-input-error for="direcciondestino" />
             </div>
         </div>

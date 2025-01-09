@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Admin\Clients;
 
-use App\Helpers\GetClient;
 use App\Models\Client;
 use App\Models\Contact;
 use App\Models\Direccion;
@@ -16,6 +15,7 @@ use App\Rules\ValidateDocument;
 use App\Rules\ValidatePhoneClient;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Nwidart\Modules\Facades\Module;
@@ -133,7 +133,6 @@ class ViewClient extends Component
         ]);
 
         try {
-
             DB::beginTransaction();
             $contact = $this->client->contacts()->updateOrCreate([
                 'id' => $this->contact->id ?? null
@@ -234,7 +233,7 @@ class ViewClient extends Component
         }
     }
 
-    public function savedireccion()
+    public function savedireccion($closemodal = false)
     {
         $this->validate([
             'namedireccion' => [
@@ -262,7 +261,10 @@ class ViewClient extends Component
             } else {
                 $this->dispatchBrowserEvent('created');
             }
-            $this->reset(['direccion', 'namedireccion', 'ubigeo_id', 'opendireccion']);
+            $this->reset(['direccion', 'namedireccion', 'ubigeo_id']);
+            if ($closemodal) {
+                $this->opendireccion = false;
+            }
             $this->resetValidation();
             $this->client->refresh();
         } catch (\Exception $e) {
@@ -276,7 +278,7 @@ class ViewClient extends Component
 
     public function deletedireccion(Direccion $direccion)
     {
-        $direccion->delete();
+        $direccion->forceDelete();
         $this->dispatchBrowserEvent('deleted');
         $this->client->refresh();
     }
@@ -341,55 +343,74 @@ class ViewClient extends Component
     public function searchclient()
     {
         $this->authorize('admin.clientes.edit');
+        $this->resetValidation();
         $this->client->document = trim($this->client->document);
         $this->validate([
             'client.document' => ['required', 'numeric', new ValidateDocument]
         ]);
 
-        $this->client->name = null;
-        // $this->client->pricetype_id = null;
+        // $this->client->name = null;
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->client->document,
+            'obtenerlista' => view()->shared('empresa')->usarLista() ? true : false,
+        ]);
 
-        $this->resetValidation(['client.document', 'client.name', 'client.pricetype_id']);
-
-        $http = new GetClient();
-        $response = $http->getClient($this->client->document, false, false);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->client->name = $response->getData()->name;
-                $this->client->pricetype_id = $response->getData()->pricetype_id;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->client->name = $cliente->name;
+                if (view()->shared('empresa')->usarLista() && !empty($cliente->pricetype)) {
+                    $this->client->pricetype_id = $cliente->pricetype->id;
+                }
             } else {
-                $this->addError('client.document', $response->getData()->message);
+                $this->client->refresh();
+                $this->addError('client.document', $cliente->error);
             }
         } else {
-            $this->addError('client.document', 'Error al buscar cliente.');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 
     public function searchcontacto()
     {
         $this->authorize('admin.clientes.contacts.edit');
+        $this->resetValidation();
         $this->document2 = trim($this->document2);
         $this->validate([
             'document2' => ['required', 'numeric', 'digits:8']
         ]);
 
-        $this->name2 = null;
-        $this->telefono2 = null;
-        $this->resetValidation(['document2', 'name2', 'telefono2']);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->document2,
+            'searchbd' => true,
+        ]);
 
-        $http = new GetClient();
-        $response = $http->getClient($this->document2, false);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->name2 = $response->getData()->name;
-                $this->telefono2 = $response->getData()->telefono;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->name2 = $cliente->name;
+                $this->telefono2 = $cliente->telefono;
             } else {
-                $this->addError('document2', $response->getData()->message);
+                $this->name2 = '';
+                $this->telefono2 = '';
+                $this->addError('document2', $cliente->error);
             }
         } else {
-            $this->addError('document2', 'Error al buscar datos del contacto.');
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 

@@ -1,12 +1,28 @@
 <div>
     <div class="flex flex-col gap-8">
-        <x-form-card titulo="DATOS PRODUCTO" subtitulo="Información del producto registrado.">
-            <form class="w-full relative flex flex-col gap-2" wire:submit.prevent="update" x-data="showproducto">
+        <x-form-card titulo="DATOS PRODUCTO" x-data="showproducto">
+            <form class="w-full relative flex flex-col gap-2" x-on:submit.prevent="savedescripcion" {{-- wire:submit.prevent="update" --}}>
                 <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                    <div class="w-full sm:col-span-2">
+                    <div class="w-full xs:col-span-2 sm:col-span-3 lg:col-span-4">
                         <x-label value="Nombre del producto :" />
-                        <x-text-area class="block w-full" wire:model.defer="producto.name"></x-text-area>
+                        <x-text-area class="block w-full" wire:model.defer="producto.name" rows="1"
+                            x-ref="name_producto" style="overflow:hidden;resize:none;"
+                            x-on:input="adjustHeight($el)"></x-text-area>
                         <x-jet-input-error for="producto.name" />
+                    </div>
+
+                    <div class="w-full">
+                        <x-label value="SKU :" />
+                        @if ($empresa->autogenerateSku())
+                            <x-disabled-text :text="$producto->sku" class="" />
+                        @else
+                            <x-input class="block w-full" wire:model.defer="producto.sku" />
+                        @endif
+                        @if (empty($skuold))
+                            <small class="text-[11px] text-colorerror leading-none font-semibold">
+                                sku pendiente de actualizar</small>
+                        @endif
+                        <x-jet-input-error for="producto.sku" />
                     </div>
 
                     <div class="w-full">
@@ -30,20 +46,6 @@
                         <x-label value="Modelo:" />
                         <x-input class="block w-full" wire:model.defer="producto.modelo" />
                         <x-jet-input-error for="producto.modelo" />
-                    </div>
-
-                    <div class="w-full">
-                        <x-label value="SKU :" />
-                        @if ($empresa->autogenerateSku())
-                            <x-disabled-text :text="$producto->sku" class="" />
-                        @else
-                            <x-input class="block w-full" wire:model.defer="producto.sku" />
-                        @endif
-                        @if (empty($skuold))
-                            <small class="text-[11px] text-colorerror leading-none font-semibold">
-                                sku pendiente de actualizar</small>
-                        @endif
-                        <x-jet-input-error for="producto.sku" />
                     </div>
 
                     <div class="w-full">
@@ -105,23 +107,6 @@
                         <x-jet-input-error for="producto.subcategory_id" />
                     </div>
 
-                    <div class="w-full">
-                        <x-label value="Precio compra :" />
-                        <x-input class="block w-full input-number-none" wire:model.defer="producto.pricebuy"
-                            type="number" min="0" step="0.001" onkeypress="return validarDecimal(event, 9)" />
-                        <x-jet-input-error for="producto.pricebuy" />
-                    </div>
-
-                    @if (!$empresa->usarLista())
-                        <div class="w-full">
-                            <x-label value="Precio venta :" />
-                            <x-input class="block w-full input-number-none" wire:model.defer="producto.pricesale"
-                                type="number" min="0" step="0.001"
-                                onkeypress="return validarDecimal(event, 9)" />
-                            <x-jet-input-error for="producto.pricesale" />
-                        </div>
-                    @endif
-
                     {{-- <div class="w-full">
                         <x-label value="IGV :" />
                         <x-input class="block w-full" wire:model.defer="producto.igv" type="number" min="0"
@@ -182,8 +167,68 @@
                             <x-jet-input-error for="producto.estante_id" />
                         </div>
                     @endif
+
+                    <div class="w-full">
+                        <x-label value="Precio compra :" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="producto.pricebuy"
+                            type="number" min="0" step="0.001"
+                            onkeypress="return validarDecimal(event, 9)" />
+                        <x-jet-input-error for="producto.pricebuy" />
+                    </div>
+
+                    @if (!$empresa->usarLista())
+                        <div class="w-full">
+                            <x-label value="Precio venta :" />
+                            <x-input class="block w-full input-number-none" wire:model.defer="producto.pricesale"
+                                type="number" min="0" step="0.001"
+                                onkeypress="return validarDecimal(event, 9)" />
+                            <x-jet-input-error for="producto.pricesale" />
+                        </div>
+                    @endif
                 </div>
 
+                @if ($empresa->usarLista())
+                    <div class="w-full py-2 pt-5">
+                        <x-label value="PRECIOS DE VENTA" class="!text-colortitleform font-semibold mb-2" />
+                        @if (count($pricetypes) > 0)
+                            <div
+                                class="w-full grid gap-2 xs:grid-cols-2 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
+                                @foreach ($pricetypes as $item)
+                                    @php
+                                        $dec = '00000001';
+                                        $step = '0.' . substr($dec, -$item->decimals);
+                                    @endphp
+                                    @if (in_array($item->campo_table, array_keys($producto->getAttributes())))
+                                        <div class="w-full" x-data="{ {{ $item->campo_table }}: @entangle('producto.' . $item->campo_table).defer }">
+                                            <x-label :value="$item->name . ' (S/)'" class="w-full text-left" />
+                                            @can('admin.administracion.pricetypes.productos')
+                                                <x-input class="block w-full text-center input-number-none"
+                                                    x-model="{{ $item->campo_table }}" wire:key="{{ rand() }}"
+                                                    type="number" x-init="{{ $item->campo_table }} = parseFloat({{ $item->campo_table }}).toFixed({{ $item->decimals }})" step="{{ $step }}"
+                                                    onkeypress="return validarDecimal(event, 12)" />
+                                                <x-jet-input-error for="producto.{{ $item->campo_table }}" />
+                                            @endcan
+                                            @cannot('admin.administracion.pricetypes.productos')
+                                                <x-disabled-text class="w-full text-center block"
+                                                    text="S/.  {{ number_format($producto->{$item->campo_table} ?? 0, $item->decimals, '.', ', ') }}" />
+                                            @endcannot
+                                        </div>
+
+                                        @if ($empresa->verDolar())
+                                            @if ($empresa->tipocambio > 0)
+                                                {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
+                                    S/. {{ decimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
+                                            @else
+                                                <p class="text-center tracking-widest text-colorerror">
+                                                    TIPO CAMBIO NO CONFIGURADO</p>
+                                            @endif
+                                        @endif
+                                    @endif
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endif
 
                 <div class="w-full flex flex-col gap-1 justify-start items-start">
                     @if (Module::isEnabled('Marketplace'))
@@ -228,9 +273,12 @@
                 </div>
 
                 @can('admin.almacen.productos.edit')
-                    <div class="w-full flex gap-2 justify-end">
-                        <x-button type="submit" wire:loading.attr="disabled">
-                            {{ __('Save') }}</x-button>
+                    <div class="w-full fixed z-[3] bottom-0 p-1 md:p-3 left-0 px-8 bg-body"
+                        :class="openSidebar ? 'md:w-[calc(100%-12rem)] md:left-48' : 'md:w-[calc(100%-4rem)] md:left-16'">
+                        <div class="w-full xl:max-w-7xl mx-auto flex justify-end px-1 lg:px-5">
+                            <x-button type="submit" wire:loading.attr="disabled">
+                                {{ __('Save') }}</x-button>
+                        </div>
                     </div>
                 @endcan
             </form>
@@ -286,10 +334,6 @@
         </x-form-card>
     </div>
 
-    <div wire:loading.flex class="loading-overlay rounded hidden fixed">
-        <x-loading-next />
-    </div>
-
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">{{ __('Agregar almacén') }}</x-slot>
 
@@ -341,7 +385,31 @@
                 subcategory_id: @entangle('producto.subcategory_id').defer,
                 almacenarea_id: @entangle('producto.almacenarea_id').defer,
                 estante_id: @entangle('producto.estante_id').defer,
+                comentario: @entangle('producto.comentario').defer,
+                init() {
+                    const detalle_producto = document.getElementById('ckeditor_descripcion_producto');
+                    this.ckeditor_descripcion = detalle_producto.value;
 
+                    this.adjustHeight(this.$refs.name_producto);
+                    Livewire.hook('message.processed', () => {
+                        this.adjustHeight(this.$refs.name_producto);
+                    });
+                },
+                savedescripcion() {
+                    const comment = document.getElementById('comentario');
+                    this.comentario = comment.value ?? '';
+                    this.$wire.update(this.ckeditor_descripcion).then(route => {
+                        if (route) {
+                            console.log(route);
+                            window.history.replaceState({}, '', route);
+                            window.location.reload();
+                        }
+                    })
+                },
+                adjustHeight($el) {
+                    $el.style.height = 'auto';
+                    $el.style.height = $el.scrollHeight + 'px';
+                }
             }));
         })
 

@@ -17,7 +17,8 @@ class ShowGarantias extends Component
 
     use AuthorizesRequests;
 
-    public $producto, $typegarantia, $pricetype;
+    public Producto $producto;
+    public $typegarantia, $pricetype;
     public $typegarantia_id, $time;
     public $open = false;
     public $newprice, $priceold, $pricemanual;
@@ -26,25 +27,24 @@ class ShowGarantias extends Component
     public $precio_1, $precio_2, $precio_3, $precio_4, $precio_5;
     public $viewdetalle = false;
 
-    protected $listeners = ['delete'];
+    protected $listeners = ['delete', 'savedetalle'];
 
-    public function mount(Producto $producto)
+    public function mount()
     {
-        $this->producto = $producto;
         $this->typegarantia = new Typegarantia();
         $this->pricetype = new Pricetype();
 
         if (Module::isEnabled('Marketplace')) {
-            $this->viewdetalle = $producto->verDetalles();
-            if ($producto->detalleproducto) {
-                $this->descripcion =  $producto->detalleproducto->descripcion;
+            $this->viewdetalle = $this->producto->verDetalles();
+            if ($this->producto->detalleproducto) {
+                $this->descripcion =  $this->producto->detalleproducto->descripcion;
             }
         }
-        $this->precio_1 = decimalOrInteger($producto->precio_1, 2,);
-        $this->precio_2 = decimalOrInteger($producto->precio_2, 2);
-        $this->precio_3 = decimalOrInteger($producto->precio_3, 2);
-        $this->precio_4 = decimalOrInteger($producto->precio_4, 2);
-        $this->precio_5 = decimalOrInteger($producto->precio_5, 2);
+        $this->precio_1 = decimalOrInteger($this->producto->precio_1, 2,);
+        $this->precio_2 = decimalOrInteger($this->producto->precio_2, 2);
+        $this->precio_3 = decimalOrInteger($this->producto->precio_3, 2);
+        $this->precio_4 = decimalOrInteger($this->producto->precio_4, 2);
+        $this->precio_5 = decimalOrInteger($this->producto->precio_5, 2);
     }
 
     public function render()
@@ -142,7 +142,7 @@ class ShowGarantias extends Component
         if (Module::isEnabled('Marketplace')) {
             $validateData = $this->validate([
                 'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-                'descripcion' => ['required', 'string']
+                'descripcion' => ['nullable', 'string']
             ]);
 
             $this->producto->detalleproducto()->updateOrCreate(
@@ -151,12 +151,12 @@ class ShowGarantias extends Component
             );
             // $this->producto->viewespecificaciones = $this->showespecificaciones ? 1 : 0;
             // $this->reset(['descripcion']);
-            $this->producto->viewdetalle = Producto::VER_DETALLES;
-            $this->producto->save();
-            $this->resetValidation();
+            // $this->producto->viewdetalle = Producto::VER_DETALLES;
+            // $this->producto->save();
+            // $this->resetValidation();
             // $this->emit("resetCKEditor");
             $this->producto->refresh();
-            $this->dispatchBrowserEvent('updated');
+            // $this->dispatchBrowserEvent('updated');
         }
     }
 
@@ -218,5 +218,11 @@ class ShowGarantias extends Component
         $this->producto->save();
         $this->producto->refresh();
         $this->dispatchBrowserEvent('updated');
+    }
+
+    public function refrescar()
+    {
+        $this->producto->refresh();
+        $this->mount();
     }
 }

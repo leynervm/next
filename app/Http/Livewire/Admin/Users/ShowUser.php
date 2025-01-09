@@ -53,44 +53,10 @@ class ShowUser extends Component
                 'before:today',
                 // new ValidateNacimiento(13)
             ],
-            'telefono' => [
-                'nullable',
-                Rule::requiredIf($this->addemployer),
-                'numeric',
-                'digits_between:7,9',
-                'regex:/^\d{7}(?:\d{2})?$/'
-            ],
-            'sexo' => [
-                'nullable',
-                Rule::requiredIf($this->addemployer),
-                'string',
-                'min:1',
-                'max:1',
-                Rule::in(['M', 'F', 'E'])
-            ],
-            'sueldo' => [
-                'nullable',
-                Rule::requiredIf($this->addemployer),
-                'numeric',
-                'min:0',
-                'gt:0',
-                'decimal:0,2'
-            ],
-            // 'horaingreso' => [
-            //     'nullable', Rule::requiredIf($this->addemployer),
-            //     'date_format:H:i'
-            // ],
-            // 'horasalida' => [
-            //     'nullable', Rule::requiredIf($this->addemployer),
-            //     'date_format:H:i'
-            // ],
-            'turno_id' => [
-                'nullable',
-                Rule::requiredIf($this->addemployer),
-                'integer',
-                'min:1',
-                'exists:turnos,id'
-            ],
+            'telefono' => ['nullable', Rule::requiredIf($this->addemployer), 'numeric', 'digits_between:7,9', 'regex:/^\d{7}(?:\d{2})?$/'],
+            'sexo' => ['nullable', Rule::requiredIf($this->addemployer), 'string', 'min:1', 'max:1', Rule::in(['M', 'F', Client::EMPRESA])],
+            'sueldo' => ['nullable', Rule::requiredIf($this->addemployer), 'numeric', 'min:0', 'gt:0', 'decimal:0,2'],
+            'turno_id' => ['nullable', Rule::requiredIf($this->addemployer), 'integer', 'min:1', 'exists:turnos,id'],
             'areawork_id' => ['nullable', 'integer', 'min:1', 'exists:areaworks,id'],
         ];
     }

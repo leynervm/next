@@ -7,6 +7,7 @@ use App\Models\Direccion;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
@@ -21,8 +22,8 @@ class ShowShippments extends Component
     public $receiver = Order::EQUAL_RECEIVER;
     public $order = [];
     public $receiver_info = [
-        'document' => null,
-        'name' => null,
+        'document' => '',
+        'name' => '',
         'telefono' => null
     ];
 
@@ -56,21 +57,8 @@ class ShowShippments extends Component
         $this->pricetype = $pricetype;
         $this->moneda = view()->shared('moneda');
         $this->shipmenttype = new Shipmenttype();
-        // $this->phoneuser = auth()->user()->telephones()
-        //     ->orderBy('default', 'desc')->orderBy('id', 'desc')->first();
-        $client = Client::with(['telephones' => function ($query) {
-            $query->orderBy('default', 'desc');
-        }])->where('document', auth()->user()->document)->first();
-
-        $phone = null;
-        if ($client && count($client->telephones) > 0) {
-            $phone = $client->telephones->first()->phone;
-        }
-
         $this->receiver_info = [
             'document' => auth()->user()->document,
-            'name' => auth()->user()->name,
-            'telefono' => $phone
         ];
     }
 
@@ -236,6 +224,51 @@ class ShowShippments extends Component
             auth()->user()->direccions()->orderBy('name', 'asc')->first()->update([
                 'default' => Direccion::DEFAULT
             ]);
+        }
+    }
+
+    public function searchclient()
+    {
+        $this->resetValidation();
+        $this->receiver_info['document'] = trim($this->receiver_info['document']);
+        $this->validate([
+            'receiver_info.document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/']
+        ]);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->receiver_info['document'],
+            'searchbd' => true,
+        ]);
+
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->receiver_info['name'] = $cliente->name;
+                $this->receiver_info['telefono'] = $cliente->telefono;
+            } else {
+                $this->receiver_info['name'] = '';
+                $this->receiver_info['telefono'] = '';
+                $this->addError('receiver_info.document', $cliente->error);
+            }
+        } else {
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+    }
+
+    public function updatedReceiver($value)
+    {
+        if ($value == Order::EQUAL_RECEIVER) {
+            $this->receiver_info['document'] = auth()->user()->document;
+            self::searchclient();
+        } else {
+            $this->reset(['receiver_info']);
+            $this->resetValidation();
         }
     }
 }

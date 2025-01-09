@@ -2,10 +2,10 @@
     @can('admin.almacen.productos.garantias')
         <x-form-card titulo="GARANTÍAS" subtitulo="Agregar garantías de proteccion del producto." class="relative">
             <div class="w-full flex flex-wrap lg:flex-nowrap gap-3" x-data="{ loading: false }">
-                <div x-show="loading" wire:loading.flex wire:target="save, delete, render, "
+                {{-- <div x-show="loading" wire:loading.flex wire:target="save, delete, render, "
                     class="loading-overlay fixed rounded">
                     <x-loading-next />
-                </div>
+                </div> --}}
 
                 @can('admin.almacen.productos.garantias.edit')
                     <div class="w-full lg:w-80 xl:w-96 lg:flex-shrink-0">
@@ -36,8 +36,8 @@
 
                                 <div class="w-full mt-2">
                                     <x-label value="Tiempo garantía :" />
-                                    <x-input class="block w-full" x-model="time" type="number"
-                                        placeholder="Meses garantía..." />
+                                    <x-input class="block w-full input-number-none" onkeypress="return validarNumero(event, 9)"
+                                        x-model="time" type="number" min="0" step="1" />
                                     <x-jet-input-error for="time" />
                                 </div>
 
@@ -94,79 +94,19 @@
         </x-form-card>
     @endcan
 
-    @if ($empresa->usarlista())
-        <x-form-card titulo="PRECIOS VENTA" subtitulo="Personalizar precios de venta según su preferencia.">
-            <form wire:submit.prevent="updatelistaprecios" class="w-full flex flex-col gap-2">
-                @if (count($pricetypes) > 0)
-                    <div class="w-full flex flex-wrap gap-2">
-                        @foreach ($pricetypes as $item)
-                            @if (in_array($item->campo_table, array_keys($producto->getAttributes())))
-                                <x-simple-card
-                                    class="w-full xs:w-48 flex flex-col items-center justify-between rounded-xl p-2">
-                                    <x-span-text :text="$item->name" class="leading-3 !tracking-normal" />
-
-                                    <div class="w-full">
-                                        @can('admin.administracion.pricetypes.productos')
-                                            <x-label value="S/." class="w-full text-left" />
-                                            <x-input class="block w-full text-center input-number-none"
-                                                wire:model.defer="{{ $item->campo_table }}" type="number" step="0.0001"
-                                                onkeypress="return validarDecimal(event, 12)" />
-                                            <x-jet-input-error for="{{ $item->campo_table }}" />
-                                        @endcan
-                                        @cannot('admin.administracion.pricetypes.productos')
-                                            <x-disabled-text class="w-full text-center block"
-                                                text="S/.  {{ number_format($producto->{$item->campo_table} ?? 0, $item->decimals, '.', ', ') }}" />
-                                        @endcannot
-                                    </div>
-
-
-                                    @if ($empresa->verDolar())
-                                        @if ($empresa->tipocambio > 0)
-                                            {{-- <h1 class="text-center relative pt-1 text-colorlabel text-xs">
-                                        S/. {{ decimalOrInteger($producto[$item->campo_table], 2, ', ') }}</h1> --}}
-                                        @else
-                                            <p class="text-center tracking-widest text-colorerror">
-                                                TIPO CAMBIO NO CONFIGURADO</p>
-                                        @endif
-                                    @endif
-                                </x-simple-card>
-                            @endif
-                        @endforeach
-                    </div>
-                @endif
-
-                @can('admin.administracion.pricetypes.productos')
-                    <div class="w-full flex items-end justify-end">
-                        <x-button type="submit" wire:loading.attr="disabled">ACTUALIZAR</x-button>
-                    </div>
-                @endcan
-            </form>
-        </x-form-card>
-    @endif
-
     @if (Module::isEnabled('Marketplace'))
         <x-form-card titulo="DETALLE PRODUCTO" style="display: none;" x-cloak x-show="viewdetalle">
-            <div class="w-full overflow-hidden">
-                <form wire:submit.prevent="savedetalle" class="w-full">
+            <div class="w-full overflow-hidden" id="form_descripcion_producto">
+                <div wire:ignore>
+                    <x-ckeditor-5 x-model="ckeditor_descripcion" id="ckeditor_descripcion_producto" name="descripcion"
+                        wire:model.defer="descripcion" />
+                </div>
 
-                    <div wire:ignore>
-                        <x-ckeditor-5 id="myckeditor3" wire:model.defer="descripcion" />
-                    </div>
-
-                    <x-jet-input-error for="descripcion" />
-                    <x-jet-input-error for="producto.id" />
-
-                    @can('admin.almacen.productos.especificaciones')
-                        <div class="mt-3 flex justify-end">
-                            <x-button type="submit" wire:loading.atrr="disabled">
-                                {{ __('Save') }}</x-button>
-                        </div>
-                    @endcan
-                </form>
+                <x-jet-input-error for="descripcion" />
+                <x-jet-input-error for="producto.id" />
             </div>
         </x-form-card>
     @endif
-
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
@@ -208,7 +148,6 @@
         </x-slot>
     </x-jet-dialog-modal>
 
-    <script src="{{ asset('assets/ckeditor5/ckeditor5_38.1.1_super-build_ckeditor.js') }}"></script>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('datagarantia', () => ({

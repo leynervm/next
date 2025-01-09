@@ -74,6 +74,6 @@ class DefaultValue implements Rule
     public function message()
     {
         // return 'Ya existe un valor asignado como :attribute.';
-        return __("There is already a value assigned as :attribute in the table") . ' ' . __($this->table);
+        return __("There is already a value assigned as :attribute.");
     }
 }

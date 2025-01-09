@@ -124,40 +124,41 @@
 
     <x-form-card titulo="DIRECCIONES">
         @if (count($client->direccions) > 0)
-            <div class="w-full flex flex-wrap gap-1">
+            <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-1 self-start">
                 @foreach ($client->direccions as $item)
                     <div
-                        class="w-full text-xs bg-body rounded p-2 rounded-lg border {{ $item->isDefault() ? 'shadow-md shadow-next-200 border-next-500' : 'border-borderminicard' }}">
-                        <p class="text-colorlabel text-[10px] font-medium">
-                            {{ $item->name }}</p>
+                        class="w-full flex flex-col justify-between text-xs bg-body rounded-xl p-2 border {{ $item->isDefault() ? 'shadow-md shadow-next-200 border-next-500' : 'border-borderminicard' }}">
+                        <div class="w-full">
+                            <p class="text-colorlabel text-[10px] font-medium">
+                                {{ $item->name }}</p>
 
-                        @if ($item->ubigeo)
-                            <p class="text-colorsubtitleform text-[10px] font-medium">
-                                {{ $item->ubigeo->region }},
-                                {{ $item->ubigeo->provincia }},
-                                {{ $item->ubigeo->distrito }} -
-                                {{ $item->ubigeo->ubigeo_reniec }}
-                            </p>
-                        @endif
-
-                        {{-- @can('admin.clientes.contacts.edit') --}}
-                        <div class="w-full flex gap-1 items-end justify-between">
-                            @if ($item->isDefault())
-                                <x-icon-default />
-                            @else
-                                <x-icon-default wire:click="usedefault({{ $item->id }})"
-                                    wire:loading.attr="disabled"
-                                    class="!text-gray-500 hover:!text-gray-400 cursor-pointer transition ease-in-out duration-150" />
+                            @if ($item->ubigeo)
+                                <p class="text-colorsubtitleform text-[10px] font-medium">
+                                    {{ $item->ubigeo->region }},
+                                    {{ $item->ubigeo->provincia }},
+                                    {{ $item->ubigeo->distrito }} -
+                                    {{ $item->ubigeo->ubigeo_reniec }}
+                                </p>
                             @endif
-
-                            <div class="inline-flex gap-2">
-                                <x-button-edit wire:click="editdireccion({{ $item->id }})"
-                                    wire:loading.attr="disabled" wire:key="editdireccion_{{ $item->id }}" />
-                                <x-button-delete onclick="confirmDeleteDireccion({{ $item }})"
-                                    wire:loading.attr="disabled" wire:key="deletedireccion_{{ $item->id }}" />
-                            </div>
                         </div>
-                        {{-- @endcan --}}
+                        @can('admin.clientes.edit')
+                            <div class="w-full flex gap-1 items-end justify-between">
+                                @if ($item->isDefault())
+                                    <x-icon-default />
+                                @else
+                                    <x-icon-default wire:click="usedefault({{ $item->id }})"
+                                        wire:loading.attr="disabled"
+                                        class="!text-gray-500 hover:!text-gray-400 cursor-pointer transition ease-in-out duration-150" />
+                                @endif
+
+                                <div class="inline-flex gap-1">
+                                    <x-button-edit wire:click="editdireccion({{ $item->id }})"
+                                        wire:loading.attr="disabled" wire:key="editdireccion_{{ $item->id }}" />
+                                    <x-button-delete onclick="confirmDeleteDireccion({{ $item }})"
+                                        wire:loading.attr="disabled" wire:key="deletedireccion_{{ $item->id }}" />
+                                </div>
+                            </div>
+                        @endcan
                     </div>
                 @endforeach
             </div>
@@ -379,6 +380,8 @@
                 </div>
 
                 <div class="w-full flex justify-end gap-2">
+                    <x-button type="button" wire:click="savedireccion(true)" wire:loading.attr="disabled">
+                        {{ __('Save and close') }}</x-button>
                     <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>
                 </div>

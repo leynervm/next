@@ -127,7 +127,7 @@ function verifyOpencaja($openbox)
     return $openbox->isActivo();
 }
 
-function mi_empresa()
+function mi_empresa($loadsucursals = false)
 {
     // $empresa = Empresa::query()->with(['image', 'telephones'])->select(
     //     'id',
@@ -156,7 +156,15 @@ function mi_empresa()
         $q->select('url')->from('images')->whereColumn('images.imageable_id', 'empresas.id')
             ->where('images.imageable_type', Empresa::class)
             ->orderBy('id', 'desc')->limit(1);
-    }])->first();
+    }]);
+
+    if ($loadsucursals) {
+        $empresa->with(['sucursals' => function ($query) {
+            $query->orderBy('codeanexo', 'asc');
+        }]);
+    }
+
+    $empresa = $empresa->take(1)->first();
     return $empresa;
 }
 
@@ -373,22 +381,29 @@ function getPricetypeAuth()
     $empresa = view()->shared('empresa');
 
     if ($empresa && $empresa->usarlista()) {
+        $pricetypedefault = Pricetype::activos()->default()->limit(1)->first();
         $authuser = auth()->user();
         if ($authuser) {
+            $pricetypelogin = Pricetype::activos()->login()->limit(1)->first();
             $authuser->load(['client.pricetype']);
             if ($authuser->client && $authuser->client->pricetype && $authuser->client->pricetype->isActivo()) {
                 $pricetype = $authuser->client->pricetype;
-            } else {
-                $pricetype = Pricetype::login()->first();
+                // valido si lista asignada es inferior a lista web
+                if (!empty($pricetypelogin) && $pricetype->id < $pricetypelogin->id) {
+                    // si es inferior, tomar lista web
+                    $pricetype = $pricetypelogin;
+                }
             }
 
-            //Si despues de validar lista no hay predeterminados
-            // por defecto tomar el primero
             if (empty($pricetype)) {
-                $pricetype = Pricetype::orderBy('id', 'asc')->limit(1)->first();
+                $pricetype = $pricetypelogin;
+            }
+
+            if (empty($pricetype)) {
+                $pricetype = $pricetypedefault;
             }
         } else {
-            $pricetype = Pricetype::default()->first();
+            $pricetype = $pricetypedefault;
         }
     }
 
@@ -705,6 +720,7 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
                 'producto_id' => $itempromo->producto_id,
                 'producto_slug' => $itempromo->producto->slug,
                 'name' => $itempromo->producto->name,
+                // 'image' => $itempromo->producto->imagen ? pathURLProductImage($itempromo->producto->imagen->url) : null,
                 'image' => $itempromo->producto->image ? pathURLProductImage($itempromo->producto->image) : null,
                 'price' => $price,
                 'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,
@@ -731,23 +747,30 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
 
 function getCartRelations(string $instance, $onlyDisponibles = false)
 {
+    $pricetype = getPricetypeAuth();
     $cart = Cart::instance($instance)->content();
-    $shoppings = $cart->transform(function ($item) {
+    $shoppings = $cart->transform(function ($item) use ($pricetype) {
         $is_disponible = true;
         $options = collect($item->options)->toArray();
 
         if (!is_null($item->model)) {
-            $producto = Producto::withCount(['almacens as stock' => function ($query) {
+            $producto = Producto::with(['unit', 'imagen'])->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
             }])->find($item->id);
             if (!$producto->isVisible() || !$producto->isPublicado()) {
                 $is_disponible = false;
             }
 
-            $producto->load(['unit', 'images' => function ($query) {
-                $query->orderByDesc('default')->take(1);
+            // if (!empty($item->options->promocion_id)) {
+            $producto->load(['promocions' => function ($query) use ($item) {
+                $query->availables()->disponibles();
+                if (!empty($item->options->promocion_id)) {
+                    $query->where('id', $item->options->promocion_id);
+                }
             }]);
+            // }
             $options['stock_disponible'] = $producto->stock;
+            $pricesale = $producto->getPrecioventa($pricetype); //Asi esta ok
 
             if (!empty($item->options->promocion_id)) {
                 $promocion = Promocion::with(['itempromos' => function ($query) {
@@ -765,14 +788,19 @@ function getCartRelations(string $instance, $onlyDisponibles = false)
                 if ($combo) {
                     if (!$combo->stock_disponible || !$combo->is_disponible) {
                         $is_disponible = false;
+                        $pricesale = $pricesale + $combo->total;
                     }
+                }
+
+                if (empty(verifyPromocion($promocion))) {
+                    $is_disponible = false;
                 }
                 $options['is_disponible'] = $is_disponible;
             } else {
 
-                $producto = Producto::withCount(['almacens as stock' => function ($query) {
-                    $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
-                }])->find($item->id);
+                // $producto = Producto::withCount(['almacens as stock' => function ($query) {
+                //     $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
+                // }])->find($item->id);
 
                 if ($producto->stock <= 0 || $producto->stock < $item->qty) {
                     $is_disponible = false;
@@ -782,15 +810,32 @@ function getCartRelations(string $instance, $onlyDisponibles = false)
                 $options['is_disponible'] = $is_disponible;
                 $options['stock_disponible'] = $producto->stock;
             }
+            $item->model = $producto;
+            $item->price = $pricesale;
         } else {
             $options['promocion'] = null;
             $options['is_disponible'] = false;
             $options['stock_disponible'] = 0;
         }
+        if (!array_key_exists('date', $options)) {
+            $options['date'] = now('America/Lima');
+        }
 
+        // Cart::instance($instance)->update($item->rowId, [
+        //     'price' => $item->price
+        // ]);
+        // Cart::instance($instance)->update($item->rowId, [
+        //     'price' => $item->price,
+        //     'options' => $options,
+        // ]);
         $item->options = (object) $options;
         return $item;
     });
+
+    // dd($shoppings);
+    // if (auth()->check()) {
+
+    // }
 
     if ($onlyDisponibles) {
         return $shoppings->filter(fn($item) => $item->options->is_disponible === true)

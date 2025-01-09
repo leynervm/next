@@ -236,7 +236,7 @@
 
                 <div class="w-full" x-show="istransferencia" x-cloak style="display: none;" x-transition>
                     <x-label value="Otros (N° operación , Banco, etc) :" />
-                    <x-input class="block w-full" x-model="detalle" />
+                    <x-text-area class="block w-full" x-model="detalle"></x-text-area>
                     <x-jet-input-error for="detalle" />
                 </div>
 

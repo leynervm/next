@@ -4,6 +4,7 @@ namespace Modules\Marketplace\Http\Controllers;
 
 use App\Enums\MethodPaymentOnlineEnum;
 use App\Enums\StatusPayWebEnum;
+use App\Models\User;
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
@@ -22,6 +23,7 @@ class AdminController extends Controller
         $this->middleware('can:admin.marketplace.shipmenttypes')->only('shipmenttypes');
         $this->middleware('can:admin.marketplace.transacciones')->only('transacciones');
         $this->middleware('can:admin.marketplace.userweb')->only('usersweb');
+        $this->middleware('can:admin.marketplace.userweb.edit')->only('showuserweb');
         $this->middleware('can:admin.marketplace.trackingstates')->only('trackingstates');
     }
 
@@ -53,6 +55,12 @@ class AdminController extends Controller
     public function usersweb()
     {
         return view('marketplace::admin.usersweb.index');
+    }
+
+    public function showuserweb(User $user)
+    {
+        $user->load(['direccions.ubigeo', 'client.pricetype']);
+        return view('marketplace::admin.usersweb.show', compact('user'));
     }
 
     public function sliders()

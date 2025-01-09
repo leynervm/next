@@ -4,10 +4,7 @@ namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
 use App\Enums\MovimientosEnum;
 use App\Enums\PromocionesEnum;
-use App\Helpers\GetClient;
-use App\Models\Category;
 use App\Models\Moneda;
-use App\Models\Serie;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -33,6 +30,7 @@ use App\Rules\ValidateDocument;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Modules\Ventas\Entities\Venta;
 use Nwidart\Modules\Facades\Module;
 
@@ -800,6 +798,7 @@ class CreateVenta extends Component
                             'direcciondestino' => $this->direcciondestino,
                             'anexodestino' => null,
                             'note' => $this->note,
+                            'sendmode' => $this->empresa->sendmode,
                             'indicadorvehiculosml' => $this->vehiculosml ? 1 : 0,
                             'indicadorvehretorvacio' => 0,
                             'indicadorvehretorenvacios' => 0,
@@ -1249,9 +1248,20 @@ class CreateVenta extends Component
         $this->reset(['searchgre', 'sincronizegre', 'guiaremision']);
     }
 
-    public function validatesearchcliente($property)
+    public function searchcliente($property, $name)
     {
+        $this->resetValidation();
         $this->$property = trim($this->$property);
+
+        if ($this->incluyeguia && $property !== 'document') {
+            if (!empty($this->motivotraslado_id)) {
+                $this->motivotraslado = Motivotraslado::find($this->motivotraslado_id);
+            }
+            if (!empty($this->modalidadtransporte_id)) {
+                $this->modalidadtransporte = Modalidadtransporte::find($this->modalidadtransporte_id);
+            }
+        }
+
         if ($property == 'ructransport') {
             $this->validate(['ructransport' => [
                 'nullable',
@@ -1286,145 +1296,56 @@ class CreateVenta extends Component
                 in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
             ]]);
         }
-        return true;
+
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->$property,
+            'autosaved' => $property == 'document' ? true : false,
+            'savedireccions' => $property == 'document' ? true : false,
+            'searchbd' => true,
+            'obtenerlista' => $property == 'document' ? true : false,
+        ]);
+
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->$name = $cliente->name;
+                if ($property == 'document') {
+                    $this->direccion = $cliente->direccion;
+                    if ($this->empresa->usarLista() && $cliente->pricetype) {
+                        $this->pricetype_id = $cliente->pricetype->id;
+                        $this->pricetype = Pricetype::find($cliente->pricetype->id);
+                        $this->updatecartpricelist($this->pricetype);
+                    }
+                    if (isset($cliente->id)) {
+                        $this->client_id = $cliente->id;
+                    }
+                    if ($cliente->birthday) {
+                        $this->dispatchBrowserEvent('birthday', $cliente->name);
+                    }
+                }
+            } else {
+                $this->$name = '';
+                if ($property == 'document') {
+                    $this->direccion = '';
+                }
+                $mensaje =  response()->json([
+                    'title' => $cliente->error,
+                    'text' => null
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
+        } else {
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
     }
-
-    // public function getClient()
-    // {
-
-    //     $this->document = trim($this->document);
-    //     $this->validate([
-    //         'document' => [
-    //             'required',
-    //             'numeric',
-    //             new ValidateDocument,
-    //             'regex:/^\d{8}(?:\d{3})?$/',
-    //             in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : ''),
-    //         ],
-    //     ]);
-
-    //     $client = new GetClient();
-    //     $response = $client->getClient($this->document);
-
-    //     if ($response->getData()) {
-    //         if ($response->getData()->success) {
-    //             // dd($response->getData());
-    //             $this->resetValidation(['client_id', 'document', 'name', 'direccion']);
-    //             $this->name = $response->getData()->name;
-
-    //             $this->client_id = $response->getData()->client_id;
-
-    //             if (!empty($response->getData()->direccion)) {
-    //                 $this->direccion = $response->getData()->direccion;
-    //             }
-
-    //             if ($this->empresa->usarLista()) {
-    //                 if ($response->getData()->pricetype_id) {
-    //                     $this->pricetypeasigned = $response->getData()->pricetypeasigned;
-    //                     // $this->pricetype = $pricetype;
-    //                     $this->pricetype_id = $response->getData()->pricetype_id;
-    //                     $this->pricetype = Pricetype::find($this->pricetype_id);
-    //                     $this->updatecartpricelist($this->pricetype);
-    //                 }
-    //             }
-
-    //             if ($response->getData()->birthday) {
-    //                 $this->dispatchBrowserEvent('birthday', $response->getData()->name);
-    //             }
-    //         } else {
-    //             $this->resetValidation(['document']);
-    //             $this->addError('document', $response->getData()->message);
-    //         }
-    //     }
-    // }
-
-    // public function getTransport()
-    // {
-
-    //     $this->ructransport = trim($this->ructransport);
-    //     $this->validate([
-    //         'ructransport' => [
-    //             'nullable',
-    //             Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false),
-    //             'numeric',
-    //             'digits:11',
-    //             'regex:/^\d{11}$/',
-    //             $this->incluyeguia && $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : '',
-    //         ],
-    //     ]);
-
-    //     $client = new GetClient();
-    //     $response = $client->getClient($this->ructransport);
-    //     if ($response->getData()) {
-    //         if ($response->getData()->success) {
-    //             $this->resetValidation(['ructransport', 'nametransport']);
-    //             $this->nametransport = $response->getData()->name;
-    //         } else {
-    //             $this->resetValidation(['ructransport']);
-    //             $this->addError('ructransport', $response->getData()->message);
-    //         }
-    //     } else {
-    //         dd($response);
-    //     }
-    // }
-
-    // public function getDestinatario()
-    // {
-
-    //     $this->documentdestinatario = trim($this->documentdestinatario);
-    //     $this->validate([
-    //         'documentdestinatario' => [
-    //             'nullable',
-    //             Rule::requiredIf($this->incluyeguia),
-    //             'numeric',
-    //             'regex:/^\d{8}(?:\d{3})?$/',
-    //             $this->incluyeguia && $this->motivotraslado->code == '03' ? 'different:document' : '',
-    //             // 'different:document',
-    //         ],
-    //     ]);
-
-    //     $client = new GetClient();
-    //     $response = $client->getClient($this->documentdestinatario);
-    //     if ($response->getData()) {
-    //         if ($response->getData()->success) {
-    //             $this->resetValidation(['documentdestinatario', 'namedestinatario']);
-    //             $this->namedestinatario = $response->getData()->name;
-    //         } else {
-    //             $this->resetValidation(['documentdestinatario']);
-    //             $this->addError('documentdestinatario', $response->getData()->message);
-    //         }
-    //     } else {
-    //         dd($response);
-    //     }
-    // }
-
-    // public function getDriver()
-    // {
-
-    //     $this->documentdriver = trim($this->documentdriver);
-    //     $this->validate([
-    //         'documentdriver' => [
-    //             'nullable',
-    //             Rule::requiredIf($this->incluyeguia && $this->modalidadtransporte->code == '02'),
-    //             'numeric',
-    //             'regex:/^\d{8}(?:\d{3})?$/'
-    //         ],
-    //     ]);
-
-    //     $client = new GetClient();
-    //     $response = $client->getClient($this->documentdriver, false);
-    //     if ($response->getData()) {
-    //         if ($response->getData()->success) {
-    //             $this->resetValidation(['documentdriver', 'namedriver']);
-    //             $this->namedriver = $response->getData()->name;
-    //         } else {
-    //             $this->resetValidation(['documentdriver']);
-    //             $this->addError('documentdriver', $response->getData()->message);
-    //         }
-    //     } else {
-    //         dd($response);
-    //     }
-    // }
 
     public function updatecartpricelist($pricetype)
     {

@@ -77,6 +77,6 @@ class CampoUnique implements Rule
         if (!empty($this->mensaje)) {
             return $this->mensaje;
         }
-        return __("The field :attribute exist in the table") /* . ' ' . __($this->table) */;
+        return __("The field :attribute already exist") /* . ' ' . __($this->table) */;
     }
 }

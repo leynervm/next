@@ -6,7 +6,7 @@
         <span>{{ $slot }}</span>
     @endif
 
-    <span class="block h-5 w-5 {{ $classIcon }}">
+    <span class="block size-5 {{ $classIcon }}">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" stroke-width="2"
             stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
             <path stroke="none" d="M0 0h24v24H0z" fill="none" />

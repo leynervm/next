@@ -166,12 +166,16 @@
             dateTimeFormat: date => format(date, 'dd/MM/yyyy')
         },
         table: {
-            addClassToAllCells: true,
+            addClassToAllCells: false,
         }
     })
     .then(function(editor) {
         editor.model.document.on('change:data', () => {
-            $dispatch('input', editor.getData())
+            $dispatch('input', editor.getData());
+            const input = document.getElementById('{{ $id }}');
+            //input.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
+            input.value = editor.getData();
+            input.dispatchEvent(new Event('change'));
         })
     })
     .catch(error => {
@@ -179,5 +183,5 @@
     });">
     {{-- {{ $slot }} --}}
 
-{{-- {!! $slot !!} --}}
+{!! $slot !!}
 </textarea>

@@ -33,28 +33,29 @@ class VerificarListaWeb
             $campo = !empty($event->user->document) ? 'document' : 'email';
             $client = Client::withTrashed()->where($campo, $event->user->{$campo})->first();
 
+            // Si esta eliminado restauramos
             if ($client && !$client->trashed()) {
-                if (is_null($client->user_id)) {
-                    $client->user()->associate($event->user);
-                }
+                $client->restore();
+                $client->direccions()->restore();
+            }
 
-                //Lista por defecto login web
-                $pricetype = Pricetype::login()->first();
-                if (empty($pricetype)) {
-                    $pricetype = Pricetype::orderBy('id', 'asc')->limit(1)->first();
-                }
+            if (is_null($client->user_id)) {
+                $client->user()->associate($event->user);
+            }
 
-                // Verifico que lista vinculada es menor a lista web 
-                // entonces actualizo a lista web
-                if ($client->pricetype && $client->pricetype->isActivo()) {
-                    if ($pricetype && ($client->pricetype_id < $pricetype->id)) {
-                        $client->pricetype_id = $pricetype->id ?? null;
-                    }
-                } else {
-                    $client->pricetype_id = $pricetype->id ?? null;
-                }
+            //Lista por defecto login web
+            $pricetype = Pricetype::activos()->login()->first();
+            if (empty($pricetype)) {
+                $pricetype = Pricetype::activos()->orderBy('id', 'asc')->limit(1)->first();
+            }
 
-                $client->save();
+            // Verifico que lista vinculada es menor a lista web 
+            // entonces actualizo a lista web
+            if (!empty($pricetype)) {
+                if (is_null($client->pricetype_id) || ($client->pricetype_id < $pricetype->id)) {
+                    $client->pricetype_id = $pricetype->id;
+                    $client->save();
+                }
             }
         }
     }

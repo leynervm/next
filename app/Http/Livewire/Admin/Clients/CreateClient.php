@@ -2,8 +2,8 @@
 
 namespace App\Http\Livewire\Admin\Clients;
 
-use App\Helpers\GetClient;
 use App\Models\Client;
+use App\Models\Direccion;
 use App\Models\Pricetype;
 use App\Models\Ubigeo;
 use App\Models\User;
@@ -13,6 +13,7 @@ use App\Rules\ValidateDocument;
 use App\Rules\ValidateNacimiento;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Nwidart\Modules\Facades\Module;
@@ -30,41 +31,20 @@ class CreateClient extends Component
     public $user;
     public $exists = false;
     public $addcontacto = false;
+    public $direccions = [];
 
     protected function rules()
     {
         return [
-            'document' => [
-                'required',
-                'numeric',
-                'digits_between:8,11',
-                'regex:/^\d{8}(?:\d{3})?$/',
-                new CampoUnique('clients', 'document', null, true)
-            ],
+            'document' => ['required', 'numeric', new ValidateDocument, 'regex:/^\d{8}(?:\d{3})?$/', new CampoUnique('clients', 'document', null, true)],
             'name' => ['required', 'string', 'min:8'],
-            'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
-            'direccion' => ['required', 'string', 'min:3'],
             'email' => ['nullable', 'email'],
-            'sexo' => ['required', 'string', 'min:1', 'max:1', Rule::in(['M', 'F', 'E'])],
+            'sexo' => ['required', 'string', 'min:1', 'max:1', Rule::in(['M', 'F', Client::EMPRESA])],
             'nacimiento' => ['nullable', 'date', 'before_or_equal:today'],
-            'pricetype_id' => [
-                'nullable',
-                Rule::requiredIf(mi_empresa()->usarlista()),
-                'integer',
-                'min:1',
-                'exists:pricetypes,id'
-            ],
+            'pricetype_id' => ['nullable', Rule::requiredIf(view()->shared('empresa')->usarlista()), 'integer', 'min:1', 'exists:pricetypes,id'],
             'telefono' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
-            'documentContact' => [
-                'nullable',
-                Rule::requiredIf($this->addcontacto),
-                new ValidateContacto($this->document)
-            ],
-            'nameContact' => [
-                'nullable',
-                Rule::requiredIf($this->addcontacto),
-                new ValidateContacto($this->document)
-            ],
+            'documentContact' => ['nullable', Rule::requiredIf($this->addcontacto), new ValidateContacto($this->document)],
+            'nameContact' => ['nullable', Rule::requiredIf($this->addcontacto), new ValidateContacto($this->document)],
             'telefonoContact' => ['nullable', 'numeric', 'digits:9', 'regex:/^\d{9}$/', new ValidateContacto($this->document)],
         ];
     }
@@ -88,9 +68,8 @@ class CreateClient extends Component
 
     public function limpiarcliente()
     {
-        $this->reset(['document', 'name', 'direccion', 'ubigeo_id', 'user', 'exists', 'addcontacto']);
+        $this->resetExcept(['open', 'documentContact', 'nameContact', 'telefonoContact']);
     }
-
 
     public function save($closemodal = false)
     {
@@ -106,14 +85,22 @@ class CreateClient extends Component
         $this->email = trim($this->email);
         $this->validate();
 
+        if (count($this->direccions) == 0) {
+            $mensaje =  response()->json([
+                'title' => "NO SE HAN AGREGADO DIRECCIONES DEL DOMICILIO",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
         DB::beginTransaction();
         try {
 
-            $client = Client::onlyTrashed()->where('document', $this->document)->first();
+            $client = Client::onlyTrashed()->where('document', $this->document)->take(1)->first();
 
             if ($client) {
                 $client->restore();
-                $client->document = $this->document;
                 $client->name = $this->name;
                 $client->email = $this->email;
                 $client->nacimiento = $this->nacimiento;
@@ -133,12 +120,20 @@ class CreateClient extends Component
                 ]);
             }
 
-            $default = $client->direccions()->exists() ? 0 : 1;
-            $client->direccions()->create([
-                'name' => $this->direccion,
-                'ubigeo_id' => $this->ubigeo_id,
-                'default' => $default,
-            ]);
+            foreach ($this->direccions as $item) {
+                $ubigeo_id = $item['ubigeo_id'];
+                if (empty($ubigeo_id)) {
+                    $ubigeo_id = Ubigeo::query()->select('id', 'distrito', 'provincia')
+                        ->whereRaw('LOWER(distrito) = ?', strtolower(trim($item['distrito'])))
+                        ->whereRaw('LOWER(provincia) = ?', strtolower(trim($item['provincia'])))
+                        ->take(1)->first()->id;
+                }
+                $client->direccions()->firstOrCreate([
+                    'name' => $item['direccion'],
+                    'ubigeo_id' => $ubigeo_id ?? null,
+                    'default' => $item['principal'] ? Direccion::DEFAULT : 0,
+                ]);
+            }
 
             if (trim($this->telefono) !== '') {
                 $client->telephones()->create([
@@ -176,66 +171,147 @@ class CreateClient extends Component
         }
     }
 
-    public function searchclient()
+    public function searchclient($property, $name)
     {
-
         $this->authorize('admin.clientes.create');
-        $this->document = trim($this->document);
-        $this->validate([
-            'document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/', new ValidateDocument]
-        ]);
-
         $this->resetValidation();
-        $this->reset(['name', 'direccion', 'ubigeo_id', 'user']);
-        $http = new GetClient();
-        $response = $http->getSunat($this->document);
+        $this->$property = trim($this->$property);
 
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->exists = true;
-                $this->name = $response->getData()->name;
-                $this->direccion = $response->getData()->direccion;
-                $this->ubigeo_id = $response->getData()->ubigeo_id;
-            } else {
-                $this->addError('document', $response->getData()->message);
-            }
+        if ($property == 'document') {
+            $rules = [
+                'document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/', new ValidateDocument, new CampoUnique('clients', 'document', null, true)]
+            ];
         } else {
-            $this->addError('document', 'Error al buscar cliente.');
+            $rules = [
+                'documentContact' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/']
+            ];
         }
 
-        if (Module::isEnabled('Marketplace')) {
-            $user = User::where('document', $this->document)->first();
-            if ($user) {
-                $this->user = $user;
+        $this->validate($rules);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->$property,
+            'autosaved' =>  false,
+            'savedireccions' => false,
+            'searchbd' => $property == 'document' ? false : true,
+            'obtenerlista' => $property == 'document' ? true : false,
+        ]);
+
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+
+            if (isset($cliente->success) && $cliente->success) {
+                $this->$name = $cliente->name;
+                if ($property == 'document') {
+                    $direccions[] = [
+                        'direccion' => $cliente->direccion,
+                        'distrito' => $cliente->distrito,
+                        'provincia' => $cliente->provincia,
+                        'region' => $cliente->region,
+                        'ubigeo_id' => $cliente->ubigeo_id,
+                        'save' => true,
+                        'principal' => true,
+                    ];
+
+                    if (array_key_exists('establecimientos', (array) $cliente) && count((array) $cliente->establecimientos) > 0) {
+                        foreach ($cliente->establecimientos as $local) {
+                            $ubigeolocal = null;
+                            if (!empty($local->distrito)) {
+                                $ubigeolocal = Ubigeo::query()->select('id', 'distrito', 'provincia', 'region')
+                                    ->whereRaw('LOWER(distrito) = ?', [strtolower(trim($local->distrito))])
+                                    ->whereRaw('LOWER(provincia) = ?', [strtolower(trim($local->provincia))])
+                                    ->take(1)->first();
+                            }
+
+                            $direccions[] = [
+                                'direccion' => $local->direccion,
+                                'distrito' => $local->distrito,
+                                'provincia' => $local->provincia,
+                                'region' => $local->departamento,
+                                'ubigeo_id' => $ubigeolocal->ubigeo_id ?? null,
+                                'save' => true,
+                                'principal' => false,
+                            ];
+                            $this->direccions = $direccions;
+                        }
+                    }
+
+                    $this->direccions = $direccions;
+                    $this->exists = true;
+                    if (view()->shared('empresa')->usarLista() && !empty($cliente->pricetype)) {
+                        $this->pricetype_id = $cliente->pricetype->id;
+                    }
+
+                    if (Module::isEnabled('Marketplace')) {
+                        $user = User::where('document', $this->document)->first();
+                        if ($user) {
+                            $this->user = $user;
+                        }
+                    }
+                } else {
+                    $this->telefonoContact = $cliente->telefono;
+                }
+            } else {
+                $this->$name = '';
+                if ($property == 'document') {
+                    $this->direccion = '';
+                    $this->ubigeo_id = '';
+                    $this->pricetype_id = null;
+                    $this->user = null;
+                } else {
+                    $this->telefonoContact = '';
+                }
+                $this->addError($property, $cliente->error);
             }
+        } else {
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 
-    public function searchcontacto()
+    public function adddireccion()
     {
-
-        $this->authorize('admin.clientes.create');
-        $this->documentContact = trim($this->documentContact);
+        $this->direccion = trim(mb_strtoupper($this->direccion, "UTF-8"));
         $this->validate([
-            'documentContact' => ['required', 'numeric', 'digits:8', 'regex:/^\d{8}$/']
+            'ubigeo_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id'],
+            'direccion' => ['required', 'string', 'min:3'],
         ]);
 
-        $this->nameContact = null;
-        $this->telefonoContact = null;
-        $this->resetValidation(['documentContact', 'nameContact', 'telefonoContact']);
-
-        $http = new GetClient();
-        $response = $http->getClient($this->documentContact, false);
-
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->nameContact = $response->getData()->name;
-                $this->telefonoContact = $response->getData()->telefono;
-            } else {
-                $this->addError('nameContact', $response->getData()->message);
+        if (count($this->direccions) > 0) {
+            $direcciones = array_column($this->direccions, 'direccion');
+            if (in_array($this->direccion, $direcciones)) {
+                $this->addError('direccion', "La dirección ya existe.");
+                return false;
             }
-        } else {
-            $this->addError('nameContact', 'Error al buscar datos del contacto.');
         }
+
+        $ubigeo = Ubigeo::find($this->ubigeo_id);
+        $principal = count($this->direccions) > 0 ? true : false;
+
+        $direccions =  $this->direccions;
+        $direccions[] = [
+            'direccion' => $this->direccion,
+            'distrito' => $ubigeo->distrito,
+            'provincia' => $ubigeo->provincia,
+            'region' => $ubigeo->region,
+            'ubigeo_id' => $this->ubigeo_id,
+            'save' => true,
+            'principal' => $principal,
+        ];
+        $this->direccions = array_values($direccions);
+        $this->reset(['direccion', 'ubigeo_id']);
+        $this->resetValidation();
+    }
+
+    public function deletedireccion($index)
+    {
+        unset($this->direccions[$index]);
+        $this->direccions = array_values($this->direccions);
+        $this->resetValidation();
     }
 }

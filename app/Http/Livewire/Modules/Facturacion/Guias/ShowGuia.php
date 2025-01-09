@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Facturacion\Guias;
 
-use App\Helpers\GetClient;
 use App\Models\Almacen;
 use App\Models\Guia;
 use App\Models\Kardex;
@@ -10,6 +9,7 @@ use App\Models\Transportdriver;
 use App\Models\Transportvehiculo;
 use App\Models\Tvitem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -34,7 +34,10 @@ class ShowGuia extends Component
         $this->placa = trim(mb_strtoupper($this->placa, "UTF-8"));
         $this->validate([
             'placa' => [
-                'required', 'string', 'min:6', 'max:8',
+                'required',
+                'string',
+                'min:6',
+                'max:8',
                 Rule::unique('transportvehiculos', 'placa')
                     ->where('guia_id', $this->guia->id)
             ],
@@ -107,7 +110,10 @@ class ShowGuia extends Component
 
         $this->validate([
             'documentdriver' => [
-                'required', 'numeric', 'digits:8', 'regex:/^\d{8}$/',
+                'required',
+                'numeric',
+                'digits:8',
+                'regex:/^\d{8}$/',
                 Rule::unique('transportdrivers', 'document')
                     ->where('guia_id', $this->guia->id)
             ],
@@ -176,9 +182,7 @@ class ShowGuia extends Component
         }
     }
 
-    public function generatecomprobante()
-    {
-    }
+    public function generatecomprobante() {}
 
     public function deleteitem(Tvitem $tvitem)
     {
@@ -291,22 +295,36 @@ class ShowGuia extends Component
             'documentdriver' => [
                 'nullable',
                 Rule::requiredIf($this->guia->modalidadtransporte->code == '02'),
-                'numeric', 'regex:/^\d{8}(?:\d{3})?$/'
+                'numeric',
+                'regex:/^\d{8}(?:\d{3})?$/'
             ],
         ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->documentdriver);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentdriver', 'namedriver']);
-                $this->namedriver = $response->getData()->name;
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->documentdriver,
+            'searchbd' => true,
+        ]);
+
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->namedriver = $cliente->name;
+                if ($cliente->birthday) {
+                    $this->dispatchBrowserEvent('birthday', $cliente->name);
+                }
             } else {
-                $this->resetValidation(['documentdriver']);
-                $this->addError('documentdriver', $response->getData()->message);
+                $this->namedriver = '';
+                $this->addError('document', $cliente->error);
             }
         } else {
-            dd($response);
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 

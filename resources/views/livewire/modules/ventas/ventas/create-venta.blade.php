@@ -803,13 +803,6 @@
                 sincronizegre: @entangle('sincronizegre').defer,
                 cotizacion_id: @entangle('cotizacion_id').defer,
 
-                ructransport: @entangle('ructransport').defer,
-                nametransport: @entangle('nametransport').defer,
-                documentdestinatario: @entangle('documentdestinatario').defer,
-                namedestinatario: @entangle('namedestinatario').defer,
-                documentdriver: @entangle('documentdriver').defer,
-                namedriver: @entangle('namedriver').defer,
-
                 init() {
 
                     $(this.$refs.selectcomprobante).select2();
@@ -1251,92 +1244,6 @@
                         $(window).off(evt);
                     }).val(this.seriecomprobante_id).trigger("change");
 
-                },
-                consultaCliente() {
-                    let route = "{{ route('consultacliente') }}";
-                    const headers = {
-                        // 'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                    }
-
-                    const formData = new FormData();
-                    formData.append('document', this.document);
-                    formData.append('autosaved', true);
-                    formData.append('searchbd', true);
-                    formData.append('obtenerlista', true);
-
-                    sendRequest(route, headers, formData, (response) => {
-                        if (response.errors) {
-                            this.$wire.seterrors(response.errors).then(result => {});
-                        }
-                        this.name = response.name;
-                        this.direccion = response.direccion;
-
-                        if (response.pricetype) {
-                            this.pricetype_id = response.pricetype.id
-                        }
-                        if (response.id) {
-                            this.$wire.set('client_id', response.id);
-                        }
-                    }, (response) => {
-                        this.name = '';
-                        this.direccion = '';
-                        this.$wire.set('client_id', null);
-
-                        if (response.error) {
-                            swal.fire({
-                                title: response.error,
-                                text: null,
-                                icon: 'error',
-                                confirmButtonColor: '#0FB9B9',
-                                confirmButtonText: 'Cerrar',
-                            })
-                        }
-                        if (response.errors) {
-                            this.$wire.seterrors(response.errors).then(result => {});
-                        }
-                    })
-                },
-                consultaRUC(modelDocument, modelName) {
-                    this.$wire.validatesearchcliente(modelDocument).then(result => {
-                        console.log(result);
-                        if (result) {
-                            let route = "{{ route('consultacliente') }}";
-                            const headers = {
-                                // 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': "{{ csrf_token() }}"
-                            }
-
-                            const formData = new FormData();
-                            formData.append('document', this[modelDocument]);
-                            formData.append('autosaved', false);
-                            formData.append('searchbd', true);
-                            formData.append('obtenerlista', false);
-
-                            sendRequest(route, headers, formData, (response) => {
-                                if (response.errors) {
-                                    this.$wire.seterrors(response.errors).then(
-                                    result => {});
-                                }
-                                this[modelName] = response.name;
-                            }, (response) => {
-                                this[modelName] = '';
-                                if (response.error) {
-                                    swal.fire({
-                                        title: response.error,
-                                        text: null,
-                                        icon: 'error',
-                                        confirmButtonColor: '#0FB9B9',
-                                        confirmButtonText: 'Cerrar',
-                                    })
-                                }
-                                if (response.errors) {
-                                    this.$wire.seterrors(response.errors).then(
-                                    result => {});
-                                }
-                            })
-                        }
-                    });
                 }
                 // getSelectedData(ref, propiedad, nameData) {
                 //     const selectData = $(this.$refs[ref]).select2('data')[0];

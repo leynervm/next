@@ -10,49 +10,41 @@ use Livewire\Component;
 class ShowWishlists extends Component
 {
 
-    public Moneda $moneda;
+    public $moneda;
+    public $pricetype;
 
+    public function mount($pricetype = null)
+    {
+        $this->pricetype = $pricetype;
+        $this->moneda = view()->shared('moneda');
+    }
 
     public function render()
     {
-        return view('livewire.modules.marketplace.wishlist.show-wishlists');
-    }
-
-    public function increment($rowId)
-    {
-        Cart::instance('wishlist')->update($rowId, Cart::get($rowId)->qty + 1);
-        if (auth()->check()) {
-            Cart::instance('shopping')->store(auth()->id());
-        }
-        $this->render();
-        $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
-    }
-
-    public function decrement($rowId)
-    {
-        $item = Cart::instance('wishlist')->get($rowId);
-        if ($item->qty > 1) {
-            Cart::instance('wishlist')->update($rowId, Cart::get($rowId)->qty - 1);
-        } else {
-            Cart::instance('wishlist')->remove($rowId);
-        }
-        $this->render();
-        $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
-        if (auth()->check()) {
-            Cart::instance('wishlist')->store(auth()->id());
-        }
+        $wishlists = getCartRelations('wishlist');
+        return view('livewire.modules.marketplace.wishlist.show-wishlists', compact('wishlists'));
     }
 
     public function deleteitem($rowId)
     {
-        Cart::instance('wishlist')->get($rowId);
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+
         Cart::instance('wishlist')->remove($rowId);
-        $this->render();
-        $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
         if (auth()->check()) {
             Cart::instance('wishlist')->store(auth()->id());
         }
+
+        if (auth()->check()) {
+            Cart::instance('wishlist')->store(auth()->id());
+            Cart::instance('wishlist')->destroy();
+            Cart::instance('wishlist')->restore(auth()->id());
+        }
+        $this->render();
+        $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
     }
+
 
     public function delete()
     {
@@ -61,7 +53,7 @@ class ShowWishlists extends Component
         $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
     }
 
-    public function move_to_carshoop($rowId)
+    public function movetocarshoop($rowId)
     {
         $wishlist = Cart::instance('wishlist')->get($rowId);
         Cart::instance('wishlist')->remove($rowId);
@@ -71,21 +63,23 @@ class ShowWishlists extends Component
             'qty' => $wishlist->qty,
             'price' => number_format($wishlist->price, 2, '.', ''),
             'options' => [
+                'date' => now('America/Lima'),
                 'moneda_id' => $wishlist->options->moneda_id,
                 'currency' => $wishlist->options->currency,
                 'simbolo' => $wishlist->options->simbolo,
                 'modo_precios' => $wishlist->options->modo_precios,
                 'carshoopitems' => $wishlist->options->carshoopitems,
-                'promocion_id' => $wishlist->options->promocion_id ?  $wishlist->options->promocion_id : null,
+                'promocion_id' => $wishlist->options->promocion_id,
                 'igv' => 0,
                 'subtotaligv' => 0
             ]
         ])->associate(Producto::class);
-        $this->render();
+        // $this->render();
         $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
         $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
         if (auth()->check()) {
             Cart::instance('wishlist')->store(auth()->id());
+            Cart::instance('shopping')->store(auth()->id());
         }
     }
 }

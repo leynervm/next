@@ -13,9 +13,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    {{-- @can('admin.ventas') --}}
     <div class="w-full">
-        <livewire:modules.marketplace.wishlist.show-wishlists :moneda="$moneda" />
+        <livewire:modules.marketplace.wishlist.show-wishlists :pricetype="$pricetype" />
     </div>
-    {{-- @endcan --}}
 </x-app-layout>

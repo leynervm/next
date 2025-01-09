@@ -22,7 +22,30 @@ class MarketplaceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('verifyproductocarshoop')->only(['create', 'productos', 'showproducto', 'carshoop', 'wishlist']);
+        $this->middleware('verifycarshoop')->only(['create', 'productos', 'showproducto', 'carshoop', 'wishlist']);
+    }
+
+    public function carshoop()
+    {
+        $pricetype = getPricetypeAuth();
+        return view('marketplace::carrito', compact('pricetype'));
+    }
+
+    public function wishlist()
+    {
+        $pricetype = getPricetypeAuth();
+        return view('marketplace::wishlist', compact('pricetype'));
+    }
+
+    public function productos(Request $request)
+    {
+        $pricetype = getPricetypeAuth();
+        return view('modules.marketplace.productos.index', compact('pricetype'));
+    }
+
+    public function profile()
+    {
+        return view('marketplace::profile');
     }
 
     public function ofertas()
@@ -103,18 +126,14 @@ class MarketplaceController extends Controller
     public function resumenorder(Order $order)
     {
         $this->authorize('user', $order);
-        $order->load(['tvitems' => function ($query) {
-            $query->with(['producto.unit']);
+        $order->load(['user', 'moneda', 'entrega', 'direccion', 'tvitems' => function ($query) {
+            $query->with(['producto' => function ($q) {
+                $q->with(['unit', 'imagen']);
+            }]);
         }, 'transaccion', 'trackings' => function ($query) {
             $query->with('trackingstate')->orderBy('date', 'asc');
         }]);
         return view('modules.marketplace.orders.payment', compact('order'));
-    }
-
-    public function productos(Request $request)
-    {
-        $pricetype = getPricetypeAuth();
-        return view('modules.marketplace.productos.index', compact('pricetype'));
     }
 
     public function showproducto(Producto $producto)
@@ -227,45 +246,6 @@ class MarketplaceController extends Controller
         $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
 
         return view('modules.marketplace.productos.show', compact('producto', 'shipmenttypes', 'relacionados', 'interesantes', 'pricetype'));
-    }
-
-    public function carshoop()
-    {
-        $pricetype = getPricetypeAuth();
-        return view('marketplace::carrito', compact('pricetype'));
-    }
-
-    public function wishlist()
-    {
-        $countwish = 0;
-        if (Cart::instance('wishlist')->count() > 0) {
-            foreach (Cart::instance('wishlist')->content() as $item) {
-                if (is_null($item->model)) {
-                    Cart::instance('wishlist')->get($item->rowId);
-                    Cart::instance('wishlist')->remove($item->rowId);
-                    $countwish++;
-                }
-            }
-
-            if ($countwish > 0) {
-                if (auth()->check()) {
-                    Cart::instance('wishlist')->store(auth()->id());
-                }
-
-                $mensaje = response()->json([
-                    'title' => "ALGUNOS PRODUCTOS FUERON REMOVIDOS DEL CARRITO.",
-                    'text' => 'Carrito de compras actualizado, algunos productos han dejado de estar disponibles en tienda web.',
-                    'type' => 'warning'
-                ])->getData();
-                session()->now('message', $mensaje);
-            }
-        }
-        return view('marketplace::wishlist');
-    }
-
-    public function profile()
-    {
-        return view('marketplace::profile');
     }
 
     public function quiensomos()
@@ -924,6 +904,7 @@ class MarketplaceController extends Controller
 
     public function additemtocart(Request $request)
     {
+
         $promocion = null;
         $pricetype = getPricetypeAuth();
         $moneda = view()->shared('moneda');
@@ -933,15 +914,57 @@ class MarketplaceController extends Controller
         $producto_id = empty($producto_id) ? null : decryptText($producto_id);
         $cantidad = $request->input('cantidad');
         $qtyexistente = 0;
+        $open_modal = filter_var($request->input('open_modal'), FILTER_VALIDATE_BOOLEAN);
 
         try {
+
+            if (!empty($producto_id) && $open_modal) {
+                $producto =  Producto::with(['promocions' => function ($query) use ($open_modal) {
+                    if ($open_modal) {
+                        $query->with(['itempromos.producto' => function ($subQuery) {
+                            $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
+                                $q->select('url')->from('images')
+                                    ->whereColumn('images.imageable_id', 'productos.id')
+                                    ->where('images.imageable_type', Producto::class)
+                                    ->orderByDesc('default')->limit(1);
+                            }]);
+                        }])->combos()->availables()->disponibles();
+                    }
+                }])->find($producto_id);
+
+                if (empty($producto)) {
+                    return response()->json([
+                        'error' => 'EL PRODUCTO NO SE ENCUENTRA DISPONIBLE !',
+                    ])->getData();
+                    return false;
+                }
+
+                if (count($producto->promocions) > 0) {
+                    $combosDisponibles = 0;
+                    foreach ($producto->promocions as $item) {
+                        $combo = getAmountCombo($item, $pricetype);
+                        if ($combo->is_disponible && $combo->stock_disponible) {
+                            $combosDisponibles++;
+                            break;
+                        }
+                    }
+
+                    if ($combosDisponibles > 0) {
+                        return response()->json([
+                            'success' => true,
+                            'open_modal' => true,
+                            'producto_id' => $producto->id,
+                        ])->getData();
+                        return false;
+                    }
+                }
+            }
+
             if (!empty($promocion_id)) {
 
-                $promocion = Promocion::with(['producto', 'itempromos.producto'])->find($promocion_id);
+                $promocion = Promocion::with(['producto', 'itempromos.producto.unit'])->find($promocion_id);
                 $producto = $promocion->producto->load(['promocions' => function ($query) {
-                    $query->with(['itempromos.producto' => function ($query) {
-                        $query->with('unit');
-                    }])->availables()->disponibles();
+                    $query->availables()->disponibles();
                 }])->loadCount(['almacens as stock' => function ($query) {
                     $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
                 }]);
@@ -1083,7 +1106,7 @@ class MarketplaceController extends Controller
 
                     return response()->json([
                         'success' => true,
-                        'mensaje' => "AGREGADO CORRECTAMENTE",
+                        'mensaje' => "AÑADIDO AL CARRITO",
                     ])->getData();
                 } else {
                     return response()->json([
@@ -1092,7 +1115,9 @@ class MarketplaceController extends Controller
                     return false;
                 }
             } else {
-                $producto = Producto::withCount(['almacens as stock' => function ($query) {
+                $producto = Producto::with(['promocions' => function ($query) {
+                    $query->availables()->disponibles();
+                }])->withCount(['almacens as stock' => function ($query) {
                     $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
                 }])->find($producto_id);
 
@@ -1122,10 +1147,10 @@ class MarketplaceController extends Controller
                 $pricesale = $producto->getPrecioVenta($pricetype);
 
                 if ($pricesale > 0) {
-                    if ($cart) {
-                        Self::addproductocart(null, $cart->rowId, $cart->qty + $cantidad, number_format($pricesale, 2, '.', ''));
+                    if (!empty($cart)) {
+                        $newcart = Self::addproductocart(null, $cart->rowId, $cart->qty + $cantidad, number_format($pricesale, 2, '.', ''));
                     } else {
-                        Self::addproductocart([
+                        $newcart = Self::addproductocart([
                             'id' => $producto->id,
                             'name' => $producto->name,
                             'qty' => $cantidad,
@@ -1151,7 +1176,7 @@ class MarketplaceController extends Controller
 
                     return response()->json([
                         'success' => true,
-                        'mensaje' => "AGREGADO CORRECTAMENTE",
+                        'mensaje' => "AÑADIDO AL CARRITO",
                     ])->getData();
                 } else {
                     return response()->json([
@@ -1182,12 +1207,14 @@ class MarketplaceController extends Controller
     public function addproductocart($cart = null, $rowId = null, $new_qty = null, $new_price = null)
     {
         if (empty($rowId)) {
-            Cart::instance('shopping')->add($cart)->associate(Producto::class);
+            $cart = Cart::instance('shopping')->add($cart)->associate(Producto::class);
+            return $cart;
         } else {
-            Cart::instance('shopping')->update($rowId, [
+            $cart = Cart::instance('shopping')->update($rowId, [
                 'qty' => $new_qty,
                 'price' => number_format($new_price, 2, '.', ''),
             ]);
+            return $cart;
         }
     }
 
@@ -1279,6 +1306,7 @@ class MarketplaceController extends Controller
 
                 if (auth()->check()) {
                     Cart::instance('shopping')->store(auth()->id());
+                    // Cart::instance('shopping')->restore(auth()->id());
                 }
 
                 return response()->json([
@@ -1466,6 +1494,8 @@ class MarketplaceController extends Controller
             Cart::instance('shopping')->remove($rowId);
             if (auth()->check()) {
                 Cart::instance('shopping')->store(auth()->id());
+                // Cart::instance('shopping')->destroy();
+                // Cart::instance('shopping')->restore(auth()->id());
             }
             return response()->json([
                 'success' => true,
@@ -1477,5 +1507,18 @@ class MarketplaceController extends Controller
             ])->getData();
             return false;
         }
+    }
+
+    public function addfavoritos(Request $request)
+    {
+
+        if (!auth()->check()) {
+            return redirect()->route('login');
+        }
+        $producto_id = $request->input('producto_id');
+        $producto_id = empty($producto_id) ? null : decryptText($producto_id);
+
+        $producto = Producto::find($producto_id);
+        return $producto->addfavorito();
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Facturacion\Guias;
 
-use App\Helpers\GetClient;
 use App\Models\Almacen;
 use App\Models\Carshoop;
 use App\Models\Carshoopserie;
@@ -23,6 +22,7 @@ use App\Traits\KardexTrait;
 use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -1013,6 +1013,8 @@ class CreateGuia extends Component
                 'placa' => $this->placa,
                 'principal' => $principal
             ];
+            $this->resetValidation();
+            $this->reset(['placa']);
         }
     }
 
@@ -1021,146 +1023,85 @@ class CreateGuia extends Component
         unset($this->placavehiculos[$id]);
     }
 
-    public function getProveedor()
+    public function searchclient($property, $name)
     {
-        $this->rucproveedor = trim($this->rucproveedor);
-        $this->validate([
-            'rucproveedor' => [
-                'required',
-                'numeric',
-                'digits:11',
-                'regex:/^\d{11}$/',
-                $this->motivotraslado->code == '02' ? 'different:documentdestinatario' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
-            ],
-        ]);
+        $this->authorize('admin.clientes.create');
+        $this->resetValidation();
+        $this->$property = trim($this->$property);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->rucproveedor);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['rucproveedor', 'nameproveedor']);
-                $this->nameproveedor = $response->getData()->name;
-            } else {
-                $this->resetValidation(['rucproveedor']);
-                $this->addError('rucproveedor', $response->getData()->message);
-            }
-        } else {
-            dd($response);
+        if ($property == 'rucproveedor') {
+            $rules = [
+                'rucproveedor' => [
+                    'required',
+                    'numeric',
+                    'digits:11',
+                    'regex:/^\d{11}$/',
+                    $this->motivotraslado->code == '02' ? 'different:documentdestinatario' : '',
+                    in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : ''
+                ]
+            ];
+        } elseif ($property == 'ructransport') {
+            $rules = [
+                'ructransport' => [
+                    'required',
+                    'numeric',
+                    'digits:11',
+                    'regex:/^\d{11}$/',
+                    $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : ''
+                ]
+            ];
+        } elseif ($property == 'documentdestinatario') {
+            $rules = [
+                'documentdestinatario' => [
+                    'required',
+                    'numeric',
+                    $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
+                    $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
+                    in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
+                ]
+            ];
+        } elseif ($property == 'documentcomprador') {
+            $rules = [
+                'documentcomprador' => [
+                    'required',
+                    'numeric',
+                    'regex:/^\d{8}(?:\d{3})?$/',
+                    $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:documentdestinatario' : '',
+                ]
+            ];
+        } elseif ($property == 'documentdriver') {
+            $rules = [
+                'documentdriver' => [Rule::requiredIf($this->modalidadtransporte->code == '02'), 'numeric', 'regex:/^\d{8}(?:\d{3})?$/']
+            ];
         }
-    }
 
-    public function getTransport()
-    {
-
-        $this->ructransport = trim($this->ructransport);
-        $this->validate([
-            'ructransport' => [
-                'required',
-                'numeric',
-                'digits:11',
-                'regex:/^\d{11}$/',
-                $this->modalidadtransporte->code == '01' && $this->vehiculosml == false ? 'different:empresa.document' : ''
-            ],
+        $this->validate($rules);
+        $response = Http::withHeaders([
+            'X-CSRF-TOKEN' => csrf_token(),
+        ])->asForm()->post(route('consultacliente'), [
+            'document' => $this->$property,
+            'searchbd' => true,
         ]);
 
-        $client = new GetClient();
-        $response = $client->getClient($this->ructransport);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['ructransport', 'nametransport']);
-                $this->nametransport = $response->getData()->name;
+        if ($response->ok()) {
+            $cliente = json_decode($response->body());
+            if (isset($cliente->success) && $cliente->success) {
+                $this->$name = $cliente->name;
+                if ($property == 'document') {
+                }
             } else {
-                $this->resetValidation(['ructransport']);
-                $this->addError('ructransport', $response->getData()->message);
+                $this->$name = '';
+                if ($property == 'document') {
+                }
+                $this->addError($property, $cliente->error);
             }
         } else {
-            dd($response);
-        }
-    }
-
-    public function getDestinatario()
-    {
-
-        $this->documentdestinatario = trim($this->documentdestinatario);
-        $this->validate([
-            'documentdestinatario' => [
-                'required',
-                'numeric',
-                $this->motivotraslado->code == '06' ? 'regex:/^\d{11}$/' : 'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' ? 'different:documentcomprador' : '',
-                in_array($this->motivotraslado->code, $this->arraydistintremite) ? 'different:empresa.document' : (in_array($this->motivotraslado->code, $this->arrayequalremite) ? 'same:empresa.document' : '')
-            ],
-        ]);
-
-
-        $client = new GetClient();
-        $response = $client->getClient($this->documentdestinatario);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentdestinatario', 'namedestinatario']);
-                $this->namedestinatario = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentdestinatario']);
-                $this->addError('documentdestinatario', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
-
-    public function getComprador()
-    {
-
-        $this->documentcomprador = trim($this->documentcomprador);
-        $this->validate([
-            'documentcomprador' => [
-                'required',
-                'numeric',
-                'regex:/^\d{8}(?:\d{3})?$/',
-                $this->motivotraslado->code == '03' || $this->motivotraslado->code == '13' ? 'different:documentdestinatario' : '',
-            ],
-        ]);
-
-        $client = new GetClient();
-        $response = $client->getClient($this->documentcomprador);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentcomprador', 'namecomprador']);
-                $this->namecomprador = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentcomprador']);
-                $this->addError('documentcomprador', $response->getData()->message);
-            }
-        } else {
-            dd($response);
-        }
-    }
-
-    public function getDriver()
-    {
-
-        $this->documentdriver = trim($this->documentdriver);
-        $this->validate([
-            'documentdriver' => [
-                Rule::requiredIf($this->modalidadtransporte->code == '02'),
-                'numeric',
-                'regex:/^\d{8}(?:\d{3})?$/'
-            ],
-        ]);
-
-        $client = new GetClient();
-        $response = $client->getClient($this->documentdriver);
-        if ($response->getData()) {
-            if ($response->getData()->success) {
-                $this->resetValidation(['documentdriver', 'namedriver']);
-                $this->namedriver = $response->getData()->name;
-            } else {
-                $this->resetValidation(['documentdriver']);
-                $this->addError('documentdriver', $response->getData()->message);
-            }
-        } else {
-            dd($response);
+            $mensaje =  response()->json([
+                'title' => 'Error:' . $response->status() . ' ' . $response->json(),
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
         }
     }
 }
