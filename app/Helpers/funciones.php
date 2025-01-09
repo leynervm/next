@@ -720,7 +720,7 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
                 'producto_id' => $itempromo->producto_id,
                 'producto_slug' => $itempromo->producto->slug,
                 'name' => $itempromo->producto->name,
-                // 'image' => $itempromo->producto->imagen ? pathURLProductImage($itempromo->producto->imagen->url) : null,
+                'imagen' => $itempromo->producto->imagen ? pathURLProductImage($itempromo->producto->imagen->url) : null,
                 'image' => $itempromo->producto->image ? pathURLProductImage($itempromo->producto->image) : null,
                 'price' => $price,
                 'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,

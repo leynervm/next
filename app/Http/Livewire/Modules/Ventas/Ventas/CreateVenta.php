@@ -1605,16 +1605,9 @@ class CreateVenta extends Component
     public function getcombos(Producto $producto)
     {
         $this->resetValidation();
-        $producto->load(['marca', 'category', 'subcategory', 'unit', 'images' => function ($query) {
-            $query->orderByDesc('default');
-        }, 'promocions' => function ($query) {
+        $producto->load(['marca', 'category', 'subcategory', 'unit', 'imagen', 'promocions' => function ($query) {
             $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderByDesc('default')->limit(1);
-                }]);
+                $subQuery->with(['unit', 'almacens', 'imagen']);
             }])->availables()->disponibles();
         }])->loadCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));

@@ -444,7 +444,7 @@
 
                         <div class="w-full relative" x-data="{ qty: 1, serieproductoprm_id: null, seriealmacenprm_id: null }">
                             <form class="w-full flex flex-col gap-2 mt-1 sm:mt-5"
-                                @submit.prevent="enviarFormulario($event)" wire:ignore>
+                                @submit.prevent="enviarFormulario($event)">
 
                                 @if ($pricesale > 0)
                                     <div class="w-full flex-1">
@@ -595,7 +595,7 @@
                                 @endphp
                                 @if ($combo->is_disponible && $combo->stock_disponible)
                                     <div>
-                                        <form wire:ignore @submit.prevent="enviarFormulario($event)"
+                                        <form @submit.prevent="enviarFormulario($event)"
                                             class="w-full flex flex-col justify-between border border-borderminicard shadow-md shadow-shadowminicard p-1 md:p-2 rounded-lg md:rounded-2xl">
                                             <div class="w-full">
                                                 <h1
@@ -636,9 +636,9 @@
                                                         <div class="w-20 flex flex-col justify-center items-center">
                                                             <div class="w-full block rounded-lg relative"
                                                                 href="{{ route('productos.show', $itemcombo->producto_slug) }}">
-                                                                @if ($itemcombo->image)
-                                                                    <img src="{{ $itemcombo->image }}"
-                                                                        alt="{{ $itemcombo->image }}"
+                                                                @if ($itemcombo->imagen)
+                                                                    <img src="{{ $itemcombo->imagen }}"
+                                                                        alt="{{ $itemcombo->imagen }}"
                                                                         title="{{ $itemcombo->name }}"
                                                                         class="{{ $opacidad }} block w-full h-auto max-h-16 object-scale-down overflow-hidden rounded-lg">
                                                                 @else
