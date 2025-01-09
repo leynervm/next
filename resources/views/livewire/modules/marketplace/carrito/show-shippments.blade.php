@@ -152,8 +152,8 @@
 
                 <div class="flex flex-col gap-2" style="display: none;" x-show="showaddadress" x-cloak>
                     <div class="w-full">
-                        <div class="relative" x-data="{ lugar_id: @entangle('lugar_id').defer }" x-init="select2Ubigeo" id="parentlugar_id">
-                            <x-select class="block w-full" x-ref="select" id="lugar_id"
+                        <div class="relative" x-init="select2Ubigeo" id="parentlugar_id">
+                            <x-select class="block w-full" x-ref="selectlugar" id="lugar_id"
                                 data-minimum-results-for-search="3" data-placeholder="Seleccionar">
                                 <x-slot name="options">
                                     @if (count($ubigeos))
@@ -248,15 +248,17 @@
                     <div class="w-full flex gap-1">
                         <x-input-radio class="py-2" for="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}"
                             text="YO MISMO">
-                            <input wire:model.lazy="receiver" wire:loading.attr="disabled" class="sr-only peer peer-disabled:opacity-25"
-                                type="radio" id="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}"
-                                name="receiver" value="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}" />
+                            <input wire:model.lazy="receiver" wire:loading.attr="disabled"
+                                class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                id="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}" name="receiver"
+                                value="{{ \Modules\Marketplace\Entities\Order::EQUAL_RECEIVER }}" />
                         </x-input-radio>
                         <x-input-radio class="py-2" for="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}"
                             text="OTRA PERSONA">
-                            <input wire:model.lazy="receiver" wire:loading.attr="disabled" class="sr-only peer peer-disabled:opacity-25"
-                                type="radio" id="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}"
-                                name="receiver" value="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}" />
+                            <input wire:model.lazy="receiver" wire:loading.attr="disabled"
+                                class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                id="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}" name="receiver"
+                                value="{{ \Modules\Marketplace\Entities\Order::OTHER_RECEIVER }}" />
                         </x-input-radio>
                     </div>
                     <x-jet-input-error for="receiver" />
@@ -497,18 +499,9 @@
                 receiver_info: @entangle('receiver_info').defer,
                 shipmenttype_id: @entangle('shipmenttype_id').defer,
                 local_id: @entangle('local_id').defer,
+                lugar_id: @entangle('lugar_id').defer,
                 daterecojo: @entangle('daterecojo').defer,
                 recaptcha: null,
-
-                seleccionarenvio(shipmenttype) {
-                    if (shipmenttype.isenvio == '1') {
-                        this.showadress = true;
-                        this.showlocales = false;
-                    } else {
-                        this.showlocales = true;
-                        this.showadress = false;
-                    }
-                },
                 init() {
                     this.$watch("shipmenttype_id", (value) => {
                         this.local_id = null;
@@ -553,6 +546,15 @@
                             this.processpay = false;
                         }
                     })
+                },
+                seleccionarenvio(shipmenttype) {
+                    if (shipmenttype.isenvio == '1') {
+                        this.showadress = true;
+                        this.showlocales = false;
+                    } else {
+                        this.showlocales = true;
+                        this.showadress = false;
+                    }
                 },
                 edit() {
                     this.open = true;
@@ -628,7 +630,7 @@
         }
 
         function select2Ubigeo() {
-            this.selectU = $(this.$refs.select).select2();
+            this.selectU = $(this.$refs.selectlugar).select2();
             this.selectU.val(this.lugar_id).trigger("change");
             this.selectU.on("select2:select", (event) => {
                 this.lugar_id = event.target.value;

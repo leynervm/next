@@ -516,7 +516,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
                 body: data
             }).then(result => result.json())
             .then(response => {
-                console.log(response);
+                // console.log(response);
                 if (response.success) {
                     onSuccess(response);
                 } else {

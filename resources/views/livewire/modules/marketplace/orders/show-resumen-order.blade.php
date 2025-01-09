@@ -65,7 +65,7 @@
                                             @endif
 
                                             @if (count($item->kardexes) > 0)
-                                                <div class="w-full flex flex-wrap gap-2">
+                                                <div class="w-full flex flex-wrap gap-2 mt-2">
                                                     @foreach ($item->kardexes as $kardex)
                                                         <x-simple-card
                                                             class="max-w-24 min-w-24 p-2 flex flex-col items-center justify-start">

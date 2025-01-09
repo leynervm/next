@@ -44,29 +44,31 @@
                                 </div>
                             </li>
                         @endforeach
+
+                        @if (Module::isEnabled('Marketplace'))
+                            <div class="w-full {{ count($producto->especificacions) > 0 ? 'mt-2' : '' }}"
+                                x-data="{
+                                    comment: '',
+                                    init() {
+                                        this.adjustHeight(this.$refs.comentario);
+                                        Livewire.hook('message.processed', () => {
+                                            this.adjustHeight(this.$refs.comentario);
+                                        });
+                                    },
+                                    adjustHeight($el) {
+                                        $el.style.height = 'auto';
+                                        $el.style.height = $el.scrollHeight + 'px';
+                                    }
+                                }">
+                                <x-label value="Comentario :" />
+                                <x-text-area class="block w-full" rows="1" style="overflow:hidden;resize:none;"
+                                    x-ref="comentario" x-on:input="adjustHeight($el)" id="comentario"
+                                    wire:model.defer="producto.comentario"></x-text-area>
+                                <x-jet-input-error for="producto.comentario" />
+                            </div>
+                        @endif
                     </ul>
 
-                    @if (Module::isEnabled('Marketplace'))
-                        <div class="w-full mt-2" x-data="{
-                            comment: '',
-                            init() {
-                                this.adjustHeight(this.$refs.comentario);
-                                Livewire.hook('message.processed', () => {
-                                    this.adjustHeight(this.$refs.comentario);
-                                });
-                            },
-                            adjustHeight($el) {
-                                $el.style.height = 'auto';
-                                $el.style.height = $el.scrollHeight + 'px';
-                            }
-                        }">
-                            <x-label value="Comentario :" />
-                            <x-text-area class="block w-full" rows="1" style="overflow:hidden;resize:none;"
-                                x-ref="comentario" x-on:input="adjustHeight($el)" id="comentario"
-                                wire:model.defer="producto.comentario"></x-text-area>
-                            <x-jet-input-error for="producto.comentario" />
-                        </div>
-                    @endif
 
                     <div class="w-full pt-4 flex flex-wrap sm:flex-nowrap items-end gap-1 justify-end">
                         @if (count($caracteristicas) > 0)

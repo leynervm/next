@@ -445,11 +445,11 @@
                 } else {
                     $(componentloading).fadeOut();
                     onError(responseData);
-                    console.log(responseData);
+                    // console.log(responseData);
                 }
             }).catch(error => {
                 $(componentloading).fadeOut();
-                console.log(error);
+                // console.log(error);
                 window.dispatchEvent(new CustomEvent('validation', {
                     detail: {
                         title: error.message,
