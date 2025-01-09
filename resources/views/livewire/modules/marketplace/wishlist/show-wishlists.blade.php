@@ -18,7 +18,7 @@
                         @php
                             $combo = getAmountCombo($item->options->promocion, $pricetype);
                             $image =
-                                !is_null($item->model) && !empty($item->model->imagen)
+                                isset($item->model) && !is_null($item->model) && !empty($item->model->imagen)
                                     ? pathURLProductImage($item->model->imagen->url)
                                     : null;
                         @endphp
@@ -37,7 +37,7 @@
                                 </div>
                                 <div class="w-ful flex-1">
                                     <p class="leading-tight text-xs text-colorlabel text-justify">
-                                        {{ !is_null($item->model) ? $item->model->name : $item->name }}</p>
+                                        {{ (!is_null($item->model)) ? $item->model->name : $item->name }}</p>
                                     @if ($combo)
                                         <div class="w-full flex items-center flex-wrap gap-1 sm:gap-3">
                                             @foreach ($combo->products as $itemcombo)
@@ -74,7 +74,7 @@
                                     @if ($item->options->is_disponible)
                                         <h1
                                             class="text-colorlabel text-sm sm:text-lg md:text-xl font-semibold text-end !leading-none">
-                                            @if ($item->options->promocion)
+                                            @if ($item->options->promocion_id)
                                                 <span
                                                     class="text-[10px] md:text-xs p-0.5 rounded text-colorerror font-medium line-through">
                                                     @if ($combo)
@@ -103,10 +103,12 @@
 
                             @if ($item->options->is_disponible)
                                 <div class="w-full flex flex-wrap gap-1 justify-end items-end">
-                                    <x-button-add-car type="button" wire:loading.attr="disabled"
-                                        class="!text-[10px] !flex !justify-center !gap-1 items-center font-semibold"
-                                        wire:click="movetocarshoop('{{ $item->rowId }}')"
-                                        wire:key="add_{{ $item->rowId }}">MOVER AL CARRITO</x-button-add-car>
+                                    @if (count($item->options->carshoopitems) == 0)
+                                        <x-button-add-car type="button" wire:loading.attr="disabled"
+                                            class="!text-[10px] !flex !justify-center !gap-1 items-center font-semibold"
+                                            wire:click="movetocarshoop('{{ $item->rowId }}')"
+                                            wire:key="add_{{ $item->rowId }}">MOVER AL CARRITO</x-button-add-car>
+                                    @endif
 
                                     <button wire:click="deleteitem('{{ $item->rowId }}')" wire:loading.attr="disabled"
                                         class="btn-outline-secondary !p-2 !text-[10px] ring-0 border-2 border-red-500 hover:bg-red-700 hover:text-white hover:ring-red-300 font-semibold">

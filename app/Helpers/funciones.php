@@ -753,7 +753,7 @@ function getCartRelations(string $instance, $onlyDisponibles = false)
         $is_disponible = true;
         $options = collect($item->options)->toArray();
 
-        if (!is_null($item->model)) {
+        if ($item->model && !is_null($item->model)) {
             $producto = Producto::with(['unit', 'imagen'])->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
             }])->find($item->id);
