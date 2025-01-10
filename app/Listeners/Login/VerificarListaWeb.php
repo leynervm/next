@@ -46,7 +46,7 @@ class VerificarListaWeb
             //Lista por defecto login web
             $pricetype = Pricetype::activos()->login()->first();
             if (empty($pricetype)) {
-                $pricetype = Pricetype::activos()->orderBy('id', 'asc')->limit(1)->first();
+                $pricetype = Pricetype::activos()->default()->orderBy('id', 'asc')->limit(1)->first();
             }
 
             // Verifico que lista vinculada es menor a lista web 

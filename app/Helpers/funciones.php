@@ -380,33 +380,29 @@ function getPricetypeAuth()
     $pricetype = null;
     $empresa = view()->shared('empresa');
 
-    if ($empresa && $empresa->usarlista()) {
+    if ($empresa && $empresa->usarLista()) {
         $pricetypedefault = Pricetype::activos()->default()->limit(1)->first();
+        $pricetype = $pricetypedefault;
         $authuser = auth()->user();
         if ($authuser) {
             $pricetypelogin = Pricetype::activos()->login()->limit(1)->first();
             $authuser->load(['client.pricetype']);
-            if ($authuser->client && $authuser->client->pricetype && $authuser->client->pricetype->isActivo()) {
-                $pricetype = $authuser->client->pricetype;
-                // valido si lista asignada es inferior a lista web
-                if (!empty($pricetypelogin) && $pricetype->id < $pricetypelogin->id) {
-                    // si es inferior, tomar lista web
-                    $pricetype = $pricetypelogin;
-                }
-            }
 
-            if (empty($pricetype)) {
+            if (!empty($pricetypelogin)) {
                 $pricetype = $pricetypelogin;
             }
 
-            if (empty($pricetype)) {
-                $pricetype = $pricetypedefault;
+            if ($authuser->client && $authuser->client->pricetype && $authuser->client->pricetype->isActivo()) {
+                $pricetypeAuth = $authuser->client->pricetype;
+                if ($pricetypeAuth->id > $pricetype->id) {
+                    // si es superior, tomar lista web de cliente
+                    $pricetype = $pricetypeAuth;
+                }
             }
-        } else {
-            $pricetype = $pricetypedefault;
+            // dd($pricetype);
+            // return $pricetype;
         }
     }
-
     return $pricetype;
 }
 

@@ -45,7 +45,7 @@ class CreateNewUser implements CreatesNewUsers
                 new CampoUnique('users', 'document', null, true, null, null, 'El documento ingresado ya está registrado.')
             ],
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users', new CampoUnique('users', 'email', null, true)],
+            'email' => ['required', 'string', 'email', 'max:255', new CampoUnique('users', 'email', null, true)],
             'password' => $this->passwordRules(),
             'g-recaptcha-response' => ['required', new Recaptcha("v2")], //TENER CUIDADO NOMBRE TIENE QUE MARCAR NO AUTO
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
