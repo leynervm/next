@@ -608,7 +608,7 @@
                             <tr
                                 class="text-textbodytable {{ count($producto->especificacions) % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
                                 <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
-                                    COMENTARIO
+                                    OTROS
                                 </th>
                                 <td class="p-2 py-3 text-left">{!! nl2br($producto->comentario) !!}</td>
                             </tr>

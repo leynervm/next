@@ -4,49 +4,51 @@
             <x-form-card titulo="ESPECIFICACIONES" subtitulo="Características y specificaciones del producto."
                 class="flex-1 justify-between">
                 <div class="w-full flex flex-col flex-1 justify-between">
-                    <ul class="w-full flex flex-col max-h-60 overflow-x-auto" id="especificacions">
-                        @if (count($producto->especificacions) > 0)
-                            <li
-                                class="w-full flex items-center bg-fondoheadertable text-textheadertable rounded-t-md text-[10px] p-2">
-                                <div class="w-full flex flex-1 gap-2">
-                                    ESPECIFICACION</div>
-                                <div class="flex-shrink-0">OPCIONES</div>
-                            </li>
-                        @endif
-                        @foreach ($producto->especificacions as $item)
-                            <li data-id="{{ $item->id }}"
-                                class="w-full p-1 flex gap-2 rounded text-textbodytable bg-fondobodytable text-[10px] hover:bg-fondohovertable">
-                                <div class="w-full flex-1 flex gap-2 items-center">
-                                    <button type="button"
-                                        class="text-next-500 inline-block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                                            stroke="none" stroke-width="1" stroke-linecap="round"
-                                            stroke-linejoin="round" class="w-6 h-6 xs:w-8 xs:h-8 block">
-                                            <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
-                                            <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
-                                            <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
-                                            <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
-                                            <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
-                                            <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
-                                            <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
-                                            <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
-                                            <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
-                                        </svg>
-                                    </button>
-                                    <p class="w-full flex-1 font-medium">
-                                        {{ $item->caracteristica->name }} :
-                                        <b>{{ $item->name }}</b>
-                                    </p>
-                                </div>
-                                <div class="flex-shrink-0">
-                                    <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
-                                        wire:loading.attr="disabled" />
-                                </div>
-                            </li>
-                        @endforeach
-
+                    <div class="w-full">
+                        <ul class="w-full flex flex-col max-h-60 overflow-x-auto" id="especificacions">
+                            @if (count($producto->especificacions) > 0)
+                                <li
+                                    class="w-full flex items-center bg-fondoheadertable text-textheadertable rounded-t-md text-[10px] p-2">
+                                    <div class="w-full flex flex-1 gap-2">
+                                        ESPECIFICACION</div>
+                                    <div class="flex-shrink-0">OPCIONES</div>
+                                </li>
+                            @endif
+                            @foreach ($producto->especificacions as $item)
+                                <li data-id="{{ $item->id }}"
+                                    class="w-full p-1 flex gap-2 rounded text-textbodytable bg-fondobodytable text-[10px] hover:bg-fondohovertable">
+                                    <div class="w-full flex-1 flex gap-2 items-center">
+                                        <button type="button"
+                                            class="text-next-500 inline-block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                                fill="currentColor" stroke="none" stroke-width="1"
+                                                stroke-linecap="round" stroke-linejoin="round"
+                                                class="w-6 h-6 xs:w-8 xs:h-8 block">
+                                                <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
+                                                <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
+                                                <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
+                                                <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
+                                                <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
+                                                <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
+                                                <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
+                                                <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
+                                                <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
+                                            </svg>
+                                        </button>
+                                        <p class="w-full flex-1 font-medium">
+                                            {{ $item->caracteristica->name }} :
+                                            <b>{{ $item->name }}</b>
+                                        </p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <x-button-delete onclick="confirmDeleteEspecificacion({{ $item }})"
+                                            wire:loading.attr="disabled" />
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
                         @if (Module::isEnabled('Marketplace'))
-                            <div class="w-full {{ count($producto->especificacions) > 0 ? 'mt-2' : '' }}"
+                            <div class="w-full {{ count($producto->especificacions) > 0 ? 'mt-1' : '' }}"
                                 x-data="{
                                     comment: '',
                                     init() {
@@ -60,15 +62,14 @@
                                         $el.style.height = $el.scrollHeight + 'px';
                                     }
                                 }">
-                                <x-label value="Comentario :" />
+                                <x-label value="Otros :" />
                                 <x-text-area class="block w-full" rows="1" style="overflow:hidden;resize:none;"
                                     x-ref="comentario" x-on:input="adjustHeight($el)" id="comentario"
                                     wire:model.defer="producto.comentario"></x-text-area>
                                 <x-jet-input-error for="producto.comentario" />
                             </div>
                         @endif
-                    </ul>
-
+                    </div>
 
                     <div class="w-full pt-4 flex flex-wrap sm:flex-nowrap items-end gap-1 justify-end">
                         @if (count($caracteristicas) > 0)
@@ -176,7 +177,7 @@
                                             <x-input-radio :for="'especificacion_' . $especificacion->id" :text="$especificacion->name" class="text-wrap">
                                                 <x-input wire:model.defer="selectedEspecificacion.{{ $item->id }}"
                                                     class="sr-only peer" type="radio" :id="'especificacion_' . $especificacion->id"
-                                                    :name="'especificaciones_' . $item->id . '[]'" value="{{ strval($especificacion->id) }}" />
+                                                    :name="'especificaciones_' . $item->id . '[]'" value="{{ $especificacion->id }}" />
                                             </x-input-radio>
                                         @endforeach
                                     @endif
@@ -263,17 +264,22 @@
             document.addEventListener("DOMContentLoaded", function(event) {
                 new Sortable(especificacions, {
                     animation: 150,
+                    scrollSpeed: 40,
                     ghostClass: 'bg-fondospancardproduct',
                     handle: '.handle',
                     store: {
                         set: function(sortable) {
-                            const sorts = sortable.toArray();
+                            const sorts = Array.from(sortable.el.children)
+                                .filter(item => item.dataset.id)
+                                .map(item => item.dataset.id);
+
+                            // const sorts = sortable.toArray();
                             const producto_id = '{{ $producto->id }}';
                             axios.post("{{ route('api.sort.especificacions') }}", {
                                 sorts: sorts,
                                 producto_id: producto_id
                             }).catch(function(error) {
-                                console.log(error);
+                                console.log(error.response.data.message);
                             });
                         }
                     },
