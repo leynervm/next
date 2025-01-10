@@ -39,7 +39,7 @@ class VerificarListaWeb
                 $client->direccions()->restore();
             }
 
-            if (is_null($client->user_id)) {
+            if (!empty($client) && is_null($client->user_id)) {
                 $client->user()->associate($event->user);
             }
 
@@ -51,7 +51,7 @@ class VerificarListaWeb
 
             // Verifico que lista vinculada es menor a lista web 
             // entonces actualizo a lista web
-            if (!empty($pricetype)) {
+            if (!empty($client) && !empty($pricetype)) {
                 if (is_null($client->pricetype_id) || ($client->pricetype_id < $pricetype->id)) {
                     $client->pricetype_id = $pricetype->id;
                     $client->save();
