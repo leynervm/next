@@ -32,9 +32,6 @@ class ShowWishlists extends Component
         }
 
         Cart::instance('wishlist')->remove($rowId);
-        if (auth()->check()) {
-            Cart::instance('wishlist')->store(auth()->id());
-        }
 
         if (auth()->check()) {
             Cart::instance('wishlist')->store(auth()->id());
@@ -49,6 +46,9 @@ class ShowWishlists extends Component
     public function delete()
     {
         Cart::instance('wishlist')->destroy();
+        if (auth()->check()) {
+            Cart::instance('wishlist')->store(auth()->id());
+        }
         $this->render();
         $this->dispatchBrowserEvent('updatewishlist', Cart::instance('wishlist')->count());
     }

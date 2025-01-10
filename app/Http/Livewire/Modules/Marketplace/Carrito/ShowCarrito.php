@@ -30,6 +30,9 @@ class ShowCarrito extends Component
     public function delete()
     {
         Cart::instance('shopping')->destroy();
+        if (auth()->check()) {
+            Cart::instance('shopping')->store(auth()->id());
+        }
         $this->render();
         $this->dispatchBrowserEvent('updatecart', Cart::instance('shopping')->count());
     }
