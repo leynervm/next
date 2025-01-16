@@ -17,7 +17,7 @@
 }
 
 .inner-body {
-    width: 450px !important;
+    max-width: 570px !important;
 }
 
 .content-ticket .table {
@@ -54,10 +54,8 @@ width: 100% !important;
 <!-- Body content -->
 <tr>
 <td class="content-cell">
-{{-- {{ Illuminate\Mail\Markdown::parse($slot) }} --}}
-
-
 <div class="content-ticket">
+
 <div style="display: block; background:#000; width:100%; height: 100px;text-align: center; padding: 5px">
 <img src="https://next.net.pe/img/logo.png" alt="Imagen de Bienvenida" style="max-width: 100%; width:auto; height: 100%; margin: auto;">
 </div>
@@ -102,12 +100,12 @@ Atentamente,
 </p>
 </div>
 
-<div style="display: block; background:#000; width:100%;">
-<p style="font-size:10px;color: #FFF;padding: 10px;margin: 0" class="text-center">© {{ $empresa->name }} 2012 - Todos los derechos reservados.</p>
-</div>
-</div>
+{{-- <div style="display: block; background:#000; width:100%;">
+<p style="font-size:10px;color: #FFF;padding: 10px;margin: 0" class="text-center">
+© {{ $empresa->name }} 2012 - Todos los derechos reservados.</p>
+</div> --}}
 
-
+</div>
 </td>
 </tr>
 </table>

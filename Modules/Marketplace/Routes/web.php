@@ -27,15 +27,20 @@ Route::get('/login/auth/{driver}/redirect', [AuthController::class, 'redirect'])
 Route::get('/login/auth/{driver}/callback', [AuthController::class, 'callback'])->name('auth.callback');
 
 
-Route::get('/completar-perfil', [UserController::class, 'profilecomplete'])->name('profile.complete')
-    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
-Route::post('/completar-perfil/store', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
-
-Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile')
-    ->middleware(['web', 'auth:sanctum', config('jetstream.auth_session')]);
 
 Route::post('/search-cliente', [ApiController::class, 'consultacliente'])->name('consultacliente')
     ->middleware(['web']);
+
+
+Route::middleware(['web', 'auth:sanctum', config('jetstream.auth_session')])->group(function () {
+    Route::get('/completar-perfil', [UserController::class, 'profilecomplete'])->name('profile.complete');
+    Route::post('/completar-perfil/store', [UserController::class, 'storeprofilecomplete'])->name('profile.complete.save');
+    Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile');
+
+    // Ruta para pruebas de envio de resumen order
+    // Route::get('/send-email-order/{order}/send', [MarketplaceController::class, 'sendemailorder'])->name('sendemailorder');
+});
+
 
 
 // CART

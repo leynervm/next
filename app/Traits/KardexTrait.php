@@ -5,6 +5,7 @@ namespace App\Traits;
 use App\Models\Almacen;
 use App\Models\Kardex;
 use App\Models\Producto;
+use App\Models\Promocion;
 use App\Models\Serie;
 use App\Models\Tvitem;
 use App\Models\User;

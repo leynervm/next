@@ -127,7 +127,7 @@ function verifyOpencaja($openbox)
     return $openbox->isActivo();
 }
 
-function mi_empresa($loadsucursals = false)
+function mi_empresa($loadsucursals = false, $relations = [])
 {
     // $empresa = Empresa::query()->with(['image', 'telephones'])->select(
     //     'id',
@@ -159,9 +159,11 @@ function mi_empresa($loadsucursals = false)
     }]);
 
     if ($loadsucursals) {
-        $empresa->with(['sucursals' => function ($query) {
-            $query->orderBy('codeanexo', 'asc');
-        }]);
+        $empresa->with(['sucursals']);
+    }
+
+    if (count($relations) > 0) {
+        $empresa->with($relations);
     }
 
     $empresa = $empresa->take(1)->first();

@@ -127,7 +127,7 @@ class Empresa extends Model
 
     public function sucursals(): HasMany
     {
-        return $this->hasMany(Sucursal::class);
+        return $this->hasMany(Sucursal::class)->orderBy('codeanexo', 'asc');
     }
 
     public function isAfectacionIGV()

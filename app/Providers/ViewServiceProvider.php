@@ -32,7 +32,7 @@ class ViewServiceProvider extends ServiceProvider
         // view()->composer('*', function ($view) {
         $empresa = null;
         if (Schema::hasTable('empresas')) {
-            $empresa = mi_empresa();
+            $empresa = mi_empresa(false, ['telephones']);
             $moneda = Moneda::default()->first();
             $categories = [];
             if (Module::isEnabled('Marketplace')) {

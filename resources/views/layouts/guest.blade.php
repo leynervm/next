@@ -93,6 +93,11 @@
         //permitir hacer enter en input
         return charCode == 13 ? true : false;
     }
+
+    function disabledform(form) {
+        const button = form.querySelector('button');
+        button.disabled = true;
+    }
 </script>
 
 </html>

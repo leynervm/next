@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Traits\KardexTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -33,5 +34,10 @@ class Tvitem extends Model
     public function itemseries()
     {
         return $this->hasMany(Itemserie::class);
+    }
+
+    public function promocion(): BelongsTo
+    {
+        return $this->belongsTo(Promocion::class);
     }
 }

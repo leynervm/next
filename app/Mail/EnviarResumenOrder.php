@@ -2,7 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Claimbook;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,23 +10,22 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
+use Modules\Marketplace\Entities\Order;
 
-class EnviarClaimbook extends Mailable implements ShouldQueue
+class EnviarResumenOrder extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
+
+    public $order, $empresa;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-
-    public $claimbook, $empresa;
-
-
-    public function __construct(Claimbook $claimbook)
+    public function __construct(Order $order)
     {
-        $this->claimbook = $claimbook;
+        $this->order = $order;
         $this->empresa = view()->shared('empresa');
     }
 
@@ -40,7 +38,7 @@ class EnviarClaimbook extends Mailable implements ShouldQueue
     {
         return new Envelope(
             from: new Address(Config::get('mail.mailers.smtp.username'), $this->empresa->name),
-            subject: 'Confirmación de Registro de Reclamo ' . $this->claimbook->serie . '-' . $this->claimbook->correlativo,
+            subject: 'CONFIRMACIÓN DE PEDIDO #' . $this->order->purchase_number,
         );
     }
 
@@ -52,8 +50,11 @@ class EnviarClaimbook extends Mailable implements ShouldQueue
     public function content()
     {
         return new Content(
-            markdown: 'emails.enviar-claimbook',
+            view: 'emails.enviar-resumen-order',
         );
+        // return new Content(
+        //     markdown: 'emails.enviar-claimbook',
+        // );
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Modules\Marketplace\Http\Controllers;
 
 use App\Enums\StatusPayWebEnum;
+use App\Mail\EnviarResumenOrder;
 use App\Models\Almacen;
 use App\Models\Promocion;
 use App\Models\Tvitem;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Jetstream\Jetstream;
@@ -246,6 +248,14 @@ class NiubizController extends Controller
                         'type' => 'success',
                     ];
                     Log::info('Respuesta del pago: ', $mensaje);
+                    $order->load(['shipmenttype', 'user',  'entrega.sucursal.ubigeo', 'client', 'moneda', 'direccion.ubigeo', 'transaccion', 'tvitems' => function ($query) {
+                        $query->with(['promocion', 'producto' => function ($q) {
+                            $q->with(['unit', 'imagen']);
+                        }]);
+                    }]);
+
+                    $mail = Mail::to($order->user->email)->send(new EnviarResumenOrder($order));
+                    Log::info('Correo de resumen de compra #' . $order->purchase_number . ' enviado a' . $order->user->email);
                     return redirect()->route('orders.payment', $order)->with('message', response()->json($mensaje)->getData());
                 } catch (\ErrorException $e) {
                     $mensaje = [

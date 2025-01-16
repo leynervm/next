@@ -172,8 +172,14 @@
                     @csrf
 
                     @if (session('status'))
-                        <div class="mb-4 font-medium text-sm text-green-600">
-                            {{ session('status') }}
+                        <div class="w-full mb-4 flex items-center gap-2 p-2 sm:p-4 border border-green-300 rounded-xl bg-green-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="none"
+                                stroke-width="0" stroke-linecap="round" stroke-linejoin="round"
+                                class="shrink-0 block rounded-full bg-white size-5 fill-green-600">
+                                <path
+                                    d="M12,0A12,12,0,1,0,24,12,12.014,12.014,0,0,0,12,0Zm6.927,8.2-6.845,9.289a1.011,1.011,0,0,1-1.43.188L5.764,13.769a1,1,0,1,1,1.25-1.562l4.076,3.261,6.227-8.451A1,1,0,1,1,18.927,8.2Z" />
+                            </svg>
+                            <p class="w-full flex-1 text-green-700 text-sm leading-tight">{{ session('status') }}</p>
                         </div>
                     @endif
 
