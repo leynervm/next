@@ -593,8 +593,8 @@
             }
 
             .icons {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
 
             .price-item {
@@ -1122,9 +1122,9 @@
                                                         @endforeach
                                                     </td>
                                                     <td align="center" valign="center">
-                                                        <img src="{{ asset('assets/settings/icon-phone.svg') }}"
+                                                        <img src="{{ asset('assets/settings/icon-phone.png') }}"
                                                             class="icons"
-                                                            alt="{{ asset('assets/settings/icon-phone.svg') }}">
+                                                            alt="{{ asset('assets/settings/icon-phone.png') }}">
                                                     </td>
                                                 </tr>
                                             </tbody>
