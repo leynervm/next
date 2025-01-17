@@ -13,7 +13,8 @@ class CreateTypeGarantia extends Component
 
     use AuthorizesRequests;
     public $open = false;
-    public $name, $datecode, $time;
+    public $name, $datecode, $timewarranty;
+
 
     protected function rules()
     {
@@ -25,7 +26,7 @@ class CreateTypeGarantia extends Component
                 new CampoUnique('typegarantias', 'name', null),
             ],
             'datecode' => ['required', 'string', 'min:2', 'max:4',],
-            'time' => ['required', 'integer', 'min:1', 'max:100']
+            'timewarranty' => ['required', 'integer', 'min:0', 'max:100']
         ];
     }
 
@@ -40,7 +41,7 @@ class CreateTypeGarantia extends Component
         if ($this->open == false) {
             $this->authorize('admin.almacen.typegarantias.create');
             $this->resetValidation();
-            $this->reset('name', 'datecode', 'time', 'open');
+            $this->reset();
         }
     }
 
@@ -49,13 +50,13 @@ class CreateTypeGarantia extends Component
         $this->authorize('admin.almacen.typegarantias.create');
         $this->name = trim($this->name);
         $this->datecode = trim($this->datecode);
-        $this->time = trim($this->time);
+        $this->timewarranty = trim($this->timewarranty);
         $this->validate();
 
         Typegarantia::create([
             'name' => $this->name,
             'datecode' => $this->datecode,
-            'time' => $this->time
+            'time' => $this->timewarranty
         ]);
 
         $this->emitTo('almacen::garantias.show-type-garantias', 'render');

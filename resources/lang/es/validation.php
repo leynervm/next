@@ -275,9 +275,9 @@ return [
         'typecomprobante_id'        => 'tipo comprobante',
         'partnumber'                => 'número de parte',
         'unit_id'                   => 'unidad medida',
-        'marca_id'                   => 'marca',
-        'datecode'                  => 'tiempo medida',
-        'typegarantia_id'           => 'tipo garantía',
+        'marca_id'                  => 'marca',
+        'datecode'                  => 'tiempo de medida',
+        'typegarantia_id'           => 'tipo de garantía',
         'sucursal_id'               => 'sucursal',
         'typesucursal_id'           => 'tipo sucursal',
         'codeanexo'                 => 'código anexo',
@@ -400,6 +400,7 @@ return [
         'maxstockweb'               =>  'límite de stock web',
         'empresa.document'          =>  'ruc empresa',
         'ructransport'              =>  'ruc transportista',
-        'nametransport'             =>  'nombre transportista'
+        'nametransport'             =>  'nombre transportista',
+        'timewarranty'              =>  'tiempo de garantía',
     ],
 ];

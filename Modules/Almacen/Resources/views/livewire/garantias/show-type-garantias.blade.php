@@ -10,9 +10,9 @@
             @foreach ($typegarantias as $item)
                 @php
                     if ($item->datecode == 'MM') {
-                        $timestring = $item->time > 1 ? ' MESES' : ' MES';
+                        $timestring = $item->time == 1 ? ' MES' : '  MESES';
                     } else {
-                        $timestring = $item->time > 1 ? ' AÑOS' : ' AÑO';
+                        $timestring = $item->time == 1 ? ' AÑO' : '  AÑOS';
                     }
                 @endphp
                 <x-minicard :title="$item->name" :content="$item->time . $timestring" size="lg">
@@ -67,7 +67,7 @@
                 <div>
                     <x-label value="Tiempo predeterminado (Meses):" />
                     <x-input type="number" class="block w-full input-number-none" wire:model.defer="typegarantia.time" step="1"
-                        min="1" onkeypress="return validarNumero(event)" />
+                        min="0" onkeypress="return validarNumero(event)" />
                     <x-jet-input-error for="typegarantia.time" />
                 </div>
 

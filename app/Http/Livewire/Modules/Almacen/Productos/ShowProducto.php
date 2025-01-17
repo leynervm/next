@@ -166,7 +166,10 @@ class ShowProducto extends Component
         }
         $this->validate();
         $isDirty = $this->producto->isDirty('pricebuy') ? true : false;
-        $reload = $this->producto->isDirty('name') ? true : false;
+        $reload = false;
+        if ($this->producto->isDirty('name') || $this->producto->isDirty('requireserie')) {
+            $reload = true;
+        }
         $this->producto->save();
 
         if (Module::isEnabled('Marketplace')) {

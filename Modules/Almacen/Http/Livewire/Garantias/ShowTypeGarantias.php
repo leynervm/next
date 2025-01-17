@@ -22,6 +22,10 @@ class ShowTypeGarantias extends Component
 
     protected $listeners = ['render'];
 
+    protected $validationAttributes = [
+        'typegarantia.time' => 'tiempo de garantía',
+    ];
+
     protected function rules()
     {
         return [
@@ -32,7 +36,7 @@ class ShowTypeGarantias extends Component
                 'required', 'string', 'min:2', 'max:4',
             ],
             'typegarantia.time' => [
-                'required', 'integer', 'min:1', 'max:100'
+                'required', 'integer', 'min:0', 'max:100'
             ]
         ];
     }

@@ -37,9 +37,9 @@
 
                 <div>
                     <x-label value="Tiempo :" />
-                    <x-input type="number" class="block w-full input-number-none" wire:model.defer="time" step="1" min="1"
+                    <x-input type="number" class="block w-full input-number-none" wire:model.defer="timewarranty" step="1" min="0"
                         onkeypress="return validarNumero(event)" />
-                    <x-jet-input-error for="time" />
+                    <x-jet-input-error for="timewarranty" />
                 </div>
 
                 <div class="w-full flex gap-2 flex-wrap pt-4 justify-end">

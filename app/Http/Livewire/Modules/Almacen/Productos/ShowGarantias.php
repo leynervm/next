@@ -28,6 +28,9 @@ class ShowGarantias extends Component
     public $viewdetalle = false;
 
     protected $listeners = ['delete', 'savedetalle'];
+    protected $validationAttributes = [
+        'time' => 'tiempo de garantía',
+    ];
 
     public function mount()
     {
@@ -69,7 +72,7 @@ class ShowGarantias extends Component
                 Rule::unique('garantiaproductos', 'typegarantia_id')
                     ->where('producto_id', $this->producto->id)
             ],
-            'time' => ['required', 'numeric', 'min:1']
+            'time' => ['required', 'numeric', 'min:0']
         ]);
 
         $this->producto->garantiaproductos()->create([
