@@ -635,7 +635,7 @@
                                 <a href="{{ env('APP_URL') }}" class="enlace-logo" title="{{ $url_logo }}">
                                     @if (!empty($url_logo))
                                         <img class="logo" src="{{ $url_logo }}" class="logo"
-                                            alt="{{ $url_logo }}">
+                                            alt="">
                                     @else
                                         {{ $empresa->name }}
                                     @endif
@@ -656,10 +656,9 @@
                                         <tr>
                                             <td>
                                                 <p class="info-tracking" style="text-justify: ">
-                                                    Su pedido está listo. Estamos trabajando en ello para realizar su
-                                                    corespondiente entrega. Para mas información del seguimiento de su
-                                                    pedido, haga click en el
-                                                    enlace "Seguimiento de pedido".
+                                                    Estamos preparando tu pedido para realizar su corespondiente entrega.
+                                                     Para más información del estado de seguimiento, haga click en el
+                                                    enlace "SEGUIMIENTO DE PEDIDO".
                                                 </p>
                                             </td>
                                         </tr>
