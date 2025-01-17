@@ -127,7 +127,7 @@ class MarketplaceController extends Controller
 
     public function resumenorder(Order $order)
     {
-        $this->authorize('user', $order);
+        // $this->authorize('user', $order);
         $order->load(['user', 'moneda', 'entrega', 'direccion', 'tvitems' => function ($query) {
             $query->with(['producto' => function ($q) {
                 $q->with(['unit', 'imagen']);

@@ -37,7 +37,8 @@ class EnviarResumenOrder extends Mailable implements ShouldQueue
     public function envelope()
     {
         return new Envelope(
-            from: new Address(Config::get('mail.mailers.smtp.username'), $this->empresa->name),
+            // Config::get('mail.mailers.smtp.username')
+            from: new Address('ventas@next.net.pe', $this->empresa->name),
             subject: 'CONFIRMACIÓN DE PEDIDO #' . $this->order->purchase_number,
         );
     }

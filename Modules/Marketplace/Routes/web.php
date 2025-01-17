@@ -77,6 +77,8 @@ Route::middleware(['web', 'verifycarshoop'])->group(function () {
 
     Route::get('/soluciones-integrales', [MarketplaceController::class, 'tic'])->name('tic');
     Route::get('/servicio-internet', [MarketplaceController::class, 'servicesnetwork'])->name('servicesnetwork');
+
+    Route::get('/orders/{order:purchase_number}/resumen', [MarketplaceController::class, 'resumenorder'])->name('orders.payment');
 });
 
 
@@ -84,14 +86,12 @@ Route::middleware(['web', 'verifycarshoop'])->group(function () {
 
 
 Route::middleware(['web', 'auth'])->group(function () {
+    Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
+    // Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');
+
 
     Route::get('/carshoop/registrar-compra', [MarketplaceController::class, 'create'])->name('carshoop.create')
         ->middleware(['verifycarshoop', 'verified', 'verifydatauser']);
-
-    Route::get('/orders', [MarketplaceController::class, 'orders'])->name('orders');
-    Route::get('/orders/{order:purchase_number}/resumen', [MarketplaceController::class, 'resumenorder'])->name('orders.payment');
-    // Route::post('/orders/{order}/payment/deposito', [MarketplaceController::class, 'deposito'])->name('orders.pay.deposito');
-
 
     Route::post('/orders/niubiz/config', [NiubizController::class, 'config_checkout'])->name('orders.niubiz.config')->middleware(['verified']);
     Route::post('/orders/niubiz/checkout', [NiubizController::class, 'checkout'])->name('orders.niubiz.checkout')->middleware(['verified']);
