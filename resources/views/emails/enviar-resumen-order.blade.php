@@ -632,10 +632,10 @@
                     <tbody>
                         <tr>
                             <td align="center">
-                                <a href="{{ env('APP_URL') }}" class="enlace-logo">
+                                <a href="{{ env('APP_URL') }}" class="enlace-logo" title="{{ $url_logo }}">
                                     @if (!empty($url_logo))
                                         <img class="logo" src="{{ $url_logo }}" class="logo"
-                                            alt="{{ $empresa->name }}">
+                                            alt="{{ $url_logo }}">
                                     @else
                                         {{ $empresa->name }}
                                     @endif
@@ -901,8 +901,8 @@
                                             </tr>
                                             @foreach ($order->tvitems as $item)
                                                 @php
-                                                    $image = !empty($item->imagen)
-                                                        ? pathURLProductImage($item->imagen->url)
+                                                    $image = !empty($item->producto->imagen)
+                                                        ? pathURLProductImage($item->producto->imagen->url)
                                                         : null;
                                                 @endphp
 
@@ -1092,9 +1092,9 @@
                                                         {{ $empresa->email }}
                                                     </td>
                                                     <td align="center" valign="center">
-                                                        <img src="{{ asset('assets/settings/icon-email.svg') }}"
+                                                        <img src="{{ asset('assets/settings/icon-email.png') }}"
                                                             class="icons"
-                                                            alt="{{ asset('assets/settings/icon-email.svg') }}">
+                                                            alt="{{ asset('assets/settings/icon-email.png') }}">
                                                     </td>
                                                 </tr>
                                             </tbody>
