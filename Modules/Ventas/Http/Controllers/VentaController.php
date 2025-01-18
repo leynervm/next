@@ -93,7 +93,7 @@ class VentaController extends Controller
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderByDesc('default')->limit(1);
+                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                     }]);
                 }, 'itemseries.serie' => function ($query) {
                     $query->withTrashed();
@@ -358,7 +358,7 @@ class VentaController extends Controller
                                 $q->select('url')->from('images')
                                     ->whereColumn('images.imageable_id', 'productos.id')
                                     ->where('images.imageable_type', Producto::class)
-                                    ->orderByDesc('default')->limit(1);
+                                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                             }]);
                         }])->combos()->availables()->disponibles();
                     }
@@ -628,7 +628,7 @@ class VentaController extends Controller
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderByDesc('default')->limit(1);
+                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                     }]);
                 }, 'producto' => function ($query) use ($almacen_id) {
                     $query->withCount(['almacens as stock' => function ($q) use ($almacen_id) {

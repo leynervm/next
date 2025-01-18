@@ -733,9 +733,9 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
             'total_normal' => $total_normal,
             'stock_disponible' => $is_stock_disponible,
             'is_disponible' => empty(verifyPromocion($promocion)) ? false : true,
-            // 'promocion' => $promocion,
+            'promocion' => $promocion,
             'unit' => $promocion->producto->unit->name,
-            'products' => $products
+            'products' => $products,
         ])->getData();
     } else {
         return null;
@@ -777,7 +777,7 @@ function getCartRelations(string $instance, $onlyDisponibles = false)
                             $db->select('url')->from('images')
                                 ->whereColumn('images.imageable_id', 'productos.id')
                                 ->where('images.imageable_type', Producto::class)
-                                ->orderByDesc('default')->limit(1);
+                                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                         }])->with(['unit', 'almacens']);
                     }]);
                 }])->find($item->options->promocion_id);

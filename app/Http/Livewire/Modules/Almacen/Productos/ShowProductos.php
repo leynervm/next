@@ -96,7 +96,7 @@ class ShowProductos extends Component
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }]);
 
         if (Module::isEnabled('Almacen')) {

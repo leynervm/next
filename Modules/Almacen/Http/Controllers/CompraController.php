@@ -47,17 +47,15 @@ class CompraController extends Controller
                 $query->with(['almacencompras' => function ($subQuery) {
                     $subQuery->with(['almacen', 'series']);
                 }, 'producto' => function ($subQuery) {
-                    $subQuery->with(['unit', 'promocions' => function ($queryPrm) {
+                    $subQuery->with(['unit', 'images', 'promocions' => function ($queryPrm) {
                         $queryPrm->with(['itempromos.producto' => function ($queryItemprm) {
                             $queryItemprm->with('unit')->addSelect(['image' => function ($q) {
                                 $q->select('url')->from('images')
                                     ->whereColumn('images.imageable_id', 'productos.id')
                                     ->where('images.imageable_type', Producto::class)
-                                    ->orderBy('default', 'desc')->limit(1);
+                                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                             }]);
                         }])->availables()->disponibles();
-                    }, 'images' => function ($sql) {
-                        $sql->orderByDesc('default');
                     }]);
                 }]);
             }

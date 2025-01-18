@@ -81,7 +81,7 @@ class CreatePromocion extends Component
             $query->select('url')->from('images')
                 ->whereColumn('images.imageable_id', 'productos.id')
                 ->where('images.imageable_type', Producto::class)
-                ->orderBy('default', 'desc')->limit(1);
+                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
         }])->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Caracteristica;
 use App\Models\Category;
+use App\Models\Image;
 use App\Models\Producto;
 use App\Models\Slider;
 use App\Models\Subcategory;
@@ -69,6 +70,24 @@ class SortController extends Controller
             $slider = Slider::find($sort);
             $slider->orden = $position;
             $slider->save();
+            $position++;
+        }
+    }
+
+    public function imagesproducto(Request $request)
+    {
+        $position = 1;
+        $sorts = $request->get('sorts');
+        // $producto_id = $request->get('producto_id');
+        foreach ($sorts as $sort) {
+            Image::where('id', $sort)->update([
+                'orden' => $position,
+            ]);
+            // return Image::find($sort);
+
+            // Producto::find($producto_id)->especificacions()->updateExistingPivot($sort, [
+            //     'orden' => $position,
+            // ]);
             $position++;
         }
     }

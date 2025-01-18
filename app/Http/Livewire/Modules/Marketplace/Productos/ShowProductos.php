@@ -246,12 +246,12 @@ class ShowProductos extends Component
             $query->select('url')->from('images')
                 ->whereColumn('images.imageable_id', 'productos.id')
                 ->where('images.imageable_type', Producto::class)
-                ->orderByDesc('default')->limit(1);
+                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
         }])->addSelect(['image_2' => function ($query) {
             $query->select('url')->from('images')
                 ->whereColumn('images.imageable_id', 'productos.id')
                 ->where('images.imageable_type', Producto::class)
-                ->orderByDesc('default')->offset(1)->limit(1);
+                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);
         }]);
 
         if (count($this->selectedcategorias) > 0) {
@@ -278,7 +278,7 @@ class ShowProductos extends Component
                     $q->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
-                        ->orderByDesc('default')->limit(1);
+                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                 }]);
             }])->availables()->disponibles();
         }]);
@@ -494,15 +494,13 @@ class ShowProductos extends Component
 
     public function getcombos(Producto $producto)
     {
-        $producto->load(['marca', 'category', 'subcategory', 'unit', 'images' => function ($query) {
-            $query->orderByDesc('default');
-        }, 'promocions' => function ($query) {
+        $producto->load(['marca', 'category', 'subcategory', 'unit', 'images', 'promocions' => function ($query) {
             $query->with(['itempromos.producto' => function ($subQuery) {
                 $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
                     $q->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
-                        ->orderByDesc('default')->limit(1);
+                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                 }]);
             }])->availables()->disponibles();
         }])->loadCount(['almacens as stock' => function ($query) {

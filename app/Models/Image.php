@@ -14,7 +14,7 @@ class Image extends Model
 
     const DEFAULT = '1';
 
-    protected $fillable = ['url', 'default', 'imageable_id', 'imageable_type'];
+    protected $fillable = ['url', 'default', 'orden', 'imageable_id', 'imageable_type'];
 
     public function imageable(): MorphTo
     {

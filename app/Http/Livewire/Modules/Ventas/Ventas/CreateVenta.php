@@ -310,7 +310,7 @@ class CreateVenta extends Component
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderByDesc('default')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }])->with([
                 'unit',
                 // 'garantiaproductos.typegarantia',
@@ -323,7 +323,7 @@ class CreateVenta extends Component
                             $q->select('url')->from('images')
                                 ->whereColumn('images.imageable_id', 'productos.id')
                                 ->where('images.imageable_type', Producto::class)
-                                ->orderByDesc('default')->limit(1);
+                                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                         }]);
                     }])->availables()->disponibles();
                 }
@@ -402,14 +402,14 @@ class CreateVenta extends Component
                 $q->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderByDesc('default')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }]);
         }, 'producto' => function ($query) {
             $query->addSelect(['image' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderByDesc('default')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }]);
         }, 'carshoopseries.serie' => function ($query) {
             $query->orderByDesc('dateout');

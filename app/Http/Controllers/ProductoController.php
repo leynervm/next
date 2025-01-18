@@ -35,6 +35,7 @@ class ProductoController extends Controller
             'series.almacen',
             'detalleproducto',
             'marca',
+            'images',
             'category' => function ($query) {
                 $query->select('id', 'name', 'slug');
             },
@@ -44,9 +45,6 @@ class ProductoController extends Controller
             },
             'detalleproducto',
             'garantiaproductos.typegarantia',
-            'images' => function ($query) {
-                $query->orderByDesc('default');
-            },
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($subQuery) {
                     $subQuery->with('unit')->addSelect(['image' => function ($q) {

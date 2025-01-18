@@ -91,7 +91,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
                         <x-alert />
 
                         <div
-                            class="relative flex flex-col flex-col-reverse md:flex-row gap-2 items-start justify-between pb-2">
+                            class="sticky -top-1 bg-body z-10 flex flex-col flex-col-reverse md:flex-row gap-2 items-start justify-between pb-2">
                             <div class="w-full flex-1 mt-auto">
                                 <x-breadcrumb-next home="{{ route('admin') }}">
                                     @if (isset($breadcrumb))

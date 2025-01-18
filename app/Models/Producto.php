@@ -165,13 +165,13 @@ class Producto extends Model
     public function images(): MorphMany
     {
         return $this->morphMany(Image::class, 'imageable')
-            ->orderByDesc('default')->orderBy('id', 'asc');
+            ->orderBy('orden', 'asc')->orderBy('id', 'asc');
     }
 
     public function imagen()
     {
         return $this->morphOne(Image::class, 'imageable')
-            ->orderByDesc('default')->orderBy('id', 'asc');
+            ->orderBy('orden', 'asc')->orderBy('id', 'asc');
     }
 
     public function category(): BelongsTo

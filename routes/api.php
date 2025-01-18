@@ -28,6 +28,7 @@ Route::post('sort/subcategories', [SortController::class, 'subcategories'])->nam
 Route::post('sort/caracteristicas', [SortController::class, 'caracteristicas'])->name('api.sort.caracteristicas');
 Route::post('sort/especificacions', [SortController::class, 'especificacions'])->name('api.sort.especificacions');
 Route::post('sort/sliders', [SortController::class, 'sliders'])->name('api.sort.sliders');
+Route::post('sort/producto/images', [SortController::class, 'imagesproducto'])->name('api.sort.producto.images');
 
 Route::post('search', [MarketplaceController::class, 'search'])->name('api.producto.search');
 Route::post('searchsubcategories', [MarketplaceController::class, 'searchsubcategories'])->name('api.producto.subcategories');

@@ -118,7 +118,7 @@
         </div>
     @endcan
 
-    <x-table class="mt-1">
+    <x-table class="mt-1 relative">
         <x-slot name="header">
             <tr>
                 @can('admin.almacen.productos.delete')
@@ -212,7 +212,7 @@
                                 <div class="w-full flex-1">
                                     @can('admin.almacen.productos.edit')
                                         <a href="{{ route('admin.almacen.productos.edit', $item) }}"
-                                            class="inline-block leading-3 text-[10px] font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
+                                            class="inline-block leading-3 text-[10px] max-h-8 truncate whitespace-normal max-w-full font-medium break-words text-linktable cursor-pointer hover:text-hoverlinktable transition-all ease-in-out duration-150">
                                             {{ $item->name }}</a>
                                     @endcan
 

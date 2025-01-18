@@ -181,10 +181,11 @@ class ShowDetalles extends Component
         }
 
         $default = $countImages == 0 ? 1 : 0;
-
+        $orden = $this->producto->images()->max('orden') ?? 0;
         $this->producto->images()->create([
             'url' => $filename,
-            'default' => $default
+            'default' => $default,
+            'orden' => 1 + $orden
         ]);
 
         $this->resetValidation();
@@ -225,6 +226,7 @@ class ShowDetalles extends Component
     {
         try {
             $url = $file->temporaryUrl();
+            $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['imagen']);
             $this->addError('imagen', $e->getMessage());

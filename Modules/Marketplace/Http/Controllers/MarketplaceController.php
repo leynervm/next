@@ -87,26 +87,39 @@ class MarketplaceController extends Controller
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderByDesc('default')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }])->addSelect(['image_2' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderByDesc('default')->offset(1)->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);
             }])->withWhereHas('promocions', function ($query) {
                 $query->with(['itempromos.producto' => function ($itemQuery) {
                     $itemQuery->with('unit')->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderByDesc('default')->limit(1);
+                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                     }]);
                 }])->availables()->disponibles();
             })->visibles()->publicados()->orderByDesc('novedad')->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->paginate(30)->through(function ($producto) {
                 $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
                 $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
+
+                $combos = [];
+                $pricetype = getPricetypeAuth();
+                foreach ($producto->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->all() as $item) {
+                    $combo = getAmountCombo($item, $pricetype);
+                    if ($combo->stock_disponible && $combo->is_disponible) {
+                        $combos[] = $combo;
+                    }
+                }
+
+                // if (count($combos) > 0 || $producto->descuento > 0 || $producto->liquidacion) {
+                $producto->combos = $combos;
                 return $producto;
+                // }
             });
 
 
@@ -173,14 +186,14 @@ class MarketplaceController extends Controller
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }])->with(['marca', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
                     $query->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
+                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                     }]);
                 }])->availables()->disponibles();
             }])->whereNot('id', $producto->id)->where('subcategory_id', $producto->subcategory_id)
@@ -196,14 +209,14 @@ class MarketplaceController extends Controller
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }])->with(['marca', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
                     $query->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
+                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                     }]);
                 }])->availables()->disponibles();
             }])->whereNot('id', $producto->id)->publicados()->visibles()
@@ -224,16 +237,14 @@ class MarketplaceController extends Controller
             'especificacions.caracteristica',
             'detalleproducto',
             'garantiaproductos.typegarantia',
-            'images' => function ($query) {
-                $query->orderByDesc('default');
-            },
+            'images',
             'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($subQuery) {
                     $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
-                            ->orderByDesc('default')->limit(1);
+                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                     }]);
                 }])->availables()->disponibles();
             },
@@ -244,10 +255,17 @@ class MarketplaceController extends Controller
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
         }]);
 
+        $combos = [];
         $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
         $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
-
-        return view('modules.marketplace.productos.show', compact('producto', 'shipmenttypes', 'relacionados', 'interesantes', 'pricetype'));
+        foreach ($producto->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->all() as $item) {
+            $combo = getAmountCombo($item, $pricetype);
+            if ($combo->stock_disponible && $combo->is_disponible) {
+                $combos[] = $combo;
+            }
+        }
+        // $combos = response()->json($combos)->getData();
+        return view('modules.marketplace.productos.show', compact('producto', 'shipmenttypes', 'relacionados', 'interesantes', 'pricetype', 'combos'));
     }
 
     public function quiensomos()
@@ -864,7 +882,7 @@ class MarketplaceController extends Controller
             $query->select('url')->from('images')
                 ->whereColumn('images.imageable_id', 'productos.id')
                 ->where('images.imageable_type', Producto::class)
-                ->orderBy('default', 'desc')->limit(1);
+                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
         }])->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id');
@@ -928,7 +946,7 @@ class MarketplaceController extends Controller
                                 $q->select('url')->from('images')
                                     ->whereColumn('images.imageable_id', 'productos.id')
                                     ->where('images.imageable_type', Producto::class)
-                                    ->orderByDesc('default')->limit(1);
+                                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                             }]);
                         }])->combos()->availables()->disponibles();
                     }

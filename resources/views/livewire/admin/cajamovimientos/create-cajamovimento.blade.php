@@ -75,8 +75,9 @@
                         <div class="w-full flex flex-wrap gap-2 justify-start items-center">
                             @foreach ($monedas as $item)
                                 <x-input-radio class="py-2" for="monedaid_{{ $item->id }}" :text="$item->currency">
-                                    <input x-model="moneda_id" wire:model.defer="moneda_id" class="sr-only peer peer-disabled:opacity-25"
-                                        type="radio" id="monedaid_{{ $item->id }}" name="monedas"
+                                    <input x-model="moneda_id" wire:model.defer="moneda_id"
+                                        class="sr-only peer peer-disabled:opacity-25" type="radio"
+                                        id="monedaid_{{ $item->id }}" name="monedas"
                                         value="{{ $item->id }}" />
                                 </x-input-radio>
                             @endforeach
@@ -131,8 +132,7 @@
 
                 <div>
                     <x-label value="Detalle :" />
-                    <x-input class="block w-full" wire:model.defer="detalle"
-                        placeholder="Ingrese detalle del movimiento..." />
+                    <x-text-area class="block w-full" wire:model.defer="detalle"></x-text-area>
                     <x-jet-input-error for="detalle" />
                 </div>
 

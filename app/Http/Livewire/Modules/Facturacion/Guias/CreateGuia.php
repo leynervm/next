@@ -901,7 +901,7 @@ class CreateGuia extends Component
                     $query->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
+                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                 }])->withWhereHas('almacens', function ($query) use ($value) {
                     $query->where('almacens.id', $this->almacen_id);
                     if ($value) {
@@ -958,7 +958,7 @@ class CreateGuia extends Component
                     $query->select('url')->from('images')
                         ->whereColumn('images.imageable_id', 'productos.id')
                         ->where('images.imageable_type', Producto::class)
-                        ->orderBy('default', 'desc')->limit(1);
+                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
                 }])->withWhereHas('almacens', function ($query) use ($value) {
                     $query->where('almacens.id', $value);
                     if ($this->disponibles) {

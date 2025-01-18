@@ -18,23 +18,7 @@
                                 <li data-id="{{ $item->id }}"
                                     class="w-full p-1 flex gap-2 rounded text-textbodytable bg-fondobodytable text-[10px] hover:bg-fondohovertable">
                                     <div class="w-full flex-1 flex gap-2 items-center">
-                                        <button type="button"
-                                            class="text-next-500 inline-block cursor-grab flex-shrink-0 h-full handle hover:shadow hover:shadow-shadowminicard rounded-md opacity-70 hover:opacity-100 transition ease-in-out duration-150">
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                                fill="currentColor" stroke="none" stroke-width="1"
-                                                stroke-linecap="round" stroke-linejoin="round"
-                                                class="w-6 h-6 xs:w-8 xs:h-8 block">
-                                                <path d="M10.4961 16.5H13.4961V19.5H10.4961V16.5Z" />
-                                                <path d="M16.5 16.5H19.5V19.5H16.5V16.5Z" />
-                                                <path d="M4.5 16.5H7.5V19.5H4.5V16.5Z" />
-                                                <path d="M10.4961 10.5H13.4961V13.5H10.4961V10.5Z" />
-                                                <path d="M10.5 4.5H13.5V7.5H10.5V4.5Z" />
-                                                <path d="M16.5 10.5H19.5V13.5H16.5V10.5Z" />
-                                                <path d="M16.5 4.5H19.5V7.5H16.5V4.5Z" />
-                                                <path d="M4.5 10.5H7.5V13.5H4.5V10.5Z" />
-                                                <path d="M4.5 4.5H7.5V7.5H4.5V4.5Z" />
-                                            </svg>
-                                        </button>
+                                        <x-icon-sweep class="w-6 h-6 xs:w-8 xs:h-8 block" />
                                         <p class="w-full flex-1 font-medium">
                                             {{ $item->caracteristica->name }} :
                                             <b>{{ $item->name }}</b>
@@ -90,10 +74,11 @@
         <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto."
             class="flex-1 justify-between">
             <div class="w-full flex h-full flex-1 flex-col justify-between gap-3">
-                @if (count($producto->images) > 0)
-                    <div class="w-full flex flex-wrap gap-1">
+                <div class="w-full flex flex-wrap gap-1" id="drag_images">
+                    @if (count($producto->images) > 0)
                         @foreach ($producto->images as $item)
-                            <div class="w-48 group border border-borderminicard rounded-lg relative overflow-hidden">
+                            <div class="w-48 group border border-borderminicard rounded-lg relative overflow-hidden"
+                                data-id="{{ $item->id }}">
                                 <div class="w-full h-32 block">
                                     <img src="{{ pathURLProductImage($item->url) }}" alt=""
                                         class="w-full h-full object-scale-down object-center">
@@ -105,11 +90,13 @@
                                             wire:loading.attr="disabled" />
                                     @endcan
                                 </div>
-                                @if ($item->isDefault())
-                                    <span class="absolute top-1 left-1 w-5 h-5 rounded-full">
+                                {{-- @if ($item->isDefault()) --}}
+                                {{-- <span class="absolute top-1 left-1 w-5 h-5 rounded-full">
                                         <x-icon-default class="w-full h-full block" />
-                                    </span>
-                                @else
+                                    </span> --}}
+                                <x-icon-sweep
+                                    class="absolute top-1 left-1 bg-fondospancardproduct text-textspancardproduct size-6 xs:size-7" />
+                                {{-- @else
                                     @can('admin.almacen.productos.images')
                                         <button wire:key="defaultimage_{{ $item->id }}"
                                             wire:click="defaultimage({{ $item->id }})" type="button"
@@ -118,11 +105,11 @@
                                             <x-icon-default class="w-full h-full block !text-neutral-500" />
                                         </button>
                                     @endcan
-                                @endif
+                                @endif --}}
                             </div>
                         @endforeach
-                    </div>
-                @endif
+                    @endif
+                </div>
             </div>
 
             @can('admin.almacen.productos.images')
@@ -287,7 +274,29 @@
             })
         </script>
     @endif
+
     <script>
+        document.addEventListener("DOMContentLoaded", function(event) {
+            new Sortable(drag_images, {
+                animation: 150,
+                ghostClass: 'bg-fondospancardproduct',
+                handle: '.handle',
+                store: {
+                    set: function(sortable) {
+                        const sorts = Array.from(sortable.el.children)
+                            .filter(item => item.dataset.id).map(item => item.dataset.id);
+                        axios.post("{{ route('api.sort.producto.images') }}", {
+                            sorts: sorts,
+                            producto_id: '{{ $producto->id }}'
+                        }).catch(function(error) {
+                            console.log(error);
+                        });
+                    }
+                },
+            })
+        })
+
+
         function confirmDeleteImage(image) {
             swal.fire({
                 title: 'Eliminar imágen del producto',

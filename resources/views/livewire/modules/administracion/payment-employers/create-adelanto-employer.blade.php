@@ -66,7 +66,7 @@
 
                 <div class="w-full">
                     <x-label value="Monto :" />
-                    <x-input class="block w-full" x-model="amount" type="number" placeholder="0.00"
+                    <x-input class="block w-full input-number-none" x-model="amount" type="number" placeholder="0.00"
                         onkeypress="return validarDecimal(event, 9)" step="0.001" @input="calcular" />
                     <x-jet-input-error for="amount" />
                 </div>
@@ -113,8 +113,7 @@
 
                 <div>
                     <x-label value="Detalle :" />
-                    <x-input class="block w-full" wire:model.defer="detalle"
-                        placeholder="Ingrese detalle del movimiento..." />
+                    <x-text-area class="block w-full" wire:model.defer="detalle"></x-text-area>
                     <x-jet-input-error for="detalle" />
                     <x-jet-input-error for="concept_id" />
                 </div>
