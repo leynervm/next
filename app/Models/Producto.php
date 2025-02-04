@@ -225,6 +225,17 @@ class Producto extends Model
         return $this->hasMany(Promocion::class);
     }
 
+    public function scopeQueryFilter($query, $filters)
+    {
+        $query->when($filters['producto_id'] ?? null, function ($query, $producto_id) {
+            $query->where('producto_id', $producto_id);
+        })->when($filters['category_id'] ?? null, function ($query, $category_id) {
+            $query->where('category_id', $category_id);
+        })->when($filters['subcategory_id'] ?? null, function ($query, $subcategory_id) {
+            $query->where('subcategory_id', $subcategory_id);
+        });
+    }
+
     public function scopePublicados($query)
     {
         return $query->where('publicado', self::PUBLICADO);

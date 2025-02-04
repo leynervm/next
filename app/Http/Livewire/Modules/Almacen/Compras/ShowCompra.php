@@ -176,7 +176,7 @@ class ShowCompra extends Component
             }
         }
 
-        if ($this->compra->cuotas()->withWhereHas('cajamovimiento')->count() > 0) {
+        if ($this->compra->cuotas()->withWhereHas('cajamovimientos')->count() > 0) {
             $mensaje = response()->json([
                 'title' => "PRIMERO DEBE ELIMINAR LOS PAGOS REGISTRADOS EN LA COMPRA.",
                 'text' => null

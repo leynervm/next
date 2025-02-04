@@ -533,7 +533,57 @@ class ApiController extends Controller
         return $response;
     }
 
-    public function tipocambio()
+    public function tipocambio($service = 'sbs')
+    {
+        if ($service == 'sbs') {
+            return Self::tipocambiosbs();
+        } else {
+            return Self::tipocambiosunat();
+        }
+    }
+
+    public function tipocambiosbs()
+    {
+        try {
+            $token = config('services.apisnet.token');
+            $response = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $token,
+                'Referer' => 'https://apis.net.pe/tipo-de-cambio-sunat-api',
+                'User-Agent' => 'laravel/http',
+                'Accept' => 'application/json',
+            ])->timeout(5)->get('https://api.apis.net.pe/v2/sbs/tipo-cambio');
+
+            if ($response->ok()) {
+                $result = $response->json();
+                return response()->json([
+                    'success' => true,
+                    'compra' => $result['precioCompra'],
+                    'venta' => $result['precioVenta'],
+                    'moneda' => $result['moneda'],
+                    'fecha' => $result['fecha'],
+                ])->getData();
+            }
+
+            return response()->json([
+                'success' => false,
+                'error' => "No se encontraron resultados"
+            ])->getData();
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ])->getData();
+            return false;
+            throw $e;
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ])->getData();
+            return false;
+            throw $e;
+        }
+    }
+
+    public function tipocambiosunat()
     {
         $tc = new tipo_cambio();
         $result = $tc->ultimo_tc();
@@ -544,6 +594,7 @@ class ApiController extends Controller
                 'compra' => $result->result->compra,
                 'venta' => $result->result->venta,
                 'fecha' => $result->result->fecha,
+                'moneda' => null,
             ];
         } else {
             $json = [

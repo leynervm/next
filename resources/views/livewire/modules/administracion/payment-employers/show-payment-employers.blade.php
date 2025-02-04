@@ -150,8 +150,8 @@
                 <div class="w-full grid gap-2">
                     <div class="w-full">
                         <x-label value="Monto pagar :" />
-                        <x-input class="block w-full" wire:model.defer="amount" type="number" placeholder="0.00"
-                            onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.defer="amount" type="number"
+                            placeholder="0.00" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="amount" />
                     </div>
 
@@ -176,7 +176,7 @@
 
                     <div class="w-full">
                         <x-label value="Detalle :" />
-                        <x-input class="block w-full" wire:model.defer="detalle" />
+                        <x-text-area class="block w-full" wire:model.defer="detalle"></x-text-area>
                         <x-jet-input-error for="detalle" />
                         <x-jet-input-error for="concept_id" />
                         <x-jet-input-error for="openbox.id" />

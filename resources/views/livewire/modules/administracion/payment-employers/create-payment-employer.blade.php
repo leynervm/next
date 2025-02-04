@@ -60,22 +60,22 @@
                 <div class="w-full grid gap-2">
                     <div class="w-full">
                         <x-label value="Monto pagar :" />
-                        <x-input class="block w-full" wire:model.lazy="amount" type="number" placeholder="0.00"
-                            onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.lazy="amount" type="number"
+                            placeholder="0.00" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="amount" />
                     </div>
 
                     <div class="w-full">
                         <x-label value="Descuentos :" />
-                        <x-input class="block w-full" wire:model.lazy="descuentos" type="number" placeholder="0.00"
-                            onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.lazy="descuentos" type="number"
+                            placeholder="0.00" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="descuentos" />
                     </div>
 
                     <div class="w-full">
                         <x-label value="Bonus :" />
-                        <x-input class="block w-full" wire:model.lazy="bonus" type="number" placeholder="0.00"
-                            onkeypress="return validarDecimal(event, 9)" />
+                        <x-input class="block w-full input-number-none" wire:model.lazy="bonus" type="number"
+                            placeholder="0.00" onkeypress="return validarDecimal(event, 9)" />
                         <x-jet-input-error for="bonus" />
                     </div>
 

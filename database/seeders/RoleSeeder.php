@@ -580,7 +580,7 @@ class RoleSeeder extends Seeder
             'descripcion' => 'Generar reportes',
             'table' => 'Reportes',
             'module' => 'Principal',
-            'orden' => '1'
+            'orden' => '99'
         ])->syncRoles([$desarrollador, $admin]);
 
         // Permission::firstOrCreate([
@@ -589,6 +589,16 @@ class RoleSeeder extends Seeder
         //     'table' => ''
         // ])->syncRoles([$desarrollador]);
 
+
+        Permission::firstOrCreate([
+            'name' => 'admin.reportes.cajas.allsucursals',
+            'descripcion' => 'Mostrar todas las sucursales',
+            'table' => 'Reportes',
+            'module' => 'Principal',
+            'orden' => '99'
+        ])->syncRoles([$desarrollador, $admin]);
+
+        
 
     }
 }

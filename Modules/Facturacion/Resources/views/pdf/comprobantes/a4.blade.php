@@ -262,22 +262,29 @@
 </style>
 
 <body>
+    @php
+        $empresa = view()->shared('empresa');
+        $logoimpresion = $empresa->logoimpresion;
+        $logofooter = $empresa->logofooter;
+        $url_logo = $empresa->logo;
+        // if (!empty($logoimpresion)) {
+        //     $url_logo = $logoimpresion;
+        // } else {
+        //     if (!empty($logofooter)) {
+        //         $url_logo = $logofooter;
+        //     }
+        // }
+    @endphp
     <div id="header" class="border">
         <table class="table">
             <thead>
                 <tr class="align-baseline">
                     <th style="text-align: left;">
-                        @if ($comprobante->sucursal->empresa->image || $comprobante->sucursal->empresa->logoimpresion)
-                            <div class="">
-                                @if ($comprobante->sucursal->empresa->logoimpresion)
-                                    <img src="{{ imageBase64($comprobante->sucursal->empresa->logoimpresion) }}"
-                                        alt="" class="image" />
-                                @else
-                                    <img src="{{ imageBase64($comprobante->sucursal->empresa->image->url) }}"
-                                        alt="" class="image" />
-                                @endif
-                            </div>
-                        @endif
+                        <div class="">
+                            @if (!empty($url_logo))
+                                <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" class="image" />
+                            @endif
+                        </div>
                     </th>
                     <th class="align-baseline" style="padding: 0 2px;">
                         <p class="font-bold text-14 leading-4" style="margin:0;">

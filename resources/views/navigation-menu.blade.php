@@ -250,7 +250,7 @@
             </li> --}}
             @can('admin.reportes')
                 <li>
-                    <x-nav-link href="#" class="">
+                    <x-nav-link href="{{ route('admin.reportes') }}" :active="request()->routeIs('admin.reportes*')" class="">
                         <x-slot name="titulo">Reportes</x-slot>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -279,7 +279,7 @@
                 'admin.administracion.pricetypes', 'admin.administracion.rangos', 'admin.administracion.typecomprobantes',
                 'admin.administracion.units', 'admin.administracion.areas', 'admin.administracion.typepayments'])
                 <li>
-                    <x-nav-link href="{{ route('admin.administracion') }}" class="" :active="request()->routeIs('admin.administracion*')">
+                    <x-nav-link href="{{ route('admin.administracion') }}" class="" :active="request()->routeIs('admin.administracion*') || request()->routeIs('admin.users*')">
                         <x-slot name="titulo">Administración</x-slot>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

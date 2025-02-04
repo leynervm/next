@@ -1374,6 +1374,7 @@ class CreateVenta extends Component
                 }
             }
 
+            $pricesale = $this->moneda->isDolar() ? convertMoneda($pricesale, 'USD', $this->empresa->tipocambio, 3) : $pricesale;
             if ($this->empresa->isAfectacionIGV()) {
                 $pricesale = getPriceIGV($pricesale, $this->empresa->igv)->price;
                 $igvsale = getPriceIGV($pricesale, $this->empresa->igv)->igv;

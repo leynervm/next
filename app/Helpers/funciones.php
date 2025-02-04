@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-use function PHPUnit\Framework\fileExists;
-
 function verificarCarpeta($path, $disk = 'public')
 {
 
@@ -515,12 +513,18 @@ function pathURLSlider($filename = null)
 }
 
 
-function imageBase64($filename)
+/**
+ * @imageBase64 Retorna una imágen convertida en Base64.
+ * @param string $filename Nombre de la imágen a convertir.
+ * @param string $pathdir Ruta del directorio de la imágen a convertir.
+ * @return string imagen convertido en Base64
+ */
+function imageBase64($filename, $pathdir = 'app/public/images/company/')
 {
     if (!is_null($filename)) {
-        if (file_exists(storage_path('app/public/images/company/' . $filename))) {
+        if (file_exists(storage_path($pathdir . $filename))) {
             // storage/images/company/
-            return 'data:image/png;base64,' . base64_encode(file_get_contents(storage_path('app/public/images/company/' . $filename)));
+            return 'data:image/png;base64,' . base64_encode(file_get_contents(storage_path($pathdir . $filename)));
         }
     }
     return null;

@@ -28,7 +28,7 @@ class ShowUsers extends Component
 
     public function render()
     {
-        $users = User::withTrashed();
+        $users = User::whereNotNull('sucursal_id')->withTrashed();
 
         if (!auth()->user()->isAdmin()) {
             $users->where('admin', '0');

@@ -265,7 +265,7 @@
 
                     <div>
                         <x-label-check for="requireserie">
-                            <x-input wire:model.defer="producto.requireserie" name="requireserie" value="1"
+                            <x-input wire:model.lazy="producto.requireserie" name="requireserie" value="1"
                                 type="checkbox" id="requireserie" />REQUIERE AGREGAR SERIES
                         </x-label-check>
                         <x-jet-input-error for="producto.requireserie" />

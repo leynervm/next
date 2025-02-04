@@ -206,15 +206,23 @@
 </style>
 
 <body class="">
-    @if ($cajamovimiento->sucursal->empresa->image || $cajamovimiento->sucursal->empresa->logoimpresion)
+    @php
+        $empresa = view()->shared('empresa');
+        $logoimpresion = $empresa->logoimpresion;
+        $logofooter = $empresa->logofooter;
+        $url_logo = $empresa->logo;
+        // if (!empty($logoimpresion)) {
+        //     $url_logo = $logoimpresion;
+        // } else {
+        //     if (!empty($logofooter)) {
+        //         $url_logo = $logofooter;
+        //     }
+        // }
+    @endphp
+
+    @if (!empty($url_logo))
         <div class="text-center content-image">
-            @if ($cajamovimiento->sucursal->empresa->logoimpresion)
-                <img src="{{ imageBase64($cajamovimiento->sucursal->empresa->logoimpresion) }}" alt=""
-                    class="image" />
-            @else
-                <img src="{{ imageBase64($cajamovimiento->sucursal->empresa->image->url) }}" alt=""
-                    class="image" />
-            @endif
+            <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" class="image" />
         </div>
     @endif
 

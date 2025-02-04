@@ -111,6 +111,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Venta::class);
     }
 
+    public function tvitems(): HasMany
+    {
+        return $this->hasMany(Tvitem::class);
+    }
+
     public function cajamovimientos()
     {
         return $this->hasMany(Cajamovimiento::class);

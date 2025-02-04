@@ -7,9 +7,9 @@
                     <x-label value="RUC :" />
                     <div class="w-full inline-flex gap-1">
                         @if (auth()->user()->isAdmin())
-                            <x-input class="flex-1 block w-full input-number-none" wire:keydown.enter="searchclient" type="number"
-                                wire:model.defer="empresa.document" onkeypress="return validarNumero(event, 11)"
-                                onkeydown="disabledEnter(event)" />
+                            <x-input class="flex-1 block w-full input-number-none" wire:keydown.enter="searchclient"
+                                type="number" wire:model.defer="empresa.document"
+                                onkeypress="return validarNumero(event, 11)" onkeydown="disabledEnter(event)" />
                         @else
                             <x-disabled-text :text="$empresa->document" class="flex-1 w-full block" />
                         @endif
@@ -330,8 +330,8 @@
                 </div>
 
                 <div class="relative w-full text-center">
-                    <p class="text-[10px] font-medium text-center text-colorsubtitleform">
-                        LOGO PIE DE PÁGINA (OPCIONAL)</p>
+                    <p class="text-[10px] font-medium text-center text-colorsubtitleform leading-none">
+                        LOGO PIE DE PÁGINA (OPCIONAL PARA FONDO OSCURO)</p>
                     <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
                         <template x-if="logofooter">
                             <img class="object-scale-down block w-full h-full" :src="logofooter" />
@@ -418,8 +418,8 @@
                 </div>
 
                 <div class="relative w-full text-center">
-                    <p class="text-[10px] font-medium text-center text-colorsubtitleform">
-                        LOGO ALTERNATIVO DE IMPRESIÓN (OPCIONAL)</p>
+                    <p class="text-[10px] font-medium text-center text-colorsubtitleform leading-none">
+                        LOGO DE IMPRESIÓN (OPCIONAL PARA FONDO OSCURO)</p>
                     <x-simple-card class="w-full h-40 md:max-w-md mx-auto mb-1 !shadow-none">
                         <template x-if="logoimpresion">
                             <img class="object-scale-down block w-full h-full" :src="logoimpresion" />
@@ -613,8 +613,8 @@
 
                                 <div x-show="!cambioauto">
                                     <div x-show="openpricedolar" style="display: none;">
-                                        <x-input class="w-full" type="number" x-model="tipocambio"
-                                            placeholder="0.00" min="0" step="0.0001" />
+                                        <x-input class="w-full input-number-none" type="number" x-model="tipocambio"
+                                            min="0" step="0.0001" />
                                     </div>
                                 </div>
 

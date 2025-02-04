@@ -138,6 +138,14 @@ class ShowProducto extends Component
         $this->producto->save();
     }
 
+    public function updatedProductoRequireserie($value)
+    {
+        $this->authorize('admin.almacen.productos.edit');
+        $this->producto->requireserie = $value ? 1 : 0;
+        $this->producto->save();
+        return redirect()->route('admin.almacen.productos.edit', $this->producto);
+    }
+
     public function setCategory($value)
     {
         $this->reset(['subcategories']);

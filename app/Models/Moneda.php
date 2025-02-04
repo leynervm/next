@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Ventas\Entities\Venta;
 
 class Moneda extends Model
 {
@@ -30,6 +31,11 @@ class Moneda extends Model
     public function cajamovimientos(): HasMany
     {
         return $this->hasMany(Cajamovimiento::class);
+    }
+
+    public function ventas(): HasMany
+    {
+        return $this->hasMany(Venta::class);
     }
 
     public function scopeDefault($query)

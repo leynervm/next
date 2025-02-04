@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\FilterReportsEnum;
 use App\Traits\CajamovimientoTrait;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,7 +18,12 @@ class Employerpayment extends Model
 
     public $timestamps = false;
     protected $fillable = [
-        'month', 'adelantos', 'descuentos', 'bonus', 'amount', 'employer_id'
+        'month',
+        'adelantos',
+        'descuentos',
+        'bonus',
+        'amount',
+        'employer_id'
     ];
 
 
@@ -29,4 +36,5 @@ class Employerpayment extends Model
     {
         return $this->belongsTo(Employer::class);
     }
+
 }

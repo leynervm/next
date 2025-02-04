@@ -4,12 +4,14 @@ use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\CajaController;
 use App\Http\Controllers\CarshoopController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\EchartController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\UserController;
@@ -122,3 +124,17 @@ Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class
 //         return view('dashboard');
 //     })->name('dashboard');
 // });
+
+
+
+Route::prefix('echarts')->name('admin.echarts')->group(function () {
+    Route::post('/typemovements', [EchartController::class, 'typemovements'])->name('.typemovements');
+
+});
+
+
+Route::get('/reportes', [ReportController::class, 'index'])->name('admin.reportes');
+Route::get('/reportes/ventas', [ReportController::class, 'ventas'])->name('admin.reportes.ventas');
+Route::get('/reportes/productos', [ReportController::class, 'productos'])->name('admin.reportes.productos');
+Route::get('/reportes/movimientos', [ReportController::class, 'movimientos'])->name('admin.reportes.movimientos');
+Route::get('/reportes/payments/employers', [ReportController::class, 'employers'])->name('admin.reportes.payments.employers');
