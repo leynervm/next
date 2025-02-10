@@ -53,7 +53,7 @@
                         <x-jet-input-error for="viewreporte" />
                     </div>
 
-                    <div class="w-full" x-cloak x-show="typereporte=='{{ getFilter::TOP_TEN_PRODUCTOS->value }}'">
+                    {{-- <div class="w-full" x-cloak x-show="typereporte=='{{ getFilter::TOP_TEN_PRODUCTOS->value }}'">
                         <x-label value="Sucursal de salida:" />
                         <div id="parentrpprod_sucursal_id" x-init="selectProdSucursal" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_sucursal_id" id="rpprod_sucursal_id"
@@ -67,7 +67,7 @@
                             <x-icon-select />
                         </div>
                         <x-jet-input-error for="sucursal_id" />
-                    </div>
+                    </div> --}}
 
                     <div class="w-full" x-cloak
                         x-show="typereporte=='{{ getFilter::DEFAULT->value }}' && producto_id==''">
@@ -103,7 +103,8 @@
                         <x-jet-input-error for="subcategory_id" />
                     </div>
 
-                    <div class="w-full" x-cloak x-show="typereporte!=='{{ getFilter::TOP_TEN_PRODUCTOS->value }}'">
+                    <div class="w-full" x-cloak
+                        x-show="['{{ getFilter::DEFAULT->value }}', '{{ getFilter::KARDEX_PRODUCTOS->value }}'].includes(typereporte)">
                         <x-label value="Filtrar producto :" />
                         <div id="parentrpprod_producto_id" x-init="selectProdProducto" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_producto_id" id="rpprod_producto_id"
@@ -111,7 +112,7 @@
                                 <x-slot name="options">
                                     @foreach ($productos as $item)
                                         <option
-                                            data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                            data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null }}"
                                             value="{{ $item->id }}">{{ $item->name }}</option>
                                     @endforeach
                                 </x-slot>
@@ -122,7 +123,7 @@
                     </div>
 
                     <div class="w-full" x-cloak
-                        x-show="'{{ count($almacens) > 1 }}' && typereporte!=='{{ getFilter::KARDEX_PRODUCTOS->value }}'"
+                        x-show="['{{ getFilter::DEFAULT->value }}', '{{ getFilter::TOP_TEN_PRODUCTOS->value }}'].includes(typereporte)"
                         style="display: none;">
                         <x-label value="Filtrar almacén :" />
                         <div id="parentrpprod_almacen" x-init="selectProdAlmacen" class="relative">
@@ -159,7 +160,7 @@
 
 
                     <div class="w-full" x-cloak
-                        x-show="!['{{ getFilter::DEFAULT->value }}', '{{ getFilter::KARDEX_PRODUCTOS->value }}'].includes(typereporte)">
+                        x-show="!['{{ getFilter::DEFAULT->value }}', '{{ getFilter::KARDEX_PRODUCTOS->value }}', '{{ getFilter::MIN_STOCK->value }}', '{{ getFilter::PRODUCTOS_PROMOCIONADOS->value }}'].includes(typereporte)">
                         <x-label value="Filtrar usuario :" />
                         <div id="parentrpprod_user_id" x-init="selectProdUser" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_user_id" id="rpprod_user_id"
@@ -293,7 +294,7 @@
             Alpine.data('reportproducto', () => ({
                 typereporte: @entangle('typereporte').defer,
                 viewreporte: @entangle('viewreporte').defer,
-                sucursal_id: @entangle('sucursal_id').defer,
+                // sucursal_id: @entangle('sucursal_id').defer,
                 producto_id: @entangle('producto_id').defer,
                 almacen_id: @entangle('almacen_id').defer,
                 category_id: @entangle('category_id'),
@@ -312,9 +313,9 @@
                     this.$watch('producto_id', (value) => {
                         this.rpProdProducto.val(value).trigger("change");
                     });
-                    this.$watch('sucursal_id', (value) => {
-                        this.rpProdSuc.val(value).trigger("change");
-                    });
+                    // this.$watch('sucursal_id', (value) => {
+                    //     this.rpProdSuc.val(value).trigger("change");
+                    // });
                     this.$watch('category_id', (value) => {
                         this.rpProdCategory.val(value).trigger("change");
                     });
@@ -370,7 +371,7 @@
                         this.rpProdPricetype.select2().val(this.pricetype_id).trigger('change');
                         this.rpProdSubcategory.select2().val(this.subcategory_id).trigger(
                             'change');
-                        this.rpProdSuc.select2().val(this.sucursal_id).trigger('change');
+                        // this.rpProdSuc.select2().val(this.sucursal_id).trigger('change');
                         this.rpProdAlmacen.select2().val(this.almacen_id).trigger(
                             'change');
                         this.rpProdUser.select2().val(this.user_id).trigger('change');

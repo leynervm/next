@@ -42,6 +42,10 @@ class ShowProductos extends Component
             'except' => '',
             'as' => 'coincidencias'
         ],
+        'term' => [
+            'except' => '',
+            'as' => 'filtrar'
+        ],
         'filterselected' => [
             'except' => 'name_asc',
             'as' => 'ordenar'
@@ -56,7 +60,7 @@ class ShowProductos extends Component
     public $qty = 1;
 
     public $producto;
-    public $search = '', $searchcategorias = '', $searchsubcategorias = '',
+    public $search = '', $term = '', $searchcategorias = '', $searchsubcategorias = '',
         $searchmarcas = '', $searchespecificaciones = '';
     public $selectedcategorias = [];
     public $selectedsubcategorias = [];
@@ -282,6 +286,21 @@ class ShowProductos extends Component
                 }]);
             }])->availables()->disponibles();
         }]);
+
+        // if (trim($this->term) !== '') {
+        //     $productos->whereRaw(
+        //         "to_tsvector('spanish', 
+        //         COALESCE(productos.name, '') || ' ' || 
+        //         COALESCE(marcas.name, '') || ' ' || 
+        //         COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $this->term . "')",
+        //     )->orWhereRaw(
+        //         "similarity(productos.name, '" . $this->term . "') > 0.5 
+        //         OR similarity(marcas.name, '" . $this->term . "') > 0.5 
+        //         OR similarity(categories.name, '" . $this->term . "') > 0.5",
+        //     )->orderByDesc('novedad')->orderBy('subcategories.orden')
+        //         ->orderBy('categories.orden')->orderByDesc('rank')
+        //         ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->term . "')"));
+        // }
 
         if (trim($this->search) !== '') {
             $productos->whereRaw(

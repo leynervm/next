@@ -64,12 +64,7 @@ class ShowPromociones extends Component
         $promociones = Promocion::query()->with([
             'producto' => function ($query) {
                 $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'unit_id')
-                    ->with(['almacens', 'unit'])->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
+                    ->with(['almacens', 'unit', 'imagen']);
             },
             'itempromos' => function ($query) {
                 $query->with(['producto' => function ($subQuery) {

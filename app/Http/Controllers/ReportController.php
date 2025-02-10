@@ -9,7 +9,9 @@ use App\Models\Employer;
 use App\Models\Employerpayment;
 use App\Models\Pricetype;
 use App\Models\Producto;
+use App\Models\Tvitem;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -313,7 +315,6 @@ class ReportController extends Controller
         $filters =  [
             "typereporte" => "",
             "viewreporte" => "",
-            "sucursal_id" => "",
             "producto_id" => "",
             "user_id" => "",
             "almacen_id" => "",
@@ -421,30 +422,215 @@ class ReportController extends Controller
             }
 
             $productos = $productos->orderByDesc('novedad')->orderBy('categories.orden', 'asc')
-                ->orderBy('subcategories.orden', 'asc');
+                ->orderBy('subcategories.orden', 'asc')->get();
             $detallado = (bool) $filters['viewreporte'];
         }
 
-        if ($empresa->usarLista()) {
-            $pricetypes = Pricetype::activos();
+        if ($filters['typereporte'] == FilterReportsEnum::TOP_TEN_PRODUCTOS->value) {
 
-            if (!empty($filters['pricetype_id'])) {
-                $pricetypes->where('id', $filters['pricetype_id']);
+            $productos = Producto::query()->select('id', 'name', 'modelo', 'sku', 'partnumber', 'slug', 'marca_id', 'category_id', 'subcategory_id', 'unit_id')
+                ->with(['category', 'marca', 'subcategory', 'unit'])
+                ->withWhereHas('tvitems', function ($query) use ($filters) {
+                    $query->with(['almacen'])->when($filters['almacen_id'], function ($q, $almacen_id) {
+                        $q->where('almacen_id', $almacen_id);
+                    })->when($filters['user_id'], function ($q, $user_id) {
+                        $q->where('user_id', $user_id);
+                    });
+                })
+                ->withSum(['tvitems as vendidos' => function ($query) use ($filters) {
+                    $query->with(['almacen'])->when($filters['almacen_id'], function ($q, $almacen_id) {
+                        $q->where('almacen_id', $almacen_id);
+                    })->when($filters['user_id'], function ($q, $user_id) {
+                        $q->where('user_id', $user_id);
+                    });
+                }], 'cantidad')
+                ->orderByDesc('vendidos')->take(10)->get();
+
+            $pdf = SnappyPdf::loadView('admin.reports.productos.report-top-productos', compact('productos', 'empresa', 'detallado', 'titulo',))
+                ->setOptions([
+                    'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                    'margin-top' => '29.5mm',
+                    'margin-bottom' => '10mm',
+                    'margin-left' => '0mm',
+                    'margin-right' => '0mm',
+                    'header-spacing' => 5,
+                    'footer-html' => view('admin.reports.snappyPDF.footer'),
+                    'encoding' => 'UTF-8',
+                ]);
+        } elseif ($filters['typereporte'] == FilterReportsEnum::KARDEX_PRODUCTOS->value) {
+            // dd((int) $filters['producto_id']);
+            $productos = Producto::query()->select('id', 'name', 'modelo', 'sku', 'partnumber', 'slug', 'created_at', 'marca_id', 'category_id', 'subcategory_id', 'unit_id')
+                ->with(['category', 'marca', 'subcategory', 'unit', 'imagen', 'kardexes' => function ($query) {
+                    $query->with(['almacen']);
+                }, 'compraitems' => function ($query) {
+                    $query->with(['almacencompras' => function ($q) {
+                        $q->with(['almacen', 'series']);
+                    }, 'compra.proveedor']);
+                }, 'tvitems' => function ($query) {
+                    $query->with(['promocion', 'almacen', 'itemseries']);
+                }, 'series' => function ($query) {
+                    $query->with(['almacen', 'itemserie.tvitem', 'almacencompra.compraitem.compra']);
+                }])->where('id', $filters['producto_id'])->get();
+
+            $pdf = SnappyPdf::loadView('admin.reports.productos.report-kardex-productos', compact('productos', 'empresa', 'detallado', 'titulo',))
+                ->setOptions([
+                    'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                    'margin-top' => '29.5mm',
+                    'margin-bottom' => '10mm',
+                    'margin-left' => '0mm',
+                    'margin-right' => '0mm',
+                    'header-spacing' => 5,
+                    'footer-html' => view('admin.reports.snappyPDF.footer'),
+                    'encoding' => 'UTF-8',
+                ]);
+
+            // return $productos;
+        } elseif ($filters['typereporte'] == FilterReportsEnum::MIN_STOCK->value) {
+
+            if ($empresa->usarLista()) {
+                $pricetypes = Pricetype::activos();
+
+                if (!empty($filters['pricetype_id'])) {
+                    $pricetypes->where('id', $filters['pricetype_id']);
+                }
+                $pricetypes = $pricetypes->orderBy('id', 'asc')->orderBy('default', 'asc')->get();
             }
-            $pricetypes = $pricetypes->orderBy('id', 'asc')->orderBy('default', 'asc')->get();
+
+            $productos = Producto::query()->select(
+                'productos.id',
+                'productos.name',
+                'productos.slug',
+                'unit_id',
+                'marca_id',
+                'category_id',
+                'subcategory_id',
+                'visivility',
+                'publicado',
+                'novedad',
+                'sku',
+                'modelo',
+                'pricebuy',
+                'pricesale',
+                'precio_1',
+                'precio_2',
+                'precio_3',
+                'precio_4',
+                'precio_5',
+                'minstock',
+                'partnumber',
+                'marcas.name as name_marca',
+                'categories.name as name_category',
+                'subcategories.name as name_subcategory',
+            )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+                ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+                ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+                ->with(['unit', 'imagen', 'almacens', 'compraitems.compra.proveedor'])
+                ->withCount(['almacens as stock' => function ($query) {
+                    $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
+                }])->whereHas('almacens', function ($query) use ($filters) {
+                    $query->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
+                        ->groupBy('almacen_producto.producto_id')
+                        ->havingRaw('SUM(almacen_producto.cantidad) <= productos.minstock');
+                })->visibles()->orderBy('novedad', 'DESC')->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC')->get();
+
+            $pdf = SnappyPdf::loadView('admin.reports.productos.report-min-stock-productos', compact('productos', 'empresa', 'pricetypes', 'detallado', 'titulo',))
+                ->setOptions([
+                    'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                    'margin-top' => '29.5mm',
+                    'margin-bottom' => '10mm',
+                    'margin-left' => '0mm',
+                    'margin-right' => '0mm',
+                    'header-spacing' => 5,
+                    'footer-html' => view('admin.reports.snappyPDF.footer'),
+                    'encoding' => 'UTF-8',
+                ]);
+        } elseif ($filters['typereporte'] == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
+
+            $productos = Producto::query()->select(
+                'productos.id',
+                'productos.name',
+                'productos.slug',
+                'unit_id',
+                'modelo',
+                'marca_id',
+                'category_id',
+                'subcategory_id',
+                'visivility',
+                'publicado',
+                'novedad',
+                'sku',
+                'pricebuy',
+                'pricesale',
+                'precio_1',
+                'precio_2',
+                'precio_3',
+                'precio_4',
+                'precio_5',
+                'minstock',
+                'partnumber',
+                'marcas.name as name_marca',
+                'categories.name as name_category',
+                'subcategories.name as name_subcategory',
+            )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+                ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+                ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+                ->with(['unit', 'imagen', 'almacens'])
+                ->addSelect(['image' => function ($query) {
+                    $query->select('url')->from('images')
+                        ->whereColumn('images.imageable_id', 'productos.id')
+                        ->where('images.imageable_type', Producto::class)
+                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
+                }])
+                ->withWhereHas('promocions', function ($query) {
+                    $query->with(['itempromos' => function ($q) {
+                        $q->with(['producto' => function ($subq) {
+                            $subq->with(['imagen', 'unit', 'almacens'])
+                                ->addSelect(['image' => function ($query) {
+                                    $query->select('url')->from('images')
+                                        ->whereColumn('images.imageable_id', 'productos.id')
+                                        ->where('images.imageable_type', Producto::class)
+                                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
+                                }]);
+                        }]);
+                    }])->disponibles()->availables();
+                })->visibles()->orderBy('novedad', 'DESC')->orderBy('subcategories.orden', 'ASC')
+                ->orderBy('categories.orden', 'ASC')->get();
+
+            $pdf = SnappyPdf::loadView('admin.reports.productos.report-productos-promocion', compact('productos', 'empresa', 'pricetypes', 'detallado', 'titulo',))
+                ->setOptions([
+                    'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                    'margin-top' => '29.5mm',
+                    'margin-bottom' => '10mm',
+                    'margin-left' => '0mm',
+                    'margin-right' => '0mm',
+                    'header-spacing' => 5,
+                    'footer-html' => view('admin.reports.snappyPDF.footer'),
+                    'encoding' => 'UTF-8',
+                ]);
+        } else {
+
+            if ($empresa->usarLista()) {
+                $pricetypes = Pricetype::activos();
+
+                if (!empty($filters['pricetype_id'])) {
+                    $pricetypes->where('id', $filters['pricetype_id']);
+                }
+                $pricetypes = $pricetypes->orderBy('id', 'asc')->orderBy('default', 'asc')->get();
+            }
+            $pdf = SnappyPdf::loadView('admin.reports.productos.report-productos', compact('productos', 'empresa', 'pricetypes', 'titulo', 'detallado'))
+                ->setOptions([
+                    'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                    'margin-top' => '29.5mm',
+                    'margin-bottom' => '10mm',
+                    'margin-left' => '0mm',
+                    'margin-right' => '0mm',
+                    'header-spacing' => 5,
+                    'footer-html' => view('admin.reports.snappyPDF.footer'),
+                    'encoding' => 'UTF-8',
+                ]);
         }
 
-        // $pdf = Pdf::loadView('admin.reports.report-productos', compact('productos', 'empresa', 'pricetypes', 'titulo', 'detallado'));
-        // return $pdf->stream("$titulo.pdf");
-
-        $fileName = 'reporte_productos.pdf';
-        $htmlContent = '';
-
-        $productos->chunk(100, function ($productos) use (&$htmlContent, $empresa, $pricetypes, $titulo, $detallado) {
-            $htmlContent .= view('admin.reports.report-productos', compact('productos', 'empresa', 'pricetypes', 'titulo', 'detallado'))->render();
-        });
-
-        $pdf = Pdf::loadHTML($htmlContent)->setPaper('A4', 'portrait');
-        return $pdf->download($fileName);
+        return $pdf->inline("$titulo.pdf");
     }
 }

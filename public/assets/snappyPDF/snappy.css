@@ -1,0 +1,187 @@
+* {
+    font-family: 'Ubuntu';
+    padding: 0;
+    margin: 0;
+    letter-spacing: 2px;
+    /* font-weight: 400;
+    font-size: 0.785rem; */
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+.container-snappy-pdf {
+    padding: 0 1cm 0 1cm;
+}
+
+.header {
+    width: 100%;
+    background: #05040f;
+    color: #fff;
+    padding: 0.25cm 1cm;
+}
+
+.footer {
+    width: 100%;
+    text-align: center;
+    font-size: 0px;
+    color: #05040f;
+    letter-spacing: 0.1rem;
+}
+
+.topage {
+    padding-left: 2px;
+}
+
+.image {
+    display: block;
+    width: auto;
+    max-width: 10cm;
+    min-width: 10cm;
+    height: 2.5cm;
+}
+
+.image img {
+    display: block;
+    width: auto;
+    max-width: 100%;
+    height: 100%;
+    object-fit: scale-down;
+    object-position: center;
+}
+
+* {
+    font-family: 'Ubuntu';
+    padding: 0;
+    margin: 0;
+    font-size: 0.785rem;
+}
+
+.text-8 {
+    font-size: 0.575rem;
+}
+
+.text-9 {
+    font-size: 0.625rem;
+}
+
+.text-10 {
+    font-size: 0.675rem;
+}
+
+.text-11 {
+    font-size: 0.7rem;
+}
+
+.text-12 {
+    font-size: 0.785rem;
+}
+
+.text-13 {
+    font-size: 1rem;
+}
+
+.text-14 {
+    font-size: 1.185rem;
+}
+
+.text-15 {
+    font-size: 1.2rem;
+}
+
+.text-16 {
+    font-size: 1.275rem;
+}
+
+.text-18 {
+    font-size: 1.475rem;
+}
+
+.text-20 {
+    font-size: 1.625rem;
+}
+
+.text-22 {
+    font-size: 2.25rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.text-end,
+.text-right {
+    text-align: end;
+    text-align: right;
+}
+
+.text-start,
+.text-left {
+    text-align: end;
+    text-align: right;
+}
+
+.text-justify {
+    text-align: justify;
+}
+
+.font-light {
+    font-weight: 300 !important;
+}
+
+.font-normal,
+.font-regular {
+    /* font-style: normal !important; */
+    font-weight: 400 !important;
+}
+
+.font-medium {
+    /* font-style: normal !important; */
+    font-weight: 500 !important;
+}
+
+.font-semibold,
+.font-bold {
+    /* font-style: normal !important; */
+    font-weight: 700 !important;
+}
+
+.align-top {
+    vertical-align: top;
+}
+
+.align-middle {
+    vertical-align: middle;
+}
+
+.align-bottom {
+    vertical-align: bottom;
+}
+
+.picture-producto {
+    width: auto;
+    max-width: 7cm;
+    height: auto;
+    max-height: 7cm;
+    margin: auto;
+    text-align: center;
+}
+
+.picture-producto img {
+    text-align: center;
+    display: block;
+    width: auto;
+    max-width: 7cm;
+    height: auto;
+    max-height: 100%;
+    object-fit: scale-down;
+    object-position: center;
+}
+
+.table-no-borders {
+    border-width: 0 !important;
+    border-style: none !important;;
+    border-color: white !important;
+    border-collapse: separate !important;
+}

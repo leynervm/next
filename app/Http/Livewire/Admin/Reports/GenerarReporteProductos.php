@@ -3,6 +3,8 @@
 namespace App\Http\Livewire\Admin\Reports;
 
 use App\Enums\FilterReportsEnum;
+use App\Exports\ProductoExport;
+use App\Exports\ProductoTopExport;
 use App\Models\Almacen;
 use App\Models\Category;
 use App\Models\Client;
@@ -19,7 +21,7 @@ use Livewire\Component;
 class GenerarReporteProductos extends Component
 {
 
-    public $open = true;
+    public $open = false;
 
     public $days = [], $months = [], $subcategories = [];
     public $typereporte = FilterReportsEnum::DEFAULT->value;
@@ -38,7 +40,7 @@ class GenerarReporteProductos extends Component
             'producto_id' => ['nullable', 'integer', 'min:1', 'exists:productos,id'],
             'category_id' => ['nullable', 'integer', 'min:1', 'exists:categories,id'],
             'subcategory_id' => ['nullable', 'integer', 'min:1', 'exists:subcategories,id'],
-            'producto_id' => ['nullable', 'integer', 'min:1', 'exists:productos,id'],
+            'producto_id' => ['nullable', Rule::requiredIf($this->typereporte == FilterReportsEnum::KARDEX_PRODUCTOS->value), 'integer', 'min:1', 'exists:productos,id'],
             'almacen_id' => ['nullable', 'integer', 'min:1', 'exists:almacens,id'],
             'client_id' => ['nullable', 'integer', 'min:1', 'exists:clients,id'],
             // 'methodpayment_id' => ['nullable', 'integer', 'min:1', 'exists:methodpayments,id'],
@@ -99,7 +101,6 @@ class GenerarReporteProductos extends Component
 
     public function render()
     {
-
         $includes = [
             FilterReportsEnum::DEFAULT->value,
             FilterReportsEnum::TOP_TEN_PRODUCTOS->value,
@@ -108,28 +109,18 @@ class GenerarReporteProductos extends Component
             FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value,
         ];
         $typereportes = response()->json(FilterReportsEnum::in($includes))->getData();
-        $sucursals = Sucursal::with(['monthboxes', 'openboxes'])->whereHas('ventas');
-        if (!auth()->user()->isAdmin() || !auth()->user()->hasPermissionTo('admin.reportes.cajas.allsucursals')) {
-            $sucursals->where('id', $this->sucursal_id);
-        }
-        $sucursals = $sucursals->get();
         $users = User::whereHas('tvitems', function ($query) {
             // $query->when(!empty($this->sucursal_id), function ($query) {
             //     $query->where('sucursal_id', $this->sucursal_id);
             // });
-        })->get();
+        })->whereHas('sucursal')->get();
         $almacens = Almacen::whereHas('tvitems')->get();
         $years = range(date('Y'), 1900);
         $productos = Producto::query()->select('productos.id', 'productos.name', 'marca_id', 'category_id', 'subcategory_id')
             ->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
-            }])->visibles()->orderByDesc('novedad')
+            ->with('imagen')->visibles()->orderByDesc('novedad')
             ->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->get();
         $categories = Category::query()->select('id', 'name', 'orden')
@@ -140,7 +131,7 @@ class GenerarReporteProductos extends Component
             $pricetypes = Pricetype::activos()->orderBy('id', 'asc')->orderBy('default', 'asc')->get();
         }
 
-        return view('livewire.admin.reports.generar-reporte-productos', compact('sucursals', 'productos', 'almacens', 'categories', 'pricetypes', 'users', 'typereportes', 'years'));
+        return view('livewire.admin.reports.generar-reporte-productos', compact('productos', 'almacens', 'categories', 'pricetypes', 'users', 'typereportes', 'years'));
     }
 
     public function updatedCategoryId($value)
@@ -191,8 +182,12 @@ class GenerarReporteProductos extends Component
         //     $this->reset(['days']);
         // }
 
-        if ($this->typereporte == FilterReportsEnum::TOP_TEN_PRODUCTOS->value) {
+        if ($this->typereporte == FilterReportsEnum::TOP_TEN_PRODUCTOS->value || $this->typereporte == FilterReportsEnum::MIN_STOCK->value || $this->typereporte == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
             $this->reset(['producto_id', 'category_id', 'subcategory_id', 'subcategories', 'serie']);
+        }
+
+        if ($this->typereporte == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
+            $this->reset(['almacen_id', 'user_id', 'producto_id', 'category_id', 'subcategory_id', 'subcategories',]);
         }
         if ($this->typereporte !== FilterReportsEnum::DEFAULT->value || !empty($this->producto_id)) {
             $this->reset([
@@ -203,11 +198,11 @@ class GenerarReporteProductos extends Component
         }
 
         if (in_array($this->typereporte, [FilterReportsEnum::KARDEX_PRODUCTOS->value])) {
-            $this->reset(['producto_id', 'category_id', 'subcategory_id', 'user_id', 'subcategories', 'serie', 'almacen_id', 'sucursal_id']);
+            $this->reset(['category_id', 'subcategory_id', 'user_id', 'subcategories', 'serie', 'almacen_id', 'sucursal_id']);
         }
 
         if ($this->typereporte == FilterReportsEnum::MIN_STOCK->value) {
-            $this->resetExcept(['open', 'almacen_id', 'producto_id', 'user_id', 'serie']);
+            $this->resetExcept(['open', 'typereporte', 'viewreporte', 'almacen_id',]);
         }
 
         if (!empty($this->producto_id)) {
@@ -234,10 +229,20 @@ class GenerarReporteProductos extends Component
     {
         $this->validateFilters();
         $dataFilters = $this->validate();
-        if ($this->viewreporte == 1) {
-            // return (new VentaDetalleExport($dataFilters))->download();
+        if ($this->typereporte == FilterReportsEnum::TOP_TEN_PRODUCTOS->value) {
+            return (new ProductoTopExport($dataFilters))->download();
+            // admin.reports.productos.report-top-productos
+        } elseif ($this->typereporte == FilterReportsEnum::KARDEX_PRODUCTOS->value) {
+            // admin.reports.productos.report-kardex-productos
+        } elseif ($this->typereporte == FilterReportsEnum::MIN_STOCK->value) {
+
+            // admin.reports.productos.report-min-stock-productos
+        } elseif ($this->typereporte == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
+
+            // admin.reports.productos.report-productos-promocion
         } else {
-            // return (new VentaExport($dataFilters))->download();
+            return (new ProductoExport($dataFilters))->download();
+            // admin.reports.productos.report-productos
         }
     }
 

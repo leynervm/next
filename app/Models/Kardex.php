@@ -12,9 +12,20 @@ class Kardex extends Model
     use HasFactory;
     public $timestamps = false;
     protected $fillable = [
-        'date', 'cantidad', 'oldstock', 'newstock', 'simbolo', 'detalle',
-        'reference', 'producto_id', 'almacen_id', 'sucursal_id',
-        'user_id', 'promocion_id', 'kardeable_id', 'kardeable_type'
+        'date',
+        'cantidad',
+        'oldstock',
+        'newstock',
+        'simbolo',
+        'detalle',
+        'reference',
+        'producto_id',
+        'almacen_id',
+        'sucursal_id',
+        'user_id',
+        'promocion_id',
+        'kardeable_id',
+        'kardeable_type'
     ];
 
 
@@ -66,6 +77,16 @@ class Kardex extends Model
     public function promocion(): BelongsTo
     {
         return $this->belongsTo(Promocion::class);
+    }
+
+    public function isEntrada()
+    {
+        return $this->simbolo == '+';
+    }
+    
+    public function isSalida()
+    {
+        return $this->simbolo == '-';
     }
 
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)

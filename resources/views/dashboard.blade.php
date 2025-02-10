@@ -2,7 +2,7 @@
     <div class="w-full flex gap-2 sm:gap-5">
         <div class="flex-1">
             <div class="w-full h-[400px] mx-auto rounded-xl" id="movimientoschart"></div>
-            <div class="w-full h-[400px] mx-auto rounded-xl" id="main"></div>
+            {{-- <div class="w-full h-[400px] mx-auto rounded-xl" id="main"></div> --}}
         </div>
         @can('admin.almacen.productos.agotados')
             @if (count($productos) > 0)
@@ -141,7 +141,7 @@
     <script src="{{ asset('assets/echart/echarts.js') }}"></script>
     <script type="text/javascript">
         // Initialize the echarts instance based on the prepared dom
-        var myChart = echarts.init(document.getElementById('main'), 'light');
+        //var myChart = echarts.init(document.getElementById('main'), 'light');
 
         // Specify the configuration items and data for the chart
         // var option = {
@@ -250,7 +250,7 @@
         };
 
         // Display the chart using the configuration items and data just specified.
-        myChart.setOption(option);
+        //myChart.setOption(option);
     </script>
 
     <script>

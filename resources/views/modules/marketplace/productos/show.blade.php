@@ -246,7 +246,7 @@
                                         <template x-if="parseFloat(qty)>1">
                                             <button x-on:click="parseFloat(qty--)" class="btn-increment-cart"
                                                 type="button" wire:loading.attr="disabled"
-                                                :key="{{ $item->id }}">-</button>
+                                                :key="{{ $producto->id }}">-</button>
                                         </template>
                                         <template x-if="parseFloat(qty)==1">
                                             <span class="btn-increment-cart disabled"

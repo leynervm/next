@@ -29,24 +29,25 @@
                         @click="sidebar=false;backdrop = false;document.body.style.overflow = 'auto';">✕</button>
                 </div>
 
+                <x-simple-card class="w-full text-colorsubtitleform relative">
+                    <x-input class="w-full block p-2.5 pr-8" wire:model.lazy="search"
+                        placeholder="Buscar en {{ count($selectedcategorias) > 0 ? str_replace('-', ' ', mb_strtoupper(implode(', ', $selectedcategorias), 'UTF-8' )) : '...' }}" />
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="block absolute top-1/2 -translate-y-1/2 right-2 size-6 text-borderminicard">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                </x-simple-card>
+
+
                 @if (count($productos) > 0)
                     @if (count($selectedcategorias) > 0 ||
                             count($selectedsubcategorias) > 0 ||
                             count($selectedmarcas) > 0 ||
                             count($selectedespecificacions) > 0 ||
                             trim($search) !== '')
-                        <x-simple-card x-data="{ openfilter: true }" wire:key="dropdownprices"
-                            class="w-full text-colorsubtitleform">
-                            <button type="button"
-                                class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
-                                @click="openfilter = !openfilter">
-                                <h1 class="pl-2 font-semibold text-[11px]">ORDENAR</h1>
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
-                                    stroke-linejoin="round" class="block w-6 h-6">
-                                    <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
-                                </svg>
-                            </button>
+                        <x-simple-card class="w-full text-colorsubtitleform">
                             <div class="w-full flex flex-col text-xs" x-cloak x-transition>
                                 @if (count($orderfilters) > 0)
                                     <svg style="display:none;">
@@ -88,69 +89,13 @@
                                         @endif
                                     @endforeach
                                 @endif
-                                {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}" wire:click="order('precio', 'asc')"
-                                wire:loading.attr="disabled"
-                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
-                                    <path d="m3 8 4-4 4 4" />
-                                    <path d="M7 4v16" />
-                                    <path d="M11 12h4" />
-                                    <path d="M11 16h7" />
-                                    <path d="M11 20h10" />
-                                </svg>
-                                DE MENOR A MAYOR PRECIO
-                            </button> --}}
-                                {{-- <button @click="if(!isXL){sidebar=false;backdrop=false}"
-                                wire:click="order('precio', 'desc')" wire:loading.attr="disabled"
-                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
-                                    <path d="m3 16 4 4 4-4" />
-                                    <path d="M7 20V4" />
-                                    <path d="M11 4h4" />
-                                    <path d="M11 8h7" />
-                                    <path d="M11 12h10" />
-                                </svg>
-                                DE MAYOR A MENOR PRECIO
-                            </button>
-                            <button @click="if(!isXL){sidebar=false;backdrop=false}" wire:click="order('name', 'asc')"
-                                wire:loading.attr="disabled"
-                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
-                                    <path d="m3 8 4-4 4 4" />
-                                    <path d="M7 4v16" />
-                                    <path d="M20 8h-5" />
-                                    <path d="M15 10V6.5a2.5 2.5 0 0 1 5 0V10" />
-                                    <path d="M15 14h5l-5 6h5" />
-                                </svg>
-                                NOMBRE ASCENDENTE
-                            </button>
-                            <button @click="if(!isXL){sidebar=false;backdrop=false}"
-                                wire:click="order('name', 'desc')" wire:loading.attr="disabled"
-                                class="w-full p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" class="w-4 h-4 inline-block">
-                                    <path d="m3 16 4 4 4-4" />
-                                    <path d="M7 4v16" />
-                                    <path d="M15 4h5l-5 6h5" />
-                                    <path d="M15 20v-3.5a2.5 2.5 0 0 1 5 0V20" />
-                                    <path d="M20 18h-5" />
-                                </svg>
-                                NOMBRE DESCENDENTE
-                            </button> --}}
                             </div>
                         </x-simple-card>
                     @endif
                 @endif
 
                 @if (count($categories) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'true' : 'true' }} }" wire:key="dropdowncategories"
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'false' : 'true' }} }" wire:key="dropdowncategories"
                         class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
@@ -178,7 +123,7 @@
                 @endif
 
                 @if (count($subcategories) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'true' : 'true' }} }" wire:key="dropdownsubcategories"
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'false' : 'true' }} }" wire:key="dropdownsubcategories"
                         class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
@@ -207,7 +152,7 @@
                 @endif
 
                 @if (count($marcas) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'true' : 'true' }} }" wire:key="dropdownmarcas"
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" wire:key="dropdownmarcas"
                         class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
@@ -236,7 +181,7 @@
 
                 @if (count($especificacions) > 0)
                     @foreach ($especificacions as $caracteristica => $especificacion)
-                        <x-simple-card x-data="{ openfilter: true }"
+                        <x-simple-card x-data="{ openfilter: false }"
                             wire:key="dropdowncaracteristicas_{{ $caracteristica }}"
                             class="w-full flex flex-col text-colorsubtitleform">
                             <button type="button"
@@ -340,8 +285,11 @@
                                 @if ($item->stock > 0)
                                     <x-slot name="buttonscart">
                                         @auth
-                                            <x-button-like class="absolute top-1 right-1 {{ in_array($item->id, $favoritos) ? 'activo' : '' }}" wire:loading.attr="disabled"
-                                               onclick="addfavoritos(this, '{{ encryptText($item->id) }}')" x-show="addcart"
+                                            <x-button-like
+                                                class="absolute top-1 right-1 {{ in_array($item->id, $favoritos) ? 'activo' : '' }}"
+                                                wire:loading.attr="disabled"
+                                                onclick="addfavoritos(this, '{{ encryptText($item->id) }}')"
+                                                x-show="addcart"
                                                 x-transition:enter="opacity-0 transition ease-in-out duration-300"
                                                 x-transition:enter-start="opacity-0 translate-x-full"
                                                 x-transition:enter-end="opacity-100 translate-y-0"

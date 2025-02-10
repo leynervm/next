@@ -5291,6 +5291,9 @@ select {
 .top-\[calc\(50\%--125px\)\] {
   top: calc(50% - -125px);
 }
+.bottom-1\/2 {
+  bottom: 50%;
+}
 .z-0 {
   z-index: 0;
 }
@@ -6735,6 +6738,10 @@ select {
 .border-transparent {
   border-color: transparent;
 }
+.border-white {
+  --tw-border-opacity: 1;
+  border-color: rgb(255 255 255 / var(--tw-border-opacity));
+}
 .border-b-borderminicard {
   border-bottom-color: var(--border-minicard);
 }
@@ -7318,6 +7325,12 @@ select {
 .pt-8 {
   padding-top: 2rem;
 }
+.pr-5 {
+  padding-right: 1.25rem;
+}
+.pr-8 {
+  padding-right: 2rem;
+}
 .text-left {
   text-align: left;
 }
@@ -7803,6 +7816,9 @@ select {
 .text-yellow-500 {
   --tw-text-opacity: 1;
   color: rgb(234 179 8 / var(--tw-text-opacity));
+}
+.text-borderminicard {
+  color: var(--border-minicard);
 }
 .underline {
   text-decoration-line: underline;

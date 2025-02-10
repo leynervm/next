@@ -188,6 +188,9 @@ return [
 
         //  View Service
         App\Providers\ViewServiceProvider::class,
+
+        // SnappyPDF
+        // Barryvdh\Snappy\ServiceProvider::class,
     ],
 
     /*
@@ -245,6 +248,9 @@ return [
         'Image' => Intervention\Image\Facades\Image::class,
         'Excel' => Maatwebsite\Excel\Facades\Excel::class,
         'getFilter' => App\Enums\FilterReportsEnum::class,
+
+        // 'PDF' => Barryvdh\Snappy\Facades\SnappyPdf::class,
+        // 'SnappyImage' => Barryvdh\Snappy\Facades\SnappyImage::class,
     ],
 
     'theme' => env('APP_THEME', 'theme-light'),

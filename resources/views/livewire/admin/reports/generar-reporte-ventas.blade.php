@@ -2,14 +2,16 @@
     <button
         class="border text-colorsubtitleform p-1 sm:p-3 border-borderminicard min-h-24 w-full flex flex-col items-center gap-2 justify-center rounded-lg sm:rounded-2xl hover:shadow hover:shadow-shadowminicard"
         type="button" wire:click="$set('open', true)">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="0.5"
             stroke-linecap="round" class="block size-9">
             <path
-                d="M15.5 13.5c3.314 0 6-.895 6-2s-2.686-2-6-2-6 .895-6 2 2.686 2 6 2Zm-7-7c3.314 0 6-.895 6-2s-2.686-2-6-2-6 .895-6 2 2.686 2 6 2Z" />
-            <path d="M2.5 8.5c0 .923 1.67 1.709 4 2m-4 2c0 .923 1.67 1.709 4 2" />
-            <path d="M2.5 4.5v12c0 .87 1.67 1.725 4 2" />
-            <path d="M21.5 11.5v8c0 1.105-2.686 2-6 2s-6-.895-6-2v-8" />
-            <path d="M21.5 15.5c0 1.105-2.686 2-6 2s-6-.895-6-2" />
+                d="M17.6 12.4h.8v1.2h-.8zM.8 5.6h4.4c.24 0 .4-.16.4-.4V.8h12V2h.8V.4c0-.24-.16-.4-.4-.4H5.2c-.04 0-.08 0-.12.04h-.04c-.04.04-.08.04-.12.08l-4.8 4.8c-.04.04-.04.08-.08.12v.04c0 .04-.04.08-.04.12v18.4c0 .24.16.4.4.4h14.4v-.8H.8zm4-.8H1.36l1.72-1.72L4.8 1.36z" />
+            <path
+                d="M19.6 11.6c2.44 0 4.4-1.96 4.4-4.4s-1.96-4.4-4.4-4.4-4.4 1.96-4.4 4.4 1.96 4.4 4.4 4.4m0-8c2 0 3.6 1.6 3.6 3.6s-1.6 3.6-3.6 3.6S16 9.2 16 7.2s1.6-3.6 3.6-3.6" />
+            <path
+                d="M18.8 9.2h.4v.8h.8v-.8h.4c.48 0 .8-.32.8-.8v-.8c0-.48-.32-.8-.8-.8h-1.6V6h1.6v.4h.8V6c0-.48-.32-.8-.8-.8H20v-.8h-.8v.8h-.4c-.48 0-.8.32-.8.8v.8c0 .48.32.8.8.8h1.6v.8h-1.6V8H18v.4c0 .48.32.8.8.8m4.8 5.2h-7.2c-.24 0-.4.16-.4.4v8.8c0 .24.16.4.4.4h7.2c.24 0 .4-.16.4-.4v-8.8c0-.24-.16-.4-.4-.4m-.4.8v1.6h-6.4v-1.6zm-6.4 8v-5.6h6.4v5.6z" />
+            <path
+                d="M18 18.4h.8v.8H18zm1.6 0h.8v.8h-.8zm1.6 0h.8v.8h-.8zM18 20h.8v.8H18zm1.6 0h.8v.8h-.8zm1.6 0h.8v.8h-.8zM18 21.6h.8v.8H18zm1.6 0h.8v.8h-.8zm1.6 0h.8v.8h-.8zm-4-6h.8v.8h-.8zm1.2 0h.8v.8h-.8zm1.2 0h.8v.8h-.8zm1.2 0h.8v.8h-.8zm1.2 0h.8v.8H22zM7.6 2H10v.8H7.6zm0 2h6v.8h-6zM3.72 7.32l-1.2 1.2.56.56.52-.52V14h.8V8.56l.52.52.56-.56-1.2-1.2a.387.387 0 0 0-.56 0m3.36 3.36.52-.52V14h.8v-3.84l.52.52.56-.56-1.2-1.2a.387.387 0 0 0-.56 0l-1.2 1.2zm5.32-2.92.52.52.56-.56-1.2-1.2a.387.387 0 0 0-.56 0l-1.2 1.2.56.56.52-.52V14h.8zM3.6 16h6v.8h-6zm0 2H14v.8H3.6zm0 2H14v.8H3.6zm6.8-4H12v.8h-1.6z" />
         </svg>
         <p class="text-center font-medium leading-none text-[10px] text-colorsubtitleform">REPORTE DE VENTAS</p>
     </button>
