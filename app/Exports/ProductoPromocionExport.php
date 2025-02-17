@@ -75,8 +75,7 @@ class ProductoPromocionExport implements FromView, WithTitle
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-            }])
-            ->withWhereHas('promocions', function ($query) {
+            }])->withWhereHas('promocions', function ($query) {
                 $query->with(['itempromos' => function ($q) {
                     $q->with(['producto' => function ($subq) {
                         $subq->with(['imagen', 'unit', 'almacens'])

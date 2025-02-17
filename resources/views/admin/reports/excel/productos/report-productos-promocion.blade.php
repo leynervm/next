@@ -56,4 +56,10 @@
             @endif
         </table>
     @endforeach
+@else
+    <table>
+        <tr>
+            <td style="" width="600">NO SE ENCONTRARON PROMOCIONES DISPONIBLES</td>
+        </tr>
+    </table>
 @endif
