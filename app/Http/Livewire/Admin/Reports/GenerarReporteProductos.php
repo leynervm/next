@@ -4,6 +4,9 @@ namespace App\Http\Livewire\Admin\Reports;
 
 use App\Enums\FilterReportsEnum;
 use App\Exports\ProductoExport;
+use App\Exports\ProductoKardexExport;
+use App\Exports\ProductoMinstockExport;
+use App\Exports\ProductoPromocionExport;
 use App\Exports\ProductoTopExport;
 use App\Models\Almacen;
 use App\Models\Category;
@@ -231,15 +234,12 @@ class GenerarReporteProductos extends Component
         $dataFilters = $this->validate();
         if ($this->typereporte == FilterReportsEnum::TOP_TEN_PRODUCTOS->value) {
             return (new ProductoTopExport($dataFilters))->download();
-            // admin.reports.productos.report-top-productos
         } elseif ($this->typereporte == FilterReportsEnum::KARDEX_PRODUCTOS->value) {
-            // admin.reports.productos.report-kardex-productos
+            return (new ProductoKardexExport($dataFilters))->download();
         } elseif ($this->typereporte == FilterReportsEnum::MIN_STOCK->value) {
-
-            // admin.reports.productos.report-min-stock-productos
+            return (new ProductoMinstockExport($dataFilters))->download();
         } elseif ($this->typereporte == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
-
-            // admin.reports.productos.report-productos-promocion
+            return (new ProductoPromocionExport($dataFilters))->download();
         } else {
             return (new ProductoExport($dataFilters))->download();
             // admin.reports.productos.report-productos

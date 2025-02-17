@@ -326,8 +326,6 @@
     </x-jet-dialog-modal>
 
 
-
-
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('reportventa', () => ({
