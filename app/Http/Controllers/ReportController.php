@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Modules\Almacen\Entities\Compra;
 use Modules\Ventas\Entities\Venta;
 
 class ReportController extends Controller
@@ -631,6 +632,79 @@ class ReportController extends Controller
                 ]);
         }
 
+        return $pdf->inline("$titulo.pdf");
+    }
+
+    public function compras(Request $request)
+    {
+        $filters =  [
+            'typereporte' => '',
+            'viewreporte' => '',
+            'sucursal_id' => '',
+            'typepayment_id' => '',
+            'proveedor_id' => '',
+            'moneda_id' => '',
+            'user_id' => '',
+            'month' => '',
+            'year' => '',
+            'date' => ''
+        ];
+
+        $detallado =  false;
+        $empresa = view()->shared('empresa');
+        $typereportvalue = FilterReportsEnum::getValue(Str::upper($request->input('typereporte')));
+
+        if ($typereportvalue === null) {
+            $titulo = FilterReportsEnum::getLabel($typereportvalue);
+            $compras = [];
+            $sumatorias = [];
+        } else {
+            $titulo = 'REPORTE DE COMPRAS ' . FilterReportsEnum::getLabel($typereportvalue);
+            foreach (array_keys($request->input()) as $param) {
+                if (in_array($param, array_keys($filters))) {
+                    if ($param == "typereporte") {
+                        $filters[$param] = FilterReportsEnum::getValue(Str::upper($request->input($param)));
+                    } else {
+                        $filters[$param] = $request->input($param);
+                    }
+                }
+            }
+
+            $compras = Compra::query()->select('compras.*')
+                ->with(['sucursal', 'proveedor', 'typepayment', 'moneda', 'user'])
+                ->when($filters['viewreporte'] == 1, function ($query) {
+                    $query->with(['cuotas' => function ($subquery) {
+                        $subquery->with(['cajamovimientos' => function ($q) {
+                            // $q->with(['moneda', 'methodpayment']);
+                        }]);
+                    }, 'cajamovimientos' => function ($subquery) {
+                        $subquery->with(['moneda', 'methodpayment']);
+                    }]);
+                })->queryFilter($filters)->get();
+            // dd($ventas->toSql(), $ventas->getBindings());
+
+            $sumatorias = $compras->groupBy('moneda_id')->map(function ($compras) use ($filters) {
+                $amounts = [
+                    'moneda_id' => $compras->first()->moneda_id,
+                    'moneda' => $compras->first()->moneda,
+                    'total' => $compras->sum('total'),
+                ];
+                return (object) $amounts;
+            })->sortBy('moneda_id')->values();
+            $detallado = (bool) $filters['viewreporte'];
+        }
+
+        $pdf = SnappyPdf::loadView('admin.reports.report-compras', compact('compras', 'sumatorias', 'empresa', 'titulo', 'detallado'))
+            ->setOptions([
+                'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                'margin-top' => '29.5mm',
+                'margin-bottom' => '10mm',
+                'margin-left' => '0mm',
+                'margin-right' => '0mm',
+                'header-spacing' => 5,
+                'footer-html' => view('admin.reports.snappyPDF.footer'),
+                'encoding' => 'UTF-8',
+            ]);
         return $pdf->inline("$titulo.pdf");
     }
 }

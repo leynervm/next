@@ -21,6 +21,7 @@ use Modules\Ventas\Entities\Venta;
 use Spatie\Permission\Traits\HasRoles;
 
 use Illuminate\Support\Str;
+use Modules\Almacen\Entities\Compra;
 use Modules\Marketplace\Entities\Order;
 
 class User extends Authenticatable implements MustVerifyEmail
@@ -114,6 +115,11 @@ class User extends Authenticatable implements MustVerifyEmail
     public function tvitems(): HasMany
     {
         return $this->hasMany(Tvitem::class);
+    }
+
+    public function compras(): HasMany
+    {
+        return $this->hasMany(Compra::class);
     }
 
     public function cajamovimientos()

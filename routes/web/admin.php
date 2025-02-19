@@ -135,6 +135,7 @@ Route::prefix('echarts')->name('admin.echarts')->group(function () {
 
 Route::get('/reportes', [ReportController::class, 'index'])->name('admin.reportes');
 Route::get('/reportes/ventas', [ReportController::class, 'ventas'])->name('admin.reportes.ventas');
+Route::get('/reportes/compras', [ReportController::class, 'compras'])->name('admin.reportes.compras');
 Route::get('/reportes/productos', [ReportController::class, 'productos'])->name('admin.reportes.productos');
 Route::get('/reportes/movimientos', [ReportController::class, 'movimientos'])->name('admin.reportes.movimientos');
 Route::get('/reportes/payments/employers', [ReportController::class, 'employers'])->name('admin.reportes.payments.employers');

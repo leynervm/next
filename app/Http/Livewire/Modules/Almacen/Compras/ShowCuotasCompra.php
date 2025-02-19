@@ -88,6 +88,7 @@ class ShowCuotasCompra extends Component
                 'amount' => $amountCuota,
                 'suma' => $sumaCuotas,
                 'cajamovimiento_id' => null,
+                'cajamovimientos' => [],
             ];
             $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
         }

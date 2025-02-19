@@ -2,6 +2,7 @@
 
 namespace Modules\Almacen\Entities;
 
+use App\Enums\FilterReportsEnum;
 use App\Models\Cajamovimiento;
 use App\Models\Cuota;
 use App\Models\Moneda;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 class Compra extends Model
 {
@@ -136,5 +138,32 @@ class Compra extends Model
         return $this->morphMany(Cuota::class, 'cuotable')
             ->doesntHave('cajamovimientos')
             ->orderBy('id', 'asc');
+    }
+
+    public function scopeQueryFilter($query, $filters)
+    {
+        $query->when($filters['sucursal_id'] ?? null, function ($query, $sucursal_id) {
+            $query->where('sucursal_id', $sucursal_id);
+        })->when($filters['proveedor_id'] ?? null, function ($query, $proveedor_id) {
+            $query->where('proveedor_id', $proveedor_id);
+        })->when($filters['user_id'] ?? null, function ($query, $user_id) {
+            $query->where('user_id', $user_id);
+        })->when($filters['moneda_id'] ?? null, function ($query, $moneda_id) {
+            $query->where('moneda_id', $moneda_id);
+        })->when($filters['typereporte'] == FilterReportsEnum::DIARIO->value, function ($query) use ($filters) {
+            $query->whereDate('date', $filters['date']);
+        })->when($filters['typereporte'] == FilterReportsEnum::MENSUAL->value, function ($query) use ($filters) {
+            $query->whereRaw("TO_CHAR(date, 'YYYY-MM') = ?", [
+                Carbon::parse($filters['month'])->format('Y-m'),
+            ]);
+        })->when($filters['typereporte'] == FilterReportsEnum::ANUAL->value, function ($query) use ($filters) {
+            $query->whereYear('date', $filters['year']);
+        })->when($filters['typereporte'] == FilterReportsEnum::ULTIMO_MES->value, function ($query) {
+            $query->whereRaw("TO_CHAR(date, 'YYYY-MM') = ?", [
+                Carbon::now('America/Lima')->subMonth()->format('Y-m')
+            ]);
+        })->when($filters['typereporte'] == FilterReportsEnum::ULTIMO_ANIO->value, function ($query) {
+            $query->whereYear('date', Carbon::now('America/Lima')->subYear()->year);
+        });
     }
 }
