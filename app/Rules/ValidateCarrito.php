@@ -2,10 +2,8 @@
 
 namespace App\Rules;
 
-use App\Models\Carshoop;
 use App\Models\Tvitem;
 use Illuminate\Contracts\Validation\Rule;
-use Illuminate\Support\Facades\Session;
 
 class ValidateCarrito implements Rule
 {

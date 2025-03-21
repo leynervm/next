@@ -2,14 +2,11 @@
 
 namespace App\Models;
 
-use App\Models\Carshoop;
 use App\Models\Serie;
 use App\Models\Sucursal;
-use App\Models\Tvitem;
 use App\Models\Producto;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -57,19 +54,14 @@ class Almacen extends Model
         return $this->hasMany(Serie::class);
     }
 
-    public function tvitems(): HasMany
-    {
-        return $this->hasMany(Tvitem::class);
-    }
-
-    public function compraitems(): HasMany
-    {
-        return $this->hasMany(Compraitem::class);
-    }
-
     public function sucursals(): BelongsToMany
     {
         return $this->belongsToMany(Sucursal::class);
+    }
+
+    public function kardexes(): HasMany
+    {
+        return $this->hasMany(Kardex::class);
     }
 
     // public function users(): hasMany
@@ -85,16 +77,6 @@ class Almacen extends Model
     public function isDefault()
     {
         return $this->where('default', $this::DEFAULT);
-    }
-
-    public function carshoops(): HasMany
-    {
-        return $this->hasMany(Carshoop::class);
-    }
-
-    public function kardexes()
-    {
-        return $this->hasMany(Kardex::class);
     }
 
     public function scoopeDefault($query)

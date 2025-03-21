@@ -30,12 +30,6 @@ class Carshoopitem extends Model
         'tvitem_id'
     ];
 
-
-    // public function carshoop(): BelongsTo
-    // {
-    //     return $this->belongsTo(Carshoop::class);
-    // }
-
     public function producto(): BelongsTo
     {
         return $this->belongsTo(Producto::class);

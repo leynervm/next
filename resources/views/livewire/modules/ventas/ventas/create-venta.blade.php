@@ -47,7 +47,7 @@
                 </div>
             </form>
         </x-form-card>
-
+        
         <x-form-card titulo="RESUMEN DE VENTA" class="text-colorlabel">
             <div class="w-full">
                 <table class="w-full table text-[10px]">

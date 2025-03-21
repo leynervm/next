@@ -3,9 +3,7 @@
 namespace App\Http\Livewire\Modules\Ventas\Ventas;
 
 use App\Enums\MovimientosEnum;
-use App\Models\Almacen;
 use App\Models\Cajamovimiento;
-use App\Models\Carshoop;
 use App\Models\Carshoopitem;
 use App\Models\Concept;
 use App\Models\Cuota;

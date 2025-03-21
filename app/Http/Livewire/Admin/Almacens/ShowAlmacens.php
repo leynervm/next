@@ -5,6 +5,7 @@ namespace App\Http\Livewire\Admin\Almacens;
 use App\Helpers\FormatoPersonalizado;
 use App\Models\Almacen;
 use App\Models\Serie;
+use App\Models\Tvitem;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -79,30 +80,23 @@ class ShowAlmacens extends Component
         $this->authorize('admin.almacen.delete');
         DB::beginTransaction();
         try {
-            $almacen->load(['carshoops' => function ($query) {
-                $query->with(['carshoopseries.serie', 'carshoopitems']);
-            }])->loadCount(['productos as total', 'carshoops as total_carrito']);
+            $almacen->load(['kardexes', 'series'])->loadCount([
+                'productos as total_productos',
+                'kardexes as total_kardexes',
+                'series as total_series',
+            ]);
+
+            if ($almacen->total_productos > 0 || $almacen->total_kardexes > 0 || $almacen->total_series > 0) {
+                $mensaje =  response()->json([
+                    'title' => "NO SE PUEDE ELIMINAR ALMACÉN SELECCIONADO, CONTIENE MÚLTIPLES REGISTROS VINCULADOS",
+                    'text' => null
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $mensaje);
+                return false;
+            }
             $almacen->productos()->detach();
             $almacen->sucursals()->detach();
-            if ($almacen->total > 0) {
-                $almacen->delete();
-            } else {
-                $almacen->forceDelete();
-            }
-            if ($almacen->total_carrito > 0) {
-                $almacen->carshoops->each(function ($carshoop) {
-                    if (count($carshoop->carshoopseries) > 0) {
-                        $carshoop->carshoopseries->each(function ($carshoopserie) {
-                            $carshoopserie->serie->status = Serie::DISPONIBLE;
-                            $carshoopserie->serie->dateout = null;
-                            $carshoopserie->serie->save();
-                            $carshoopserie->delete();
-                        });
-                    };
-                    $carshoop->carshoopitems()->delete();
-                    $carshoop->delete();
-                });
-            }
+            $almacen->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {

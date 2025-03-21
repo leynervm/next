@@ -9,7 +9,6 @@ use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Almacen;
-use App\Models\Carshoop;
 use App\Models\Carshoopitem;
 use App\Models\Client;
 use App\Models\Concept;
@@ -502,16 +501,6 @@ class CreateVenta extends Component
     {
 
         $this->resetValidation();
-        // $results = Carshoop::select(
-        //     DB::raw("COALESCE(SUM(subtotal),0) as subtotal"),
-        //     DB::raw("COALESCE(SUM(total),0) as total"),
-        //     DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN igv * cantidad ELSE 0 END),0) as igv"),
-        //     DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '1' THEN igv * cantidad ELSE 0 END), 0) as igvgratuito"),
-        //     DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as gravado"),
-        //     DB::raw("COALESCE(SUM(CASE WHEN igv = 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as exonerado"),
-        //     DB::raw("COALESCE(SUM(CASE WHEN gratuito = '1' THEN price * cantidad ELSE 0 END), 0) as gratuitos")
-        // )->ventas()->where('user_id', auth()->user()->id)->where('sucursal_id', auth()->user()->sucursal_id)->first();
-        // dd($results[0]);
         $results = Tvitem::select(
             DB::raw("COALESCE(SUM(subtotal),0) as subtotal"),
             DB::raw("COALESCE(SUM(total),0) as total"),
@@ -587,18 +576,17 @@ class CreateVenta extends Component
         $this->setTotal();
     }
 
-    public function updategratis(Carshoop $carshoop)
+    public function updategratis(Tvitem $tvitem)
     {
-        if ($carshoop->isGratuito()) {
-            $total = ($carshoop->price + $carshoop->igv) * $carshoop->cantidad;
-            $carshoop->total = $total;
-            $carshoop->gratuito = 0;
-            $carshoop->save();
+        if ($tvitem->isGratuito()) {
+            $total = ($tvitem->price + $tvitem->igv) * $tvitem->cantidad;
+            $tvitem->total = $total;
+            $tvitem->gratuito = Tvitem::NO_GRATUITO;
         } else {
-            $carshoop->total = 0;
-            $carshoop->gratuito = Tvitem::GRATUITO;
-            $carshoop->save();
+            $tvitem->total = 0;
+            $tvitem->gratuito = Tvitem::GRATUITO;
         }
+        $tvitem->save();
         $this->setTotal();
     }
 
@@ -653,12 +641,6 @@ class CreateVenta extends Component
 
         $carshoops = Tvitem::with(['moneda', 'promocion', 'kardexes.almacen', 'carshoopitems.producto', 'producto', 'itemseries.serie'])
             ->ventas()->micart()->orderBy('id', 'asc')->get();
-
-        // $carshoops = Carshoop::with(['carshoopseries', 'producto', 'almacen'])
-        //     ->ventas()->where('user_id', auth()->user()->id)
-        //     ->where('sucursal_id', auth()->user()->sucursal_id)
-        //     ->orderBy('id', 'asc')->get();
-        // $this->items = $carshoops;
 
         if ($this->seriecomprobante_id) {
             $seriecomprobante = Seriecomprobante::with('typecomprobante')->find($this->seriecomprobante_id);
@@ -1306,27 +1288,29 @@ class CreateVenta extends Component
             'typepayment_id',
             'carshoopPage'
         ]);
-
-        Carshoop::ventas()->where('user_id', auth()->user()->id)
-            ->where('sucursal_id', auth()->user()->sucursal_id)->get()->map(function ($carshoop) {
-                self::delete($carshoop, true);
-            });
-        $pricetype = null;
+        Self::deleteallitems();
         if ($this->empresa->usarlista()) {
-            $this->pricetype = Pricetype::activos()->orderBy('default', 'desc')->orderBy('id', 'asc')->first();
-            $this->pricetype_id = $pricetype->id ?? null;
+            $this->pricetype_id = Pricetype::activos()->orderByDesc('default')->orderBy('id', 'asc')->first()->id ?? null;
+            // $this->pricetype = Pricetype::activos()->orderByDesc('default')->orderBy('id', 'asc')->first();
         }
 
-        $this->moneda = Moneda::default()->first();
-        $this->moneda_id = $this->moneda->id;
+        $this->producto = new Producto();
+        $this->tvitem = new Tvitem();
+        $this->motivotraslado = new Motivotraslado();
+        $this->modalidadtransporte = new Modalidadtransporte();
+        $this->moneda_id = Moneda::orderByDesc('default')->first()->id;
+        // $this->moneda = Moneda::default()->first();
+        $this->typepayment_id = Typepayment::default()->first()->id ?? null;
         $this->concept = Concept::ventas()->first();
         $this->methodpayment_id = Methodpayment::default()->first()->id ?? null;
-        $this->typepayment_id = Typepayment::default()->first()->id ?? null;
+        if (count($this->sucursal->almacens) > 0) {
+            $this->almacen_id = $this->sucursal->almacens->first()->id;
+        }
 
         self::setTotal();
         $this->resetValidation();
         $this->resetPage();
-        $this->dispatchBrowserEvent('toast', toastJSON('Venta limpiado correctamente'));
+        $this->dispatchBrowserEvent('toast', toastJSON('VENTA LIMPIADA CORRECTAMENTE'));
     }
 
     public function delete(Tvitem $tvitem)

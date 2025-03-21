@@ -3,8 +3,6 @@
 namespace App\Http\Livewire\Modules\Facturacion\Guias;
 
 use App\Models\Almacen;
-use App\Models\Carshoop;
-use App\Models\Carshoopserie;
 use App\Models\Client;
 use App\Models\Guia;
 use App\Models\Itemserie;

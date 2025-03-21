@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Carshoop;
 use App\Models\Guiaitem;
 use App\Models\Tvitem;
 use App\Models\Almacen;
@@ -221,11 +220,6 @@ class Producto extends Model
     public function detalleproducto(): HasOne
     {
         return $this->hasOne(Detalleproducto::class);
-    }
-
-    public function carshoops(): HasMany
-    {
-        return $this->hasMany(Carshoop::class)->orderBy('id', 'asc');
     }
 
     public function promocions(): HasMany

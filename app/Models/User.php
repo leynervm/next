@@ -102,11 +102,6 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Openbox::class);
     }
 
-    public function carshoop()
-    {
-        return $this->hasMany(Carshoop::class);
-    }
-
     public function ventas(): HasMany
     {
         return $this->hasMany(Venta::class);

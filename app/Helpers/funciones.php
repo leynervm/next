@@ -284,51 +284,6 @@ function getCombo()
     return collect($combo);
 }
 
-
-function getTotalCarrito($sesionName)
-{
-
-    $total = 0;
-    $gratuito = 0;
-    $countgratuitos = 0;
-    $countnogratuitos = 0;
-
-    $carrito = Session::get($sesionName, []);
-    if (!is_array($carrito)) {
-        $carrito = json_decode($carrito, true);
-    }
-
-    if (count($carrito) > 0) {
-        $carritoJSON = json_decode(Session::get($sesionName));
-        foreach ($carritoJSON as $item) {
-            if ($item->gratuito) {
-                $gratuito += $item->importe;
-                $countgratuitos++;
-            } else {
-                $total += $item->importe;
-                $countnogratuitos++;
-            }
-        }
-    }
-
-    return json_encode([
-        'total' => decimalOrInteger($total, 3),
-        'gratuito' => decimalOrInteger($gratuito, 3),
-        'sumatoria' => decimalOrInteger($total + $gratuito, 3),
-        'countgratuitos' => $countgratuitos,
-        'countnogratuitos' => $countnogratuitos,
-        'count' => $countgratuitos + $countnogratuitos,
-    ]);
-
-    // $total = Carshoop::Micarrito()
-    //     ->where('sucursal_id', $this->sucursal->id)
-    //     ->where('gratuito', 0)->sum('total') ?? 0;
-    // $this->gratuito = Carshoop::Micarrito()
-    //     ->where('sucursal_id', $this->sucursal->id)
-    //     ->where('gratuito', 1)->sum('total') ?? 0;
-}
-
-
 function round_decimal($value, $roundedTo = 1)
 {
     $result = $value - floor($value);
