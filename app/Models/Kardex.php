@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\KardexTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Kardex extends Model
 {
     use HasFactory;
+    use KardexTrait;
+
     public $timestamps = false;
     protected $fillable = [
         'date',
@@ -23,7 +26,6 @@ class Kardex extends Model
         'almacen_id',
         'sucursal_id',
         'user_id',
-        'promocion_id',
         'kardeable_id',
         'kardeable_type'
     ];
@@ -48,6 +50,9 @@ class Kardex extends Model
     const SALIDA_ANULACION_ITEMCOMPRA = 'ANULACIÓN ITEM COMPRA';
     const REPOSICION_ALMACEN = 'REPOSICIÓN ALMACEN';
 
+    const SIMBOLO_INGRESO = '+';
+    const SIMBOLO_SALIDA = '-';
+
 
     public function kardeable(): MorphTo
     {
@@ -56,22 +61,22 @@ class Kardex extends Model
 
     public function producto(): BelongsTo
     {
-        return $this->belongsTo(Producto::class);
+        return $this->belongsTo(Producto::class)->withTrashed();
     }
 
     public function almacen(): BelongsTo
     {
-        return $this->belongsTo(Almacen::class);
+        return $this->belongsTo(Almacen::class)->withTrashed();
     }
 
     public function sucursal(): BelongsTo
     {
-        return $this->belongsTo(Sucursal::class);
+        return $this->belongsTo(Sucursal::class)->withTrashed();
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function promocion(): BelongsTo
@@ -81,12 +86,12 @@ class Kardex extends Model
 
     public function isEntrada()
     {
-        return $this->simbolo == '+';
+        return $this->simbolo == Self::SIMBOLO_INGRESO;
     }
-    
+
     public function isSalida()
     {
-        return $this->simbolo == '-';
+        return $this->simbolo == Self::SIMBOLO_SALIDA;
     }
 
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)

@@ -16,13 +16,11 @@ class CreateCotizaciongarantiasTable extends Migration
         Schema::create('cotizaciongarantias', function (Blueprint $table) {
             $table->id();
             $table->integer('time');
-            $table->integer('delete')->default(0);
+            $table->char('datecode', 1);
             $table->bigInteger('typegarantia_id')->nullable();
-            $table->bigInteger('cotizacion_id')->nullable();
+            $table->unsignedBigInteger('cotizacion_id')->nullable();
             $table->foreign('typegarantia_id')->on('typegarantias')->references('id');
             $table->foreign('cotizacion_id')->on('cotizacions')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

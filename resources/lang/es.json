@@ -259,7 +259,7 @@
     "New sale": "Nueva venta",
     "Save and close": "Guardar y cerrar",
     "Save changues": "Guardar cambios",
-    "The verification of Recaptcha failed.": "La verificación de Recaptcha ha fallado.",
+    "The verification of Recaptcha failed.": "La verificación de seguridad ha fallado.",
     "The": "El",
     "is incorrect.": "es incorrecto",
     "Registration Success": "Registrado correctamente",
@@ -290,5 +290,9 @@
     "If you did not create an account, no further action is required." : "Si no creó una cuenta, no es necesario realizar ninguna otra acción.",
     "You are receiving this email because we received a password reset request for your account." :"Está recibiendo este correo electrónico porque recibimos una solicitud de restablecimiento de contraseña para su cuenta.",
     "If you did not request a password reset, no further action is required." :"Si no solicitó un restablecimiento de contraseña, no es necesario realizar ninguna otra acción.",
-    "This password reset link will expire in :count minutes." :"Este enlace para restablecer la contraseña caducará en :count minutos."
+    "This password reset link will expire in :count minutes." :"Este enlace para restablecer la contraseña caducará en :count minutos.",
+    "Print" : "Imprimir",
+    "Print ticket" : "Imprimir ticket",
+    "Print a4" : "Imprimir A4",
+    "Print a5" : "Imprimir A5"
 }

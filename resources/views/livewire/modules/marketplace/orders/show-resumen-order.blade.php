@@ -1,145 +1,140 @@
-<div class="w-full grid grid-cols-1 xl:grid-cols-7 gap-3 xl:gap-5">
-    <div wire:loading.flex wire:target="updatestock,save,discountserie,discountstock"
-        class="fixed loading-overlay hidden z-[99999]">
-        <x-loading-next />
-    </div>
+<div class="w-full grid grid-cols-1 xl:grid-cols-7 gap-3 xl:gap-5" x-data="showorder">
+    <x-loading-web-next wire:key="showresumenorder" wire:loading />
 
     <div class="xl:col-span-5 w-full">
-        <div class="w-full overflow-x-auto">
-            <table class="w-full min-w-full text-[10px] md:text-xs">
-                <tbody class="divide-y">
-                    @foreach ($order->tvitems as $item)
-                        @php
-                            $image = !empty($item->producto->imagen) ? pathURLProductImage($item->producto->imagen->url) : null;
-                        @endphp
+        @if (count($order->tvitems))
+            <div
+                class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
+                @foreach ($order->tvitems as $item)
+                    @php
+                        $image = !empty($item->producto->imagen)
+                            ? pathURLProductImage($item->producto->imagen->url)
+                            : null;
+                    @endphp
+                    <x-card-producto :image="$image" :name="$item->producto->name" :marca="$item->producto->marca->name" :category="$item->producto->category->name"
+                        :increment="$item->increment" :promocion="$item->promocion" class="overflow-hidden">
+                        @if ($item->isGratuito())
+                            <x-span-text text="GRATUITO" type="green" class="!py-0.5" />
+                        @endif
 
-                        <tr class="text-colorlabel">
-                            <td class="text-left py-2 align-middle">
-                                <div class="flex flex-col xs:flex-row items-start gap-2">
-                                    <div
-                                        class="flex-shrink-0 w-full h-40 mx-auto xs:w-24 xs:h-24 rounded overflow-hidden">
-                                        @if ($image)
-                                            <img src="{{ $image }}" alt=""
-                                                class="w-full h-full object-scale-down rounded aspect-square overflow-hidden">
-                                        @else
-                                            <x-icon-file-upload class="w-full h-full" type="unknown" />
+                        <h1 class="text-xl !leading-none font-semibold mt-1 text-center text-colorlabel">
+                            {{ decimalOrInteger($item->cantidad, 2, ', ') }}
+                            <small class="text-[10px] font-medium">
+                                {{ $item->producto->unit->name }}
+                                <small class="text-colorerror">
+                                    /
+                                    @if ($item->isNoAlterStock())
+                                        NO ALTERA STOCK
+                                    @elseif ($item->isReservedStock())
+                                        STOCK RESERVADO
+                                    @elseif ($item->isIncrementStock())
+                                        INCREMENTA STOCK
+                                    @elseif($item->isDiscountStock())
+                                        DISMINUYE STOCK
+                                    @endif
+                                </small>
+                            </small>
+                        </h1>
+
+                        <h1 class="text-xl text-center font-semibold text-colortitleform">
+                            <small class="text-[10px] font-medium">{{ $order->moneda->simbolo }}</small>
+                            {{ decimalOrInteger($item->total, 2, ', ') }}
+                            <small class="text-[10px] font-medium">{{ $order->moneda->currency }}</small>
+                        </h1>
+
+                        @if ($item->cantidad > 1)
+                            <div class="text-sm font-semibold text-colorlabel leading-3">
+                                <small class="text-[10px] font-medium">P.U.V : </small>
+                                {{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}
+                                <small class="text-[10px] font-medium">{{ $order->moneda->currency }}</small>
+                            </div>
+                        @endif
+
+                        @if ($item->producto->isRequiredserie())
+                            <div wire:key="contseries_{{ $item->id }}"
+                                class="w-full flex flex-col gap-1 justify-center items-center mt-1"
+                                x-data="{ showForm: '{{ count($item->itemseries) == 1 }}' }">
+                                @if (count($item->itemseries) > 1)
+                                    <x-button @click="showForm = !showForm"
+                                        class="w-full !flex gap-3 items-center justify-center">
+                                        <span x-text="showForm ? 'OCULTAR SERIES' : 'MOSTRAR SERIES'"></span>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor"
+                                            stroke-width="1.2" viewBox="0 0 24 24" stroke-linecap="square"
+                                            stroke-linejoin="round" class="size-5 block">
+                                            <path d="M8 20V4h4v16z" />
+                                            <path d="M2 4v16M5 4v16M15 4v16" />
+                                            <path d="M18 20V4h4v16z" />
+                                        </svg>
+                                    </x-button>
+                                @endif
+
+                                <div class="w-full" x-show="showForm" x-transition>
+                                    @if (count($item->itemseries) > 0)
+                                        <x-table class="w-full block">
+                                            <x-slot name="body">
+                                                @foreach ($item->itemseries as $itemserie)
+                                                    <tr>
+                                                        <td class="p-1 align-middle font-medium">
+                                                            {{ $itemserie->serie->serie }}
+                                                            [{{ $itemserie->serie->almacen->name }}]
+                                                        </td>
+                                                        <td class="align-middle text-center" width="40px">
+                                                            @if ($itemserie->serie)
+                                                                <x-button-delete wire:loading.attr="disabled"
+                                                                    wire:key="deleteitemserie_{{ $itemserie->id }}"
+                                                                    x-on:click="confirmDeleteSerie({{ $itemserie->id }}, '{{ $itemserie->serie->serie }}')" />
+                                                            @else
+                                                                <x-button-delete wire:loading.attr="disabled"
+                                                                    wire:key="deleteitemserie_{{ $itemserie->id }}"
+                                                                    x-on:click="confirmDeleteSerie({{ $itemserie->id }})" />
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </x-slot>
+                                        </x-table>
+                                    @endif
+                                </div>
+                            </div>
+                        @else
+                            <div
+                                class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-3 xs:grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
+                                @foreach ($item->kardexes as $kardex)
+                                    <div class="w-full p-1.5 flex flex-col items-center justify-start">
+                                        <h1 class="text-colorsubtitleform text-sm font-semibold !leading-none">
+                                            {{ decimalOrInteger($kardex->cantidad) }}
+                                            <small class="text-[10px] font-normal">
+                                                {{ $item->producto->unit->name }}</small>
+                                        </h1>
+
+                                        <h1 class="text-colortitleform text-[10px] font-semibold">
+                                            {{ $kardex->almacen->name }}</h1>
+
+                                        @if (!$item->producto->isRequiredserie())
+                                            <x-button-delete
+                                                wire:click="deletekardex({{ $item->id }},{{ $kardex->id }})"
+                                                wire:loading.attr="disabled" class="inline-flex" />
                                         @endif
                                     </div>
-                                    <div
-                                        class="w-full flex-1 lg:flex justify-between gap-3 items-center text-colorsubtitleform">
-                                        <div class="w-full lg:flex-1">
-                                            <a href="{{ route('productos.show', $item->producto) }}"
-                                                class="block w-full text-xs text-center xs:text-start">
-                                                {{ $item->producto->name }}</a>
+                                @endforeach
+                            </div>
+                        @endif
 
-                                            @if (!empty($item->promocion_id))
-                                                <span
-                                                    class="p-1 font-semibold inline-block ring-1 rounded-lg text-[10px] ring-green-600 text-end text-green-600 whitespace-nowrap">
-                                                    PROMOCIÓN</span>
-                                            @endif
+                        <x-slot name="buttoncombos">
+                            @include('modules.ventas.forms.modal-carshoopitems', [
+                                'moneda' => $order->moneda,
+                                'viewloading' => true,
+                            ])
+                        </x-slot>
 
-                                            @if (count($item->itemseries) > 0)
-                                                <div class="w-full flex flex-wrap gap-2 mb-2">
-                                                    @foreach ($item->itemseries as $itemser)
-                                                        <div
-                                                            class="inline-flex items-center gap-1 text-[10px] text-center bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
-                                                            <div class="w-full flex-1">
-                                                                {{ $itemser->serie->serie }}
-                                                                <br>
-                                                                <span class="block text-colortitleform">
-                                                                    {{ $itemser->serie->almacen->name }}
-                                                                </span>
-                                                            </div>
-
-                                                            @can('admin.marketplace.orders.deletestock')
-                                                                @if ($item->producto->isRequiredserie())
-                                                                    <x-button-delete
-                                                                        onclick="deleteitemseriestock({{ $itemser->id }})"
-                                                                        wire:loading.attr="disabled"
-                                                                        class="inline-flex flex-shrink-0" />
-                                                                @endif
-                                                            @endcan
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-
-                                            @if (count($item->kardexes) > 0)
-                                                <div class="w-full flex flex-wrap gap-2 mt-2">
-                                                    @foreach ($item->kardexes as $kardex)
-                                                        <x-simple-card
-                                                            class="max-w-24 min-w-24 p-2 flex flex-col items-center justify-start">
-                                                            <div class="text-colorsubtitleform text-center">
-                                                                <span
-                                                                    class="inline-block text-sm text-center font-semibold">
-                                                                    {{ decimalOrInteger($kardex->cantidad) }}</span>
-                                                                <small
-                                                                    class="inline-block text-center text-[10px] leading-3">
-                                                                    {{ $item->producto->unit->name }}</small>
-                                                            </div>
-
-                                                            <h1
-                                                                class="text-colortitleform text-[10px] text-center font-semibold">
-                                                                {{ $kardex->almacen->name }}</h1>
-
-                                                            @can('admin.marketplace.orders.deletestock')
-                                                                @if (!$item->producto->isRequiredserie())
-                                                                    <x-button-delete
-                                                                        onclick="deletestock({{ $kardex->id }})"
-                                                                        wire:loading.attr="disabled" class="inline-flex" />
-                                                                @endif
-                                                            @endcan
-                                                        </x-simple-card>
-                                                    @endforeach
-                                                </div>
-                                            @endif
-
-
-                                            @if ($item->kardexes && $item->kardexes->sum('cantidad') == $item->cantidad)
-                                                <div class="mt-1">
-                                                    <x-span-text type="green" text="STOCK ACTUALIZADO" />
-                                                </div>
-                                            @else
-                                                @can('admin.marketplace.orders.discountstock')
-                                                    <x-button class="mt-2" wire:click="updatestock({{ $item->id }})"
-                                                        wire:loading.attr="disabled">DESCONTAR STOCK</x-button>
-                                                @endcan
-                                            @endif
-                                        </div>
-
-                                        <div class="flex items-end lg:items-center lg:w-60 lg:flex-shrink-0 ">
-                                            <span
-                                                class="text-left p-2 text-xs sm:text-end font-semibold whitespace-nowrap">
-                                                x{{ decimalOrInteger($item->cantidad) }}
-                                                {{ $item->producto->unit->name }}
-                                            </span>
-
-                                            @if ($item->isGratuito())
-                                                <div class="flex-1 flex justify-end items-center">
-                                                    <span
-                                                        class="p-2 font-semibold inline-block ring-1 rounded-lg text-xs ring-green-600 text-end text-green-600 whitespace-nowrap">
-                                                        GRATUITO</span>
-                                                </div>
-                                            @else
-                                                <span
-                                                    class="p-2 font-semibold text-lg flex-1 text-end text-colorlabel whitespace-nowrap">
-                                                    {{ $order->moneda->simbolo }}
-                                                    {{ number_format($item->total, 2, '.', ', ') }}
-                                                </span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
+                    </x-card-producto>
+                @endforeach
+            </div>
+        @endif
     </div>
 
     {{-- TRACKING --}}
-    <div class="xl:col-span-2 w-full pb-5 border border-borderminicard rounded-xl p-3">
+    <div class="xl:col-span-2 w-full border border-borderminicard rounded-xl p-3">
         <h3 class="text-xl font-semibold text-colorsubtitleform">Tracking</h3>
         @can('admin.marketplace.trackings.create')
             @if ($order->isPagoconfirmado())
@@ -147,8 +142,7 @@
                     <form wire:submit.prevent="save" class="flex flex-col gap-2 py-5">
                         <div class="w-full">
                             <x-label for="trackingstate_id" value="Seleccionar estado :" />
-                            <div class="relative" id="parenttrackingstate_id" x-data="{ trackingstate_id: @entangle('trackingstate_id').defer }"
-                                x-init="select2Tracking">
+                            <div class="relative" id="parenttrackingstate_id"" x-init="select2Tracking">
                                 <x-select class="block w-full" id="trackingstate_id" data-placeholder="null"
                                     x-ref="selecttraking" x-model="trackingstate_id">
                                     <x-slot name="options">
@@ -174,7 +168,7 @@
         @if (count($order->trackings) > 0)
             <ol class="relative ms-3 border-s border-borderminicard">
                 @foreach ($order->trackings as $item)
-                    <li class="mb-10 ms-6 text-colorlabel">
+                    <li class="mb-3 sm:mb-10 ms-6 text-colorlabel">
                         <span
                             class="absolute -start-3 flex h-6 w-6 items-center justify-center rounded-full bg-next-500 ring-8 ring-body">
                             @if ($item->trackingstate->isFinalizado())
@@ -197,9 +191,10 @@
                                 </svg>
                             @endif
                         </span>
-                        <h4 class="mb-0.5 font-semibold text-sm text-primary">
+                        <h4 class="mb-0.5 font-semibold text-[10px] sm:text-sm text-primary">
                             {{ formatDate($item->date, 'DD MMM Y, hh:mm A') }}</h4>
-                        <p class="text-xs text-colorsubtitleform">{{ $item->trackingstate->name }}</p>
+                        <p class="text-[10px] sm:text-xs text-colorsubtitleform">{{ $item->trackingstate->name }}
+                        </p>
                         @can('admin.marketplace.trackings.delete')
                             @if (!$item->trackingstate->isDefault())
                                 <x-button-delete wire:click="delete({{ $item->id }})" wire:loading.attr="disabled" />
@@ -210,125 +205,84 @@
             </ol>
         @endif
     </div>
-
-    <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
-        <x-slot name="title">
-            {{ __('Descontar stock del producto') }}
-        </x-slot>
-
-        <x-slot name="content">
-            <form wire:submit.prevent="discountstock" x-data="discount">
-
-                @if ($tvitem->producto)
-                    <p class="text-xs text-colorlabel pb-6">
-                        {{ $tvitem->producto->name }}</p>
-
-                    @if (count($tvitem->itemseries) > 0)
-                        <div class="w-full flex flex-wrap gap-2 mb-2">
-                            @foreach ($tvitem->itemseries as $item)
-                                <div
-                                    class="text-xs text-center bg-fondospancardproduct text-textspancardproduct p-1 px-1 rounded-lg">
-                                    {{ $item->serie->serie }}
-                                    <br>
-                                    <span class="block text-colortitleform text-[10px]">
-                                        {{ $item->serie->almacen->name }}
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                @endif
-
-                @if ($tvitem && $tvitem->kardexes->sum('cantidad') < $tvitem->cantidad)
-                    @if (count($almacens) > 0)
-                        <div class="w-full flex flex-wrap gap-2">
-                            @foreach ($almacens as $item)
-                                <x-simple-card wire:key="{{ $item['id'] }}"
-                                    class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
-                                    <div class="text-colorsubtitleform text-center">
-                                        <small class="w-full block text-center text-[8px] leading-3">
-                                            STOCK ACTUAL</small>
-                                        <span class="inline-block text-2xl text-center font-semibold">
-                                            {{ decimalOrInteger($item['pivot']['cantidad']) }}</span>
-                                        <small class="inline-block text-center text-[10px] leading-3">
-                                            {{ $tvitem->producto->unit->name }}</small>
-                                    </div>
-
-                                    <h1 class="text-colortitleform text-[10px] text-center font-semibold">
-                                        {{ $item['name'] }}</h1>
-
-                                    @if ($tvitem->producto->isRequiredserie())
-                                        <div class="w-full">
-                                            <x-label value="SELECCIONAR SERIES :" />
-                                            <div class="relative" id="parentserie_id_{{ $item['id'] }}">
-                                                <x-select class="block w-full relative" x-init="initializeSelect2($el, {{ $item['id'] }})"
-                                                    id="serie_id_{{ $item['id'] }}" data-dropdown-parent="null"
-                                                    data-minimum-results-for-search="3">
-                                                    <x-slot name="options">
-                                                        @foreach ($tvitem->producto->series()->disponibles()->where('almacen_id', $item['id'])->get() as $ser)
-                                                            <option value="{{ $ser->id }}">
-                                                                {{ $ser->serie }}</option>
-                                                        @endforeach
-                                                    </x-slot>
-                                                </x-select>
-                                                <x-icon-select />
-                                            </div>
-                                            <x-jet-input-error for="almacens.{{ $item['id'] }}.serie_id" />
-                                        </div>
-                                        <div class="w-full">
-                                            <x-button type="button"
-                                                @click.prevent="discountserie({{ $item['id'] }})">AGREGAR</x-button>
-                                        </div>
-                                    @else
-                                        <div class="w-full">
-                                            <x-label value="STOCK DESCONTAR :" />
-                                            <x-input class="block w-full"
-                                                wire:model.defer="almacens.{{ $item['id'] }}.cantidad"
-                                                x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
-                                                onkeypress="return validarDecimal(event, 9)"
-                                                wire:key="cantidad_{{ $item['id'] }}"
-                                                wire:loading.class="bg-blue-50" />
-                                            <x-jet-input-error for="almacens.{{ $item['id'] }}.cantidad" />
-                                        </div>
-                                    @endif
-                                </x-simple-card>
-                            @endforeach
-                        </div>
-                    @endif
-                @endif
-
-                @if ($tvitem->producto && !$tvitem->producto->isRequiredserie())
-                    <div class="w-full flex pt-4 gap-2 justify-end">
-                        <x-button type="submit" wire:loading.attr="disabled">
-                            {{ __('Save') }}</x-button>
-                    </div>
-                @endif
-            </form>
-        </x-slot>
-    </x-jet-dialog-modal>
-
+    
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('discount', () => ({
-                serie_id: @entangle('serie_id').defer,
-                almacen_id: @entangle('almacen_id').defer,
-                initializeSelect2(element, almacen_id) {
-                    $(element).select2().on("select2:select", (event) => {
-                        this.serie_id = event.target.value;
-                        console.log(this.serie_id);
+            Alpine.data('showorder', () => ({
+                trackingstate_id: @entangle('trackingstate_id').defer,
+                // serie_id: @entangle('serie_id').defer,
+                // almacen_id: @entangle('almacen_id').defer,
+                almacenitem: @entangle('almacenitem').defer,
+                almacens: @entangle('almacens').defer,
+                init() {
+                    this.$watch('almacenitem', (value) => {
+                        this.valuesAlmacenItem();
                     });
-                    this.$watch("serie_id", (value) => {
-                        $(element).val(value).trigger("change");
+                    this.$watch('almacens', (value) => {
+                        this.valuesAlmacen();
                     });
                     Livewire.hook('message.processed', () => {
-                        $(element).select2().val(this.serie_id).trigger('change');
+                        this.valuesAlmacenItem();
+                        this.valuesAlmacen();
                     });
                 },
-                discountserie(almacen_id) {
-                    console.log(almacen_id, this.serie_id);
-                    this.$wire.discountserie(almacen_id, this.serie_id).then(function() {
-                        console.log('completed');
+                initializeSelect2(element, almacen_id) {
+                    $(element).select2().on('select2:select', (event) => {
+                        this.$wire.set(`almacens.${almacen_id}.serie_id`, event.target.value,
+                            true);
                     });
+                },
+                valuesAlmacen() {
+                    if (Object.keys(this.almacens).length > 0) {
+                        for (let key in this.almacens) {
+                            let x_ref =
+                                `serie_id_${String(this.almacens[key].tvitem_id) + String(this.almacens[key].id)}`;
+                            let value = this.almacens[key].serie_id;
+                            const ser = document.getElementById(x_ref);
+                            $(ser).select2().val(value).trigger('change');
+                        }
+                    }
+                },
+                select2Carshoopitem(element, carshoopitem_id, almacen_id) {
+                    $(element).select2().on('select2:select', (event) => {
+                        this.$wire.set(
+                            `almacenitem.${carshoopitem_id}.almacens.${almacen_id}.serie_id`,
+                            event
+                            .target.value, true);
+                    });
+                },
+                valuesAlmacenItem() {
+                    if (Object.keys(this.almacenitem).length > 0) {
+                        for (let key in this.almacenitem) {
+                            if (Object.keys(this.almacenitem[key].almacens).length > 0) {
+                                for (let almacen in this.almacenitem[key].almacens) {
+                                    let x_ref = `serie_id_${String(key) + String(almacen)}`;
+                                    let value = this.almacenitem[key].almacens[almacen].serie_id;
+                                    const ser = document.getElementById(x_ref);
+                                    $(ser).select2().val(value).trigger('change');
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmDeleteSerie(itemserie_id, serie = null) {
+                    let mensaje = serie == null ? `SERIE NO DISPONIBLE, ELIMINAR DEL PRODUCTO ?` :
+                        `ELIMINAR SERIE ${serie} DEL PRODUCTO ?`;
+
+                    swal.fire({
+                        title: mensaje,
+                        text: null,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.deleteitemserie(itemserie_id);
+                        }
+                    })
                 }
             }))
         })
@@ -350,57 +304,5 @@
                 this.selectTRK.select2().val(this.trackingstate_id).trigger('change');
             });
         }
-
-        function deleteitemseriestock(itemserie_id) {
-            swal.fire({
-                title: 'ANULAR SERIE DEL STOCK EN ALMACÉN SELECCIONADO ?',
-                text: "Se eliminará un registro de pago de la base de datos.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.deleteitemseriestock(itemserie_id);
-                }
-            })
-        }
-
-        function deletestock(kardex_id) {
-            swal.fire({
-                title: 'ANULAR DESCUENTO DE STOCK EN ALMACÉN SELECCIONADO ?',
-                text: "Se eliminará un registro de pago de la base de datos.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.deletestock(kardex_id);
-                }
-            })
-        }
-
-        // function selectAlmacen() {
-        //     this.selectAP = $(this.$refs.selectalmacen).select2();
-        //     this.selectAP.val(this.almacen_id).trigger("change");
-        //     this.selectAP.on("select2:select", (event) => {
-        //         this.almacen_id = event.target.value;
-        //     }).on('select2:open', function(e) {
-        //         const evt = "scroll.select2";
-        //         $(e.target).parents().off(evt);
-        //         $(window).off(evt);
-        //     });
-        //     this.$watch("almacen_id", (value) => {
-        //         this.selectAP.val(value).trigger("change");
-        //     });
-        //     Livewire.hook('message.processed', () => {
-        //         this.selectAP.select2().val(this.almacen_id).trigger('change');
-        //     });
-        // }
     </script>
 </div>

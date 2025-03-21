@@ -113,7 +113,7 @@
                         <form wire:submit.prevent="add" class="w-full mt-6 flex flex-col gap-2">
                             <div class="">
                                 <x-label value="Producto secundario :" />
-                                <div class="relative" id="parentproductosec_id" x-init="selectProductoSec" wire:ignore>
+                                <div class="relative" id="parentproductosec_id" x-init="selectProductoSec">
                                     <x-select class="block w-full" x-ref="selectps" id="productosec_id"
                                         data-dropdown-parent="null" data-minimum-results-for-search="3"
                                         data-placeholder="null">
@@ -274,17 +274,17 @@
                                     </div>
                                     <x-jet-input-error for="type" />
 
-                                    <div class="w-full" x-show="typecombo == '1'">
+                                    {{-- <div class="w-full" x-show="typecombo == '1'">
                                         <x-label value="Descuento (%) :" />
                                         <x-input class="block w-full" wire:model.defer="descuento" type="number"
                                             min="0" step="0.01" />
                                         <x-jet-input-error for="descuento" />
-                                    </div>
+                                    </div> --}}
                                 </div>
 
                                 <div class="xs:col-span-2 xl:col-span-3">
                                     <x-label value="Seleccionar producto :" />
-                                    <div class="relative" id="parentproducto_id" wire:ignore x-init="select2Producto">
+                                    <div class="relative" id="parentproducto_id" x-init="select2Producto">
                                         <x-select class="block w-full" x-ref="selectproductoprm" id="producto_id"
                                             data-minimum-results-for-search="3" data-dropdown-parent="null"
                                             data-placeholder="null">
@@ -318,7 +318,7 @@
                                     <x-jet-input-error for="expiredate" />
                                 </div>
 
-                                <div class="w-full" x-show="type == '0'">
+                                <div class="w-full" x-show="showdscto" x-cloak>
                                     <x-label value="Descuento (%) :" />
                                     <x-input class="block w-full input-number-none" wire:model.defer="descuento"
                                         type="number" min="0" step="0.01"
@@ -443,6 +443,7 @@
             document.addEventListener('alpine:init', () => {
                 Alpine.data('loader', () => ({
                     type: @entangle('type').defer,
+                    showdscto: false,
                     agotarstock: @entangle('agotarstock').defer,
                     producto_id: @entangle('producto_id'),
                     productosec_id: @entangle('productosec_id'),
@@ -450,60 +451,33 @@
 
                     init() {
                         this.$watch('type', value => {
-                            if (value == '{{ \App\Enums\PromocionesEnum::LIQUIDACION->value }}') {
-                                this.agotarstock = true;
-                            } else {
-                                this.agotarstock = false;
-                            }
+                            let liquidacion = [
+                                '{{ \App\Enums\PromocionesEnum::LIQUIDACION->value }}',
+                            ]
+                            let descuento = [
+                                '{{ \App\Enums\PromocionesEnum::DESCUENTO->value }}',
+                                '{{ \App\Enums\PromocionesEnum::OFERTA->value }}'
+                            ]
+
+                            this.showdscto = descuento.includes(value);
+                            this.agotarstock = liquidacion.includes(value);
                         });
 
                         this.$watch('producto_id', (value) => {
                             this.selectPP.val(value).trigger("change");
                         });
-                        // Livewire.hook('message.processed', () => {
-                        //     this.selectPP..val(this.producto_id).trigger('change');
-                        // })
+                        Livewire.hook('message.processed', () => {
+                            this.selectPP.select2({
+                                templateResult: formatOption
+                            }).val(this.producto_id).trigger('change');
+                        })
                     }
                 }))
             })
 
             function select2Producto() {
                 this.selectPP = $(this.$refs.selectproductoprm).select2({
-                    templateResult: function(data) {
-                        if (!data.id) {
-                            return data.text;
-                        }
-                        const image = $(data.element).data('image') ?? '';
-                        const marca = $(data.element).data('marca') ?? '';
-                        const category = $(data.element).data('category') ??
-                            '';
-                        const subcategory = $(data.element).data(
-                                'subcategory') ??
-                            '';
-
-                        let html = `<div class="custom-list-select">
-                                    <div class="image-custom-select">`;
-                        if (image) {
-                            html +=
-                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
-                        } else {
-                            html +=
-                                `<x-icon-image-unknown class="w-full h-full" />`;
-                        }
-                        html += `</div>
-                                        <div class="content-custom-select">
-                                <p class="title-custom-select">
-                                    ${data.text}</p>
-                                <p class="marca-custom-select">
-                                    ${marca}</p>  
-                                    <div class="category-custom-select">
-                                        <span class="inline-block">${category}</span>
-                                        <span class="inline-block">${subcategory}</span>
-                                    </div>  
-                                </div>
-                                 </div>`;
-                        return $(html);
-                    }
+                    templateResult: formatOption
                 });
                 this.selectPP.val(this.producto_id).trigger("change");
                 this.selectPP.on("select2:select", (event) => {
@@ -517,37 +491,7 @@
 
             function selectProductoSec() {
                 this.selectPS = $(this.$refs.selectps).select2({
-                    templateResult: function(data) {
-                        if (!data.id) {
-                            return data.text;
-                        }
-                        const image = $(data.element).data('image') ?? '';
-                        const marca = $(data.element).data('marca') ?? '';
-                        const category = $(data.element).data('category') ?? '';
-                        const subcategory = $(data.element).data('subcategory') ?? '';
-
-                        let html = `<div class="custom-list-select">
-                        <div class="image-custom-select">`;
-                        if (image) {
-                            html +=
-                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
-                        } else {
-                            html += `<x-icon-image-unknown class="w-full h-full" />`;
-                        }
-                        html += `</div>
-                            <div class="content-custom-select">
-                                <p class="title-custom-select">
-                                    ${data.text}</p>
-                                <p class="marca-custom-select">
-                                    ${marca}</p>  
-                                <div class="category-custom-select">
-                                    <span class="inline-block">${category}</span>
-                                    <span class="inline-block">${subcategory}</span>
-                                </div>  
-                            </div>
-                      </div>`;
-                        return $(html);
-                    }
+                    templateResult: formatOption
                 });
                 this.selectPS.val(this.productosec_id).trigger("change");
                 this.selectPS.on("select2:select", (event) => {
@@ -560,6 +504,47 @@
                 this.$watch('productosec_id', (value) => {
                     this.selectPS.val(value).trigger("change");
                 });
+                console.log(this.selectPS);
+                if (this.selectPS) {
+                    Livewire.hook('message.processed', () => {
+                        this.selectPS.select2({
+                            templateResult: formatOption
+                        }).val(this.productosec_id).trigger('change');
+                    })
+                }
+            }
+
+            function formatOption(data) {
+                if (!data.id) {
+                    return data.text;
+                }
+                const image = $(data.element).data('image') ?? '';
+                const marca = $(data.element).data('marca') ?? '';
+                const category = $(data.element).data('category') ?? '';
+                const subcategory = $(data.element).data('subcategory') ?? '';
+
+                let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+                if (image) {
+                    html +=
+                        `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
+                } else {
+                    html += `<x-icon-image-unknown class="w-full h-full" />`;
+                }
+                html += `</div>
+                            <div class="content-custom-select">
+                                <p class="title-custom-select">
+                                    ${data.text}</p>
+                                <p class="marca-custom-select">
+                                    ${marca}</p>  
+                                <div class="category-custom-select">
+                                    <span class="inline-block">${category}</span>
+                                    <span class="inline-block">${subcategory}</span>
+                                </div>  
+                            </div>
+                      </div>`;
+                return $(html);
+
             }
         </script>
     </div>

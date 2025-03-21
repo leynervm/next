@@ -159,13 +159,13 @@ Estimado cliente, no hay devolución de dinero. Todo cambio de mercadería solo 
 <table class="content-buttons" width="100%" cellpadding="5" cellspacing="0" role="presentation">
 <tr>
 <td cellpadding="0" cellspacing="0" style="border: hidden !important;">          
-<a class="btn btn-link" href="{{ route('facturacion.download.pdf', ['comprobante' => $comprobante, 'format'=> 'a4']) }}">DESCARGAR PDF</a>
+<a class="btn btn-link" href="{{ route('facturacion.download.pdf', ['comprobante' => $comprobante->uuid, 'format'=> 'a4']) }}">DESCARGAR PDF</a>
 </td>
 <td cellpadding="0" cellspacing="0" style="border: hidden !important;">          
-<a class="btn btn-link" href="{{ route('facturacion.download.xml', ['comprobante' => $comprobante, 'type'=> 'xml']) }}">DESCARGAR XML</a>
+<a class="btn btn-link" href="{{ route('facturacion.download.xml', ['comprobante' => $comprobante->uuid, 'type'=> 'xml']) }}">DESCARGAR XML</a>
 </td>
 <td cellpadding="0" cellspacing="0" style="border: hidden !important;">          
-<a class="btn btn-link" href="{{ route('facturacion.download.xml', ['comprobante' => $comprobante, 'type'=> 'cdr']) }}">DESCARGAR CDR</a>
+<a class="btn btn-link" href="{{ route('facturacion.download.xml', ['comprobante' => $comprobante->uuid, 'type'=> 'cdr']) }}">DESCARGAR CDR</a>
 </td>
 </tr>
 </table>

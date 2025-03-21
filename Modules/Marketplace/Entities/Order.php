@@ -51,6 +51,9 @@ class Order extends Model
     const EQUAL_RECEIVER = '0';
     const OTHER_RECEIVER = '1';
 
+    const BOLETA = '03';
+    const FACTURA = '01';
+
     protected $casts = [
         'receiverinfo' => 'array',
         'status' => StatusPayWebEnum::class
@@ -92,6 +95,11 @@ class Order extends Model
         return $this->belongsTo(Direccion::class)->withTrashed();
     }
 
+    public function comprobante(): MorphOne
+    {
+        return $this->morphOne(Comprobante::class, 'facturable')->withTrashed();
+    }
+
     public function cajamovimientos(): MorphMany
     {
         return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
@@ -105,11 +113,6 @@ class Order extends Model
     public function trackings(): HasMany
     {
         return $this->hasMany(Tracking::class);
-    }
-
-    public function comprobante(): MorphOne
-    {
-        return $this->morphOne(Comprobante::class, 'facturable');
     }
 
     public function tvitems(): MorphMany

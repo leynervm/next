@@ -96,7 +96,16 @@ class GenerarReporteVentas extends Component
 
     public function render()
     {
-        $typereportes = response()->json(FilterReportsEnum::except())->getData();
+        $except = [
+            FilterReportsEnum::TOP_TEN_PRODUCTOS->value,
+            FilterReportsEnum::CATALOGO_PRODUCTOS->value,
+            FilterReportsEnum::MIN_STOCK->value,
+            FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value,
+            FilterReportsEnum::KARDEX_PRODUCTOS->value,
+            FilterReportsEnum::CONSOLIDADO->value,
+        ];
+
+        $typereportes = response()->json(FilterReportsEnum::except($except))->getData();
         $sucursals = Sucursal::with(['monthboxes', 'openboxes'])->whereHas('ventas');
         if (!auth()->user()->isAdmin() || !auth()->user()->hasPermissionTo('admin.reportes.cajas.allsucursals')) {
             $sucursals->where('id', $this->sucursal_id);

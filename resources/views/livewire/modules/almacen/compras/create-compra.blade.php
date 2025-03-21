@@ -127,7 +127,8 @@
 
                 <div class="w-full xs:col-span-2">
                     <x-label value="Observaciones / Detalles :" />
-                    <x-text-area class="block w-full" rows="1" wire:model.defer="detalle"></x-text-area>
+                    <x-text-area class="block w-full" rows="1" wire:model.defer="detalle"
+                        style="height: auto;"></x-text-area>
                     <x-jet-input-error for="detalle" />
                 </div>
             </div>
@@ -387,15 +388,6 @@
                     </div>
 
                     <table class="w-full table text-[10px] text-colorsubtitleform">
-                        {{-- <tr>
-                        <td colspan="3" class="text-center text-colorlabel">
-                            TOTAL
-                            <span class="font-semibold text-xl">
-                                {{ decimalOrInteger($item['totalitem'], 2, ', ') }}</span>
-                            <small x-text="namemoneda"></small>
-                        </td>
-                    </tr> --}}
-
                         <tr>
                             <td class="align-middle">P. U. C. </td>
                             <td class="text-end">
@@ -592,6 +584,39 @@
                         }
                         this.calcular()
                     });
+                    this.$watch("producto_id", (value) => {
+                        this.selectP.val(value).trigger("change");
+                    });
+                    this.$watch("proveedor_id", (value) => {
+                        this.selectProvC.val(value).trigger("change");
+                    });
+                    this.$watch("sucursal_id", (value) => {
+                        this.selectS.val(value).trigger("change");
+                    });
+                    this.$watch("typedescuento", (value) => {
+                        this.selectTD.val(value).trigger("change");
+                    });
+                    this.$watch("moneda_id", (value) => {
+                        this.selectM.val(value).trigger("change");
+                    });
+                    this.$watch("typepayment_id", (value) => {
+                        this.selectT.val(value).trigger("change");
+                    });
+                    this.$watch("afectacion", (value) => {
+                        this.calcular()
+                        this.selectAF.val(value).trigger("change");
+                    });
+
+                    Livewire.hook('message.processed', () => {
+                        this.selectAF.select2().val(this.afectacion).trigger('change');
+                        this.selectT.select2().val(this.typepayment_id).trigger('change');
+                        this.selectTD.select2().val(this.typedescuento).trigger('change');
+                        this.selectS.select2().val(this.sucursal_id).trigger('change');
+                        this.selectProvC.select2().val(this.proveedor_id).trigger('change');
+                        this.selectP.select2({
+                            templateResult: formatOptionProd
+                        }).val(this.producto_id).trigger('change');
+                    });
                 },
                 numeric() {
                     this.exonerado = toDecimal(this.exonerado > 0 ? this.exonerado : 0);
@@ -687,37 +712,7 @@
 
         function select2Producto() {
             this.selectP = $(this.$refs.selectprod).select2({
-                templateResult: function(data) {
-                    if (!data.id) {
-                        return data.text;
-                    }
-                    const image = $(data.element).data('image') ?? '';
-                    const marca = $(data.element).data('marca') ?? '';
-                    const category = $(data.element).data('category') ?? '';
-                    const subcategory = $(data.element).data('subcategory') ?? '';
-
-                    let html = `<div class="custom-list-select">
-                        <div class="image-custom-select">`;
-                    if (image) {
-                        html +=
-                            `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
-                    } else {
-                        html += `<x-icon-image-unknown class="w-full h-full" />`;
-                    }
-                    html += `</div>
-                            <div class="content-custom-select">
-                                <p class="title-custom-select">
-                                    ${data.text}</p>
-                                <p class="marca-custom-select">
-                                    ${marca}</p>  
-                                <div class="category-custom-select">
-                                    <span class="inline-block">${category}</span>
-                                    <span class="inline-block">${subcategory}</span>
-                                </div>  
-                            </div>
-                      </div>`;
-                    return $(html);
-                }
+                templateResult: formatOptionProd
             });
             this.selectP.val(this.producto_id).trigger("change");
             this.selectP.on("select2:select", (event) => {
@@ -733,48 +728,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("producto_id", (value) => {
-                this.selectP.val(value).trigger("change");
-                if (value == null) {
-                    this.selectP.empty();
-                }
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectP.select2('destroy');
-                this.selectP.select2({
-                    templateResult: function(data) {
-                        if (!data.id) {
-                            return data.text;
-                        }
-                        const image = $(data.element).data('image') ?? '';
-                        const marca = $(data.element).data('marca') ?? '';
-                        const category = $(data.element).data('category') ?? '';
-                        const subcategory = $(data.element).data('subcategory') ?? '';
-
-                        let html = `<div class="custom-list-select">
-                        <div class="image-custom-select">`;
-                        if (image) {
-                            html +=
-                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
-                        } else {
-                            html += `<x-icon-image-unknown class="w-full h-full" />`;
-                        }
-                        html += `</div>
-                            <div class="content-custom-select">
-                                <p class="title-custom-select">
-                                    ${data.text}</p>
-                                <p class="marca-custom-select">
-                                    ${marca}</p>  
-                                <div class="category-custom-select">
-                                    <span class="inline-block">${category}</span>
-                                    <span class="inline-block">${subcategory}</span>
-                                </div>  
-                            </div>
-                      </div>`;
-                        return $(html);
-                    }
-                }).val(this.producto_id).trigger('change');
-            });
         }
 
         function selec2Proveedor() {
@@ -787,14 +740,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("proveedor_id", (value) => {
-                this.selectProvC.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectProvC.select2('destroy');
-                this.selectProvC.select2().val(this.proveedor_id).trigger('change');
-            });
         }
 
         function selec2Sucursal() {
@@ -806,14 +751,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("sucursal_id", (value) => {
-                this.selectS.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectS.select2('destroy');
-                this.selectS.select2().val(this.sucursal_id).trigger('change');
             });
         }
 
@@ -836,9 +773,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("moneda_id", (value) => {
-                this.selectM.val(value).trigger("change");
-            });
         }
 
         function select2Typedescto() {
@@ -852,13 +786,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("typedescuento", (value) => {
-                this.selectTD.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectTD.select2().val(this.typedescuento).trigger('change');
-            });
         }
 
         function select2Typepayment() {
@@ -870,13 +797,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("typepayment_id", (value) => {
-                this.selectT.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectT.select2().val(this.typepayment_id).trigger('change');
             });
         }
 
@@ -890,14 +810,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("afectacion", (value) => {
-                this.calcular()
-                this.selectAF.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectAF.select2().val(this.afectacion).trigger('change');
-            });
         }
 
         function formatOption(option) {
@@ -907,6 +819,35 @@
                 '</p>'
             );
             return $option;
-        };
+        }
+
+        function formatOptionProd(option) {
+            if (!option.id) {
+                return option.text;
+            }
+            const image = $(option.element).data('image') ?? '';
+            const marca = $(option.element).data('marca') ?? '';
+            const category = $(option.element).data('category') ?? '';
+            const subcategory = $(option.element).data('subcategory') ?? '';
+
+            let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+            if (image) {
+                html += `<img src="${image}" class="w-full h-full object-scale-down block" alt="${option.text}">`;
+            } else {
+                html += `<x-icon-image-unknown class="w-full h-full" />`;
+            }
+            html += `</div>
+                        <div class="content-custom-select">
+                            <p class="title-custom-select">${option.text}</p>
+                            <p class="marca-custom-select">${marca}</p>  
+                            <div class="category-custom-select">
+                                <span class="inline-block">${category}</span>
+                                <span class="inline-block">${subcategory}</span>
+                            </div>  
+                        </div>
+                    </div>`;
+            return $(html);
+        }
     </script>
 </div>

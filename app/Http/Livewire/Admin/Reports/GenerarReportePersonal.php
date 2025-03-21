@@ -89,6 +89,12 @@ class GenerarReportePersonal extends Component
             FilterReportsEnum::DIAS_SELECCIONADOS->value,
             FilterReportsEnum::TOP_TEN_VENTAS->value,
             FilterReportsEnum::VENTAS_POR_COBRAR->value,
+            FilterReportsEnum::TOP_TEN_PRODUCTOS->value,
+            FilterReportsEnum::CATALOGO_PRODUCTOS->value,
+            FilterReportsEnum::MIN_STOCK->value,
+            FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value,
+            FilterReportsEnum::KARDEX_PRODUCTOS->value,
+            FilterReportsEnum::CONSOLIDADO->value,
         ];
 
         // $typereportes = response()->json(FilterReportsEnum::filterEmployers())->getData();

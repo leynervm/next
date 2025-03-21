@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Storage;
 use Modules\Facturacion\Entities\Comprobante;
 use Nwidart\Modules\Facades\Module;
 use Nwidart\Modules\Routing\Controller;
+use Illuminate\Support\Str;
 use ZipArchive;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -26,16 +27,11 @@ class FacturacionController extends Controller
         return view('facturacion::index');
     }
 
-    // public function show(Comprobante $comprobante)
-    // {
-    //     return view('facturacion::comprobantes.index', compact('comprobante'));
-    // }
-
     public function imprimirA4(Comprobante $comprobante)
     {
         $this->authorize('sucursal', $comprobante);
         if (Module::isEnabled('Facturacion')) {
-            
+
             $tmp = public_path('fonts/');
             $options = [
                 'isHtml5ParserEnabled' => true,
@@ -49,7 +45,50 @@ class FacturacionController extends Controller
                 'defaultFont' => 'Ubuntu'
             ];
 
+            $comprobante->load([
+                'facturableitems',
+                'client',
+                'moneda',
+                'typepayment',
+                'seriecomprobante.typecomprobante',
+                'sucursal' => function ($query) {
+                    $query->with(['ubigeo', 'empresa.telephones']);
+                }
+            ]);
             $pdf = PDF::setOption($options)->loadView('facturacion::pdf.comprobantes.a4', compact('comprobante'));
+            return $pdf->stream($comprobante->seriecompleta . '.pdf');
+        }
+    }
+
+    public function imprimirA5(Comprobante $comprobante)
+    {
+        $this->authorize('sucursal', $comprobante);
+        if (Module::isEnabled('Facturacion')) {
+
+            $tmp = public_path('fonts/');
+            $options = [
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'isRemoteEnabled' => true,
+                'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                'fontDir' => $tmp,
+                'fontCache' => $tmp,
+                'tempDir' => $tmp,
+                'chroot' => $tmp,
+                'defaultFont' => 'Ubuntu'
+            ];
+
+            $comprobante->load([
+                'facturableitems',
+                'client',
+                'moneda',
+                'typepayment',
+                'seriecomprobante.typecomprobante',
+                'sucursal' => function ($query) {
+                    $query->with(['ubigeo', 'empresa.telephones']);
+                }
+            ]);
+            $pdf = PDF::setOption($options)->setPaper('a5', 'portarait')->loadView('facturacion::pdf.comprobantes.a5', compact('comprobante'));
             return $pdf->stream($comprobante->seriecompleta . '.pdf');
         }
     }
@@ -76,14 +115,43 @@ class FacturacionController extends Controller
                 'defaultFont' => 'Ubuntu'
             ];
 
+            $comprobante->load([
+                'facturableitems',
+                'client',
+                'moneda',
+                'typepayment',
+                'seriecomprobante.typecomprobante',
+                'sucursal' => function ($query) {
+                    $query->with(['ubigeo', 'empresa.telephones']);
+                }
+            ]);
             $pdf = PDF::setOption($options)->setPaper([0, 0, 226.77, $heightPage])->loadView('facturacion::pdf.comprobantes.ticket', compact('comprobante'));
             return $pdf->stream($comprobante->seriecompleta . '.pdf');
         }
     }
 
-
-    public function downloadXML(Comprobante $comprobante, $type)
+    public function downloadXML($comprobante, $type)
     {
+
+        if (!in_array($type, ['xml', 'cdr']) || !Str::isUuid($comprobante)) {
+            abort(404);
+        }
+
+        $comprobante = Comprobante::where('uuid', $comprobante)->first();
+        if (empty($comprobante)) {
+            abort(404);
+        }
+
+        $comprobante->load([
+            'facturableitems',
+            'client',
+            'moneda',
+            'typepayment',
+            'seriecomprobante.typecomprobante',
+            'sucursal' => function ($query) {
+                $query->with(['ubigeo', 'empresa.telephones']);
+            }
+        ]);
 
         // $this->authorize('sucursal', $comprobante);
         $code_comprobante = $comprobante->seriecomprobante->typecomprobante->code;
@@ -127,14 +195,73 @@ class FacturacionController extends Controller
         }
     }
 
-    public function imprimirA4Public(Comprobante $comprobante, $format)
+    public function imprimirpublic($comprobante, $format)
     {
         if (Module::isEnabled('Facturacion')) {
-            if (!in_array($format, ['a4', 'a5'])) {
+            if (!in_array($format, ['a4', 'a5', 'ticket']) || !Str::isUuid($comprobante)) {
                 abort(404);
             }
-            $pdf = PDF::loadView('facturacion::pdf.comprobantes.' . $format, compact('comprobante'));
-            return $pdf->stream();
+
+            $comprobante = Comprobante::where('uuid', $comprobante)->first();
+            if (empty($comprobante)) {
+                abort(404);
+            }
+
+            $options = [];
+            $tmp = public_path('fonts/');
+            $comprobante->load([
+                'facturableitems',
+                'client',
+                'moneda',
+                'typepayment',
+                'seriecomprobante.typecomprobante',
+                'sucursal' => function ($query) {
+                    $query->with(['ubigeo', 'empresa.telephones']);
+                }
+            ]);
+
+            switch ($format) {
+                case 'ticket':
+                    $heightHeader = 250;
+                    $heightBody = (count($comprobante->facturableitems) * 16 * 12) * 2.8346;
+                    $heightFooter = 400; #Incl. Totales, QR, Leyenda, Info, Web
+                    $heightPage = number_format($heightHeader + $heightBody + $heightFooter, 2, '.', '');
+                    $options = [
+                        'isHtml5ParserEnabled' => true,
+                        'isFontSubsettingEnabled' => true,
+                        'isRemoteEnabled' => true,
+                        'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                        'fontDir' => $tmp,
+                        'fontCache' => $tmp,
+                        'tempDir' => $tmp,
+                        'chroot' => $tmp,
+                        'defaultFont' => 'Ubuntu'
+                    ];
+                    $pdf = PDF::setOption($options)->setPaper([0, 0, 226.77, $heightPage]);
+                    break;
+                case 'a5':
+                    $options = [
+                        'isHtml5ParserEnabled' => true,
+                        'isFontSubsettingEnabled' => true,
+                        'isRemoteEnabled' => true,
+                        'logOutputFile' => storage_path('logs/dompdf.log.htm'),
+                        'fontDir' => $tmp,
+                        'fontCache' => $tmp,
+                        'tempDir' => $tmp,
+                        'chroot' => $tmp,
+                        'defaultFont' => 'Ubuntu'
+                    ];
+                    $pdf = PDF::setOption($options)->setPaper('a5', 'portarait');
+                    break;
+                default:
+                    $pdf = PDF::setOption($options);
+                    break;
+            }
+
+            return $pdf->loadView('facturacion::pdf.comprobantes.' . $format, compact('comprobante'))
+                ->stream($comprobante->seriecompleta . '.pdf');
+        } else {
+            abort(404);
         }
     }
 

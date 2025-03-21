@@ -38,8 +38,11 @@ class ShowCompra extends Component
     public $openbox, $monthbox, $methodpayment_id, $concept_id, $detalle, $moneda_id;
     public $totalamount, $tipocambio;
 
+    public $producto_id, $subtotaldsctoitem = 0, $subtotaligvitem = 0,
+        $pricebuy = 0, $subtotalitem = 0, $totalitem = 0;
+
     public $requireserie, $priceunitario, $priceventa, $descuentounitario,
-        $typedescuento, $igvunitario, $sumstock;
+        $typedescuento, $typedescuentoprod, $igvunitario, $sumstock;
     public $pricetype, $pricetype_id;
 
     protected function rules()
@@ -371,136 +374,62 @@ class ShowCompra extends Component
     public function edit(Compraitem $compraitem)
     {
         $this->resetValidation();
-        $this->setAlmacens($compraitem);
+        $compraitem->load(['kardexes', 'series', 'producto' => function ($query) {
+            $query->with(['unit', 'almacens']);
+        }]);
+        Self::setAlmacens($compraitem);
+        $this->compraitem = $compraitem;
         $this->requireserie = $compraitem->producto->isRequiredserie();
         $this->priceunitario = $compraitem->price;
-        $this->typedescuento = $compraitem->descuento > 0 ? '1' : '0';
         $this->igvunitario = $compraitem->igv;
+        $this->typedescuentoprod = $compraitem->typedescuento;
         $this->descuentounitario = $compraitem->descuento;
         $this->priceventa = $compraitem->producto->pricesale;
-        $this->compraitem = $compraitem;
+        $this->subtotaldsctoitem = $compraitem->subtotaldescuento;
+        $this->subtotalitem = $compraitem->total + $compraitem->subtotaldescuento;
+        $this->totalitem = $compraitem->total;
+        $this->sumstock = collect($this->almacens)->sum('cantidad');
         $this->openproducto = true;
-    }
-
-    public function setAlmacens($compraitem)
-    {
-        $unit = $compraitem->producto->unit->name ?? '';
-        $arrayalmacens = $compraitem->almacencompras()->with(['almacen', 'series' => function ($query) {
-            $query->select('id', 'serie', 'dateout', 'status', 'almacencompra_id');
-        }])->get()->toArray();
-        $combined = $compraitem->producto->almacens->map(function ($item) use ($arrayalmacens, $unit) {
-            $almacencompra = collect($arrayalmacens)->firstWhere('almacen_id', $item['id']);
-            if ($almacencompra) {
-                $almacencompra['cantidad'] = decimalOrInteger($almacencompra['cantidad']);
-                $almacencompra['series'] = $almacencompra['series'];
-            } else {
-                $almacencompra['cantidad'] = 0;
-                $almacencompra['series'] = [];
-            }
-            $almacencompra['id'] = $item->id;
-            $almacencompra['name'] =  $item->name;
-            $almacencompra['unit'] =  $unit;
-            $almacencompra['stock_actual'] =  $item->pivot->cantidad;
-            $almacencompra['newserie'] = '';
-            return $almacencompra;
-        })->toArray();
-
-        // dd($combined);
-        $this->almacens = $combined;
     }
 
     public function updateitem($closemodal = false)
     {
-
         $this->sumstock = collect($this->almacens)->sum('cantidad');
-
         $this->validate([
-            'sumstock' =>   ['required', 'numeric', 'gt:0', 'decimal:0,2'],
-            'priceunitario' => ['required'],
-            'priceventa' => ['required'],
-            'descuentounitario' => ['required'],
-            'typedescuento' => ['required'],
-            'igvunitario' => ['required'],
+            'sumstock' =>   ['required', 'numeric', 'gt:0'],
+            'priceunitario' => ['required', 'numeric', 'decimal:0,2', 'gt:0'],
+            'typedescuentoprod' => ['required', 'integer', 'min:0', 'in:0,1,2,3'],
+            'descuentounitario' => $this->typedescuentoprod > 0 ?
+                ['required', 'numeric', 'decimal:0,2', 'gt:0'] :
+                ['nullable'],
+            'igvunitario' => ['required', 'min:0', 'numeric', 'decimal:0,3'],
+            'priceventa' => $this->compra->sucursal->empresa->usarlista() ?
+                ['nullable', 'min:0'] :
+                ['required', 'numeric', 'decimal:0,3', 'gt:0'],
+            'almacens' => ['required', 'array', 'min:1'],
         ]);
 
         DB::beginTransaction();
         try {
+            // Verificamos que almenos exista almacenes con cantidad > 0
+            $validAlmacens = collect($this->almacens)->filter(function ($item) {
+                return $item['cantidad'] > 0;
+            })->toArray();
 
-            foreach ($this->almacens as $key => $almacen) {
-                $almacen_id = (int) $almacen['id'];
-                $productoAlmacen = $this->compraitem->producto->almacens->find($almacen_id);
-                $almacencompra = $this->compraitem->almacencompras()->firstOrCreate(['almacen_id' => $almacen_id], [
-                    'almacen_id' => $almacen['id'],
-                    'cantidad' => $almacen['cantidad']
-                ]);
+            if (count($validAlmacens) == 0) {
+                $message = response()->json([
+                    // 'title' => "INGRESAR CANTIDAD MAYOR A CERO AL MENOS EN UN ALMACÉN DISPONIBLE.",
+                    'title' => "STOCK TOTAL ENTRANTE DEBE SER MAYOR A CERO.",
+                    'text' => null,
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $message);
+                return false;
+            }
 
-                if ($this->compraitem->producto->isRequiredserie()) {
-                    if (count($almacen['series']) != $almacen['cantidad']) {
-                        $this->addError("almacens.$key.newserie", 'Series agregadas no coinciden con stock entrante.');
-                        $message = response()->json([
-                            'title' => "SERIES AGREGADAS NO COINCIDEN CON STOCK ENTRANTE.",
-                            'text' => null,
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $message);
-                        return false;
-                    }
-
-                    foreach ($almacen['series'] as $serial) {
-                        if (is_null($serial['id']) && $almacencompra) {
-                            $almacencompra->series()->create([
-                                'serie' => trim($serial['serie']),
-                                'almacen_id' => $almacen_id,
-                                'producto_id' => $this->compraitem->producto_id,
-                                'user_id' => auth()->user()->id,
-                            ]);
-                        }
-                    }
-                }
-
-                $almacenDB = $this->compraitem->almacencompras()->where('almacen_id', $almacen_id)->first();
-                $cantidadSaved = $almacenDB->cantidad;
-
-                if ($cantidadSaved > $almacen['cantidad']) {
-                    // dd($productoAlmacen->pivot->cantidad - ($cantidadSaved - $almacen['cantidad']));
-                    $this->compraitem->producto->almacens()->updateExistingPivot($almacen_id, [
-                        'cantidad' => $productoAlmacen->pivot->cantidad - ($cantidadSaved - $almacen['cantidad']),
-                    ]);
-                } else {
-                    // dd($productoAlmacen->pivot->cantidad + ($almacen['cantidad'] - $cantidadSaved));
-                    $this->compraitem->producto->almacens()->updateExistingPivot($almacen_id, [
-                        'cantidad' => $productoAlmacen->pivot->cantidad + ($almacen['cantidad'] - $cantidadSaved),
-                    ]);
-                }
-                // dd($cantidadSaved);
-                if ($almacencompra) {
-                    $almacencompra->cantidad = $almacen['cantidad'];
-                    $almacencompra->save();
-
-                    if ($almacencompra->kardex) {
-                        if ($almacencompra->kardex->cantidad <> $almacen['cantidad']) {
-                            if ($almacencompra->kardex->cantidad < $almacen['cantidad']) {
-                                $diferencia = $almacen['cantidad'] - $almacencompra->kardex->cantidad;
-                                $almacencompra->kardex->newstock = $almacencompra->kardex->newstock + $diferencia;
-                            } else {
-                                $diferencia = $almacencompra->kardex->cantidad - $almacen['cantidad'];
-                                $almacencompra->kardex->newstock = $almacencompra->kardex->newstock - $diferencia;
-                            }
-                        }
-                        $almacencompra->kardex->cantidad = $almacen['cantidad'];
-                        $almacencompra->kardex->save();
-                    } else {
-                        // dd( $almacen);
-                        $almacencompra->saveKardex(
-                            $this->compraitem->producto_id,
-                            $almacen['id'],
-                            $almacen['stock_actual'],
-                            $almacen['stock_actual'] +  $almacen['cantidad'],
-                            $almacen['cantidad'],
-                            '+',
-                            Kardex::ENTRADA_ALMACEN,
-                            $this->compra->seriecompleta
-                        );
-                    }
+            foreach ($this->almacens as $key => $item) {
+                if ($item['addseries'] && count($item['series']) != $item['cantidad']) {
+                    $this->addError("almacens.$key.cantidad", 'Series agregadas no coinciden con la cantidad entrante.');
+                    return false;
                 }
             }
 
@@ -509,23 +438,110 @@ class ShowCompra extends Component
             $subtotaldescuento = $this->descuentounitario * $this->sumstock;
             $subtotaligv = $this->igvunitario * $this->sumstock;
 
-            if ($this->typedescuento > 0) {
-                if ($this->typedescuento == '2') {
+            // if ($this->typedescuentoprod > 0) {
+            //     if ($this->typedescuentoprod == Compraitem::PRECIO_UNIT_SIN_DSCTO_APLICADO) {
+            //         $this->priceunitario = $this->pricebuy;
+            //     } elseif ($this->typedescuentoprod == Compraitem::DSCTO_IMPORTE_TOTAL) {
+            //         $this->descuentounitario = number_format($this->subtotaldsctoitem / $this->sumstock, 2, '.', '');
+            //     }
+            // } else {
+            //     $this->descuentounitario = 0;
+            //     $this->subtotaldsctoitem = 0;
+            // }
+
+            if ($this->typedescuentoprod > 0) {
+                if ($this->typedescuentoprod == Compraitem::PRECIO_UNIT_SIN_DSCTO_APLICADO) {
                     $priceunitario = $this->priceunitario - $descuentounitario;
-                    // $this->priceunitario = $this->priceunitario;
-                } elseif ($this->typedescuento == '3') {
+                } elseif ($this->typedescuentoprod == Compraitem::DSCTO_IMPORTE_TOTAL) {
                     $descuentounitario = number_format($this->descuentounitario / $this->sumstock, 2, '.', '');
                     $subtotaldescuento = $this->descuentounitario;
-                    // $this->descuentounitario = number_format($subtotaldescuento / $this->sumstock, 2, '.', '');
                 }
             } else {
                 $descuentounitario = 0;
                 $subtotaldescuento = 0;
             }
 
-            $pricebuy = $priceunitario + $this->igvunitario;
+
+            foreach ($this->almacens as $key => $almacen) {
+                // 1.- Verificamos si nuevo stock es inferior a existente en caso de existir
+                $kardex = $this->compraitem->kardexes()->where('almacen_id', $almacen['id'])->first();
+                $stock = $this->compraitem->producto->almacens()->find($almacen['id'])->pivot->cantidad;
+
+                if (!empty($kardex)) {
+                    if ($almacen['cantidad'] < $kardex->cantidad) {
+                        // 2.-Verificar que diferencia a disminuir exista en stock almacen sino quedara en NEGATIVO.
+                        $diferencia = $kardex->cantidad - $almacen['cantidad'];
+                        if ($stock < $diferencia) {
+                            $this->addError("almacens.$key.cantidad", 'Stock insuficiente para quitar de almacén.');
+                            return false;
+                        }
+
+                        $kardex->cantidad = $almacen['cantidad'];
+                        $kardex->newstock = $kardex->newstock - $diferencia;
+                        $this->compraitem->producto->descontarStockProducto($almacen['id'], $diferencia);
+                    } else {
+                        $diferencia = $almacen['cantidad'] - $kardex->cantidad;
+                        $kardex->newstock = $kardex->newstock + $diferencia;
+                        $this->compraitem->producto->incrementarStockProducto($almacen['id'], $diferencia);
+                    }
+
+                    $kardex->cantidad = $almacen['cantidad'];
+                    if ($kardex->cantidad > 0) {
+                        $kardex->save();
+                    } else {
+                        $kardex->delete();
+                    }
+                } else {
+                    if ($almacen['cantidad'] > 0) {
+                        $kardex = $this->compraitem->kardexes()->create([
+                            'date' => now('America/Lima'),
+                            'cantidad' => $almacen['cantidad'],
+                            'oldstock' => $stock,
+                            'newstock' => $stock + $almacen['cantidad'],
+                            'simbolo' => Kardex::SIMBOLO_INGRESO,
+                            'detalle' => Kardex::ENTRADA_ALMACEN,
+                            'reference' => $this->compra->referencia,
+                            'producto_id' => $this->compraitem->producto_id,
+                            'almacen_id' => $almacen['id'],
+                            'sucursal_id' => $this->compra->sucursal_id,
+                            'user_id' => auth()->user()->id,
+                        ]);
+                        $this->compraitem->producto->incrementarStockProducto($almacen['id'], $almacen['cantidad']);
+                    }
+                }
+
+                if ($this->compraitem->producto->isRequiredserie() && count($almacen['series']) > 0) {
+                    //Validar eliminacion de serie con con id no nulos
+                    $idArr = array_filter(array_column($almacen['series'], 'id'));
+                    foreach ($this->compraitem->series->where('almacen_id', $key) as $serie) {
+                        if (!in_array($serie->id, $idArr)) {
+                            if (!Self::validatedeleteserie($serie)) {
+                                return;
+                            }
+                            $serie->forceDelete();
+                            $this->compraitem->producto->descontarStockProducto($serie->almacen_id, 1);
+                        }
+                    }
+
+                    foreach ($almacen['series'] as $serie) {
+                        //Serie debe ser unico por producto
+                        $itemserie = $this->compraitem->series()->firstOrCreate([
+                            'serie' => trim($serie['serie']),
+                            'producto_id' => $this->compraitem->producto_id,
+                        ], [
+                            'almacen_id' => $almacen['id'],
+                            'user_id' => auth()->user()->id,
+                        ]);
+                    }
+                }
+            }
+
+
+            $pricebuysoles = $priceunitario + $this->igvunitario;
             $this->compraitem->price = $priceunitario;
+            $this->compraitem->igv = $this->igvunitario;
             $this->compraitem->cantidad = $this->sumstock;
+            $this->compraitem->typedescuento = $this->typedescuentoprod;
             $this->compraitem->descuento = $descuentounitario;
             $this->compraitem->subtotaligv = $subtotaligv;
             $this->compraitem->subtotaldescuento = $subtotaldescuento;
@@ -533,35 +549,27 @@ class ShowCompra extends Component
             $this->compraitem->subtotal = ($this->priceunitario * $this->sumstock) + $subtotaligv + $subtotaldescuento;
             $this->compraitem->save();
 
-            $this->compraitem->producto->pricebuy =  $this->compra->moneda->isDolar() ?
-                number_format($this->pricebuy * $this->compra->tipocambio, 2, '.', '') :
-                number_format($this->pricebuy, 2, '.', '');
-            if (!mi_empresa()->usarLista()) {
+            if (!$this->compra->sucursal->empresa->usarLista()) {
                 $this->compraitem->producto->pricesale = $this->priceventa;
             }
 
+            if ($this->compra->moneda->isDolar()) {
+                $pricebuysoles = $pricebuysoles * $this->compra->tipocambio ?? 1;
+            }
+
+            $this->compraitem->producto->pricebuy = $pricebuysoles;
             $this->compraitem->producto->save();
-            $this->compraitem->producto->load(['promocions' => function ($query) {
-                $query->with(['itempromos.producto' => function ($subQuery) {
-                    $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
-                }])->availables()->disponibles()->take(1);
-            }]);
             $this->compraitem->producto->assignPrice();
             $this->setTotal();
             DB::commit();
-            $this->compraitem->refresh();
             $this->compra->refresh();
             $this->resetValidation();
-            // dd($this->compra, $this->compra->compraitems()->sum('total'));
             if ($closemodal) {
-                $this->resetExcept(['compra', 'compraitem']);
+                $this->resetExcept(['compra']);
+                $this->compraitem = new Compraitem();
             } else {
                 $this->resetExcept(['compra', 'compraitem', /* 'openproducto' */]);
+                $this->compraitem->refresh();
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -572,32 +580,58 @@ class ShowCompra extends Component
         }
     }
 
+    public function updatingOpenadd()
+    {
+        if (!$this->openadd) {
+            $this->reset([
+                'producto_id',
+                'compraitem',
+                'almacens',
+                'priceunitario',
+                'igvunitario',
+                'subtotaligvitem',
+                'descuentounitario',
+                'pricebuy',
+                'subtotalitem',
+                'priceventa',
+                'subtotaldsctoitem',
+                'totalitem',
+                'typedescuento',
+                'requireserie'
+            ]);
+            $this->compraitem = new Compraitem;
+            $this->resetValidation();
+            $this->typedescuento = 0;
+        }
+    }
+
     public function addserie(int $index)
     {
-
         DB::beginTransaction();
         try {
-
             $this->almacens[$index]['newserie'] = trim(mb_strtoupper($this->almacens[$index]['newserie'], "UTF-8"));
             $validateData = $this->validate([
-                "almacens.$index.newserie" => ['required', 'string', 'min:6']
+                "almacens.$index.newserie" => ['required', 'string', 'min:4']
+            ], [], [
+                "almacens.$index.newserie" => 'serie'
             ]);
+            $serie = $this->almacens[$index]['newserie'];
 
-            if (count($this->almacens[$index]['series']) >= $this->almacens[$index]['cantidad']) {
-                $this->addError("almacens.$index.newserie", 'Series superan a la cantidad entrante.');
-                return false;
-            }
+            // if (count($this->almacens[$index]['series']) >= $this->almacens[$index]['cantidad']) {
+            //     $this->addError("almacens.$index.newserie", 'Series superan a la cantidad entrante.');
+            //     return false;
+            // }
 
             $exists = collect($this->almacens ?? [])->flatMap(function ($item) {
                 return $item['series'];
-            })->firstWhere('serie', $this->almacens[$index]['newserie']);
+            })->firstWhere('serie', $serie);
 
             if ($exists) {
                 $this->addError("almacens.$index.newserie", 'Serie ya se encuentra agregado.');
                 return false;
             }
 
-            $existsDB = Serie::where('serie', $this->almacens[$index]['newserie'])->exists();
+            $existsDB = Serie::where('serie', $serie)->exists();
             if ($existsDB) {
                 $this->addError("almacens.$index.newserie", 'Serie ya existe en la base de datos.');
                 return false;
@@ -605,12 +639,203 @@ class ShowCompra extends Component
 
             $arraySerie = [
                 'id' => null,
-                'serie' =>  $this->almacens[$index]['newserie'],
+                'serie' =>  $serie,
+                'dateout' =>  null,
+                'status' =>  Serie::DISPONIBLE,
             ];
             $this->almacens[$index]['series'][] = $arraySerie;
+            $this->almacens[$index]['cantidad'] = count($this->almacens[$index]['series']);
             DB::commit();
             $this->almacens[$index]['newserie'] = '';
             $this->resetValidation();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function updatedProductoId()
+    {
+        $this->resetValidation();
+        $almacens = [];
+        if (!empty($this->producto_id)) {
+            $producto = Producto::with(['almacens', 'unit'])->find($this->producto_id);
+            foreach ($producto->almacens as $item) {
+                $almacens[$item->id] = [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'unit' => $producto->unit->name,
+                    'stock_actual' => $item->pivot->cantidad,
+                    'cantidad' => 0,
+                    'series' => [],
+                    'newserie' => '',
+                    'addseries' => $producto->isRequiredserie(),
+                ];
+            }
+        }
+        $this->almacens = $almacens;
+        // dd($this->almacens);
+    }
+
+    public function addproducto($closemodal = false)
+    {
+        DB::beginTransaction();
+        try {
+            $this->validate([
+                'producto_id' => [
+                    'required',
+                    'integer',
+                    'min:1',
+                    'exists:productos,id',
+                    Rule::unique('compraitems', 'producto_id')->where('compra_id', $this->compra->id)
+                ],
+                'almacens' => ['required', 'array', 'min:1'],
+                'sumstock' => ['required', 'integer', 'gt:0'],
+                'priceunitario' => ['required', 'numeric', 'decimal:0,3', 'gt:0'],
+                'igvunitario' => ['nullable', 'numeric', 'decimal:0,3', 'min:0'],
+                'pricebuy' => ['required', 'numeric', 'decimal:0,3', 'gt:0'],
+                'typedescuento' => ['required', 'integer', 'min:0', 'in:0,1,2,3'],
+                'subtotaligvitem' => ['required', 'numeric', 'min:0'],
+                'subtotalitem' => ['required', 'numeric', 'gt:0'],
+                'subtotaldsctoitem' => ['nullable', 'numeric', 'min:0'],
+                'descuentounitario' =>  $this->typedescuento > 0 ?
+                    ['required', 'numeric', 'decimal:0,2', 'gt:0'] :
+                    ['nullable'],
+                'priceventa' => $this->compra->sucursal->empresa->usarlista() ?
+                    ['nullable', 'min:0'] :
+                    ['required', 'numeric', 'decimal:0,3', 'gt:0']
+
+            ]);
+
+            $myalmacens = collect($this->almacens)->filter(function ($item) {
+                return $item['cantidad'] > 0;
+            })->toArray();
+
+            // if ($item->isRequiredserie()) {
+            foreach ($myalmacens as $key => $item) {
+                if ($item['addseries'] && count($item['series']) != $item['cantidad']) {
+                    $this->addError("almacens.$key.cantidad", 'Series agregadas no coinciden con la cantidad entrante.');
+                    return false;
+                }
+            }
+
+            if ($this->typedescuento > 0) {
+                if ($this->typedescuento == Compraitem::PRECIO_UNIT_SIN_DSCTO_APLICADO) {
+                    $this->priceunitario = $this->pricebuy;
+                } elseif ($this->typedescuento == Compraitem::DSCTO_IMPORTE_TOTAL) {
+                    $this->descuentounitario = number_format($this->subtotaldsctoitem / $this->sumstock, 2, '.', '');
+                }
+            } else {
+                $this->descuentounitario = 0;
+                $this->subtotaldsctoitem = 0;
+            }
+
+            $producto = Producto::with('almacens')->find($this->producto_id);
+            $compraitem = $this->compra->compraitems()->where('producto_id', $this->producto_id)
+                ->where('typedescuento', $this->typedescuento)->first();
+
+            if (!empty($compraitem)) {
+                $compraitem->cantidad = $compraitem->cantidad + array_sum(array_column($myalmacens, 'cantidad'));
+                $compraitem->price = $this->priceunitario;
+                $compraitem->igv = $this->igvunitario;
+                $compraitem->descuento = $this->descuentounitario;
+                $compraitem->subtotaligv = $this->igvunitario * $compraitem->cantidad;
+                $compraitem->subtotaldescuento = $this->descuentounitario > 0 ? $this->descuentounitario * $compraitem->cantidad : 0;
+                $compraitem->total = ($this->priceunitario + $this->igvunitario) * $compraitem->cantidad;
+                $compraitem->subtotal =  $compraitem->subtotaldescuento + $compraitem->total;
+                $compraitem->save();
+            } else {
+                $compraitem = $this->compra->compraitems()->create([
+                    'cantidad' => array_sum(array_column($myalmacens, 'cantidad')),
+                    'price' => $this->priceunitario,
+                    'igv' => $this->igvunitario,
+                    'oldprice' => $producto->pricebuy,
+                    'oldpricesale' => $producto->pricesale,
+                    'typedescuento' => $this->typedescuento,
+                    'descuento' => $this->descuentounitario,
+                    'subtotaligv' => $this->subtotaligvitem,
+                    'subtotaldescuento' => $this->subtotaldsctoitem,
+                    'subtotal' => $this->subtotalitem,
+                    'total' => $this->totalitem,
+                    'producto_id' => $this->producto_id,
+                ]);
+            }
+
+            foreach ($myalmacens as $almacen) {
+
+                $kardex = $compraitem->kardexes()->where('almacen_id', $almacen['id'])->first();
+
+                if (!empty($kardex)) {
+                    $kardex->cantidad = $kardex->cantidad + $almacen['cantidad'];
+                    $kardex->newstock = $kardex->newstock + $almacen['cantidad'];
+                    $kardex->save();
+                } else {
+                    $stock = $producto->almacens->find($almacen['id'])->pivot->cantidad;
+                    $kardex = $compraitem->kardexes()->create([
+                        'date' => now('America/Lima'),
+                        'cantidad' => $almacen['cantidad'],
+                        'oldstock' => $stock,
+                        'newstock' => $stock + $almacen['cantidad'],
+                        'simbolo' => Kardex::SIMBOLO_INGRESO,
+                        'detalle' => Kardex::ENTRADA_ALMACEN,
+                        'reference' => $this->compra->referencia,
+                        'producto_id' => $this->producto_id,
+                        'almacen_id' => $almacen['id'],
+                        'sucursal_id' => $this->compra->sucursal_id,
+                        'user_id' => auth()->user()->id,
+                    ]);
+                }
+
+                if ($producto->isRequiredserie() && count($almacen['series']) > 0) {
+                    foreach ($almacen['series'] as $serie) {
+                        $itemserie = $compraitem->series()->create([
+                            'serie' => trim($serie['serie']),
+                            'almacen_id' => $almacen['id'],
+                            'producto_id' => $this->producto_id,
+                            'user_id' => auth()->user()->id,
+                        ]);
+                    }
+                }
+                $producto->incrementarStockProducto($almacen['id'], $almacen['cantidad']);
+            }
+
+            $pricebuysoles = $this->priceunitario + $this->igvunitario;
+            if ($this->compra->moneda->isDolar()) {
+                $pricebuysoles = $pricebuysoles * $this->tipocambio ?? 1;
+            }
+            $producto->pricebuy =  $pricebuysoles;
+            if (!$this->compra->sucursal->empresa->usarLista()) {
+                $producto->pricesale = $this->priceventa;
+            }
+            $producto->save();
+            DB::commit();
+            $producto->assignPrice();
+            // $this->setTotal();
+            $this->compra->refresh();
+            $this->setTotal(false);
+            $this->resetValidation();
+            $this->reset([
+                'producto_id',
+                'almacens',
+                'priceunitario',
+                'igvunitario',
+                'subtotaligvitem',
+                'descuentounitario',
+                'pricebuy',
+                'subtotalitem',
+                'priceventa',
+                'subtotaldsctoitem',
+                'totalitem',
+                'typedescuento',
+                'requireserie',
+            ]);
+            if ($closemodal) {
+                $this->openadd = false;
+            }
+            $this->dispatchBrowserEvent('created');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -626,53 +851,17 @@ class ShowCompra extends Component
         try {
             if (isset($this->almacens[$almacenindex]['series'][$index])) {
                 $serie_id = $this->almacens[$almacenindex]['series'][$index]['id'] ?? null;
-                $almacen_id = $this->almacens[$almacenindex]['id'];
-
-                if (!is_null($serie_id)) {
-                    $stockPivot = $this->compraitem->producto->almacens->find($almacen_id);
-                    if ($stockPivot) {
-                        if ($stockPivot->pivot->cantidad < 1) {
-                            $mensaje = response()->json([
-                                'title' => "NO EXISTE SUFICIENTE CANTIDAD PARA DISMINUIR STOCK EN ALMACÉN.",
-                                'text' => null
-                            ])->getData();
-                            $this->dispatchBrowserEvent('validation', $mensaje);
-                            return false;
-                        }
-
-                        $serie = Serie::find($serie_id);
-                        if ($serie->isSalida()) {
-                            $message = response()->json([
-                                'title' => "LA SERIE HA SIDO MARCADA COMO SALIDA Y NO SE PUEDE DESHACER EL PROCESO.",
-                                'text' => null
-                            ])->getData();
-                            $this->dispatchBrowserEvent('validation', $message);
-                            return false;
-                        }
-                        $serie->forceDelete();
-
-                        $this->compraitem->producto->almacens()->updateExistingPivot($almacen_id, [
-                            'cantidad' => $stockPivot->pivot->cantidad - 1,
-                        ]);
-
-                        $almacencompra = $this->compraitem->almacencompras()->where('almacen_id', $almacen_id)->first();
-                        if ($almacencompra) {
-                            $almacencompra->cantidad = $almacencompra->cantidad - 1;
-                            $almacencompra->save();
-                        }
-                    } else {
-                        $mensaje = response()->json([
-                            'title' => "ALMACÉN YA NO SE ENCUENTRA DISPONIBLE EN EL PRODUCTO SELECCIONADO",
-                            'text' => null
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
+                if (!empty($serie_id)) {
+                    $serie = Serie::find($serie_id);
+                    if (!Self::validatedeleteserie($serie)) {
+                        return; // Detener ejecución si la función retorna false
                     }
                 }
 
                 unset($this->almacens[$almacenindex]['series'][$index]);
                 $this->almacens[$almacenindex]['series'] = array_values($this->almacens[$almacenindex]['series']);
+                $this->almacens[$almacenindex]['cantidad'] = count($this->almacens[$almacenindex]['series']);
                 DB::commit();
-                $this->compraitem->refresh();
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -683,52 +872,83 @@ class ShowCompra extends Component
         }
     }
 
+    public function validatedeleteserie(Serie $serie, $confirmdelete = true)
+    {
+        $almacen = $serie->producto->almacens()->find($serie->almacen_id);
+        if (empty($almacen)) {
+            $mensaje = response()->json([
+                'title' => "ALMACÉN NO DISPONIBLE DE SERIE SELECCIONADA",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+        $stock = $almacen->pivot->cantidad;
+
+        if ($stock < 1) {
+            $mensaje = response()->json([
+                'title' => "NO EXISTE SUFICIENTE CANTIDAD PARA DISMINUIR STOCK EN ALMACÉN.",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $mensaje);
+            return false;
+        }
+
+        if (!$serie->isDisponible()) {
+            $title = $confirmdelete ? "REMOVIDA" : "";
+            $message = response()->json([
+                'title' => "SERIE $title [$serie->serie] SE ENCUENTRA OCUPADA, SE ENCUENTRA VINCULADO A OTROS REGISTROS.",
+                'text' => null
+            ])->getData();
+            $this->dispatchBrowserEvent('validation', $message);
+            return false;
+        }
+        return true;
+    }
+
     public function deleteitemcompra(Compraitem $compraitem)
     {
+        $compraitem->load(['kardexes', 'series' => function ($query) {
+            $query->where('status', '<>', Serie::DISPONIBLE);
+        }, 'producto' => function ($query) {
+            $query->with(['unit', 'almacens']);
+        }]);
+
         DB::beginTransaction();
         try {
-            foreach ($compraitem->almacencompras as $item) {
-                $outseries = $item->series()->whereNotNull('dateout')->count();
-                if ($outseries) {
-                    $message = response()->json([
-                        'title' => 'ITEM DE COMPRA CONTIENE SERIES QUE HAN SIDO REGISTRADO COMO SALIDAS !',
-                        'text' => null,
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $message);
-                    return false;
-                }
-
-                $stockPivot = $compraitem->producto->almacens->find($item->almacen_id);
-                if ($stockPivot) {
-                    if ($stockPivot->pivot->cantidad < $item->cantidad) {
-                        $mensaje = response()->json([
-                            'title' => 'NO EXISTE SUFICIENTE STOCK PARA DESCONTAR LAS CANTIDAD ENTRANTE EN COMPRA',
-                            'text' => null
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-                    $compraitem->producto->almacens()->updateExistingPivot($item->almacen_id, [
-                        'cantidad' => $stockPivot->pivot->cantidad - $item->cantidad,
-                    ]);
-                }
-
-                if ($item->kardex) {
-                    $item->kardex()->delete();
-                }
-                $item->series()->forceDelete();
-                $item->delete();
+            if (count($compraitem->series) > 0) {
+                $message = response()->json([
+                    'title' => count($compraitem->series) . " SERIES DEL PRODUCTO ADQUIRIDO SE ENCUENTRAN OCUPADOS, VINCULADOS A OTROS REGISTROS",
+                    'text' => null,
+                ])->getData();
+                $this->dispatchBrowserEvent('validation', $message);
+                return false;
             }
 
+            foreach ($compraitem->kardexes as $kardex) {
+                $stock = $compraitem->producto->almacens->find($kardex->almacen_id)->pivot->cantidad;
+                if ($stock < $kardex->cantidad) {
+                    $mensaje = response()->json([
+                        'title' => "STOCK INSUFICIENTE EN ALMACEN [" . $kardex->almacen->name . "] PARA DESCONTAR " . $kardex->cantidad . " " . $compraitem->producto->unit->name,
+                        'text' => null
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+                $compraitem->producto->descontarStockProducto($kardex->almacen_id, $kardex->cantidad);
+                DB::table('kardexes')->where('id', $kardex->id)->delete();
+            }
+
+            DB::table('series')->where('compraitem_id', $compraitem->id)->delete();
             $compraitem->producto->pricebuy = $compraitem->oldprice;
             $compraitem->producto->pricesale = $compraitem->oldpricesale;
             $compraitem->producto->save();
             $compraitem->producto->assignPrice();
-            $compraitem->forceDelete();
-            $this->setTotal();
+            DB::table('compraitems')->where('id', $compraitem->id)->delete();
             DB::commit();
-            $this->resetValidation();
             $this->compra->refresh();
+            $this->setTotal();
+            $this->resetValidation();
             $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -736,6 +956,30 @@ class ShowCompra extends Component
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
+        }
+    }
+
+    // public function deleteseriealmacencompra(Serie $serie)
+    // {
+    //     if (!Self::validatedeleteserie($serie)) {
+    //         return;
+    //     }
+    //     $serie->forceDelete();
+    //     $this->compraitem->producto->descontarStockProducto($serie->almacen_id, 1);
+    //     $kardex = $this->compraitem->kardexes()->where('almacen_id', $serie->almacen_id)->first();
+
+    //     if ($kardex) {
+    //         $kardex->cantidad = $kardex->cantidad - 1;
+    //         $kardex->newstock = $kardex->newstock - 1;
+    //         $kardex->save();
+    //     }
+    // }
+
+    public function updatedPricetypeId($value)
+    {
+        if ($value) {
+            $this->pricetype = Pricetype::find($value);
+            $this->pricetype_id = $this->pricetype->id;
         }
     }
 
@@ -769,215 +1013,33 @@ class ShowCompra extends Component
         $this->compra->save();
     }
 
-    public $producto_id, $subtotaldsctoitem = 0, $subtotaligvitem = 0,
-        $pricebuy = 0, $subtotalitem = 0, $totalitem = 0;
-
-    public function updatingOpenadd()
+    public function setAlmacens($compraitem)
     {
-        if (!$this->openadd) {
-            $this->reset([
-                'producto_id',
-                'almacens',
-                'priceunitario',
-                'igvunitario',
-                'subtotaligvitem',
-                'descuentounitario',
-                'pricebuy',
-                'subtotalitem',
-                'priceventa',
-                'subtotaldsctoitem',
-                'totalitem',
-                'typedescuento',
-                'requireserie'
-            ]);
-            $this->resetValidation();
-            $this->typedescuento = 0;
-        }
-    }
-
-    public function updatedProductoId()
-    {
-        $this->resetValidation();
         $almacens = [];
-        if (!empty($this->producto_id)) {
-            $producto = Producto::with(['almacens', 'unit'])->find($this->producto_id);
-            foreach ($producto->almacens as $item) {
-                $almacens[] = [
-                    'id' => $item->id,
-                    'name' => $item->name,
-                    'stock_actual' => $item->pivot->cantidad,
-                    'cantidad' => 0,
-                    'series' => [],
-                    'newserie' => '',
-                    'addseries' => $producto->isRequiredserie(),
-                    'unit' => $producto->unit->name
-                ];
+        foreach ($compraitem->producto->almacens as $almacen) {
+            $almacenarray['id'] = $almacen->id;
+            $almacenarray['newserie'] = '';
+            $almacenarray['cantidad'] = 0;
+            $almacenarray['series'] = [];
+            $almacenarray['addseries'] = $compraitem->producto->isRequiredserie();
+
+            foreach ($compraitem->kardexes->where('almacen_id', $almacen->id) as $kardex) {
+                $almacenarray['cantidad'] = decimalOrInteger($kardex->cantidad);
             }
+
+            $seriesalmacen = $compraitem->series->where('almacen_id', $almacen->id);
+            if (count($seriesalmacen) > 0) {
+                foreach ($seriesalmacen as $serie) {
+                    $arrayserie = [];
+                    $arrayserie['id'] = $serie->id;
+                    $arrayserie['serie'] = $serie->serie;
+                    $arrayserie['dateout'] = $serie->dateout;
+                    $arrayserie['status'] = $serie->status;
+                    $almacenarray['series'][] = $arrayserie;
+                }
+            }
+            $almacens[$almacen->id] = $almacenarray;
         }
         $this->almacens = $almacens;
-    }
-
-    public function addproducto($closemodal = false)
-    {
-        DB::beginTransaction();
-        try {
-            $this->validate([
-                'producto_id' => [
-                    'required',
-                    'integer',
-                    'min:1',
-                    'exists:productos,id',
-                    Rule::unique('compraitems', 'producto_id')->where('compra_id', $this->compra->id)
-                ],
-                'almacens' => ['required', 'array', 'min:1'],
-                'sumstock' => ['required', 'integer', 'gt:0'],
-                'priceunitario' => ['required', 'numeric', 'gt:0'],
-                'igvunitario' => ['nullable', 'numeric', 'min:0'],
-                'descuentounitario' =>  $this->typedescuento > 0 ? ['required', 'numeric', 'decimal:0,2', 'gt:0'] : ['nullable'],
-                'pricebuy' => ['required', 'numeric', 'gt:0'],
-                'typedescuento' => ['required', 'integer', 'min:0', 'in:0,1,2,3'],
-                'subtotaligvitem' => ['required', 'numeric', 'min:0'],
-                'subtotalitem' => ['required', 'numeric', 'gt:0'],
-                'subtotaldsctoitem' => ['nullable', 'numeric', 'min:0'],
-                'priceventa' => !$this->compra->sucursal->empresa->usarlista() ? ['required', 'numeric', 'decimal:0,2', 'gt:0'] : ['nullable', 'min:0']
-            ]);
-
-            $myalmacens = collect($this->almacens)->filter(function ($item) {
-                return $item['cantidad'] > 0;
-            })->toArray();
-
-            $producto = Producto::with(['unit'])->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
-            }])->find($this->producto_id);
-
-            if ($producto->requireserie) {
-                foreach ($myalmacens as $key => $item) {
-                    if (count($item['series']) != $item['cantidad']) {
-                        $this->addError("almacens.$key.cantidad", 'Series agregadas no coinciden con la cantidad entrante.');
-                        return false;
-                    }
-                }
-            }
-
-            if ($this->typedescuento > 0) {
-                if ($this->typedescuento == '2') {
-                    $this->priceunitario = $this->pricebuy;
-                } elseif ($this->typedescuento == '3') {
-                    $this->descuentounitario = number_format($this->subtotaldsctoitem / $this->sumstock, 2, '.', '');
-                }
-            } else {
-                $this->descuentounitario = 0;
-                $this->subtotaldsctoitem = 0;
-            }
-
-            $pricebuysoles = 0;
-            if ($this->compra->moneda->isDolar()) {
-                $pricebuysoles = $this->pricebuy * $this->tipocambio ?? 1;
-            }
-
-            $compraitem = $this->compra->compraitems()->create([
-                'cantidad' => $this->sumstock,
-                'price' => $this->pricebuy,
-                'oldprice' => $producto->pricebuy,
-                'oldpricesale' => $producto->pricesale,
-                'igv' => $this->igvunitario,
-                'descuento' => $this->descuentounitario,
-                'subtotaligv' => $this->subtotaligvitem,
-                'subtotaldescuento' => $this->subtotaldsctoitem,
-                'subtotal' => $this->subtotalitem,
-                'total' => $this->totalitem,
-                'producto_id' => $this->producto_id,
-                // 'almacens' => $myalmacens,
-            ]);
-
-            foreach ($myalmacens as $almacen) {
-                $almacencompra = $compraitem->almacencompras()->create([
-                    'cantidad' => $almacen['cantidad'],
-                    'almacen_id' => $almacen['id'],
-                ]);
-
-                if ($producto->isRequiredserie()) {
-                    foreach ($almacen['series'] as $serie) {
-                        $almacencompra->series()->create([
-                            'serie' => trim($serie['serie']),
-                            'almacen_id' => $almacen['id'],
-                            'producto_id' => $this->producto_id,
-                            'user_id' => auth()->user()->id,
-                        ]);
-                    }
-                }
-
-                $stockPivot = $producto->almacens->find($almacen['id']);
-
-                $almacencompra->saveKardex(
-                    $this->producto_id,
-                    $almacen['id'],
-                    $stockPivot->pivot->cantidad,
-                    $stockPivot->pivot->cantidad +  $almacen['cantidad'],
-                    $almacen['cantidad'],
-                    '+',
-                    Kardex::ENTRADA_ALMACEN,
-                    $this->compra->referencia
-                );
-                $producto->almacens()->updateExistingPivot($almacen['id'], [
-                    'cantidad' => $stockPivot->pivot->cantidad + $almacen['cantidad'],
-                ]);
-            }
-
-            $producto->pricebuy =  $this->compra->moneda->isDolar() ?
-                number_format($this->pricebuy * $this->compra->tipocambio, 2, '.', '') :
-                number_format($this->pricebuy, 2, '.', '');
-            if (!view()->shared('empresa')->usarLista()) {
-                $producto->pricesale = $this->priceventa;
-            }
-
-            $producto->save();
-            $producto->assignPrice();
-            DB::commit();
-            $this->compra->refresh();
-            $this->setTotal(false);
-            $this->resetValidation();
-            $this->reset([
-                'producto_id',
-                'almacens',
-                'priceunitario',
-                'igvunitario',
-                'subtotaligvitem',
-                'descuentounitario',
-                'pricebuy',
-                'subtotalitem',
-                'priceventa',
-                'subtotaldsctoitem',
-                'totalitem',
-                'typedescuento',
-                'requireserie',
-            ]);
-
-            if ($closemodal) {
-                $this->openadd = false;
-            }
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    public function updatedPricetypeId($value)
-    {
-        if ($value) {
-            $this->pricetype = Pricetype::find($value);
-            $this->pricetype_id = $this->pricetype->id;
-        }
-    }
-
-    public function hydrate()
-    {
-        $this->compra->refresh();
     }
 }

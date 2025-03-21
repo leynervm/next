@@ -176,6 +176,7 @@
             grecaptcha.execute("{{ config('services.recaptcha_v3.key_web') }}", {
                 action: 'submit'
             }).then(function(token) {
+                // console.log(token);
                 let form = e.target;
                 let action = form.getAttribute('action');
                 let input = document.createElement('input');
@@ -302,9 +303,8 @@
             cantidad: cantidad,
             open_modal: open_modal
         }
-
         sendRequest(`{{ route('marketplace.addproducto') }}`, data, (response) => {
-            // console.log(response);
+            //console.log(response);
             if (response.open_modal) {
                 window.dispatchEvent(new CustomEvent('getcombos', {
                     detail: {
@@ -319,6 +319,7 @@
                 window.dispatchEvent(new CustomEvent('updatecart'));
             }
         }, (errorData) => {
+            //console.log(errorData);
             toastMixin.fire({
                 title: errorData.error,
                 icon: 'error',

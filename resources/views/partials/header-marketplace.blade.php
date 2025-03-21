@@ -70,6 +70,11 @@
                                     <img :src="product.image" alt="" class="w-full h-full object-scale-down">
                                 </div>
                             </template>
+                            <template x-if="product.image==null">
+                                <div class="size-16 flex-shrink-0 rounded overflow-hidden">
+                                    <x-icon-file-upload class="!w-full !h-full" type="unknown" />
+                                </div>
+                            </template>
                             <a x-html="highlight(product.name, search)"
                                 :class="{ 'bg-fondohoverselect2': index === selectedIndex }"
                                 class="block w-full flex-1 rounded text-colorsubtitleform p-2.5 text-xs leading-none hover:bg-fondohoverselect2"
@@ -86,7 +91,7 @@
                     class="group relative h-[68%] self-center hidden xs:flex min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
                     <a class="h-full flex flex-col text-primary items-center px-1 font-semibold text-lg leading-none cursor-pointer group-hover:opacity-80"
                         href="{{ route('ofertas') }}">
-                        Ofertas</a>
+                        PROMOCIONES</a>
                 </li>
 
                 @auth
@@ -115,8 +120,8 @@
                             <button title="Dark" theme="theme-darknext" type="button"
                                 class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                                    class="block w-8 h-8 p-1">
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" class="block w-8 h-8 p-1">
                                     <path
                                         d="M21.5 14.0784C20.3003 14.7189 18.9301 15.0821 17.4751 15.0821C12.7491 15.0821 8.91792 11.2509 8.91792 6.52485C8.91792 5.06986 9.28105 3.69968 9.92163 2.5C5.66765 3.49698 2.5 7.31513 2.5 11.8731C2.5 17.1899 6.8101 21.5 12.1269 21.5C16.6849 21.5 20.503 18.3324 21.5 14.0784Z" />
                                 </svg>
@@ -295,13 +300,18 @@
 
             <ul class="w-full block absolute left-0 top-[100%] py-2 rounded-b-3xl bg-fondominicard z-[999]"
                 x-show="products.length">
-                <div class="rounded p-1 overflow-y-auto max-h-[calc(100vh-125px)]">
+                <div class="rounded p-1 overflow-y-auto max-h-[calc(100vh-120px)]">
                     <template x-for="product in products" :key="product.id">
                         <li class="w-full flex p-1">
                             <template x-if="product.image">
                                 <div class="size-16 flex-shrink-0 rounded overflow-hidden">
                                     <img :src="product.image" alt=""
                                         class="w-full h-full object-scale-down">
+                                </div>
+                            </template>
+                            <template x-if="product.image==null">
+                                <div class="size-16 flex-shrink-0 rounded overflow-hidden">
+                                    <x-icon-file-upload class="!w-full !h-full" type="unknown" />
                                 </div>
                             </template>
                             <a x-html="highlight(product.name, search)"

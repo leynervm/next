@@ -37,9 +37,7 @@ trait CalcularPrecioVenta
         // $precio_real_compra = $this->precio_real_compra;
         //Verifico si cuenta con promocion activa y disponible 
         $promocion = $this->getPromocion();
-        // $usarLista = Empresa::query()->select('uselistprice')->first()->usarlista() ?? false;
         $usarLista = view()->shared('empresa')->usarlista() ?? false;
-        // $descuento = getDscto($promocion);
 
         if ($usarLista) {
             $rango = Rango::query()->with(['pricetypes' => function ($query) {
@@ -94,20 +92,17 @@ trait CalcularPrecioVenta
                 $this->pricesale = $oldpromocion->pricebuy;
                 $this->save();
             } else {
-                $pricesale = ($promocion && $promocion->isRemate()) ? $this->pricebuy : $this->pricesale;
+                $pricesale = ($promocion && $promocion->isLiquidacion()) ? $this->pricebuy : $this->pricesale;
                 $precio_venta = getPriceDinamic($pricesale, 0, 0, 0, 2, $promocion);
-
-                if ($promocion && $promocion->isCombo()) {
-                    $combo = getAmountCombo($promocion);
-                    $precio_venta = $precio_venta + $combo->total;
-                }
-
+                // if ($promocion && $promocion->isCombo()) {
+                //     $combo = getAmountCombo($promocion);
+                //     $precio_venta = $precio_venta + $combo->total;
+                // }
                 $this->pricesale = $precio_venta;
                 $this->save();
             }
         }
     }
-
 
     public function getPrecioVentaDefault($pricetype = null)
     {
@@ -118,17 +113,11 @@ trait CalcularPrecioVenta
         }
     }
 
-    //siempre traer las relacione cargadas con with en el producto
-    private function getPromocion()
-    {
-        return ($this->promocions && count($this->promocions) > 0) ? verifyPromocion($this->promocions->first()) : null;
-    }
-
     public function getPrecioVenta($pricetype = null)
     {
-        $descuento = $this->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $descuento = $this->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
         $liquidacion = $this->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
-// dd($descuento, $liquidacion);
+        // dd($descuento, $liquidacion);
         if ($liquidacion) {
             $precio_venta = getPriceDinamic($this->pricebuy, 0, !empty($pricetype) ? $pricetype->incremento : 2, 0, !empty($pricetype) ? $pricetype->decimals : 2);
             return $precio_venta;
@@ -146,6 +135,18 @@ trait CalcularPrecioVenta
         }
 
         return $precio_venta;
+    }
+
+    //siempre traer las relacione cargadas con with en el producto
+    private function getPromocion()
+    {
+        $this->load(['promocions' => function ($query) {
+            $query->with(['itempromos.producto' => function ($subq) {
+                $subq->with(['unit', 'imagen']);
+            }])->where('type', '<>', PromocionesEnum::COMBO->value)->availables()->disponibles()->take(1);
+        }]);
+
+        return count($this->promocions) > 0 ? verifyPromocion($this->promocions->first()) : null;
     }
 
     public function addfavorito()

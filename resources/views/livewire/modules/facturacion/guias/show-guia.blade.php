@@ -507,42 +507,91 @@
                                 }
                             @endphp
 
-                            <x-card-producto :name="$item->producto->name" :image="!empty($item->producto->image)
-                                ? pathURLProductImage($item->producto->image)
-                                : null" :almacen="$item->almacen->name" :class="$class">
+                            <x-card-producto :name="$item->producto->name" :image="!empty($item->producto->imagen)
+                                ? pathURLProductImage($item->producto->imagen->url)
+                                : null" :almacen="$item->producto->marca->name" :class="$class">
 
-                                <p class="text-center text-colorlabel text-xl">
+                                <h1 class="text-xl !leading-none font-semibold mt-1 text-center text-colorlabel">
                                     {{ decimalOrInteger($item->cantidad) }}
-                                    <small class="text-[10px]">
-                                        {{ $item->producto->unit->name }}</small>
-                                </p>
+                                    <small class="text-[10px] font-medium">
+                                        {{ $item->producto->unit->name }}
+                                        <small class="text-colorerror">
+                                            /
+                                            @if ($item->isNoAlterStock())
+                                                NO ALTERA STOCK
+                                            @elseif ($item->isReservedStock())
+                                                STOCK RESERVADO
+                                            @elseif ($item->isIncrementStock())
+                                                INCREMENTA STOCK
+                                            @elseif($item->isDiscountStock())
+                                                DISMINUYE STOCK
+                                            @endif
+                                        </small>
+                                    </small>
+                                </h1>
 
-                                <div class="w-full mt-1 flex flex-wrap gap-1 items-start">
-                                    @if ($item->isNoAlterStock())
-                                        <x-span-text text="NO ALTERA STOCK" class="leading-3 !tracking-normal" />
-                                    @elseif ($item->isReservedStock())
-                                        <x-span-text text="STOCK RESERVADO" class="leading-3 !tracking-normal"
-                                            type="orange" />
-                                    @elseif ($item->isIncrementStock())
-                                        <x-span-text text="STOCK INCREMENTADO" class="leading-3 !tracking-normal"
-                                            type="green" />
-                                    @elseif($item->isDiscountStock())
-                                        <x-span-text text="DISMINUYE STOCK" class="leading-3 !tracking-normal"
-                                            type="red" />
-                                    @endif
+                                @if (count($item->kardexes) > 0  && count($item->itemseries) == 0)
+                                    <div
+                                        class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-3 xs:grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
+                                        @foreach ($item->kardexes as $kardex)
+                                            <div class="w-full p-1.5 flex flex-col items-center justify-start">
+                                                <h1 class="text-colorsubtitleform text-sm font-semibold !leading-none">
+                                                    {{ decimalOrInteger($kardex->cantidad) }}
+                                                    <small class="text-[10px] font-normal">
+                                                        {{ $item->producto->unit->name }}</small>
+                                                </h1>
 
-                                    @if (count($item->itemseries) == 1)
-                                        <x-span-text :text="'SERIE :' . $item->itemseries()->first()->serie->serie" class="leading-3 !tracking-normal" />
+                                                <h1 class="text-colortitleform text-[10px] font-semibold">
+                                                    {{ $kardex->almacen->name }}</h1>
+
+                                                @if (!$item->producto->isRequiredserie())
+                                                    <x-button-delete wire:click="deletekardex({{ $item->id }},{{ $kardex->id }})"
+                                                        wire:loading.attr="disabled" class="inline-flex" />
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <div class="w-full flex flex-col gap-1 justify-center items-center mt-1"
+                                    x-data="{ showForm: '{{ count($item->itemseries) == 1 }}' }">
+                                    @if (count($item->itemseries) > 0)
+                                        @if (count($item->itemseries) > 1)
+                                            <x-button @click="showForm = !showForm" class="whitespace-nowrap">
+                                                <span x-text="showForm ? 'OCULTAR SERIES' : 'MOSTRAR SERIES'"></span>
+                                            </x-button>
+                                        @endif
+
+                                        <div class="w-full" x-show="showForm" x-transition>
+                                            <x-table class="w-full block">
+                                                <x-slot name="body">
+                                                    @foreach ($item->itemseries as $itemserie)
+                                                        <tr>
+                                                            <td class="p-1 align-middle font-medium">
+                                                                {{ $itemserie->serie->serie }}
+                                                                [{{ $itemserie->serie->almacen->name }}]
+                                                            </td>
+                                                            <td class="align-middle text-center" width="40px">
+                                                                <x-button-delete
+                                                                    wire:click="deleteitemserie({{ $itemserie->id }})"
+                                                                    wire:loading.attr="disabled" />
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </x-slot>
+                                            </x-table>
+                                        </div>
                                     @endif
                                 </div>
+
 
                                 @if (!$item->trashed())
                                     @if ($item->cantidad > 0)
                                         @if ($item->isReservedStock())
-                                            <x-button class="inline-block mt-1"
+                                            <x-button class="block w-full mt-1"
                                                 onclick="confirmarSalida({{ $item->id }})"
                                                 wire:loading.attr="disabled">CONFIRMAR SALIDA</x-button>
-                                            <x-button class="inline-block mt-1"
+                                            <x-button class="block w-full mt-1"
                                                 onclick="confirmarDevolucion({{ $item->id }})"
                                                 wire:loading.attr="disabled">REPONER ALMACÉN</x-button>
                                         @endif
@@ -552,28 +601,12 @@
                                     @endif
                                 @endif
 
-                                @if (count($item->itemseries) > 1)
-                                    <div x-data="{ showForm: false }" class="mt-1">
-                                        <x-button @click="showForm = !showForm" class="whitespace-nowrap"
-                                            wire:loading.attr="disabled">
-                                            {{ __('VER SERIES') }}</x-button>
-                                        <div x-show="showForm" x-transition class="block w-full rounded mt-1">
-                                            <div class="w-full flex flex-wrap gap-1">
-                                                @foreach ($item->itemseries as $serie)
-                                                    <x-span-text :text="$serie->serie->serie"
-                                                        class="leading-3 !tracking-normal" />
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
-
                                 <x-slot name="footer">
                                     @if ($item->trashed())
                                         <x-span-text text="ELIMINADO" class="leading-3 !tracking-normal"
                                             type="red" />
                                     @else
-                                        @if ($guia->codesunat != '0')
+                                        @if (!$guia->isSendSunat())
                                             <x-button-delete onclick="confirmDeleteitem({{ $item->id }})"
                                                 wire:loading.attr="disabled" />
                                         @endif

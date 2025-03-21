@@ -72,7 +72,7 @@
 
     --fondo-header-modal: theme('colors.next.600');
     --color-header-modal: theme('colors.next.800');
-    --fondo-body-modal: theme('colors.white');
+    --fondo-body-modal: theme('colors.gray.50');
 
     --fondo-select2: theme('colors.white');
     --color-select2: theme('colors.gray.500');
@@ -200,7 +200,7 @@
 
     --fondo-header-modal: theme('colors.neutral.700');
     --color-header-modal: theme('colors.white');
-    --fondo-body-modal: theme('colors.neutral.600');
+    --fondo-body-modal: theme('colors.neutral.700');
 
     --fondo-select2: theme('colors.neutral.700');
     --color-select2: theme('colors.white');
@@ -439,7 +439,7 @@ input[type='number'].input-number-none {
 }
 
 .span-novedad {
-    @apply bg-gradient-to-tr from-amber-300 to-orange-600 px-1.5 p-1 rounded-lg sm:rounded-xl font-medium text-[10px] text-white tracking-widest transition duration-150 ease-in-out;
+    @apply bg-gradient-to-tr from-amber-300 to-orange-600 p-1 px-1.5 rounded-lg sm:rounded-xl font-medium text-[10px] text-white tracking-widest transition duration-150 ease-in-out;
 }
 
 .lista-requisitos-asus {
@@ -453,11 +453,11 @@ input[type='number'].input-number-none {
 
 .lista-requisitos-asus li::before {
     content: counter(step-counter);
-    @apply top-0 left-0 absolute flex justify-center items-center bg-fondospancardproduct px-3 md:px-4 p-2 rounded-lg md:rounded-xl font-semibold text-colorlabel text-xl sm:text-2xl md:text-3xl xl:text-5xl !leading-none;
+    @apply top-0 left-0 absolute flex justify-center items-center bg-fondospancardproduct p-2 px-3 md:px-4 rounded-lg md:rounded-xl font-semibold text-colorlabel text-xl sm:text-2xl md:text-3xl xl:text-5xl !leading-none;
 }
 
 .titulo-requerimiento-centro-autorizado {
-    @apply py-3 sm:py-5 md:py-8 font-semibold text-center text-sm sm:text-lg lg:text-2xl !leading-none;
+    @apply py-3 sm:py-5 md:py-8 font-semibold text-sm sm:text-lg lg:text-2xl text-center !leading-none;
 }
 
 .button-export-pdf {

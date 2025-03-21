@@ -44,17 +44,10 @@ class CompraController extends Controller
             'cuotas',
             'cajamovimientos',
             'compraitems' => function ($query) {
-                $query->with(['almacencompras' => function ($subQuery) {
-                    $subQuery->with(['almacen', 'series']);
-                }, 'producto' => function ($subQuery) {
-                    $subQuery->with(['unit', 'images', 'promocions' => function ($queryPrm) {
-                        $queryPrm->with(['itempromos.producto' => function ($queryItemprm) {
-                            $queryItemprm->with('unit')->addSelect(['image' => function ($q) {
-                                $q->select('url')->from('images')
-                                    ->whereColumn('images.imageable_id', 'productos.id')
-                                    ->where('images.imageable_type', Producto::class)
-                                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                            }]);
+                $query->with(['kardexes.almacen', 'series', 'producto' => function ($subq) {
+                    $subq->with(['unit', 'imagen', 'promocions' => function ($subquery) {
+                        $subquery->with(['itempromos.producto' => function ($q) {
+                            $q->with(['unit', 'imagen', 'almacens']);
                         }])->availables()->disponibles();
                     }]);
                 }]);
@@ -92,6 +85,19 @@ class CompraController extends Controller
                 'defaultFont' => 'Ubuntu'
             ];
 
+            $compra->load([
+                'sucursal.empresa',
+                'typepayment',
+                'moneda',
+                'proveedor',
+                'cuotas',
+                'cajamovimientos',
+                'compraitems' => function ($query) {
+                    $query->with(['kardexes.almacen', 'series', 'producto' => function ($subq) {
+                        $subq->with(['unit']);
+                    }]);
+                }
+            ]);
             $pdf = PDF::setOption($options)->loadView('almacen::pdf.compras.a4', compact('compra'));
             return $pdf->stream('COMPRA-' . $compra->referencia . '.pdf');
         }

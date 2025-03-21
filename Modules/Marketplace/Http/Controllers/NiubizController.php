@@ -5,9 +5,13 @@ namespace Modules\Marketplace\Http\Controllers;
 use App\Enums\StatusPayWebEnum;
 use App\Mail\EnviarResumenOrder;
 use App\Models\Almacen;
+use App\Models\Client;
 use App\Models\Promocion;
+use App\Models\Sucursal;
 use App\Models\Tvitem;
+use App\Models\Typepayment;
 use App\Rules\Recaptcha;
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Http\Request;
@@ -18,9 +22,11 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Laravel\Jetstream\Jetstream;
+use Luecano\NumeroALetras\NumeroALetras;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
 use Modules\Marketplace\Entities\Trackingstate;
+use Nwidart\Modules\Facades\Module;
 use Nwidart\Modules\Routing\Controller;
 
 class NiubizController extends Controller
@@ -37,7 +43,7 @@ class NiubizController extends Controller
                 'text' => null,
                 'type' => 'error',
             ];
-            Log::info('Mensaje de validación al registar venta virtual: ', $mensaje);
+            Log::info('Registrando venta virtual : ', $mensaje);
             return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
         }
 
@@ -59,7 +65,7 @@ class NiubizController extends Controller
                 'text' => null,
                 'type' => 'error',
             ];
-            Log::info('Mensaje de validación al registar venta virtual: ', $mensaje);
+            Log::info('Registrando venta virtual : ', $mensaje);
             return redirect()->route('carshoop.create')->with('message', response()->json($mensaje)->getData());
         }
 
@@ -90,7 +96,7 @@ class NiubizController extends Controller
 
         if (isset($response)) {
             if (isset($response['dataMap']) && $response['dataMap']['ACTION_CODE'] == '000') {
-                Log::info('Mensaje de validación al registar venta virtual: ', $response);
+                Log::info('Registrando venta virtual : ', $response['dataMap']);
                 DB::beginTransaction();
                 try {
 
@@ -114,6 +120,8 @@ class NiubizController extends Controller
                         'default' => $default
                     ]);
 
+                    Log::info('Registrando orden de compra web');
+                    $empresa = view()->shared('empresa');
                     $order = Order::create([
                         'date' => now('America/Lima'),
                         'seriecompleta' => 'ORDER-',
@@ -123,7 +131,7 @@ class NiubizController extends Controller
                         'igv' => 0,
                         'subtotal' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
                         'total' => decimalOrInteger(getAmountCart($shoppings)->total, 2),
-                        'tipocambio' => number_format(view()->shared('empresa')->tipocambio ?? 0, 3, '.', ''),
+                        'tipocambio' => number_format($empresa->tipocambio ?? 0, 3, '.', ''),
                         'receiverinfo' => [
                             'document' => $request->input('receiver_document'),
                             'name' => $request->input('receiver_name'),
@@ -137,6 +145,7 @@ class NiubizController extends Controller
                         'pasarela' => 'NIUBIZ',
                         'user_id' => auth()->user()->id,
                     ]);
+                    Log::info('Orden de compra web registrado correctamente');
 
                     $eci_description = "";
                     if (isset($response['dataMap']['ECI_DESCRIPTION']) && !empty($response['dataMap']['ECI_DESCRIPTION'])) {
@@ -162,6 +171,7 @@ class NiubizController extends Controller
                         'email' => isset($response['dataMap']['VAULT_BLOCK']) ?  $response['dataMap']['VAULT_BLOCK'] : null,
                         'user_id' => auth()->user()->id
                     ]);
+                    Log::info('Transacción de compra web registrado correctamente');
 
                     $order->seriecompleta = $order->seriecompleta . $order->id;
                     $order->save();
@@ -182,51 +192,74 @@ class NiubizController extends Controller
                         ]);
                     }
 
+                    Log::info('Registrando TVITEMS de compra web');
                     foreach ($shoppings as $item) {
-                        $order->tvitems()->create([
+                        $pricesale = $item->price;
+                        $igvsale = 0;
+                        if ($empresa->isAfectacionIGV()) {
+                            $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                            $pricesale = $priceIGV->price;
+                            $igvsale = $priceIGV->igv;
+                        }
+
+                        $tvitem = $order->tvitems()->create([
                             'date' => now('America/Lima'),
                             'cantidad' => decimalOrInteger($item->qty),
                             'pricebuy' => number_format($item->model->pricebuy, 2, '.', ''),
-                            'price' => number_format($item->price, 2, '.', ''),
-                            'igv' => number_format($item->options->igv, 2, '.', ''),
-                            'subtotaligv' => number_format($item->options->subtotaligv, 2, '.', ''),
-                            'subtotal' => number_format($item->subtotal, 2, '.', ''),
-                            'total' => number_format($item->subtotal, 2, '.', ''),
-                            'status' => 0,
-                            'alterstock' => Almacen::NO_ALTERAR_STOCK,
-                            'gratuito' => 0,
+                            'price' => number_format($pricesale, 2, '.', ''),
+                            'igv' => number_format($igvsale, 2, '.', ''),
+                            'subtotaligv' => number_format($item->qty * $igvsale, 2, '.', ''),
+                            'subtotal' => number_format($item->qty * $pricesale, 2, '.', ''),
+                            'total' => number_format(($pricesale + $igvsale) * $item->qty, 2, '.', ''),
+                            'alterstock' => Almacen::DISMINUIR_STOCK,
+                            'gratuito' => Tvitem::NO_GRATUITO,
                             'promocion_id' => $item->options->promocion_id,
-                            'almacen_id' => null,
                             'producto_id' => $item->id,
                             'user_id' => auth()->user()->id
                         ]);
 
                         if (count($item->options->carshoopitems) > 0) {
                             foreach ($item->options->carshoopitems as $carshoopitem) {
-                                $itemcombo = [
-                                    'date' => now('America/Lima'),
+
+                                $priceitem = $carshoopitem->price;
+                                $igvitem = 0;
+
+                                if ($empresa->isAfectacionIGV()) {
+                                    $priceIGV = getPriceIGV($priceitem, $empresa->igv);
+                                    $priceitem = $priceIGV->price;
+                                    $igvitem = $priceIGV->igv;
+                                }
+
+                                $carshoopitem = $tvitem->carshoopitems()->create([
                                     'cantidad' => $item->qty,
                                     'pricebuy' => $carshoopitem->pricebuy,
-                                    // 'price' => number_format($carshoopitem->price, 3, '.', ''),
-                                    // 'igv' => number_format($carshoopitem->igv, 3, '.', ''),
-                                    // 'subtotaligv' => number_format($subtotalItemIGVCombo, 3, '.', ''),
-                                    // 'subtotal' => number_format($subtotalItemCombo, 3, '.', ''),
-                                    // 'total' => number_format($totalItemCombo, 3, '.', ''),
-                                    'price' => $item->price,
-                                    'igv' => 0,
-                                    'subtotaligv' => 0,
-                                    'subtotal' => 0,
-                                    'total' => 0,
-                                    'status' => 0,
-                                    'alterstock' => Almacen::DISMINUIR_STOCK,
-                                    'gratuito' => Tvitem::GRATUITO,
-                                    'increment' => 0,
-                                    'promocion_id' => $item->options->promocion_id,
-                                    'almacen_id' => null,
+                                    'price' => $priceitem,
+                                    'igv' => $igvitem,
+                                    'subtotaligv' => $item->qty * $igvitem,
+                                    'subtotal' => $item->qty * $priceitem,
+                                    'total' => ($priceitem + $igvitem) * $item->qty,
+                                    'itempromo_id' => $carshoopitem->itempromo_id ?? null,
                                     'producto_id' => $carshoopitem->producto_id,
-                                    'user_id' => auth()->user()->id
-                                ];
-                                $order->tvitems()->create($itemcombo);
+                                ]);
+                                // $itemcombo = [
+                                //     'date' => now('America/Lima'),
+                                //     'cantidad' => $item->qty,
+                                //     'pricebuy' => $carshoopitem->pricebuy,
+                                //     'price' => $item->price,
+                                //     'igv' => 0,
+                                //     'subtotaligv' => 0,
+                                //     'subtotal' => 0,
+                                //     'total' => 0,
+                                //     'status' => 0,
+                                //     'alterstock' => Almacen::DISMINUIR_STOCK,
+                                //     'gratuito' => Tvitem::GRATUITO,
+                                //     'increment' => 0,
+                                //     'promocion_id' => $item->options->promocion_id,
+                                //     'almacen_id' => null,
+                                //     'producto_id' => $carshoopitem->producto_id,
+                                //     'user_id' => auth()->user()->id
+                                // ];
+                                // $order->tvitems()->create($itemcombo);
                             }
                         }
 
@@ -237,6 +270,128 @@ class NiubizController extends Controller
                         }
                         Cart::instance('shopping')->remove($item->rowId);
                     }
+                    Log::info('TVITEMS de compra web registrado correctamente');
+
+                    $sumatorias = Tvitem::select(
+                        DB::raw("COALESCE(SUM(total),0) as total"),
+                        DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN igv * cantidad ELSE 0 END),0) as igv"),
+                        DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '1' THEN igv * cantidad ELSE 0 END), 0) as igvgratuito"),
+                        DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as gravado"),
+                        DB::raw("COALESCE(SUM(CASE WHEN igv = 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as exonerado"),
+                        DB::raw("COALESCE(SUM(CASE WHEN gratuito = '1' THEN price * cantidad ELSE 0 END), 0) as gratuito")
+                    )->where('tvitemable_id', $order->id)->where('tvitemable_type', Order::class)->first();
+
+                    $order->exonerado = $sumatorias->exonerado;
+                    $order->gravado = $sumatorias->gravado;
+                    $order->igv = $sumatorias->igv;
+                    if ($sumatorias->igv > 0) {
+                        $order->subtotal = $sumatorias->gravado;
+                        $order->total = $sumatorias->gravado +  $sumatorias->igv;
+                    } else {
+                        $order->subtotal = $sumatorias->exonerado;
+                        $order->total = $sumatorias->exonerado;
+                    }
+                    $order->save();
+                    Log::info('Totales de compra web actualizados correctamente');
+
+                    if (Module::isEnabled('Facturacion')) {
+                        Log::info('Generando comprobante electrónico');
+                        $codecpe = $request->input('typecomprobante');
+                        $sucursal = Sucursal::withWhereHas('seriecomprobantes', function ($query) use ($codecpe) {
+                            $query->withWhereHas('typecomprobante', function ($subq) use ($codecpe) {
+                                $subq->where('code', $codecpe);
+                            });
+                        })->orderByDesc('default')->first();
+
+                        if (count($sucursal->seriecomprobantes) > 0) {
+                            $typepayment = Typepayment::activos()->where('paycuotas', Typepayment::CONTADO)->first();
+                            $clientecpe = Client::firstOrCreate([
+                                'document' => $request->input('document_comprobante')
+                            ], [
+                                'name' => $request->input('name_comprobante')
+                            ]);
+                            $counter = 1;
+                            $seriecomprobante = $sucursal->seriecomprobantes->first();
+                            $numeracion = $empresa->isProduccion() ? $seriecomprobante->contador + 1 : $seriecomprobante->contadorprueba + 1;
+                            $seriecompleta = $seriecomprobante->serie . '-' . $numeracion;
+                            $leyenda = new NumeroALetras();
+                            $currency_leyenda = 'NUEVOS SOLES';
+                            if ($order->moneda->isDolar()) {
+                                $currency_leyenda = 'DÓLARES';
+                            }
+
+                            $comprobante = $order->comprobante()->create([
+                                'date' => now('America/Lima'),
+                                'expire' => Carbon::parse(now('America/Lima'))->format('Y-m-d'),  //NO BIENE DE VENTA
+                                'seriecompleta' => $seriecompleta,
+                                'direccion' => null,
+                                'observaciones' => 'REGISTRADO MEDIANTE TIENDA VIRTUAL',
+                                'exonerado' => number_format($order->exonerado, 3, '.', ''),
+                                'gravado' => number_format($order->gravado, 3, '.', ''),
+                                'gratuito' => number_format(0, 3, '.', ''),
+                                'inafecto' => number_format(0, 3, '.', ''),
+                                'descuento' => number_format(0, 3, '.', ''),
+                                'otros' => number_format(0, 3, '.', ''),
+                                'igv' => number_format($order->igv, 3, '.', ''),
+                                'igvgratuito' => number_format(0, 3, '.', ''),
+                                'subtotal' => number_format($order->subtotal, 3, '.', ''),
+                                'total' => number_format($order->total, 3, '.', ''),
+                                'paymentactual' => number_format($order->total, 3, '.', ''),
+                                'percent' => $empresa->igv,  //NO BIENE DE VENTA
+                                'referencia' => 'ORDER #' . $order->purchase_number,
+                                'leyenda' => $leyenda->toInvoice($order->total, 2, $currency_leyenda),  //NO BIENE DE VENTA
+                                'sendmode' => $empresa->sendmode, //NO BIENE DE VENTA
+                                'client_id' => $clientecpe->id,
+                                'typepayment_id' => $typepayment->id,
+                                'seriecomprobante_id' => $seriecomprobante->id,
+                                'moneda_id' => $order->moneda_id,
+                                'sucursal_id' => $sucursal->id,
+                                'user_id' => auth()->user()->id,
+                            ]);
+
+                            Log::info('Registrando TVITEMS de comprobante electrónico');
+                            foreach ($order->tvitems as $item) {
+                                if ($item->gratuito) {
+                                    $afectacion = $item->igv > 0 ? '15' : '21';
+                                } else {
+                                    $afectacion = $item->igv > 0 ? '10' : '20';
+                                }
+
+                                $codeafectacion = $item->igv > 0 ? '1000' : '9997';
+                                $nameafectacion = $item->igv > 0 ? 'IGV' : 'EXO';
+                                $typeafectacion = $item->igv > 0 ? 'VAT' : 'VAT';
+                                $abreviatureafectacion = $item->igv > 0 ? 'S' : 'E';
+
+                                $descripcion = $item->producto->name;
+                                if ($item->promocion && $item->promocion->isCombo()) {
+                                    $descripcion = $item->promocion->titulo;
+                                }
+
+                                $comprobante->facturableitems()->create([
+                                    'item' => $counter,
+                                    'descripcion' => $descripcion,
+                                    'code' => $item->producto->code,
+                                    'cantidad' => $item->cantidad,
+                                    'price' => number_format($item->price, 3, '.', ''),
+                                    'igv' => number_format($item->igv, 3, '.', ''),
+                                    'subtotaligv' => number_format($item->subtotaligv, 3, '.', ''),
+                                    'subtotal' => number_format($item->subtotal, 3, '.', ''),
+                                    'total' => number_format($item->total, 3, '.', ''),
+                                    'unit' => $item->producto->unit->code,
+                                    'codetypeprice' => $item->gratuito ? '02' : '01', //01: Precio unitario (incluye el IGV) 02: Valor referencial unitario en operaciones no onerosas
+                                    'afectacion' => $afectacion,
+                                    'codeafectacion' => $item->gratuito ? '9996' : $codeafectacion,
+                                    'nameafectacion' => $item->gratuito ? 'GRA' : $nameafectacion,
+                                    'typeafectacion' => $item->gratuito ? 'FRE' : $typeafectacion,
+                                    'abreviatureafectacion' => $item->gratuito ? 'Z' : $abreviatureafectacion,
+                                    'percent' => $item->igv > 0 ? $empresa->igv : 0,
+                                ]);
+                                $counter++;
+                            }
+                            Log::info('Comprobante electrónico generado correctamente');
+                        }
+                    }
+
                     DB::commit();
                     // Cart::instance('shopping')->destroy();
                     if (auth()->check()) {
@@ -248,14 +403,8 @@ class NiubizController extends Controller
                         'type' => 'success',
                     ];
                     Log::info('Respuesta del pago: ', $mensaje);
-                    $order->load(['shipmenttype', 'user',  'entrega.sucursal.ubigeo', 'client', 'moneda', 'direccion.ubigeo', 'transaccion', 'tvitems' => function ($query) {
-                        $query->with(['promocion', 'producto' => function ($q) {
-                            $q->with(['unit', 'imagen']);
-                        }]);
-                    }]);
-
                     $mail = Mail::to($order->user->email)->send(new EnviarResumenOrder($order));
-                    Log::info('Correo de resumen de compra #' . $order->purchase_number . ' enviado a' . $order->user->email);
+                    Log::info('Resumen de compra #' . $order->purchase_number . ' enviado al email ' . $order->user->email);
                     return redirect()->route('orders.payment', $order)->with('message', response()->json($mensaje)->getData());
                 } catch (\ErrorException $e) {
                     $mensaje = [
@@ -364,7 +513,7 @@ class NiubizController extends Controller
     public function config_checkout(Request $request)
     {
 
-        $shipmenttype = Shipmenttype::find($request->input('datos.shipmenttype.id'));
+        $shipmenttype = Shipmenttype::find($request->input('shipmenttype.id'));
 
         if (empty($shipmenttype)) {
             return response()->json([
@@ -376,33 +525,35 @@ class NiubizController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'datos.shipmenttype.id' => ['required', 'integer', 'min:1', 'exists:shipmenttypes,id'],
-            'datos.local_entrega.id' => [
+            'shipmenttype.id' => ['required', 'integer', 'min:1', 'exists:shipmenttypes,id'],
+            'local_entrega.id' => [
                 'nullable',
                 Rule::requiredIf($shipmenttype->isRecojotienda()),
                 'integer',
                 'min:1',
                 'exists:sucursals,id'
             ],
-            'datos.daterecojo' => [
+            'daterecojo' => [
                 'nullable',
                 Rule::requiredIf($shipmenttype->isRecojotienda()),
                 'date',
                 'after_or_equal:today'
             ],
-            'datos.direccion_envio.id' => [
+            'direccion_envio.id' => [
                 'nullable',
                 Rule::requiredIf($shipmenttype->isEnviodomicilio()),
                 'integer',
                 'min:1',
                 'exists:direccions,id'
             ],
-            'datos.receiver' => ['required', 'integer', Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])],
-            'datos.receiver_info.document' => ['required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'],
-            'datos.receiver_info.name' => ['required', 'string', 'min:8',],
-            'datos.receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
-            'datos.g_recaptcha_response' => ['required', new Recaptcha()],
-            'datos.terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+            'receiver' => ['required', 'integer', Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])],
+            'receiver_info.document' => ['required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'],
+            'receiver_info.name' => ['required', 'string', 'min:8',],
+            'receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
+            'g_recaptcha_response' => ['required', new Recaptcha()],
+            'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+        ], [], [
+            'g_recaptcha_response' => 'verificación de seguridad'
         ]);
 
         // ->stopOnFirstFailure()
@@ -413,17 +564,21 @@ class NiubizController extends Controller
             ]); // 422 Unprocessable Entity
         }
 
-        $datos_url_get = "shipmenttype_id=" . $shipmenttype->id . "&receiver=" . $request->input('datos.receiver');
-        $datos_url_get .= "&receiver_document=" . $request->input('datos.receiver_info.document') . "&receiver_name=" . $request->input('datos.receiver_info.name');
-        $datos_url_get .= "&receiver_telefono=" . $request->input('datos.receiver_info.telefono');
-        $datos_url_get .= "&moneda_id=" . $request->input('datos.moneda_id');
+        $datos_url_get = "shipmenttype_id=" . $shipmenttype->id . "&receiver=" . $request->input('receiver');
+        $datos_url_get .= "&receiver_document=" . $request->input('receiver_info.document') . "&receiver_name=" . $request->input('receiver_info.name');
+        $datos_url_get .= "&receiver_telefono=" . $request->input('receiver_info.telefono');
+        $datos_url_get .= "&moneda_id=" . $request->input('moneda_id');
 
         if ($shipmenttype->isRecojotienda()) {
-            $datos_url_get .= "&local_entrega=" . $request->input('datos.local_entrega.id');
-            $datos_url_get .= "&daterecojo=" . $request->input('datos.daterecojo');
+            $datos_url_get .= "&local_entrega=" . $request->input('local_entrega.id');
+            $datos_url_get .= "&daterecojo=" . $request->input('daterecojo');
         } else {
-            $datos_url_get .= "&direccion_envio=" . $request->input('datos.direccion_envio.id');
+            $datos_url_get .= "&direccion_envio=" . $request->input('direccion_envio.id');
         }
+
+        $datos_url_get .= "&typecomprobante=" . $request->input('typecomprobante');
+        $datos_url_get .= "&document_comprobante=" . $request->input('document_comprobante');
+        $datos_url_get .= "&name_comprobante=" . $request->input('name_comprobante');
 
         do {
             $purchasenumber = mt_rand(100000000, 999999999);
@@ -447,11 +602,6 @@ class NiubizController extends Controller
             'hidexbutton' =>  true,
             'action' => route('orders.niubiz.checkout') . "?purchaseNumber=$purchasenumber&$datos_url_get",
         ];
-
-        // 'complete': function(params) {
-        //         console.log(params.status);
-        //         alert(JSON.stringify(params));
-        //     }
 
         return response()->json($config);
     }

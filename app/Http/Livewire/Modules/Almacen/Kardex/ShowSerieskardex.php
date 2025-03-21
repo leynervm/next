@@ -3,8 +3,10 @@
 namespace App\Http\Livewire\Modules\Almacen\Kardex;
 
 use App\Models\Almacen;
+use App\Models\Carshoopitem;
 use App\Models\Serie;
 use App\Models\Sucursal;
+use App\Models\Tvitem;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -46,7 +48,14 @@ class ShowSerieskardex extends Component
 
         $sucursals = Sucursal::withTrashed()->whereHas('almacens')->get();
         $almacens = Almacen::whereHas('series')->get();
-        $serieskardex = Serie::with(['almacen', 'producto', 'almacencompra.compraitem.compra.proveedor', 'user']);
+        $serieskardex = Serie::with(['almacen', 'producto', 'almacencompra.compraitem.compra.proveedor', 'user', 'itemseries' => function ($query) {
+            $query->with(['seriable' => function ($subq) {
+                // $subq->when(Tvitem::class, fn($q) => $q->with(['tvitem']))
+                //     ->when(Carshoopitem::class, fn($q) => $q->with([
+
+                //     ]));
+            }]);
+        }]);
 
         if ($this->searchalmacen !== '') {
             $serieskardex->where('almacen_id', $this->searchalmacen);

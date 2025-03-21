@@ -14,10 +14,8 @@
                 <td class="p-2 border border-dark text-center align-middle leading-none text-10">
                     @if ($detallado)
                         @if (!empty($image))
-                            <div class="picture-producto">
-                                <img src="{{ imageBase64($image, 'app/public/images/productos/') }}"
-                                    alt="{{ $item->imagen->url }}" class="img-fluid">
-                            </div>
+                            <img src="{{ imageBase64($image, 'app/public/images/productos/') }}"
+                                alt="{{ $item->imagen->url }}" class="img-fluid img-xs">
                         @else
                             <p class="text-10 text-10" style="color:#000;">IMÁGEN NO DISPONIBLE</p>
                         @endif
@@ -31,10 +29,10 @@
                             TIENDA WEB</span>
                     @endif
                 </td>
-                <td class="p-0 m-0 border-dark" valign="top" style="width: 560px;">
-                    <table class="table border-0 border-white font-normal text-10">
+                <td class="p-0 m-0 border border-dark" valign="top" style="width: 560px;">
+                    <table class="p-0 m-0 table border-0 border-white font-normal text-10">
                         <tbody>
-                            <tr class="border-dark">
+                            <tr class="border-bottom border-dark">
                                 <td colspan="{{ $empresa->usarLista() ? 4 : 3 }}" class="p-2 leading-none text-start">
                                     {{ $item->name_category }} <br>
                                     {{ $item->name_subcategory }}
@@ -58,7 +56,7 @@
                             @if ($empresa->usarLista())
                                 <tr @if ($detallado) style="border-bottom: 1px solid #222;" @endif>
                                     @foreach ($pricetypes as $pricetype)
-                                        <td class="border-b p-2 text-start align-middle leading-none"
+                                        <td class="border-b p-2 text-start align-middle leading-none {{ $loop->last ? 'border-end border-dark' : '' }}"
                                             style="width: 112px;">
                                             <b>{{ $pricetype->name }}</b>
                                             <br>
@@ -77,7 +75,7 @@
                                     class="p-2 py-3 leading-none text-start border-end border-dark">
                                     MARCA
                                 </th>
-                                <td colspan="4" class="p-2 py-3 leading-none">
+                                <td colspan="4" class="p-2 py-3 leading-none border-end border-dark">
                                     {{ $item->name_marca }}
                                 </td>
                             </tr>
@@ -88,7 +86,7 @@
                                         class="p-2 py-3 leading-none text-start border-end border-dark">
                                         MODELO
                                     </th>
-                                    <td colspan="4" class="p-2 py-3 leading-none">
+                                    <td colspan="4" class="p-2 py-3 leading-none border-end border-dark">
                                         {{ $item->modelo }}
                                     </td>
                                 </tr>
@@ -101,7 +99,7 @@
                                             class="p-2 py-3 leading-none text-start border-end border-dark">
                                             {{ $esp->caracteristica->name }}
                                         </th>
-                                        <td colspan="4" class="p-2 py-3 leading-none">
+                                        <td colspan="4" class="p-2 py-3 leading-none border-end border-dark">
                                             {{ $esp->name }}
                                         </td>
                                     </tr>
@@ -112,7 +110,7 @@
                                             class="p-2 py-3 leading-none text-start border-end border-dark">
                                             OTROS
                                         </th>
-                                        <td colspan="4" class="p-2 py-3 leading-none">
+                                        <td colspan="4" class="p-2 py-3 leading-none border-end border-dark">
                                             {{ nl2br($item->comentario) }}
                                         </td>
                                     </tr>
@@ -133,7 +131,7 @@
                                 @foreach ($almacens as $chunk)
                                     <tr class="border-0 border-white">
                                         @foreach ($chunk as $almacen)
-                                            <th class="border-0 border-white align-middle text-center"
+                                            <th class="border-0 border-end border-dark align-middle text-center"
                                                 style="width: 112px; word-break: break-all;">
                                                 {{ $almacen->name }}
                                                 <br>
@@ -150,8 +148,8 @@
                             @endif
 
                             @if ($detallado && count($item->series) > 0)
-                                <tr style="border-top: 1px solid #222;">
-                                    <th class="text-center p-2" colspan="5">
+                                <tr>
+                                    <th class="text-center p-2 border-top border-bottom border-dark" colspan="5">
                                         SERIES</th>
                                 </tr>
                                 @php
@@ -167,7 +165,7 @@
                                         @endforeach
 
                                         @for ($i = count($chunk); $i < 5; $i++)
-                                            <td></td>
+                                            <td class="border border-dark"></td>
                                         @endfor
                                     </tr>
                                 @endforeach

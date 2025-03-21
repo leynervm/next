@@ -15,8 +15,8 @@ use Modules\Facturacion\Http\Controllers\GuiaController;
 |
 */
 
-Route::get('/facturacion/download/{comprobante:seriecompleta}/print/{format}', [FacturacionController::class, 'imprimirA4Public'])->name('facturacion.download.pdf');
-Route::get('/facturacion/download/{comprobante:seriecompleta}/file/{type}/', [FacturacionController::class, 'downloadXML'])->name('facturacion.download.xml');
+Route::get('/facturacion/download/{comprobante:uuid}/print/{format}', [FacturacionController::class, 'imprimirpublic'])->name('facturacion.download.pdf');
+Route::get('/facturacion/download/{comprobante:uuid}/file/{type}/', [FacturacionController::class, 'downloadXML'])->name('facturacion.download.xml');
 
 Route::get('/facturacion/guia-remision/download/{guia:seriecompleta}/print/{format}', [GuiaController::class, 'imprimirA4Public'])->name('facturacion.guia.download.pdf');
 Route::get('/facturacion/guia-remision/download/{guia:seriecompleta}/file/{type}/', [GuiaController::class, 'downloadXML'])->name('facturacion.guia.download.xml');
@@ -44,6 +44,7 @@ Route::middleware([
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'auth'])
     ->prefix('admin/facturacion')->name('admin.facturacion')->group(function () {
         Route::get('/{comprobante:seriecompleta}/print/a4', [FacturacionController::class, 'imprimirA4'])->name('.print.a4');
+        Route::get('/{comprobante:seriecompleta}/print/a5', [FacturacionController::class, 'imprimirA5'])->name('.print.a5');
         Route::get('/{comprobante:seriecompleta}/print/ticket', [FacturacionController::class, 'imprimirticket'])->name('.print.ticket');
         Route::get('/guias/{guia:seriecompleta}/print/a4', [GuiaController::class, 'imprimirA4'])->name('.guias.print');
     });

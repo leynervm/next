@@ -39,14 +39,9 @@ class GuiaController extends Controller
         $this->authorize('sucursal', $guia);
         $guia->load([
             'tvitems' => function ($query) {
-                $query->with(['almacen', 'producto'  => function ($q) {
-                    $q->addSelect(['image' => function ($subQuery) {
-                        $subQuery->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('default', 'desc')->limit(1);
-                    }]);
-                }])->withTrashed()->orderBy('date', 'asc');
+                $query->with(['itemseries.serie', 'kardexes.almacen', 'producto'  => function ($q) {
+                    $q->with(['imagen', 'unit', 'marca']);
+                }]);
             },
             'client',
             'motivotraslado',

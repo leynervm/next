@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PromocionesEnum;
 use App\Traits\KardexTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -37,7 +38,8 @@ class Promocion extends Model
 
     public function setTituloAttribute($value)
     {
-        $this->attributes['titulo'] = trim(mb_convert_case(mb_strtolower($value, "UTF-8"), MB_CASE_TITLE, "UTF-8"));
+        $this->attributes['titulo'] = trim(mb_strtoupper($value, "UTF-8"));
+        // $this->attributes['titulo'] = trim(mb_convert_case(mb_strtolower($value, "UTF-8"), MB_CASE_TITLE, "UTF-8"));
     }
 
     public function producto(): BelongsTo
@@ -57,22 +59,22 @@ class Promocion extends Model
 
     public function scopeDescuentos($query)
     {
-        return $query->where('type', self::DESCUENTO);
+        return $query->where('type', PromocionesEnum::DESCUENTO->value);
     }
 
     public function scopeCombos($query)
     {
-        return $query->where('type', self::COMBO);
+        return $query->where('type', PromocionesEnum::COMBO->value);
     }
 
-    public function scopeRemates($query)
-    {
-        return $query->where('type', self::LIQUIDACION);
-    }
+    // public function scopeRemates($query)
+    // {
+    //     return $query->where('type', self::LIQUIDACION);
+    // }
 
     public function scopeLiquidaciones($query)
     {
-        return $query->where('type', self::LIQUIDACION);
+        return $query->where('type', PromocionesEnum::LIQUIDACION->value);
     }
 
     public function scopeAvailables($query)
@@ -127,22 +129,27 @@ class Promocion extends Model
 
     public function isDescuento()
     {
-        return $this->type == self::DESCUENTO;
+        return $this->type == PromocionesEnum::DESCUENTO->value;
+    }
+
+    public function isOferta()
+    {
+        return $this->type == PromocionesEnum::OFERTA->value;
     }
 
     public function isCombo()
     {
-        return $this->type == self::COMBO;
+        return $this->type == PromocionesEnum::COMBO->value;
     }
 
-    public function isRemate()
-    {
-        return $this->type == self::LIQUIDACION;
-    }
+    // public function isRemate()
+    // {
+    //     return $this->type == PromocionesEnum::LIQUIDACION->value;
+    // }
 
     public function isLiquidacion()
     {
-        return $this->type == self::LIQUIDACION;
+        return $this->type == PromocionesEnum::LIQUIDACION->value;
     }
 
     public function isDesactivado()
@@ -157,7 +164,7 @@ class Promocion extends Model
 
     public function isExpired()
     {
-        return !is_null($this->expiredate) && Carbon::now('America/Lima')->gt(Carbon::parse($this->expiredate)->format('d-m-Y'));
+        return !is_null($this->expiredate) && Carbon::now('America/Lima')->gt(Carbon::parse($this->expiredate));
     }
 
     public function isActivo()

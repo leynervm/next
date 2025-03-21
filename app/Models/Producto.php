@@ -6,7 +6,6 @@ use App\Models\Carshoop;
 use App\Models\Guiaitem;
 use App\Models\Tvitem;
 use App\Models\Almacen;
-use App\Traits\KardexTrait;
 use App\Models\Especificacion;
 use App\Models\Image;
 use App\Models\Marca;
@@ -27,15 +26,17 @@ use App\Models\Category;
 use App\Models\Subcategory;
 use App\Traits\CalcularPrecioVenta;
 use App\Traits\ObtenerImage;
+use App\Traits\TvitemTrait;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Cviebrock\EloquentSluggable\Sluggable;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Producto extends Model
 {
     use HasFactory;
     use SoftDeletes;
     use Sluggable;
-    use KardexTrait;
+    use TvitemTrait;
 
     use CalcularPrecioVenta;
     use ObtenerImage;
@@ -119,7 +120,8 @@ class Producto extends Model
     public function almacens(): BelongsToMany
     {
         return $this->belongsToMany(Almacen::class)
-            ->withPivot('cantidad')->orderByPivot('cantidad', 'desc');
+            ->withPivot('cantidad')->orderBy('id', 'asc');
+        // ->orderByPivot('cantidad', 'desc');
     }
 
     public function scopeDisponibles($query)
@@ -134,7 +136,8 @@ class Producto extends Model
 
     public function seriesdisponibles(): HasMany
     {
-        return $this->hasMany(Serie::class)->where('status', Serie::DISPONIBLE);
+        return $this->hasMany(Serie::class)
+            ->disponibles()->orderBy('serie', 'asc');
     }
 
     public function garantiaproductos(): HasMany
@@ -168,11 +171,16 @@ class Producto extends Model
             ->orderBy('orden', 'asc')->orderBy('id', 'asc');
     }
 
-    public function imagen()
+    public function imagen(): MorphOne
     {
         return $this->morphOne(Image::class, 'imageable')
             ->orderBy('orden', 'asc')->orderBy('id', 'asc');
     }
+
+    // public function getImagenSecondaryAttribute()
+    // {
+    //     return $this->images->get(1);
+    // }
 
     public function category(): BelongsTo
     {

@@ -22,6 +22,7 @@ class GenerarReporteCaja extends Component
 
     public $monthboxes = [], $openboxes = [], $days = [], $months = [];
     public $typereporte = FilterReportsEnum::DEFAULT->value;
+    public $viewreporte = '0';
     public $sucursal_id = '', $concept_id = '', $typemovement = '', $methodpayment_id = '',
         $user_id = '', $monthbox_id = '', $openbox_id = '', $moneda_id = '';
     public $date = '', $dateto = '', $week = '', $month = '', $monthto = '', $year = '';
@@ -30,6 +31,7 @@ class GenerarReporteCaja extends Component
     {
         return [
             'typereporte' => ['required', 'integer', 'min:0', /* Rule::enum(FilterReportsEnum::all()) */],
+            'viewreporte' => ['required', 'integer', 'min:0', 'max:1' /* Rule::enum(FilterReportsEnum::all()) */],
             'sucursal_id' => ['nullable', 'integer', 'min:1', 'exists:sucursals,id'],
             'concept_id' => ['nullable', 'integer', 'min:1', 'exists:concepts,id'],
             'typemovement' => ['nullable', 'string',],
@@ -93,6 +95,14 @@ class GenerarReporteCaja extends Component
         $except = [
             FilterReportsEnum::TOP_TEN_VENTAS->value,
             FilterReportsEnum::VENTAS_POR_COBRAR->value,
+            FilterReportsEnum::TOP_TEN_VENTAS->value,
+            FilterReportsEnum::VENTAS_POR_COBRAR->value,
+            FilterReportsEnum::TOP_TEN_PRODUCTOS->value,
+            FilterReportsEnum::CATALOGO_PRODUCTOS->value,
+            FilterReportsEnum::MIN_STOCK->value,
+            FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value,
+            FilterReportsEnum::KARDEX_PRODUCTOS->value,
+            FilterReportsEnum::CONSOLIDADO->value,
         ];
         $typereportes = response()->json(FilterReportsEnum::except($except))->getData();
 

@@ -47,7 +47,7 @@
                                 @foreach ($item->especificacions as $itemespecif)
                                     <div
                                         class="max-w-full inline-flex gap-1 items-center text-[10px] p-1 rounded-md bg-fondospancardproduct text-textspancardproduct">
-                                        <p class="flex-1">{{ $itemespecif->name }}</p>
+                                        <p class="flex-1">{!! nl2br($itemespecif->name) !!}</p>
 
                                         @canany(['admin.almacen.especificacions.edit',
                                             'admin.almacen.especificacions.delete'])
@@ -148,7 +148,9 @@
             <form wire:submit.prevent="saveespecificacion" class="w-full flex flex-col gap-2">
                 <div>
                     <x-label value="Nombre :" />
-                    <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese especificación..." />
+                    <x-text-area class="block w-full" rows="3" wire:model.defer="name"
+                        style="height: auto;"></x-text-area>
+                    {{-- <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese especificación..." /> --}}
                     <x-jet-input-error for="name" />
                 </div>
 
@@ -171,7 +173,8 @@
             <form wire:submit.prevent="update_especificacion(true)" class="w-full flex flex-col gap-2">
                 <div>
                     <x-label value="Nombre :" />
-                    <x-input class="block w-full" wire:model.defer="name" placeholder="Ingrese especificación..." />
+                    <x-text-area class="block w-full" rows="3" wire:model.defer="name"
+                        style="height: auto;"></x-text-area>
                     <x-jet-input-error for="name" />
                     <x-jet-input-error for="especificacion.caracteristica_id" />
                 </div>

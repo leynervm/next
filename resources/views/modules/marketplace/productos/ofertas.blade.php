@@ -26,7 +26,7 @@
                 @foreach ($ofertas as $item)
                     @if (count($item->combos) > 0 || $item->descuento > 0 || $item->liquidacion)
                         @php
-                            $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
+                            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
                             $secondimage = !empty($item->image_2) ? pathURLProductImage($item->image_2) : null;
                             $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
                             $pricesale = $item->getPrecioVenta($pricetype);
@@ -38,7 +38,7 @@
                                 $promocion = $item->promocions
                                     ->where('type', \App\Enums\PromocionesEnum::COMBO->value)
                                     ->first();
-                            } elseif ($item->descuento > 0 || $item->liquidacion) {
+                            } else {
                                 $promocion = $item->promocions
                                     ->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)
                                     ->first();
@@ -51,8 +51,8 @@
                             }
                         @endphp
 
-                        <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->name_marca" :sku="$item->sku"
-                            :novedad="$item->isNovedad()" :image="$image" :secondimage="$secondimage" :promocion="$promocion"
+                        <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->name_marca" :subcategory="$item->name_subcategory"
+                            :sku="$item->sku" :novedad="$item->isNovedad()" :image="$image" :secondimage="$secondimage" :promocion="$promocion"
                             wire:key="cardproduct{{ $item->id }}" x-data="{ addcart: isXL ? false : true }"
                             @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
                             class="w-full pt-0 rounded-md md:rounded-xl ring-1 ring-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
@@ -82,7 +82,7 @@
                                         <x-slot name="buttonscart">
                                             <div class="w-full p-1">
                                                 @if (count($item->combos) > 0)
-                                                    <x-link-button href="{{ route('productos.show', $item) }}"
+                                                    <x-link-button href="{{ route('productos.show', $item) }}#combos"
                                                         wire:loading.attr="disabled"
                                                         class="!rounded-xl w-full !flex gap-2 items-center justify-center text-[10px]">
                                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
@@ -163,6 +163,4 @@
             </div>
         @endif
     </div>
-
-    <script></script>
 </x-app-layout>

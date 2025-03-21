@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\DefaultConceptsEnum;
+use App\Enums\PromocionesEnum;
 use App\Models\Empresa;
 use App\Models\Guia;
 use App\Models\Pricetype;
@@ -89,7 +90,7 @@ function getNotesNode($ruta, $node = 'Note')
     $notes_value = $doc->getElementsByTagName($node);
     foreach ($notes_value as $note) {
         // $notes[] = $note->nodeValue;
-        $notes .= '<p class="text-left mb-1 text-sm">' . $note->nodeValue . '</p>';
+        $notes .= '<p class="mb-1 text-sm text-left">' . $note->nodeValue . '</p>';
     }
 
     return $notes;
@@ -723,13 +724,14 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
                 'producto_slug' => $itempromo->producto->slug,
                 'name' => $itempromo->producto->name,
                 'imagen' => $itempromo->producto->imagen ? pathURLProductImage($itempromo->producto->imagen->url) : null,
-                'image' => $itempromo->producto->image ? pathURLProductImage($itempromo->producto->image) : null,
                 'price' => $price,
                 'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,
                 'precio_normal' => $pricenormal,
                 'stock' => $stockCombo,
-                'unit' => $itempromo->producto->unit->name,
+                'unit' => $itempromo->producto->unit ? $itempromo->producto->unit->name : '',
                 'type' => $type,
+                'itempromo_id' => $itempromo->id,
+                'almacens' => $itempromo->producto->almacens
             ];
         }
         return response()->json([
@@ -738,7 +740,7 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
             'stock_disponible' => $is_stock_disponible,
             'is_disponible' => empty(verifyPromocion($promocion)) ? false : true,
             'promocion' => $promocion,
-            'unit' => $promocion->producto->unit->name,
+            'unit' => $promocion->producto->unit ? $promocion->producto->unit->name : '',
             'products' => $products,
         ])->getData();
     } else {
@@ -751,68 +753,54 @@ function getCartRelations(string $instance, $onlyDisponibles = false)
 {
     $pricetype = getPricetypeAuth();
     $cart = Cart::instance($instance)->content();
+    // dd($cart);
     $shoppings = $cart->transform(function ($item) use ($pricetype) {
         $is_disponible = true;
+        $promocion = null;
         $options = collect($item->options)->toArray();
 
         if ($item->model && !is_null($item->model)) {
-            $producto = Producto::with(['unit', 'imagen'])->withCount(['almacens as stock' => function ($query) {
+            $item->model = Producto::withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
+            }])->with(['promocions' => function ($query) use ($item) {
+                $query->with('itempromos.producto')->where('id', $item->options->promocion_id);
             }])->find($item->id);
-            if (!$producto->isVisible() || !$producto->isPublicado()) {
+
+            $promocion = count($item->model->promocions) > 0 ? $item->model->promocions->first() : null;
+            $pricesale = $item->model->getPrecioVenta($pricetype); //Asi esta ok
+            $options['stock_disponible'] = $item->model->stock;
+            if (!$item->model->isVisible() || !$item->model->isPublicado()) {
                 $is_disponible = false;
             }
 
-            // if (!empty($item->options->promocion_id)) {
-            $producto->load(['promocions' => function ($query) use ($item) {
-                $query->availables()->disponibles();
-                if (!empty($item->options->promocion_id)) {
-                    $query->where('id', $item->options->promocion_id);
-                }
-            }]);
-            // }
-            $options['stock_disponible'] = $producto->stock;
-            $pricesale = $producto->getPrecioventa($pricetype); //Asi esta ok
-
-            if (!empty($item->options->promocion_id)) {
-                $promocion = Promocion::with(['itempromos' => function ($query) {
-                    $query->with(['producto' => function ($q) {
-                        $q->addSelect(['image' => function ($db) {
-                            $db->select('url')->from('images')
-                                ->whereColumn('images.imageable_id', 'productos.id')
-                                ->where('images.imageable_type', Producto::class)
-                                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                        }])->with(['unit', 'almacens']);
-                    }]);
-                }])->find($item->options->promocion_id);
-                $options['promocion'] = $promocion;
+            if (!empty($promocion)) {
                 $combo = getAmountCombo($promocion);
                 if ($combo) {
                     if (!$combo->stock_disponible || !$combo->is_disponible) {
                         $is_disponible = false;
                         $pricesale = $pricesale + $combo->total;
                     }
+                    $options['carshoopitems'] = $combo->products;
                 }
 
                 if (empty(verifyPromocion($promocion))) {
                     $is_disponible = false;
                 }
-                $options['is_disponible'] = $is_disponible;
-            } else {
 
-                // $producto = Producto::withCount(['almacens as stock' => function ($query) {
-                //     $query->select(DB::raw('COALESCE(SUM(cantidad), 0)'));
-                // }])->find($item->id);
-
-                if ($producto->stock <= 0 || $producto->stock < $item->qty) {
+                if ($item->qty > ($promocion->limit - $promocion->salidas)) {
                     $is_disponible = false;
                 }
-
-                $options['promocion'] = null;
                 $options['is_disponible'] = $is_disponible;
-                $options['stock_disponible'] = $producto->stock;
             }
-            $item->model = $producto;
+            // dd($item, $promocion, $pricesale);
+
+            if ($item->model->stock <= 0 || $item->model->stock < $item->qty) {
+                $is_disponible = false;
+            }
+            $options['promocion'] = $promocion;
+            $options['is_disponible'] = $is_disponible;
+            $options['stock_disponible'] = $item->model->stock;
+            // $item->model = $producto;
             $item->price = $pricesale;
         } else {
             $options['promocion'] = null;
@@ -833,7 +821,7 @@ function getCartRelations(string $instance, $onlyDisponibles = false)
         $item->options = (object) $options;
         return $item;
     });
-
+    // dd($cart);
     // dd($shoppings);
     // if (auth()->check()) {
 
@@ -892,4 +880,36 @@ function decryptText($text, $length = null)
     $length = empty($length) ? config('services.hashids.length') : $length;
     $hashids = new Hashids(config('services.hashids.password'), $length);
     return $hashids->decode($text)[0];
+}
+
+function getNameTime($abrev)
+{
+    $name = '';
+    switch ($abrev) {
+        case 'D':
+            $name = 'DÍAS';
+            break;
+        case 'M':
+            $name = 'MESES';
+            break;
+        case 'MM':
+            $name = 'MESES';
+            break;
+        case 'Y':
+            $name = 'AÑOS';
+            break;
+        case 'YY':
+            $name = 'AÑOS';
+            break;
+        default:
+            $name = '';
+            break;
+    }
+    return $name;
+}
+
+
+function getTextPromocion($value)
+{
+    return PromocionesEnum::getText($value);
 }

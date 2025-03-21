@@ -3,6 +3,8 @@
     'route' => null,
     'name',
     'marca',
+    'category' => null,
+    'subcategory' => null,
     'partnumber' => null,
     'sku' => null,
     'image' => null,
@@ -37,20 +39,24 @@
             </div>
 
             <div class="flex-1 flex flex-col">
-                <div class="w-full flex flex-wrap gap-3 justify-between p-1">
+                <div class="w-full flex flex-wrap gap-3 justify-between px-1">
                     <span class="inline-block text-colorsubtitleform text-[11px] sm:text-xs font-medium">
                         {{ $marca }}</span>
 
-                    @if ($novedad)
-                        <div class="inline-block">
-                            @if (!empty($empresa->textnovedad))
-                                <span class="span-novedad">
-                                    {{ $empresa->textnovedad }}</span>
-                            @endif
-                            <x-icon-novedad />
-                        </div>
+                    @if ($subcategory)
+                        <x-span-text :text="$subcategory" class="!py-0.5" />
                     @endif
                 </div>
+
+                @if ($novedad)
+                    <div class="px-1 pb-1">
+                        @if (!empty($empresa->textnovedad))
+                            <span class="span-novedad">
+                                {{ $empresa->textnovedad }}</span>
+                        @endif
+                        <x-icon-novedad />
+                    </div>
+                @endif
 
                 @if (!empty($sku))
                     <p class="px-1 inline-block text-[10px] text-colorsubtitleform leading-none">
@@ -77,16 +83,15 @@
                 <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
                     @if ($empresa->isTitlePromocion())
                         PROMOCIÓN
+                    @elseif($empresa->isTitleOferta())
+                        OFERTA
                     @elseif($empresa->isTitleLiquidacion())
                         LIQUIDACIÓN
                     @else
                         @if ($promocion->isDescuento())
-                            - {{ decimalOrInteger($promocion->descuento) }}% DSCT
-                        @elseif ($promocion->isCombo())
-                            OFERTA
-                        @else
-                            LIQUIDACIÓN
+                            - {{ decimalOrInteger($promocion->descuento) }}%
                         @endif
+                        {{ getTextPromocion($promocion->type) }}
                     @endif
                 </p>
             </div>

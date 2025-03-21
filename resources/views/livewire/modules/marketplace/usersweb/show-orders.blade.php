@@ -47,33 +47,19 @@
                             @if ($item->transaccion)
                                 <td class="text-center p-3 xl:py-5 uppercase">
                                     @if ($item->transaccion->brand == 'visa')
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#visa" />
-                                        </svg>
+                                        <x-icon-file-upload type="visa" class="!w-10 !h-6 !p-0" />
                                     @elseif ($item->transaccion->brand == 'mastercard')
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#mastercard" />
-                                        </svg>
+                                        <x-icon-file-upload type="visa" class="!w-10 !h-6 !p-0" />
                                     @elseif ($item->transaccion->brand == 'paypal')
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#paypal" />
-                                        </svg>
+                                        <x-icon-file-upload type="paypal" class="!w-10 !h-6 !p-0" />
                                     @elseif ($item->transaccion->brand == 'unionpay')
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#unionpay" />
-                                        </svg>
+                                        <x-icon-file-upload type="unionpay" class="!w-10 !h-6 !p-0" />
                                     @elseif ($item->transaccion->brand == 'dinersclub')
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#dinersclub" />
-                                        </svg>
+                                        <x-icon-file-upload type="dinersclub" class="!w-10 !h-6 !p-0" />
                                     @elseif ($item->transaccion->brand == 'amex')
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#amex" />
-                                        </svg>
+                                        <x-icon-file-upload type="amex" class="!w-10 !h-6 !p-0" />
                                     @else
-                                        <svg class="w-10 h-6 block mx-auto">
-                                            <use href="#default" />
-                                        </svg>
+                                        <x-icon-file-upload type="paydefault" class="!w-10 !h-6 !p-0" />
                                     @endif
 
                                     {{ $item->transaccion->brand }}
@@ -99,8 +85,6 @@
     <div wire:key="loadingcompras" wire:loading.flex class="loading-overlay fixed hidden">
         <x-loading-next />
     </div>
-
-    @include('partials.icons-cards')
 
     <script>
         function select2Estado() {

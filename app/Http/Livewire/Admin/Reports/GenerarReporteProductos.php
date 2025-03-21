@@ -23,6 +23,7 @@ class GenerarReporteProductos extends Component
 
     public $open = false;
 
+    public $viewstock = '0';
     public $days = [], $months = [], $subcategories = [];
     public $typereporte = FilterReportsEnum::DEFAULT->value;
     public $viewreporte = 0, $producto_id = '', $category_id = '', $subcategory_id = '',
@@ -36,6 +37,7 @@ class GenerarReporteProductos extends Component
         return [
             'typereporte' => ['required', 'integer', 'min:0', /* Rule::enum(FilterReportsEnum::all()) */],
             'viewreporte' => ['required', 'integer', 'min:0', 'max:1', /* Rule::enum(FilterReportsEnum::all()) */],
+            'viewstock' => ['required', 'integer', 'min:0', 'max:2', /* Rule::enum(FilterReportsEnum::all()) */],
             'sucursal_id' => ['nullable', 'integer', 'min:1', 'exists:sucursals,id'],
             'producto_id' => ['nullable', 'integer', 'min:1', 'exists:productos,id'],
             'category_id' => ['nullable', 'integer', 'min:1', 'exists:categories,id'],
@@ -103,6 +105,7 @@ class GenerarReporteProductos extends Component
     {
         $includes = [
             FilterReportsEnum::DEFAULT->value,
+            FilterReportsEnum::CATALOGO_PRODUCTOS->value,
             FilterReportsEnum::TOP_TEN_PRODUCTOS->value,
             FilterReportsEnum::KARDEX_PRODUCTOS->value,
             FilterReportsEnum::MIN_STOCK->value,
@@ -124,7 +127,7 @@ class GenerarReporteProductos extends Component
             ->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->get();
         $categories = Category::query()->select('id', 'name', 'orden')
-            ->orderBy('orden')->get();
+            ->orderBy('orden', 'asc')->get();
 
         $pricetypes = [];
         if (view()->shared('empresa')->usarLista()) {
@@ -189,7 +192,8 @@ class GenerarReporteProductos extends Component
         if ($this->typereporte == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
             $this->reset(['almacen_id', 'user_id', 'producto_id', 'category_id', 'subcategory_id', 'subcategories',]);
         }
-        if ($this->typereporte !== FilterReportsEnum::DEFAULT->value || !empty($this->producto_id)) {
+
+        if (!in_array($this->typereporte, [FilterReportsEnum::DEFAULT->value, FilterReportsEnum::CATALOGO_PRODUCTOS->value])) {
             $this->reset([
                 'category_id',
                 'subcategory_id',

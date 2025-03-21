@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(RoleSeeder::class);
         $this->call(PricetypeSeeder::class);
-
+        $this->call(PermissionCotizacionSeeder::class);
 
 
 

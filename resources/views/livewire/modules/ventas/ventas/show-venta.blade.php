@@ -1,18 +1,6 @@
-<div class="w-full flex flex-col gap-8" x-data="{
-    istransferencia: false,
-    detalle: @entangle('detalle').defer,
-    detallepaycuota: @entangle('detalle').defer,
-    showtipocambio: false,
-    reset() {
-        this.istransferencia = false;
-        this.detalle = '';
-        this.detallepaycuota = '';
-        this.showtipocambio = false;
-    }
-}">
-    <div wire:loading.flex class="loading-overlay hidden fixed">
-        <x-loading-next />
-    </div>
+<div class="w-full flex flex-col gap-8" x-data="showventa">
+    <x-loading-web-next wire:key="showventa" wire:loading />
+
 
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
         <div class="w-full grid grid-cols-1 sm:grid-cols-2">
@@ -351,98 +339,180 @@
         </x-form-card>
     @endif
 
-    <x-form-card titulo="RESUMEN PRODUCTOS">
-        <div class="w-full">
+    @if (count($venta->tvitems) > 0)
+        <x-form-card titulo="RESUMEN PRODUCTOS">
             @if (count($venta->tvitems))
                 <div
                     class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
                     @foreach ($venta->tvitems as $item)
                         @php
-                            $image = !empty($item->producto->image)
-                                ? pathURLProductImage($item->producto->image)
+                            $image = !empty($item->producto->imagen)
+                                ? pathURLProductImage($item->producto->imagen->url)
                                 : null;
                         @endphp
                         <x-card-producto :image="$image" :name="$item->producto->name" :marca="$item->producto->marca->name" :category="$item->producto->category->name"
                             :increment="$item->increment" :promocion="$item->promocion" class="overflow-hidden">
-
                             @if ($item->isGratuito())
                                 <x-span-text text="GRATUITO" type="green" class="!py-0.5" />
                             @endif
 
+                            <h1 class="text-xl !leading-none font-semibold mt-1 text-center text-colorlabel">
+                                {{ decimalOrInteger($item->cantidad, 2, ', ') }}
+                                <small class="text-[10px] font-medium">
+                                    {{ $item->producto->unit->name }}
+                                    <small class="text-colorerror">
+                                        /
+                                        @if ($item->isNoAlterStock())
+                                            NO ALTERA STOCK
+                                        @elseif ($item->isReservedStock())
+                                            STOCK RESERVADO
+                                        @elseif ($item->isIncrementStock())
+                                            INCREMENTA STOCK
+                                        @elseif($item->isDiscountStock())
+                                            DISMINUYE STOCK
+                                        @endif
+                                    </small>
+                                </small>
+                            </h1>
+
                             <h1 class="text-xl text-center font-semibold text-colortitleform">
                                 <small class="text-[10px] font-medium">{{ $venta->moneda->simbolo }}</small>
-                                {{ decimalOrInteger($item->subtotal + $item->subtotaligv, 2, ', ') }}
+                                {{ decimalOrInteger($item->total, 2, ', ') }}
                                 <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                             </h1>
 
-                            <div class="text-xl font-semibold mt-1 text-colorlabel">
-                                {{ decimalOrInteger($item->cantidad, 2, ', ') }}
-                                <small class="text-[10px] font-medium">
-                                    {{ $item->producto->unit->name }} /
-                                    {{ $item->almacen->name }}
-                                </small>
-                            </div>
-
-                            <div class="text-sm font-semibold text-colorlabel leading-3">
-                                <small class="text-[10px] font-medium">P.U.V : </small>
-                                {{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}
-                                <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
-                            </div>
-
-                            @if (count($item->itemseries) == 1)
+                            @if ($item->cantidad > 1)
                                 <div class="text-sm font-semibold text-colorlabel leading-3">
-                                    <small class="text-[10px] font-medium">
-                                        SN: {{ $item->itemseries->first()->serie->serie }}
-                                    </small>
+                                    <small class="text-[10px] font-medium">P.U.V : </small>
+                                    {{ decimalOrInteger($item->price + $item->igv, 2, ', ') }}
+                                    <small class="text-[10px] font-medium">{{ $venta->moneda->currency }}</small>
                                 </div>
                             @endif
 
-
-                            @if ($item->producto->isRequiredserie() && count($item->itemseries) < $item->cantidad)
-                                <div class="w-full mt-2" x-data="{ addserie: false }">
-                                    <form class="w-full inline-flex gap-0.5"
-                                        wire:submit.prevent="saveserie({{ $item->id }})">
-                                        <x-input class="block w-full flex-1" minlength="1" maxlength="255"
-                                            wire:model.defer="tvitem.{{ $item->id }}.serie" />
-                                        <x-button-add class="px-2" wire:loading.attr="disabled" type="submit">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                                <circle cx="11" cy="11" r="8" />
-                                                <path d="m21 21-4.3-4.3" />
-                                            </svg>
-                                        </x-button-add>
-                                    </form>
-                                    <x-jet-input-error for="tvitem.{{ $item->id }}.tvitem_id" />
-                                    <x-jet-input-error for="tvitem.{{ $item->id }}.serie" />
-                                </div>
-                            @endif
-
-                            <div class="w-full mt-1" x-data="{ showForm: false }">
-                                @if (count($item->itemseries) > 1)
-                                    <x-button @click="showForm = !showForm" class="whitespace-nowrap">
-                                        {{ __('VER SERIES') }}</x-button>
-                                @endif
-
-                                <div x-show="showForm" x-transition class="w-full flex flex-wrap gap-1 rounded mt-1">
+                            @if ($item->producto->isRequiredserie())
+                                <div wire:key="contseries_{{ $item->id }}"
+                                    class="w-full flex flex-col gap-1 justify-center items-center mt-1"
+                                    x-data="{ showForm: '{{ count($item->itemseries) == 1 }}' }">
                                     @if (count($item->itemseries) > 1)
-                                        @foreach ($item->itemseries as $itemserie)
-                                            <span
-                                                class="inline-flex items-center gap-1 text-[10px] bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
-                                                {{ $itemserie->serie->serie }}
-                                                <x-button-delete onclick="confirmDeleteSerie({{ $itemserie }})"
-                                                    wire:loading.attr="disabled" />
-                                            </span>
-                                        @endforeach
+                                        <x-button @click="showForm = !showForm"
+                                            class="w-full !flex gap-3 items-center justify-center">
+                                            <span x-text="showForm ? 'OCULTAR SERIES' : 'MOSTRAR SERIES'"></span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"
+                                                stroke-linecap="square" stroke-linejoin="round" class="size-5 block">
+                                                <path d="M8 20V4h4v16z" />
+                                                <path d="M2 4v16M5 4v16M15 4v16" />
+                                                <path d="M18 20V4h4v16z" />
+                                            </svg>
+                                        </x-button>
                                     @endif
+
+                                    <div class="w-full" x-show="showForm" x-transition>
+                                        @if (count($item->itemseries) > 0)
+                                            <x-table class="w-full block">
+                                                <x-slot name="body">
+                                                    @foreach ($item->itemseries as $itemserie)
+                                                        <tr>
+                                                            <td class="p-1 align-middle font-medium">
+                                                                {{ $itemserie->serie->serie }}
+                                                                [{{ $itemserie->serie->almacen->name }}]
+                                                            </td>
+                                                            <td class="align-middle text-center" width="40px">
+                                                                @if ($itemserie->serie)
+                                                                    <x-button-delete wire:loading.attr="disabled"
+                                                                        wire:key="deleteitemserie_{{ $itemserie->id }}"
+                                                                        x-on:click="confirmDeleteSerie({{ $itemserie->id }}, '{{ $itemserie->serie->serie }}')" />
+                                                                @else
+                                                                    <x-button-delete wire:loading.attr="disabled"
+                                                                        wire:key="deleteitemserie_{{ $itemserie->id }}"
+                                                                        x-on:click="confirmDeleteSerie({{ $itemserie->id }})" />
+                                                                @endif
+                                                            </td>
+                                                        </tr>
+                                                    @endforeach
+                                                </x-slot>
+                                            </x-table>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <div
+                                    class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-3 xs:grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
+                                    @foreach ($item->kardexes as $kardex)
+                                        <div class="w-full p-1.5 flex flex-col items-center justify-start">
+                                            <h1 class="text-colorsubtitleform text-sm font-semibold !leading-none">
+                                                {{ decimalOrInteger($kardex->cantidad) }}
+                                                <small class="text-[10px] font-normal">
+                                                    {{ $item->producto->unit->name }}</small>
+                                            </h1>
+
+                                            <h1 class="text-colortitleform text-[10px] font-semibold">
+                                                {{ $kardex->almacen->name }}</h1>
+
+                                            @if (!$item->producto->isRequiredserie())
+                                                <x-button-delete
+                                                    wire:click="deletekardex({{ $item->id }},{{ $kardex->id }})"
+                                                    wire:loading.attr="disabled" class="inline-flex" />
+                                            @endif
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+
+                            <x-slot name="buttoncombos">
+                                @include('modules.ventas.forms.modal-carshoopitems', [
+                                    'moneda' => $venta->moneda,
+                                    'viewloading' => true,
+                                ])
+                            </x-slot>
+
                         </x-card-producto>
                     @endforeach
                 </div>
             @endif
-        </div>
-    </x-form-card>
+        </x-form-card>
+    @endif
+
+    @if (count($venta->otheritems) > 0)
+        <x-form-card titulo="OTROS AGREGADOS Y/O SERVICIOS" class="gap-2">
+            <x-table class="w-full">
+                <x-slot name="body">
+                    @foreach ($venta->otheritems as $key => $item)
+                        <tr>
+                            <td class="p-2 leading-none" style="min-width: 180px;">
+                                <p class="italic text-colorsubtitleform font-normal">
+                                    {{ $item->name }}</p>
+
+                                <small>{{ $venta->moneda->simbolo }}</small>
+                                <span class="text-sm font-semibold">
+                                    {{ number_format($item->price + $item->igv, 2, '.', ', ') }}</span>
+                                <small>C/U</small>
+                                @if ($item->igv > 0)
+                                    INC. IGV
+                                @endif
+                            </td>
+                            <td class="p-2 text-center font-normal italic leading-none" width="80px">
+                                @if (!empty($item->marca))
+                                    {{ $item->marca }}
+                                @endif
+                            </td>
+                            <td class="p-2 text-center font-semibold text-sm" width="80px">
+                                x {{ decimalOrInteger($item->cantidad) }}
+                                <small class="font-normal text-[10px]">{{ $item->unit->name }}</small>
+                            </td>
+                            <td class="p-2 text-center" width="100px">
+                                <small>{{ $venta->moneda->simbolo }}</small>
+                                <span class="text-sm font-semibold !leading-none">
+                                    {{ number_format($item->total, 2, '.', ', ') }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-slot>
+            </x-table>
+        </x-form-card>
+    @endif
+
 
     @if (Module::isEnabled('Facturacion'))
         @if ($venta->comprobante)
@@ -531,9 +601,8 @@
 
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">{{ __('Realizar pago cuota') }}</x-slot>
-
         <x-slot name="content">
-            <form wire:submit.prevent="savepayment" class="flex flex-col gap-2" x-data="payventa">
+            <form wire:submit.prevent="savepayment" class="flex flex-col gap-2">
                 @if ($monthbox)
                     <x-card-box :openbox="$openbox" :monthbox="$monthbox" />
                 @else
@@ -725,9 +794,8 @@
 
     <x-jet-dialog-modal wire:model="openpay" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">{{ __('Realizar pago venta') }}</x-slot>
-
         <x-slot name="content">
-            <form wire:submit.prevent="savepay" class="w-full flex flex-col gap-1" x-data="payventa">
+            <form wire:submit.prevent="savepay" class="w-full flex flex-col gap-1">
                 @if ($monthbox)
                     <x-card-box :openbox="$openbox" :monthbox="$monthbox" />
                 @else
@@ -842,7 +910,7 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('payventa', () => ({
+            Alpine.data('showventa', () => ({
                 paymentactual: @entangle('paymentactual').defer,
                 methodpayment_id: @entangle('methodpayment_id').defer,
                 moneda_id: @entangle('moneda_id').defer,
@@ -854,8 +922,64 @@
                 tipocambio: @entangle('tipocambio').defer,
                 tipocambiodefault: '{{ (float) mi_empresa()->tipocambio }}',
 
+                istransferencia: false,
+                detalle: @entangle('detalle').defer,
+                detallepaycuota: @entangle('detalle').defer,
+                showtipocambio: false,
+                serie_id: @entangle('serie_id').defer,
+                almacens: @entangle('almacens').defer,
+                almacenitem: @entangle('almacenitem').defer,
+                almacens: @entangle('almacens').defer,
                 init() {
-
+                    this.$watch('almacenitem', (value) => {
+                        this.valuesAlmacenItem();
+                    });
+                    this.$watch('almacens', (value) => {
+                        this.valuesAlmacen();
+                    });
+                    Livewire.hook('message.processed', () => {
+                        this.valuesAlmacenItem();
+                        this.valuesAlmacen();
+                    });
+                },
+                initializeSelect2(element, almacen_id) {
+                    $(element).select2().on('select2:select', (event) => {
+                        this.$wire.set(`almacens.${almacen_id}.serie_id`, event.target.value,
+                            true);
+                    });
+                },
+                valuesAlmacen() {
+                    if (Object.keys(this.almacens).length > 0) {
+                        for (let key in this.almacens) {
+                            let x_ref =
+                                `serie_id_${String(this.almacens[key].tvitem_id) + String(this.almacens[key].id)}`;
+                            let value = this.almacens[key].serie_id;
+                            const ser = document.getElementById(x_ref);
+                            $(ser).select2().val(value).trigger('change');
+                        }
+                    }
+                },
+                select2Carshoopitem(element, carshoopitem_id, almacen_id) {
+                    $(element).select2().on('select2:select', (event) => {
+                        this.$wire.set(
+                            `almacenitem.${carshoopitem_id}.almacens.${almacen_id}.serie_id`,
+                            event
+                            .target.value, true);
+                    });
+                },
+                valuesAlmacenItem() {
+                    if (Object.keys(this.almacenitem).length > 0) {
+                        for (let key in this.almacenitem) {
+                            if (Object.keys(this.almacenitem[key].almacens).length > 0) {
+                                for (let almacen in this.almacenitem[key].almacens) {
+                                    let x_ref = `serie_id_${String(key) + String(almacen)}`;
+                                    let value = this.almacenitem[key].almacens[almacen].serie_id;
+                                    const ser = document.getElementById(x_ref);
+                                    $(ser).select2().val(value).trigger('change');
+                                }
+                            }
+                        }
+                    }
                 },
                 changeMoneda(event) {
                     const rdomoneda = event.target;
@@ -884,6 +1008,31 @@
                             this.totalamount = null
                         }
                     }
+                },
+                reset() {
+                    this.istransferencia = false;
+                    this.detalle = '';
+                    this.detallepaycuota = '';
+                    this.showtipocambio = false;
+                },
+                confirmDeleteSerie(itemserie_id, serie = null) {
+                    let mensaje = serie == null ? `SERIE NO DISPONIBLE, ELIMINAR DEL PRODUCTO ?` :
+                        `ELIMINAR SERIE ${serie} DEL PRODUCTO ?`;
+
+                    swal.fire({
+                        title: mensaje,
+                        text: null,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#0FB9B9',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Confirmar',
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            this.$wire.deleteitemserie(itemserie_id);
+                        }
+                    })
                 }
             }))
         })
@@ -967,23 +1116,6 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     @this.deletecuota(cuota.id);
-                }
-            })
-        }
-
-        function confirmDeleteSerie(serie) {
-            swal.fire({
-                title: 'Eliminar serie de venta ' + serie.serie.serie + ' ?',
-                text: "Se eliminará un registro de la base de datos.",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonColor: '#0FB9B9',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    @this.deleteserie(serie.id);
                 }
             })
         }

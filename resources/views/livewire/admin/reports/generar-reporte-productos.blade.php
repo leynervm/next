@@ -46,6 +46,7 @@
                                 <x-slot name="options">
                                     <option value="0">POR DEFECTO</option>
                                     <option value="1">DETALLADO</option>
+                                    {{-- <option value="2">CATÁLOGO</option> --}}
                                 </x-slot>
                             </x-select>
                             <x-icon-select />
@@ -70,7 +71,7 @@
                     </div> --}}
 
                     <div class="w-full" x-cloak
-                        x-show="typereporte=='{{ getFilter::DEFAULT->value }}' && producto_id==''">
+                        x-show="['{{ getFilter::DEFAULT->value }}', '{{ getFilter::CATALOGO_PRODUCTOS->value }}'].includes(typereporte) && producto_id==''">
                         <x-label value="Filtrar categoría :" />
                         <div id="parentrpprod_category_id" x-init="selectProdCategory" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_category_id" id="rpprod_category_id"
@@ -87,7 +88,7 @@
                     </div>
 
                     <div class="w-full" x-cloak
-                        x-show="typereporte=='{{ getFilter::DEFAULT->value }}' && producto_id==''">
+                        x-show="['{{ getFilter::DEFAULT->value }}', '{{ getFilter::CATALOGO_PRODUCTOS->value }}'].includes(typereporte) && producto_id==''">
                         <x-label value="Filtrar subcategoría :" />
                         <div id="parentrpprod_subcategory_id" x-init="selectProdSubcategory" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_subcategory_id" id="rpprod_subcategory_id"
@@ -104,7 +105,7 @@
                     </div>
 
                     <div class="w-full" x-cloak
-                        x-show="['{{ getFilter::DEFAULT->value }}', '{{ getFilter::KARDEX_PRODUCTOS->value }}'].includes(typereporte)">
+                        x-show="['{{ getFilter::DEFAULT->value }}', '{{ getFilter::CATALOGO_PRODUCTOS->value }}', '{{ getFilter::KARDEX_PRODUCTOS->value }}'].includes(typereporte)">
                         <x-label value="Filtrar producto :" />
                         <div id="parentrpprod_producto_id" x-init="selectProdProducto" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_producto_id" id="rpprod_producto_id"
@@ -141,7 +142,7 @@
                     </div>
 
                     <div class="w-full" x-cloak
-                        x-show="'{{ view()->shared('empresa')->usarLista() }}' && typereporte=='{{ getFilter::DEFAULT->value }}'"
+                        x-show="'{{ view()->shared('empresa')->usarLista() }}' && ['{{ getFilter::DEFAULT->value }}', '{{ getFilter::CATALOGO_PRODUCTOS->value }}'].includes(typereporte)"
                         style="display: none;">
                         <x-label value="Filtrar lista de precios :" />
                         <div id="parentrpprod_pricetype" x-init="selectProdPricetype" class="relative">
@@ -158,9 +159,25 @@
                         <x-jet-input-error for="pricetype_id" />
                     </div>
 
+                    <div class="w-full">
+                        <x-label value="Filtrar stock :" />
+                        <div id="parentrpprod_viewstock" x-init="selectProdViewstock" class="relative">
+                            <x-select class="block w-full" x-ref="rpprod_viewstock" id="rpprod_viewstock"
+                                data-dropdown-parent="null">
+                                <x-slot name="options">
+                                    <option value="0">MOSTRAR TODO</option>
+                                    <option value="1">SOLAMENTE DISPONIBLES</option>
+                                    <option value="2">SIN STOCK</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="viewstock" />
+                    </div>
+
 
                     <div class="w-full" x-cloak
-                        x-show="!['{{ getFilter::DEFAULT->value }}', '{{ getFilter::KARDEX_PRODUCTOS->value }}', '{{ getFilter::MIN_STOCK->value }}', '{{ getFilter::PRODUCTOS_PROMOCIONADOS->value }}'].includes(typereporte)">
+                        x-show="['{{ getFilter::TOP_TEN_PRODUCTOS->value }}'].includes(typereporte)">
                         <x-label value="Filtrar usuario :" />
                         <div id="parentrpprod_user_id" x-init="selectProdUser" class="relative">
                             <x-select class="block w-full" x-ref="rpprod_user_id" id="rpprod_user_id"
@@ -294,6 +311,7 @@
             Alpine.data('reportproducto', () => ({
                 typereporte: @entangle('typereporte').defer,
                 viewreporte: @entangle('viewreporte').defer,
+                viewstock: @entangle('viewstock').defer,
                 // sucursal_id: @entangle('sucursal_id').defer,
                 producto_id: @entangle('producto_id').defer,
                 almacen_id: @entangle('almacen_id').defer,
@@ -309,6 +327,9 @@
                     });
                     this.$watch('viewreporte', (value) => {
                         this.rpProdViewreporte.val(value).trigger("change");
+                    });
+                    this.$watch('viewstock', (value) => {
+                        this.rpProdViewstock.val(value).trigger("change");
                     });
                     this.$watch('producto_id', (value) => {
                         this.rpProdProducto.val(value).trigger("change");
@@ -343,6 +364,7 @@
                         this.rpProdType.select2().val(this.typereporte).trigger('change');
                         this.rpProdViewreporte.select2().val(this.viewreporte).trigger(
                             'change');
+                        this.rpProdViewstock.select2().val(this.viewstock).trigger('change');
                         this.rpProdProducto.select2({
                             templateResult: function(data) {
                                 if (!data.id) {
@@ -402,6 +424,14 @@
             this.rpProdViewreporte.val(this.viewreporte).trigger("change");
             this.rpProdViewreporte.on("select2:select", (event) => {
                 this.viewreporte = event.target.value;
+            })
+        }
+
+        function selectProdViewstock() {
+            this.rpProdViewstock = $(this.$refs.rpprod_viewstock).select2();
+            this.rpProdViewstock.val(this.viewstock).trigger("change");
+            this.rpProdViewstock.on("select2:select", (event) => {
+                this.viewstock = event.target.value;
             })
         }
 

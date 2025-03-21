@@ -50,7 +50,8 @@
                             </svg>
                         </div>
 
-                        <span class="inline-block pl-14 text-primary group-hover:text-hovercolorlinknav">OFERTAS</span>
+                        <span class="inline-block pl-14 text-primary group-hover:text-hovercolorlinknav">
+                            PROMOCIONES</span>
                         {{-- <span class="sale group-hover:text-textspancardproduct group-hover:bg-fondospancardproduct">
                             SALE</span> --}}
                     </div>

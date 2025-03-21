@@ -65,8 +65,8 @@
                         <div class="w-full flex flex-wrap gap-1">
                             @foreach ($seriesalmacen as $item)
                                 <div
-                                    class="inline-flex gap-2 items-center justify-between p-1 px-2 rounded-lg border border-borderminicard {{ $item->almacen->trashed() || $item->isDisponible() == false ? 'opacity-45' : '' }}">
-                                    <span class="inline-block flex-shrink-0 w-6 h-6">
+                                    class="inline-flex gap-1 items-center justify-between p-1 px-2 rounded-lg border border-borderminicard {{ $item->almacen->trashed() || $item->isDisponible() == false ? 'opacity-45' : '' }}">
+                                    <span class="inline-block flex-shrink-0 size-5">
                                         @if ($item->isSalida())
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                                 class="w-full h-full text-neutral-400" stroke="currentColor"
@@ -84,18 +84,24 @@
                                             </svg>
                                         @else
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                                stroke-width="1.5" class="w-full h-full text-colorlabel">
+                                                <path d="M8 20V4h4v16zM2 4v16M5 4v16M15 4v16m3 0V4h4v16z" />
+                                            </svg>
+
+                                            {{-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                                 class="w-full h-full text-green-500" stroke="currentColor"
                                                 stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
                                                 <polyline id="primary" points="21 5 12 14 8 10" />
                                                 <path id="primary-2" data-name="primary"
                                                     d="M20.94,11A8.26,8.26,0,0,1,21,12a9,9,0,1,1-9-9,8.83,8.83,0,0,1,4,1" />
-                                            </svg>
+                                            </svg> --}}
                                         @endif
                                     </span>
                                     <div class="flex-1">
                                         <p class="font-medium text-[10px] text-colorlabel">
                                             {{ $item->serie }}</p>
-                                        <p class="text-colorsubtitleform text-[10px]">
+                                        <p class="text-colorsubtitleform text-[10px] !leading-none">
                                             {{ $item->almacen->name }}</p>
                                     </div>
                                     @can('admin.almacen.productos.series.edit')

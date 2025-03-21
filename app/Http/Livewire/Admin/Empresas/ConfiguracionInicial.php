@@ -178,7 +178,7 @@ class ConfiguracionInicial extends Component
                 'viewespecificaciones' => ['integer', 'min:0', 'max:1'],
                 'viewalmacens' => ['integer', 'min:0', 'max:1'],
                 'viewalmacensdetalle' => ['integer', 'min:0', 'max:1'],
-                'viewtextopromocion' => ['integer', 'min:0', 'max:2'],
+                'viewtextopromocion' => ['integer', 'min:0', 'max:3'],
                 'generatesku' => ['integer', 'min:0', 'max:1'],
                 'usemarkagua' => ['integer', 'min:0', 'max:1'],
                 'markagua' => [

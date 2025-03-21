@@ -71,9 +71,9 @@ class ShowEmployers extends Component
 
     public function render()
     {
-        $sucursals = Sucursal::whereHas('employers')->orderBy('name', 'asc')->get();
-        $areaworks = Areawork::whereHas('employers')->orderBy('name', 'asc')->get();
-        $turnos = Turno::whereHas('employers')->orderBy('horaingreso', 'asc')->get();
+        $sucursals = Sucursal::orderBy('name', 'asc')->get();
+        $areaworks = Areawork::orderBy('name', 'asc')->get();
+        $turnos = Turno::orderBy('horaingreso', 'asc')->get();
         $sucursalusers = Sucursal::whereHas('employers')->orderBy('name', 'asc')->get();
 
         $employers = Employer::withTrashed()->with(['areawork', 'sucursal', 'user', 'turno', 'telephone']);

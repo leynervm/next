@@ -82,11 +82,12 @@
                                                     </svg>
                                                 </span>
 
-                                                <a class="size-16 sm:size-20 block rounded-lg relative"
+                                                <a class="block size-16 sm:size-20 rounded-lg relative"
                                                     href="{{ route('productos.show', $itemcombo->producto_slug) }}">
-                                                    @if ($itemcombo->image)
-                                                        <img src="{{ $itemcombo->image }}" alt="{{ $itemcombo->image }}"
-                                                            class="block w-full h-auto object-scale-down overflow-hidden rounded-lg">
+                                                    @if ($itemcombo->imagen)
+                                                        <img src="{{ $itemcombo->imagen }}"
+                                                            alt="{{ $itemcombo->producto_slug }}"
+                                                            class="block w-full h-full object-scale-down overflow-hidden rounded-lg">
                                                     @else
                                                         <x-icon-image-unknown
                                                             class="w-full h-full text-colorsubtitleform" />
@@ -158,12 +159,12 @@
         @if (auth()->user())
             <div class="w-full lg:w-96 lg:flex-shrink-0 relative">
                 <div class="w-full lg:sticky lg:top-28">
-                    <div class="w-full border-b border-borderminicard mb-5">
-                        <p class="text-sm font-medium text-colorsubtitleform">
-                            RESUMEN DEL CARRITO</p>
-                        <p class="text-3xl text-right font-semibold text-colorlabel">
+                    <div class="w-full flex justify-between gap-2 items-end mb-2">
+                        <small class="inline-block text-sm font-medium text-colorsubtitleform">
+                            RESUMEN DEL CARRITO</small>
+                        <p class="text-3xl text-right font-semibold text-colorlabel !leading-none">
                             <small class="text-[10px] font-medium">{{ $moneda->simbolo }}</small>
-                            {{ decimalOrInteger(getAmountCart($shoppings)->total, 2, ', ') }}
+                            {{ number_format(getAmountCart($shoppings)->total, 2, '.', ', ') }}
                         </p>
                     </div>
 
@@ -174,8 +175,7 @@
         @endif
     </div>
 
-    {{-- @push('scripts') --}}
+
     <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha_v3.key_web') }}"></script>
     <script type="text/javascript" src="{{ config('services.niubiz.url_js') }}"></script>
-    {{-- @endpush --}}
 </x-app-layout>

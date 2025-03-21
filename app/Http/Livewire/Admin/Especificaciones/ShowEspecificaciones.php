@@ -58,6 +58,7 @@ class ShowEspecificaciones extends Component
     public function render()
     {
         $caracteristicas = Caracteristica::with(['especificacions' => function ($query) {
+            $query->orderBy('id', 'asc');
             // $query->where('name', 'ilike', '%' . $this->search . '%');
         }]);
 

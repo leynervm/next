@@ -19,8 +19,8 @@
         <livewire:admin.reports.generar-reporte-ventas wire:key="report_ventas" />
         <livewire:admin.reports.generar-reporte-compras wire:key="report_compras" />
         <livewire:admin.reports.generar-reporte-productos wire:key="report_productos" />
-        <livewire:admin.reports.generar-reporte-comprobantes wire:key="report_comprobantes" />
-        <livewire:admin.reports.generar-reporte-guias wire:key="report_guias" />
+        {{-- <livewire:admin.reports.generar-reporte-comprobantes wire:key="report_comprobantes" /> --}}
+        {{-- <livewire:admin.reports.generar-reporte-guias wire:key="report_guias" /> --}}
 
     </div>
 </x-admin-layout>

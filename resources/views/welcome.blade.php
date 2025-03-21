@@ -9,34 +9,42 @@
         @if (count($categories))
             <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">
                 Nuestros Productos</h1>
+            @php
+                $chunks = $categories->chunk(5);
+            @endphp
             <section
-                class="w-full py-6 pb-10 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
-                @foreach ($categories as $item)
-                    <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
-                        class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
-                        <div
-                            class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
-                            @if ($item->image)
-                                <picture>
-                                    <source srcset="{{ getCategoryURL($item->image->url) }}">
-                                    <img src="{{ getCategoryURL($item->image->url) }}"
-                                        alt="{{ getCategoryURL($item->image->url) }}"
-                                        class="w-full h-full object-scale-down overflow-hidden">
-                                </picture>
-                            @else
-                                <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                    viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round"
-                                    stroke-linejoin="round" stroke-width="2" class="w-full h-full">
-                                    <path d="M4 6h16M4 12h16M4 18h7" />
-                                </svg>
-                            @endif
-                        </div>
-                        <h1
-                            class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
-                            {{ $item->name }}</h1>
-                    </a>
+                class="w-full py-6 pb-10 flex flex-col gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+                @foreach ($chunks as $chunk)
+                    <div class="w-full flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+                        @foreach ($chunk as $item)
+                            <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
+                                class="w-full aspect-square max-w-16 xs:max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-1 xs:p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                                <div
+                                    class="w-full h-5 xs:h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                                    @if ($item->image)
+                                        <picture>
+                                            <source srcset="{{ getCategoryURL($item->image->url) }}">
+                                            <img src="{{ getCategoryURL($item->image->url) }}"
+                                                alt="{{ getCategoryURL($item->image->url) }}"
+                                                class="w-full h-full object-scale-down overflow-hidden">
+                                        </picture>
+                                    @else
+                                        <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round"
+                                            stroke-linejoin="round" stroke-width="2" class="w-full h-full">
+                                            <path d="M4 6h16M4 12h16M4 18h7" />
+                                        </svg>
+                                    @endif
+                                </div>
+                                <h1
+                                    class="pt-1 sm:pt-3 text-[7px] xs:text-[8px] sm:text-[9px] md:text-[10px] !leading-none text-colorsubtitleform font-semibold text-center group-hover:text-primary transition ease-in-out duration-300">
+                                    {{ $item->name }}</h1>
+                            </a>
+                        @endforeach
+                    </div>
                 @endforeach
             </section>
+
         @endif
 
         <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">

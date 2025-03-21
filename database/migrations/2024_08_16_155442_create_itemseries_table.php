@@ -17,13 +17,15 @@ class CreateItemseriesTable extends Migration
         Schema::create('itemseries', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->integer('status')->default(0);
+            // $table->integer('status')->default(0);
             $table->unsignedBigInteger('serie_id');
-            $table->unsignedBigInteger('tvitem_id');
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('seriable_id');
+            $table->string('seriable_type', 255);
+            // $table->unsignedBigInteger('tvitem_id');
             $table->foreign('serie_id')->on('series')->references('id');
-            $table->foreign('tvitem_id')->on('tvitems')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
+            // $table->foreign('tvitem_id')->on('tvitems')->references('id');
         });
     }
 

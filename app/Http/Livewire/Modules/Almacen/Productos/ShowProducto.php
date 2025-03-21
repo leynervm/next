@@ -237,34 +237,34 @@ class ShowProducto extends Component
 
             if ($this->almacen->id ?? null) {
                 $event = 'updated';
-                $countSeries = $this->producto->seriesdisponibles
-                    ->where('almacen_id', $this->almacen_id)->count();
+                $countSeries = $this->producto->series->where('almacen_id', $this->almacen_id)->count();
 
                 if ($this->newcantidad >= $countSeries) {
-                    $this->producto->almacens()->updateExistingPivot($this->almacen_id, [
-                        'cantidad' => $this->newcantidad,
-                    ]);
-
-                    $stock = $this->producto->almacens->find($this->almacen->id)->pivot->cantidad;
+                    $stock = $this->producto->almacens()->find($this->almacen_id)->pivot->cantidad;
                     if ($this->newcantidad <> $stock) {
                         // dd($stock, $this->newcantidad);
-                        if ($this->newcantidad > $stock) {
-                            $this->producto->saveKardex($this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $this->newcantidad - $stock, '+', Kardex::ACTUALIZACION_MANUAL, null);
-                        } else {
-                            $this->producto->saveKardex($this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $stock - $this->newcantidad, '-', Kardex::ACTUALIZACION_MANUAL, null);
-                        }
+                        $kardex = Kardex::updateOrNewKardex($this->almacen_id, $this->producto->id, $stock, $this->newcantidad);
+                        // dd($kardex);
+                        // if ($this->newcantidad > $stock) {
+                        //     $this->producto->saveKardex($this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $this->newcantidad - $stock, '+', Kardex::ACTUALIZACION_MANUAL, null);
+                        // } else {
+                        //     $this->producto->saveKardex($this->producto->id, $this->almacen->id, $stock, $this->newcantidad, $stock - $this->newcantidad, '-', Kardex::ACTUALIZACION_MANUAL, null);
+                        // }
+                        $this->producto->almacens()->updateExistingPivot($this->almacen_id, [
+                            'cantidad' => $this->newcantidad,
+                        ]);
                     }
                 } else {
-                    $this->addError('newcantidad', "Cantidad es menor a las series disonibles ($countSeries).");
+                    $this->addError('newcantidad', "Cantidad debe ser mayor a series disponibles [$countSeries " . $this->producto->unit->name . "].");
                     return false;
                 }
             } else {
-
                 // $almacen = Almacen::find($this->almacen_id);
                 $this->producto->almacens()->attach($this->almacen_id, [
                     'cantidad' => $this->newcantidad,
                 ]);
-                $this->producto->saveKardex($this->producto->id, $this->almacen_id, 0, $this->newcantidad, $this->newcantidad, '+', Kardex::ENTRADA_PRODUCTO, null);
+                $kardex = Kardex::updateOrNewKardex($this->almacen_id, $this->producto->id, 0, $this->newcantidad);
+                // $this->producto->saveKardex($this->producto->id, $this->almacen_id, 0, $this->newcantidad, $this->newcantidad, '+', Kardex::ENTRADA_PRODUCTO, null);
             }
 
             DB::commit();

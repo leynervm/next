@@ -3,6 +3,7 @@
 namespace App\Rules;
 
 use App\Models\Carshoop;
+use App\Models\Tvitem;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Facades\Session;
 
@@ -32,45 +33,18 @@ class ValidateCarrito implements Rule
      */
     public function passes($attribute, $value)
     {
-
-        // $carrito = Session::get('carrito', []);
-        // if (!is_array($carrito)) {
-        //     $carrito = json_decode($carrito, true);
-        // }
-
-        // if (count($carrito) > 0) {
-        //     $carritoJson = json_decode(Session::get('carrito'));
-        //     $monedaEquals = true;
-        //     $sucursalEquals = true;
-
-        //     foreach ($carritoJson as $item) {
-        //         if ($item->moneda_id !== $this->moneda_id) {
-        //             $monedaEquals = false;
-        //             $this->mensaje = 'Carrito de compras con items distintos a la moneda seleccionada.';
-        //         }
-
-        //         if ($item->sucursal_id !== $this->sucursal_id) {
-        //             $monedaEquals = false;
-        //             $this->mensaje = 'Carrito de compras con items distintos a la sucursal en uso.';
-        //         }
-        //     }
-
-        //     return $monedaEquals;
-        // }
-
-        $carrito = Carshoop::ventas()->where('user_id', auth()->user()->id)
-            ->where('sucursal_id', auth()->user()->sucursal_id)->select('moneda_id');
+        $carrito = Tvitem::ventas()->micart()->select('moneda_id');
 
         if ($carrito->get()->count() > 0) {
-            $countmoneda = $carrito->groupBy('moneda_id');
+            $monedas = $carrito->groupBy('moneda_id');
 
-            if ($countmoneda->get()->count() > 1) {
-                $this->mensaje = 'Existen items en el carrito de compras con distintos tipos de moneda.';
+            if ($monedas->get()->count() > 1) {
+                $this->mensaje = 'Carrito de venta con diferenetes monedas.';
             } else {
-                if ($countmoneda->first()->moneda_id == $this->moneda_id) {
+                if ($monedas->first()->moneda_id == $this->moneda_id) {
                     return true;
                 } else {
-                    $this->mensaje = 'Moneda de venta diferente al carrito de ventas.';
+                    $this->mensaje = 'Moneda seleccionada diferente al carrito de ventas.';
                 }
             }
         }

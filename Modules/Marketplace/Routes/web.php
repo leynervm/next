@@ -14,7 +14,13 @@
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Models\Client;
+use App\Models\Sucursal;
+use App\Models\Tvitem;
+use App\Models\Typepayment;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Http\Controllers\AdminController;
 use Modules\Marketplace\Http\Controllers\ClaimbookController;
 use Modules\Marketplace\Http\Controllers\ContactController;
@@ -26,10 +32,39 @@ use Modules\Marketplace\Http\Controllers\OrderController;
 Route::get('/login/auth/{driver}/redirect', [AuthController::class, 'redirect'])->name('auth.redirect');
 Route::get('/login/auth/{driver}/callback', [AuthController::class, 'callback'])->name('auth.callback');
 
+// Route::get('prueba', function () {
+//     $order = Order::find(2);
+//     $sumatorias = Tvitem::select(
+//         DB::raw("COALESCE(SUM(total),0) as total"),
+//         DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN igv * cantidad ELSE 0 END),0) as igv"),
+//         DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '1' THEN igv * cantidad ELSE 0 END), 0) as igvgratuito"),
+//         DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as gravado"),
+//         DB::raw("COALESCE(SUM(CASE WHEN igv = 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as exonerado"),
+//         DB::raw("COALESCE(SUM(CASE WHEN gratuito = '1' THEN price * cantidad ELSE 0 END), 0) as gratuito")
+//     )->where('tvitemable_id', $order->id)->where('tvitemable_type', Order::class)
+//         ->first();
+
+//     return $sumatorias;
 
 
-Route::post('/search-cliente', [ApiController::class, 'consultacliente'])->name('consultacliente')
-    ->middleware(['web']);
+
+
+
+
+//     $codecpe = '01';
+//     $sucursal = Sucursal::with(['empresa'])->withWhereHas('seriecomprobantes', function ($query) use ($codecpe) {
+//         $query->withWhereHas('typecomprobante', function ($subq) use ($codecpe) {
+//             $subq->where('code', $codecpe);
+//         });
+//     })->orderByDesc('default')->first();
+//     $typepayment = Typepayment::activos()->where('paycuotas', Typepayment::CONTADO)->first();
+
+//     $client = Client::firstOrCreate(['document' => '20609551594'], ['name' => 'NAME RAZON SOCIAL']);
+
+//     return [$sucursal->seriecomprobantes->first(), $typepayment, $client];
+// });
+
+Route::post('/search-cliente', [ApiController::class, 'consultacliente'])->name('consultacliente')->middleware(['web']);
 
 
 Route::middleware(['web', 'auth:sanctum', config('jetstream.auth_session')])->group(function () {
@@ -110,7 +145,7 @@ Route::middleware(['web', 'auth'])->group(function () {
         Route::get('/usuarios-web/{user}/show', [AdminController::class, 'showuserweb'])->name('.usersweb.show');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('.orders');
-        Route::get('/orders/{order}/show', [OrderController::class, 'show'])->name('.orders.show');
+        Route::get('/orders/{order:purchase_number}/show', [OrderController::class, 'show'])->name('.orders.show');
 
         Route::get('/libro-reclamaciones', [ClaimbookController::class, 'claimbooks'])->name('.claimbooks');
         Route::get('/libro-reclamaciones/{claimbook}/show', [ClaimbookController::class, 'show'])->name('.claimbooks.show');

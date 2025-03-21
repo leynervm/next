@@ -80,46 +80,33 @@ class MarketplaceController extends Controller
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->with(['unit', 'almacens', 'compraitems.compra.proveedor'])
+            ->with(['unit', 'imagen', 'almacens', 'compraitems.compra.proveedor'])
             ->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
-            }])->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }])->addSelect(['image_2' => function ($query) {
                 $query->select('url')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);
             }])->withWhereHas('promocions', function ($query) {
-                $query->with(['itempromos.producto' => function ($itemQuery) {
-                    $itemQuery->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                    }]);
-                }])->availables()->disponibles();
+                $query->with('itempromos.producto.almacens')->availables()->disponibles();
             })->visibles()->publicados()->orderByDesc('novedad')->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->paginate(30)->through(function ($producto) {
-                $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                // $producto->oferta = $producto->promocions->where('type', PromocionesEnum::OFERTA->value)->first()->descuento ?? 0;
+                $producto->descuento = $producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
                 $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
 
                 $combos = [];
                 $pricetype = getPricetypeAuth();
-                foreach ($producto->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->all() as $item) {
+                foreach ($producto->promocions->where('type', PromocionesEnum::COMBO->value)->all() as $item) {
                     $combo = getAmountCombo($item, $pricetype);
                     if ($combo->stock_disponible && $combo->is_disponible) {
                         $combos[] = $combo;
                     }
                 }
 
-                // if (count($combos) > 0 || $producto->descuento > 0 || $producto->liquidacion) {
                 $producto->combos = $combos;
                 return $producto;
-                // }
             });
 
 
@@ -141,13 +128,28 @@ class MarketplaceController extends Controller
     public function resumenorder(Order $order)
     {
         // $this->authorize('user', $order);
-        $order->load(['user', 'moneda', 'entrega', 'direccion', 'tvitems' => function ($query) {
-            $query->with(['producto' => function ($q) {
-                $q->with(['unit', 'imagen']);
-            }]);
-        }, 'transaccion', 'trackings' => function ($query) {
-            $query->with('trackingstate')->orderBy('date', 'asc');
-        }]);
+        $order->load([
+            'shipmenttype',
+            'user',
+            'entrega.sucursal.ubigeo',
+            'client',
+            'moneda',
+            'direccion.ubigeo',
+            'transaccion',
+            'tvitems' => function ($query) {
+                $query->with(['promocion', 'producto' => function ($subq) {
+                    $subq->with(['unit', 'imagen', 'marca', 'category']);
+                }, 'carshoopitems' => function ($q) {
+                    $q->with(['itempromo', 'producto' => function ($db) {
+                        $db->with(['unit', 'imagen', 'marca', 'category']);
+                    }]);
+                }]);
+            },
+            'trackings' => function ($query) {
+                $query->with('trackingstate')->orderBy('date', 'asc');
+            }
+        ]);
+
         return view('modules.marketplace.orders.payment', compact('order'));
     }
 
@@ -187,9 +189,9 @@ class MarketplaceController extends Controller
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-            }])->with(['marca', 'promocions' => function ($query) {
+            }])->with(['marca', 'imagen', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
-                    $query->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
+                    $query->with(['unit', 'imagen', 'almacens'])->addSelect(['image' => function ($q) {
                         $q->select('url')->from('images')
                             ->whereColumn('images.imageable_id', 'productos.id')
                             ->where('images.imageable_type', Producto::class)
@@ -199,7 +201,7 @@ class MarketplaceController extends Controller
             }])->whereNot('id', $producto->id)->where('subcategory_id', $producto->subcategory_id)
             ->publicados()->visibles()->take(28)->orderBy('views', 'desc')
             ->orderBy('name', 'asc')->get()->map(function ($producto) {
-                $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                $producto->descuento = $producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
                 $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
                 return $producto;
             });
@@ -222,7 +224,7 @@ class MarketplaceController extends Controller
             }])->whereNot('id', $producto->id)->publicados()->visibles()
             ->inRandomOrder()->take(28)->orderBy('views', 'desc')
             ->orderBy('name', 'asc')->get()->map(function ($producto) {
-                $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                $producto->descuento = $producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
                 $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
                 return $producto;
             });
@@ -256,7 +258,7 @@ class MarketplaceController extends Controller
         }]);
 
         $combos = [];
-        $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $producto->descuento = $producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
         $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
         foreach ($producto->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->all() as $item) {
             $combo = getAmountCombo($item, $pricetype);
@@ -878,15 +880,10 @@ class MarketplaceController extends Controller
                     COALESCE(categories.name, '')
                 ), plainto_tsquery('spanish', '" . $search . "')) AS rank"
             )
-        )->addSelect(['image' => function ($query) {
-            $query->select('url')->from('images')
-                ->whereColumn('images.imageable_id', 'productos.id')
-                ->where('images.imageable_type', Producto::class)
-                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-        }])->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
-            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id');
-
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['imagen']);
         if ($empresa->viewOnlyDisponibles()) {
             $products->withWhereHas('almacens', function ($query) {
                 $query->where('cantidad', '>', 0);
@@ -908,7 +905,7 @@ class MarketplaceController extends Controller
             ->visibles()->publicados()->limit(30);
 
         $products = $products->get()->transform(function ($item) {
-            $item->image = pathURLProductImage($item->image);
+            $item->image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
             return $item;
         });
 
@@ -937,17 +934,11 @@ class MarketplaceController extends Controller
         $open_modal = filter_var($request->input('open_modal'), FILTER_VALIDATE_BOOLEAN);
 
         try {
-
             if (!empty($producto_id) && $open_modal) {
-                $producto =  Producto::with(['promocions' => function ($query) use ($open_modal) {
+                $producto =  Producto::with(['imagen', 'promocions' => function ($query) use ($open_modal) {
                     if ($open_modal) {
-                        $query->with(['itempromos.producto' => function ($subQuery) {
-                            $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
-                                $q->select('url')->from('images')
-                                    ->whereColumn('images.imageable_id', 'productos.id')
-                                    ->where('images.imageable_type', Producto::class)
-                                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                            }]);
+                        $query->with(['itempromos.producto' => function ($subq) {
+                            $subq->with(['unit', 'imagen', 'almacens']);
                         }])->combos()->availables()->disponibles();
                     }
                 }])->find($producto_id);
@@ -1020,40 +1011,46 @@ class MarketplaceController extends Controller
                 }
 
                 $combo = getAmountCombo($promocion, $pricetype);
+                // -1               =               1               -   (    1     +    1       )
+                $qty_restante_oferta = $stock_disponible_promocion - ($cantidad + $qtyexistente);
                 $qty_sin_oferta = ($cantidad + $qtyexistente) - $stock_disponible_promocion;
+                $pricesale = $producto->getPrecioVenta($pricetype);
 
                 if ($combo) {
-                    $priceold = $producto->getPrecioVentaDefault($pricetype) + $combo->total_normal;
-                    $pricesale = $producto->getPrecioVenta($pricetype) + $combo->total;
-                } else {
-                    $priceold = $producto->getPrecioVentaDefault($pricetype);
-                    $pricesale = $producto->getPrecioVenta($pricetype);
+                    $pricesale = $pricesale + $combo->total;
                 }
 
-                //Agregar con precio promocional
+                // return [
+                //     $pricesale,
+                //     "$stock_disponible_promocion - ($cantidad + $qtyexistente)",
+                //     "CANT REST. OFER: ($qty_restante_oferta)",
+                //     "OTRO ITEM SIN PRM: ($qty_sin_oferta)",
+                //     $producto->getPrecioVentaDefault($pricetype),
+                // ];
+
                 if ($pricesale > 0) {
-                    // cantidad sin promocion xq supera stock disp. promocion
-                    if ($cantidad == $qty_sin_oferta) {
+                    // Si $cant_restante_oferta es mayor igual que 0 agregar un solo item con promocion
+                    if ($qty_restante_oferta >= 0) {
                         $cart = Cart::instance('shopping')->content()->first(function ($item) use ($promocion) {
-                            return $item->id == $promocion->producto_id && $item->options->promocion_id == null;
+                            return $item->id == $promocion->producto_id && $item->options->promocion_id == $promocion->id;
                         });
 
                         if ($cart) {
-                            Self::addproductocart(null, $cart->rowId, $cart->qty + $cantidad, number_format($priceold, 2, '.', ''));
+                            Self::addproductocart(null, $cart->rowId, $cart->qty + $cantidad, number_format($pricesale, 2, '.', ''));
                         } else {
                             Self::addproductocart([
                                 'id' => $producto->id,
                                 'name' => $producto->name,
                                 'qty' => $cantidad,
-                                'price' => number_format($priceold, 2, '.', ''),
+                                'price' => number_format($pricesale, 2, '.', ''),
                                 'options' => [
                                     'date' => now('America/Lima')->format('Y-m-d H:i:s'),
                                     'moneda_id' => $moneda->id,
                                     'currency' => $moneda->currency,
                                     'simbolo' => $moneda->simbolo,
                                     'modo_precios' => $pricetype->name ?? 'DEFAUL PRICESALE',
-                                    'carshoopitems' => [],
-                                    'promocion_id' => null,
+                                    'carshoopitems' => empty($combo) ? [] : $combo->products,
+                                    'promocion_id' => $promocion_id,
                                     'igv' => 0,
                                     'subtotaligv' => 0,
                                     'stock_disponible' => true,
@@ -1061,18 +1058,33 @@ class MarketplaceController extends Controller
                             ]);
                         }
                     } else {
+                        // Si $cant_restante_oferta es menor que 0 se agregarán dos item
+                        // Agregar item con promocion de unidades diponibles ($stock_disponible_promocion)
+                        // Agregar item con $cant_restante_oferta (POSITIVO) sin promocion
                         $cart = Cart::instance('shopping')->content()->first(function ($item) use ($promocion) {
                             return $item->id == $promocion->producto_id && $item->options->promocion_id == $promocion->id;
                         });
 
+                        // return [
+                        //     [
+                        //         'qty' => $stock_disponible_promocion,
+                        //         'pricesale' => $pricesale
+                        // 'promocion_id' => 
+                        //     ],
+                        //     [
+                        //         'qty' => $qty_sin_oferta,
+                        //         'pricesale' => $producto->getPrecioVentaDefault($pricetype)
+                        // 'promocion_id' => null,
+                        //     ]
+                        // ];
+
                         if ($cart) {
-                            $new_qty = $qty_sin_oferta > 0 ? $stock_disponible_promocion : $cart->qty + $cantidad;
-                            Self::addproductocart(null, $cart->rowId, $new_qty, number_format($pricesale, 2, '.', ''));
+                            Self::addproductocart(null, $cart->rowId, $stock_disponible_promocion, number_format($pricesale, 2, '.', ''));
                         } else {
                             Self::addproductocart([
                                 'id' => $producto->id,
                                 'name' => $producto->name,
-                                'qty' => $qty_sin_oferta > 0 ? $stock_disponible_promocion : $cantidad,
+                                'qty' => $stock_disponible_promocion,
                                 'price' => number_format($pricesale, 2, '.', ''),
                                 'options' => [
                                     'date' => now('America/Lima')->format('Y-m-d H:i:s'),
@@ -1089,34 +1101,38 @@ class MarketplaceController extends Controller
                             ]);
                         }
 
-                        if ($qty_sin_oferta > 0) {
-                            //Agregar con precio normal
-                            $cart = Cart::instance('shopping')->content()->first(function ($item) use ($promocion) {
-                                return $item->id == $promocion->producto_id && $item->options->promocion_id == null;
-                            });
+                        // AGREGO EL SEGUNDO CART SIN PROMOCION PORQUE CANT. SUPERA AL DISPONIBLE
+                        $cart_normal = Cart::instance('shopping')->content()->first(function ($item) use ($promocion) {
+                            return $item->id == $promocion->producto_id && $item->options->promocion_id == null;
+                        });
 
-                            if ($cart) {
-                                Self::addproductocart(null, $cart->rowId, $cart->qty + $qty_sin_oferta, number_format($priceold, 2, '.', ''));
-                            } else {
-                                Self::addproductocart([
-                                    'id' => $producto->id,
-                                    'name' => $producto->name,
-                                    'qty' => $qty_sin_oferta,
-                                    'price' => number_format($priceold, 2, '.', ''),
-                                    'options' => [
-                                        'date' => now('America/Lima')->format('Y-m-d H:i:s'),
-                                        'moneda_id' => $moneda->id,
-                                        'currency' => $moneda->currency,
-                                        'simbolo' => $moneda->simbolo,
-                                        'modo_precios' => $pricetype->name ?? 'DEFAUL PRICESALE',
-                                        'carshoopitems' => [],
-                                        'promocion_id' => null,
-                                        'igv' => 0,
-                                        'subtotaligv' => 0,
-                                        'stock_disponible' => true,
-                                    ]
-                                ]);
-                            }
+                        if (!$combo) {
+                            $pricesale = $producto->getPrecioVentaDefault($pricetype);
+                        }
+
+                        if ($cart_normal) {
+                            Self::addproductocart(null, $cart_normal->rowId, $cart_normal->qty + $qty_sin_oferta, number_format($pricesale, 2, '.', ''));
+                            //    return $saved;
+                        } else {
+                            Self::addproductocart([
+                                'id' => $producto->id,
+                                'name' => $producto->name,
+                                'qty' => $qty_sin_oferta,
+                                'price' => number_format($pricesale, 2, '.', ''),
+                                'options' => [
+                                    'date' => now('America/Lima')->format('Y-m-d H:i:s'),
+                                    'moneda_id' => $moneda->id,
+                                    'currency' => $moneda->currency,
+                                    'simbolo' => $moneda->simbolo,
+                                    'modo_precios' => $pricetype->name ?? 'DEFAUL PRICESALE',
+                                    'carshoopitems' => [],
+                                    'promocion_id' => null,
+                                    'igv' => 0,
+                                    'subtotaligv' => 0,
+                                    'stock_disponible' => true,
+                                ]
+                            ]);
+                            // return $saved;
                         }
                     }
 
@@ -1231,8 +1247,8 @@ class MarketplaceController extends Controller
             return $cart;
         } else {
             $cart = Cart::instance('shopping')->update($rowId, [
-                'qty' => $new_qty,
                 'price' => number_format($new_price, 2, '.', ''),
+                'qty' => $new_qty,
             ]);
             return $cart;
         }

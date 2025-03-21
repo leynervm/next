@@ -4,7 +4,9 @@ namespace App\Http\Livewire\Modules\Facturacion\Guias;
 
 use App\Models\Almacen;
 use App\Models\Guia;
+use App\Models\Itemserie;
 use App\Models\Kardex;
+use App\Models\Serie;
 use App\Models\Transportdriver;
 use App\Models\Transportvehiculo;
 use App\Models\Tvitem;
@@ -188,29 +190,93 @@ class ShowGuia extends Component
     {
         DB::beginTransaction();
         try {
-            if (count($tvitem->itemseries) > 0) {
-                $tvitem->itemseries()->each(function ($itemserie) use ($tvitem) {
-                    if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
-                        $itemserie->serie->dateout = null;
-                        $itemserie->serie->status = 0;
-                        $itemserie->serie->save();
-                    }
-                    $itemserie->delete();
-                });
+            $tvitem->load(['itemseries.serie', 'producto.almacens', 'kardexes']);
+            foreach ($tvitem->itemseries as $itemserie) {
+                if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                    $tvitem->updateSerieDisponible($itemserie->serie);
+                }
+                $itemserie->delete();
             }
+
+            foreach ($tvitem->kardexes as $kardex) {
+                $kardex->incrementOrDecrementStock($tvitem->producto, $tvitem);
+                $kardex->delete();
+            }
+
+            // $tvitem->forceDelete();
+            DB::commit();
+            $this->guia->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function deleteitemserie(Itemserie $itemserie)
+    {
+        DB::beginTransaction();
+        try {
+            $itemserie->load(['seriable.kardexes', 'serie'  => function ($query) {
+                $query->with(['producto.almacens']);
+            }]);
+            $tvitem = $itemserie->seriable;
+            $almacen_id = $itemserie->serie->almacen_id;
+            $kardex = $tvitem->kardexes->where('almacen_id', $almacen_id)->first();
 
             if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
-                $stock = $tvitem->producto->almacens->find($tvitem->almacen_id)->pivot->cantidad;
-                $tvitem->producto->almacens()->updateExistingPivot($tvitem->almacen_id, [
-                    'cantidad' => $stock + $tvitem->cantidad,
-                ]);
+                $tvitem->updateSerieDisponible($itemserie->serie);
+                if ($kardex) {
+                    $itemserie->serie->producto->incrementarStockProducto($almacen_id, 1);
+                }
             }
 
-            if ($tvitem->kardex) {
-                $tvitem->kardex->delete();
+            if ($kardex) {
+                $kardex->cantidad = $kardex->cantidad - 1;
+                $kardex->newstock = $kardex->newstock - 1;
+                if ($kardex->cantidad == 0) {
+                    $kardex->delete();
+                } else {
+                    $kardex->save();
+                }
             }
+            $itemserie->delete();
+            // $tvitem->cantidad = $tvitem->cantidad - 1;
+            // if ($tvitem->cantidad == 0) {
+            //     $tvitem->delete();
+            // } else {
+            //     $tvitem->save();
+            // }
+            DB::commit();
+            $this->guia->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 
-            $tvitem->delete();
+    public function deletekardex(Tvitem $tvitem, Kardex $kardex)
+    {
+        DB::beginTransaction();
+        try {
+            $tvitem->load(['producto.almacens']);
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                $tvitem->producto->incrementarStockProducto($kardex->almacen_id, $kardex->cantidad);
+            }
+            $kardex->delete();
+            $tvitem->cantidad = $tvitem->cantidad - $kardex->cantidad;
+            // if ($tvitem->cantidad == 0) {
+            //     $tvitem->delete();
+            // } else {
+            //     $tvitem->save();
+            // }
             DB::commit();
             $this->guia->refresh();
             $this->dispatchBrowserEvent('deleted');
@@ -227,26 +293,22 @@ class ShowGuia extends Component
     {
         DB::beginTransaction();
         try {
-            $stock = $tvitem->producto->almacens->find($tvitem->almacen_id)->pivot->cantidad;
-            $tvitem->producto->almacens()->updateExistingPivot($tvitem->almacen_id, [
-                'cantidad' => $stock + $tvitem->cantidad,
-            ]);
-
-            if (count($tvitem->itemseries) > 0) {
-                $tvitem->itemseries()->each(function ($itemserie) {
-                    $itemserie->serie->status = 0;
-                    $itemserie->serie->dateout = null;
-                    $itemserie->serie->save();
-                });
-            }
-
-            if ($tvitem->kardex) {
-                $tvitem->kardex->delete();
-            }
-
-            // $tvitem->cantidad = 0;
+            $tvitem->load(['kardexes', 'producto', 'itemseries.serie']);
             $tvitem->alterstock = Almacen::NO_ALTERAR_STOCK;
             $tvitem->save();
+
+            // if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+            if (count($tvitem->kardexes) > 0) {
+                $tvitem->kardexes()->each(function ($kardex) use ($tvitem) {
+                    $tvitem->producto->incrementarStockProducto($kardex->almacen_id, $kardex->cantidad);
+                });
+            }
+            if (count($tvitem->itemseries) > 0) {
+                $tvitem->itemseries()->each(function ($itemserie) use ($tvitem) {
+                    $tvitem->updateSerieDisponible($itemserie->serie);
+                });
+            }
+            // }
             $this->guia->refresh();
             DB::commit();
             $this->dispatchBrowserEvent('updated');
@@ -263,18 +325,17 @@ class ShowGuia extends Component
     {
         DB::beginTransaction();
         try {
-            if ($tvitem->kardex) {
-                $tvitem->kardex->detalle = Kardex::SALIDA_GUIA;
-                $tvitem->kardex->save();
-            }
-            if (count($tvitem->itemseries) > 0) {
-                $tvitem->itemseries()->each(function ($itemserie) {
-                    $itemserie->serie->status = 2;
-                    $itemserie->serie->save();
-                });
-            }
+            $tvitem->load(['kardexes', 'itemseries.serie']);
             $tvitem->alterstock = Almacen::DISMINUIR_STOCK;
             $tvitem->save();
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                if (count($tvitem->itemseries) > 0) {
+                    $tvitem->itemseries()->each(function ($itemserie) {
+                        $itemserie->serie->status = Serie::SALIDA;
+                        $itemserie->serie->save();
+                    });
+                }
+            }
             $this->guia->refresh();
             DB::commit();
             $this->dispatchBrowserEvent('updated');

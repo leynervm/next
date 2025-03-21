@@ -78,11 +78,9 @@ class ShowSeries extends Component
         $this->validate();
         DB::beginTransaction();
         try {
-            $seriesDisponibles = $this->producto->seriesdisponibles
-                ->where('almacen_id', $this->almacen_id)->count();
 
-            $stockAlmacen = $this->producto->almacens
-                ->find($this->almacen_id)->pivot->cantidad;
+            $seriesDisponibles = $this->producto->seriesdisponibles()->where('almacen_id', $this->almacen_id)->count();
+            $stockAlmacen = $this->producto->almacens->find($this->almacen_id)->pivot->cantidad;
 
             if ($seriesDisponibles >= $stockAlmacen) {
                 $this->addError('serie', 'Serie sobrepase el stock disponible en almacén.');

@@ -15,14 +15,19 @@ return new class extends Migration
     {
         Schema::create('carshoopitems', function (Blueprint $table) {
             $table->id();
+            $table->unsignedDecimal('cantidad', 12, 2);
             $table->unsignedDecimal('pricebuy', 18, 4);
             $table->unsignedDecimal('price', 18, 4);
             $table->unsignedDecimal('igv', 18, 4);
-            $table->char('requireserie', 1)->default(0);
+            $table->unsignedDecimal('subtotaligv', 18, 4);
+            $table->unsignedDecimal('subtotal', 18, 4);
+            $table->unsignedDecimal('total', 18, 4);
+            $table->unsignedInteger('itempromo_id')->nullable();
             $table->unsignedBigInteger('producto_id');
-            $table->unsignedBigInteger('carshoop_id');
+            $table->unsignedBigInteger('tvitem_id');
+            $table->foreign('itempromo_id')->on('itempromos')->references('id');
             $table->foreign('producto_id')->on('productos')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreign('carshoop_id')->on('carshoops')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreign('tvitem_id')->on('tvitems')->references('id')->cascadeOnDelete()->cascadeOnUpdate();
         });
     }
 

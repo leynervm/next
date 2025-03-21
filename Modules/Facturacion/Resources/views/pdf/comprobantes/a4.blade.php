@@ -395,14 +395,17 @@
                     <td class="p-1 font-medium align-baseline" style="width:100px">
                         CLIENTE </td>
                     <td class="p-1 font-bold">
-                        : {{ $comprobante->client->name }}</td>
+                        : {{ $comprobante->client->name }} - {{ $comprobante->client->document }}</td>
                 </tr>
-                <tr>
-                    <td class="p-1 font-medium align-baseline" style="width:100px">
-                        DIRECCIÓN </td>
-                    <td class="p-1 font-bold">
-                        : {{ $comprobante->direccion }}</td>
-                </tr>
+
+                @if (!empty($comprobante->direccion))
+                    <tr>
+                        <td class="p-1 font-medium align-baseline" style="width:100px">
+                            DIRECCIÓN </td>
+                        <td class="p-1 font-bold">
+                            : {{ $comprobante->direccion }}</td>
+                    </tr>
+                @endif
                 <tr>
                     <td class="p-1 font-medium" style="width: 100px">
                         TIPO PAGO </td>
@@ -441,11 +444,12 @@
         @if (count($comprobante->facturableitems) > 0)
             <table class="table mt-3 text-10">
                 <thead style="background: #CCC">
-                    <tr class="border-table" <th class="font-bold p-2 text-center" style="">ITEM</th>
-                        <th class="font-bold p-2 text-center" style=";">DESCRIPCIÓN</th>
-                        <th class="font-bold p-2 text-center" style=";">CANTIDAD</th>
-                        <th class="font-bold p-2 text-center" style=";">P. UNIT.</th>
-                        <th class="font-bold p-2 text-center" style=";">IMPORTE</th>
+                    <tr class="border-table">
+                        <th class="font-bold p-2 text-center">ITEM</th>
+                        <th class="font-bold p-2 text-center">DESCRIPCIÓN</th>
+                        <th class="font-bold p-2 text-center">CANTIDAD</th>
+                        <th class="font-bold p-2 text-center">P. UNIT.</th>
+                        <th class="font-bold p-2 text-center">IMPORTE</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -457,7 +461,13 @@
                             <td class="p-2 align-middle text-start leading-3">
                                 {!! nl2br($item->descripcion) !!}</td>
                             <td class="p-2 text-center" style="width: 70px;">
-                                {{ decimalOrInteger($item->cantidad) }} {{ $item->unit }}</td>
+                                {{ decimalOrInteger($item->cantidad) }}
+                                @if ($item->unit == 'NIU')
+                                    UND
+                                @else
+                                    {{ $item->unit }}
+                                @endif
+                            </td>
                             <td class="p-2 text-center" style="width: 70px;">
                                 {{ number_format($item->price + $item->igv, 2, '.', ', ') }}</td>
                             <td class="p-2 text-center align-middle" style="width: 80px;">

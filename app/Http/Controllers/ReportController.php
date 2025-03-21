@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use App\Enums\FilterReportsEnum;
 use App\Enums\MovimientosEnum;
 use App\Models\Cajamovimiento;
+use App\Models\Category;
+use App\Models\Concept;
 use App\Models\Employer;
 use App\Models\Employerpayment;
 use App\Models\Pricetype;
 use App\Models\Producto;
+use App\Models\Subcategory;
 use App\Models\Tvitem;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Barryvdh\Snappy\Facades\SnappyPdf;
@@ -31,6 +34,7 @@ class ReportController extends Controller
 
         $filters =  [
             "typereporte" => "",
+            "viewreporte" => "",
             "sucursal_id" => "",
             "concept_id" => "",
             "typemovement" => "",
@@ -49,15 +53,22 @@ class ReportController extends Controller
             "months" => [],
         ];
 
+        $hiddencolums = [];
+        $aperturas = [];
+        $consolidado = [];
         $empresa = view()->shared('empresa');
         $typereportvalue = FilterReportsEnum::getValue(Str::upper($request->input('typereporte')));
+        $viewconsolidado = false;
 
         if ($typereportvalue === null) {
-            $titulo = FilterReportsEnum::getLabel($typereportvalue);
+            $namePDF = FilterReportsEnum::getLabel($typereportvalue);
+            $titulo = $namePDF;
             $cajamovimientos = [];
             $sumatorias = [];
         } else {
-            $titulo = 'REPORTE DE CAJA ' . FilterReportsEnum::getLabel($typereportvalue);
+            $namePDF = 'REPORTE DE CAJA ' . FilterReportsEnum::getLabel($typereportvalue);
+            $titulo = $namePDF;
+
             foreach (array_keys($request->input()) as $param) {
                 if (in_array($param, array_keys($filters))) {
                     if ($param == "typereporte") {
@@ -67,23 +78,107 @@ class ReportController extends Controller
                     }
                 }
             }
+
+            $viewconsolidado = (bool) $filters['viewreporte'];
+            if ($viewconsolidado) {
+                $namePDF = 'CONSOLIDADO DE CAJA ' . FilterReportsEnum::getLabel($typereportvalue);
+                $titulo = $namePDF;
+            }
             $cajamovimientos = Cajamovimiento::with(['sucursal', 'openbox.box', 'monthbox', 'concept', 'methodpayment', 'moneda', 'user'])
-                ->queryFilter($filters)->orderByDesc('date')->get();
-
-            $totales = Cajamovimiento::with('moneda')
+                ->queryFilter($filters)->where('concept_id', '<>', Concept::openbox()->first()->id)
+                ->orderByDesc('date')->get();
+            $aperturas = Cajamovimiento::with(['sucursal', 'openbox.box', 'monthbox', 'concept', 'methodpayment', 'moneda', 'user'])
+                ->queryFilter($filters)->where('concept_id', Concept::openbox()->first()->id)
+                ->orderByDesc('date')->get();
+            $totales = Cajamovimiento::with(['moneda', 'methodpayment'])
                 ->select('typemovement', 'moneda_id', DB::raw('SUM(amount) as total'))
-                ->queryFilter($filters)->groupBy('typemovement', 'moneda_id')
-                ->orderBy('moneda_id', 'asc')->orderByDesc('typemovement')->get();
-
+                ->queryFilter($filters)->where('concept_id', '<>', Concept::openbox()->first()->id)
+                ->groupBy('typemovement', 'moneda_id')->orderBy('moneda_id', 'asc')
+                ->orderByDesc('typemovement')->get();
             $sumatorias = response()->json($totales->groupBy('moneda_id')->map(function ($items, $moneda_id) {
+                $ingreso = $items->where('typemovement', MovimientosEnum::INGRESO)->sum('total');
+                $egreso = $items->where('typemovement', MovimientosEnum::EGRESO)->sum('total');
                 return [
                     'moneda' => $items->firstWhere('moneda_id', $moneda_id)->moneda->toArray(),
                     'totales' => [
-                        MovimientosEnum::INGRESO->name => $items->where('typemovement', MovimientosEnum::INGRESO)->sum('total'),
-                        MovimientosEnum::EGRESO->name => $items->where('typemovement', MovimientosEnum::EGRESO)->sum('total'),
+                        MovimientosEnum::INGRESO->name => $ingreso,
+                        MovimientosEnum::EGRESO->name => $egreso,
+                        'DIFERENCIA'  =>  $ingreso - $egreso,
                     ],
                 ];
             }))->getData();
+
+            if ($viewconsolidado) {
+                $totalesconsol = Cajamovimiento::with(['moneda', 'methodpayment'])
+                    ->select('typemovement', 'moneda_id', 'methodpayment_id', DB::raw('SUM(amount) as total'))
+                    ->queryFilter($filters)->where('concept_id', '<>', Concept::openbox()->first()->id)
+                    ->groupBy(['typemovement', 'moneda_id', 'methodpayment_id'])->orderBy('methodpayment_id', 'asc')
+                    ->orderByDesc('typemovement')->get();
+
+                $consolidado = response()->json($totalesconsol->groupBy('moneda_id')->map(function ($items, $moneda_id) {
+                    return [
+                        'moneda' => $items->firstWhere('moneda_id', $moneda_id)->moneda->toArray(),
+                        // 'totales' => [
+                        //     MovimientosEnum::INGRESO->name => $ingreso,
+                        //     MovimientosEnum::EGRESO->name => $egreso,
+                        //     'SALDO'  =>  $ingreso - $egreso,
+                        // ],
+                        'methodpayments' => $items->groupBy('methodpayment_id')->map(function ($item, $methodpayment_id) {
+                            $ingreso = $item->where('typemovement', MovimientosEnum::INGRESO)->where('methodpayment_id', $methodpayment_id)->sum('total');
+                            $egreso = $item->where('typemovement', MovimientosEnum::EGRESO)->where('methodpayment_id', $methodpayment_id)->sum('total');
+
+                            return [
+                                'methodpayment' => $item->firstWhere('methodpayment_id', $methodpayment_id)->methodpayment->toArray(),
+                                'totales' => [
+                                    MovimientosEnum::INGRESO->name => $ingreso,
+                                    MovimientosEnum::EGRESO->name => $egreso,
+                                    'DIFERENCIA'  =>  $ingreso - $egreso,
+                                ]
+                            ];
+                        }),
+                    ];
+                }))->getData();
+                // dd($totalesconsol, $consolidado);
+            }
+
+            $sucursales = $cajamovimientos->pluck('sucursal')->unique()->values();
+            $typemovements = $cajamovimientos->pluck('typemovement.value')->unique()->values();
+            $methodpayments = $cajamovimientos->pluck('methodpayment')->unique()->values();
+            $monedas = $cajamovimientos->pluck('moneda')->unique()->values();
+            $fechas = $cajamovimientos->pluck('date')->map(function ($date) use ($typereportvalue) {
+                $arrmensual = [
+                    FilterReportsEnum::MES_ACTUAL->value,
+                    FilterReportsEnum::MENSUAL->value,
+                    FilterReportsEnum::RANGO_MESES->value,
+                ];
+                if (in_array($typereportvalue, $arrmensual)) {
+                    return \Carbon\Carbon::parse($date)->isoFormat('MMMM Y');
+                } else {
+                    return \Carbon\Carbon::parse($date)->isoFormat('DD MMM Y');
+                }
+            })->unique()->sort()->values();
+
+            if (count($sucursales) == 1) {
+                $titulo .= ' [' . $sucursales->first()->name . ']';
+                $hiddencolums[] = 'sucursal';
+            }
+            if (count($fechas) == 1) {
+                $titulo .= "\n " . $fechas->first();
+                $hiddencolums[] = 'date';
+            }
+            if (count($typemovements) == 1) {
+                $titulo .=  count($fechas) == 1 ? ' - ' . $typemovements->first() : "\n " . $typemovements->first();
+                $hiddencolums[] = 'typemovement';
+            }
+            if (count($methodpayments) == 1) {
+                $titulo .=  count($fechas) == 1 ? ' - ' . $methodpayments->first()->name : "\n " . $methodpayments->first()->name;
+                $hiddencolums[] = 'methodpayment';
+            }
+            if (count($monedas) == 1) {
+                $titulo .=  count($fechas) == 1 || count($typemovements) == 1 ? ' - ' . $monedas->first()->currency : "\n " . $monedas->first()->currency;
+                $hiddencolums[] = 'moneda';
+            }
+
             // dd($sumatorias);
             // foreach ($sumatorias as $k => $value) {
             //     foreach ($value['totales'] as $key => $total) {
@@ -92,8 +187,8 @@ class ReportController extends Controller
             // }
         }
 
-        $pdf = Pdf::loadView('admin.reports.report-cajamovimientos', compact('cajamovimientos', 'sumatorias', 'empresa', 'titulo'));
-        return $pdf->stream("$titulo.pdf");
+        $pdf = Pdf::loadView('admin.reports.report-cajamovimientos', compact('cajamovimientos', 'sumatorias', 'empresa', 'titulo', 'viewconsolidado', 'consolidado', 'aperturas', 'hiddencolums'));
+        return $pdf->stream("$namePDF.pdf");
         // return $pdf->download('reporte_movimientos.pdf');
     }
 
@@ -322,6 +417,7 @@ class ReportController extends Controller
             "category_id" => "",
             "subcategory_id" => "",
             "pricetype_id" => "",
+            "viewstock" => "",
             // "date" => "",
             // "dateto" => "",
             // "week" => "",
@@ -363,6 +459,8 @@ class ReportController extends Controller
                 'subcategory_id',
                 'publicado',
                 'sku',
+                'visivility',
+                'comentario',
                 'partnumber',
                 'pricebuy',
                 'pricesale',
@@ -382,15 +480,35 @@ class ReportController extends Controller
                 //         $q->where('almacens.id', $almacen_id);
                 //     })->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
                 // }])
-                ->with(['unit', 'imagen', 'almacens' => function ($query) use ($filters) {
-                    $query->when($filters['almacen_id'] ?? null, function ($q, $almacen_id) {
-                        $q->where('almacens.id', $almacen_id);
-                    });
-                }, 'series' => function ($query) {
+                // ->withSum(['almacens as stock' => function ($query) use ($filters) {
+                //     $query->when($filters['almacen_id'] ?? null, function ($q, $almacen_id) {
+                //         $q->where('almacens.id', $almacen_id);
+                //     });
+                // }], 'almacen_producto.cantidad')
+                ->with(['unit', 'imagen', 'series' => function ($query) {
                     $query->when($filters['almacen_id'] ?? null, function ($q, $almacen_id) {
                         $q->where('almacen_id', $almacen_id);
                     });
-                }])->when($filters['viewreporte'] == 1, function ($query) {
+                }])->when($filters['viewstock'] == '0', function ($query) use ($filters) {
+                    $query->with(['almacens' => function ($q) use ($filters) {
+                        $q->when($filters['almacen_id'] ?? null, function ($q, $almacen_id) {
+                            $q->where('almacens.id', $almacen_id);
+                        });
+                    }]);
+                })->when($filters['viewstock'] == '1', function ($query) {
+                    $query->whereHas('almacens', function ($q) {
+                        $q->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
+                            ->groupBy('almacen_producto.producto_id')
+                            ->havingRaw('SUM(almacen_producto.cantidad) > 0');
+                    });
+                })->when($filters['viewstock'] == '2', function ($query) {
+                    $query->whereHas('almacens', function ($q) {
+                        $q->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
+                            ->groupBy('almacen_producto.producto_id')
+                            ->havingRaw('SUM(almacen_producto.cantidad) = 0');
+                    });
+                })
+                ->when($filters['viewreporte'] == 1, function ($query) {
                     $query->with(['compraitems.compra.proveedor', 'tvitems' => function ($subq) {
                         $subq->with(['almacen', 'producto' => function ($q) {
                             $q->select('id', 'name', 'unit_id')->with('unit');
@@ -420,6 +538,9 @@ class ReportController extends Controller
                 })->when($filters['subcategory_id'], function ($query, $subcategory_id) {
                     $query->where('subcategory_id', $subcategory_id);
                 });
+            }
+            if ($filters['typereporte'] == FilterReportsEnum::CATALOGO_PRODUCTOS->value) {
+                $productos->visibles();
             }
 
             $productos = $productos->orderByDesc('novedad')->orderBy('categories.orden', 'asc')
@@ -561,6 +682,7 @@ class ReportController extends Controller
                 'publicado',
                 'novedad',
                 'sku',
+                'comentario',
                 'pricebuy',
                 'pricesale',
                 'precio_1',
@@ -619,17 +741,35 @@ class ReportController extends Controller
                 }
                 $pricetypes = $pricetypes->orderBy('id', 'asc')->orderBy('default', 'asc')->get();
             }
-            $pdf = SnappyPdf::loadView('admin.reports.productos.report-productos', compact('productos', 'empresa', 'pricetypes', 'titulo', 'detallado'))
-                ->setOptions([
-                    'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
-                    'margin-top' => '29.5mm',
-                    'margin-bottom' => '10mm',
-                    'margin-left' => '0mm',
-                    'margin-right' => '0mm',
-                    'header-spacing' => 5,
-                    'footer-html' => view('admin.reports.snappyPDF.footer'),
-                    'encoding' => 'UTF-8',
-                ]);
+
+            if ($filters['typereporte'] == FilterReportsEnum::CATALOGO_PRODUCTOS->value) {
+                $detallado = true;
+                $titulo = FilterReportsEnum::getLabel($typereportvalue);
+                if (!empty($filters['subcategory_id'])) {
+                    $subcategory = Subcategory::find($filters['subcategory_id']);
+                    $titulo =  $subcategory->name;
+                }
+
+                if (!empty($filters['category_id']) && empty($filters['subcategory_id'])) {
+                    $category = Category::find($filters['category_id']);
+                    $titulo = $category->name;
+                }
+                $pdf = SnappyPdf::loadView('admin.reports.productos.report-catalogo', compact('productos', 'empresa', 'pricetypes', 'titulo', 'detallado'));
+            } else {
+                $pdf = SnappyPdf::loadView('admin.reports.productos.report-productos', compact('productos', 'empresa', 'pricetypes', 'titulo', 'detallado'));
+            }
+            $pdf->setOptions([
+                'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
+                // 'margin-top' => '29.5mm',
+                // 'margin-bottom' => '10mm',
+                'margin-top' => '0mm',
+                'margin-bottom' => '0mm',
+                'margin-left' => '0mm',
+                'margin-right' => '0mm',
+                'header-spacing' => 5,
+                'footer-html' => view('admin.reports.snappyPDF.footer'),
+                'encoding' => 'UTF-8',
+            ]);
         }
 
         return $pdf->inline("$titulo.pdf");

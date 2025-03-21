@@ -22,7 +22,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="exportexcel" class="w-full" x-data="reportventa">
+            <form wire:submit.prevent="exportexcel" class="w-full" x-data="reportcompra">
                 <div class="w-full grid grid-cols-1 gap-2">
 
                     <div class="w-full">
@@ -196,7 +196,7 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('reportventa', () => ({
+            Alpine.data('reportcompra', () => ({
                 typereporte: @entangle('typereporte').defer,
                 viewreporte: @entangle('viewreporte').defer,
                 sucursal_id: @entangle('sucursal_id').defer,

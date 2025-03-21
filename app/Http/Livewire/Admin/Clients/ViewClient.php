@@ -288,9 +288,9 @@ class ViewClient extends Component
         $this->authorize('admin.clientes.delete');
         DB::beginTransaction();
         try {
-            $client->contacts()->delete();
+            $client->contacts()->forceDelete();
             $client->telephones()->delete();
-            $client->direccions()->delete();
+            $client->direccions()->forceDelete();
             $client->delete();
             DB::commit();
             $this->dispatchBrowserEvent('deleted');

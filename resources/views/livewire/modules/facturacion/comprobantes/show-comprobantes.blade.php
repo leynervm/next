@@ -255,6 +255,21 @@
                                                 d="M3 12C3 10.1591 4.49238 8.66667 6.33333 8.66667C6.99912 8.66667 7.78404 8.78333 8.43137 8.60988C9.00652 8.45576 9.45576 8.00652 9.60988 7.43136C9.78333 6.78404 9.66667 5.99912 9.66667 5.33333C9.66667 3.49238 11.1591 2 13 2" />
                                         </svg>
                                     </a>
+                                    <a href="{{ route('admin.facturacion.print.a5', $item) }}" target="_blank"
+                                        class="p-1.5 bg-fondospancardproduct text-textspancardproduct block rounded-lg transition-colors duration-150">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                            class="w-4 h-4 block scale-110 " fill="none" stroke-width="1.5"
+                                            stroke="currentColor">
+                                            <path
+                                                d="m15,22.0287l-4.2727,0c-3.26123,0 -4.89184,0 -6.02423,-0.7978c-0.32445,-0.2286 -0.61249,-0.4997 -0.85537,-0.8051c-0.8477,-1.0658 -0.8477,-2.6005 -0.8477,-5.6698l0,-2.5455c0,-2.96315 0,-4.44474 0.46894,-5.62805c0.75387,-1.90233 2.3482,-3.40287 4.36942,-4.1124c1.25727,-0.44135 2.83144,-0.44135 5.97984,-0.44135c1.7991,0 2.6986,0 3.417,0.2522c1.155,0.40545 2.066,1.2629 2.4968,2.34994c0.268,0.67618 0.268,1.5228 0.268,3.21604l0,2.18182" />
+                                            <path
+                                                d="m3,12c0,-1.8409 1.49238,-3.33333 3.33333,-3.33333c0.66579,0 1.45071,0.11666 2.09804,-0.05679c0.57515,-0.15412 1.02439,-0.60336 1.17851,-1.17852c0.17345,-0.64732 0.05679,-1.43224 0.05679,-2.09803c0,-1.84095 1.49243,-3.33333 3.33333,-3.33333" />
+                                            <path
+                                                d="m3,12c0,-1.8409 1.49238,-3.33333 3.33333,-3.33333c0.66579,0 1.45071,0.11666 2.09804,-0.05679c0.57515,-0.15412 1.02439,-0.60336 1.17851,-1.17852c0.17345,-0.64732 0.05679,-1.43224 0.05679,-2.09803c0,-1.84095 1.49243,-3.33333 3.33333,-3.33333" />
+                                            <path
+                                                d="m11.8779,17.96009l-0.03251,-3.65806c0.0811,-0.41958 -0.00328,-0.86673 0.24329,-1.25873c0.49882,-0.81468 2.27076,-0.66731 2.61653,-0.11991c0.2032,0.40864 0.13062,0.65181 0.19594,0.97771l0.00289,4.14927m1.44536,-0.12311c3.83889,0.07231 4.28987,-0.32345 4.24622,-1.73938c-0.04365,-1.41593 -1.3898,-1.13336 -3.4885,-1.14139l-0.03251,-1.28871c0,-0.2813 -0.0292,-0.6059 0.2625,-0.7663c0.1218,-0.067 0.03509,-0.0564 0.6125,-0.067l3.12043,0.04055" />
+                                        </svg>
+                                    </a>
 
                                     <x-button-print href="{{ route('admin.facturacion.print.ticket', $item) }}"
                                         target="_blank" />
@@ -276,7 +291,7 @@
                                             class="absolute right-0 mt-1 w-36 bg-fondodropdown rounded-md shadow shadow-fondominicard border border-borderminicard z-20">
                                             @if (!$item->trashed() && $item->codesunat == '0')
                                                 <a target="_blank"
-                                                    href="{{ route('facturacion.download.xml', ['comprobante' => $item, 'type' => 'xml']) }}"
+                                                    href="{{ route('facturacion.download.xml', ['comprobante' => $item->uuid, 'type' => 'xml']) }}"
                                                     class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between"
                                                     @click="dropdownOpen = false">
                                                     DESCARGAR XML
@@ -292,7 +307,7 @@
                                                     </svg>
                                                 </a>
                                                 <a target="_blank"
-                                                    href="{{ route('facturacion.download.xml', ['comprobante' => $item, 'type' => 'cdr']) }}"
+                                                    href="{{ route('facturacion.download.xml', ['comprobante' => $item->uuid, 'type' => 'cdr']) }}"
                                                     class="w-full p-2.5 rounded-md text-[10px] text-colordropdown hover:bg-fondohoverdropdown flex gap-1 items-center justify-between"
                                                     @click="dropdownOpen = false">
                                                     DESCARGAR CDR

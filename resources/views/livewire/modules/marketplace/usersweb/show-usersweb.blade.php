@@ -1,9 +1,7 @@
 <div>
-    @if ($users->hasPages())
-        <div class="pb-2">
-            {{ $users->onEachSide(0)->links('livewire::pagination-default') }}
-        </div>
-    @endif
+    <div wire:key="loadingcreateuserweb" wire:loading.flex class="loading-overlay hidden overflow-hidden fixed">
+        <x-loading-next />
+    </div>
 
     <div class="flex items-center gap-2 mt-4">
         <div class="w-full max-w-sm">
@@ -118,9 +116,11 @@
         @endif
     </x-table>
 
-    <div wire:key="loadingcreateuserweb" wire:loading.flex class="loading-overlay hidden overflow-hidden fixed">
-        <x-loading-next />
-    </div>
+    @if ($users->hasPages())
+        <div class="w-full flex justify-center items-center sm:justify-end p-1 sticky -bottom-1 right-0 bg-body">
+            {{ $users->onEachSide(0)->links('livewire::pagination-default') }}
+        </div>
+    @endif
 
     <script>
         function confirmDelete(user) {

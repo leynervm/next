@@ -158,9 +158,6 @@
         </div>
     </x-form-card>
 
-
-
-
     <div class="w-full grid grid-cols-1 lg:grid-cols-2 gap-8">
         <x-form-card titulo="CARGAR LOGOS EMPRESA">
             <div class="w-full grid grid-cols-1 gap-3 xs:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
@@ -496,8 +493,6 @@
             </div>
         </x-form-card>
 
-
-
         <x-form-card titulo="OTRAS OPCIONES" subtitulo="Seleccionar las opciones según su preferencia de uso.">
             <form wire:submit.prevent="updateopciones" class="w-full flex flex-col gap-8">
                 @if (Module::isEnabled('Ventas'))
@@ -528,6 +523,7 @@
                                         <option value="0">TEXTO POR DEFECTO</option>
                                         <option value="1">MOSTRAR TEXTO DE "PROMOCIÓN"</option>
                                         <option value="2">MOSTRAR TEXTO DE "LIQUIDACIÓN"</option>
+                                        <option value="3">MOSTRAR TEXTO DE "OFERTA"</option>
                                     </x-slot>
                                 </x-select>
                                 <x-icon-select />
@@ -545,7 +541,7 @@
                                 </x-select>
                                 <x-icon-select />
                             </div>
-                            <x-jet-input-error for="empresa.viewtextopromocion" />
+                            <x-jet-input-error for="empresa.viewalmacens" />
                         </div>
 
                         <div class="w-full">

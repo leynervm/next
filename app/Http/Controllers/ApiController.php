@@ -249,6 +249,7 @@ class ApiController extends Controller
             if ($response->ok()) {
                 $result = $response->json();
                 $name = $result['razonSocial'];
+                $direccion_name = null;
 
                 if (empty(trim($name))) {
                     return response()->json([
@@ -276,7 +277,8 @@ class ApiController extends Controller
                     ]);
 
                     if (isset($result['direccion']) && !empty($result['direccion'])) {
-                        $cliente->direccions()->create([
+                        $direccion_name = mb_strtoupper($result['direccion'], "UTF-8");
+                        $direccion = $cliente->direccions()->create([
                             'name' => mb_strtoupper($result['direccion'], "UTF-8"),
                             'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
                             'default' => Direccion::DEFAULT,
@@ -295,7 +297,7 @@ class ApiController extends Controller
                         'name' => $cliente->name,
                         'pricetype' => $cliente->pricetype,
                         'telefono' => null,
-                        'direccion' => empty($direccion) ? $direccion->name : null,
+                        'direccion' => empty($direccion) ? $direccion->name : $direccion_name,
                         'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
                         'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
                         'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
@@ -345,7 +347,7 @@ class ApiController extends Controller
             $birthday = false;
 
             $cliente = Client::withTrashed()->with(['direccions' => function ($query) {
-                $query->withTrashed()->with('ubigeo')->orderByDesc('default');
+                $query->with('ubigeo')->orderByDesc('default');
             }])->where('document', $document)->first();
 
             if ($obtenerlista && $empresa->usarLista()) {
@@ -409,9 +411,9 @@ class ApiController extends Controller
         $empresa = view()->shared('empresa');
         $pricetype = null;
         $config = [
-            'representantes_legales'     => true,
+            'representantes_legales'    => true,
             'cantidad_trabajadores'     => false,
-            'establecimientos'             => true,
+            'establecimientos'          => true,
             'deuda'                     => false,
         ];
 
@@ -420,6 +422,7 @@ class ApiController extends Controller
         // return json_decode($response, true);
 
         if (isset($response->success) && $response->success) {
+            $direccion_name = null;
             $ubigeo = null;
             if (!empty($response->result->distrito)) {
                 $ubigeo = Ubigeo::query()->select('id', 'distrito', 'provincia', 'region')
@@ -441,6 +444,7 @@ class ApiController extends Controller
                 ]);
 
                 if (array_key_exists('direccion', (array) $response->result) && !empty($response->result->direccion)) {
+                    $direccion_name = $response->result->direccion;
                     $cliente->direccions()->firstOrCreate([
                         'name' => mb_strtoupper($response->result->direccion, "UTF-8")
                     ], [
@@ -456,7 +460,7 @@ class ApiController extends Controller
                             $ubigeolocal = Ubigeo::query()->select('id', 'distrito', 'provincia')
                                 ->whereRaw('LOWER(distrito) = ?', [strtolower(trim($local->distrito))])
                                 ->whereRaw('LOWER(provincia) = ?', [strtolower(trim($local->provincia))])
-                                ->take(1)->first();
+                                ->first();
                         }
 
                         $cliente->direccions()->firstOrCreate([
@@ -481,7 +485,7 @@ class ApiController extends Controller
                     'telefono' => null,
                     'estado' => $response->result->estado ?? null,
                     'condicion' => $response->result->condicion ?? null,
-                    'direccion' => !empty($direccion) ? $direccion->name : null,
+                    'direccion' => !empty($direccion) ? $direccion->name : $direccion_name,
                     'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
                     'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
                     'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,

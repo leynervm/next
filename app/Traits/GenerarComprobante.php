@@ -11,6 +11,10 @@ trait GenerarComprobante
     public function createComprobante()
     {
         $leyenda = new NumeroALetras();
+        $currency_leyenda = 'NUEVOS SOLES';
+        if ($this->moneda->isDolar()) {
+            $currency_leyenda = 'DÓLARES';
+        }
         return $this->comprobante()->create([
             'date' => $this->date,
             'expire' => Carbon::parse($this->date)->format('Y-m-d'),  //NO BIENE DE VENTA
@@ -30,7 +34,7 @@ trait GenerarComprobante
             'paymentactual' => number_format($this->paymentactual, 3, '.', ''),
             'percent' => $this->sucursal->empresa->igv,  //NO BIENE DE VENTA
             'referencia' => $this->seriecompleta,
-            'leyenda' => $leyenda->toInvoice($this->total, 2, 'NUEVOS SOLES'),  //NO BIENE DE VENTA
+            'leyenda' => $leyenda->toInvoice($this->total, 2, $currency_leyenda),  //NO BIENE DE VENTA
             'sendmode' => $this->sucursal->empresa->sendmode, //NO BIENE DE VENTA
             'client_id' => $this->client_id,
             'typepayment_id' => $this->typepayment_id,

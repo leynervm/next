@@ -222,6 +222,9 @@
                                                 <option value="2">
                                                     MOSTRAR TEXTO DE "LIQUIDACIÓN"
                                                 </option>
+                                                <option value="3">
+                                                    MOSTRAR TEXTO DE "OFERTA"
+                                                </option>
                                             </x-slot>
                                         </x-select>
                                         <x-icon-select />

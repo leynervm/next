@@ -142,64 +142,6 @@ class ShowRangos extends Component
         }
     }
 
-    // public function updatepricerango(Rango $rango, Pricetype $pricetype, $ganancia)
-    // {
-    //     $this->authorize('admin.administracion.rangos.edit');
-
-    //     if (empty($ganancia)) {
-    //         $ganancia = 0;
-    //         // $json = response()->json([
-    //         //     'title' => 'INGRESE UN NÚMERO VÁLIDO !',
-    //         //     'text' => 'el campo requiere un valor de tipo numérico'
-    //         // ])->getData();
-    //         // $this->dispatchBrowserEvent('validation', $json);
-    //         // return false;
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         $gananciaOld = $rango->pricetypes()->find($pricetype)->pivot->ganancia;
-    //         if ($gananciaOld <> $ganancia) {
-    //             $rango->pricetypes()->updateExistingPivot($pricetype, [
-    //                 'ganancia' => $ganancia
-    //             ]);
-
-    //             $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
-    //                 ->with(['promocions' => function ($query) {
-    //                     $query->with(['itempromos.producto' => function ($subQuery) {
-    //                         $subQuery->with('unit');
-    //                     }])->availables()->disponibles();
-    //                 }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
-    //             if (count($productos) > 0) {
-    //                 foreach ($productos as $producto) {
-    //                     // $firstPrm = count($producto->promocions) > 0 ? $producto->promocions->first() : null;
-    //                     // $promocion = verifyPromocion($firstPrm);
-    //                     // $precio_venta = getPriceDinamic(
-    //                     //     $producto->pricebuy,
-    //                     //     $ganancia,
-    //                     //     $rango->incremento,
-    //                     //     $pricetype->rounded,
-    //                     //     $pricetype->decimals,
-    //                     //     $promocion
-    //                     // );
-
-    //                     // $producto->{$pricetype->campo_table} = $precio_venta;
-    //                     // $producto->save();
-    //                     $producto->assignPrice();
-    //                 }
-    //             }
-    //             $this->dispatchBrowserEvent('updated');
-    //         }
-    //         DB::commit();
-    //     } catch (\Exception $e) {
-    //         DB::rollBack();
-    //         throw $e;
-    //     } catch (\Throwable $e) {
-    //         DB::rollBack();
-    //         throw $e;
-    //     }
-    // }
-
     public function updateganacias($ganancias = [])
     {
         if (count($ganancias) > 0) {
@@ -216,11 +158,7 @@ class ShowRangos extends Component
                         ]);
 
                         $productos = Producto::query()->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'unit_id')
-                            ->with(['promocions' => function ($query) {
-                                $query->with(['itempromos.producto' => function ($subQuery) {
-                                    $subQuery->with('unit');
-                                }])->availables()->disponibles();
-                            }])->whereRangoBetween($rango->desde, $rango->hasta)->get();
+                            ->whereRangoBetween($rango->desde, $rango->hasta)->get();
                         if (count($productos) > 0) {
                             foreach ($productos as $producto) {
                                 $producto->assignPrice();

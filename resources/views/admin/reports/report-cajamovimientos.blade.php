@@ -109,16 +109,11 @@
     }
 
     .image {
-        width: auto;
-        max-width: 100%;
-        height: 2cm;
-    }
-
-    .image img {
         display: block;
-        width: auto;
-        max-width: 8cm;
-        height: 100%;
+        width: 100%;
+        max-width: 6cm;
+        height: auto;
+        max-height: 2cm;
         object-fit: scale-down;
         object-position: center;
     }
@@ -347,12 +342,10 @@
     <div id="header" class="">
         <table class="table" style="padding: 0.25cm 1cm">
             <thead>
-                <tr class="align-middle text-start">
-                    <th class="text-start" rowspan="2">
+                <tr class="text-start">
+                    <th class="text-start " style="width: 6cm;" rowspan="2">
                         @if (!empty($url_logo))
-                            <div class="image">
-                                <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" class="" />
-                            </div>
+                            <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" class="image" />
                         @endif
                     </th>
                     <th class="align-top">
@@ -376,8 +369,10 @@
                 </tr>
                 <tr>
                     <th class="align-bottom">
-                        <p class="font-bold text-14 leading-4 text-end p-0">
-                            {{ $titulo }}</p>
+                        <p class="font-bold text-14 leading-4 text-end p-0" style="text-transform: uppercase;">
+                            {{-- {{ $titulo }} --}}
+                            {!! nl2br($titulo) !!}
+                        </p>
                     </th>
                 </tr>
             </thead>
@@ -399,70 +394,244 @@
 
     <div class="body" style="padding: 0 1cm;">
         {{-- <h1 class="title-report">{{ $titulo }}</h1> --}}
-        @if (count($cajamovimientos) > 0)
+
+        @if ($viewconsolidado)
+            @php
+                $chunknumber = 4;
+            @endphp
+            @if (count((array) $consolidado) > 0)
+                @foreach ($consolidado as $m => $item)
+                    <table class="table border-table text-12" style="margin-top: 30px;">
+                        <thead>
+                            <tr>
+                                <th colspan="4" class="font-medium text-center p-3 leading-3">
+                                    {{ $item->moneda->currency }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $chunks = collect($item->methodpayments)->chunk($chunknumber);
+                            @endphp
+                            @foreach ($chunks as $methodpayments)
+                                <tr class="">
+                                    @foreach ($methodpayments as $k => $itemmethod)
+                                        <td class="font-medium text-start p-0" style="width: 100%">
+                                            <table class="table text-12 p-0 m-0">
+                                                <tr class="border-table">
+                                                    <th colspan="2" class="font-medium p-2 align-middle"
+                                                        style="background: #f1f1f1;">
+                                                        {{ $itemmethod->methodpayment->name }}
+                                                    </th>
+                                                </tr>
+
+                                                @foreach ($itemmethod->totales as $key => $total)
+                                                    <tr class="border-table">
+                                                        <td class="p-2 text-10"
+                                                            style="width: 50px;border-right: 0.5px solid #000;">
+                                                            {{ $key }}
+                                                        </td>
+                                                        <td class="p-2 text-end text-14 font-bold">
+                                                            <small
+                                                                class="font-normal text-10">{{ $item->moneda->simbolo }}</small>
+                                                            {{ number_format($total, 2, '.', ', ') }}
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </table>
+                                        </td>
+                                    @endforeach
+                                    @for ($i = count($methodpayments); $i < $chunknumber; $i++)
+                                        <td class="font-medium text-start p-0" style="width: 100%">
+                                            <table class="table text-12 p-0 m-0">
+                                                <tr class="border-table">
+                                                    <th colspan="2" class="font-medium p-2"
+                                                        style="background: #f1f1f1;">
+                                                        &nbsp;
+                                                    </th>
+                                                </tr>
+                                                @for ($j = 0; $j < 3; $j++)
+                                                    <tr class="">
+                                                        <td class="font-medium p-2 text-10">
+                                                            &nbsp;
+                                                        </td>
+                                                        <td class="p-2 text-end text-14 font-bold" style="border-right: 0.5px solid #000;">
+                                                            &nbsp;
+                                                        </td>
+                                                    </tr>
+                                                @endfor
+                                            </table>
+                                        </td>
+                                    @endfor
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endforeach
+            @endif
+        @else
             <table class="table text-10">
                 <thead style="background: #CCC">
                     <tr class="border-table">
-                        <th class="font-bold p-2 text-center">FECHA</th>
+                        @if (!in_array('date', $hiddencolums))
+                            <th class="font-bold p-2 text-center">FECHA</th>
+                        @endif
                         <th class="font-bold p-2 text-center">MONTO</th>
                         <th class="font-bold p-2 text-center leading-none">TIPO DE CAMBIO</th>
-                        <th class="font-bold p-2 text-center">TIPO MOVIM.</th>
-                        <th class="font-bold p-2 text-center leading-none">FORMA DE PAGO</th>
+
+                        @if (!in_array('typemovement', $hiddencolums))
+                            <th class="font-bold p-2 text-center">TIPO MOVIM.</th>
+                        @endif
+
+                        @if (!in_array('methodpayment', $hiddencolums))
+                            <th class="font-bold p-2 text-center leading-none">FORMA DE PAGO</th>
+                        @endif
+
                         <th class="font-bold p-2 text-center">CONCEPTO</th>
                         {{-- <th class="font-bold p-2 text-center">REFERENCIA</th> --}}
                         {{-- <th class="font-bold p-2 text-center">DETALLE</th> --}}
                         {{-- <th class="font-bold p-2 text-center">CAJA</th> --}}
                         {{-- <th class="font-bold p-2 text-center">CAJA MENSUAL</th> --}}
-                        <th class="font-bold p-2 text-center">SUCURSAL</th>
-                        {{-- <th class="font-bold p-2 text-center">USUARIO</th> --}}
+                        @if (in_array('sucursal', $hiddencolums))
+                            <th class="font-bold p-2 text-center">REFERENCIA</th>
+                        @endif
+                        @if (!in_array('sucursal', $hiddencolums))
+                            <th class="font-bold p-2 text-center">SUCURSAL</th>
+                        @endif
+                        @if (in_array('sucursal', $hiddencolums))
+                            <th class="font-bold p-2 text-center">USUARIO</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($cajamovimientos as $item)
-                        <tr class="border-table row-striped font-normal text-10">
-                            <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
-                                {{ formatDate($item->date, 'DD MMMM Y') }}
-                            </td>
-                            <td class="p-2 text-center" style="width: 80px;">
-                                {{ $item->moneda->simbolo }}
-                                {{ number_format($item->amount, 2, '.', ', ') }}</td>
-                            <td class="p-2 text-center" style="width: 50px;">
-                                {{ decimalOrInteger($item->tipocambio) }}</td>
-                            <td class="p-2 text-center {{ $item->isIngreso() ? 'ingreso' : 'egreso' }}"
-                                style="width: 50px;">
-                                {{ $item->typemovement->value }}</td>
-                            <td class="p-3 text-center align-middle" style="width: 60px;">
-                                {{ $item->methodpayment->name }}</td>
-                            <td class="p-2 text-center align-middle leading-none" style="width: 100px;">
-                                {{ $item->concept->name }}</td>
-                            {{-- <td class="p-2 text-center align-middle" style="width: 80px;">
+                    @if (count($cajamovimientos) > 0)
+                        @foreach ($cajamovimientos as $item)
+                            <tr class="border-table row-striped font-normal text-10">
+                                @if (!in_array('date', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
+                                        {{ formatDate($item->date, 'DD MMMM Y') }}
+                                    </td>
+                                @endif
+                                <td class="p-2 text-center" style="width: 90px;">
+                                    {{ $item->moneda->simbolo }}
+                                    {{ number_format($item->amount, 2, '.', ', ') }}</td>
+                                <td class="p-2 text-center" style="width: 50px;">
+                                    @if ($item->tipocambio > 0)
+                                        {{ decimalOrInteger($item->tipocambio) }}
+                                    @endif
+                                </td>
+
+                                @if (!in_array('typemovement', $hiddencolums))
+                                    <td class="p-2 text-center {{ $item->isIngreso() ? 'ingreso' : 'egreso' }}"
+                                        style="width: 50px;">
+                                        {{ $item->typemovement->value }}</td>
+                                @endif
+
+                                @if (!in_array('methodpayment', $hiddencolums))
+                                    <td class="p-3 text-center align-middle" style="width: 70px;">
+                                        {{ $item->methodpayment->name }}</td>
+                                @endif
+
+                                <td class="p-2 text-center align-middle leading-none" style="width: 100px;">
+                                    {{ $item->concept->name }}</td>
+                                {{-- <td class="p-2 text-center align-middle" style="width: 80px;">
                                 {{ $item->referencia }}</td> --}}
-                            {{-- <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
+                                {{-- <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
                                 {!! nl2br($item->detalle) !!}</td> --}}
-                            {{-- <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
+                                {{-- <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
                                 {{ $item->openbox->box->name }}</td> --}}
-                            {{-- <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
+                                {{-- <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
                                 {{ $item->monthbox->name }}</td> --}}
-                            <td class="p-2 text-center align-middle leading-none">
-                                {{ $item->sucursal->name }}</td>
-                            {{-- <td class="p-2 text-center align-middle leading-none" style="width: 90px;">
-                                {{ $item->user->name }}</td> --}}
-                        </tr>
-                    @endforeach
+
+                                @if (in_array('sucursal', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none"
+                                        style="max-width: 130px;min-width: 80px;">
+                                        {{ $item->referencia }}</td>
+                                @endif
+                                @if (!in_array('sucursal', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none">
+                                        {{ $item->sucursal->name }}</td>
+                                @endif
+                                @if (in_array('sucursal', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none">
+                                        {{ $item->user->name }}</td>
+                                @endif
+                            </tr>
+                        @endforeach
+                    @endif
                 </tbody>
             </table>
 
+            @if (count($aperturas))
+                <h1 class="font-bold text-14 leading-4 text-center p-0 m-0" style="margin-top: 30px !important;">
+                    HISTORIAL DE APERTURA DE CAJAS</h1>
+
+                <table class="table text-10" style="margin-top: 5px;">
+                    <tbody>
+                        @foreach ($aperturas as $item)
+                            <tr class="border-table row-striped font-normal text-10">
+                                @if (!in_array('date', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none" style="width: 80px;">
+                                        {{ formatDate($item->date, 'DD MMMM Y') }}
+                                    </td>
+                                @endif
+                                <td class="p-2 text-center" style="width: 80px;">
+                                    {{ $item->moneda->simbolo }}
+                                    {{ number_format($item->amount, 2, '.', ', ') }}</td>
+                                {{-- <td class="p-2 text-center" style="width: 50px;">
+                                    {{ decimalOrInteger($item->tipocambio) }}</td> --}}
+
+                                {{-- @if (!in_array('typemovement', $hiddencolums))
+                                    <td class="p-2 text-center {{ $item->isIngreso() ? 'ingreso' : 'egreso' }}"
+                                        style="width: 50px;">
+                                        {{ $item->typemovement->value }}</td>
+                                @endif --}}
+
+                                <td class="p-3 text-center align-middle" style="width: 60px;">
+                                    {{ $item->methodpayment->name }}</td>
+                                {{-- <td class="p-2 text-center align-middle leading-none" style="width: 100px;">
+                                    {{ $item->concept->name }}</td> --}}
+                                @if (!in_array('sucursal', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none">
+                                        {{ $item->sucursal->name }}</td>
+                                @endif
+                                @if (in_array('sucursal', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none" style="width: 90px;">
+                                        {{ $item->user->name }}</td>
+                                @endif
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        @endif
+
+        @if (count($cajamovimientos) > 0)
             <table class="table text-10" style="margin-top: 30px;">
                 <tbody>
                     @foreach ($sumatorias as $k => $item)
                         <tr class="border-table">
+                            <td class="font-medium text-start p-3 leading-3">
+                                TOTAL <br> APERTURAS :</td>
+                            <td class="font-bold text-end text-14 p-3 leading-3 align-middle"
+                                style="border-right: 0.5px solid #000;">
+                                <small class="font-normal text-10">{{ $item->moneda->simbolo }}</small>
+                                {{ number_format($aperturas->where('moneda_id', $item->moneda->id)->sum('amount'), 2, '.', ', ') }}
+                                @if (!in_array('moneda', $hiddencolums))
+                                    <small class="font-normal text-9">{{ $item->moneda->currency }}</small>
+                                @endif
+                            </td>
+
                             @foreach ($item->totales as $key => $total)
-                                <td class="font-medium text-end p-3">
-                                    TOTAL {{ $key }} :</td>
-                                <td class="font-bold text-end text-14 p-3 " style="border-right: 0.5px solid #000;">
+                                <td class="font-medium text-start p-3 leading-3 align-middle">
+                                    TOTAL <br> {{ $key }} :</td>
+                                <td class="font-bold text-end text-14 p-3 leading-3 align-middle"
+                                    style="border-right: 0.5px solid #000;">
                                     <small class="font-normal text-10">{{ $item->moneda->simbolo }}</small>
                                     {{ number_format($total, 2, '.', ', ') }}
-                                    <small class="font-normal text-10">{{ $item->moneda->currency }}</small>
+                                    @if (!in_array('moneda', $hiddencolums))
+                                        <small class="font-normal text-9">{{ $item->moneda->currency }}</small>
+                                    @endif
                                 </td>
                             @endforeach
                         </tr>

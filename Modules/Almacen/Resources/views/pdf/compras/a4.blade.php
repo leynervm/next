@@ -388,10 +388,7 @@
                     <tr class="border-table">
                         <th class="font-bold p-2 text-center" style="">ITEM</th>
                         <th class="font-bold p-2 text-center" style=";">DESCRIPCIÓN</th>
-                        <th class="font-bold p-2 text-center" style="">TOTAL</th>
-                        {{-- <th class="font-bold p-2 text-center" style=";">DISTRIBUCIÓN</th> --}}
-                        {{-- <th class="font-bold p-2 text-center" style=";">P. UNIT.</th>
-                        <th class="font-bold p-2 text-center" style=";">IMPORTE</th> --}}
+                        <th class="font-bold p-2 text-center" style="">STOCK</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -410,27 +407,42 @@
                         <tr class="border-table font-normal"
                             style="border-top: 0 !important;border-bottom: 0 !important;">
                             <td class="p-2 font-bold">
-                                DISTRIBUCION
+                                ALMACÉN UBICACIÓN
                             </td>
                         </tr>
                         <tr class="border-table" style="border-top: 0 !important;"">
                             <td class="p-2" colspan="2" style="border-top: 0 !important;">
-                                @foreach ($item->almacencompras as $almacen)
-                                    <p class="font-normal" style="margin: 0; padding: 0">
-                                        <span class="font-medium">
-                                            [{{ decimalOrInteger($almacen->cantidad) }}
-                                            {{ $item->producto->unit->name }}]</span>
-                                        - {{ $almacen->almacen->name }}
-                                    </p>
+                                @foreach ($item->kardexes as $kardex)
+                                    @php
+                                        $serieschunk = $item->series
+                                            ->where('almacen_id', $kardex->almacen_id)
+                                            ->chunk(5);
+                                    @endphp
 
-                                    @if (count($almacen->series) > 0)
-                                        <p style="padding: 0px; margin-bottom: 5px;">
-                                            @foreach ($almacen->series as $serie)
-                                                <span class="px-3 font-medium">
-                                                    - S/N: {{ $serie->serie }}</span>
+                                    <table class="table">
+                                        <tr>
+                                            <td class="font-medium p-2" colspan="5">
+                                                [{{ decimalOrInteger($kardex->cantidad) }}
+                                                {{ $item->producto->unit->name }}]
+                                                - {{ $kardex->almacen->name }}
+                                            </td>
+                                        </tr>
+                                        @if (count($serieschunk) > 0)
+                                            @foreach ($serieschunk as $series)
+                                                <tr class="border-table">
+                                                    @foreach ($series as $serie)
+                                                        <td class="border-table p-2" width="120px" align="center"
+                                                            valign="center">
+                                                            S/N: {{ $serie->serie }}
+                                                        </td>
+                                                    @endforeach
+                                                    @for ($i = count($series); $i < 5; $i++)
+                                                        <td></td>
+                                                    @endfor
+                                                </tr>
                                             @endforeach
-                                        </p>
-                                    @endif
+                                        @endif
+                                    </table>
                                 @endforeach
                             </td>
                         </tr>

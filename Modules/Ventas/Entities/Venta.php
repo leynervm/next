@@ -5,9 +5,12 @@ namespace Modules\Ventas\Entities;
 use App\Enums\FilterReportsEnum;
 use App\Models\Cajamovimiento;
 use App\Models\Client;
+use App\Models\Cotizable;
+use App\Models\Cotizacion;
 use App\Models\Cuota;
 use App\Models\Guia;
 use App\Models\Moneda;
+use App\Models\Otheritem;
 use App\Models\Seriecomprobante;
 use App\Models\Sucursal;
 use App\Models\Tvitem;
@@ -92,6 +95,11 @@ class Venta extends Model
         return $this->morphMany(Tvitem::class, 'tvitemable')->orderBy('id', 'asc');
     }
 
+    public function otheritems(): MorphMany
+    {
+        return $this->morphMany(Otheritem::class, 'otheritemable')->orderBy('id', 'asc');
+    }
+
     public function cajamovimientos(): MorphMany
     {
         return $this->morphMany(Cajamovimiento::class, 'cajamovimientable');
@@ -135,6 +143,11 @@ class Venta extends Model
     public function guia(): MorphOne
     {
         return $this->morphOne(Guia::class, 'guiable')->withTrashed();
+    }
+
+    public function cotizable(): MorphOne
+    {
+        return $this->morphOne(Cotizable::class, 'cotizable');
     }
 
     public function scopeWhereDateBetween($query, $fieldName, $date, $dateto)

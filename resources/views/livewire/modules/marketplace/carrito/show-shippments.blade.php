@@ -1,5 +1,5 @@
 <div class="" x-data="shipment">
-    <form @submit.prevent="save" class="w-full " id="register_order" autocomplete="off">
+    <form @submit.prevent="save" class="w-full " {{-- id="register_order" --}} autocomplete="off">
         <div class="w-full flex flex-col ">
             @if (count($order) > 0)
                 <div class="w-full">
@@ -94,7 +94,7 @@
 
         @if (count($order) == 0)
             <div wire:key="section_direcciones" class="w-full mt-2" style="display:none;" x-show="showadress" x-cloak>
-                <h1 class="text-lg font-semibold text-primary">
+                <h1 class="text-xs font-medium text-primary">
                     DIRECCIÓN DE ENVÍO</h1>
 
                 @if (count($direccions) > 0)
@@ -190,7 +190,7 @@
 
         @if (count($order) == 0)
             <div wire:key="section_tiendas" class="w-full mt-2" style="display:none;" x-show="showlocales">
-                <h1 class="text-lg font-semibold text-primary">
+                <h1 class="text-xs font-medium text-primary">
                     TIENDA DE ENTREGA</h1>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 items-end gap-2">
@@ -223,8 +223,8 @@
             </div>
         @endif
 
-        <div class="w-full mt-2">
-            <h1 class="text-lg font-semibold text-primary">
+        <div class="w-full mt-5">
+            <h1 class="text-xs font-medium text-primary">
                 QUIÉN RECIBE EL PEDIDO</h1>
             <div class="flex flex-col gap-1">
                 @if (count($order) > 0)
@@ -268,9 +268,10 @@
                             <x-label value="Documento :" />
                             <div class="w-full flex gap-1">
                                 <x-input class="block w-full flex-1 input-number-none" type="number"
-                                    x-model="receiver_info.document" wire:keydown.enter.prevent="searchclient()"
+                                    x-model="receiver_info.document"
+                                    wire:keydown.enter.prevent="searchclient('document')"
                                     onkeypress="return validarNumero(event, 11)" />
-                                <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient()"
+                                <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient('document')"
                                     wire:loading.attr="disabled">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full" viewBox="0 0 24 24"
                                         fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"
@@ -299,6 +300,69 @@
                 @endif
             </div>
         </div>
+
+        @if (Module::isEnabled('Facturacion'))
+            <div class="w-full mt-5">
+                <h1 class="text-xs font-medium text-primary">
+                    GENERAR COMPROBANTE</h1>
+
+                @if (count($order) > 0)
+                    <div class="w-full">
+                        <p class="text-sm text-colorlabel font-semibold">
+                            {{ $order['name_comprobante'] }}</p>
+                        <p class="text-[10px] text-colorsubtitleform font-medium">
+                            {{ $order['document_comprobante'] }}
+                        </p>
+                    </div>
+                @else
+                    <div class="flex flex-col gap-1">
+                        <div class="w-full flex gap-1">
+                            <x-input-radio class="py-2" for="boleta" text="BOLETA">
+                                <input x-model="typecomprobante" wire:loading.attr="disabled"
+                                    class="sr-only peer peer-disabled:opacity-25" type="radio" id="boleta"
+                                    name="typecomprobante"
+                                    value="{{ \Modules\Marketplace\Entities\Order::BOLETA }}" />
+                            </x-input-radio>
+                            <x-input-radio class="py-2" for="factura" text="FACTURA">
+                                <input x-model="typecomprobante" wire:loading.attr="disabled"
+                                    class="sr-only peer peer-disabled:opacity-25" type="radio" id="factura"
+                                    name="typecomprobante"
+                                    value="{{ \Modules\Marketplace\Entities\Order::FACTURA }}" />
+                            </x-input-radio>
+                        </div>
+                        <x-jet-input-error for="typecomprobante" />
+
+                        <div class="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-1 gap-2" x-cloak
+                            x-show="showformcpe" x-transition>
+                            <div class="w-full">
+                                <x-label value="Documento :" x-text="typecomprobante == '01' ? 'RUC :' : 'DNI :'" />
+                                <div class="w-full flex gap-1">
+                                    <x-input class="block w-full flex-1 input-number-none" type="number"
+                                        x-model="document_comprobante" wire:keydown.enter.prevent="searchclient"
+                                        onkeypress="return validarNumero(event, 11)" />
+                                    <x-button-add class="px-2 flex-shrink-0" wire:click="searchclient"
+                                        wire:loading.attr="disabled">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-full w-full"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="m21 21-4.3-4.3" />
+                                        </svg>
+                                    </x-button-add>
+                                </div>
+                                <x-jet-input-error for="document_comprobante" />
+                            </div>
+                            <div class="w-full">
+                                <x-label value="Nombres completos :"
+                                    x-text="typecomprobante == '01' ? 'Razón social :' : 'Nombres completos :'" />
+                                <x-input class="block w-full" x-model="name_comprobante" />
+                                <x-jet-input-error for="name_comprobante" />
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endif
 
         @if (count($shoppings) > 0)
             <div class="w-full flex flex-col gap-2 mt-2">
@@ -365,126 +429,113 @@
                             EDITAR</button>
                     @endif
                 </div>
-
-                <div x-show="processpay" x-cloak style="display: none;"
-                    class="w-full z-[199] h-screen fixed top-0 left-0 flex justify-center items-center bg-neutral-800 bg-opacity-85">
-                    <div
-                        class="w-full py-2 sm:py-5 max-w-xs flex flex-col gap-3 bg-fondominicard rounded-xl shadow shadow-shadowminicard">
-
-                        <div class="skeleton-box w-full px-3 sm:px-5 pb-3">
-                            <div
-                                class="w-full flex flex-col gap-1 justify-center items-center bg-fondospancardproduct bg-opacity-80 h-12 sm:h-16 p-2 sm:p-4 rounded-lg border border-borderminicard">
-                                <span class="bg-neutral-300 block h-1.5 w-full max-w-[30%] rounded-lg"></span>
-                                <span
-                                    class="bg-neutral-400 block h-1 w-full max-w-[35%] bg-opacity-70 rounded-lg"></span>
-                                <span
-                                    class="bg-neutral-400 block h-1 w-full max-w-[40%] bg-opacity-70 rounded-lg"></span>
-                            </div>
-                        </div>
-
-                        <div class="skeleton-box w-ful grid grid-cols-1 gap-3 px-3 sm:px-5 py-0 sm:py-3">
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="skeleton-box w-ful grid grid-cols-2 gap-3 px-3 sm:px-5 py-3">
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                            <div class="w-full flex flex-col gap-2">
-                                <span
-                                    class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                                <div
-                                    class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                    <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="skeleton-box w-full flex flex-col gap-2 px-5 pb-3">
-                            <span
-                                class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
-                            <div class="w-full grid grid-cols-3 gap-3">
-                                <div class="w-full flex flex-col gap-2">
-                                    <div
-                                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                        <span
-                                            class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
-                                    </div>
-                                </div>
-                                <div class="w-full flex flex-col gap-2">
-                                    <div
-                                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                        <span
-                                            class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
-                                    </div>
-                                </div>
-                                <div class="w-full flex flex-col gap-2">
-                                    <div
-                                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
-                                        <span
-                                            class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="skeleton-box w-full px-3 sm:px-5 pt-3 sm:pt-5">
-                            <div class="w-full bg-next-900 rounded-lg py-5">
-                                <div class="w-full mx-auto max-w-[30%] bg-white h-1 sm:h-1.5 rounded-lg"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         @endif
     </form>
 
     <x-loading-web-next x-cloak wire:loading.flex wire:key="loadingregisterorder"
         wire:target="receiver,searchclient" />
+
+    <div x-show="processpay" x-cloak style="display: none;" wire:key="processpay"
+        class="w-full z-[299] h-screen fixed top-0 left-0 flex justify-center items-center bg-neutral-800 bg-opacity-85">
+        <div
+            class="w-full py-2 sm:py-5 max-w-xs flex flex-col gap-3 bg-fondominicard rounded-xl shadow shadow-shadowminicard">
+
+            <div class="skeleton-box w-full px-3 sm:px-5 pb-3">
+                <div
+                    class="w-full flex flex-col gap-1 justify-center items-center bg-fondospancardproduct bg-opacity-80 h-12 sm:h-16 p-2 sm:p-4 rounded-lg border border-borderminicard">
+                    <span class="bg-neutral-300 block h-1.5 w-full max-w-[30%] rounded-lg"></span>
+                    <span class="bg-neutral-400 block h-1 w-full max-w-[35%] bg-opacity-70 rounded-lg"></span>
+                    <span class="bg-neutral-400 block h-1 w-full max-w-[40%] bg-opacity-70 rounded-lg"></span>
+                </div>
+            </div>
+
+            <div class="skeleton-box w-ful grid grid-cols-1 gap-3 px-3 sm:px-5 py-0 sm:py-3">
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-5 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="skeleton-box w-ful grid grid-cols-2 gap-3 px-3 sm:px-5 py-3">
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+                <div class="w-full flex flex-col gap-2">
+                    <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                    <div
+                        class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                        <span class="bg-neutral-300 block h-1 w-full max-w-[50%] rounded-lg"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="skeleton-box w-full flex flex-col gap-2 px-5 pb-3">
+                <span class="bg-fondospancardproduct block h-1 sm:h-1.5 w-full max-w-[40%] rounded-lg"></span>
+                <div class="w-full grid grid-cols-3 gap-3">
+                    <div class="w-full flex flex-col gap-2">
+                        <div
+                            class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                            <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                        </div>
+                    </div>
+                    <div class="w-full flex flex-col gap-2">
+                        <div
+                            class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                            <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                        </div>
+                    </div>
+                    <div class="w-full flex flex-col gap-2">
+                        <div
+                            class="w-full bg-fondospancardproduct bg-opacity-80 p-3.5 sm:p-4 rounded-lg border border-borderminicard">
+                            <span class="bg-neutral-300 block h-0.5 sm:h-1 w-full max-w-[50%] rounded-lg"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="skeleton-box w-full px-3 sm:px-5 pt-3 sm:pt-5">
+                <div class="w-full bg-next-900 rounded-lg py-5">
+                    <div class="w-full mx-auto max-w-[30%] bg-white h-1 sm:h-1.5 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('alpine:init', () => {
@@ -501,8 +552,13 @@
                 local_id: @entangle('local_id').defer,
                 lugar_id: @entangle('lugar_id').defer,
                 daterecojo: @entangle('daterecojo').defer,
+                typecomprobante: @entangle('typecomprobante').defer,
+                document_comprobante: @entangle('document_comprobante').defer,
+                name_comprobante: @entangle('name_comprobante').defer,
                 recaptcha: null,
+                showformcpe: false,
                 init() {
+                    this.initRecaptcha();
                     this.$watch("shipmenttype_id", (value) => {
                         this.local_id = null;
                         this.daterecojo = null;
@@ -513,7 +569,20 @@
                     this.$watch("local_id", (value) => {
                         this.selectSuc.val(value).trigger("change");
                     });
+                    this.$watch("typecomprobante", (value) => {
+                        if (value == '') {
+                            this.showformcpe = false;
+                            this.document_comprobante = '';
+                            this.name_comprobante = '';
+                        } else {
+                            this.showformcpe = true;
+                        }
+                    });
+                    Livewire.hook('element.updating', (fromEl, toEl, component) => {
+                        document.body.style.overflow = 'hidden';
+                    })
                     Livewire.hook('message.processed', () => {
+                        document.body.style.overflow = 'auto';
                         this.selectU.select2().val(this.lugar_id).trigger('change');
                         this.selectSuc.select2({
                             templateResult: formatOption
@@ -521,29 +590,33 @@
                     });
                 },
                 save() {
-                    $(componentloading).fadeIn();
+                    document.body.style.overflow = 'hidden';
                     this.$wire.validateorder().then(async (data) => {
-                        // console.log(data);
+                        console.log(data);
                         if (data) {
                             this.processpay = true;
                             const result = data;
-                            result.g_recaptcha_response = await obtenerRecaptchaToken();
+                            // result.g_recaptcha_response = await obtenerRecaptchaToken();
                             const config = {
                                 ...await getConfigCheckout(result),
                                 complete: function(params) {
                                     alert(JSON.stringify(params));
                                 }
                             }
-                            VisanetCheckout.configure(config);
-                            VisanetCheckout.open();
-                            // this.processpay = false;
+                            console.log(config);
+                            if (config.sessiontoken) {
+                                VisanetCheckout.configure(config);
+                                VisanetCheckout.open();
+                            }
+                            this.initRecaptcha();
+                            document.body.style.overflow = 'auto';
                             setTimeout(() => {
                                 this.processpay = false;
                             }, 2000);
-                            $(componentloading).fadeOut();
                         } else {
-                            $(componentloading).fadeOut();
+                            this.initRecaptcha();
                             this.processpay = false;
+                            document.body.style.overflow = 'auto';
                         }
                     })
                 },
@@ -561,6 +634,10 @@
                     this.$wire.order = [];
                     this.$wire.$refresh();
                     this.open = false;
+                },
+                async initRecaptcha() {
+                    const g_recaptcha_response = await obtenerRecaptchaToken();
+                    this.$wire.set('g_recaptcha_response', g_recaptcha_response, true);
                 }
             }))
         })
@@ -583,6 +660,7 @@
         }
 
         async function getConfigCheckout(datos) {
+            document.body.style.overflow = 'hidden';
             try {
                 const response = await fetch(`{{ route('orders.niubiz.config') }}`, {
                     method: 'POST',
@@ -591,12 +669,11 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     },
-                    body: JSON.stringify({
-                        datos: datos
-                    })
+                    body: JSON.stringify(datos)
                 });
 
                 const data = await response.json();
+                document.body.style.overflow = 'auto';
                 if (data.errors) {
                     Object.values(data.errors).forEach(error => {
                         window.dispatchEvent(new CustomEvent('validation', {
@@ -619,6 +696,7 @@
                     return data;
                 }
             } catch (error) {
+                document.body.style.overflow = 'auto';
                 window.dispatchEvent(new CustomEvent('validation', {
                     detail: {
                         title: e.message,

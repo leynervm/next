@@ -2,7 +2,6 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Carrito;
 
-use App\Models\Client;
 use App\Models\Direccion;
 use App\Models\Sucursal;
 use App\Models\Ubigeo;
@@ -13,6 +12,7 @@ use Laravel\Jetstream\Jetstream;
 use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
+use Nwidart\Modules\Facades\Module;
 
 class ShowShippments extends Component
 {
@@ -29,6 +29,7 @@ class ShowShippments extends Component
 
     public $pricetype;
     public $lugar_id, $direccion, $referencia, $shipmenttype,
+        $typecomprobante = '', $document_comprobante, $name_comprobante,
         $shipmenttype_id, $local_id, $daterecojo, $direccionenvio_id, $g_recaptcha_response;
     public $terms;
     public $cart = [];
@@ -39,16 +40,44 @@ class ShowShippments extends Component
         return [
             'moneda.id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
             'shipmenttype_id' => ['required', 'integer', 'min:1', 'exists:shipmenttypes,id'],
-            'local_id' => ['nullable', Rule::requiredIf($this->shipmenttype->isRecojotienda()), 'integer', 'min:1', 'exists:sucursals,id'],
-            'daterecojo' => ['nullable', Rule::requiredIf($this->shipmenttype->isRecojotienda()), 'date', 'after_or_equal:today'],
-            'direccionenvio_id' => ['nullable', Rule::requiredIf($this->shipmenttype->isEnviodomicilio()), 'integer', 'min:1', 'exists:direccions,id'],
+            'local_id' => $this->shipmenttype->isRecojotienda() ?
+                ['required', 'integer', 'min:1', 'exists:sucursals,id'] :
+                ['nullable'],
+            'daterecojo' => $this->shipmenttype->isRecojotienda() ?
+                ['required', 'date', 'after_or_equal:today'] :
+                ['nullable'],
+            'direccionenvio_id' => $this->shipmenttype->isEnviodomicilio() ?
+                ['required', 'integer', 'min:1', 'exists:direccions,id'] :
+                ['nullable'],
             'receiver' => ['required', 'integer', Rule::in([Order::EQUAL_RECEIVER, Order::OTHER_RECEIVER])],
             'receiver_info.document' => ['required', 'string', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/'],
             'receiver_info.name' => ['required', 'string', 'min:8',],
             'receiver_info.telefono' => ['required', 'numeric', 'digits:9', 'regex:/^\d{9}$/'],
-            // 'cart' => [],
-            // 'g_recaptcha_response' => ['required', new Recaptcha()],
+            'typecomprobante' => Module::isEnabled('Facturacion') ?
+                ['required', Rule::in(['', Order::BOLETA, Order::FACTURA])] :
+                ['nullable'],
+            'document_comprobante' => Module::isEnabled('Facturacion') ?
+                [
+                    'required',
+                    'string',
+                    'numeric',
+                    'digits_between:8,11',
+                    'regex:/^\d{8}(?:\d{3})?$/',
+                    $this->typecomprobante == Order::FACTURA ? 'regex:/^\d{11}$/' : ''
+                ] : ['nullable'],
+            'name_comprobante' => Module::isEnabled('Facturacion') ?
+                ['required', 'string', 'min:6'] :
+                ['nullable'],
             'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['accepted', 'required'] : '',
+        ];
+    }
+
+    public function getValidationAttributes()
+    {
+        return [
+            'document_comprobante' => $this->typecomprobante == Order::FACTURA ? 'ruc' : 'dni',
+            'name_comprobante' => $this->typecomprobante == Order::FACTURA ? 'razón social' : 'nombres completos',
+            'typecomprobante' => 'tipo de comprobante',
         ];
     }
 
@@ -60,6 +89,7 @@ class ShowShippments extends Component
         $this->receiver_info = [
             'document' => auth()->user()->document,
         ];
+        Self::searchclient('document');
     }
 
     public function render()
@@ -74,12 +104,13 @@ class ShowShippments extends Component
         return view('livewire.modules.marketplace.carrito.show-shippments', compact('shoppings', 'shipmenttypes', 'direccions', 'ubigeos', 'locals'));
     }
 
-    public function validateorder($recaptcha = null)
+    public function validateorder()
     {
 
-        $this->g_recaptcha_response = $recaptcha;
-        // try {
-        // $this->cart = $carshoop;
+        if ($this->shipmenttype_id) {
+            $this->shipmenttype = Shipmenttype::find($this->shipmenttype_id);
+        }
+        // $this->g_recaptcha_response = $recaptcha;
         $validateData = $this->validate();
         $carshoop = getCartRelations('shopping', true);
         if (count($carshoop) == 0) {
@@ -127,17 +158,12 @@ class ShowShippments extends Component
             return false;
         }
 
-
-        // $this->cart = $cartshoop;
         $this->direccionenvio_id = auth()->user()->direccions()->default()->first()->id ?? null;
-        if ($this->shipmenttype_id) {
-            $this->shipmenttype = Shipmenttype::find($this->shipmenttype_id);
-        }
-
         $direccion_envio = $this->shipmenttype->isEnviodomicilio() ? Direccion::with('ubigeo')->find($this->direccionenvio_id) : null;
         $local_entrega = $this->shipmenttype->isRecojotienda() ? Sucursal::with('ubigeo')->find($this->local_id) : null;
 
         $this->order = [
+            'g_recaptcha_response' => $this->g_recaptcha_response,
             'moneda_id' => $this->moneda->id,
             'shipmenttype' => $this->shipmenttype,
             'local_entrega' => $local_entrega,
@@ -145,26 +171,12 @@ class ShowShippments extends Component
             'direccion_envio' => $direccion_envio,
             'receiver' => $this->receiver,
             'receiver_info' => $this->receiver_info,
+            'typecomprobante' => $this->typecomprobante,
+            'document_comprobante' => $this->document_comprobante,
+            'name_comprobante' => $this->name_comprobante,
             'terms' => $this->terms,
         ];
         return $this->order;
-        // } catch (\Exception $e) {
-        //     $mensaje = response()->json([
-        //         'title' => $e->getMessage(),
-        //         'text' => null,
-        //         'type' => 'warning'
-        //     ])->getData();
-        //     $this->dispatchBrowserEvent('validation', $mensaje);
-        //     return false;
-        // } catch (\Throwable $e) {
-        //     $mensaje = response()->json([
-        //         'title' => $e->getMessage(),
-        //         'text' => null,
-        //         'type' => 'warning'
-        //     ])->getData();
-        //     $this->dispatchBrowserEvent('validation', $mensaje);
-        //     return false;
-        // }
     }
 
     public function savedireccion()
@@ -227,29 +239,54 @@ class ShowShippments extends Component
         }
     }
 
-    public function searchclient()
+    public function searchclient($property = '')
     {
         $this->resetValidation();
-        $this->receiver_info['document'] = trim($this->receiver_info['document']);
-        $this->validate([
-            'receiver_info.document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/']
-        ]);
+        if ($property == 'document') {
+            $this->receiver_info['document'] = trim($this->receiver_info['document']);
+            $this->validate([
+                'receiver_info.document' => ['required', 'numeric', 'digits_between:8,11', 'regex:/^\d{8}(?:\d{3})?$/']
+            ]);
+        } else {
+            $this->document_comprobante = trim($this->document_comprobante);
+            $this->validate([
+                'document_comprobante' => [
+                    'required',
+                    'numeric',
+                    'digits_between:8,11',
+                    'regex:/^\d{8}(?:\d{3})?$/',
+                    $this->typecomprobante == Order::FACTURA ? 'regex:/^\d{11}$/' : ''
+                ]
+            ]);
+        }
         $response = Http::withHeaders([
             'X-CSRF-TOKEN' => csrf_token(),
         ])->asForm()->post(route('consultacliente'), [
-            'document' => $this->receiver_info['document'],
+            'document' => $property == 'document' ? $this->receiver_info['document'] : $this->document_comprobante,
             'searchbd' => true,
+            'autosaved' => $property == 'document' ? false : true,
+            'savedireccions' => $property == 'document' ? false : true,
+            'obtenerlista' => $property == 'document' ? false : true,
         ]);
 
         if ($response->ok()) {
             $cliente = json_decode($response->body());
             if (isset($cliente->success) && $cliente->success) {
-                $this->receiver_info['name'] = $cliente->name;
-                $this->receiver_info['telefono'] = $cliente->telefono;
+                if ($property == 'document') {
+                    $this->receiver_info['name'] = $cliente->name;
+                    $this->receiver_info['telefono'] = $cliente->telefono;
+                } else {
+                    $this->name_comprobante = $cliente->name;
+                }
             } else {
-                $this->receiver_info['name'] = '';
-                $this->receiver_info['telefono'] = '';
-                $this->addError('receiver_info.document', $cliente->error);
+                if ($property == 'document') {
+                    $this->receiver_info['name'] = '';
+                    $this->receiver_info['telefono'] = '';
+                    $this->addError('receiver_info.document', $cliente->error);
+                } else {
+                    $this->name_comprobante = '';
+                    $this->addError('name_comprobante', $cliente->error);
+                }
             }
         } else {
             $mensaje =  response()->json([
@@ -265,7 +302,7 @@ class ShowShippments extends Component
     {
         if ($value == Order::EQUAL_RECEIVER) {
             $this->receiver_info['document'] = auth()->user()->document;
-            self::searchclient();
+            self::searchclient('document');
         } else {
             $this->reset(['receiver_info']);
             $this->resetValidation();

@@ -102,16 +102,28 @@
                         {{ $empresa->name }}</p>
 
                     <p class="font-normal text-10 leading-3 text-end p-0">
-                        {{ $empresa->direccion }}
+                        @if (isset($sucursal))
+                            {{ $sucursal->direccion }}
+                        @else
+                            {{ $empresa->direccion }}
+                        @endif
                     </p>
 
-                    @if ($empresa->ubigeo)
-                        <p class="font-normal text-10 leading-3 text-end p-0">
-                            {{ $empresa->ubigeo->region }}
-                            - {{ $empresa->ubigeo->provincia }}
-                            - {{ $empresa->ubigeo->distrito }}
-                        </p>
-                    @endif
+                    <p class="font-normal text-10 leading-3 text-end p-0">
+                        @if (isset($sucursal))
+                            @if ($sucursal->ubigeo)
+                                {{ $sucursal->ubigeo->region }}
+                                - {{ $sucursal->ubigeo->provincia }}
+                                - {{ $sucursal->ubigeo->distrito }}
+                            @endif
+                        @else
+                            @if ($empresa->ubigeo)
+                                {{ $empresa->ubigeo->region }}
+                                - {{ $empresa->ubigeo->provincia }}
+                                - {{ $empresa->ubigeo->distrito }}
+                            @endif
+                        @endif
+                    </p>
                 </th>
             </tr>
             <tr>

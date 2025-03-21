@@ -8,8 +8,8 @@ use App\Models\Itempromo;
 use App\Models\Producto;
 use App\Models\Promocion;
 use App\Rules\ValidatePrincipalCombo;
-use App\Rules\ValidateSecondaryCombo;
 use App\Rules\ValidateStockCombo;
+use Carbon\Carbon;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -168,17 +168,24 @@ class CreatePromocion extends Component
             'startdate' => ['nullable', 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d')],
             'expiredate' => ['nullable', Rule::requiredIf(!empty($this->startdate)), 'date', 'after_or_equal:' . now('America/Lima')->format('Y-m-d'), 'after_or_equal:startdate'],
             'type' => ['required', 'integer', Rule::in(PromocionesEnum::values())],
-            'descuento' => ['nullable', Rule::requiredIf($this->type == Promocion::DESCUENTO), 'numeric', 'gt:0', 'max:100', 'decimal:0,2'],
+            'descuento' => [
+                'nullable',
+                Rule::requiredIf(in_array($this->type, [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])),
+                'numeric',
+                'gt:0',
+                'max:100',
+                'decimal:0,2'
+            ],
         ], [
             'descuento.required_if' => 'El campo :attribute es obligatorio cuando la promoción es un descuento.'
         ]);
 
-        $promocion = [
-            'titulo' => $this->type != Promocion::COMBO ? null : $this->titulo,
+        $data = [
+            'titulo' => $this->type != PromocionesEnum::COMBO->value ? null : $this->titulo,
             'producto_id' => $this->producto_id,
             'pricebuy' => $this->pricebuy,
             'limit' => $this->limit,
-            'descuento' => $this->descuento,
+            'descuento' => in_array($this->type, [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value]) ? $this->descuento : null,
             'unit' => $this->producto['unit']['name'],
             'startdate' => !empty(trim($this->startdate)) ? $this->startdate :  null,
             'expiredate' => !empty(trim($this->expiredate)) ? $this->expiredate : null,
@@ -186,23 +193,15 @@ class CreatePromocion extends Component
             'comboitems' => [],
         ];
 
-        if ($this->type == Promocion::COMBO) {
-            $comboCollect = collect($promocion);
+        if ($this->type == PromocionesEnum::COMBO->value) {
+            $comboCollect = collect($data);
             $comboJSON = response()->json($comboCollect)->getData();
             Session::put('combo', $comboJSON);
         } else {
-            $promocion = Promocion::create($promocion);
-            // $promocion->producto->load(['promocions' => function ($query) {
-            //     $query->with(['itempromos.producto' => function ($subQuery) {
-            //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
-            //             $q->select('url')->from('images')
-            //                 ->whereColumn('images.imageable_id', 'productos.id')
-            //                 ->where('images.imageable_type', Producto::class)
-            //                 ->orderBy('default', 'desc')->limit(1);
-            //         }]);
-            //     }])->availables()->disponibles()->take(1);
-            // }]);
-            // $promocion->producto->assignPrice();
+            if (!empty($this->expiredate)) {
+                $data['expiredate'] = Carbon::parse($this->expiredate)->endOfDay();
+            }
+            $promocion = Promocion::create($data);
             $this->reset();
             $this->dispatchBrowserEvent('created');
             $this->emitTo('admin.promociones.show-promociones', 'render');
@@ -215,6 +214,9 @@ class CreatePromocion extends Component
         $this->authorize('admin.promociones.create');
         $this->itempromos = getCombo()->get('comboitems');
         $validateData = $this->validate();
+        if (!empty($this->expiredate)) {
+            $validateData['expiredate'] =  Carbon::parse($this->expiredate)->endOfDay();
+        }
 
         DB::beginTransaction();
         try {
@@ -227,18 +229,6 @@ class CreatePromocion extends Component
                 ]);
             }
             DB::commit();
-            // $promocion->producto->load(['promocions' => function ($query) {
-            //     $query->with(['itempromos.producto' => function ($subQuery) {
-            //         $subQuery->with('unit')->addSelect(['image' => function ($q) {
-            //             $q->select('url')->from('images')
-            //                 ->whereColumn('images.imageable_id', 'productos.id')
-            //                 ->where('images.imageable_type', Producto::class)
-            //                 ->orderBy('default', 'desc')->limit(1);
-            //         }]);
-            //     }])->availables()->disponibles()->take(1);
-            // }]);
-            // dd($promocion->producto);
-            // $promocion->producto->assignPrice();
             $this->emitTo('admin.promociones.show-promociones', 'render');
             $this->resetValidation();
             $this->dispatchBrowserEvent('created');

@@ -112,20 +112,6 @@
                 @endcan
             @endif
 
-            {{-- <li>
-                <x-nav-link href="#" class="">
-                    <x-slot name="titulo">Cotizaciones</x-slot>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                        <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-.5" />
-                        <path d="M16 4h2a2 2 0 0 1 1.73 1" />
-                        <path d="M18.42 9.61a2.1 2.1 0 1 1 2.97 2.97L16.95 17 13 18l.99-3.95 4.43-4.44Z" />
-                        <path d="M8 18h1" />
-                    </svg>
-                </x-nav-link>
-            </li> --}}
-
             @canany(['admin.cajas', 'admin.cajas.methodpayments', 'admin.cajas.conceptos', 'admin.cajas.aperturas',
                 'admin.cajas.mensuales'])
                 <li>
@@ -217,6 +203,23 @@
                         </x-nav-link>
                     </li>
                 @endcan
+            @endif
+
+            @if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas'))
+                <li>
+                    <x-nav-link href="{{ route('admin.cotizacions') }}" :active="request()->routeIs('admin.cotizacions*')">
+                        <x-slot name="titulo">Cotizaciones</x-slot>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                            <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-.5" />
+                            <path d="M16 4h2a2 2 0 0 1 1.73 1" />
+                            <path d="M18.42 9.61a2.1 2.1 0 1 1 2.97 2.97L16.95 17 13 18l.99-3.95 4.43-4.44Z" />
+                            <path d="M8 18h1" />
+                        </svg>
+                    </x-nav-link>
+                </li>
             @endif
 
 

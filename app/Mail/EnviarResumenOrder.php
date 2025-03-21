@@ -25,6 +25,30 @@ class EnviarResumenOrder extends Mailable implements ShouldQueue
      */
     public function __construct(Order $order)
     {
+        $order->load([
+            'shipmenttype',
+            'user',
+            'entrega.sucursal.ubigeo',
+            'client',
+            'moneda',
+            'direccion.ubigeo',
+            'transaccion',
+            'tvitems' => function ($query) {
+                $query->with(['promocion', 'producto' => function ($subq) {
+                    $subq->with(['unit', 'imagen', 'marca', 'category']);
+                }, 'carshoopitems' => function ($q) {
+                    $q->with(['itempromo', 'producto' => function ($db) {
+                        $db->with(['unit', 'imagen', 'marca', 'category']);
+                    }]);
+                }]);
+            },
+            'trackings' => function ($query) {
+                $query->with('trackingstate')->orderBy('date', 'asc');
+            },
+            'comprobante' => function ($query) {
+                $query->with(['client', 'facturableitems', 'seriecomprobante.typecomprobante']);
+            }
+        ]);
         $this->order = $order;
         $this->empresa = view()->shared('empresa');
     }

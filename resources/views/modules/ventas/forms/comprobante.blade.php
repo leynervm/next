@@ -202,7 +202,7 @@
         </div>
 
         <div class="w-full" x-show="istransferencia" x-cloak style="display: none;">
-            <x-label value="Observaciones / Detalle, etc :" />
+            <x-label value="Detalle del pago :" />
             <x-text-area class="block w-full" wire:model.defer="detallepago"></x-text-area>
             <x-jet-input-error for="detallepago" />
         </div>

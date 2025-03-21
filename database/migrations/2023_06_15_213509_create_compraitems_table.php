@@ -25,6 +25,7 @@ class CreateCompraitemsTable extends Migration
             $table->unsignedDecimal('total', 18, 2);
             $table->unsignedDecimal('oldprice', 18, 2);
             $table->unsignedDecimal('oldpricesale', 18, 2);
+            $table->char('typedescuento', 1)->default(0);
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('compra_id')->nullable();
             $table->foreign('producto_id')->on('productos')->references('id');

@@ -234,8 +234,13 @@ class ShowProductos extends Component
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->with(['unit', 'almacens' => function ($query) {
+            ->with(['unit', 'imagen', 'almacens' => function ($query) {
                 $query->where('cantidad', '>', 0);
+            }])->addSelect(['image_2' => function ($query) {
+                $query->select('url')->from('images')
+                    ->whereColumn('images.imageable_id', 'productos.id')
+                    ->where('images.imageable_type', Producto::class)
+                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);
             }]);
 
         if ($this->empresa->viewOnlyDisponibles()) {
@@ -246,16 +251,6 @@ class ShowProductos extends Component
 
         $productos->withCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
-        }])->addSelect(['image' => function ($query) {
-            $query->select('url')->from('images')
-                ->whereColumn('images.imageable_id', 'productos.id')
-                ->where('images.imageable_type', Producto::class)
-                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-        }])->addSelect(['image_2' => function ($query) {
-            $query->select('url')->from('images')
-                ->whereColumn('images.imageable_id', 'productos.id')
-                ->where('images.imageable_type', Producto::class)
-                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);
         }]);
 
         if (count($this->selectedcategorias) > 0) {
@@ -277,13 +272,8 @@ class ShowProductos extends Component
         }
 
         $productos->with(['promocions' => function ($query) {
-            $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with('unit')->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                }]);
+            $query->with(['itempromos.producto' => function ($subq) {
+                $subq->with(['imagen', 'almacens']);
             }])->availables()->disponibles();
         }]);
 
@@ -336,7 +326,7 @@ class ShowProductos extends Component
         // dd($productos->toSql());
         if ($this->readyToLoad) {
             $productos = $productos->paginate(50)->through(function ($producto) {
-                $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                $producto->descuento = $producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
                 $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
                 return $producto;
             });
@@ -349,6 +339,13 @@ class ShowProductos extends Component
 
     public function updatedSearch()
     {
+        $this->resetPage();
+        Self::resetfilterorder();
+    }
+
+    public function resetfilters()
+    {
+        $this->resetExcept(['empresa', 'moneda', 'moneda_id', 'pricetype', 'pricetype_id', 'readyToLoad', 'orderfilters']);
         $this->resetPage();
         Self::resetfilterorder();
     }
@@ -513,19 +510,14 @@ class ShowProductos extends Component
 
     public function getcombos(Producto $producto)
     {
-        $producto->load(['marca', 'category', 'subcategory', 'unit', 'images', 'promocions' => function ($query) {
+        $producto->load(['marca', 'category', 'subcategory', 'unit', 'imagen', 'promocions' => function ($query) {
             $query->with(['itempromos.producto' => function ($subQuery) {
-                $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
-                    $q->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                }]);
+                $subQuery->with(['unit', 'imagen', 'almacens']);
             }])->availables()->disponibles();
         }])->loadCount(['almacens as stock' => function ($query) {
             $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
         }]);
-        $producto->descuento = $producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+        $producto->descuento = $producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
         $producto->liquidacion = $producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
         $this->producto = $producto;
         $this->open =  true;

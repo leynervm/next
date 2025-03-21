@@ -97,13 +97,21 @@
                             </p>
                         </td>
                         <td class="p-2 text-center min-w-40">
-                            @if ($item->itemserie)
+                            @foreach ($item->itemseries as $itemser)
                                 <p class="text-colorsubtitleform text-[10px]">
-                                    {{ formatDate($item->itemserie->date, 'DD MMMM YYYY') }}
+                                    {{ formatDate($itemser->date) }}
                                     <br>
-                                    {{ $item->itemserie->tvitem->tvitemable->seriecompleta }}
+                                    @if ($itemser->isCarshoopitem())
+                                        @if ($itemser->seriable && $itemser->seriable->tvitem)
+                                            {{ $itemser->seriable->tvitem->tvitemable->seriecompleta }}
+                                        @endif
+                                    @else
+                                        @if ($itemser->seriable)
+                                            {{ $itemser->seriable->tvitemable->seriecompleta }}
+                                        @endif
+                                    @endif
                                 </p>
-                            @endif
+                            @endforeach
                         </td>
                         <td class="p-2 text-xs text-center">
                             @if ($item->isDisponible())

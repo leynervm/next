@@ -21,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Ventas\Entities\Venta;
+use Illuminate\Support\Str;
+
 
 class Comprobante extends Model
 {
@@ -33,6 +35,18 @@ class Comprobante extends Model
     protected $guarded = ['created_at', 'updated_at'];
     protected $policyNamespace = '\Modules\Facturacion\Policies\PolicyComprobante';
 
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($comprobante) {
+            do {
+                $uuid = Str::uuid();
+            } while (Comprobante::where('uuid', $uuid)->exists()); // Si existe, genera otro
+
+            $comprobante->uuid = $uuid;
+        });
+    }
 
     public function setDireccionAttribute($value)
     {

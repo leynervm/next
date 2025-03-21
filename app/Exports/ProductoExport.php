@@ -49,6 +49,8 @@ class ProductoExport implements FromView, WithTitle
             'subcategory_id',
             'publicado',
             'sku',
+            'visivility',
+            'comentario',
             'partnumber',
             'pricebuy',
             'pricesale',
@@ -68,15 +70,30 @@ class ProductoExport implements FromView, WithTitle
             //         $q->where('almacens.id', $almacen_id);
             //     })->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
             // }])
-            ->with(['unit', 'imagen', 'almacens' => function ($query) {
-                $query->when($this->filters['almacen_id'] ?? null, function ($q, $almacen_id) {
-                    $q->where('almacens.id', $almacen_id);
-                });
-            }, 'series' => function ($query) {
+            ->with(['unit', 'imagen', 'series' => function ($query) {
                 $query->when($this->filters['almacen_id'] ?? null, function ($q, $almacen_id) {
                     $q->where('almacen_id', $almacen_id);
                 });
-            }])->when($this->filters['viewreporte'] == 1, function ($query) {
+            }])->when($this->filters['viewstock'] == '0', function ($query) {
+                $query->with(['almacens' => function ($subq) {
+                    $subq->when($this->filters['almacen_id'] ?? null, function ($q, $almacen_id) {
+                        $q->where('almacens.id', $almacen_id);
+                    });
+                }]);
+            })->when($this->filters['viewstock'] == '1', function ($query) {
+                $query->whereHas('almacens', function ($q) {
+                    $q->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
+                        ->groupBy('almacen_producto.producto_id')
+                        ->havingRaw('SUM(almacen_producto.cantidad) > 0');
+                });
+            })->when($this->filters['viewstock'] == '2', function ($query) {
+                $query->whereHas('almacens', function ($q) {
+                    $q->select(DB::raw('SUM(almacen_producto.cantidad) as total_stock'))
+                        ->groupBy('almacen_producto.producto_id')
+                        ->havingRaw('SUM(almacen_producto.cantidad) = 0');
+                });
+            })
+            ->when($this->filters['viewreporte'] == 1, function ($query) {
                 $query->with(['compraitems.compra.proveedor', 'tvitems' => function ($subq) {
                     $subq->with(['almacen', 'producto' => function ($q) {
                         $q->select('id', 'name', 'unit_id')->with('unit');

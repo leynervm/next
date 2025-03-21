@@ -3,11 +3,13 @@
 namespace App\Http\Livewire\Modules\Marketplace\Orders;
 
 use App\Models\Almacen;
+use App\Models\Carshoopitem;
 use App\Models\Itemserie;
 use App\Models\Kardex;
 use App\Models\Producto;
 use App\Models\Serie;
 use App\Models\Tvitem;
+use App\Rules\ValidateStock;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -23,17 +25,19 @@ class ShowResumenOrder extends Component
 
     protected $listeners = ['render'];
 
-    public Order $order;
+    public $order;
     public $tvitem;
     public $open = false;
-    public $almacen_id;
-    public $almacens = [];
-    public $almacen = [];
-    public $serie_id = '';
+    // public $almacen_id;
+    // public $almacen = [];
+    // public $serie_id = '';
     public $trackingstate_id = '';
 
-    public function mount()
+    public $almacens = [], $almacenitem = [];
+
+    public function mount(Order $order)
     {
+        $this->order = $order;
         $this->tvitem = new Tvitem();
     }
 
@@ -43,234 +47,87 @@ class ShowResumenOrder extends Component
         return view('livewire.modules.marketplace.orders.show-resumen-order', compact('trackingstates'));
     }
 
-    public function updatestock(Tvitem $tvitem)
+    public function confirmkardexstock($key)
     {
-        $this->authorize('admin.marketplace.orders.discountstock');
-        $this->resetValidation();
-        $this->resetExcept(['order', 'tvitem']);
-        $this->tvitem = $tvitem;
-        $this->getAlmacens();
-        $this->open = true;
-    }
-
-    public function getAlmacens()
-    {
-        foreach ($this->tvitem->producto->almacens as $item) {
-            $almacen = [
-                'id' => $item->id,
-                'name' => $item->name,
-                'cantidad' => 0,
-                'pivot' =>  [
-                    'cantidad' => $item->pivot->cantidad
+        $validateData = $this->validate([
+            "almacens.$key.id" => ['required', 'integer', 'min:1', 'exists:almacens,id'],
+            'tvitem.producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
+            "almacens.$key.cantidad" => $this->tvitem->producto->isRequiredserie() ?
+                ['nullable'] : [
+                    'required',
+                    'integer',
+                    'gt:0',
+                    new ValidateStock($this->tvitem->producto_id, $this->almacens[$key]['id'], $this->almacens[$key]['cantidad']),
+                    'lte:' . $this->tvitem->cantidad - $this->tvitem->kardexes->sum('cantidad'),
                 ],
-            ];
-            $this->almacens[$item->id] = $almacen;
-        }
-    }
-
-    public function discountserie($almacen_id, $serie_id)
-    {
-        $this->authorize('admin.marketplace.orders.discountstock');
-        $this->almacens[$almacen_id]['serie_id'] = $serie_id;
-        $this->validate([
-            "almacens.$almacen_id.serie_id" => [
-                'required',
-                'integer',
-                'min:1',
-                'exists:series,id'
-            ]
+            "almacens.$key.serie_id" => $this->tvitem->producto->isRequiredserie() ?
+                [
+                    Rule::requiredIf($this->tvitem->producto->isRequiredserie()),
+                    'integer',
+                    'min:1',
+                    'exists:series,id',
+                    new ValidateStock($this->tvitem->producto_id, $this->almacens[$key]['id'], 1),
+                ] : ['nullable'],
+        ], [], [
+            "tvitem.producto_id" => 'producto',
+            "almacens.$key.id" => 'almacen',
+            "almacens.$key.cantidad" => 'cantidad',
+            "almacens.$key.serie_id" => 'serie',
         ]);
 
         DB::beginTransaction();
         try {
-            $serie = Serie::find($serie_id);
-            if ($serie->isDisponible()) {
-                if (($this->tvitem->kardexes()->sum('cantidad') + 1) > $this->tvitem->cantidad) {
+            $date = now('America/Lima');
+            $serie_id = $this->tvitem->producto->isRequiredserie() && !empty($this->almacens[$key]['serie_id']) ? $this->almacens[$key]['serie_id'] : null;
+            $cantidad = $this->tvitem->producto->isRequiredserie() ? 1 : $this->almacens[$key]['cantidad'];
+            $stock = $this->tvitem->producto->almacens()->find($key)->pivot->cantidad;
+
+            if (!empty($serie_id)) {
+                $serie = Serie::find($serie_id);
+                if ($this->tvitem->itemseries()->where('serie_id', $serie_id)->exists()) {
                     $mensaje =  response()->json([
-                        'title' => 'CANTIDAD A DESCONTAR NO PUEDE SER MAYOR AL STOCK ADQUIRIDO !',
+                        'title' => "SERIE $serie->serie YA SE ENCUENTRA AGREGADO !",
                         'text' => null
                     ])->getData();
                     $this->dispatchBrowserEvent('validation', $mensaje);
                     return false;
                 }
 
-                $almacenStock = $this->tvitem->producto->almacens()->find(($almacen_id));
-
-                if (!$almacenStock) {
-                    $mensaje = response()->json([
-                        'title' => 'ALMACÉN NO SE ENCUENTRA DISPONIBLE',
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-
-                if (($almacenStock->pivot->cantidad - 1) < 0) {
-                    $mensaje =  response()->json([
-                        'title' => 'CANTIDAD A DESCONTAR EN ALMACÉN SUPERA EL STOCK DISPONIBLE !',
-                        'text' => null
-                    ])->getData();
-                    $this->dispatchBrowserEvent('validation', $mensaje);
-                    return false;
-                }
-
-                $serie->status = Serie::SALIDA;
-                $serie->save();
-                $this->tvitem->itemseries()->create([
-                    'serie_id' => $serie_id,
-                    'status' => 0,
-                    'date' => now('America/Lima'),
-                    'user_id' => auth()->user()->id
-                ]);
-                $kardex = $this->tvitem->kardexes()->where('almacen_id', $almacen_id)->first();
-
-                if ($kardex) {
-                    $kardex->cantidad = $kardex->cantidad + 1;
-                    // $kardex->oldstock = $almacenStock->pivot->cantidad;
-                    $kardex->newstock = $almacenStock->pivot->cantidad - 1;
-                    $kardex->save();
-                } else {
-                    $kardex = $this->tvitem->saveKardex(
-                        $this->tvitem->producto_id,
-                        $almacen_id,
-                        $almacenStock->pivot->cantidad,
-                        $almacenStock->pivot->cantidad - 1,
-                        1,
-                        Almacen::SALIDA_ALMACEN,
-                        Kardex::SALIDA_VENTA_WEB,
-                        $this->order->purchase_number,
-                    );
-                }
-
-                $kardex->producto->almacens()->updateExistingPivot($almacen_id, [
-                    'cantidad' => $almacenStock->pivot->cantidad - 1,
-                ]);
-                DB::commit();
-                $this->dispatchBrowserEvent('updated');
-                $this->tvitem->refresh();
-                $this->order->refresh();
-                $this->getAlmacens();
-                $this->resetValidation();
-                $this->reset(['serie_id']);
-                if (($this->tvitem->kardexes()->sum('cantidad')) == $this->tvitem->cantidad) {
-                    $this->reset(['open']);
-                }
-            } else {
-                $mensaje =  response()->json([
-                    'title' => 'SERIE YA NO SE ENCUENTRA DISPONIBLE !',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-            }
-        } catch (\Exception $e) {
-            DB::rollBack();
-            // $mensaje =  response()->json([
-            //     'title' => $e->getMessage(),
-            //     'text' => null,
-            // ])->getData();
-            // $this->dispatchBrowserEvent('validation', $mensaje);
-            // return false;
-            throw $e;
-        } catch (\Throwable $e) {
-            // DB::rollBack();
-            // $mensaje =  response()->json([
-            //     'title' => $e->getMessage(),
-            //     'text' => null,
-            // ])->getData();
-            // $this->dispatchBrowserEvent('validation', $mensaje);
-            // return false;
-            throw $e;
-        }
-    }
-
-    public function discountstock()
-    {
-        $this->authorize('admin.marketplace.orders.discountstock');
-        $this->validate([
-            "almacens" => ['required', 'array', 'min:1'],
-            "almacens.*.cantidad" => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
-        ]);
-
-        $catidades = array_column($this->almacens, 'cantidad');
-        $totalstock = array_sum($catidades) ?? 0;
-        if ($totalstock <= 0) {
-            $mensaje =  response()->json([
-                'title' => 'EL STOCK A DESCONTAR DEBE SER MAYOR QUE CERO !',
-                'text' => null
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
-
-        if (($this->tvitem->kardexes()->sum('cantidad') + $totalstock) > $this->tvitem->cantidad) {
-            $mensaje =  response()->json([
-                'title' => 'CANTIDAD A DESCONTAR NO PUEDE SER MAYOR AL STOCK ADQUIRIDO !',
-                'text' => null
-            ])->getData();
-            $this->dispatchBrowserEvent('validation', $mensaje);
-            return false;
-        }
-
-        DB::beginTransaction();
-        try {
-            foreach ($this->almacens as $item) {
-                if ($item['cantidad'] > 0) {
-
-                    $almacenStock = $this->tvitem->producto->almacens()->find($item['id']);
-                    if (!$almacenStock) {
-                        $mensaje = response()->json([
-                            'title' => 'ALMACÉN NO SE ENCUENTRA DISPONIBLE',
-                            'text' => null
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-
-                    if (($almacenStock->pivot->cantidad - (float) $item['cantidad']) < 0) {
+                if ($this->tvitem->isDiscountStock() || $this->tvitem->isReservedStock()) {
+                    if (!$serie->isDisponible()) {
                         $mensaje =  response()->json([
-                            'title' => 'CANTIDAD A DESCONTAR EN ALMACÉN SUPERA EL STOCK DISPONIBLE !',
+                            'title' => "SERIE $serie->serie NO SE ENCUENTRA DISPONIBLE !",
                             'text' => null
                         ])->getData();
                         $this->dispatchBrowserEvent('validation', $mensaje);
                         return false;
                     }
-
-                    $kardex = $this->tvitem->kardexes()->where('almacen_id', $item['id'])->first();
-
-                    if ($kardex) {
-                        $kardex->cantidad = $kardex->cantidad + (float) $item['cantidad'];
-                        // $kardex->oldstock = $almacenStock->pivot->cantidad;
-                        $kardex->newstock = $almacenStock->pivot->cantidad - (float) $item['cantidad'];
-                        $kardex->save();
-                    } else {
-                        $kardex = $this->tvitem->saveKardex(
-                            $this->tvitem->producto_id,
-                            $item['id'],
-                            $almacenStock->pivot->cantidad,
-                            $almacenStock->pivot->cantidad - (float) $item['cantidad'],
-                            1,
-                            Almacen::SALIDA_ALMACEN,
-                            Kardex::SALIDA_VENTA_WEB,
-                            $this->order->purchase_number,
-                        );
-                    }
-
-                    $kardex->producto->almacens()->updateExistingPivot($item['id'], [
-                        'cantidad' => $almacenStock->pivot->cantidad - (float) $item['cantidad'],
+                    $this->tvitem->registrarSalidaSerie($serie_id);
+                } else {
+                    $this->tvitem->itemseries()->create([
+                        'date' =>  $date,
+                        'serie_id' => $serie_id,
+                        'user_id' => auth()->user()->id
                     ]);
                 }
             }
 
+            $kardex = $this->tvitem->updateOrCreateKardex($key, $stock, $cantidad);
+            $kardex->detalle = Kardex::SALIDA_VENTA;
+            $kardex->save();
+            if ($this->tvitem->isDiscountStock() || $this->tvitem->isReservedStock()) {
+                $this->tvitem->producto->descontarStockProducto($key, $cantidad);
+            }
             DB::commit();
-            $this->dispatchBrowserEvent('updated');
+            $this->dispatchBrowserEvent('toast', toastJSON('STOCK ACTUALIZADO CORRECTAMENTE'));
+            $this->order->refresh();
             $this->tvitem->refresh();
-            $this->order->refresh();
-            $this->getAlmacens();
-            $this->resetValidation();
-            if (($this->tvitem->kardexes()->sum('cantidad')) == $this->tvitem->cantidad) {
-                $this->reset(['open']);
+            foreach ($this->tvitem->producto->almacens as $item) {
+                $this->almacens[$item->id]['tvitem_id'] = $this->tvitem->id;
+                $this->almacens[$item->id]['id'] = $item->id;
+                $this->almacens[$item->id]['serie_id'] = null;
+                $this->almacens[$item->id]['cantidad'] = $this->tvitem->producto->isRequiredserie() ? 1 : 0;
             }
-            $this->reset(['serie_id']);
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -280,77 +137,22 @@ class ShowResumenOrder extends Component
         }
     }
 
-    public function deletestock(Kardex $kardex)
+    public function deletekardex(Tvitem $tvitem, Kardex $kardex)
     {
-        $this->authorize('admin.marketplace.orders.deletestock');
-        try {
-            $almacenStock = $kardex->producto->almacens()->find($kardex->almacen_id);
-            if (!$almacenStock) {
-                $mensaje = response()->json([
-                    'title' => 'ALMACÉN NO SE ENCUENTRA DISPONIBLE',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-
-            $kardex->producto->almacens()->updateExistingPivot($kardex->almacen_id, [
-                'cantidad' => $almacenStock->pivot->cantidad + (float) $kardex->cantidad,
-            ]);
-            DB::commit();
-            $kardex->delete();
-            $this->dispatchBrowserEvent('deleted');
-            $this->order->refresh();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            throw $e;
-        }
-    }
-
-    public function deleteitemseriestock(Itemserie $itemserie)
-    {
-        $this->authorize('admin.marketplace.orders.deletestock');
         DB::beginTransaction();
         try {
-            $kardex = $itemserie->tvitem->kardexes()->where('almacen_id', $itemserie->serie->almacen_id)->first();
-            if (!$kardex) {
-                $mensaje = response()->json([
-                    'title' => 'KARDEX DE SALIDA DEL PRODUCTO NO SE ENCUENTRA DISPONIBLE',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
+            $tvitem->load(['producto.almacens']);
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                // $stock = $tvitem->producto->almacens()->find($kardex->almacen_id)->pivot->cantidad;
+                // $tvitem->producto->almacens()->updateExistingPivot($kardex->almacen_id, [
+                //     'cantidad' => $stock + $kardex->cantidad,
+                // ]);
+                $tvitem->producto->incrementarStockProducto($kardex->almacen_id, $kardex->cantidad);
             }
-
-            $almacenStock = $kardex->producto->almacens()->find($kardex->almacen_id);
-            if (!$almacenStock) {
-                $mensaje = response()->json([
-                    'title' => 'ALMACÉN NO SE ENCUENTRA DISPONIBLE',
-                    'text' => null
-                ])->getData();
-                $this->dispatchBrowserEvent('validation', $mensaje);
-                return false;
-            }
-
-            $itemserie->serie->status = Serie::DISPONIBLE;
-            $itemserie->serie->save();
-            $itemserie->delete();
-            $kardex->producto->almacens()->updateExistingPivot($kardex->almacen_id, [
-                'cantidad' => $almacenStock->pivot->cantidad + 1,
-            ]);
-            if (($kardex->cantidad - 1) == 0) {
-                $kardex->delete();
-            } else {
-                $kardex->cantidad = $kardex->cantidad - 1;
-                $kardex->newstock = $kardex->newstock + 1;
-                $kardex->save();
-            }
+            $kardex->delete();
             DB::commit();
-            $this->dispatchBrowserEvent('deleted');
             $this->order->refresh();
+            $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
@@ -360,9 +162,242 @@ class ShowResumenOrder extends Component
         }
     }
 
+    public function deletekardexcarshoop(Carshoopitem $carchoopitem, Kardex $kardex)
+    {
+        DB::beginTransaction();
+        try {
+            $carchoopitem->load(['tvitem', 'producto.almacens']);
+            if ($carchoopitem->tvitem->isDiscountStock() || $carchoopitem->tvitem->isReservedStock()) {
+                $carchoopitem->producto->incrementarStockProducto($kardex->almacen_id, 1);
+            }
+            $kardex->delete();
+            DB::commit();
+            $this->order->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function deleteitemserie(Itemserie $itemserie)
+    {
+        DB::beginTransaction();
+        try {
+            $itemserie->load(['seriable.kardexes', 'serie'  => function ($query) {
+                $query->with(['producto.almacens']);
+            }]);
+            $tvitem = $itemserie->seriable;
+            $almacen_id = $itemserie->serie->almacen_id;
+            $kardex = $tvitem->kardexes->where('almacen_id', $almacen_id)->first();
+
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                $tvitem->updateSerieDisponible($itemserie->serie);
+                if ($kardex) {
+                    $itemserie->serie->producto->incrementarStockProducto($almacen_id, 1);
+                }
+            }
+
+            if ($kardex) {
+                $kardex->cantidad = $kardex->cantidad - 1;
+                $kardex->newstock = $kardex->newstock - 1;
+                if ($kardex->cantidad == 0) {
+                    $kardex->delete();
+                } else {
+                    $kardex->save();
+                }
+            }
+            $itemserie->delete();
+            DB::commit();
+            $this->order->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function deleteitemserieitem(Itemserie $itemserie)
+    {
+        DB::beginTransaction();
+        try {
+            $itemserie->load(['seriable.kardexes', 'serie'  => function ($query) {
+                $query->with(['producto.almacens']);
+            }]);
+            $carshoopitem = $itemserie->seriable;
+            $almacen_id = $itemserie->serie->almacen_id;
+            $kardex = $carshoopitem->kardexes->where('almacen_id', $almacen_id)->first();
+            // dd($carshoopitem->tvitem->isDiscountStock());
+            if ($carshoopitem->tvitem->isDiscountStock() || $carshoopitem->tvitem->isReservedStock()) {
+                $carshoopitem->tvitem->updateSerieDisponible($itemserie->serie);
+                if ($kardex) {
+                    $itemserie->serie->producto->incrementarStockProducto($almacen_id, 1);
+                }
+            }
+
+            if ($kardex) {
+                $kardex->cantidad = $kardex->cantidad - 1;
+                $kardex->newstock = $kardex->newstock - 1;
+                if ($kardex->cantidad == 0) {
+                    $kardex->delete();
+                } else {
+                    $kardex->save();
+                }
+            }
+            $itemserie->delete();
+            DB::commit();
+            $this->order->refresh();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function openmodalcarshoops(Tvitem $tvitem)
+    {
+
+        $this->reset(['almacens', 'almacenitem']);
+        $this->resetValidation();
+
+        $tvitem->load(['itemseries' => function ($query) {
+            $query->with(['serie.almacen']);
+        }, 'kardexes.almacen', 'producto' => function ($query) {
+            $query->with(['almacens', 'unit', 'seriesdisponibles']);
+        }, 'carshoopitems' => function ($query) {
+            $query->with(['kardexes.almacen', 'itempromo', 'itemseries' => function ($query) {
+                $query->with(['serie.almacen']);
+            }, 'producto' => function ($subq) {
+                $subq->with(['almacens', 'unit', 'marca', 'category', 'seriesdisponibles']);
+            }]);
+        }]);
+        $this->tvitem = $tvitem;
+        foreach ($tvitem->producto->almacens as $item) {
+            $this->almacens[$item->id]['tvitem_id'] = $tvitem->id;
+            $this->almacens[$item->id]['id'] = $item->id;
+            $this->almacens[$item->id]['serie_id'] = '';
+            $this->almacens[$item->id]['cantidad'] = $tvitem->producto->isRequiredserie() ? 1 : 0;
+        }
+
+        foreach ($tvitem->carshoopitems as $item) {
+            foreach ($item->producto->almacens as $almacen) {
+                $this->almacenitem[$item->id]['almacens'][$almacen->id]['id'] = $almacen->id;
+                $this->almacenitem[$item->id]['almacens'][$almacen->id]['serie_id'] = '';
+                $this->almacenitem[$item->id]['almacens'][$almacen->id]['cantidad'] = $item->producto->isRequiredserie() ? 1 : 0;
+            }
+        }
+    }
+
+    public function confirmkardexstockitem($key, Carshoopitem $carshoopitem)
+    {
+
+        $carshoopitem->load(['tvitem', 'kardexes.almacen', 'itempromo', 'producto' => function ($query) {
+            $query->with(['unit', 'almacens', 'series' => function ($subq) {
+                $subq->disponibles();
+            }]);
+        }, 'itemseries' => function ($query) {
+            $query->with(['serie.almacen']);
+        }]);
+
+        // dd($this->almacenitem);
+        $validateData = $this->validate([
+            "almacenitem.$carshoopitem->id.almacens.$key.id" => ['required', 'integer', 'min:1', 'exists:almacens,id'],
+            // 'carshoopitem.producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
+            "almacenitem.$carshoopitem->id.almacens.$key.cantidad" => $carshoopitem->producto->isRequiredserie() ?
+                ['nullable'] : [
+                    'required',
+                    'integer',
+                    'gt:0',
+                    new ValidateStock($carshoopitem->producto_id, $this->almacenitem[$carshoopitem->id]['almacens'][$key]['id'], $this->almacenitem[$carshoopitem->id]['almacens'][$key]['cantidad']),
+                    'lte:' . $carshoopitem->cantidad - $carshoopitem->kardexes->sum('cantidad'),
+                ],
+            "almacenitem.$carshoopitem->id.almacens.$key.serie_id" => $carshoopitem->producto->isRequiredserie() ?
+                [
+                    Rule::requiredIf($carshoopitem->producto->isRequiredserie()),
+                    'integer',
+                    'min:1',
+                    'exists:series,id',
+                    new ValidateStock($carshoopitem->producto_id, $this->almacenitem[$carshoopitem->id]['almacens'][$key]['id'], 1),
+                ] : ['nullable'],
+        ], [], [
+            "almacenitem.$carshoopitem->id.almacens.$key.id" => 'almacen',
+            "almacenitem.$carshoopitem->id.almacens.$key.cantidad" => 'cantidad',
+            "almacenitem.$carshoopitem->id.almacens.$key.serie_id" => 'serie',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $serie_id = $carshoopitem->producto->isRequiredserie() && !empty($this->almacenitem[$carshoopitem->id]['almacens'][$key]['serie_id']) ? $this->almacenitem[$carshoopitem->id]['almacens'][$key]['serie_id'] : null;
+            $cantidad = $carshoopitem->producto->isRequiredserie() ? 1 : $this->almacenitem[$carshoopitem->id]['almacens'][$key]['cantidad'];
+            $stock = $carshoopitem->producto->almacens()->find($key)->pivot->cantidad;
+
+            if (!empty($serie_id)) {
+                $serie = Serie::find($serie_id);
+
+                if ($carshoopitem->itemseries()->where('serie_id', $serie_id)->exists()) {
+                    $mensaje =  response()->json([
+                        'title' => "SERIE $serie->serie YA SE ENCUENTRA AGREGADO !",
+                        'text' => null
+                    ])->getData();
+                    $this->dispatchBrowserEvent('validation', $mensaje);
+                    return false;
+                }
+
+                if ($carshoopitem->tvitem->isDiscountStock() || $carshoopitem->tvitem->isReservedStock()) {
+                    if (!$serie->isDisponible()) {
+                        $mensaje =  response()->json([
+                            'title' => "SERIE $serie->serie NO SE ENCUENTRA DISPONIBLE !",
+                            'text' => null
+                        ])->getData();
+                        $this->dispatchBrowserEvent('validation', $mensaje);
+                        return false;
+                    }
+                    $carshoopitem->registrarSalidaSerie($serie_id);
+                } else {
+                    $carshoopitem->itemseries()->create([
+                        'date' => now('America/Lima'),
+                        'serie_id' => $serie_id,
+                        'user_id' => auth()->user()->id
+                    ]);
+                }
+            }
+
+            $kardex = $carshoopitem->updateOrCreateKardex($key, $stock, $cantidad);
+            $kardex->detalle = Kardex::SALIDA_VENTA;
+            $kardex->save();
+
+            if ($carshoopitem->tvitem->isDiscountStock() || $carshoopitem->tvitem->isReservedStock()) {
+                $carshoopitem->producto->descontarStockProducto($key, $cantidad);
+            }
+            DB::commit();
+            $this->dispatchBrowserEvent('toast', toastJSON('STOCK ACTUALIZADO CORRECTAMENTE'));
+            $this->order->refresh();
+            foreach ($carshoopitem->tvitem->carshoopitems as $item) {
+                foreach ($item->producto->almacens as $almacen) {
+                    $this->almacenitem[$item->id]['almacens'][$almacen->id]['id'] = $almacen->id;
+                    $this->almacenitem[$item->id]['almacens'][$almacen->id]['serie_id'] = '';
+                    $this->almacenitem[$item->id]['almacens'][$almacen->id]['cantidad'] = $item->producto->isRequiredserie() ? 1 : 0;
+                }
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 
     // TRACKING
-
     public function save()
     {
         $this->authorize('admin.marketplace.trackings.create');

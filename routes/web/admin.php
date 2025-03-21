@@ -2,10 +2,9 @@
 
 use App\Http\Controllers\AlmacenController;
 use App\Http\Controllers\CajaController;
-use App\Http\Controllers\CarshoopController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CotizacionController;
 use App\Http\Controllers\EchartController;
-use App\Http\Controllers\EmailController;
 use App\Http\Controllers\EmpresaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PrintController;
@@ -17,6 +16,7 @@ use App\Http\Controllers\SucursalController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Laravel\Jetstream\Http\Controllers\Livewire\UserProfileController;
+use Modules\Ventas\Http\Controllers\VentaController;
 use Nwidart\Modules\Facades\Module;
 
 /*
@@ -114,9 +114,7 @@ if (Module::isEnabled('Almacen') || Module::isEnabled('Ventas')) {
     Route::get('/almacen/productos/{producto:slug}/edit', [ProductoController::class, 'edit'])->name('admin.almacen.productos.edit')->middleware(['verifysucursal']);
 }
 
-// Route::post('admin/carshoops/{carshoop}/delete', [CarshoopController::class, 'delete'])->name('admin.carshoop.delete');
-// Route::post('admin/carshoops/delete/all', [CarshoopController::class, 'deleteall'])->name('admin.carshoop.delete.all');
-Route::post('admin/carshoops/moneda/{moneda_id}/update', [CarshoopController::class, 'updatemoneda'])->name('admin.carshoop.updatemoneda');
+Route::post('admin/ventas/moneda/update', [VentaController::class, 'updatemoneda'])->name('admin.ventas.updatemoneda');
 
 Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class, 'imprimirticket'])->name('admin.payments.print');
 // Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
@@ -129,13 +127,21 @@ Route::get('/payments/{cajamovimiento}/imprimir-ticket', [PrintController::class
 
 Route::prefix('echarts')->name('admin.echarts')->group(function () {
     Route::post('/typemovements', [EchartController::class, 'typemovements'])->name('.typemovements');
-
 });
 
+Route::prefix('reportes')->name('admin.reportes')->group(function () {
+    Route::get('/', [ReportController::class, 'index']);
+    Route::get('/ventas', [ReportController::class, 'ventas'])->name('.ventas');
+    Route::get('/compras', [ReportController::class, 'compras'])->name('.compras');
+    Route::get('/productos', [ReportController::class, 'productos'])->name('.productos');
+    Route::get('/movimientos', [ReportController::class, 'movimientos'])->name('.movimientos');
+    Route::get('/payments/employers', [ReportController::class, 'employers'])->name('.payments.employers');
+});
 
-Route::get('/reportes', [ReportController::class, 'index'])->name('admin.reportes');
-Route::get('/reportes/ventas', [ReportController::class, 'ventas'])->name('admin.reportes.ventas');
-Route::get('/reportes/compras', [ReportController::class, 'compras'])->name('admin.reportes.compras');
-Route::get('/reportes/productos', [ReportController::class, 'productos'])->name('admin.reportes.productos');
-Route::get('/reportes/movimientos', [ReportController::class, 'movimientos'])->name('admin.reportes.movimientos');
-Route::get('/reportes/payments/employers', [ReportController::class, 'employers'])->name('admin.reportes.payments.employers');
+Route::prefix('cotizaciones')->name('admin.cotizacions')->group(function () {
+    Route::get('/', [CotizacionController::class, 'index']);
+    Route::get('/create', [CotizacionController::class, 'create'])->name('.create');
+    Route::get('/{cotizacion:seriecompleta}/edit', [CotizacionController::class, 'edit'])->name('.edit');
+
+    Route::get('/print/{cotizacion:seriecompleta}/a4', [CotizacionController::class, 'print'])->name('.print.a4');
+});

@@ -19,11 +19,34 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['transaccion', 'trackings' => function ($query) {
-            $query->with('trackingstate')->orderBy('date', 'asc');
-        }, 'tvitems.producto' => function ($query) {
-            $query->with(['unit', 'imagen']);
-        }]);
+        $order->load([
+            'shipmenttype',
+            'user',
+            'entrega.sucursal.ubigeo',
+            'client',
+            'moneda',
+            'direccion.ubigeo',
+            'transaccion',
+            'tvitems' => function ($query) {
+                $query->with(['kardexes.almacen', 'itemseries' => function ($subq) {
+                    $subq->with(['serie.almacen']);
+                }, 'producto' => function ($subq) {
+                    $subq->withTrashed()->with(['unit', 'imagen', 'almacens', 'seriesdisponibles']);
+                }, 'carshoopitems' => function ($subq) {
+                    $subq->with(['kardexes.almacen', 'itempromo', 'producto' => function ($q) {
+                        $q->with(['unit', 'imagen', 'almacens', 'seriesdisponibles']);
+                    }, 'itemseries' => function ($subq) {
+                        $subq->with(['serie.almacen']);
+                    }]);
+                }]);
+            },
+            'trackings' => function ($query) {
+                $query->with('trackingstate')->orderBy('date', 'asc');
+            },
+            'comprobante' => function ($query) {
+                $query->with(['client', 'facturableitems', 'seriecomprobante.typecomprobante']);
+            }
+        ]);
 
         return view('marketplace::admin.orders.show', compact('order'));
     }

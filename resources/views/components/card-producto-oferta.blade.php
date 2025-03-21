@@ -36,9 +36,10 @@
 
         <div class="w-full p-0">
             <div class="w-full rounded-lg overflow-hidden mx-auto mb-2">
-                @if ($producto->image)
-                    <img src="{{ pathURLProductImage($producto->image) }}" alt="product-case-iphone-11-transparente-image"
-                        title="{{ $producto->slug }}" class="align-middle w-full h-full max-h-44 object-scale-down">
+                @if ($producto->imagen)
+                    <img src="{{ pathURLProductImage($producto->imagen->url) }}"
+                        alt="product-case-iphone-11-transparente-image" title="{{ $producto->slug }}"
+                        class="align-middle w-full h-full max-h-44 object-scale-down">
                 @else
                     <x-icon-image-unknown class="!w-full !h-full text-colorsubtitleform" />
                 @endif
@@ -86,8 +87,8 @@
                     @foreach ($combo->products as $itemcombo)
                         <div class="w-full flex gap-1 relative">
                             <div class="block rounded overflow-hidden flex-shrink-0 w-12 h-12 relative cursor-pointer">
-                                @if ($itemcombo->image)
-                                    <img src="{{ $itemcombo->image }}" alt=""
+                                @if ($itemcombo->imagen)
+                                    <img src="{{ $itemcombo->imagen }}" alt="{{ $itemcombo->imagen }}"
                                         class="w-full h-full object-scale-down">
                                 @else
                                     <x-icon-image-unknown class="!w-full !h-full text-colorsubtitleform" />

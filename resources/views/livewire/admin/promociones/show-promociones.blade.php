@@ -122,9 +122,9 @@
                                                 <div class="w-full flex gap-2 relative">
                                                     <div
                                                         class="block rounded-lg flex-shrink-0 w-20 h-auto max-h-20 relative">
-                                                        @if ($itemcombo->image)
-                                                            <img src="{{ $itemcombo->image }}"
-                                                                alt="{{ $itemcombo->image }}"
+                                                        @if ($itemcombo->imagen)
+                                                            <img src="{{ $itemcombo->imagen }}"
+                                                                alt="{{ $itemcombo->imagen }}"
                                                                 class="{{ $opacidad }} block w-full h-full object-scale-down overflow-hidden rounded-lg">
                                                         @else
                                                             <x-icon-image-unknown
@@ -158,7 +158,7 @@
                                 <small class="text-[10px]">S/. </small>
                                 {{ decimalOrInteger($pricesale, $pricetype->decimals ?? 2, ', ') }}
                             </h1>
-                            @if ($item->isDescuento() || $item->isLiquidacion())
+                            @if (!$item->isCombo())
                                 <small class="block text-[1rem] w-full line-through text-red-600 text-center">
                                     S/.
                                     {{ decimalOrInteger($priceold, $pricetype->decimals ?? 2, ', ') }}
@@ -219,13 +219,10 @@
                     <div
                         class="w-auto h-auto {{ !empty(verifyPromocion($item)) ? 'bg-red-600' : 'bg-neutral-500' }}  absolute -left-8 top-3 -rotate-[35deg] leading-3">
                         <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
-                            @if ($item->isDescuento())
-                                - {{ decimalOrInteger($item->descuento) }}% DSCT
-                            @elseif ($item->isCombo())
-                                COMBO
-                            @else
-                                LIQUIDACIÓN
+                            @if ($item->descuento > 0)
+                                - {{ decimalOrInteger($item->descuento) }}%
                             @endif
+                            {{ getTextPromocion($item->type) }}
                         </p>
                     </div>
                 </x-simple-card>
@@ -246,7 +243,7 @@
 
     <x-jet-dialog-modal wire:model="open" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
-            {{ __('Crear promoción') }}
+            {{ __('Actualizar promoción') }}
         </x-slot>
 
         <x-slot name="content">
@@ -257,9 +254,9 @@
                             {{ $promocion->producto->name }}</h1>
 
                         <div class="w-full max-w-full mx-auto my-2">
-                            @if (!empty($promocion->producto->image))
-                                <img src="{{ pathURLProductImage($promocion->producto->image) }}"
-                                    alt="{{ pathURLProductImage($promocion->producto->image) }}"
+                            @if (!empty($promocion->producto->imagen))
+                                <img src="{{ pathURLProductImage($promocion->producto->imagen->url) }}"
+                                    alt="{{ pathURLProductImage($promocion->producto->slug) }}"
                                     class="block w-full max-w-full h-auto max-h-72 object-scale-down overflow-hidden">
                             @else
                                 <x-icon-file-upload type="unknown" class="w-full h-full max-h-72" />
@@ -277,8 +274,8 @@
                                             {{ $itemcombo->name }}</h1>
 
                                         <div class="w-full block">
-                                            @if ($itemcombo->image)
-                                                <img src="{{ $itemcombo->image }}" alt="{{ $itemcombo->image }}"
+                                            @if ($itemcombo->imagen)
+                                                <img src="{{ $itemcombo->imagen }}" alt="{{ $itemcombo->imagen }}"
                                                     class="block w-full h-full max-h-32 object-scale-down overflow-hidden">
                                             @else
                                                 <x-icon-image-unknown class="!w-full !h-full text-colorsubtitleform" />
@@ -321,12 +318,14 @@
                             <x-jet-input-error for="promocion.expiredate" />
                         </div>
 
-                        @if ($promocion->type == \App\Enums\PromocionesEnum::DESCUENTO->value)
-                            <x-label value="Descuento (%) :" />
-                            <x-input class="block w-full input-number-none" wire:model.defer="promocion.descuento"
-                                type="number" min="0" step="0.01"
-                                onkeypress="return validarDecimal(event, 7)" />
-                            <x-jet-input-error for="promocion.descuento" />
+                        @if ($promocion->isDescuento() || $promocion->isOferta())
+                            <div class="w-full">
+                                <x-label value="Descuento (%) :" />
+                                <x-input class="block w-full input-number-none" wire:model.defer="promocion.descuento"
+                                    type="number" min="0" step="0.01"
+                                    onkeypress="return validarDecimal(event, 7)" />
+                                <x-jet-input-error for="promocion.descuento" />
+                            </div>
                         @endif
 
                         <div class="w-full">

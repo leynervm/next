@@ -4,7 +4,6 @@ namespace Modules\Ventas\Http\Controllers;
 
 use App\Enums\PromocionesEnum;
 use App\Models\Almacen;
-use App\Models\Carshoop;
 use App\Models\Category;
 use App\Models\Concept;
 use App\Models\Marca;
@@ -17,6 +16,7 @@ use App\Models\Producto;
 use App\Models\Promocion;
 use App\Models\Serie;
 use App\Models\Subcategory;
+use App\Models\Tvitem;
 use App\Models\Typepayment;
 use App\Models\Ubigeo;
 use App\Rules\ValidateStock;
@@ -88,21 +88,24 @@ class VentaController extends Controller
                 $query->with(['openbox.box', 'moneda', 'methodpayment', 'monthbox']);
             },
             'tvitems' => function ($query) {
-                $query->with(['almacen', 'producto' => function ($subQuery) {
-                    $subQuery->withTrashed()->with('unit')->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
+                $query->with(['kardexes.almacen', 'itemseries' => function ($subq) {
+                    $subq->with(['serie.almacen']);
+                }, 'producto' => function ($subq) {
+                    $subq->withTrashed()->with(['unit', 'imagen', 'almacens', 'seriesdisponibles']);
+                }, 'carshoopitems' => function ($subq) {
+                    $subq->with(['kardexes.almacen', 'itempromo', 'producto' => function ($q) {
+                        $q->with(['unit', 'imagen', 'almacens', 'seriesdisponibles']);
+                    }, 'itemseries' => function ($subq) {
+                        $subq->with(['serie.almacen']);
                     }]);
-                }, 'itemseries.serie' => function ($query) {
-                    $query->withTrashed();
                 }]);
+            },
+            'otheritems' => function ($query) {
+                $query->with(['unit', 'user']);
             }
         ]);
         return view('ventas::ventas.show', compact('venta'));
     }
-
 
     public function cobranzas()
     {
@@ -124,35 +127,6 @@ class VentaController extends Controller
         $pdf =  PDF::setPaper([0, 0, 226.77, $heightPage])->loadView('ventas::pdf.ticket', compact('venta'));
         return $pdf->stream();
     }
-
-
-    // public function data(Request $request)
-    // {
-    //     $search = $request->input('search');
-    //     $products = Producto::query()->select('id', 'name', 'slug');
-
-    //     if (strlen(trim($search)) < 2) {
-    //         $products->visibles()->orderBy('name', 'asc');
-    //     } else {
-    //         if (trim($search) !== '') {
-    //             $searchTerms = explode(' ', $search);
-    //             $products->where(function ($query) use ($searchTerms) {
-    //                 foreach ($searchTerms as $term) {
-    //                     $query->orWhere('name', 'ilike', '%' . $term . '%');
-    //                 }
-    //             })->visibles()->orderBy('name', 'asc')->limit(10);
-    //         }
-    //     }
-
-    //     $products = $products->get()->map(function ($producto) {
-    //         return [
-    //             'value' => $producto->id,
-    //             'text' => $producto->name,
-    //         ];
-    //     });
-
-    //     return response()->json($products);
-    // }
 
     public function marcas()
     {
@@ -353,14 +327,8 @@ class VentaController extends Controller
             if ($request->has('producto_id')) {
                 $producto =  Producto::with(['promocions' => function ($query) use ($open_modal) {
                     if ($open_modal) {
-                        $query->with(['itempromos.producto' => function ($subQuery) {
-                            $subQuery->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
-                                $q->select('url')->from('images')
-                                    ->whereColumn('images.imageable_id', 'productos.id')
-                                    ->where('images.imageable_type', Producto::class)
-                                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                            }]);
-                        }])->combos()->availables()->disponibles();
+                        $query->with(['itempromos.producto.almacens'])
+                            ->combos()->availables()->disponibles();
                     }
                 }])->find($request->input('producto_id'));
 
@@ -474,58 +442,59 @@ class VentaController extends Controller
                 }
 
                 if ($empresa->isAfectacionIGV()) {
-                    $pricesale = getPriceIGV($pricesale, $empresa->igv)->price;
-                    $igvsale = getPriceIGV($pricesale, $empresa->igv)->igv;
-
-                    // $priceold = getPriceIGV($priceold, $empresa->igv)->price;
-                    // $igveold = getPriceIGV($priceold, $empresa->igv)->igv;
+                    $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                    $pricesale = $priceIGV->price;
+                    $igvsale = $priceIGV->igv;
                 }
 
                 // cantidad sin promocion xq supera stock disp. promocion
                 // Ejm: lim=3, Outs=3, Cant=5, qtySO=(cant-disp)=5
                 if ($cantidad == $qty_sin_oferta) {
-                    $carshoop = Carshoop::with('kardex')->existsInCartVenta($producto->id, $almacen_id, $moneda_id, null)->first();
+                    $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                        ->inCart($producto->id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, null)
+                        ->first();
 
                     if (!empty($carshoop)) {
                         $carshoop->cantidad = $carshoop->cantidad + $cantidad;
                         $carshoop->pricebuy = $producto->pricebuy;
                         $carshoop->price = $pricesale;
                         $carshoop->igv = $igvsale;
+                        $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                         $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                         $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                         $carshoop->save();
                     } else {
-                        $carshoop = Carshoop::create([
+                        $carshoop = Tvitem::create([
                             'date' => $date,
                             'cantidad' => $cantidad,
                             'pricebuy' => $producto->pricebuy,
                             'price' => $pricesale,
                             'igv' => $igvsale,
+                            'subtotaligv' => $cantidad * $igvsale,
                             'subtotal' => $pricesale * $cantidad,
                             'total' => ($pricesale + $igvsale) * $cantidad,
-                            'gratuito' => 0,
-                            'status' => 0,
+                            'gratuito' => Tvitem::NO_GRATUITO,
+                            'alterstock' => Almacen::DISMINUIR_STOCK,
                             'producto_id' => $producto->id,
-                            'almacen_id' => $almacen_id,
                             'moneda_id' => $moneda_id,
                             'user_id' => auth()->user()->id,
                             'sucursal_id' => auth()->user()->sucursal_id,
-                            'alterstock' => Almacen::DISMINUIR_STOCK,
                             'promocion_id' => null,
-                            'cartable_type' => Venta::class,
+                            'tvitemable_type' => Venta::class,
                         ]);
                     }
-                    // La funcion saveKardexCarshoop tambien descuenta la promocion
-                    $carshoop->saveKardexCarshoop($producto->stock, $cantidad);
-                    $producto->almacens()->updateExistingPivot($almacen_id, [
-                        'cantidad' => $producto->stock - $cantidad,
-                    ]);
+                    // La funcion updateOrCreateKardex || updateOrCreateKardex tambien descuenta la promocion
+                    $kardex = $carshoop->updateOrCreateKardex($almacen_id, $producto->stock, $cantidad);
+                    $producto->descontarStockProducto($almacen_id, $cantidad);
                     if (!empty($serie)) {
-                        $carshoop->descontarSerieCarshoop($serie->id);
+                        $carshoop->registrarSalidaSerie($serie->id);
                     }
                 } else {
                     // Ejm: lim=3, Outs=1, Cant=2, qtySO=(cant-disp)=0
-                    $carshoop = Carshoop::with(['kardex', 'carshoopitems'])->existsInCartVenta($producto->id, $almacen_id, $moneda_id, !empty($promocion) ? $promocion->id : null)->first();
+                    $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                        ->inCart($producto->id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, !empty($promocion) ? $promocion->id : null)
+                        ->first();
+
                     $new_qty = $qty_sin_oferta > 0 ? $stock_disponible_promocion : $cantidad;
 
                     if (!empty($carshoop)) {
@@ -533,80 +502,83 @@ class VentaController extends Controller
                         $carshoop->pricebuy = $producto->pricebuy;
                         $carshoop->price = $pricesale;
                         $carshoop->igv = $igvsale;
+                        $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                         $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                         $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                         $carshoop->save();
                     } else {
-                        $carshoop = Carshoop::create([
+                        $carshoop = Tvitem::create([
                             'date' => $date,
                             'cantidad' => $new_qty,
                             'pricebuy' => $producto->pricebuy,
                             'price' => $pricesale,
                             'igv' => $igvsale,
                             'subtotal' => $pricesale * $new_qty,
+                            'subtotaligv' => $cantidad * $igvsale,
                             'total' => ($pricesale + $igvsale) * $new_qty,
-                            'gratuito' => 0,
-                            'status' => 0,
+                            'gratuito' => Tvitem::NO_GRATUITO,
+                            'alterstock' => Almacen::DISMINUIR_STOCK,
                             'producto_id' => $producto->id,
-                            'almacen_id' => $almacen_id,
                             'moneda_id' => $moneda_id,
                             'user_id' => auth()->user()->id,
                             'sucursal_id' => auth()->user()->sucursal_id,
-                            'alterstock' => Almacen::DISMINUIR_STOCK,
                             'promocion_id' => !empty($promocion) ? $promocion->id : null,
-                            'cartable_type' => Venta::class,
+                            'tvitemable_type' => Venta::class,
                         ]);
                     }
-                    // La funcion saveKardexCarshoop tambien descuenta la promocion
-                    $carshoop->saveKardexCarshoop($producto->stock, $new_qty);
-                    $producto->almacens()->updateExistingPivot($almacen_id, [
-                        'cantidad' => $producto->stock - $new_qty,
-                    ]);
-
+                    // La funcion updateOrCreateKardex tambien descuenta la promocion
+                    $kardex = $carshoop->updateOrCreateKardex($almacen_id, $producto->stock, $new_qty);
+                    $producto->descontarStockProducto($almacen_id, $new_qty);
                     if (!empty($serie)) {
-                        $carshoop->descontarSerieCarshoop($serie->id);
+                        $carshoop->registrarSalidaSerie($serie->id);
                     }
 
                     // Ejm: lim=3, Outs=0, Cant=5, qtySO=(cant-disp)=2
                     if ($qty_sin_oferta > 0) {
                         //Agregar con precio normal
                         $pricesale = $producto->getPrecioVentaDefault($pricetype);
-                        $carshoop = Carshoop::with('kardex')->existsInCartVenta($producto->id, $almacen_id, $moneda_id, null)->first();
+                        if ($empresa->isAfectacionIGV()) {
+                            $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                            $pricesale = $priceIGV->price;
+                            $igvsale = $priceIGV->igv;
+                        }
+
+                        $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                            ->inCart($producto->id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, null)
+                            ->first();
 
                         if (!empty($carshoop)) {
                             $carshoop->cantidad = $carshoop->cantidad + $qty_sin_oferta;
                             $carshoop->pricebuy = $producto->pricebuy;
                             $carshoop->price = $pricesale;
                             $carshoop->igv = $igvsale;
+                            $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                             $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                             $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                             $carshoop->save();
                         } else {
-                            $carshoop = Carshoop::create([
+                            $carshoop = Tvitem::create([
                                 'date' => $date,
                                 'cantidad' => $qty_sin_oferta,
                                 'pricebuy' => $producto->pricebuy,
                                 'price' => $pricesale,
                                 'igv' => $igvsale,
                                 'subtotal' => $pricesale * $qty_sin_oferta,
+                                'subtotaligv' => $qty_sin_oferta * $igvsale,
                                 'total' => ($pricesale + $igvsale) * $qty_sin_oferta,
-                                'gratuito' => 0,
-                                'status' => 0,
+                                'gratuito' => Tvitem::NO_GRATUITO,
+                                'alterstock' => Almacen::DISMINUIR_STOCK,
                                 'producto_id' => $producto->id,
-                                'almacen_id' => $almacen_id,
                                 'moneda_id' => $moneda_id,
                                 'user_id' => auth()->user()->id,
                                 'sucursal_id' => auth()->user()->sucursal_id,
-                                'alterstock' => Almacen::DISMINUIR_STOCK,
                                 'promocion_id' => null,
-                                'cartable_type' => Venta::class,
+                                'tvitemable_type' => Venta::class,
                             ]);
                         }
-                        // La funcion saveKardexCarshoop tambien descuenta la promocion
-                        $carshoop->saveKardexCarshoop($producto->stock, $qty_sin_oferta);
-                        $producto->almacens()->updateExistingPivot($almacen_id, [
-                            'cantidad' => $producto->stock - $qty_sin_oferta,
-                        ]);
+                        // La funcion updateOrCreateKardex tambien descuenta la promocion
+                        $kardex = $carshoop->updateOrCreateKardex($almacen_id, $producto->stock, $qty_sin_oferta);
+                        $producto->descontarStockProducto($almacen_id, $qty_sin_oferta);
                     }
                 }
 
@@ -618,25 +590,27 @@ class VentaController extends Controller
             } else {
                 // sino envio producto_id es porque estoy agregando un combo
                 $pricetype = null;
+                $serie = null;
                 $almacen_id =  $request->input('almacen_id');
                 $pricetype_id =  $request->input('pricetype_id');
                 $moneda_id =  $request->input('moneda_id');
                 $date = now('America/Lima')->format('Y-m-d H:i:s');
 
                 $promocion = Promocion::with(['itempromos.producto' => function ($query) {
-                    $query->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                    }]);
+                    $query->with(['unit', 'almacens', 'imagen']);
                 }, 'producto' => function ($query) use ($almacen_id) {
-                    $query->withCount(['almacens as stock' => function ($q) use ($almacen_id) {
-                        if (!empty($almacen_id)) {
+                    $query->withCount(['almacens as stock' => function ($subq) use ($almacen_id) {
+                        $subq->when($almacen_id, function ($q, $almacen_id) {
                             $q->where('almacen_id', $almacen_id);
-                        }
-                        $q->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                        })->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
                     }]);
+
+                    // $query->withCount(['almacens as stock' => function ($q) use ($almacen_id) {
+                    //     if (!empty($almacen_id)) {
+                    //         $q->where('almacen_id', $almacen_id);
+                    //     }
+                    //     $q->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)'));
+                    // }]);
                 }])->find($request->input('promocion_id'));
 
                 // return $promocion;
@@ -650,13 +624,20 @@ class VentaController extends Controller
 
                 $rules = [
                     // 'promocion_id' => ['required', 'integer', 'min:1', 'exists:promocions,id'],
-                    'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
+                    // 'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
                     'moneda_id' => ['required', 'integer', 'min:1', 'exists:monedas,id'],
                     'pricetype_id' => ['nullable', Rule::requiredIf($empresa->usarLista()), 'integer', 'min:1', 'exists:pricetypes,id'],
                 ];
+
+                if ($promocion->producto->isRequiredserie()) {
+                    $rules['serie_id'] = ['required', 'integer', 'min:1', 'exists:series,id'];
+                } else {
+                    $rules['almacen_id'] = ['required', 'integer', 'min:1', 'exists:almacens,id'];
+                }
                 $attributes = [
-                    // 'serie_id' => 'serie',
-                    // 'producto_id' => 'producto',
+                    'almacen_id' => 'almacén',
+                    'serie_id' => 'serie',
+                    'producto_id' => 'producto',
                 ];
 
                 $validator = Validator::make($request->all(), $rules);
@@ -669,6 +650,17 @@ class VentaController extends Controller
                         'errors' => $validator->errors(),
                         'promocion_id' => $promocion->id,
                     ])->getData();
+                }
+
+                if ($request->filled('serie_id')) {
+                    $serie = Serie::find($request->input('serie_id'));
+                    if (empty($serie) || !$serie->isDisponible()) {
+                        return response()->json([
+                            'error' => 'SERIE NO SE ENCUENTRA DISPONIBLE'
+                        ])->getData();
+                        return false;
+                    }
+                    $almacen_id = $serie->almacen_id;
                 }
 
                 // Ejm: lim=3, Outs=1, Cant=2, qtySO=(cant-disp)=0
@@ -691,7 +683,7 @@ class VentaController extends Controller
                 $pricetype = $empresa->usarLista() ? Pricetype::find($pricetype_id) : null;
                 $pricesale = $promocion->producto->getPrecioventa($pricetype);
                 $igvsale = 0;
-                $combo = getAmountCombo($promocion, $pricetype, $almacen_id);
+                $combo = getAmountCombo($promocion, $pricetype, null /* $almacen_id */);
 
                 if (!$combo->is_disponible) {
                     return response()->json([
@@ -711,11 +703,14 @@ class VentaController extends Controller
                 if ($combo) {
                     $pricesale = $pricesale + $combo->total;
                 }
-                $carshoop = Carshoop::with(['kardex', 'carshoopitems'])->existsInCartVenta($promocion->producto_id, $almacen_id, $moneda_id, $promocion->id)->first();
+                $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                    ->inCart($promocion->producto_id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, $promocion->id)
+                    ->first();
                 // return [$request->input(), $pricesale, getPriceIGV($pricesale, $empresa->igv)];
                 if ($empresa->isAfectacionIGV()) {
-                    $pricesale = getPriceIGV($pricesale, $empresa->igv)->price;
-                    $igvsale = getPriceIGV($pricesale, $empresa->igv)->igv;
+                    $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                    $pricesale = $priceIGV->price;
+                    $igvsale = $priceIGV->igv;
                 }
 
                 if (!empty($carshoop)) {
@@ -723,56 +718,76 @@ class VentaController extends Controller
                     $carshoop->pricebuy = $promocion->producto->pricebuy;
                     $carshoop->price = $pricesale;
                     $carshoop->igv = $igvsale;
+                    $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                     $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                     $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                     $carshoop->save();
                 } else {
-                    $carshoop = Carshoop::create([
+                    $carshoop = Tvitem::create([
                         'date' => $date,
                         'cantidad' => 1,
                         'pricebuy' => $promocion->producto->pricebuy,
                         'price' => $pricesale,
                         'igv' => $igvsale,
+                        'subtotaligv' => $igvsale,
                         'subtotal' => $pricesale,
                         'total' => $pricesale + $igvsale,
-                        'gratuito' => 0,
-                        'status' => 0,
+                        'gratuito' => Tvitem::NO_GRATUITO,
+                        'alterstock' => Almacen::DISMINUIR_STOCK,
                         'producto_id' => $promocion->producto_id,
-                        'almacen_id' => $almacen_id,
                         'moneda_id' => $moneda_id,
                         'user_id' => auth()->user()->id,
                         'sucursal_id' => auth()->user()->sucursal_id,
-                        'alterstock' => Almacen::DISMINUIR_STOCK,
                         'promocion_id' => $promocion->id,
-                        'cartable_type' => Venta::class,
+                        'tvitemable_type' => Venta::class,
                     ]);
                 }
 
-                // La funcion saveKardexCarshoop tambien descuenta la promocion
-                $carshoop->saveKardexCarshoop($promocion->producto->stock, 1);
-                $promocion->producto->almacens()->updateExistingPivot($almacen_id, [
-                    'cantidad' => $promocion->producto->stock - 1,
-                ]);
+                if (!empty($serie)) {
+                    $itemserie = $carshoop->registrarSalidaSerie($serie->id);
+                }
+
+                // La funcion updateOrCreateKardex tambien descuenta la promocion
+                $kardex = $carshoop->updateOrCreateKardex($almacen_id, $promocion->producto->stock, 1);
+                $promocion->producto->descontarStockProducto($almacen_id, 1);
 
                 foreach ($combo->products as $item) {
                     $priceitem = $item->price;
                     $igvitem = 0;
                     if ($empresa->isAfectacionIGV()) {
-                        $priceitem = getPriceIGV($priceitem, $empresa->igv)->price;
-                        $igvitem = getPriceIGV($priceitem, $empresa->igv)->igv;
+                        $priceIGV = getPriceIGV($priceitem, $empresa->igv);
+                        $priceitem = $priceIGV->price;
+                        $igvitem = $priceIGV->igv;
                     }
 
-                    $carshoopitem = $carshoop->carshoopitems()->firstOrCreate([
-                        'pricebuy' => $item->pricebuy
-                    ], [
-                        'price' => $priceitem,
-                        'igv' => $igvitem,
-                        'producto_id' => $item->producto_id,
-                    ]);
+                    $carshoopitem = $carshoop->carshoopitems()->where('producto_id', $item->producto_id)->first();
+                    if (!empty($carshoopitem)) {
+                        $carshoopitem->cantidad = $carshoopitem->cantidad + 1;
+                        $carshoopitem->price = $priceitem;
+                        $carshoopitem->igv = $igvitem;
+                        $carshoopitem->subtotaligv = $carshoopitem->cantidad * $igvitem;
+                        $carshoopitem->subtotal = $carshoopitem->cantidad * $priceitem;
+                        $carshoopitem->total = $carshoopitem->cantidad * ($priceitem + $igvitem);
+                        $carshoopitem->save();
+                    } else {
+                        $carshoopitem = $carshoop->carshoopitems()->create([
+                            'cantidad' => 1,
+                            'pricebuy' => $item->pricebuy,
+                            'price' => $priceitem,
+                            'igv' => $igvitem,
+                            'subtotaligv' => $igvitem,
+                            'subtotal' => $priceitem,
+                            'total' => $priceitem + $igvitem,
+                            'itempromo_id' => $item->itempromo_id,
+                            'producto_id' => $item->producto_id,
+                        ]);
+                    }
 
-                    $carshoopitem->producto->almacens()->updateExistingPivot($almacen_id, [
-                        'cantidad' => $item->stock - 1,
-                    ]);
+                    // No descuento stock ni genero kardex, porque prod. de combo 
+                    // puedo sacarlos de otro almacen no necesariamente del almacen prod. principal
+                    // $stockcarshoopitem = $carshoopitem->producto->almacens()->find($almacen_id)->pivot->cantidad;
+                    // $kardex = $carshoopitem->updateOrCreateKardex($almacen_id, $stockcarshoopitem, 1);
+                    // $carshoopitem->producto->descontarStockProducto($almacen_id, 1);
                 }
 
                 DB::commit();
@@ -780,26 +795,36 @@ class VentaController extends Controller
                 return response()->json([
                     'success' => true,
                     'mensaje' => 'COMBO AGREGADO CORRECTAMENTE !',
+                    'promocion_id' => $promocion->id ?? null
                 ])->getData();
                 return false;
             }
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
-                'error' => $e->getMessage(),
+                // 'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'error' => 'eRROR:' . $e,
             ])->getData();
-            return false;
-            throw $e;
+            // return false;
+            // throw $e;
         } catch (\Throwable $e) {
+            DB::rollBack();
             return response()->json([
-                'error' => $e->getMessage(),
+                // 'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'error' => 'eRROR:' . $e,
             ])->getData();
-            return false;
-            throw $e;
+            // return false;
+            // throw $e;
         }
     }
 
     public function getproductobyserie(Request $request)
     {
+        // return
         DB::beginTransaction();
         try {
             $empresa = view()->shared('empresa');
@@ -837,9 +862,7 @@ class VentaController extends Controller
             $serie = Serie::with(['almacen', 'producto' => function ($query) {
                 $query->select('id', 'name', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5', 'requireserie', 'unit_id')
                     ->with(['unit', 'promocions' => function ($subQuery) {
-                        $subQuery->with(['itempromos.producto' => function ($q) {
-                            $q->with(['unit', 'almacens']);
-                        }])->availables()->disponibles();
+                        $subQuery->with(['itempromos.producto.almacens'])->availables()->disponibles();
                     }])->visibles();
             }])->disponibles()->whereRaw('UPPER(serie) = ?', $searchserie)
                 ->whereIn('almacen_id', auth()->user()->sucursal->almacens->pluck('id'))->first();
@@ -874,11 +897,11 @@ class VentaController extends Controller
             $promocion = null;
 
             if (count($promociones) > 0) {
-                $serie->producto->descuento = $serie->producto->promocions->where('type', PromocionesEnum::DESCUENTO->value)->first()->descuento ?? 0;
+                $serie->producto->descuento = $serie->producto->promocions->whereIn('type', [PromocionesEnum::DESCUENTO->value, PromocionesEnum::OFERTA->value])->first()->descuento ?? 0;
                 $serie->producto->liquidacion = $serie->producto->promocions->where('type', PromocionesEnum::LIQUIDACION->value)->count() > 0 ? true : false;
 
                 if ($serie->producto->descuento > 0 || $serie->producto->liquidacion) {
-                    $promocion = $serie->producto->promocions->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)->first();
+                    $promocion = $serie->producto->promocions->where('type', '<>', PromocionesEnum::COMBO->value)->first();
                     $promocion = verifyPromocion($promocion);
                 }
             }
@@ -890,7 +913,7 @@ class VentaController extends Controller
             if ($combos) {
                 $combosDisponibles = 0;
                 foreach ($combos as $item) {
-                    $combo = getAmountCombo($item, $pricetype);
+                    $combo = getAmountCombo($item, $pricetype, null/* $serie->almacen_id */);
                     if ($combo->is_disponible && $combo->stock_disponible) {
                         $combosDisponibles++;
                         break;
@@ -921,51 +944,55 @@ class VentaController extends Controller
             }
 
             if ($empresa->isAfectacionIGV()) {
-                $pricesale = getPriceIGV($pricesale, $empresa->igv)->price;
-                $igvsale = getPriceIGV($pricesale, $empresa->igv)->igv;
+                $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                $pricesale = $priceIGV->price;
+                $igvsale = $priceIGV->igv;
             }
 
             if ($cantidad == $qty_sin_oferta) {
-                $carshoop = Carshoop::with('kardex')->existsInCartVenta($serie->producto_id, $serie->almacen_id, $moneda_id, null)->first();
+                $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                    ->inCart($serie->producto_id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, null)
+                    ->first();
 
                 if (!empty($carshoop)) {
                     $carshoop->cantidad = $carshoop->cantidad + $cantidad;
                     $carshoop->pricebuy = $serie->producto->pricebuy;
                     $carshoop->price = $pricesale;
                     $carshoop->igv = $igvsale;
+                    $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                     $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                     $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                     $carshoop->save();
                 } else {
-                    $carshoop = Carshoop::create([
+                    $carshoop = Tvitem::create([
                         'date' => $date,
-                        'cantidad' => $cantidad,
+                        'cantidad' =>  $cantidad,
                         'pricebuy' => $serie->producto->pricebuy,
                         'price' => $pricesale,
                         'igv' => $igvsale,
-                        'subtotal' => $pricesale * $cantidad,
-                        'total' => ($pricesale + $igvsale) * $cantidad,
-                        'gratuito' => 0,
-                        'status' => 0,
+                        'subtotaligv' => $igvsale,
+                        'subtotal' => $pricesale,
+                        'total' => $pricesale + $igvsale,
+                        'gratuito' => Tvitem::NO_GRATUITO,
+                        'alterstock' => Almacen::DISMINUIR_STOCK,
                         'producto_id' => $serie->producto->id,
-                        'almacen_id' => $serie->almacen_id,
                         'moneda_id' => $moneda_id,
                         'user_id' => auth()->user()->id,
                         'sucursal_id' => auth()->user()->sucursal_id,
-                        'alterstock' => Almacen::DISMINUIR_STOCK,
                         'promocion_id' => null,
-                        'cartable_type' => Venta::class,
+                        'tvitemable_type' => Venta::class,
                     ]);
                 }
-                // La funcion saveKardexCarshoop tambien descuenta la promocion
-                $carshoop->saveKardexCarshoop($serie->producto->stock, $cantidad);
-                $serie->producto->almacens()->updateExistingPivot($serie->almacen_id, [
-                    'cantidad' => $serie->producto->stock - $cantidad,
-                ]);
-                $carshoop->descontarSerieCarshoop($serie->id);
+
+                // La funcion updateOrCreateKardex tambien descuenta la promocion
+                $kardex = $carshoop->updateOrCreateKardex($serie->almacen_id, $serie->producto->stock, $cantidad);
+                $serie->producto->descontarStockProducto($serie->almacen_id, $cantidad);
+                $carshoop->registrarSalidaSerie($serie->id);
             } else {
                 // Ejm: lim=3, Outs=1, Cant=2, qtySO=(cant-disp)=0
-                $carshoop = Carshoop::with(['kardex', 'carshoopitems'])->existsInCartVenta($serie->producto_id, $serie->almacen_id, $moneda_id, !empty($promocion) ? $promocion->id : null)->first();
+                $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                    ->inCart($serie->producto_id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, !empty($promocion) ? $promocion->id : null)
+                    ->first();
                 $new_qty = $qty_sin_oferta > 0 ? $stock_disponible_promocion : $cantidad;
 
                 if (!empty($carshoop)) {
@@ -973,106 +1000,210 @@ class VentaController extends Controller
                     $carshoop->pricebuy = $serie->producto->pricebuy;
                     $carshoop->price = $pricesale;
                     $carshoop->igv = $igvsale;
+                    $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                     $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                     $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                     $carshoop->save();
                 } else {
-                    $carshoop = Carshoop::create([
+                    $carshoop = Tvitem::create([
                         'date' => $date,
-                        'cantidad' => $new_qty,
+                        'cantidad' =>  $new_qty,
                         'pricebuy' => $serie->producto->pricebuy,
                         'price' => $pricesale,
                         'igv' => $igvsale,
-                        'subtotal' => $pricesale * $new_qty,
-                        'total' => ($pricesale + $igvsale) * $new_qty,
-                        'gratuito' => 0,
-                        'status' => 0,
-                        'producto_id' => $serie->producto_id,
-                        'almacen_id' => $serie->almacen_id,
+                        'subtotaligv' => $igvsale,
+                        'subtotal' => $pricesale,
+                        'total' => $pricesale + $igvsale,
+                        'gratuito' => Tvitem::NO_GRATUITO,
+                        'alterstock' => Almacen::DISMINUIR_STOCK,
+                        'producto_id' => $serie->producto->id,
                         'moneda_id' => $moneda_id,
                         'user_id' => auth()->user()->id,
                         'sucursal_id' => auth()->user()->sucursal_id,
-                        'alterstock' => Almacen::DISMINUIR_STOCK,
                         'promocion_id' => !empty($promocion) ? $promocion->id : null,
-                        'cartable_type' => Venta::class,
+                        'tvitemable_type' => Venta::class,
                     ]);
                 }
-                // La funcion saveKardexCarshoop tambien descuenta la promocion
-                $carshoop->saveKardexCarshoop($serie->producto->stock, $new_qty);
-                $serie->producto->almacens()->updateExistingPivot($serie->almacen_id, [
-                    'cantidad' => $serie->producto->stock - $new_qty,
-                ]);
-                $carshoop->descontarSerieCarshoop($serie->id);
+                // La funcion updateOrCreateKardex tambien descuenta la promocion
+                $kardex = $carshoop->updateOrCreateKardex($serie->almacen_id, $serie->producto->stock, $new_qty);
+                $serie->producto->descontarStockProducto($serie->almacen_id, $new_qty);
+                $carshoop->registrarSalidaSerie($serie->id);
 
                 // Ejm: lim=3, Outs=0, Cant=5, qtySO=(cant-disp)=2
                 if ($qty_sin_oferta > 0) {
                     //Agregar con precio normal
                     $pricesale = $serie->producto->getPrecioVentaDefault($pricetype);
-                    $carshoop = Carshoop::with('kardex')->existsInCartVenta($serie->producto_id, $serie->almacen_id, $moneda_id, null)->first();
+                    if ($empresa->isAfectacionIGV()) {
+                        $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                        $pricesale = $priceIGV->price;
+                        $igvsale = $priceIGV->igv;
+                    }
+
+                    $carshoop = Tvitem::with('kardexes')->ventas()->micart()
+                        ->inCart($serie->producto_id, Tvitem::NO_GRATUITO, Almacen::DISMINUIR_STOCK, $moneda_id, null)
+                        ->first();
 
                     if (!empty($carshoop)) {
                         $carshoop->cantidad = $carshoop->cantidad + $qty_sin_oferta;
                         $carshoop->pricebuy = $serie->producto->pricebuy;
                         $carshoop->price = $pricesale;
                         $carshoop->igv = $igvsale;
+                        $carshoop->subtotaligv = $carshoop->cantidad * $igvsale;
                         $carshoop->subtotal =  $pricesale * $carshoop->cantidad;
                         $carshoop->total = ($pricesale + $igvsale) * $carshoop->cantidad;
                         $carshoop->save();
                     } else {
-                        $carshoop = Carshoop::create([
+                        $carshoop = Tvitem::create([
                             'date' => $date,
-                            'cantidad' => $qty_sin_oferta,
+                            'cantidad' =>  $qty_sin_oferta,
                             'pricebuy' => $serie->producto->pricebuy,
                             'price' => $pricesale,
                             'igv' => $igvsale,
-                            'subtotal' => $pricesale * $qty_sin_oferta,
-                            'total' => ($pricesale + $igvsale) * $qty_sin_oferta,
-                            'gratuito' => 0,
-                            'status' => 0,
-                            'producto_id' => $serie->producto_id,
-                            'almacen_id' => $serie->almacen_id,
+                            'subtotaligv' => $igvsale,
+                            'subtotal' => $pricesale,
+                            'total' => $pricesale + $igvsale,
+                            'gratuito' => Tvitem::NO_GRATUITO,
+                            'alterstock' => Almacen::DISMINUIR_STOCK,
+                            'producto_id' => $serie->producto->id,
                             'moneda_id' => $moneda_id,
                             'user_id' => auth()->user()->id,
                             'sucursal_id' => auth()->user()->sucursal_id,
-                            'alterstock' => Almacen::DISMINUIR_STOCK,
                             'promocion_id' => null,
-                            'cartable_type' => Venta::class,
+                            'tvitemable_type' => Venta::class,
                         ]);
                     }
-                    // La funcion saveKardexCarshoop tambien descuenta la promocion
-                    $serie->carshoop->saveKardexCarshoop($serie->producto->stock, $qty_sin_oferta);
-                    $serie->producto->almacens()->updateExistingPivot($serie->almacen_id, [
-                        'cantidad' => $serie->producto->stock - $qty_sin_oferta,
-                    ]);
+                    // La funcion updateOrCreateKardex tambien descuenta la promocion
+                    $kardex = $carshoop->updateOrCreateKardex($serie->almacen_id, $serie->producto->stock, $qty_sin_oferta);
+                    $serie->producto->descontarStockProducto($serie->almacen_id, $qty_sin_oferta);
                 }
             }
 
             DB::commit();
             return response()->json([
                 'success' => true,
-                'mensaje' => 'AGREGADO CORRECTAMENTE !',
+                'mensaje' => 'AGREGADO AL CARRITO CORRECTAMENTE',
             ])->getData();
             return false;
-
-            // return $serie;
-            // $carshoop = "([])";
-            // $carshoop->saveKardexCarshoop($serie->producto->stock, 1);
-            // $serie->producto->almacens()->updateExistingPivot($serie->almacen_id, [
-            //     'cantidad' => $serie->producto->stock - 1,
-            // ]);
-            // $carshoop->descontarSerieCarshoop($serie->id);
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
             ])->getData();
-            return false;
-            throw $e;
         } catch (\Throwable $e) {
+            DB::rollBack();
             return response()->json([
                 'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
             ])->getData();
-            return false;
-            throw $e;
         }
+    }
+
+    public function updatemoneda(Request $request)
+    {
+        $moneda_id = $request->get('moneda_id');
+        $empresa = view()->shared('empresa');
+
+        try {
+            DB::beginTransaction();
+            $tvitems = Tvitem::with(['moneda', 'promocion', 'producto', 'carshoopitems'])
+                ->where('moneda_id', '<>', $moneda_id)
+                ->ventas()->micart()->orderBy('id', 'asc')->get();
+
+            if (count($tvitems) > 0) {
+                foreach ($tvitems as $item) {
+                    $pricesale = number_format($item->price + $item->igv, 3, '.', '');
+                    $igvsale = 0;
+
+                    if ($empresa->isAfectacionIGV()) {
+                        $priceIGV = getPriceIGV($pricesale, $empresa->igv);
+                        $pricesale = number_format($priceIGV->price, 3, '.', '');
+                        $igvsale = number_format($priceIGV->igv, 3, '.', '');
+                    }
+
+                    Self::updatemonedaitem($item, $item->moneda, $pricesale, $igvsale, $moneda_id);
+
+                    if (count($item->carshoopitems) > 0) {
+                        foreach ($item->carshoopitems as $carshoopitem) {
+                            $pricesaleitem = number_format($carshoopitem->price + $carshoopitem->igv, 3, '.', '');
+                            $igvsaleitem = 0;
+
+                            if ($empresa->isAfectacionIGV()) {
+                                $priceIGV = getPriceIGV($pricesaleitem, $empresa->igv);
+                                $pricesaleitem = number_format($priceIGV->price, 3, '.', '');
+                                $igvsaleitem = number_format($priceIGV->igv, 3, '.', '');
+                            }
+
+                            Self::updatemonedaitem($carshoopitem, $item->moneda, $pricesaleitem, $igvsaleitem, $moneda_id, false);
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'CARRITO ACTUALIZADO CORRECTAMENTE',
+                // 'totales'   => self::total(),
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'mensaje' => $e->getMessage(),
+                'error' => $e,
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'mensaje' => $e->getMessage(),
+                'error' => $e,
+            ]);
+        }
+    }
+
+    // public function total()
+    // {
+    //     $sumatorias = Tvitem::select(
+    //         DB::raw("COALESCE(SUM(total),0) as total"),
+    //         DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN igv * cantidad ELSE 0 END),0) as igv"),
+    //         DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '1' THEN igv * cantidad ELSE 0 END), 0) as igvgratuito"),
+    //         DB::raw("COALESCE(SUM(CASE WHEN igv > 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as gravado"),
+    //         DB::raw("COALESCE(SUM(CASE WHEN igv = 0 AND gratuito = '0' THEN price * cantidad ELSE 0 END), 0) as exonerado"),
+    //         DB::raw("COALESCE(SUM(CASE WHEN gratuito = '1' THEN price * cantidad ELSE 0 END), 0) as gratuito")
+    //     )->ventas()->micart()->get();
+    //     return  $sumatorias[0];
+    // }
+
+    private function updatemonedaitem($model, $moneda, $pricesale, $igvsale, $moneda_id, $istvitem = true)
+    {
+        $empresa = view()->shared('empresa');
+        // Moneda actual del tvitem
+        if ($moneda->isDolar()) {
+            $pricesale = convertMoneda($pricesale, 'PEN', $empresa->tipocambio ?? 1, 2);
+            if ($igvsale > 0) {
+                $igvsale = convertMoneda($igvsale, 'PEN', $empresa->tipocambio ?? 1, 2);
+            }
+        } else {
+            $pricesale = convertMoneda($pricesale, 'USD', $empresa->tipocambio ?? 1, 3);
+            if ($igvsale > 0) {
+                $igvsale = convertMoneda($igvsale, 'USD', $empresa->tipocambio ?? 1, 3);
+            }
+        }
+
+        $data = [
+            'price' => $pricesale,
+            'igv' => $igvsale,
+            'subtotaligv' => number_format($igvsale * $model->cantidad, 3, '.', ''),
+            'subtotal' => number_format($pricesale * $model->cantidad, 3, '.', ''),
+            'total' => number_format(($pricesale + $igvsale) * $model->cantidad, 3, '.', ''),
+        ];
+        if ($istvitem) {
+            $data['moneda_id'] = $moneda_id; //Moneda nueva a actualizar
+        }
+        $model->update($data);
     }
 }

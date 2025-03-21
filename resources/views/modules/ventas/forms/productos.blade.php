@@ -4,7 +4,7 @@
         @php
             $almacen = null;
             $promocion = null;
-            $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
+            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
             $priceold = $item->getPrecioVentaDefault($pricetype);
             $pricesale = $item->getPrecioVenta($pricetype);
 
@@ -13,8 +13,8 @@
             }
         @endphp
 
-        <form id="cardproduct{{ $item->id }}" class="w-full block" x-data="{ serie_id: null, seriealmacen_id: null, promocion_id: '{{ $promocion->id ?? null }}' }"
-            @submit.prevent="enviarFormulario($event)" autocomplete="off" novalidate>
+        <form method="post" id="cardproduct{{ $item->id }}" class="w-full block" x-data="{ serie_id: null, seriealmacen_id: null, promocion_id: '{{ $promocion->id ?? null }}' }"
+            @submit.prevent="enviarFormulario($event)" x-ref="formulario{{ $item->id }}" autocomplete="off" novalidate>
             <x-card-producto :name="$item->name" :image="$image" :category="$item->name_category" :marca="$item->name_marca" :promocion="$promocion"
                 class="w-full h-full" id="card_{{ $item->id }}">
 
@@ -60,24 +60,6 @@
                             </p>
                         @endif
 
-                        {{-- @if ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value)->count() > 0)
-                            <x-slot name="buttoncombos">
-                                <ul
-                                    class="w-full list-disc list-inside text-xs flex flex-col gap-1 text-colorsubtitleform">
-                                    @foreach ($item->promocions->where('type', \App\Enums\PromocionesEnum::COMBO->value) as $prom)
-                                        @php
-                                            $combo_promo = getAmountCombo($prom, $pricetype);
-                                        @endphp
-                                        @if ($combo_promo->is_disponible && $combo_promo->stock_disponible)
-                                            <li class="leading-none text-justify">
-                                                [combo]
-                                                {{ $prom->titulo }}</li>
-                                        @endif
-                                    @endforeach
-                                </ul>
-                            </x-slot>
-                        @endif --}}
-
                         <div class="w-full">
                             <x-label value="Precio  venta" />
                             <div class="w-full relative">
@@ -120,7 +102,7 @@
                                     });
                                 })">
                                 <x-slot name="options">
-                                    @foreach ($item->seriesdisponibles as $ser)
+                                    @foreach ($item->series as $ser)
                                         <option data-almacen_id="{{ $ser->almacen_id }}" value="{{ $ser->id }}"
                                             title="{{ $ser->almacen->name }}">
                                             {{ $ser->serie }}</option>
@@ -136,14 +118,14 @@
                     @if (count($item->almacens) > 0)
                         <div class="w-full flex flex-wrap gap-1">
                             @foreach ($item->almacens as $alm)
+                                @php
+                                    $unidades =
+                                        ' [' . decimalOrInteger($alm->pivot->cantidad) . ' ' . $item->unit->name . ']';
+                                @endphp
                                 <x-input-radio class="py-2 !text-[10px]" for="almacen_{{ $item->id . $alm->id }}"
-                                    :text="$alm->name .
-                                        ' [' .
-                                        decimalOrInteger($alm->pivot->cantidad) .
-                                        ' ' .
-                                        $item->unit->name .
-                                        ']'">
+                                    :text="$alm->name . $unidades">
                                     <input name="selectedalmacen_{{ $item->id }}"
+                                        wire:key="{{ $item->id . $alm->id }}"
                                         class="sr-only peer peer-disabled:opacity-25" type="radio"
                                         id="almacen_{{ $item->id . $alm->id }}" value="{{ $alm->id }}"
                                         @if ($almacen_id === $alm->id || count($item->almacens) == 1) checked @endif />
@@ -152,32 +134,6 @@
                         </div>
                     @endif
                 @endif
-
-                {{-- @if (Module::isEnabled('Almacen'))
-                    @if (count($item->garantiaproductos) > 0)
-                        <div class="absolute right-1 flex flex-col gap-1 top-1">
-                            @foreach ($item->garantiaproductos as $garantia)
-                                <div x-data="{ isHovered: false }" @mouseover="isHovered = true"
-                                    @mouseleave="isHovered = false"
-                                    class="relative w-5 h-5 bg-green-500 text-white rounded-full p-0.5">
-                                    <svg class="w-full h-full block" xmlns="http://www.w3.org/2000/svg"
-                                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                        stroke-linecap="round" stroke-linejoin="round">
-                                        <path
-                                            d="M11.9982 2C8.99043 2 7.04018 4.01899 4.73371 4.7549C3.79589 5.05413 3.32697 5.20374 3.1372 5.41465C2.94743 5.62556 2.89186 5.93375 2.78072 6.55013C1.59143 13.146 4.1909 19.244 10.3903 21.6175C11.0564 21.8725 11.3894 22 12.0015 22C12.6135 22 12.9466 21.8725 13.6126 21.6175C19.8116 19.2439 22.4086 13.146 21.219 6.55013C21.1078 5.93364 21.0522 5.6254 20.8624 5.41449C20.6726 5.20358 20.2037 5.05405 19.2659 4.75499C16.9585 4.01915 15.0061 2 11.9982 2Z" />
-                                        <path d="M9 13C9 13 10 13 11 15C11 15 14.1765 10 17 9" />
-                                    </svg>
-
-                                    <p class="absolute w-5 top-0 left-0 text-white rounded-md p-0.5 text-[8px] h-full whitespace-nowrap opacity-0 overflow-hidden bg-green-500 ease-in-out duration-150"
-                                        :class="isHovered &&
-                                            '-translate-x-full opacity-100 w-auto max-w-[100px] truncate'">
-                                        {{ $garantia->typegarantia->name }}</p>
-
-                                </div>
-                            @endforeach
-                        </div>
-                    @endif
-                @endif --}}
 
                 @if ($pricesale > 0)
                     <x-slot name="footer">
@@ -220,12 +176,4 @@
             </x-card-producto>
         </form>
     @endforeach
-
-    <script>
-        function formatOption(option) {
-            var $option = $(`<p>${option.text}</p>
-                <p class="select2-subtitle-option text-[10px] !text-next-500">${option.title}</p>`);
-            return $option;
-        }
-    </script>
 </div>

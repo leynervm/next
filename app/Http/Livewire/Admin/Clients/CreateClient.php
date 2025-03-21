@@ -87,7 +87,7 @@ class CreateClient extends Component
 
         if (count($this->direccions) == 0) {
             $mensaje =  response()->json([
-                'title' => "NO SE HAN AGREGADO DIRECCIONES DEL DOMICILIO",
+                'title' => "AGREGAR DIRECCIÓN DEL CLIENTE",
                 'text' => null
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
@@ -122,7 +122,7 @@ class CreateClient extends Component
 
             foreach ($this->direccions as $item) {
                 $ubigeo_id = $item['ubigeo_id'];
-                if (empty($ubigeo_id)) {
+                if (empty($ubigeo_id) && !empty($item['distrito']) && !empty($item['provincia'])) {
                     $ubigeo_id = Ubigeo::query()->select('id', 'distrito', 'provincia')
                         ->whereRaw('LOWER(distrito) = ?', strtolower(trim($item['distrito'])))
                         ->whereRaw('LOWER(provincia) = ?', strtolower(trim($item['provincia'])))
@@ -200,19 +200,24 @@ class CreateClient extends Component
 
         if ($response->ok()) {
             $cliente = json_decode($response->body());
+            $this->reset(['direccions']);
+            $direccions = [];
 
             if (isset($cliente->success) && $cliente->success) {
                 $this->$name = $cliente->name;
                 if ($property == 'document') {
-                    $direccions[] = [
-                        'direccion' => $cliente->direccion,
-                        'distrito' => $cliente->distrito,
-                        'provincia' => $cliente->provincia,
-                        'region' => $cliente->region,
-                        'ubigeo_id' => $cliente->ubigeo_id,
-                        'save' => true,
-                        'principal' => true,
-                    ];
+
+                    if (!empty($cliente->direccion) && trim($cliente->direccion) != '-') {
+                        $direccions[] = [
+                            'direccion' => $cliente->direccion,
+                            'distrito' => $cliente->distrito,
+                            'provincia' => $cliente->provincia,
+                            'region' => $cliente->region,
+                            'ubigeo_id' => $cliente->ubigeo_id,
+                            'save' => true,
+                            'principal' => true,
+                        ];
+                    }
 
                     if (array_key_exists('establecimientos', (array) $cliente) && count((array) $cliente->establecimientos) > 0) {
                         foreach ($cliente->establecimientos as $local) {

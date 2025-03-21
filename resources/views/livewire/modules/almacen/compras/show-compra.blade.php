@@ -1,23 +1,5 @@
-<div class="flex flex-col gap-8" x-data="{
-    proveedor_id: @entangle('compra.proveedor_id').defer,
-    sucursal_id: @entangle('compra.sucursal_id').defer,
-    typepayment_id: @entangle('compra.typepayment_id').defer,
-    compratipocambio: @entangle('compra.tipocambio').defer,
-    pricetype_id: @entangle('pricetype_id'),
-    typedescuento: @entangle('typedescuento').defer,
-    afectacion: '{{ $compra->afectacion }}',
-    afectacion: '{{ $compraitem->igv > 0 ? 'S' : 'E' }}',
-    tipocambio: '{{ $compra->tipocambio }}',
-    istransferencia: false,
-    detalle: @entangle('detalle').defer,
-    reset() {
-        this.istransferencia = false;
-        this.detalle = '';
-    }
-}">
-    <div wire:loading.flex class="loading-overlay fixed hidden z-[99]">
-        <x-loading-next />
-    </div>
+<div class="flex flex-col gap-8" x-data="showcompra">
+    <x-loading-web-next wire:key="showcompra" wire:loading />
 
     <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
@@ -41,7 +23,7 @@
                 @if ($compra->moneda->isDolar())
                     <div class="w-full">
                         <x-label value="Tipo Cambio :" />
-                        <x-input class="block w-full" x-model="compratipocambio" 
+                        <x-input class="block w-full" x-model="compratipocambio"
                             x-mask:dynamic="$money($input, '.', '', 3)" onkeypress="return validarDecimal(event, 7)" />
                         <x-jet-input-error for="compra.tipocambio" />
                     </div>
@@ -101,7 +83,7 @@
 
                 <div class="w-full xs:col-span-2">
                     <x-label value="Sucursal :" />
-                    <div id="parentsucursalcompra_id" class="relative" x-init="selec2Sucursal" wire:ignore>
+                    <div id="parentsucursalcompra_id" class="relative" x-init="selec2Sucursal">
                         <x-select class="block w-full" x-ref="selectsucursal" id="sucursalcompra_id"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
@@ -206,8 +188,8 @@
                     @foreach ($compra->compraitems as $item)
                         @php
                             $image =
-                                count($item->producto->images) > 0
-                                    ? pathURLProductImage($item->producto->images->first()->url)
+                                !empty($item->producto->imagen) > 0
+                                    ? pathURLProductImage($item->producto->imagen->url)
                                     : null;
                             $promocion = verifyPromocion($item->producto->promocions->first());
                             $descuento = getDscto($promocion);
@@ -218,17 +200,20 @@
                         <x-card-producto :image="$image" :name="$item->producto->name" :promocion="$promocion" class="overflow-hidden">
                             <div
                                 class="w-full p-1 rounded-xl shadow-md shadow-shadowminicard border border-borderminicard my-2">
-                                @foreach ($item->almacencompras as $almac)
+                                @foreach ($item->kardexes as $kardex)
                                     <div
                                         class="text-lg font-semibold mt-1 text-colorlabel text-center leading-4  @if (!$loop->first) pt-2 border-t border-borderminicard @endif">
-                                        {{ decimalOrInteger($almac->cantidad) }}
+                                        {{ decimalOrInteger($kardex->cantidad) }}
                                         <small class="text-[10px] font-medium">
                                             {{ $item->producto->unit->name }} \
-                                            {{ $almac->almacen->name }}</small>
+                                            {{ $kardex->almacen->name }}</small>
                                     </div>
-                                    @if (count($almac->series) > 0)
+                                    @php
+                                        $seriesfilter = $item->series->where('almacen_id', $kardex->almacen_id);
+                                    @endphp
+                                    @if (count($seriesfilter) > 0)
                                         <div class="w-full flex flex-wrap gap-1 items-start">
-                                            @foreach ($almac->series as $ser)
+                                            @foreach ($seriesfilter as $ser)
                                                 <x-span-text :text="$ser->serie" />
                                             @endforeach
                                         </div>
@@ -289,16 +274,6 @@
                                 </tr>
                             </table>
 
-                            {{-- @if ($promocion)
-                                @if ($promocion->isDescuento() || $promocion->isLiquidacion())
-                                    @if ($descuento > 0)
-                                        <span class="block w-full line-through text-red-600 text-center">
-                                            S/.
-                                            {{ decimalOrInteger(getPriceAntes($pricesale, $descuento), $pricetype->decimals ?? 2, ', ') }}
-                                        </span>
-                                    @endif
-                                @endif
-                            @endif --}}
 
                             @can('admin.almacen.compras.create')
                                 <x-slot name="footer">
@@ -358,112 +333,38 @@
 
     <x-jet-dialog-modal wire:model="openproducto" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
-            {{ __('Editar producto de compra') }}
+            @if (!empty($compraitem->producto))
+                {{ __($compraitem->producto->name) }}
+            @endif
         </x-slot>
 
         <x-slot name="content">
             @if (!empty($compraitem->producto))
                 <form wire:submit.prevent="updateitem" class="w-full text-colorlabel flex flex-col gap-1"
-                    x-data="{
-                        requireserie: @entangle('requireserie').defer,
-                        priceunitario: @entangle('priceunitario').defer,
-                        igvunitario: @entangle('igvunitario').defer,
-                        descuentounitario: @entangle('descuentounitario').defer,
-                        pricebuy: `{{ $compraitem->price + $compraitem->igv }}`,
-                        priceventa: @entangle('priceventa').defer,
-                        pricebuysoles: 0,
-                        subtotalitem: 0,
-                        subtotaldsctoitem: 0,
-                        totalitem: 0,
-                        almacens: @entangle('almacens'),
-                        sumstock: `{{ $compraitem->almacencompras()->sum('cantidad') }}`,
-                        init() {
-                            this.$watch('almacens', (value) => {
-                                const almacens = Object.values(value);
-                                if (almacens.length > 0) {
-                                    const cantidad = almacens.reduce((sum, item) =>
-                                        parseFloat(sum) + Number(item.cantidad), 0);
-                                    this.sumstock = cantidad;
-                                } else {
-                                    this.sumstock = 0;
-                                }
-                                this.calcular()
-                            });
-                            this.$watch('typedescuento', (value) => {
-                                if (value == '0') {
-                                    this.descuentounitario = 0;
-                                    this.subtotaldsctoitem = 0;
-                                }
-                                this.calcular();
-                            })
-                            this.calcular();
-                        },
-                        calcularsoles() {
-                            let codemoneda = `{{ $compra->moneda->code }}`;
-                            if (codemoneda == 'USD') {
-                                this.pricebuysoles = toDecimal(parseFloat(this.pricebuy) * parseFloat(this
-                                    .tipocambio), 2);
-                            } else {
-                                this.pricebuysoles = 0;
-                            }
-                        },
-                        calcular() {
-                            if (this.afectacion == 'S') {
-                                this.igvunitario = toDecimal(parseFloat(this.priceunitario * 18) / 100, 2)
-                            } else {
-                                this.igvunitario = 0;
-                            }
-                    
-                            this.pricebuy = toDecimal(parseFloat(this.priceunitario) + parseFloat(this
-                                .igvunitario), 2);
-                    
-                            if (this.typedescuento > 0 && this.sumstock > 0) {
-                                if (this.typedescuento == '1') {
-                                    this.subtotaldsctoitem = toDecimal(parseFloat(this.descuentounitario) *
-                                        parseFloat(this.sumstock), 2);
-                                } else if (this.typedescuento == '2') {
-                                    this.pricebuy = toDecimal((parseFloat(this.priceunitario) - parseFloat(this
-                                        .descuentounitario)) + parseFloat(this.igvunitario), 2);
-                                    this.subtotaldsctoitem = toDecimal(parseFloat(this.descuentounitario) *
-                                        parseFloat(this.sumstock), 2);
-                                } else if (this.typedescuento == '3') {
-                                    this.subtotaldsctoitem = this.descuentounitario;
-                                }
-                            }
-                    
-                    
-                            this.totalitem = toDecimal(parseFloat(this.pricebuy) * parseFloat(this.sumstock),
-                                2);
-                            this.subtotaligvitem = toDecimal(parseFloat(this.igvunitario) * parseFloat(this
-                                .sumstock), 2);
-                            this.subtotalitem = toDecimal(parseFloat(this.subtotaldsctoitem) + parseFloat(this
-                                .totalitem), 2);
-                            this.calcularsoles();
-                        },
-                    }">
-                    <h1 class="text-xs sm:text-sm text-colorlabel md:text-sm !leading-normal font-medium pb-3">
-                        {{ $compraitem->producto->name }}</h1>
+                    x-data="editarproducto()">
+                    {{-- <h1 class="text-xs sm:text-sm text-colorlabel md:text-sm !leading-normal font-medium pb-3">
+                        {{ $compraitem->producto->name }}</h1> --}}
 
                     <div class="w-full grid grid-cols-2 md:grid-cols-3 gap-2">
                         <div class="w-full">
                             <x-label value="Precio unitario sin IGV :" />
                             <x-input class="block w-full" x-mask:dynamic="$money($input, '.', '', 2)"
-                                x-model="priceunitario" @input="calcular" placeholder="0.00"
+                                x-model="priceunitario" @input="calcularedit" placeholder="0.00"
                                 onkeypress="return validarDecimal(event, 12)" />
                             <x-jet-input-error for="priceunitario" />
                         </div>
                         <div class="w-full" x-cloak x-show="afectacion == 'S'" style="display: none;">
                             <x-label value="IGV :" />
                             <x-input class="block w-full" x-mask:dynamic="$money($input, '.', '', 2)"
-                                x-model="igvunitario" @input="calcular" placeholder="0.00"
+                                x-model="igvunitario" @input="calcularedit" placeholder="0.00"
                                 onkeypress="return validarDecimal(event, 12)" />
                             <x-jet-input-error for="igvunitario" />
                         </div>
 
                         <div class="w-full">
                             <x-label value="Aplicar descuento :" />
-                            <div id="parenttypedscto" class="relative" x-init="select2Typedescto">
-                                <x-select class="block w-full" x-ref="selectypedscto" id="typedscto">
+                            <div id="parentedittypedscto" class="relative" x-init="select2EditTypedescto">
+                                <x-select class="block w-full" x-ref="selectypedsctoedit" id="edittypedscto">
                                     <x-slot name="options">
                                         <option value="0">NO APLICAR DSCTO</option>
                                         <option value="1">PRECIO UNITARIO CON DESCUENTO APLICADO</option>
@@ -473,13 +374,13 @@
                                 </x-select>
                                 <x-icon-select />
                             </div>
-                            <x-jet-input-error for="typedescuento" />
+                            <x-jet-input-error for="typedescuentoprod" />
                         </div>
 
                         <div class="w-full" style="display: none" x-cloak x-show="typedescuento > 0" x-transition>
                             <x-label value="Descuento:" />
                             <x-input class="block w-full" x-model="descuentounitario"
-                                x-mask:dynamic="$money($input, '.', '', 2)" @input="calcular" placeholder="0.00"
+                                x-mask:dynamic="$money($input, '.', '', 2)" @input="calcularedit" placeholder="0.00"
                                 onkeypress="return validarDecimal(event, 12)" />
                             <x-jet-input-error for="descuentounitario" />
                         </div>
@@ -494,7 +395,6 @@
                             </div>
                         @endif
                     </div>
-
                     <x-jet-input-error for="sumstock" />
 
                     <div class="w-full flex gap-2 justify-end">
@@ -502,70 +402,87 @@
                             {{ __('Save') }}</x-button>
                     </div>
 
-                    @if (count($almacens) > 0)
-                        <div class="w-full flex flex-wrap gap-2">
-                            @foreach ($almacens as $key => $item)
-                                <x-simple-card wire:key="almacencompraitem{{ $compraitem->id }}_{{ $item['id'] }}"
+                    <div class="w-full flex flex-wrap gap-2">
+                        @if (count($almacens) > 0)
+                            @foreach ($compraitem->producto->almacens as $item)
+                                <x-simple-card wire:key="almacencompraitem{{ $compraitem->id }}_{{ $item->id }}"
                                     class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
+
                                     <div class="text-colorsubtitleform text-center">
                                         <small class="w-full block text-center text-[8px] leading-3">
-                                            STOCK ACTUAL</small>
+                                            ALMACÉN</small>
                                         <span class="inline-block text-2xl text-center font-semibold">
-                                            {{ decimalOrInteger($item['stock_actual']) }}</span>
-                                        <small class="inline-block text-center text-[10px] leading-3">
-                                            {{ $compraitem->producto->unit->name }}</small>
+                                            {{ $item->name }}</span>
                                     </div>
 
-                                    <h1 class="text-colortitleform text-[10px] text-center font-semibold">
-                                        {{ $item['name'] }}</h1>
-                                    <div class="w-full">
-                                        <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
-                                        <x-input class="block w-full"
-                                            wire:model.debounce.500ms="almacens.{{ $key }}.cantidad"
-                                            x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
-                                            onkeypress="return validarDecimal(event, 9)"
-                                            wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
-                                    </div>
-
-                                    <div x-cloak x-show="requireserie" style="display: none;" x-transition>
-                                        <x-label value="SERIE :" textSize="[10px]" />
-                                        <x-input class="block w-full"
-                                            wire:keydown.enter.prevent="addserie('{{ $key }}')"
-                                            onkeypress="return validarSerie(event)" placeholder="Ingresar serie..."
-                                            wire:model.defer="almacens.{{ $key }}.newserie" />
-                                        <x-jet-input-error for="almacens.{{ $key }}.newserie" />
-
-                                        <div
-                                            class="w-full flex gap-1 justify-between items-center font-medium text-colorlabel">
-                                            <span class="text-[9px]">ENTER PARA AGREGAR SERIE</span>
-
-                                            <p class="text-end text-[9px] font-semibold">
-                                                <span>{{ count($item['series']) + 1 }}</span>
-                                                / <span>{{ decimalOrInteger($item['cantidad']) }}</span>
-                                            </p>
+                                    @if ($almacens[$item->id]['addseries'])
+                                        <div class="text-colorsubtitleform text-center">
+                                            <small class="w-full block text-center text-[8px] leading-3">
+                                                CANTIDAD</small>
+                                            <span class="inline-block text-2xl text-center font-semibold">
+                                                {{ $almacens[$item->id]['cantidad'] }}</span>
+                                            <small class="inline-block text-left text-[10px] leading-3">
+                                                {{ $compraitem->producto->unit->name }}
+                                            </small>
                                         </div>
 
-                                        @if (count($item['series']) > 0)
+                                        <div>
+                                            <x-label value="INGRESAR SERIE :" textSize="[10px]" />
+                                            <x-input class="block w-full"
+                                                wire:keydown.enter.prevent="addserie('{{ $item->id }}')"
+                                                onkeypress="return validarSerie(event)"
+                                                placeholder="Ingresar serie..."
+                                                wire:model.defer="almacens.{{ $item->id }}.newserie" />
+                                            <p class="text-[9px] text-colorerror">ENTER PARA AGREGAR SERIE</p>
+                                            <x-jet-input-error for="almacens.{{ $item->id }}.newserie" />
+                                        </div>
+
+                                        @if (count($almacens[$item->id]['series']) > 0)
                                             <ul class="w-full flex flex-wrap gap-1 items-start mt-2">
-                                                @foreach ($item['series'] as $k => $ser)
+                                                @foreach ($almacens[$item->id]['series'] as $k => $ser)
                                                     <li>
                                                         <div
-                                                            class="rounded-lg p-1 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
+                                                            class="{{ $ser['status'] > 0 ? 'opacity-65' : '' }} rounded-lg p-1 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
                                                             <small class="text-[10px] leading-3 tracking-wider">
                                                                 {{ $ser['serie'] }}</small>
-                                                            <x-button-delete
-                                                                wire:click="removeserie({{ $key }}, {{ $k }})"
-                                                                wire:loading.attr="disabled" />
+
+                                                            @if ($ser['status'] > 0)
+                                                                <svg xmlns="http://www.w3.org/2000/svg"
+                                                                    viewBox="0 0 24 24" fill="none"
+                                                                    class="size-4 inline-block text-neutral-400"
+                                                                    stroke="currentColor" stroke-linecap="round"
+                                                                    stroke-linejoin="round" stroke-width="2.5">
+                                                                    <circle class="cls-1" cx="12"
+                                                                        cy="12" r="10.5"></circle>
+                                                                    <line class="cls-1" x1="19.64"
+                                                                        y1="4.36" x2="4.36" y2="19.64">
+                                                                    </line>
+                                                                </svg>
+                                                            @else
+                                                                <x-button-delete
+                                                                    wire:click="removeserie({{ $item->id }}, {{ $k }})"
+                                                                    wire:loading.attr="disabled" />
+                                                            @endif
                                                         </div>
                                                     </li>
                                                 @endforeach
                                             </ul>
                                         @endif
-                                    </div>
+                                    @else
+                                        <div class="w-full">
+                                            <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
+                                            <x-input class="block w-full"
+                                                wire:model.debounce.500ms="almacens.{{ $item->id }}.cantidad"
+                                                x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
+                                                onkeypress="return validarDecimal(event, 9)"
+                                                wire:key="cantidad_{{ $item->id }}"
+                                                wire:loading.attr="disabled" />
+                                        </div>
+                                    @endif
                                 </x-simple-card>
                             @endforeach
-                        </div>
-                    @endif
+                        @endif
+                    </div>
 
                     <table class="w-full table text-xs text-colorsubtitleform">
                         <tr>
@@ -628,6 +545,97 @@
                     </table>
                 </form>
             @endif
+            <script>
+                function editarproducto() {
+                    return {
+                        typedescuentoprod: @entangle('typedescuentoprod').defer,
+                        pricebuy: `{{ $compraitem->price + $compraitem->igv }}`,
+                        requireserie: @entangle('requireserie').defer,
+                        priceunitario: @entangle('priceunitario').defer,
+                        igvunitario: @entangle('igvunitario').defer,
+                        descuentounitario: @entangle('descuentounitario').defer,
+                        subtotaligvitem: @entangle('subtotaligvitem').defer,
+                        subtotalitem: @entangle('subtotalitem').defer,
+                        subtotaldsctoitem: @entangle('subtotaldsctoitem').defer,
+                        totalitem: @entangle('totalitem').defer,
+                        priceventa: @entangle('priceventa').defer,
+                        almacens: @entangle('almacens').defer,
+                        sumstock: @entangle('sumstock').defer,
+                        pricebuysoles: 0,
+                        // subtotalitem: 0,
+                        // subtotaldsctoitem: 0,
+                        // totalitem: 0,
+                        init() {
+                            this.$watch('almacens', (value) => {
+                                const almacens = Object.values(value);
+                                if (almacens.length > 0) {
+                                    const cantidad = almacens.reduce((sum, item) =>
+                                        parseFloat(sum) + Number(item.cantidad), 0);
+                                    this.sumstock = cantidad;
+                                } else {
+                                    this.sumstock = 0;
+                                }
+                                this.calcularedit()
+                            });
+
+                            this.$watch('typedescuentoprod', (value) => {
+                                this.selectTDE.val(value).trigger("change");
+                                if (value == '0') {
+                                    this.descuentounitario = 0;
+                                    this.subtotaldsctoitem = 0;
+                                }
+                                this.calcular();
+                            })
+
+                            Livewire.hook('message.processed', () => {
+                                this.selectTDE.select2().val(this.typedescuentoprod).trigger('change');
+                            });
+                            this.calcularedit();
+                        },
+                        calcularsoles() {
+                            let codemoneda = `{{ $compra->moneda->code }}`;
+                            if (codemoneda == 'USD') {
+                                this.pricebuysoles = toDecimal(parseFloat(this.pricebuy) * parseFloat(this
+                                    .tipocambio), 2);
+                            } else {
+                                this.pricebuysoles = 0;
+                            }
+                        },
+                        calcularedit() {
+                            if (this.afectacion == 'S') {
+                                this.igvunitario = toDecimal(parseFloat(this.priceunitario * 18) / 100, 2)
+                            } else {
+                                this.igvunitario = 0;
+                            }
+
+                            this.pricebuy = toDecimal(parseFloat(this.priceunitario) + parseFloat(this
+                                .igvunitario), 2);
+
+                            if (this.typedescuentoprod > 0 && this.sumstock > 0) {
+                                if (this.typedescuentoprod == '1') {
+                                    this.subtotaldsctoitem = toDecimal(parseFloat(this.descuentounitario) *
+                                        parseFloat(this.sumstock), 2);
+                                } else if (this.typedescuentoprod == '2') {
+                                    this.pricebuy = toDecimal((parseFloat(this.priceunitario) - parseFloat(this
+                                        .descuentounitario)) + parseFloat(this.igvunitario), 2);
+                                    this.subtotaldsctoitem = toDecimal(parseFloat(this.descuentounitario) *
+                                        parseFloat(this.sumstock), 2);
+                                } else if (this.typedescuentoprod == '3') {
+                                    this.subtotaldsctoitem = this.descuentounitario;
+                                }
+                            }
+
+                            this.totalitem = toDecimal(parseFloat(this.pricebuy) * parseFloat(this.sumstock),
+                                2);
+                            this.subtotaligvitem = toDecimal(parseFloat(this.igvunitario) * parseFloat(this
+                                .sumstock), 2);
+                            this.subtotalitem = toDecimal(parseFloat(this.subtotaldsctoitem) + parseFloat(this
+                                .totalitem), 2);
+                            this.calcularsoles();
+                        }
+                    }
+                }
+            </script>
         </x-slot>
     </x-jet-dialog-modal>
 
@@ -638,8 +646,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <form class="w-full flex flex-col gap-2 min-h-[400px]" @submit.prevent="addproducto(false)"
-                x-data="addproducto">
+            <form class="w-full flex flex-col gap-2 min-h-[400px]" @submit.prevent="addproducto(false)">
                 <div class="flex w-full flex-col gap-1">
                     <x-label value="Seleccionar producto :" />
                     <div class="w-full relative" x-init="select2Producto" id="parentproducto_id">
@@ -683,7 +690,7 @@
 
                     <div class="w-full">
                         <x-label value="Aplicar descuento :" />
-                        <div id="parenttypedescuento" class="relative" x-init="typedescto">
+                        <div id="parenttypedescuento" class="relative" x-init="select2Typedescto">
                             <x-select class="block w-full" x-ref="selectypedescuento" id="typedescuento">
                                 <x-slot name="options">
                                     <option value="0">NO APLICAR DSCTO</option>
@@ -716,47 +723,37 @@
                     @endif
                 </div>
 
-                @if (count($almacens) > 0)
+                @if (empty($compraitem->producto) && count($almacens) > 0)
                     <div class="w-full flex flex-wrap gap-2">
                         @foreach ($almacens as $key => $item)
                             <x-simple-card wire:key="{{ $key }}" wire:loading.class="opacity-25"
                                 class="w-full xs:w-52 rounded-lg p-2 flex flex-col gap-3 justify-start">
-                                <h1 class="text-colortitleform text-[10px] text-center font-semibold">
-                                    {{ $item['name'] }}</h1>
                                 <div class="text-colorsubtitleform text-center">
-                                    <small class="w-full block text-center text-[8px] leading-3">STOCK
-                                        ACTUAL</small>
+                                    <small class="w-full block text-center text-[8px] leading-3">
+                                        ALMACÉN</small>
                                     <span class="inline-block text-2xl text-center font-semibold">
-                                        {{ $item['stock_actual'] }}</span>
-                                    <small class="inline-block text-center text-[10px] leading-3">
-                                        {{ $item['unit'] }}</small>
+                                        {{ $item['name'] }}</span>
                                 </div>
 
-                                <div class="w-full">
-                                    <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
-                                    <x-input class="block w-full"
-                                        wire:model.debounce.500ms="almacens.{{ $key }}.cantidad"
-                                        x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
-                                        onkeypress="return validarDecimal(event, 9)"
-                                        wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
-                                    <x-jet-input-error for="almacens.{{ $key }}.cantidad" />
-                                </div>
+                                @if ($item['addseries'])
+                                    <div class="text-colorsubtitleform text-center">
+                                        <small class="w-full block text-center text-[8px] leading-3">
+                                            CANTIDAD</small>
+                                        <span class="inline-block text-2xl text-center font-semibold">
+                                            {{ $item['cantidad'] }}</span>
+                                        <small class="inline-block text-left text-[10px] leading-3">
+                                            {{ $item['unit'] }}
+                                        </small>
+                                    </div>
 
-                                <div x-cloak x-show="requireserie" style="display: none;" x-transition>
-                                    <x-input class="block w-full"
-                                        wire:keydown.enter.prevent="addserie('{{ $key }}')"
-                                        onkeypress="return validarSerie(event)" placeholder="Ingresar serie..."
-                                        wire:model.defer="almacens.{{ $key }}.newserie" />
-                                    <x-jet-input-error for="almacens.{{ $key }}.newserie" />
-
-                                    <div
-                                        class="w-full flex gap-1 justify-between items-center font-medium text-colorlabel">
-                                        <span class="text-[9px]">ENTER PARA AGREGAR SERIE</span>
-
-                                        <p class="text-end text-[9px] font-semibold">
-                                            <span>{{ count($item['series']) + 1 }}</span>
-                                            <span> / {{ $almacens[$key]['cantidad'] }}</span>
-                                        </p>
+                                    <div>
+                                        <x-label value="INGRESAR SERIE :" class="!text-[10px]" />
+                                        <x-input class="block w-full"
+                                            wire:keydown.enter.prevent="addserie('{{ $key }}')"
+                                            onkeypress="return validarSerie(event)" placeholder="Ingresar serie..."
+                                            wire:model.defer="almacens.{{ $key }}.newserie" />
+                                        <p class="text-[9px] text-colorerror">ENTER PARA AGREGAR SERIE</p>
+                                        <x-jet-input-error for="almacens.{{ $key }}.newserie" />
                                     </div>
 
                                     @if (count($item['series']) > 0)
@@ -765,8 +762,8 @@
                                                 <li>
                                                     <div
                                                         class="rounded-lg p-1 bg-fondospancardproduct text-textspancardproduct flex gap-1 items-center">
-                                                        <small
-                                                            class="text-[10px] leading-3 tracking-wider">{{ $ser['serie'] }}</small>
+                                                        <small class="text-[10px] leading-3 tracking-wider">
+                                                            {{ $ser['serie'] }}</small>
                                                         <x-button-delete
                                                             wire:click="removeserie({{ $key }}, {{ $k }})"
                                                             wire:loading.attr="disabled" />
@@ -775,7 +772,17 @@
                                             @endforeach
                                         </ul>
                                     @endif
-                                </div>
+                                @else
+                                    <div class="w-full">
+                                        <x-label value="STOCK ENTRANTE :" class="!text-[10px]" />
+                                        <x-input class="block w-full"
+                                            wire:model.debounce.500ms="almacens.{{ $key }}.cantidad"
+                                            x-mask:dynamic="$money($input, '.', '', 0)" placeholder="0"
+                                            onkeypress="return validarDecimal(event, 9)"
+                                            wire:key="cantidad_{{ $item['id'] }}" wire:loading.attr="disabled" />
+                                        <x-jet-input-error for="almacens.{{ $key }}.cantidad" />
+                                    </div>
+                                @endif
                             </x-simple-card>
                         @endforeach
                     </div>
@@ -851,6 +858,29 @@
                         </table>
                     </div>
                 </div>
+
+                <script>
+                    function select2Producto() {
+                        this.selectP = $(this.$refs.selectprod).select2({
+                            templateResult: formatOptionProd
+                        });
+
+                        this.selectP.val(this.producto_id).trigger("change");
+                        this.selectP.on("select2:select", (event) => {
+                            this.producto_id = event.target.value;
+                            const selected = event.target.options[event.target.selectedIndex];
+                            if (selected.dataset) {
+                                this.requireserie = selected.dataset.requireserie;
+                            } else {
+                                this.requireserie = false;
+                            }
+                        }).on('select2:open', function(e) {
+                            const evt = "scroll.select2";
+                            $(e.target).parents().off(evt);
+                            $(window).off(evt);
+                        });
+                    }
+                </script>
             </form>
         </x-slot>
     </x-jet-dialog-modal>
@@ -862,7 +892,7 @@
         </x-slot>
 
         <x-slot name="content">
-            <form wire:submit.prevent="savepayment" class="w-full flex flex-col gap-1" x-data="paycompra">
+            <form wire:submit.prevent="savepayment" class="w-full flex flex-col gap-1">
                 @if ($monthbox)
                     <x-card-box :openbox="$openbox" :monthbox="$monthbox" />
                 @else
@@ -905,7 +935,7 @@
 
                 <div class="w-full">
                     <x-label value="Monto pagar :" />
-                    <x-input class="block w-full input-number-none" x-model="amount" @input="calcular"
+                    <x-input class="block w-full input-number-none" x-model="amount" @input="calcularmonto"
                         type="number" min="0.001" step="0.001"
                         onkeypress="return validarDecimal(event, 12)" />
                     <x-jet-input-error for="paymentactual" />
@@ -914,7 +944,7 @@
                 <div class="w-full" x-show="showtipocambio">
                     <div class="w-full">
                         <x-label value="Tipo cambio :" />
-                        <x-input class="block w-full input-number-none" x-model="tipocambio" @input="calcular"
+                        <x-input class="block w-full input-number-none" x-model="tipocambio" @input="calcularmonto"
                             type="number" onkeypress="return validarDecimal(event, 7)" step="0.001"
                             min="0.001" wire:key="tipo_cambio" />
                         <x-jet-input-error for="tipocambio" />
@@ -935,7 +965,7 @@
 
                 <div class="w-full">
                     <x-label value="Método pago :" />
-                    <div class="relative" x-init="select2Methodpayment" id="parentqwerty" wire:ignore>
+                    <div class="relative" x-init="select2Methodpayment" id="parentqwerty">
                         <x-select class="block w-full" x-ref="selectmp" id="qwerty" data-dropdown-parent="null">
                             <x-slot name="options">
                                 @if (count($methodpayments))
@@ -974,11 +1004,22 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('addproducto', () => ({
-                producto_id: @entangle('producto_id'),
-                almacens: @entangle('almacens').defer,
-                sumstock: @entangle('sumstock').defer,
+            Alpine.data('showcompra', () => ({
+                proveedor_id: @entangle('compra.proveedor_id').defer,
+                sucursal_id: @entangle('compra.sucursal_id').defer,
+                typepayment_id: @entangle('compra.typepayment_id').defer,
+                compratipocambio: @entangle('compra.tipocambio').defer,
+                pricetype_id: @entangle('pricetype_id'),
+                typedescuento: @entangle('typedescuento').defer,
+                afectacion: '{{ $compra->afectacion }}',
+                afectacion: '{{ $compraitem->igv > 0 ? 'S' : 'E' }}',
+                tipocambio: '{{ $compra->tipocambio }}',
+                istransferencia: false,
+                detalle: @entangle('detalle').defer,
 
+                producto_id: @entangle('producto_id'),
+                almacens: @entangle('almacens'),
+                sumstock: @entangle('sumstock').defer,
                 requireserie: @entangle('requireserie').defer,
                 priceunitario: @entangle('priceunitario').defer,
                 igvunitario: @entangle('igvunitario').defer,
@@ -993,8 +1034,19 @@
                 totalitem: @entangle('totalitem').defer,
                 codemoneda: "{{ $compra->moneda->code }}",
 
+                showtipocambio: @entangle('showtipocambio').defer,
+                amount: @entangle('paymentactual').defer,
+                tipocambio: @entangle('tipocambio').defer,
+                totalamount: @entangle('totalamount').defer,
+                methodpayment_id: @entangle('methodpayment_id').defer,
+                moneda_id: @entangle('moneda_id').defer,
+                code_moneda_compra: @json($compra->moneda->code),
+                simbolo: null,
+                code: null,
+                currency: null,
+
                 init() {
-                    this.$watch("almacens", (value) => {
+                    this.$watch('almacens', (value) => {
                         const almacens = Object.values(value);
                         if (almacens.length > 0) {
                             const cantidad = almacens.reduce((sum, item) =>
@@ -1005,8 +1057,50 @@
                         }
                         this.calcular()
                     });
-                },
 
+                    this.$watch("showtipocambio", (value) => {
+                        this.tipocambio = null;
+                        this.totalamount = '0.00';
+                    });
+                    this.$watch("methodpayment_id", (value) => {
+                        this.selectF.val(value).trigger("change");
+                    });
+                    this.$watch("sucursal_id", (value) => {
+                        this.selectS.val(value).trigger("change");
+                    });
+                    this.$watch("proveedor_id", (value) => {
+                        this.selectPRV.val(value).trigger("change");
+                    });
+                    this.$watch("typedescuento", (value) => {
+                        this.selectTD.val(value).trigger("change");
+                    });
+
+                    this.$watch("typepayment_id", (value) => {
+                        this.selectT.val(value).trigger("change");
+                    });
+                    this.$watch("pricetype_id", (value) => {
+                        this.selectPT.val(value).trigger("change");
+                    });
+                    this.$watch("producto_id", (value) => {
+                        this.selectP.val(value).trigger("change");
+                    });
+
+                    Livewire.hook('message.processed', () => {
+                        this.selectS.select2().val(this.sucursal_id).trigger('change');
+                        this.selectPT.select2().val(this.pricetype_id).trigger('change');
+                        this.selectT.select2().val(this.typepayment_id).trigger('change');
+                        this.selectF.select2().val(this.methodpayment_id).trigger('change');
+                        this.selectTD.select2().val(this.typedescuento).trigger('change');
+                        this.selectPRV.select2().val(this.proveedor_id).trigger('change');
+                        this.selectP.select2({
+                            templateResult: formatOptionProd
+                        }).val(this.producto_id).trigger('change');
+                    });
+                },
+                reset() {
+                    this.istransferencia = false;
+                    this.detalle = '';
+                },
                 numeric() {
                     this.exonerado = toDecimal(this.exonerado > 0 ? this.exonerado : 0);
                     this.gravado = toDecimal(this.gravado > 0 ? this.gravado : 0);
@@ -1071,7 +1165,7 @@
                     }
                 },
                 addproducto(closemodal) {
-                    this.$wire.call('addproducto', closemodal).then(result => console.log(result));
+                    this.$wire.call('addproducto', closemodal);
                 },
                 clearproducto() {
                     this.product = null
@@ -1092,29 +1186,6 @@
                     this.totalitem = 0
                     this.$wire.$refresh()
                 },
-            }))
-        })
-
-
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('paycompra', () => ({
-                showtipocambio: @entangle('showtipocambio').defer,
-                amount: @entangle('paymentactual').defer,
-                tipocambio: @entangle('tipocambio').defer,
-                totalamount: @entangle('totalamount').defer,
-                methodpayment_id: @entangle('methodpayment_id').defer,
-                moneda_id: @entangle('moneda_id').defer,
-                code_moneda_compra: @json($compra->moneda->code),
-                simbolo: null,
-                code: null,
-                currency: null,
-
-                init() {
-                    this.$watch("showtipocambio", (value) => {
-                        this.tipocambio = null;
-                        this.totalamount = '0.00';
-                    });
-                },
                 getCodeMoneda(moneda) {
                     const monedaJSON = JSON.parse(moneda);
                     this.code = monedaJSON.code;
@@ -1134,7 +1205,7 @@
                         this.showtipocambio = true;
                     }
                 },
-                calcular() {
+                calcularmonto() {
                     if (this.code == 'PEN') {
                         if (toDecimal(this.amount) > 0 && toDecimal(this.tipocambio) > 0) {
                             this.totalamount = toDecimal(this.amount * this.tipocambio, 2);
@@ -1154,99 +1225,6 @@
             }))
         })
 
-
-        function select2Producto() {
-            this.selectP = $(this.$refs.selectprod).select2({
-                templateResult: function(data) {
-                    if (!data.id) {
-                        return data.text;
-                    }
-                    const image = $(data.element).data('image') ?? '';
-                    const marca = $(data.element).data('marca') ?? '';
-                    const category = $(data.element).data('category') ?? '';
-                    const subcategory = $(data.element).data('subcategory') ?? '';
-
-                    let html = `<div class="custom-list-select">
-                        <div class="image-custom-select">`;
-                    if (image) {
-                        html +=
-                            `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
-                    } else {
-                        html += `<x-icon-image-unknown class="w-full h-full" />`;
-                    }
-                    html += `</div>
-                            <div class="content-custom-select">
-                                <p class="title-custom-select">
-                                    ${data.text}</p>
-                                <p class="marca-custom-select">
-                                    ${marca}</p>  
-                                <div class="category-custom-select">
-                                    <span class="inline-block">${category}</span>
-                                    <span class="inline-block">${subcategory}</span>
-                                </div>  
-                            </div>
-                      </div>`;
-                    return $(html);
-                }
-            });
-            this.selectP.val(this.producto_id).trigger("change");
-            this.selectP.on("select2:select", (event) => {
-                this.producto_id = event.target.value;
-                const selected = event.target.options[event.target.selectedIndex];
-                if (selected.dataset) {
-                    this.requireserie = selected.dataset.requireserie;
-                } else {
-                    this.requireserie = false;
-                }
-            }).on('select2:open', function(e) {
-                const evt = "scroll.select2";
-                $(e.target).parents().off(evt);
-                $(window).off(evt);
-            });
-            this.$watch("producto_id", (value) => {
-                this.selectP.val(value).trigger("change");
-                if (value == null) {
-                    this.selectP.empty();
-                }
-            });
-            Livewire.hook('message.processed', () => {
-                this.selectP.select2('destroy');
-                this.selectP.select2({
-                    templateResult: function(data) {
-                        if (!data.id) {
-                            return data.text;
-                        }
-                        const image = $(data.element).data('image') ?? '';
-                        const marca = $(data.element).data('marca') ?? '';
-                        const category = $(data.element).data('category') ?? '';
-                        const subcategory = $(data.element).data('subcategory') ?? '';
-
-                        let html = `<div class="custom-list-select">
-                        <div class="image-custom-select">`;
-                        if (image) {
-                            html +=
-                                `<img src="${image}" class="w-full h-full object-scale-down block" alt="${data.text}">`;
-                        } else {
-                            html += `<x-icon-image-unknown class="w-full h-full" />`;
-                        }
-                        html += `</div>
-                            <div class="content-custom-select">
-                                <p class="title-custom-select">
-                                    ${data.text}</p>
-                                <p class="marca-custom-select">
-                                    ${marca}</p>  
-                                <div class="category-custom-select">
-                                    <span class="inline-block">${category}</span>
-                                    <span class="inline-block">${subcategory}</span>
-                                </div>  
-                            </div>
-                      </div>`;
-                        return $(html);
-                    }
-                }).val(this.producto_id).trigger('change');
-            });
-        }
-
         function select2Methodpayment() {
             this.selectF = $(this.$refs.selectmp).select2();
             this.selectF.val(this.methodpayment_id).trigger("change");
@@ -1261,9 +1239,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("methodpayment_id", (value) => {
-                this.selectF.val(value).trigger("change");
             });
         }
 
@@ -1319,7 +1294,7 @@
         }
 
         function select2Typedescto() {
-            this.selectTD = $(this.$refs.selectypedscto).select2();
+            this.selectTD = $(this.$refs.selectypedescuento).select2();
             this.selectTD.val(this.typedescuento).trigger("change");
             this.selectTD.on("select2:select", (event) => {
                 this.typedescuento = event.target.value;
@@ -1329,32 +1304,18 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("typedescuento", (value) => {
-                this.selectTD.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectTD.select2().val(this.typedescuento).trigger('change');
-            });
         }
 
-        function typedescto() {
-            this.selectTDE = $(this.$refs.selectypedescuento).select2();
-            this.selectTDE.val(this.typedescuento).trigger("change");
+        function select2EditTypedescto() {
+            this.selectTDE = $(this.$refs.selectypedsctoedit).select2();
+            this.selectTDE.val(this.typedescuentoprod).trigger("change");
             this.selectTDE.on("select2:select", (event) => {
-                this.typedescuento = event.target.value;
+                this.typedescuentoprod = event.target.value;
                 this.calcular();
             }).on('select2:open', function(e) {
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("typedescuento", (value) => {
-                this.selectTDE.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectTDE.select2().val(this.typedescuento).trigger('change');
             });
         }
 
@@ -1368,13 +1329,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("proveedor_id", (value) => {
-                this.selectPRV.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectPRV.select2().val(this.proveedor_id).trigger('change');
-            });
         }
 
         function selec2Sucursal() {
@@ -1386,9 +1340,6 @@
                 const evt = "scroll.select2";
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
-            });
-            this.$watch("sucursal_id", (value) => {
-                this.selectS.val(value).trigger("change");
             });
         }
 
@@ -1402,13 +1353,6 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("typepayment_id", (value) => {
-                this.selectT.val(value).trigger("change");
-            });
-
-            Livewire.hook('message.processed', () => {
-                this.selectT.select2().val(this.typepayment_id).trigger('change');
-            });
         }
 
         function Pricetype() {
@@ -1421,13 +1365,35 @@
                 $(e.target).parents().off(evt);
                 $(window).off(evt);
             });
-            this.$watch("pricetype_id", (value) => {
-                this.selectPT.val(value).trigger("change");
-            });
+        }
 
-            Livewire.hook('message.processed', () => {
-                this.selectPT.select2().val(this.pricetype_id).trigger('change');
-            });
+        function formatOptionProd(option) {
+            if (!option.id) {
+                return option.text;
+            }
+            const image = $(option.element).data('image') ?? '';
+            const marca = $(option.element).data('marca') ?? '';
+            const category = $(option.element).data('category') ?? '';
+            const subcategory = $(option.element).data('subcategory') ?? '';
+
+            let html = `<div class="custom-list-select">
+                        <div class="image-custom-select">`;
+            if (image) {
+                html += `<img src="${image}" class="w-full h-full object-scale-down block" alt="${option.text}">`;
+            } else {
+                html += `<x-icon-image-unknown class="w-full h-full" />`;
+            }
+            html += `</div>
+                        <div class="content-custom-select">
+                            <p class="title-custom-select">${option.text}</p>
+                            <p class="marca-custom-select">${marca}</p>  
+                            <div class="category-custom-select">
+                                <span class="inline-block">${category}</span>
+                                <span class="inline-block">${subcategory}</span>
+                            </div>  
+                        </div>
+                    </div>`;
+            return $(html);
         }
     </script>
 </div>

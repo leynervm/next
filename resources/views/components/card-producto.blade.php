@@ -28,24 +28,18 @@
                     <p class="text-white text-[9px] inline-block font-medium p-1 px-10">
                         @if ($empresa->isTitlePromocion())
                             PROMOCIÓN
+                        @elseif($empresa->isTitleOferta())
+                            OFERTA
                         @elseif($empresa->isTitleLiquidacion())
                             LIQUIDACIÓN
                         @else
                             @if ($promocion->isDescuento())
-                                - {{ decimalOrInteger($promocion->descuento) }}% DSCT
-                            @elseif ($promocion->isCombo())
-                                OFERTA
-                            @else
-                                LIQUIDACIÓN
+                                - {{ decimalOrInteger($promocion->descuento) }}%
                             @endif
+                            {{ getTextPromocion($promocion->type) }}
                         @endif
                     </p>
                 </div>
-
-                {{-- <div class="w-auto h-auto bg-red-600 absolute -left-9 top-3 -rotate-[35deg] leading-3">
-                    <p class=" text-white text-[8px] inline-block font-semibold p-1 px-10">
-                        PROMOCIÓN</p>
-                </div> --}}
             @endif
         </div>
 

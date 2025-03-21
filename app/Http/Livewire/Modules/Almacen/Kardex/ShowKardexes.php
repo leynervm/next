@@ -53,8 +53,7 @@ class ShowKardexes extends Component
         $sucursals = Sucursal::withTrashed()->whereHas('kardexes')->get();
         $users = User::whereHas('kardexes')->get();
         $almacens = Almacen::whereHas('kardexes')->get();
-        $kardexes = Kardex::withWhereHas('sucursal', function ($query) {
-            $query->withTrashed();
+        $kardexes = Kardex::with(['user', 'almacen'])->withWhereHas('sucursal', function ($query) {
             if ($this->searchsucursal !== '') {
                 $query->where('id', $this->searchsucursal);
             } else {

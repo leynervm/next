@@ -77,6 +77,7 @@ class Empresa extends Model
     const TITLE_PROMO_DEFAULT = '0';
     const TITLE_PROMOCION = '1';
     const TITLE_PROMO_LIQUIDACION = '2';
+    const TITLE_PROMO_OFERTA = '3';
 
     const USER_SOL_PRUEBA = 'MODDATOS';
     const PASSWORD_SOL_PRUEBA = 'MODDATOS';
@@ -190,6 +191,11 @@ class Empresa extends Model
         return $this->viewtextopromocion == self::TITLE_PROMOCION;
     }
 
+    public function isTitleOferta()
+    {
+        return $this->viewtextopromocion == self::TITLE_PROMO_OFERTA;
+    }
+
     public function isTitleLiquidacion()
     {
         return $this->viewtextopromocion == self::TITLE_PROMO_LIQUIDACION;
@@ -199,7 +205,7 @@ class Empresa extends Model
     {
         return $this->viewalmacens == self::OPTION_ACTIVE;
     }
-    
+
     public function viewAlmacensDetalle()
     {
         return $this->viewalmacensdetalle == self::OPTION_ACTIVE;

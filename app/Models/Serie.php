@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Almacen;
 use App\Models\Producto;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Almacen\Entities\Compraitem;
 
 class Serie extends Model
 {
@@ -36,9 +38,16 @@ class Serie extends Model
         return $this->belongsTo(Producto::class);
     }
 
+    // Eliminar en futuro
     public function almacencompra(): BelongsTo
     {
         return $this->belongsTo(Almacencompra::class);
+    }
+    // 
+
+    public function compraitem(): BelongsTo
+    {
+        return $this->belongsTo(Compraitem::class);
     }
 
     public function carshoopserie(): HasOne
@@ -46,10 +55,15 @@ class Serie extends Model
         return $this->hasOne(Carshoopserie::class);
     }
 
-    public function itemserie(): HasOne
+    public function itemseries(): HasMany
     {
-        return $this->hasOne(Itemserie::class);
+        return $this->hasMany(Itemserie::class);
     }
+
+    // public function itemserie(): HasOne
+    // {
+    //     return $this->hasOne(Itemserie::class);
+    // }
 
     public function user(): BelongsTo
     {

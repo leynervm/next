@@ -82,10 +82,10 @@
 
                                                     <a class="size-16 sm:size-20 block rounded-lg relative"
                                                         href="{{ route('productos.show', $itemcombo->producto_slug) }}">
-                                                        @if ($itemcombo->image)
-                                                            <img src="{{ $itemcombo->image }}"
-                                                                alt="{{ $itemcombo->image }}"
-                                                                class="block w-full h-auto object-scale-down overflow-hidden rounded-lg">
+                                                        @if ($itemcombo->imagen)
+                                                            <img src="{{ $itemcombo->imagen }}"
+                                                                alt="{{ $itemcombo->producto_slug }}"
+                                                                class="block w-full h-full object-scale-down overflow-hidden rounded-lg">
                                                         @else
                                                             <x-icon-image-unknown
                                                                 class="w-full h-full text-colorsubtitleform" />
@@ -190,7 +190,7 @@
                         <p class="text-xl text-white font-semibold">
                             <small class="text-[10px] font-medium">{{ $moneda->simbolo }} </small>
                             {{-- {{ number_format(Cart::instance('shopping')->subtotal(), 2, '.', ', ') }} --}}
-                            {{ decimalOrInteger(getAmountCart($shoppings)->total, 2, ', ') }}
+                            {{ number_format(getAmountCart($shoppings)->total, 2, '.', ', ') }}
                         </p>
                     </div>
                     <a href="{{ route('carshoop') }}" class="btn-next btn-white btn-hover-transparent">

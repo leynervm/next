@@ -300,14 +300,16 @@
                     <td class="font-medium align-baseline" style="width: 50px;text-align: left;">
                         CLIENTE </td>
                     <td class="font-bold leading-5" style="text-align: left;">
-                        : {{ $comprobante->client->name }}</td>
+                        : {{ $comprobante->client->name }} - {{ $comprobante->client->document }}</td>
                 </tr>
-                <tr>
-                    <td class="font-medium align-baseline" style="width: 50px;text-align: left;">
-                        DIRECCIÓN </td>
-                    <td class="font-bold" style="text-align: left;">
-                        : {{ $comprobante->direccion }}</td>
-                </tr>
+                @if (!empty($comprobante->direccion))
+                    <tr>
+                        <td class="font-medium align-baseline" style="width: 50px;text-align: left;">
+                            DIRECCIÓN </td>
+                        <td class="font-bold" style="text-align: left;">
+                            : {{ $comprobante->direccion }}</td>
+                    </tr>
+                @endif
                 <tr>
                     <td class="font-medium" style="width: 50px;text-align: left;">
                         TIPO PAGO </td>
@@ -380,7 +382,12 @@
                                 <p>
                                     <small class="font-medium">
                                         [{{ decimalOrInteger($item->cantidad) }}
-                                        {{ $item->unit }}]
+                                        @if ($item->unit == 'NIU')
+                                            UND
+                                        @else
+                                            {{ $item->unit }}
+                                        @endif
+                                        ]
                                     </small>
                                     {!! nl2br($item->descripcion) !!}
                                 </p>

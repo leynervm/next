@@ -7,6 +7,7 @@ use App\Models\Carshoop;
 use App\Models\Carshoopserie;
 use App\Models\Client;
 use App\Models\Guia;
+use App\Models\Itemserie;
 use App\Models\Kardex;
 use App\Models\Modalidadtransporte;
 use App\Models\Motivotraslado;
@@ -46,7 +47,7 @@ class CreateGuia extends Component
     public $items = [];
     public $series = [];
     public $placavehiculos = [];
-    public $productos = [];
+    // public $productos = [];
 
     public $arrayrequireruc = ['06', '17'];
     public $arrayequalremite = ['02', '04', '07'];
@@ -69,6 +70,8 @@ class CreateGuia extends Component
     public $alterstock, $almacen_id, $producto_id, $cantidad, $serie_id, $searchserie;
     public $mode = '0';
     public $sincronizecpe = false;
+    public $producto;
+    public $almacens = [];
 
     protected function rules()
     {
@@ -264,17 +267,37 @@ class CreateGuia extends Component
         $seriecomprobantes = $seriecomprobantes->orderBy('code', 'asc')->get();
         $almacens = $this->sucursal->almacens()->orderBy('name', 'asc')->get();
 
-        $carshoops = Carshoop::with(['carshoopseries', 'almacen', 'producto' => function ($query) {
-            $query->addSelect(['image' => function ($q) {
-                $q->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
-            }])->with(['category', 'subcategory'])->visibles();
-        }])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
-            ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('id', 'asc')->paginate();
+        $productos = Producto::query()->select(
+            'productos.id',
+            'productos.name',
+            'marca_id',
+            'category_id',
+            'subcategory_id',
+            'requireserie',
+            'visivility',
+            'novedad',
+            'pricebuy',
+            'pricesale',
+            'precio_1',
+            'precio_2',
+            'precio_3',
+            'precio_4',
+            'precio_5',
+            'marcas.name as name_marca',
+            'categories.name as name_category',
+            'subcategories.name as name_subcategory',
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+            ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
+            ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
+            ->with(['almacens', 'imagen'])->visibles()->orderByDesc('novedad')
+            ->orderBy('subcategories.orden', 'ASC')
+            ->orderBy('categories.orden', 'ASC')->get();
 
-        return view('livewire.modules.facturacion.guias.create-guia', compact('modalidadtransportes', 'motivotraslados', 'seriecomprobantes', 'almacens', 'ubigeos', 'carshoops'));
+        $tvitems = Tvitem::with(['itemseries.serie', 'kardexes.almacen', 'producto' => function ($query) {
+            $query->with(['imagen', 'unit', 'marca']);
+        }])->guias()->micart()->orderBy('id', 'asc')->paginate();
+
+        return view('livewire.modules.facturacion.guias.create-guia', compact('modalidadtransportes', 'motivotraslados', 'seriecomprobantes', 'almacens', 'ubigeos', 'productos', 'tvitems'));
     }
 
     public function save()
@@ -285,9 +308,8 @@ class CreateGuia extends Component
         $this->rucproveedor = trim($this->rucproveedor);
         $this->nameproveedor = trim($this->nameproveedor);
         $this->seriecomprobante_id = empty($this->seriecomprobante_id) ? null : $this->seriecomprobante_id;
-        $this->items = Carshoop::with(['carshoopseries', 'producto', 'almacen'])->guias()
-            ->whereNull('moneda_id')->where('user_id', auth()->user()->id)
-            ->where('sucursal_id', auth()->user()->sucursal_id)->orderBy('date', 'asc')->get();
+        $this->items = Tvitem::with(['itemseries.serie', 'kardexes.almacen', 'producto'])
+            ->guias()->micart()->orderBy('id', 'asc')->get();
 
         if ($this->modalidadtransporte_id) {
             $this->modalidadtransporte = Modalidadtransporte::find($this->modalidadtransporte_id);
@@ -396,72 +418,14 @@ class CreateGuia extends Component
                 }
             }
 
-            foreach ($this->items as $item) {
-                $tvitem = $guia->tvitems()->create([
-                    'date' => now('America/Lima'),
-                    'cantidad' => $item->cantidad,
-                    'pricebuy' => 0,
-                    'price' => 0,
-                    'igv' => 0,
-                    'subtotaligv' => 0,
-                    'subtotal' => 0,
-                    'total' => 0,
-                    'status' => 0,
-                    'increment' => 0,
-                    'alterstock' => $item->alterstock,
-                    'almacen_id' => $item->almacen_id,
-                    'producto_id' => $item->producto_id,
-                    'user_id' => auth()->user()->id
-                ]);
-
-                if (count($item->carshoopseries) > 0) {
-                    foreach ($item->carshoopseries as $carshoopserie) {
-                        $tvitem->itemseries()->create([
-                            'date' => now('America/Lima'),
-                            'serie_id' => $carshoopserie->serie_id,
-                            'user_id' => auth()->user()->id
-                        ]);
-                    }
-                }
-
-                if ($item->kardex) {
-                    $item->kardex->detalle = $item->isReservedStock() ? Kardex::RESERVADO_GUIA : Kardex::SALIDA_GUIA;
-                    $item->kardex->reference = $this->seriecomprobante->serie . '-' . $contador;
-                    $item->kardex->kardeable_id = $tvitem->id;
-                    $item->kardex->kardeable_type = Tvitem::class;
-                    $item->kardex->save();
-                } else {
-                    if ($item->isIncrementStock()) {
-                        $producto = Producto::with('almacens')->find($item->producto_id);
-                        $stock = $producto->almacens->find($item->almacen_id)->pivot->cantidad;
-
-                        $tvitem->saveKardex(
-                            $item->producto_id,
-                            $item->almacen_id,
-                            $stock,
-                            $stock + $item->cantidad,
-                            $item->cantidad,
-                            Almacen::INGRESO_ALMACEN,
-                            Kardex::ENTRADA_GUIA,
-                            $this->seriecomprobante->serie . '-' . $contador
-                        );
-
-                        $producto->almacens()->updateExistingPivot($item->almacen_id, [
-                            'cantidad' => $stock + $item->cantidad,
-                        ]);
-                    }
-                }
+            foreach ($this->items as $tvitem) {
+                $tvitem->tvitemable_id = $guia->id;
+                $tvitem->tvitemable_type = Guia::class;
+                $tvitem->save();
             }
 
             $this->seriecomprobante->contador = $contador;
             $this->seriecomprobante->save();
-
-            Carshoop::with(['carshoopseries'])->guias()->whereNull('moneda_id')->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
-                    $carshoop->carshoopseries()->delete();
-                    $carshoop->delete();
-                });
-
             DB::commit();
             $this->resetValidation();
             $this->resetExcept('modalidadtransporte', 'motivotraslado', 'sucursal', 'empresa', 'seriecomprobante');
@@ -489,18 +453,19 @@ class CreateGuia extends Component
     public function searchreferencia()
     {
         $this->referencia = mb_strtoupper(trim($this->referencia), "UTF-8");
-        $this->validate(['referencia' => [
-            'required',
-            'string',
-            'min:6',
-            'max:13'
-        ]]);
+        $this->validate([
+            'referencia' => ['required', 'string', 'min:6', 'max:13']
+        ]);
 
         if ($this->motivotraslado_id) {
             $this->motivotraslado = Motivotraslado::find($this->motivotraslado_id);
         }
 
-        $comprobante = Comprobante::with('facturable')->ventas()->where('seriecompleta', $this->referencia)
+        $comprobante = Comprobante::with(['facturable' => function ($query) {
+            $query->with(['tvitems' => function ($q) {
+                $q->with(['itemseries.serie', 'kardexes', 'producto']);
+            }]);
+        }])->ventas()->where('seriecompleta', $this->referencia)
             ->where('sucursal_id', $this->sucursal->id)->withTrashed()->first();
 
         if ($comprobante) {
@@ -522,9 +487,7 @@ class CreateGuia extends Component
                 return false;
             }
 
-
-            $tvitems = $comprobante->facturable->tvitems()->with('producto.unit', 'almacen', 'itemseries.serie')->get();
-            if (count($tvitems) > 0) {
+            if (count($comprobante->facturable->tvitems) > 0) {
                 $this->sincronizecpe = true;
                 $this->comprobante_id = $comprobante->id;
                 if ($this->motivotraslado->code == '03') {
@@ -535,8 +498,7 @@ class CreateGuia extends Component
                     $this->namedestinatario = $comprobante->client->name;
                 }
 
-                $this->confirmaradditemsguia($tvitems);
-                $this->dispatchBrowserEvent('toast', toastJSON('Detalle del comprobante agregado correctamente'));
+                Self::confirmaradditemsguia($comprobante->facturable->tvitems);
             } else {
                 $this->addError('referencia', 'No se encontraron items del comprobante.');
             }
@@ -547,45 +509,87 @@ class CreateGuia extends Component
 
     public function confirmaradditemsguia($tvitems)
     {
-        foreach ($tvitems as $item) {
-            $date = now('America/Lima');
-            $carshoop = Carshoop::create([
-                'date' => $date,
-                'cantidad' =>  $item->cantidad,
-                'pricebuy' => $item->producto->pricebuy,
-                'price' => 0,
-                'igv' => 0,
-                'subtotal' => 0,
-                'total' => 0,
-                'gratuito' => 0,
-                'status' => 0,
-                'producto_id' => $item->producto_id,
-                'almacen_id' => $item->almacen_id,
-                'moneda_id' => null,
-                'user_id' => auth()->user()->id,
-                'sucursal_id' => $this->sucursal->id,
-                'alterstock' => Almacen::NO_ALTERAR_STOCK,
-                'cartable_type' => Guia::class,
-            ]);
+        DB::beginTransaction();
+        try {
+            foreach ($tvitems as $item) {
+                $date = now('America/Lima');
+                $tvitem = Tvitem::with(['kardexes', 'itemseries'])->guias()->micart()
+                    ->where('alterstock', Almacen::NO_ALTERAR_STOCK,)
+                    ->where('producto_id', $item->producto_id)->first();
 
-            if (count($item->itemseries) > 0) {
-                foreach ($item->itemseries as $itemserie) {
-                    if (Carshoopserie::where('serie_id', $itemserie->serie_id)->exists()) {
-                        $mensaje =  response()->json([
-                            'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN LOS ITEMS !',
-                            'text' => "La serie " . $itemserie->serie->serie . " ya se encuentra registrado en los items de la Guía."
-                        ])->getData();
-                        $this->dispatchBrowserEvent('validation', $mensaje);
-                        return false;
-                    }
-
-                    $carshoop->carshoopseries()->create([
-                        'date' =>  $date,
-                        'serie_id' => $itemserie->serie_id,
-                        'user_id' => auth()->user()->id
+                if (empty($tvitem)) {
+                    $tvitem = Tvitem::create([
+                        'date' => $date,
+                        'cantidad' =>  $item->cantidad,
+                        'pricebuy' => $item->producto->pricebuy,
+                        'price' => 0,
+                        'igv' => 0,
+                        'subtotal' => 0,
+                        'subtotaligv' => 0,
+                        'total' => 0,
+                        'gratuito' => 0,
+                        'status' => 0,
+                        'producto_id' => $item->producto_id,
+                        'user_id' => auth()->user()->id,
+                        'sucursal_id' => auth()->user()->sucursal_id,
+                        'alterstock' => Almacen::NO_ALTERAR_STOCK,
+                        'tvitemable_type' => Guia::class,
                     ]);
+                } else {
+                    $tvitem->cantidad = $tvitem->cantidad + $item->cantidad;
+                    $tvitem->pricebuy = $item->producto->pricebuy;
+                    $tvitem->save();
+                }
+
+                if (count($item->itemseries) > 0) {
+                    foreach ($item->itemseries as $itemserie) {
+                        if ($tvitem->itemseries()->where('serie_id', $itemserie->serie_id)->exists()) {
+                            $mensaje =  response()->json([
+                                'title' => "SERIE " . $itemserie->serie->serie . " YA SE ENCUENTRA AGREGADO !",
+                                'text' => null
+                            ])->getData();
+                            $this->dispatchBrowserEvent('validation', $mensaje);
+                            return false;
+                        }
+
+                        $tvitem->itemseries()->create([
+                            'date' =>  $date,
+                            'serie_id' => $itemserie->serie_id,
+                            'user_id' => auth()->user()->id
+                        ]);
+                    }
+                }
+
+                if (count($item->kardexes) > 0) {
+                    foreach ($item->kardexes as $itemkardex) {
+                        $kardex = $tvitem->kardexes()->where('almacen_id', $itemkardex->almacen_id)->first();
+
+                        if (empty($kardex)) {
+                            $kardex = $tvitem->saveKardex(
+                                $itemkardex->almacen_id,
+                                $itemkardex->oldstock,
+                                $itemkardex->newstock, //$stock - $cantidad,
+                                $itemkardex->cantidad,
+                                Almacen::SALIDA_ALMACEN,
+                                Kardex::ADD_GUIA,
+                            );
+                        } else {
+                            $stock = $tvitem->producto->almacens()->find($itemkardex->almacen_id)->pivot->cantidad;
+                            $kardex->cantidad = $kardex->cantidad +  $itemkardex->cantidad;
+                            $kardex->newstock = $stock - $itemkardex->cantidad;
+                            $kardex->save();
+                        }
+                    }
                 }
             }
+            DB::commit();
+            $this->dispatchBrowserEvent('toast', toastJSON('PRODUCTOS AGREGADOS CORRECTAMENTE'));
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
         }
     }
 
@@ -594,26 +598,27 @@ class CreateGuia extends Component
         $this->reset(['referencia', 'sincronizecpe', 'comprobante_id']);
     }
 
-    public function addtoguia()
+    public function addtoguia($key)
     {
         $this->mode = $this->mode > 0 ? $this->mode : 0;
-        $this->validate([
-            'almacen_id' => ['required', 'integer', 'min:1', 'exists:almacens,id'],
+        $validateData = $this->validate([
+            "almacens.$key.id" => ['required', 'integer', 'min:1', 'exists:almacens,id'],
             'producto_id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'cantidad' => [
-                'nullable',
-                Rule::requiredIf(count($this->series) == 0 || in_array($this->mode, [Almacen::NO_ALTERAR_STOCK, Almacen::INCREMENTAR_STOCK])),
-                'integer',
-                'min:1',
-                in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK]) ? new ValidateStock($this->producto_id, $this->almacen_id) : ''
-            ],
-            'serie_id' => [
-                'nullable',
-                Rule::requiredIf(count($this->series) > 0 && in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])),
-                'integer',
-                'min:1',
-                'exists:series,id'
-            ],
+            "almacens.$key.cantidad" => $this->producto->isRequiredserie() ?
+                ['nullable'] : [
+                    'required',
+                    'integer',
+                    'gt:0',
+                    !in_array($this->mode, [Almacen::NO_ALTERAR_STOCK, Almacen::INCREMENTAR_STOCK]) ? new ValidateStock($this->producto_id, $this->almacens[$key]['id'], $this->almacens[$key]['cantidad']) : ''
+                ],
+            "almacens.$key.serie_id" => $this->producto->isRequiredserie() ?
+                [
+                    Rule::requiredIf($this->producto->isRequiredserie()),
+                    'integer',
+                    'min:1',
+                    'exists:series,id',
+                    $this->mode !== Almacen::NO_ALTERAR_STOCK ? new ValidateStock($this->producto_id, $this->almacens[$key]['id'], 1) : '',
+                ] : ['nullable'],
             'mode' => [
                 'nullable',
                 'integer',
@@ -621,134 +626,93 @@ class CreateGuia extends Component
                 'max:3',
                 Rule::in([Almacen::NO_ALTERAR_STOCK, Almacen::RESERVAR_STOCK, Almacen::INCREMENTAR_STOCK, Almacen::DISMINUIR_STOCK])
             ],
+        ], [], [
+            "almacens.$key.id" => 'almacen',
+            "almacens.$key.cantidad" => 'cantidad',
+            "almacens.$key.serie_id" => 'serie',
         ]);
-
-        $producto = Producto::with('almacens')->find($this->producto_id);
-        $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
-
-        if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-            if ($stock && $stock > 0) {
-                if (($stock - $this->cantidad) < 0) {
-                    $this->addError('cantidad', 'Cantidad supera el stock');
-                    return false;
-                }
-            }
-        }
 
         DB::beginTransaction();
         try {
-
-            $existskardex = false;
             $date = now('America/Lima');
-            $existsInCart = Carshoop::where('producto_id', $this->producto_id)
-                ->where('almacen_id', $this->almacen_id)
-                ->whereNull('moneda_id')->where('gratuito', 0)
-                ->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)
-                ->where('alterstock', $this->mode)
-                ->where('cartable_type', Guia::class);
+            $serie_id = $this->producto->isRequiredserie() && !empty($this->almacens[$key]['serie_id']) ? $this->almacens[$key]['serie_id'] : null;
+            $cantidad = $this->producto->isRequiredserie() ? 1 : $this->almacens[$key]['cantidad'];
+            $stock = $this->producto->almacens()->find($key)->pivot->cantidad;
 
+            $tvitem = Tvitem::with(['producto', 'kardexes', 'itemseries', 'promocion'])->guias()->micart()
+                ->inCart($this->producto_id, Tvitem::NO_GRATUITO, $this->mode)
+                ->first();
 
-            if ($existsInCart->exists()) {
-                $cantidad = $this->serie_id ? 1 : $this->cantidad;
-                $carshoop = $existsInCart->first();
-                $carshoop->cantidad = $carshoop->cantidad + $cantidad;
-                $carshoop->pricebuy = $producto->pricebuy;
-                $carshoop->save();
-
-                if ($carshoop->kardex) {
-                    $existskardex = true;
-                    $carshoop->kardex->cantidad = $carshoop->kardex->cantidad +  $cantidad;
-                    $carshoop->kardex->newstock = $carshoop->kardex->newstock - $cantidad;
-                    $carshoop->kardex->save();
-                }
-            } else {
-                $carshoop = Carshoop::create([
+            if (empty($tvitem)) {
+                $tvitem = Tvitem::create([
                     'date' => $date,
-                    'cantidad' => $this->serie_id ? 1 : $this->cantidad,
-                    'pricebuy' => $producto->pricebuy,
+                    'cantidad' => $cantidad,
+                    'pricebuy' => $this->producto->pricebuy,
                     'price' => 0,
                     'igv' => 0,
                     'subtotal' => 0,
+                    'subtotaligv' => 0,
+                    // 'subtotal' => 0,
                     'total' => 0,
                     'gratuito' => 0,
                     'status' => 0,
-                    'producto_id' => $this->producto_id,
-                    'almacen_id' => $this->almacen_id,
-                    'moneda_id' => null,
-                    'user_id' => auth()->user()->id,
-                    'sucursal_id' => $this->sucursal->id,
                     'alterstock' => $this->mode,
-                    'cartable_type' => Guia::class,
+                    'producto_id' => $this->producto_id,
+                    'user_id' => auth()->user()->id,
+                    'sucursal_id' => auth()->user()->sucursal_id,
+                    'tvitemable_type' => Guia::class,
                 ]);
+            } else {
+                $tvitem->cantidad = $tvitem->cantidad + $cantidad;
+                $tvitem->pricebuy = $this->producto->pricebuy;
+                $tvitem->save();
             }
 
-            if ($this->serie_id) {
-                $serie = Serie::find($this->serie_id);
+            if (!empty($serie_id)) {
+                $serie = Serie::find($serie_id);
 
-                if (Carshoopserie::where('serie_id', $this->serie_id)->exists()) {
+                if ($tvitem->itemseries()->where('serie_id', $serie_id)->exists()) {
                     $mensaje =  response()->json([
-                        'title' => 'SERIE YA SE ENCUENTRA AGREGADO EN LOS ITEMS !',
-                        'text' => "La serie $serie->serie ya se encuentra registrado en los items de la Guía."
+                        'title' => "SERIE $serie->serie YA SE ENCUENTRA AGREGADO !",
+                        'text' => null
                     ])->getData();
                     $this->dispatchBrowserEvent('validation', $mensaje);
                     return false;
                 }
 
-                if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-                    if ($serie->isDisponible()) {
-                        $serie->status = ($this->mode == Almacen::RESERVAR_STOCK) ? 1 : 2;
-                        $serie->dateout = $date;
-                        $serie->save();
-                    } else {
+                if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                    if (!$serie->isDisponible()) {
                         $mensaje =  response()->json([
-                            'title' => 'SERIE NO SE ENCUENTRA DISPONIBLE !',
-                            'text' => "La serie $serie->serie ya no se encuentra disponible en este momento."
+                            'title' => "SERIE $serie->serie NO SE ENCUENTRA DISPONIBLE !",
+                            'text' => null
                         ])->getData();
                         $this->dispatchBrowserEvent('validation', $mensaje);
                         return false;
                     }
-                }
 
-                $carshoop->carshoopseries()->create([
-                    'date' =>  $date,
-                    'serie_id' => $this->serie_id,
-                    'user_id' => auth()->user()->id
-                ]);
+                    $tvitem->registrarSalidaSerie($serie_id,  $tvitem->isReservedStock() ? Serie::RESERVADA : Serie::SALIDA);
+                } else {
+                    $tvitem->itemseries()->create([
+                        'date' =>  $date,
+                        'serie_id' => $serie_id,
+                        'user_id' => auth()->user()->id
+                    ]);
+                }
             }
 
-            if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-                if (!$existskardex) {
-                    $cantidad = $this->serie_id ? 1 : $this->cantidad;
-                    $producto = Producto::with('almacens')->find($this->producto_id);
-                    $stock = $producto->almacens->find($this->almacen_id)->pivot->cantidad;
-
-                    $carshoop->saveKardex(
-                        $this->producto_id,
-                        $this->almacen_id,
-                        $stock,
-                        $stock - $cantidad,
-                        $cantidad,
-                        Almacen::SALIDA_ALMACEN,
-                        Kardex::ADD_GUIA,
-                        null
-                    );
-                }
-
-                $producto->almacens()->updateExistingPivot($this->almacen_id, [
-                    'cantidad' => $stock - $cantidad,
-                ]);
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                $kardex = $tvitem->updateOrCreateKardex($key, $stock, $cantidad);
+                $tvitem->producto->descontarStockProducto($key, $cantidad);
             }
 
             DB::commit();
             $this->dispatchBrowserEvent('created');
-            if ($this->clearaftersave) {
-                $this->reset(['serie_id', 'producto_id', 'almacen_id', 'alterstock', 'mode', 'cantidad']);
-            } else {
-                $this->reset(['serie_id', 'cantidad']);
-                $this->series = Serie::disponibles()->where('almacen_id', $this->almacen_id)
-                    ->where('producto_id', $this->producto_id)
-                    ->orderBy('serie', 'asc')->get();
+            $this->producto->refresh();
+            foreach ($this->producto->almacens as $item) {
+                $this->almacens[$item->id]['id'] = $item->id;
+                $this->almacens[$item->id]['serie_id'] = null;
+                $this->almacens[$item->id]['cantidad'] = 0;
+                $this->almacens[$item->id]['producto_id'] = $this->producto_id;
             }
         } catch (\Exception $e) {
             DB::rollBack();
@@ -759,43 +723,64 @@ class CreateGuia extends Component
         }
     }
 
-    public function delete(Carshoop $carshoop)
+    public function delete(Tvitem $tvitem)
     {
         DB::beginTransaction();
         try {
-            if (count($carshoop->carshoopseries) > 0) {
-                $carshoop->carshoopseries()->each(function ($carshoopserie) use ($carshoop) {
-                    if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
-                        $carshoopserie->serie->dateout = null;
-                        $carshoopserie->serie->status = 0;
-                        $carshoopserie->serie->save();
+            $tvitem->load(['itemseries.serie', 'producto.almacens', 'kardexes']);
+
+            foreach ($tvitem->itemseries as $itemserie) {
+                if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                    $tvitem->updateSerieDisponible($itemserie->serie);
+                }
+                $itemserie->delete();
+            }
+
+            foreach ($tvitem->kardexes as $kardex) {
+                $kardex->incrementOrDecrementStock($tvitem->producto, $tvitem);
+                $kardex->delete();
+            }
+
+            $tvitem->forceDelete();
+            DB::commit();
+            $this->dispatchBrowserEvent('deleted');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
+
+    public function deletekardex(Tvitem $tvitem, Kardex $kardex)
+    {
+        DB::beginTransaction();
+        try {
+            $tvitem->load(['producto.almacens']);
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                $tvitem->producto->incrementarStockProducto($kardex->almacen_id, $kardex->cantidad);
+
+                // COmparar si tiene seleccionado y es el mismo
+                if (!empty($this->producto_id) && $tvitem->producto_id == $this->producto_id) {
+                    $this->producto->refresh();
+                    foreach ($this->producto->almacens as $item) {
+                        $this->almacens[$item->id]['id'] = $item->id;
+                        $this->almacens[$item->id]['serie_id'] = null;
+                        $this->almacens[$item->id]['cantidad'] = 0;
+                        $this->almacens[$item->id]['producto_id'] = $this->producto->id;
                     }
-                    $carshoopserie->delete();
-                });
-            }
-
-            if ($carshoop->isDiscountStock() || $carshoop->isReservedStock()) {
-                $stock = $carshoop->producto->almacens->find($carshoop->almacen_id)->pivot->cantidad;
-                $carshoop->producto->almacens()->updateExistingPivot($carshoop->almacen_id, [
-                    'cantidad' => $stock + $carshoop->cantidad,
-                ]);
-            }
-
-            if ($carshoop->kardex) {
-                $carshoop->kardex->delete();
-            }
-
-            $carshoop->delete();
-            if ($this->producto_id && $this->almacen_id) {
-                $query = Serie::where('almacen_id', $this->almacen_id)
-                    ->where('producto_id', $this->producto_id);
-
-                if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-                    $query->disponibles();
                 }
-                $this->series = $query->orderBy('serie', 'asc')->get();
+            }
+            $kardex->delete();
+            $tvitem->cantidad = $tvitem->cantidad - $kardex->cantidad;
+            if ($tvitem->cantidad == 0) {
+                $tvitem->forceDelete();
+            } else {
+                $tvitem->save();
             }
             DB::commit();
+            $this->resetValidation();
             $this->dispatchBrowserEvent('deleted');
         } catch (\Exception $e) {
             DB::rollBack();
@@ -806,39 +791,39 @@ class CreateGuia extends Component
         }
     }
 
-    public function deleteserie(Carshoopserie $carshoopserie)
+    public function deleteitemserie(Itemserie $itemserie)
     {
         DB::beginTransaction();
         try {
-            if ($carshoopserie->carshoop->isDiscountStock() || $carshoopserie->carshoop->isReservedStock()) {
-                $carshoopserie->serie->dateout = null;
-                $carshoopserie->serie->status = 0;
-                $carshoopserie->serie->save();
-                $carshoopserie->carshoop->cantidad = $carshoopserie->carshoop->cantidad - 1;
-                $carshoopserie->carshoop->save();
+            $itemserie->load(['seriable.kardexes', 'serie'  => function ($query) {
+                $query->with(['producto.almacens']);
+            }]);
+            $tvitem = $itemserie->seriable;
+            $almacen_id = $itemserie->serie->almacen_id;
+            $kardex = $tvitem->kardexes->where('almacen_id', $almacen_id)->first();
 
-                $stock = $carshoopserie->carshoop->producto->almacens->find($carshoopserie->carshoop->almacen_id)->pivot->cantidad;
-                $carshoopserie->carshoop->producto->almacens()->updateExistingPivot($carshoopserie->carshoop->almacen_id, [
-                    'cantidad' => $stock + 1,
-                ]);
-            }
-
-            if ($carshoopserie->carshoop->kardex) {
-                $carshoopserie->carshoop->kardex->cantidad = $carshoopserie->carshoop->kardex->cantidad - 1;
-                $carshoopserie->carshoop->kardex->newstock = $carshoopserie->carshoop->kardex->newstock + 1;
-                $carshoopserie->carshoop->kardex->save();
-            }
-
-            $carshoopserie->delete();
-
-            if ($this->producto_id && $this->almacen_id) {
-                $query = Serie::where('almacen_id', $this->almacen_id)
-                    ->where('producto_id', $this->producto_id);
-
-                if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-                    $query->disponibles();
+            if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                $tvitem->updateSerieDisponible($itemserie->serie);
+                if ($kardex) {
+                    $itemserie->serie->producto->incrementarStockProducto($almacen_id, 1);
                 }
-                $this->series = $query->orderBy('serie', 'asc')->get();
+            }
+
+            if ($kardex) {
+                $kardex->cantidad = $kardex->cantidad - 1;
+                $kardex->newstock = $kardex->newstock - 1;
+                if ($kardex->cantidad == 0) {
+                    $kardex->delete();
+                } else {
+                    $kardex->save();
+                }
+            }
+            $itemserie->delete();
+            $tvitem->cantidad = $tvitem->cantidad - 1;
+            if ($tvitem->cantidad == 0) {
+                $tvitem->forceDelete();
+            } else {
+                $tvitem->save();
             }
             DB::commit();
             $this->dispatchBrowserEvent('deleted');
@@ -851,139 +836,44 @@ class CreateGuia extends Component
         }
     }
 
-    public function deleteallcarshoop()
+    public function deleteallitems()
     {
         try {
             DB::beginTransaction();
-            Carshoop::with(['carshoopseries'])->guias()->where('user_id', auth()->user()->id)
-                ->where('sucursal_id', auth()->user()->sucursal_id)->each(function ($carshoop) {
-                    $this->delete($carshoop);
-                });
+            Tvitem::with(['itemseries.serie', 'kardexes.almacen', 'producto' => function ($query) {
+                $query->with(['imagen', 'unit', 'marca']);
+            }])->guias()->micart()->orderBy('id', 'asc')->get()->map(function ($tvitem) {
+                Self::delete($tvitem);
+            });
             DB::commit();
             $this->resetValidation();
-            $this->dispatchBrowserEvent('toast', toastJSON('Carrito de guías eliminado correctamente'));
+            $this->dispatchBrowserEvent('toast', toastJSON('CARRITO ELIMINADO CORRECTAMENTE'));
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
         } catch (\Throwable $e) {
             DB::rollBack();
             throw $e;
-        }
-    }
-
-    public function updatedDisponibles($value)
-    {
-        $this->reset(['productos', 'producto_id', 'series', 'serie_id']);
-        if ($this->almacen_id) {
-
-            $this->productos = Producto::query()->select(
-                'productos.id',
-                'productos.name',
-                'marca_id',
-                'category_id',
-                'subcategory_id',
-                'visivility',
-                'novedad',
-                'pricebuy',
-                'pricesale',
-                'precio_1',
-                'precio_2',
-                'precio_3',
-                'precio_4',
-                'precio_5',
-                'marcas.name as name_marca',
-                'categories.name as name_category',
-                'subcategories.name as name_subcategory',
-            )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
-                ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
-                ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-                ->addSelect(['image' => function ($query) {
-                    $query->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                }])->withWhereHas('almacens', function ($query) use ($value) {
-                    $query->where('almacens.id', $this->almacen_id);
-                    if ($value) {
-                        $query->where('cantidad', '>', 0);
-                    }
-                })->visibles()->orderByDesc('novedad')
-                ->orderBy('subcategories.orden', 'ASC')
-                ->orderBy('categories.orden', 'ASC')->get();
-        }
-    }
-
-    public function updatedMode($value)
-    {
-        $this->reset(['serie_id']);
-        if ($this->producto_id && $this->almacen_id) {
-            $query = Serie::where('almacen_id', $this->almacen_id)
-                ->where('producto_id', $this->producto_id);
-
-            if (in_array($value, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-                $query->disponibles();
-            }
-
-            $this->series = $query->orderBy('serie', 'asc')->get();
-        }
-    }
-
-    public function updatedAlmacenId($value)
-    {
-        $this->reset(['productos', 'almacen_id', 'series', 'serie_id']);
-        if ($value) {
-            $this->almacen_id = $value;
-            $this->productos = Producto::query()->select(
-                'productos.id',
-                'productos.name',
-                'marca_id',
-                'category_id',
-                'subcategory_id',
-                'visivility',
-                'novedad',
-                'pricebuy',
-                'pricesale',
-                'precio_1',
-                'precio_2',
-                'precio_3',
-                'precio_4',
-                'precio_5',
-                'marcas.name as name_marca',
-                'categories.name as name_category',
-                'subcategories.name as name_subcategory',
-            )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
-                ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
-                ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-                ->addSelect(['image' => function ($query) {
-                    $query->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                }])->withWhereHas('almacens', function ($query) use ($value) {
-                    $query->where('almacens.id', $value);
-                    if ($this->disponibles) {
-                        $query->where('cantidad', '>', 0);
-                    }
-                })->visibles()->orderByDesc('novedad')
-                ->orderBy('subcategories.orden', 'ASC')
-                ->orderBy('categories.orden', 'ASC')->get();
         }
     }
 
     public function updatedProductoId($value)
     {
-        $this->reset(['series', 'serie_id']);
+        $this->reset(['series', 'serie_id', 'almacens', 'producto']);
         if ($value) {
-            $this->producto_id = $value;
-            $query = Serie::where('almacen_id', $this->almacen_id)
-                ->where('producto_id', $this->producto_id);
-
-            if (in_array($this->mode, [Almacen::DISMINUIR_STOCK, Almacen::RESERVAR_STOCK])) {
-                $query->disponibles();
+            $this->producto = Producto::with(['almacens', 'unit', 'series'])->find($value);
+            foreach ($this->producto->almacens as $item) {
+                $this->almacens[$item->id]['id'] = $item->id;
+                $this->almacens[$item->id]['serie_id'] = null;
+                $this->almacens[$item->id]['cantidad'] = 0;
+                $this->almacens[$item->id]['producto_id'] = $value;
             }
-
-            $this->series = $query->orderBy('serie', 'asc')->get();
         }
+    }
+
+    public function clearproducto()
+    {
+        $this->reset(['producto', 'producto_id', 'almacens', 'cantidad', 'mode']);
     }
 
     public function addplacavehiculo()

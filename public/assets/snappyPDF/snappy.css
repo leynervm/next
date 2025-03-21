@@ -168,6 +168,22 @@
     text-align: center;
 }
 
+.table-no-borders {
+    border-width: 0 !important;
+    border-style: none !important;
+    ;
+    border-color: white !important;
+    border-collapse: separate !important;
+}
+
+.img-xs {
+    max-height: 4cm;
+}
+
+.img-sm {
+    max-height: 6cm;
+}
+
 .picture-producto img {
     text-align: center;
     display: block;
@@ -177,11 +193,4 @@
     max-height: 100%;
     object-fit: scale-down;
     object-position: center;
-}
-
-.table-no-borders {
-    border-width: 0 !important;
-    border-style: none !important;;
-    border-color: white !important;
-    border-collapse: separate !important;
 }

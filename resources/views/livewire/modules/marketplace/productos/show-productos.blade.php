@@ -29,9 +29,88 @@
                         @click="sidebar=false;backdrop = false;document.body.style.overflow = 'auto';">✕</button>
                 </div>
 
+                @if (count($selectedcategorias) > 0 ||
+                        count($selectedsubcategorias) > 0 ||
+                        count($selectedmarcas) > 0 ||
+                        count($selectedespecificacions) > 0)
+                    <x-simple-card class="w-full text-colorsubtitleform p-2.5 relative flex flex-col gap-1">
+                        <small class="font-medium text-colorsubtitleform text-sm flex justify-between">
+                            Filtros aplicados
+                            <button wire:click="resetfilters"
+                                class="bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill-rule="evenodd"
+                                    clip-rule="evenodd" fill="currentColor" class="size-5 block text-colorsubtitleform">
+                                    <path
+                                        d="M21.4356 2.5218C21.8377 2.90032 21.8569 3.53319 21.4784 3.93537L14.8289 11.0004L13.4141 9.58556L20.022 2.56464C20.4005 2.16246 21.0334 2.14329 21.4356 2.5218ZM11.1141 9.8569C11.4092 9.67983 11.787 9.72634 12.0303 9.96969L14.5303 12.4697C14.671 12.6103 14.75 12.8011 14.75 13C14.75 15.6795 13.814 17.8177 12.8877 19.2772C12.4241 20.0075 11.9599 20.573 11.6089 20.9585C11.4396 21.1445 11.1279 21.4442 11.0102 21.5573L11.01 21.5575L11.01 21.5575L10.9977 21.5693C10.8136 21.7275 10.5643 21.7869 10.3287 21.7285C8.22723 21.2085 6.31516 20.2792 4.86851 18.5743C4.55974 18.2104 4.27528 17.8148 4.01631 17.3852C4.46585 17.4158 5.01987 17.425 5.62737 17.3722C7.1693 17.2381 9.14788 16.694 10.5761 14.9802C10.8412 14.662 10.7982 14.189 10.48 13.9239C10.1618 13.6587 9.6889 13.7017 9.42373 14.0199C8.35191 15.3061 6.83049 15.7619 5.49742 15.8778C4.83657 15.9353 4.24455 15.9066 3.81796 15.8632C3.76922 15.8583 3.72288 15.8545 3.67748 15.8508H3.67747H3.67746C3.53541 15.8392 3.40251 15.8283 3.23357 15.7848C2.72636 14.4883 2.39274 12.9551 2.25226 11.1471C2.23306 10.9001 2.33712 10.6595 2.5303 10.5043C2.72348 10.3491 2.98083 10.2994 3.21793 10.3714C6.09614 11.2454 8.85755 11.2108 11.1141 9.8569ZM5 6.5C5 5.67157 5.67157 5 6.5 5C7.32843 5 8 5.67157 8 6.5C8 7.32843 7.32843 8 6.5 8C5.67157 8 5 7.32843 5 6.5ZM12 3.95238C12 3.4264 11.5523 3 11 3C10.4477 3 10 3.4264 10 3.95238V4.04762C10 4.5736 10.4477 5 11 5C11.5523 5 12 4.5736 12 4.04762V3.95238Z" />
+                                </svg>
+                            </button>
+                        </small>
+
+                        <div class="w-full flex flex-wrap gap-1">
+                            @foreach ($selectedcategorias as $item)
+                                <span
+                                    class="px-1 py-0.5 !leading-none uppercase text-[10px] font-semibold inline-flex gap-1 items-center justify-center rounded bg-fondospancardproduct text-colorsubtitleform">
+                                    {{ str_replace('-', ' ', $item) }}
+                                    <label for="quitcategory_{{ $item }}"
+                                        class="text-xs text-textspancardproduct p-0.5 rounded cursor-pointer">
+                                        <input type="checkbox" wire:model.lazy="selectedcategorias" name="categorias[]"
+                                            class="hidden rounded outline-none cursor-pointer shadow-none shadow-0 border ring-0 focus:ring-0"
+                                            value="{{ $item }}" id="quitcategory_{{ $item }}">
+                                        ✕
+                                    </label>
+                                </span>
+                            @endforeach
+
+                            @foreach ($selectedsubcategorias as $item)
+                                <span
+                                    class="px-1 py-0.5 !leading-none uppercase text-[10px] font-semibold inline-flex gap-1 items-center justify-center rounded bg-fondospancardproduct text-colorsubtitleform">
+                                    {{ str_replace('-', ' ', $item) }}
+                                    <label for="quitsubcat_{{ $item }}"
+                                        class="text-xs text-textspancardproduct p-0.5 rounded cursor-pointer">
+                                        <input type="checkbox" wire:model.lazy="selectedsubcategorias"
+                                            name="subcategorias[]"
+                                            class="hidden rounded outline-none cursor-pointer shadow-none shadow-0 border ring-0 focus:ring-0"
+                                            value="{{ $item }}" id="quitsubcat_{{ $item }}">
+                                        ✕
+                                    </label>
+                                </span>
+                            @endforeach
+
+                            @foreach ($selectedmarcas as $item)
+                                <span
+                                    class="px-1 py-0.5 !leading-none uppercase text-[10px] font-semibold inline-flex gap-1 items-center justify-center rounded bg-fondospancardproduct text-colorsubtitleform">
+                                    {{ str_replace('-', ' ', $item) }}
+                                    <label for="marca_{{ $item }}"
+                                        class="text-xs text-textspancardproduct p-0.5 rounded cursor-pointer">
+                                        <input type="checkbox" wire:model.lazy="selectedmarcas" name="marcas[]"
+                                            class="hidden rounded outline-none cursor-pointer shadow-none shadow-0 border ring-0 focus:ring-0"
+                                            value="{{ $item }}" id="marca_{{ $item }}">
+                                        ✕
+                                    </label>
+                                </span>
+                            @endforeach
+
+                            @foreach ($selectedespecificacions as $item)
+                                <span
+                                    class="px-1 py-0.5 !leading-none uppercase text-[10px] font-semibold inline-flex gap-1 items-center justify-center rounded bg-fondospancardproduct text-colorsubtitleform">
+                                    {{ str_replace('-', ' ', $item) }}
+                                    <label for="quitespecif_{{ $item }}"
+                                        class="text-xs text-textspancardproduct p-0.5 rounded cursor-pointer">
+                                        <input type="checkbox" wire:model.lazy="selectedespecificacions"
+                                            name="especificacions[]"
+                                            class="hidden rounded outline-none cursor-pointer shadow-none shadow-0 border ring-0 focus:ring-0"
+                                            value="{{ $item }}" id="quitespecif_{{ $item }}">
+                                        ✕
+                                    </label>
+                                </span>
+                            @endforeach
+                        </div>
+                    </x-simple-card>
+                @endif
+
                 <x-simple-card class="w-full text-colorsubtitleform relative">
                     <x-input class="w-full block p-2.5 pr-8" wire:model.lazy="search"
-                        placeholder="Buscar en {{ count($selectedcategorias) > 0 ? str_replace('-', ' ', mb_strtoupper(implode(', ', $selectedcategorias), 'UTF-8' )) : '...' }}" />
+                        placeholder="Buscar en {{ count($selectedcategorias) > 0 ? str_replace('-', ' ', mb_strtoupper(implode(', ', $selectedcategorias), 'UTF-8')) : '...' }}" />
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="block absolute top-1/2 -translate-y-1/2 right-2 size-6 text-borderminicard">
@@ -42,68 +121,64 @@
 
 
                 @if (count($productos) > 0)
-                    @if (count($selectedcategorias) > 0 ||
-                            count($selectedsubcategorias) > 0 ||
-                            count($selectedmarcas) > 0 ||
-                            count($selectedespecificacions) > 0 ||
-                            trim($search) !== '')
-                        <x-simple-card class="w-full text-colorsubtitleform">
-                            <div class="w-full flex flex-col text-xs" x-cloak x-transition>
-                                @if (count($orderfilters) > 0)
-                                    <svg style="display:none;">
-                                        <symbol id="precio_asc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="m3 8 4-4 4 4" />
-                                            <path d="M7 4v16" />
-                                            <path d="M11 12h4" />
-                                            <path d="M11 16h7" />
-                                            <path d="M11 20h10" />
-                                        </symbol>
-                                        <symbol id="precio_desc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round">
-                                            <path d="m3 16 4 4 4-4" />
-                                            <path d="M7 20V4" />
-                                            <path d="M11 4h4" />
-                                            <path d="M11 8h7" />
-                                            <path d="M11 12h10" />
-                                        </symbol>
-                                    </svg>
+                    {{-- @if (count($selectedcategorias) > 0 || count($selectedsubcategorias) > 0 || count($selectedmarcas) > 0 || count($selectedespecificacions) > 0 || trim($search) !== '') --}}
+                    <x-simple-card class="w-full text-colorsubtitleform">
+                        <div class="w-full flex flex-col text-xs" x-cloak x-transition>
+                            @if (count($orderfilters) > 0)
+                                <svg style="display:none;">
+                                    <symbol id="precio_asc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m3 8 4-4 4 4" />
+                                        <path d="M7 4v16" />
+                                        <path d="M11 12h4" />
+                                        <path d="M11 16h7" />
+                                        <path d="M11 20h10" />
+                                    </symbol>
+                                    <symbol id="precio_desc" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="m3 16 4 4 4-4" />
+                                        <path d="M7 20V4" />
+                                        <path d="M11 4h4" />
+                                        <path d="M11 8h7" />
+                                        <path d="M11 12h10" />
+                                    </symbol>
+                                </svg>
 
-                                    @foreach ($orderfilters as $filter => $item)
-                                        @if ($item['visible'])
-                                            <div>
-                                                <x-input type="radio" wire:model="filterselected"
-                                                    id="filter_{{ $filter }}" class="peer"
-                                                    value="{{ $filter }}" name="filterselected"
-                                                    style="display: none;" wire:key="key_{{ $filter }}" />
-                                                <label for="filter_{{ $filter }}"
-                                                    class="w-full peer-checked:bg-fondospancardproduct peer-checked:text-textspancardproduct cursor-pointer block p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
-                                                    <svg class="w-4 h-4 inline-block">
-                                                        <use href="#{{ $filter }}"></use>
-                                                    </svg>
-                                                    {{ $item['text'] }}
-                                                </label>
-                                            </div>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            </div>
-                        </x-simple-card>
-                    @endif
+                                @foreach ($orderfilters as $filter => $item)
+                                    @if ($item['visible'])
+                                        <div>
+                                            <x-input type="radio" wire:model="filterselected"
+                                                id="filter_{{ $filter }}" class="peer"
+                                                value="{{ $filter }}" name="filterselected"
+                                                style="display: none;" wire:key="key_{{ $filter }}" />
+                                            <label for="filter_{{ $filter }}"
+                                                class="w-full peer-checked:bg-fondospancardproduct peer-checked:text-textspancardproduct cursor-pointer block p-2.5 text-xs rounded text-left hover:bg-shadowminicard hover:text-textspancardproduct disabled:opacity-25 transition ease-in-out duration-150">
+                                                <svg class="w-4 h-4 inline-block">
+                                                    <use href="#{{ $filter }}"></use>
+                                                </svg>
+                                                {{ $item['text'] }}
+                                            </label>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @endif
+                        </div>
+                    </x-simple-card>
+                    {{-- @endif --}}
                 @endif
 
                 @if (count($categories) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'false' : 'true' }} }" wire:key="dropdowncategories"
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchcategorias) ? 'false' : 'false' }} }" wire:key="dropdowncategories"
                         class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
                             @click="openfilter = !openfilter">
                             <h1 class="pl-2 font-semibold text-[11px]">CATEGORÍAS</h1>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                class="block w-6 h-6">
+                                stroke-width="1.5" stroke="currentColor" stroke-linecap="round"
+                                stroke-linejoin="round" class="block w-6 h-6">
                                 <path d="M8.25 15 12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9" />
                             </svg>
                         </button>
@@ -115,7 +190,7 @@
                                     <input type="checkbox" wire:model.lazy="selectedcategorias" name="categorias[]"
                                         class="rounded p-2 outline-none cursor-pointer shadow-none shadow-0 border ring-0 focus:ring-0 hover:text-next-500 checked:text-next-500 focus:text-next-500"
                                         value="{{ $item->slug }}" id="category_id_{{ $item->id }}">
-                                    {{ $item->name }}
+                                    {{ str_replace('-', ' ', $item->name) }}
                                 </label>
                             @endforeach
                         </div>
@@ -123,7 +198,7 @@
                 @endif
 
                 @if (count($subcategories) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'false' : 'true' }} }" wire:key="dropdownsubcategories"
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchsubcategorias) ? 'false' : 'false' }} }" wire:key="dropdownsubcategories"
                         class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
@@ -152,7 +227,7 @@
                 @endif
 
                 @if (count($marcas) > 0)
-                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'true' }} }" wire:key="dropdownmarcas"
+                    <x-simple-card x-data="{ openfilter: {{ empty($searchmarcas) ? 'false' : 'false' }} }" wire:key="dropdownmarcas"
                         class="w-full text-colorsubtitleform">
                         <button type="button"
                             class="w-full p-1 py-2 cursor-pointer flex gap-1 justify-between items-center"
@@ -218,7 +293,7 @@
                 class="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 self-start">
                 @foreach ($productos as $item)
                     @php
-                        $image = !empty($item->image) ? pathURLProductImage($item->image) : null;
+                        $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
                         $secondimage = !empty($item->image_2) ? pathURLProductImage($item->image_2) : null;
                         $priceold = $item->getPrecioVentaDefault($pricetype);
                         $pricesale = $item->getPrecioVenta($pricetype);
@@ -238,12 +313,13 @@
                         }
                     @endphp
 
-                    <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->name_marca" :sku="$item->sku"
-                        :novedad="$item->isNovedad()" :image="$image" :secondimage="$secondimage" :promocion="$promocion"
+                    <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->name_marca" :subcategory="$item->name_subcategory"
+                        :sku="$item->sku" :novedad="$item->isNovedad()" :image="$image" :secondimage="$secondimage" :promocion="$promocion"
                         wire:key="cardproduct{{ $item->id }}" x-data="{ addcart: isXL ? false : true }"
                         @mouseover="addcart = true" @mouseleave="isXL && (addcart = false)"
                         class="w-full pt-0 rounded-md md:rounded-xl ring-1 ring-borderminicard hover:shadow-md hover:shadow-shadowminicard overflow-hidden transition ease-in-out duration-150"
                         x-init="$watch('isXL', value => { addcart = value ? false : true; })">
+
                         @if ($pricesale > 0)
                             <div class="{{ $paddingTop }} text-center flex flex-col justify-center">
                                 @if ($empresa->verDolar())
@@ -401,7 +477,7 @@
 
     <x-jet-dialog-modal wire:model="open" maxWidth="5xl" footerAlign="justify-end">
         <x-slot name="title">
-            {{ __('Add product to cart') }}
+            {{ __('AGREGAR PRODUCTO AL CARRITO') }}
         </x-slot>
 
         <x-slot name="content">
@@ -409,7 +485,7 @@
                 @php
                     $pricesale = $producto->getPrecioVenta($pricetype);
                     $priceold = $producto->getPrecioVentaDefault($pricetype);
-                    $image = count($producto->images) > 0 ? pathURLProductImage($producto->images->first()->url) : null;
+                    $image = !empty($producto->imagen) > 0 ? pathURLProductImage($producto->imagen->url) : null;
                     $promocion_producto = null;
                     if ($producto->descuento > 0 || $producto->liquidacion) {
                         $promocion_producto = $producto->promocions
@@ -434,14 +510,15 @@
                                 <p class="text-white text-xs block font-medium py-1.5 px-10 tracking-widest">
                                     @if ($empresa->isTitlePromocion())
                                         PROMOCIÓN
+                                    @elseif($empresa->isTitleOferta())
+                                        OFERTA
                                     @elseif($empresa->isTitleLiquidacion())
                                         LIQUIDACIÓN
                                     @else
-                                        @if ($producto->descuento > 0)
-                                            - {{ decimalOrInteger($producto->descuento) }}% DSCT
-                                        @else
-                                            LIQUIDACIÓN
+                                        @if ($promocion_producto->isDescuento())
+                                            - {{ decimalOrInteger($promocion_producto->descuento) }}%
                                         @endif
+                                        {{ getTextPromocion($promocion_producto->type) }}
                                     @endif
                                 </p>
                             </div>
@@ -618,14 +695,14 @@
                                                 {{ $item->titulo }}</h1>
 
                                             <div class="w-full flex items-center flex-wrap gap-1">
-                                                <div class="w-20 flex flex-col justify-center items-center opacity-50">
+                                                <div class="w-20 flex flex-col justify-center items-center">
                                                     <div class="w-full block rounded-lg relative">
                                                         @if ($image)
                                                             <img src="{{ $image }}" alt="{{ $image }}"
-                                                                class="block w-full h-auto max-h-16 object-scale-down overflow-hidden rounded-lg">
+                                                                class="block w-full h-auto max-h-20 object-scale-down overflow-hidden rounded-lg">
                                                         @else
                                                             <x-icon-image-unknown
-                                                                class="w-full h-full max-h-16 text-colorsubtitleform" />
+                                                                class="w-full h-full max-h-20 text-colorsubtitleform" />
                                                         @endif
                                                     </div>
                                                 </div>
@@ -649,9 +726,9 @@
                                                         class="w-20 flex flex-col justify-center items-center">
                                                         <a class="w-full block rounded-lg relative"
                                                             href="{{ route('productos.show', $itemcombo->producto_slug) }}">
-                                                            @if ($itemcombo->image)
-                                                                <img src="{{ $itemcombo->image }}"
-                                                                    alt="{{ $itemcombo->image }}"
+                                                            @if ($itemcombo->imagen)
+                                                                <img src="{{ $itemcombo->imagen }}"
+                                                                    alt="{{ $itemcombo->producto_slug }}"
                                                                     class="{{ $opacidad }} block w-full h-auto max-h-16 object-scale-down overflow-hidden rounded-lg">
                                                             @else
                                                                 <x-icon-image-unknown

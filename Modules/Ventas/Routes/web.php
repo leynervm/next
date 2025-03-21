@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Ventas\Http\Controllers\VentaController;
 use Nwidart\Modules\Facades\Module;
 
-Route::prefix('admin')->middleware(['auth:sanctum', config('jetstream.auth_session'), 'verifysucursal'])->group(function () {
+Route::prefix('admin')->middleware(['web', 'auth:sanctum', config('jetstream.auth_session'), 'verifysucursal'])->group(function () {
     Route::prefix('/ventas')->group(function () {
 
 

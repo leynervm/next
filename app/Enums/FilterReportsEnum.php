@@ -31,6 +31,9 @@ enum FilterReportsEnum: string
     case KARDEX_PRODUCTOS = '19';
     case MIN_STOCK = '20';
     case PRODUCTOS_PROMOCIONADOS = '21';
+    case CATALOGO_PRODUCTOS = '22';
+
+    case CONSOLIDADO = '100';
 
     public static function values(): array
     {
@@ -97,7 +100,7 @@ enum FilterReportsEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::DEFAULT => 'POR DEFECTO (TODOS LOS REGISTROS)',
+            self::DEFAULT => 'GENERAL',
             // self::AYER => 'AYER',
             self::DIARIO => 'DIARIO',
             self::SEMANA_ACTUAL => 'SEMANA ACTUAL',
@@ -119,6 +122,8 @@ enum FilterReportsEnum: string
             self::KARDEX_PRODUCTOS => 'KARDEX DEL PRODUCTO',
             self::MIN_STOCK => 'PRÓXIMOS A AGOTARSE',
             self::PRODUCTOS_PROMOCIONADOS => 'PRODUCTOS EN PROMOCIÓN',
+            self::CATALOGO_PRODUCTOS => 'CATÁLOGO DE PRODUCTOS',
+            self::CONSOLIDADO => 'CONSOLIDADO DE INFORMACIÓN',
         };
     }
 

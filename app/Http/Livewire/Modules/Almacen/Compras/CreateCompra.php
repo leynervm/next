@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Modules\Almacen\Entities\Compra;
+use Modules\Almacen\Entities\Compraitem;
 
 class CreateCompra extends Component
 {
@@ -153,6 +154,7 @@ class CreateCompra extends Component
                     'oldprice' => $producto->pricebuy,
                     'oldpricesale' => $producto->pricesale,
                     'igv' => $item['igvunitario'],
+                    'typedescuento' => $item['typedescuento'],
                     'descuento' => $item['descuentounitario'],
                     'subtotaligv' => $item['subtotaligvitem'],
                     'subtotaldescuento' => $item['subtotaldsctoitem'],
@@ -162,10 +164,24 @@ class CreateCompra extends Component
                 ]);
 
                 foreach ($item['almacens'] as $almacen) {
-                    $almacencompra = $compraitem->almacencompras()->create([
+                    $stock = $producto->almacens()->find($almacen['id'])->pivot->cantidad;
+                    $kardex = $compraitem->kardexes()->create([
+                        'date' => now('America/Lima'),
                         'cantidad' => $almacen['cantidad'],
+                        'oldstock' => $stock,
+                        'newstock' => $stock + $almacen['cantidad'],
+                        'simbolo' => Kardex::SIMBOLO_INGRESO,
+                        'detalle' => Kardex::ENTRADA_ALMACEN,
+                        'reference' => $this->referencia,
+                        'producto_id' => $item['producto_id'],
                         'almacen_id' => $almacen['id'],
+                        'sucursal_id' => $this->sucursal_id,
+                        'user_id' => auth()->user()->id,
                     ]);
+                    // $almacencompra = $compraitem->almacencompras()->create([
+                    //     'cantidad' => $almacen['cantidad'],
+                    //     'almacen_id' => $almacen['id'],
+                    // ]);
 
                     if ($item['requireserie']) {
                         if (count($almacen['series']) != $almacen['cantidad']) {
@@ -177,30 +193,36 @@ class CreateCompra extends Component
                             return false;
                         }
                         foreach ($almacen['series'] as $serie) {
-                            $almacencompra->series()->create([
+                            $compraitem->series()->create([
                                 'serie' => trim($serie),
                                 'almacen_id' => $almacen['id'],
                                 'producto_id' => $item['producto_id'],
                                 'user_id' => auth()->user()->id,
                             ]);
+                            // $almacencompra->series()->create([
+                            //     'serie' => trim($serie),
+                            //     'almacen_id' => $almacen['id'],
+                            //     'producto_id' => $item['producto_id'],
+                            //     'user_id' => auth()->user()->id,
+                            // ]);
                         }
                     }
 
-                    $mystock = $producto->almacens()->where('almacen_id', $almacen['id'])->first();
-
-                    $almacencompra->saveKardex(
-                        $item['producto_id'],
-                        $almacen['id'],
-                        $mystock->pivot->cantidad,
-                        $mystock->pivot->cantidad +  $almacen['cantidad'],
-                        $almacen['cantidad'],
-                        '+',
-                        Kardex::ENTRADA_ALMACEN,
-                        $this->referencia
-                    );
-                    $producto->almacens()->updateExistingPivot($almacen['id'], [
-                        'cantidad' => $mystock->pivot->cantidad + $almacen['cantidad'],
-                    ]);
+                    // $mystock = $producto->almacens()->where('almacen_id', $almacen['id'])->first();
+                    // $almacencompra->saveKardex(
+                    //     $item['producto_id'],
+                    //     $almacen['id'],
+                    //     $mystock->pivot->cantidad,
+                    //     $mystock->pivot->cantidad +  $almacen['cantidad'],
+                    //     $almacen['cantidad'],
+                    //     '+',
+                    //     Kardex::ENTRADA_ALMACEN,
+                    //     $this->referencia
+                    // );
+                    // $producto->almacens()->updateExistingPivot($almacen['id'], [
+                    //     'cantidad' => $mystock->pivot->cantidad + $almacen['cantidad'],
+                    // ]);
+                    $producto->incrementarStockProducto($almacen['id'], $almacen['cantidad']);
                 }
 
                 if (!view()->shared('empresa')->usarLista()) {
@@ -268,15 +290,15 @@ class CreateCompra extends Component
             'afectacion' => ['required', 'string', 'in:S,E'],
             'almacens' => ['required', 'array', 'min:1'],
             'sumstock' => ['required', 'integer', 'gt:0'],
-            'priceunitario' => ['required', 'numeric', 'gt:0'],
-            'igvunitario' => ['nullable', 'numeric', 'min:0'],
-            'descuentounitario' =>  $this->typedescuento > 0 ? ['required', 'numeric', 'decimal:0,2', 'gt:0'] : ['nullable'],
-            'pricebuy' => ['required', 'numeric', 'gt:0'],
+            'priceunitario' => ['required', 'numeric', 'gt:0', 'decimal:0,3'],
+            'igvunitario' => ['nullable', 'numeric', 'min:0', 'decimal:0,3'],
             'typedescuento' => ['required', 'integer', 'min:0', 'in:0,1,2,3'],
+            'descuentounitario' =>  $this->typedescuento > 0 ? ['required', 'numeric', 'decimal:0,3', 'gt:0'] : ['nullable'],
+            'pricebuy' => ['required', 'numeric', 'gt:0'],
             'subtotaligvitem' => ['required', 'numeric', 'min:0'],
             'subtotalitem' => ['required', 'numeric', 'gt:0'],
             'subtotaldsctoitem' => ['nullable', 'numeric', 'min:0'],
-            'priceventa' => !$empresa->usarlista() ? ['required', 'numeric', 'decimal:0,2', 'gt:0'] : ['nullable', 'min:0']
+            'priceventa' => !$empresa->usarlista() ? ['required', 'numeric', 'decimal:0,3', 'gt:0'] : ['nullable', 'min:0']
         ]);
 
         $producto = Producto::with(['unit'])->addSelect(['image' => function ($query) {
@@ -308,9 +330,9 @@ class CreateCompra extends Component
         });
 
         if ($this->typedescuento > 0) {
-            if ($this->typedescuento == '2') {
+            if ($this->typedescuento == Compraitem::PRECIO_UNIT_SIN_DSCTO_APLICADO) {
                 $this->priceunitario = $this->pricebuy;
-            } elseif ($this->typedescuento == '3') {
+            } elseif ($this->typedescuento == Compraitem::DSCTO_IMPORTE_TOTAL) {
                 $this->descuentounitario = number_format($this->subtotaldsctoitem / $this->sumstock, 2, '.', '');
             }
         } else {

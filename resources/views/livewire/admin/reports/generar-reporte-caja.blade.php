@@ -40,6 +40,21 @@
                     </div>
 
                     <div class="w-full">
+                        <x-label value="Vista de reporte :" />
+                        <div id="parentrpcaja_viewreporte" x-init="rpCajaViewreporte" class="relative">
+                            <x-select class="block w-full" x-ref="rpcaja_viewreporte" id="rpcaja_viewreporte"
+                                data-dropdown-parent="null">
+                                <x-slot name="options">
+                                    <option value="0">POR DEFECTO</option>
+                                    <option value="1">CONSOLIDADO</option>
+                                </x-slot>
+                            </x-select>
+                            <x-icon-select />
+                        </div>
+                        <x-jet-input-error for="viewreporte" />
+                    </div>
+
+                    <div class="w-full">
                         <x-label value="Sucursal de caja:" />
                         <div id="parentrpcaja_sucursal_id" x-init="rpCajaSucursal" class="relative">
                             <x-select class="block w-full" x-ref="rpcaja_sucursal_id" id="rpcaja_sucursal_id"
@@ -313,6 +328,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('reportcaja', () => ({
                 typereporte: @entangle('typereporte').defer,
+                viewreporte: @entangle('viewreporte').defer,
                 typemovement: @entangle('typemovement'),
                 sucursal_id: @entangle('sucursal_id'),
                 monthbox_id: @entangle('monthbox_id'),
@@ -331,6 +347,9 @@
                         if (value !== @json(getFilter::DIAS_SELECCIONADOS->value)) {
                             this.$wire.set('days', []);
                         }
+                    });
+                    this.$watch('viewreporte', (value) => {
+                        this.rpCajaView.val(value).trigger("change");
                     });
                     this.$watch('typemovement', (value) => {
                         this.rpCajaTypemovement.val(value).trigger("change");
@@ -366,6 +385,7 @@
 
                     Livewire.hook('message.processed', () => {
                         this.rpCajaType.select2().val(this.typereporte).trigger('change');
+                        this.rpCajaView.select2().val(this.viewreporte).trigger('change');
                         this.rpCajaTypemovement.select2().val(this.typemovement).trigger(
                             'change');
                         this.rpCajaSuc.select2().val(this.sucursal_id).trigger('change');
@@ -400,6 +420,14 @@
             this.rpCajaType.val(this.typereporte).trigger("change");
             this.rpCajaType.on("select2:select", (event) => {
                 this.typereporte = event.target.value;
+            })
+        }
+
+        function rpCajaViewreporte() {
+            this.rpCajaView = $(this.$refs.rpcaja_viewreporte).select2();
+            this.rpCajaView.val(this.viewreporte).trigger("change");
+            this.rpCajaView.on("select2:select", (event) => {
+                this.viewreporte = event.target.value;
             })
         }
 

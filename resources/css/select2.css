@@ -7,62 +7,59 @@
 }
 
 .select2-container .select2-dropdown {
-    @apply bg-fondoselect2 shadow-shadowselect2 shadow-lg border-0 rounded-md mt-1 p-2 !important;
+    @apply bg-fondoselect2 shadow-lg shadow-shadowselect2 mt-1 p-2 border-0 rounded-md !important;
 }
 
 .select2-container--open .select2-dropdown--below {
-    @apply border-solid border-t-0 border-shadowselect2 !important;
+    @apply border-shadowselect2 border-t-0 border-solid !important;
 }
 
 .select2.select2-container .select2-selection {
     @apply p-1.5 px-4 border border-next-300 rounded-lg outline-none transition-all duration-150;
 }
 
+#parentdatecodegarantia .select2.select2-container .select2-selection,
+#parentrpcot_entrega .select2.select2-container .select2-selection {
+    @apply border-l-0 rounded-tl-none rounded-bl-none !important;
+}
+
+
 .select2-container .select2-selection--single {
-    @apply h-auto bg-transparent;
+    @apply bg-transparent h-auto;
 }
 
 .select2.select2-container .select2-selection .select2-selection__rendered {
-    @apply text-colorlabel text-sm !leading-normal px-0;
+    @apply px-0 text-colorlabel text-sm !leading-normal;
 }
 
 .select2.select2-container .select2-selection .select2-selection__arrow {
     @apply hidden;
 }
 
-.select2.select2-container.select2-container--open
-    .select2-selection.select2-selection--multiple {
+.select2.select2-container.select2-container--open .select2-selection.select2-selection--multiple {
     @apply border border-next-300;
 }
 
 .select2.select2-container .select2-selection--multiple {
-    @apply h-auto p-2.5;
+    @apply p-2.5 h-auto;
 }
 
-.select2.select2-container
-    .select2-selection--multiple
-    .select2-search--inline
-    .select2-search__field {
+.select2.select2-container .select2-selection--multiple .select2-search--inline .select2-search__field {
     @apply mt-0 p-2.5;
 }
 
-.select2.select2-container
-    .select2-selection--multiple
-    .select2-selection__choice {
-    @apply h-[32px] bg-white border border-next-300 p-2.5 leading-3 text-sm rounded-sm relative;
+.select2.select2-container .select2-selection--multiple .select2-selection__choice {
+    @apply relative bg-white p-2.5 border border-next-300 rounded-sm h-[32px] text-sm leading-3;
 }
 
-.select2.select2-container
-    .select2-selection--multiple
-    .select2-selection__choice
-    .select2-selection__choice__remove {
-    @apply absolute top-0 left-0 m-0 text-center font-bold text-red-600 text-sm;
+.select2.select2-container .select2-selection--multiple .select2-selection__choice .select2-selection__choice__remove {
+    @apply top-0 left-0 absolute m-0 font-bold text-red-600 text-sm text-center;
 }
 
 /* .select2-container .select2-dropdown .select2-search {} */
 
 .select2-container .select2-dropdown .select2-search input {
-    @apply bg-transparent text-colorlabel outline-none border border-next-300 p-2.5 text-sm leading-3 shadow-none rounded-lg !important;
+    @apply bg-transparent shadow-none p-2.5 border border-next-300 rounded-lg outline-none text-colorlabel text-sm leading-3 !important;
 }
 
 .select2-container .select2-dropdown .select2-search input:focus {
@@ -77,42 +74,33 @@
     @apply bg-fondoselect2 text-colorlabel;
 }
 
-.select2-container--default.select2-container--disabled
-    .select2-selection--single,
-.select2-container--default.select2-container--disabled
-    .select2.select2-container
-    .select2-selection:focus {
-    @apply shadow-none border-gray-300 bg-fondoinputdisabled opacity-80 !important;
+.select2-container--default.select2-container--disabled .select2-selection--single,
+.select2-container--default.select2-container--disabled .select2.select2-container .select2-selection:focus {
+    @apply bg-fondoinputdisabled opacity-80 shadow-none border-gray-300 !important;
 }
 
 .select2-results__option {
-    @apply p-2 rounded-md ease-in-out duration-150 !important;
+    @apply p-2 rounded-md duration-150 ease-in-out !important;
 }
 
 .select2-results__option .select2-subtitle-option {
-    @apply text-subtitleselect2 ease-in-out duration-150;
+    @apply text-subtitleselect2 duration-150 ease-in-out;
 }
 
-.select2-container--default
-    .select2-results
-    > .select2-results__options::-webkit-scrollbar {
-    @apply cursor-pointer h-[4px] w-[6px] rounded-md;
+.select2-container--default .select2-results>.select2-results__options::-webkit-scrollbar {
+    @apply rounded-md w-[6px] h-[4px] cursor-pointer;
 }
 
-.select2-container--default
-    .select2-results
-    > .select2-results__options::-webkit-scrollbar-track {
-    @apply bg-gray-300 cursor-pointer rounded-md;
+.select2-container--default .select2-results>.select2-results__options::-webkit-scrollbar-track {
+    @apply bg-gray-300 rounded-md cursor-pointer;
 }
 
-.select2-container--default
-    .select2-results
-    > .select2-results__options::-webkit-scrollbar-thumb {
-    @apply bg-gray-400 cursor-pointer rounded-md;
+.select2-container--default .select2-results>.select2-results__options::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-md cursor-pointer;
 }
 
 /* #form-configuracion .select2.select2-container .select2-selection {
-    @apply rounded-lg p-2;
+    @apply p-2 rounded-lg;
 }
 
 #form-configuracion .select2.select2-container .select2-selection .select2-selection__rendered {
@@ -120,7 +108,7 @@
 } */
 
 /* .soft-scrollbar::-webkit-scrollbar {
-    @apply cursor-pointer h-[4px] w-[4px];
+    @apply w-[4px] h-[4px] cursor-pointer;
 }
 
 .soft-scrollbar::-webkit-scrollbar-track {
@@ -143,8 +131,7 @@
     border-color: transparent transparent #3b82f6 transparent;
 } */
 
-.select2-container--default
-    .select2-results__option--highlighted[aria-selected] {
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
     @apply bg-fondohoverselect2 text-texthoverselect2;
 }
 
@@ -152,52 +139,47 @@
     @apply bg-fondoactiveselect2 text-textactiveselect2;
 }
 
-.select2-container--default
-    .select2-results__option--highlighted[aria-selected]
-    .select2-subtitle-option {
+.select2-container--default .select2-results__option--highlighted[aria-selected] .select2-subtitle-option {
     @apply text-subtitleactiveselect2 !important;
 }
 
-.select2-container--default
-    .select2-results__option[aria-selected='true']
-    .select2-subtitle-option {
+.select2-container--default .select2-results__option[aria-selected='true'] .select2-subtitle-option {
     @apply text-subtitleactiveselect2 !important;
 }
 
-.select2-container--default.select2-container--open.select2-container--below
-    .select2-selection--single,
-.select2-container--default.select2-container--open.select2-container--below
-    .select2-selection--multiple {
-    @apply rounded-br-lg rounded-bl-lg;
+.select2-container--default.select2-container--open.select2-container--below .select2-selection--single,
+.select2-container--default.select2-container--open.select2-container--below .select2-selection--multiple {
+    @apply rounded-bl-lg rounded-br-lg;
 }
 
 .custom-list-select {
-    @apply w-full flex gap-2;
+    @apply flex gap-2 w-full;
 }
 
 .custom-list-select .image-custom-select {
-    @apply w-20 h-20 rounded-lg overflow-hidden flex-shrink-0;
+    @apply flex-shrink-0 rounded-lg w-20 h-20 overflow-hidden;
 }
 
 .custom-list-select .content-custom-select {
-    @apply w-full flex-1;
+    @apply flex-1 w-full;
 }
 
 .custom-list-select .title-custom-select {
-    @apply w-full block font-medium text-textselect2 text-xs;
+    @apply block w-full font-medium text-textselect2 text-xs;
 }
 
 .custom-list-select .marca-custom-select {
-    @apply w-full block text-colorsubtitleform text-xs font-medium;
+    @apply block w-full font-medium text-colorsubtitleform text-xs;
 }
 
 .custom-list-select .category-custom-select {
-    @apply w-full flex justify-start items-center gap-2 text-subtitleselect2 text-[10px];
+    @apply flex justify-start items-center gap-2 w-full text-[10px] text-subtitleselect2;
 }
 
 .select2-container--default .select2-results__option[aria-selected='true'] .title-custom-select {
     @apply text-textactiveselect2;
 }
+
 .select2-container--default .select2-results__option[aria-selected='true'] .marca-custom-select,
 .select2-container--default .select2-results__option[aria-selected='true'] .category-custom-select {
     @apply !text-neutral-200;
