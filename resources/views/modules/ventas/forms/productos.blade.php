@@ -4,7 +4,7 @@
         @php
             $almacen = null;
             $promocion = null;
-            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
+            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null;
             $priceold = $item->getPrecioVentaDefault($pricetype);
             $pricesale = $item->getPrecioVenta($pricetype);
 

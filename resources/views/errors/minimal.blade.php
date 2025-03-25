@@ -16,11 +16,12 @@
             @yield('image')
 
             <div class="flex flex-col items-center pt-8 justify-center sm:pt-0">
-                <div class="px-4 text-6xl font-semibold italic text-primary md:border-b md:border-borderminicard tracking-wider">
+                <div
+                    class="w-full text-center text-6xl font-semibold italic text-primary tracking-wider">
                     @yield('code')
                 </div>
 
-                <div class="ml-4 text-xs md:text-lg text-colorsubtitleform uppercase tracking-wider">
+                <div class="w-full text-center text-xs md:text-lg text-colorsubtitleform uppercase tracking-wider">
                     @yield('message')
                 </div>
             </div>

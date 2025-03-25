@@ -93,7 +93,8 @@
                 <th class="text-start" rowspan="2">
                     @if (!empty($url_logo))
                         <div class="image">
-                            <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" />
+                            <img src="{{ imageBase64($url_logo) }}"
+                                alt="{{ $empresa->name }}" />
                         </div>
                     @endif
                 </th>

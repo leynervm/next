@@ -30,7 +30,7 @@ class ShowMarcas extends Component
     {
         return [
             'marca.name' => ['required', 'min:2', 'max:100', new CampoUnique('marcas', 'name', $this->marca->id, true)],
-            'logo' => ['nullable', 'file', 'mimes:jpeg,png,gif', 'max:5120']
+            'logo' => ['nullable', 'file', 'mimes:jpeg,png,gif,webp', 'max:5120']
         ];
     }
 
@@ -63,12 +63,12 @@ class ShowMarcas extends Component
         try {
             if ($this->logo) {
                 $compressedImage = Image::make($this->logo->getRealPath())
-                    ->resize(450, 450, function ($constraint) {
+                    ->resize(150, null, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
-                    })->orientate()->encode('jpg', 30);
+                    })->orientate()->encode('webp', 90);
 
-                $logoURL = uniqid('marca_') . '.' . $this->logo->getClientOriginalExtension();
+                $logoURL = uniqid('marca_') . '.webp';
                 $compressedImage->save(public_path('storage/images/marcas/' . $logoURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB

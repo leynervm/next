@@ -7,6 +7,7 @@ use App\Models\Guia;
 use App\Models\Pricetype;
 use App\Models\Producto;
 use App\Models\Promocion;
+use Intervention\Image\Facades\Image as ImageIntervention;
 use Illuminate\Support\Facades\Config;
 use Carbon\Carbon;
 use CodersFree\Shoppingcart\Facades\Cart;
@@ -468,7 +469,6 @@ function pathURLSlider($filename = null)
     }
 }
 
-
 /**
  * @imageBase64 Retorna una imágen convertida en Base64.
  * @param string $filename Nombre de la imágen a convertir.
@@ -477,14 +477,19 @@ function pathURLSlider($filename = null)
  */
 function imageBase64($filename, $pathdir = 'app/public/images/company/')
 {
-    if (!is_null($filename)) {
-        if (file_exists(storage_path($pathdir . $filename))) {
-            // storage/images/company/
-            return 'data:image/png;base64,' . base64_encode(file_get_contents(storage_path($pathdir . $filename)));
-        }
+    if (is_null($filename)) {
+        return null;
     }
-    return null;
+
+    $filePath = storage_path($pathdir . $filename);
+    if (!file_exists($filePath)) {
+        return null;
+    }
+
+    $base64_image = ImageIntervention::make($filePath)->encode('png')->getEncoded();
+    return 'data:image/png;base64,' . base64_encode($base64_image);
 }
+
 
 function getLogoEmpresa($filename = null, $forceHTTPS = true)
 {
@@ -678,7 +683,8 @@ function getAmountCombo($promocion, $pricetype = null, $almacen_id = null)
                 'producto_id' => $itempromo->producto_id,
                 'producto_slug' => $itempromo->producto->slug,
                 'name' => $itempromo->producto->name,
-                'imagen' => $itempromo->producto->imagen ? pathURLProductImage($itempromo->producto->imagen->url) : null,
+                'filename' => $itempromo->producto->imagen ? $itempromo->producto->imagen->urlmobile : null,
+                'imagen' => $itempromo->producto->imagen ? pathURLProductImage($itempromo->producto->imagen->urlmobile) : null,
                 'price' => $price,
                 'pricebuy' => $pricetype ? $itempromo->producto->precio_real_compra : $itempromo->producto->pricebuy,
                 'precio_normal' => $pricenormal,

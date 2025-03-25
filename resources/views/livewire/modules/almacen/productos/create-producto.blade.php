@@ -239,40 +239,37 @@
 
         <x-form-card titulo="IMÁGEN REFERENCIAL">
             <div class="w-full xs:max-w-sm">
-                <div class="relative" class="w-full relative">
-                    <x-simple-card class="w-full h-60 mx-auto border border-borderminicard">
-                        @if (isset($imagen))
-                            <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down ">
-                        @else
-                            <x-icon-file-upload class="w-full h-full" />
-                        @endif
-                    </x-simple-card>
-                    <p class="text-[10px] text-center text-colorsubtitleform">
-                        Resolución Mínima : 500px X 500px</p>
-
-                    <div class="w-full flex flex-wrap gap-1 justify-center">
-                        <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
-                            wire:target="imagen">
-                            <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"
-                                accept="image/jpg,image/jpeg,image/png,image/webp" />
-                        </x-input-file>
-                        @if (isset($imagen))
-                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:target="clearImage"
-                                wire:click="clearImage">LIMPIAR
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                            </x-button>
-                        @endif
-                    </div>
-
+                <div class="h-96 w-auto max-w-full relative mb-2 overflow-hidden">
+                    <template x-if="image">
+                        <img id="image" class="object-scale-down block w-full h-full" :src="image" />
+                    </template>
+                    <template x-if="!image">
+                        <x-icon-file-upload class="w-full h-full" />
+                    </template>
                 </div>
+
+                <div class="w-full flex flex-wrap items-end justify-center gap-1">
+                    <template x-if="image">
+                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" x-on:click="reset">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    </template>
+                    <x-input-file for="{{ $identificador }}" titulo="SELECCIONAR IMÁGEN" class="">
+                        <input type="file" id="{{ $identificador }}" name="photo" @change="loadlogo"
+                            accept="image/*" class="hidden disabled:opacity-25" wire:loading.attr="disabled" />
+                    </x-input-file>
+                </div>
+                <p class="text-xs text-center text-colorsubtitleform">
+                    Resolución Mínima : 800px X 800px</p>
                 <x-jet-input-error for="imagen" class="text-center" />
             </div>
         </x-form-card>
@@ -302,6 +299,8 @@
                 estante_id: @entangle('estante_id').defer,
                 viewdetalle: @entangle('viewdetalle').defer,
                 novedad: @entangle('novedad').defer,
+                image: @entangle('imagen').defer,
+                identificador: @entangle('identificador').defer,
                 // descripcionproducto: @entangle('descripcionproducto').defer,
                 init() {
                     this.adjustHeight(this.$refs.name_producto);
@@ -312,6 +311,21 @@
                 adjustHeight($el) {
                     $el.style.height = 'auto';
                     $el.style.height = $el.scrollHeight + 'px';
+                },
+                loadlogo() {
+                    const input = document.getElementById(this.identificador);
+                    if (!input || !input.files || !input.files[0]) {
+                        console.log('No se seleccionó ningún archivo');
+                        return;
+                    }
+                    const file = input.files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.image = e.target.result;
+                    reader.readAsDataURL(file);
+                },
+                reset() {
+                    // this.image = null;
+                    @this.clearImage();
                 },
                 confirmsave() {
                     swal.fire({

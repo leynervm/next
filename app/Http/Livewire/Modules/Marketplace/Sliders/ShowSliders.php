@@ -37,14 +37,14 @@ class ShowSliders extends Component
                 Rule::requiredIf(empty($this->slider->url)),
                 'string',
                 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
-                new ValidateImageBase64(1920, 560, ['JPG', 'JPEG', 'PNG'])
+                new ValidateImageBase64(1920, 560, ['JPG', 'JPEG', 'PNG', 'WEBP'])
             ],
             'imagemobile' => [
                 'nullable',
                 Rule::requiredIf(empty($this->slider->urlmobile)),
                 'string',
                 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
-                new ValidateImageBase64(720, 833, ['JPG', 'JPEG', 'PNG'])
+                new ValidateImageBase64(720, 833, ['JPG', 'JPEG', 'PNG', 'WEBP'])
             ]
         ];
     }
@@ -130,7 +130,12 @@ class ShowSliders extends Component
         list($type, $imageSlider) = explode(';', $imageSlider);
         list(, $imageSlider) = explode(',', $imageSlider);
         $imageSlider = base64_decode($imageSlider);
-        $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 30);
+        // $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 30);
+        $compressedSlider = ImageIntervention::make($imageSlider)
+            ->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->orientate()->encode('webp', 90);
 
         if ($compressedSlider->width() < $width || $compressedSlider->height() < $height) {
             $this->addError($attribute, "La :imagen debe tener dimensiones de " . $width . 'x' . $height . " píxeles.");
@@ -147,7 +152,7 @@ class ShowSliders extends Component
             Storage::makeDirectory('images/slider/');
         }
 
-        $urlslider = uniqid('slider_' . $responsive) . '.' . $extencionimage;
+        $urlslider = uniqid('slider_' . $responsive) . '.webp';
         $compressedSlider->save(public_path('storage/images/slider/' . $urlslider));
         return $urlslider;
     }

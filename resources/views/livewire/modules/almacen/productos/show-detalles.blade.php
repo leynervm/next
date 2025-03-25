@@ -80,32 +80,19 @@
                             <div class="w-48 group border border-borderminicard rounded-lg relative overflow-hidden"
                                 data-id="{{ $item->id }}">
                                 <div class="w-full h-32 block">
-                                    <img src="{{ pathURLProductImage($item->url) }}" alt=""
+                                    <img src="{{ pathURLProductImage($item->urlmobile) }}" alt=""
                                         class="w-full h-full object-scale-down object-center">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">
-                                    <x-span-text :text="$item->url" class="truncate leading-3 flex-1" />
+                                    <x-span-text :text="$item->urlmobile" class="truncate leading-3 flex-1" />
                                     @can('admin.almacen.productos.images')
                                         <x-button-delete onclick="confirmDeleteImage({{ $item->id }})"
                                             wire:loading.attr="disabled" />
                                     @endcan
                                 </div>
-                                {{-- @if ($item->isDefault()) --}}
-                                {{-- <span class="absolute top-1 left-1 w-5 h-5 rounded-full">
-                                        <x-icon-default class="w-full h-full block" />
-                                    </span> --}}
+
                                 <x-icon-sweep
                                     class="absolute top-1 left-1 bg-fondospancardproduct text-textspancardproduct size-6 xs:size-7" />
-                                {{-- @else
-                                    @can('admin.almacen.productos.images')
-                                        <button wire:key="defaultimage_{{ $item->id }}"
-                                            wire:click="defaultimage({{ $item->id }})" type="button"
-                                            wire:loading.attr="disabled"
-                                            class="absolute top-1 -left-7 w-5 h-5 group-hover:translate-x-8 rounded-full transition ease-out duration-150 hover:scale-110 disabled:opacity-25">
-                                            <x-icon-default class="w-full h-full block !text-neutral-500" />
-                                        </button>
-                                    @endcan
-                                @endif --}}
                             </div>
                         @endforeach
                     @endif
@@ -190,57 +177,50 @@
         </x-slot>
 
         <x-slot name="content">
-            <div wire:loading.flex class="loading-overlay hidden fixed">
-                <x-loading-next />
-            </div>
-
-            <form wire:submit.prevent="saveimage">
-                <div class="w-full relative">
-                    @if (isset($imagen))
-                        <x-simple-card class="w-full h-80 md:max-w-md mx-auto mb-1 border border-borderminicard">
-                            <img src="{{ $imagen->temporaryUrl() }}" class="w-full h-full object-scale-down">
-                        </x-simple-card>
-                    @else
-                        <x-icon-file-upload class="w-full h-80" />
-                    @endif
-
-                    <div class="w-full flex flex-wrap gap-2 justify-center">
-                        <x-input-file :for="$identificador" titulo="SELECCIONAR IMAGEN" wire:loading.attr="disabled"
-                            wire:target="imagen">
-                            <input type="file" class="hidden" wire:model="imagen" id="{{ $identificador }}"
-                                accept="image/jpg,image/jpeg,image/png,image/webp" />
-                        </x-input-file>
-
-                        @if (isset($imagen))
-                            <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
-                                GUARDAR
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path
-                                        d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
-                                    <path
-                                        d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
-                                </svg>
-                            </x-button>
-
-                            <x-button class="inline-flex" wire:loading.attr="disabled" wire:target="clearImage"
-                                wire:click="clearImage">LIMPIAR
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block"
-                                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                    stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M3 6h18" />
-                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                                    <line x1="10" x2="10" y1="11" y2="17" />
-                                    <line x1="14" x2="14" y1="11" y2="17" />
-                                </svg>
-                            </x-button>
-                        @endif
-                    </div>
-
+            <form wire:submit.prevent="saveimage" x-data="loadimage()">
+                <div class="h-96 w-auto max-w-full relative mb-2 overflow-hidden">
+                    <template x-if="image">
+                        <img id="image" class="object-scale-down block w-full h-full" :src="image" />
+                    </template>
+                    <template x-if="!image">
+                        <x-icon-file-upload class="w-full h-full" />
+                    </template>
                 </div>
-                <x-jet-input-error wire:loading.remove wire:target="imagen" for="imagen" class="text-center" />
+
+                <div class="w-full flex flex-wrap items-end justify-center gap-1">
+                    <template x-if="image">
+                        <x-button class="inline-flex !rounded-lg" wire:loading.attr="disabled" x-on:click="reset">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M3 6h18" />
+                                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                                <line x1="10" x2="10" y1="11" y2="17" />
+                                <line x1="14" x2="14" y1="11" y2="17" />
+                            </svg>
+                            LIMPIAR
+                        </x-button>
+                    </template>
+                    <template x-if="image">
+                        <x-button class="inline-flex" wire:loading.attr="disabled" type="submit">
+                            GUARDAR
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline-block" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="M17.4776 9.01106C17.485 9.01102 17.4925 9.01101 17.5 9.01101C19.9853 9.01101 22 11.0294 22 13.5193C22 15.8398 20.25 17.7508 18 18M17.4776 9.01106C17.4924 8.84606 17.5 8.67896 17.5 8.51009C17.5 5.46695 15.0376 3 12 3C9.12324 3 6.76233 5.21267 6.52042 8.03192M17.4776 9.01106C17.3753 10.1476 16.9286 11.1846 16.2428 12.0165M6.52042 8.03192C3.98398 8.27373 2 10.4139 2 13.0183C2 15.4417 3.71776 17.4632 6 17.9273M6.52042 8.03192C6.67826 8.01687 6.83823 8.00917 7 8.00917C8.12582 8.00917 9.16474 8.38194 10.0005 9.01101" />
+                                <path
+                                    d="M12 21L12 13M12 21C11.2998 21 9.99153 19.0057 9.5 18.5M12 21C12.7002 21 14.0085 19.0057 14.5 18.5" />
+                            </svg>
+                        </x-button>
+                    </template>
+                    <x-input-file for="{{ $identificador }}" titulo="SELECCIONAR IMÁGEN" class="">
+                        <input type="file" id="{{ $identificador }}" name="photo" @change="loadlogo"
+                            accept="image/*" class="hidden disabled:opacity-25" wire:loading.attr="disabled" />
+                    </x-input-file>
+                </div>
+                <x-jet-input-error for="imagen" class="text-center" />
                 <x-jet-input-error for="producto.id" />
             </form>
         </x-slot>
@@ -296,11 +276,32 @@
             })
         })
 
+        function loadimage() {
+            return {
+                image: @entangle('imagen').defer,
+                identificador: @entangle('identificador').defer,
+                loadlogo() {
+                    const input = document.getElementById(this.identificador);
+                    if (!input || !input.files || !input.files[0]) {
+                        console.log('No se seleccionó ningún archivo');
+                        return;
+                    }
+                    const file = input.files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.image = e.target.result;
+                    reader.readAsDataURL(file);
+                },
+                reset() {
+                    // this.image = null;
+                    @this.clearImage();
+                },
+            }
+        }
 
         function confirmDeleteImage(image) {
             swal.fire({
-                title: 'Eliminar imágen del producto',
-                text: "Se eliminará un registro de la base de datos.",
+                title: "ELIMINAR IMÁGEN",
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',
@@ -316,8 +317,8 @@
 
         function confirmDeleteEspecificacion(especificacion) {
             swal.fire({
-                title: 'Eliminar especificación ' + especificacion.name,
-                text: "Se eliminará un registro de la base de datos.",
+                title: 'ELIMINAR ESPECIFICACIÓN ' + especificacion.name,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

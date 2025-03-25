@@ -3,9 +3,9 @@
 
 @if (count($productos) > 0)
     @foreach ($productos as $item)
-        <table class="table border-dark text-10 font-normal mb-4">
+        <table class="table table-bordered border-dark text-10 font-normal mb-4">
             <tbody>
-                <tr>
+                <tr class="border border-dark">
                     <td class="text-center align-middle font-medium text-14" style="width: 100px; background: #f1f1f1;">
                         RANK
                         <br>
@@ -87,7 +87,7 @@
                         </td>
                     </tr> --}}
 
-                    <tr>
+                    <tr class="border border-dark">
                         <th>CANT.</th>
                         <th>ALMACÉN</th>
                         <th>COMPRA</th>
@@ -103,7 +103,7 @@
                             $total_item = $total_item + $tvitem->total;
                             $total_item_ganancia = $total_item_ganancia + $ganancia * $tvitem->cantidad;
                         @endphp
-                        <tr>
+                        <tr class="border border-dark">
                             <td class="text-center">
                                 {{ decimalOrInteger($tvitem->cantidad) }} {{ $item->unit->name }}</td>
                             <td class="text-center">
@@ -132,12 +132,12 @@
                             </td>
                         </tr>
                     @endforeach
-                    <tr>
+                    <tr class="border border-dark">
                         <th colspan="6" class="text-end align-middle">TOTAL GENERADO</th>
                         <th colspan="2" class="text-end align-middle text-14">
                             {{ number_format($total_item, 2, '.', ', ') }}</th>
                     </tr>
-                    <tr>
+                    <tr class="border border-dark">
                         <th colspan="6" class="text-end align-middle">GANANCIA</th>
                         <th colspan="2"
                             class="text-end align-middle text-14 {{ $total_item_ganancia >= 0 ? 'text-success' : 'text-danger' }}">

@@ -134,73 +134,103 @@ class ShowDetalles extends Component
         $this->authorize('admin.almacen.productos.images');
         $this->validate([
             'producto.id' => ['required', 'integer', 'min:1', 'exists:productos,id'],
-            'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500']
+            // 'imagen' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500']
+            'imagen' => ['required', 'string', 'starts_with:data:image'],
         ]);
-
-        $countImages = $this->producto->images()->count();
-
-        // if ($countImages >= 5) {
-        //     $this->addError('imagen', 'Exediste el límite de imágenes por producto.');
-        //     return false;
-        // }
 
         if (!Storage::exists('images/productos')) {
             Storage::makeDirectory('images/productos');
         }
 
-        // $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
-        //     ->resize(1500, 1500, function ($constraint) {
-        //         $constraint->aspectRatio();
-        //         $constraint->upsize();
-        //     })->orientate()->encode('jpg', 30);
-        $compressedImage = ImageIntervention::make($this->imagen->getRealPath())
-            ->orientate()->encode('jpg', 60);
+        $allowedMimes = ['jpeg' => 'image/jpeg', 'jpg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
+
+        try {
+            $imageData = explode(',', $this->imagen)[1] ?? $this->imagen;
+            $decodedImage = base64_decode($imageData);
+            // dd($imageData);
+            // $maxSize = 5 * 1024; // 5MB en KB
+            // if (strlen($decodedImage) / 1024 > $maxSize) {
+            //     // Rechazar
+            // }
+
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mime = $finfo->buffer($decodedImage);
+
+            if (!in_array($mime, $allowedMimes)) {
+                $this->addError('imagen', 'Formato no soportado (solo JPEG, PNG, WebP)');
+                return false;
+            }
+
+            $compressedImage = ImageIntervention::make($decodedImage)
+                ->resize(1200, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('webp', 90);
+            // Generar Imagen Responsive
+            $compressImageMobile = ImageIntervention::make($decodedImage)
+                ->resize(320, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
 
 
-        $empresa = view()->shared('empresa');
-        if ($empresa->usarMarkagua()) {
-            $w = $empresa->widthmark  ?? 100;
-            $h = $empresa->heightmark  ?? 100;
-            $urlMark = public_path('storage/images/company/' . $empresa->markagua);
-            $margin = $empresa->alignmark !== 'center' ? 20 : 0;
-            // create a new Image instance for inserting
-            $mark = ImageIntervention::make($urlMark)->resize($w, $h, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })->orientate();
-            $compressedImage->insert($mark, $empresa->alignmark, $margin, $margin);
+            $empresa = view()->shared('empresa');
+            if ($empresa->usarMarkagua()) {
+                $w = $empresa->widthmark  ?? 100;
+                $h = $empresa->heightmark  ?? 100;
+                $urlMark = public_path('storage/images/company/' . $empresa->markagua);
+                $margin = $empresa->alignmark !== 'center' ? 20 : 0;
+                // create a new Image instance for inserting
+                $mark = ImageIntervention::make($urlMark)->resize($w, $h, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate();
+                $compressedImage->insert($mark, $empresa->alignmark, $margin, $margin);
+
+                // Generar Imagen Responsive
+                $margin = $empresa->alignmark !== 'center' ? 7 : 0;
+                $mark = ImageIntervention::make($urlMark)->resize(60, 60, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate();
+                $compressImageMobile->insert($mark, $empresa->alignmark, $margin, $margin);
+            }
+
+            if ($compressedImage->filesize() > 1048576) { //1MB
+                $compressedImage->destroy();
+                $this->addError('imagen', "La imagen excede el tamaño permitido 1MB, tamaño actual " . $compressedImage->filesize());
+                return false;
+            }
+
+            $filename = uniqid('producto_') . '.webp';
+            $compressedImage->save(public_path('storage/images/productos/' . $filename));
+
+            $filenameMobile = uniqid('producto_mobile_') . '.webp';
+            $compressImageMobile->save(public_path('storage/images/productos/' . $filenameMobile));
+
+            $countImages = $this->producto->images()->count();
+            $default = $countImages == 0 ? 1 : 0;
+            $orden = $this->producto->images()->max('orden') ?? 0;
+            $this->producto->images()->create([
+                'url' => $filename,
+                'urlmobile' => $filenameMobile,
+                'default' => $default,
+                'orden' => 1 + $orden
+            ]);
+
+            Self::clearImage();
+            $this->producto->refresh();
+            $this->dispatchBrowserEvent('created');
+        } catch (\Exception $e) {
+            $this->addError('imagen', "Error al procesar la imagen " . $e->getMessage());
         }
-
-        $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
-        $compressedImage->save(public_path('storage/images/productos/' . $filename));
-
-        if ($compressedImage->filesize() > 1048576) { //1MB
-            $compressedImage->destroy();
-            $this->addError('imagen', "El campo imagen no debe ser mayor que 1 MB. -" . $compressedImage->filesize());
-            return false;
-        }
-
-        $default = $countImages == 0 ? 1 : 0;
-        $orden = $this->producto->images()->max('orden') ?? 0;
-        $this->producto->images()->create([
-            'url' => $filename,
-            'default' => $default,
-            'orden' => 1 + $orden
-        ]);
-
-        $this->resetValidation();
-        $this->identificador = rand();
-        $this->reset(['imagen']);
-        $this->producto->refresh();
-        $this->dispatchBrowserEvent('created');
     }
 
     public function deleteimage(Image $image)
     {
         $this->authorize('admin.almacen.productos.images');
         if ($image->default) {
-            $imageDefault = $this->producto->images()
-                ->where('id', '<>', $image->id)->first();
+            $imageDefault = $this->producto->images()->where('id', '<>', $image->id)->first();
             if ($imageDefault) {
                 $imageDefault->default = 1;
                 $imageDefault->save();
@@ -211,13 +241,17 @@ class ShowDetalles extends Component
         if (Storage::exists('images/productos/' . $image->url)) {
             Storage::delete('images/productos/' . $image->url);
         }
+        if (Storage::exists('images/productos/' . $image->urlmobile)) {
+            Storage::delete('images/productos/' . $image->urlmobile);
+        }
         $this->producto->refresh();
         $this->dispatchBrowserEvent('deleted');
     }
 
+
     public function clearImage()
     {
-        $this->reset(['imagen']);
+        $this->reset(['imagen', 'identificador']);
         $this->resetValidation();
         $this->identificador = rand();
     }
@@ -225,7 +259,8 @@ class ShowDetalles extends Component
     public function updatedImagen($file)
     {
         try {
-            $url = $file->temporaryUrl();
+            // dd($this->imagen);
+            // $url = $file->temporaryUrl();
             $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['imagen']);

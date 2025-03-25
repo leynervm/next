@@ -66,7 +66,7 @@ class CreateProducto extends Component
             'viewespecificaciones' => ['nullable', 'integer', 'min:0', 'max:1'],
             'novedad' => ['nullable', 'integer', 'min:0', 'max:1'],
             'requireserie' => ['nullable', 'integer', 'min:0', 'max:1'],
-            'imagen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'dimensions:min_width=500,min_height=500'],
+            'imagen' => ['nullable', 'string', 'starts_with:data:image'],
             'descripcionproducto' => ['nullable', 'string'],
             'comentario' => ['nullable', 'string']
         ];
@@ -141,6 +141,42 @@ class CreateProducto extends Component
         DB::beginTransaction();
         try {
 
+            if ($this->imagen) {
+                $allowedMimes = ['jpeg' => 'image/jpeg', 'jpg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
+
+                if (!Storage::exists('images/productos')) {
+                    Storage::makeDirectory('images/productos');
+                }
+
+                $imageData = explode(',', $this->imagen)[1] ?? $this->imagen;
+                $decodedImage = base64_decode($imageData);
+
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mime = $finfo->buffer($decodedImage);
+
+                if (!in_array($mime, $allowedMimes)) {
+                    $this->addError('imagen', 'Formato no soportado (solo JPEG, PNG, WebP)');
+                    return false;
+                }
+
+                $compressedImage = Image::make($decodedImage)
+                    ->resize(1200, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+
+                if ($compressedImage->width() < 800 || $compressedImage->height() < 800) {
+                    $this->addError('imagen', "La imagen es demasiado pequeña (Mín. 500x500px)");
+                    return false;
+                }
+
+                if ($compressedImage->filesize() > 1048576) { //1MB
+                    // $compressedImage->destroy();
+                    $this->addError('imagen', "La imagen excede el tamaño permitido 1MB, tamaño actual " . $compressedImage->filesize());
+                    return false;
+                }
+            }
+
             $exists = Producto::where('modelo', $this->modelo)->where('marca_id', $this->marca_id)->exists();
             if (!$confirmsave && $exists) {
                 $this->dispatchBrowserEvent('confirmsave');
@@ -180,18 +216,13 @@ class CreateProducto extends Component
             ]);
 
             if ($this->imagen) {
-                if (!Storage::exists('images/productos')) {
-                    Storage::makeDirectory('images/productos');
-                }
-
-                // $compressedImage = Image::make($this->imagen->getRealPath())
-                //     ->resize(1500, 1500, function ($constraint) {
-                //         $constraint->aspectRatio();
-                //         $constraint->upsize();
-                //     })->orientate()->encode('jpg', 30);
-                $compressedImage = Image::make($this->imagen->getRealPath())
-                    ->orientate()->encode('jpg', 60);
-
+                $compressedImage = $compressedImage->orientate()->encode('webp', 90);
+                // Generar Imagen Responsive
+                $compressImageMobile = Image::make($decodedImage)
+                    ->resize(320, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
 
                 if ($this->empresa->usarMarkagua()) {
                     $w = $this->empresa->widthmark  ?? 100;
@@ -204,19 +235,26 @@ class CreateProducto extends Component
                         $constraint->upsize();
                     })->orientate();
                     $compressedImage->insert($mark, $this->empresa->alignmark, $margin, $margin);
+
+                    // Generar Imagen Responsive
+                    $margin = $this->empresa->alignmark !== 'center' ? 7 : 0;
+                    $mark = Image::make($urlMark)->resize(60, 60, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate();
+                    $compressImageMobile->insert($mark, $this->empresa->alignmark, $margin, $margin);
                 }
 
-                $filename = uniqid('producto_') . '.' . $this->imagen->getClientOriginalExtension();
+                $filename = uniqid('producto_') . '.webp';
                 $compressedImage->save(public_path('storage/images/productos/' . $filename));
 
-                if ($compressedImage->filesize() > 1048576) { //1MB
-                    $compressedImage->destroy();
-                    $this->addError('imagen', 'La imagen excede el tamaño máximo permitido.');
-                    return false;
-                }
+                $filenameMobile = uniqid('producto_mobile_') . '.webp';
+                $compressImageMobile->save(public_path('storage/images/productos/' . $filenameMobile));
 
                 $producto->images()->create([
                     'url' => $filename,
+                    'urlmobile' => $filenameMobile,
+                    'orden' => 1,
                     'default' => 1,
                 ]);
             }
@@ -230,6 +268,7 @@ class CreateProducto extends Component
             DB::commit();
             $producto->assignPrice();
             $this->resetValidation();
+            Self::clearImage();
             $this->reset();
             $this->dispatchBrowserEvent('created');
             if (auth()->user()->hasPermissionTo('admin.almacen.productos.edit')) {
@@ -263,7 +302,7 @@ class CreateProducto extends Component
     public function updatedImagen($file)
     {
         try {
-            $url = $file->temporaryUrl();
+            // $url = $file->temporaryUrl();
             $this->resetValidation();
         } catch (\Exception $e) {
             $this->reset(['imagen']);

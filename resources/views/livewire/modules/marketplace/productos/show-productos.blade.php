@@ -293,7 +293,7 @@
                 class="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 self-start">
                 @foreach ($productos as $item)
                     @php
-                        $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
+                        $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null;
                         $secondimage = !empty($item->image_2) ? pathURLProductImage($item->image_2) : null;
                         $priceold = $item->getPrecioVentaDefault($pricetype);
                         $pricesale = $item->getPrecioVenta($pricetype);

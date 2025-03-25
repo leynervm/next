@@ -585,13 +585,11 @@ class ReportController extends Controller
                 ->with(['category', 'marca', 'subcategory', 'unit', 'imagen', 'kardexes' => function ($query) {
                     $query->with(['almacen']);
                 }, 'compraitems' => function ($query) {
-                    $query->with(['almacencompras' => function ($q) {
-                        $q->with(['almacen', 'series']);
-                    }, 'compra.proveedor']);
+                    $query->with(['compra.proveedor', 'kardexes.almacen', 'series.compraitem.compra']);
                 }, 'tvitems' => function ($query) {
                     $query->with(['promocion', 'almacen', 'itemseries']);
                 }, 'series' => function ($query) {
-                    $query->with(['almacen', 'itemserie.tvitem', 'almacencompra.compraitem.compra']);
+                    $query->with(['almacen', 'itemseries']);
                 }])->where('id', $filters['producto_id'])->get();
 
             $pdf = SnappyPdf::loadView('admin.reports.productos.report-kardex-productos', compact('productos', 'empresa', 'detallado', 'titulo',))
@@ -699,22 +697,10 @@ class ReportController extends Controller
                 ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
                 ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
                 ->with(['unit', 'imagen', 'almacens'])
-                ->addSelect(['image' => function ($query) {
-                    $query->select('url')->from('images')
-                        ->whereColumn('images.imageable_id', 'productos.id')
-                        ->where('images.imageable_type', Producto::class)
-                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                }])
                 ->withWhereHas('promocions', function ($query) {
                     $query->with(['itempromos' => function ($q) {
                         $q->with(['producto' => function ($subq) {
-                            $subq->with(['imagen', 'unit', 'almacens'])
-                                ->addSelect(['image' => function ($query) {
-                                    $query->select('url')->from('images')
-                                        ->whereColumn('images.imageable_id', 'productos.id')
-                                        ->where('images.imageable_type', Producto::class)
-                                        ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                                }]);
+                            $subq->with(['imagen', 'unit', 'almacens']);
                         }]);
                     }])->disponibles()->availables();
                 })->visibles()->orderBy('novedad', 'DESC')->orderBy('subcategories.orden', 'ASC')
@@ -760,10 +746,8 @@ class ReportController extends Controller
             }
             $pdf->setOptions([
                 'header-html' => view('admin.reports.snappyPDF.header', compact('titulo')),
-                // 'margin-top' => '29.5mm',
-                // 'margin-bottom' => '10mm',
-                'margin-top' => '0mm',
-                'margin-bottom' => '0mm',
+                'margin-top' => '29.5mm',
+                'margin-bottom' => '10mm',
                 'margin-left' => '0mm',
                 'margin-right' => '0mm',
                 'header-spacing' => 5,

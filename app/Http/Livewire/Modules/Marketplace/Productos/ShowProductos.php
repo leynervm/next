@@ -9,7 +9,6 @@ use App\Models\Especificacion;
 use App\Models\Marca;
 use App\Models\Moneda;
 use App\Models\Producto;
-use App\Models\Promocion;
 use App\Models\Subcategory;
 use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Support\Facades\DB;
@@ -237,7 +236,7 @@ class ShowProductos extends Component
             ->with(['unit', 'imagen', 'almacens' => function ($query) {
                 $query->where('cantidad', '>', 0);
             }])->addSelect(['image_2' => function ($query) {
-                $query->select('url')->from('images')
+                $query->select('urlmobile')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);

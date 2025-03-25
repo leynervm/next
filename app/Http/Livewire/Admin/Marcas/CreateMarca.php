@@ -22,8 +22,6 @@ class CreateMarca extends Component
     public $identificador;
     public $name;
 
-    protected $listeners = ['errorImage'];
-
     protected function rules()
     {
         return [
@@ -36,7 +34,7 @@ class CreateMarca extends Component
             'logo' => [
                 'nullable',
                 'file',
-                'mimes:jpeg,png,gif',
+                'mimes:jpeg,png,gif,webp',
                 'max:5120'
             ]
         ];
@@ -93,12 +91,12 @@ class CreateMarca extends Component
                 }
 
                 $compressedImage = Image::make($this->logo->getRealPath())
-                    ->resize(400, 400, function ($constraint) {
+                    ->resize(150, null, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
-                    })->orientate()->encode('jpg', 30);
+                    })->orientate()->encode('webp', 90);
 
-                $logoURL = uniqid('marca_') . '.' . $this->logo->getClientOriginalExtension();
+                $logoURL = uniqid('marca_') . '.webp';
                 $compressedImage->save(public_path('storage/images/marcas/' . $logoURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB

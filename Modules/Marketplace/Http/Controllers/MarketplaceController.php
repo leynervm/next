@@ -184,19 +184,9 @@ class MarketplaceController extends Controller
         $producto->save();
 
         $relacionados = Producto::query()->select('id', 'name', 'slug', 'modelo', 'sku', 'partnumber', 'marca_id', 'unit_id', 'subcategory_id', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-            }])->with(['marca', 'imagen', 'promocions' => function ($query) {
+            ->with(['marca', 'imagen', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
-                    $query->with(['unit', 'imagen', 'almacens'])->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                    }]);
+                    $query->with(['imagen', 'almacens']);
                 }])->availables()->disponibles();
             }])->whereNot('id', $producto->id)->where('subcategory_id', $producto->subcategory_id)
             ->publicados()->visibles()->take(28)->orderBy('views', 'desc')
@@ -207,19 +197,9 @@ class MarketplaceController extends Controller
             });
         // dd($relacionados);
         $interesantes = Producto::query()->select('id', 'name', 'slug', 'marca_id', 'unit_id', 'pricebuy', 'pricesale', 'precio_1', 'precio_2', 'precio_3', 'precio_4', 'precio_5')
-            ->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-            }])->with(['marca', 'promocions' => function ($query) {
+            ->with(['marca', 'imagen', 'promocions' => function ($query) {
                 $query->with(['itempromos.producto' => function ($query) {
-                    $query->with(['unit', 'almacens'])->addSelect(['image' => function ($q) {
-                        $q->select('url')->from('images')
-                            ->whereColumn('images.imageable_id', 'productos.id')
-                            ->where('images.imageable_type', Producto::class)
-                            ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-                    }]);
+                    $query->with(['imagen', 'almacens']);
                 }])->availables()->disponibles();
             }])->whereNot('id', $producto->id)->publicados()->visibles()
             ->inRandomOrder()->take(28)->orderBy('views', 'desc')

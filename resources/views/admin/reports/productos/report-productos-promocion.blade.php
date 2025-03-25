@@ -6,18 +6,15 @@
     @foreach ($productos as $item)
         @php
             $image = $item->imagen;
-            if (!empty($image)) {
-                $image = $item->imagen->url;
-            }
         @endphp
 
-        <table class="table border-dark text-10 font-normal mb-5">
-            <tr>
+        <table class="table table-bordered border-dark text-10 font-normal mb-5">
+            <tr class="border-start border-end border-dark">
                 <th class="border-end border-dark" style="width: 6cm;">
                     @if (!empty($image))
                         <div class="picture-producto" style="width:150px !important;height:150px !important;;">
-                            <img src="{{ pathURLProductImage($image) }}" alt="{{ pathURLProductImage($image) }}"
-                                class="img-fluid">
+                            <img src="{{ imageBase64($image->urlmobile, 'app/public/images/productos/') }}"
+                                alt="{{ pathURLProductImage($image->urlmobile) }}" class="img-fluid">
                         </div>
                     @else
                         <p class="text-10 text-10" style="color:#000;">IMÁGEN NO DISPONIBLE</p>
@@ -35,7 +32,7 @@
                     @endphp
                     @if ($combo)
                         @foreach ($combo->products as $itemcombo)
-                            <tr>
+                            <tr class="border-start border-end border-dark">
                                 @if ($loop->first)
                                     <td rowspan="{{ count($combo->products) }}"
                                         class="border-end border-dark align-middle text-center" style="width:5cm;">
@@ -52,8 +49,8 @@
                                     @if (!empty($itemcombo->imagen))
                                         <div class="picture-producto"
                                             style="width:80px !important;height:80px !important;">
-                                            <img src="{{ $itemcombo->imagen }}" alt="{{ $itemcombo->image }}"
-                                                class="img-fluid">
+                                            <img src="{{ imageBase64($itemcombo->filename, 'app/public/images/productos/') }}"
+                                                alt="{{ $itemcombo->imagen }}" class="img-fluid">
                                         </div>
                                     @else
                                         IMÁGEN NO DISPONIBLE
@@ -69,7 +66,7 @@
                             </tr>
                         @endforeach
                     @else
-                        <tr>
+                        <tr class="border-start border-end border-dark">
                             <td style="width:5cm;" class="align-middle text-center">
                                 @if ($promocion->isDescuento())
                                     DESCUENTO

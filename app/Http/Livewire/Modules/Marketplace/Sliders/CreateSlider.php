@@ -34,19 +34,19 @@ class CreateSlider extends Component
             'image' => [
                 'required',
                 'string',
-                'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
+                'regex:/^data:image\/(png|jpg|jpeg|webp);base64,([A-Za-z0-9+\/=]+)$/',
                 // 'max:5120',
                 // 'dimensions:min_width=1920,min_height=560'
-                new ValidateImageBase64(1920, 560, ['JPG', 'JPEG', 'PNG'])
+                new ValidateImageBase64(1920, 560, ['JPG', 'JPEG', 'PNG', 'WEBP'])
             ],
-            'extencionimage' => ['in:jpg,jpeg,png,gif'],
+            'extencionimage' => ['in:jpg,jpeg,png,gif,webp'],
             'imagemobile' => [
                 'required',
                 'string',
                 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
-                new ValidateImageBase64(720, 833, ['JPG', 'JPEG', 'PNG'])
+                new ValidateImageBase64(720, 833, ['JPG', 'JPEG', 'PNG', 'WEBP'])
             ],
-            'extencionimagemobile' => ['in:jpg,jpeg,png,gif']
+            'extencionimagemobile' => ['in:jpg,jpeg,png,gif,webp']
         ];
     }
 
@@ -78,8 +78,8 @@ class CreateSlider extends Component
             $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
             $this->validate();
 
-            $urlslider = $this->savepicture('image', 1920, 560, $this->extencionimage, 'desk_');
-            $urlslidermobile = $this->savepicture('imagemobile', 720, 833, $this->extencionimagemobile, 'mobile_');
+            $urlslider = $this->savepicture('image', 1920, 560, 'webp', 'desk_');
+            $urlslidermobile = $this->savepicture('imagemobile', 720, 833, 'webp', 'mobile_');
 
             Slider::create([
                 'url' => $urlslider,
@@ -115,7 +115,13 @@ class CreateSlider extends Component
         list($type, $imageSlider) = explode(';', $imageSlider);
         list(, $imageSlider) = explode(',', $imageSlider);
         $imageSlider = base64_decode($imageSlider);
-        $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 30);
+
+        $compressedSlider = ImageIntervention::make($imageSlider)
+            ->resize($width, $height, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->orientate()->encode('webp', 90);
+        // $compressedSlider = ImageIntervention::make($imageSlider)->orientate()->encode('jpg', 30);
 
         if ($compressedSlider->width() < $width || $compressedSlider->height() < $height) {
             $this->addError($attribute, "La :imagen debe tener dimensiones de " . $width . 'x' . $height . " píxeles.");
@@ -132,7 +138,7 @@ class CreateSlider extends Component
             Storage::makeDirectory('images/slider/');
         }
 
-        $urlslider = uniqid('slider_' . $responsive) . '.' . $extencionimage;
+        $urlslider = uniqid('slider_' . $responsive) . '.webp';
         $compressedSlider->save(public_path('storage/images/slider/' . $urlslider));
         return $urlslider;
     }

@@ -151,7 +151,7 @@ class ShowEmpresa extends Component
         }
 
         $this->validate([
-            'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png'],
+            'logo' => ['nullable', 'file', 'mimes:jpg,bmp,png,webp'],
             'icono' => ['nullable', 'file', 'mimes:ico'],
             'mark' => ['nullable', Rule::requiredIf($this->empresa->usarMarkagua() && empty($this->empresa->markagua)), 'file', 'mimes:png'],
             'empresa.uselistprice' => ['integer', 'min:0', 'max:1'],
@@ -180,9 +180,13 @@ class ShowEmpresa extends Component
                 }
 
                 $compressedImage = Image::make($this->mark->getRealPath())
-                    ->orientate()->encode('jpg', 50);
+                    ->resize(400, 400, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate()->encode('webp', 90);
 
-                $markURL = uniqid('markagua_') . '.' . $this->mark->getClientOriginalExtension();
+
+                $markURL = uniqid('markagua_') . '.webp';
                 $compressedImage->save(public_path('storage/images/company/' . $markURL));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
@@ -330,16 +334,19 @@ class ShowEmpresa extends Component
     public function savelogo()
     {
 
-        $this->validate(['logo' => ['nullable', 'file', 'mimes:jpg,bmp,png']]);
+        $this->validate(['logo' => ['nullable', 'file', 'mimes:jpg,bmp,png,webp']]);
         if (!Storage::directoryExists('images/company/')) {
             Storage::makeDirectory('images/company/');
         }
 
         if ($this->logo) {
             $compressedImage = Image::make($this->logo->getRealPath())
-                ->orientate()->encode('jpg', 50);
+                ->resize(400, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('webp', 90);
 
-            $urlLogo = 'logo_' . uniqid() . '.' . $this->logo->getClientOriginalExtension();
+            $urlLogo = 'logo_' . uniqid() . '.webp';
             $compressedImage->save(public_path('storage/images/company/' . $urlLogo));
 
             if ($compressedImage->filesize() > 1048576) { //1MB
@@ -403,7 +410,7 @@ class ShowEmpresa extends Component
 
     public function savelogofooter()
     {
-        $this->validate(['logofooter' => ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/']]);
+        $this->validate(['logofooter' => ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg|webp);base64,([A-Za-z0-9+\/=]+)$/']]);
         if (!Storage::directoryExists('images/company/')) {
             Storage::makeDirectory('images/company/');
         }
@@ -419,13 +426,18 @@ class ShowEmpresa extends Component
                 Storage::makeDirectory('images/company/');
             }
 
-            $compressedFooter = Image::make($imageFooter)->orientate()->encode('jpg', 70);
+            $compressedFooter = Image::make($imageFooter)
+                ->resize(400, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('webp', 90);
+
             if ($compressedFooter->filesize() > 1048576) { //1MB
                 $compressedFooter->destroy();
                 $this->addError('logofooter', 'La imagen excede el tamaño máximo permitido.');
                 return false;
             }
-            $urlfooterlogo = uniqid('footer_') . '.' . $this->extencionlogofooter;
+            $urlfooterlogo = uniqid('footer_') . '.webp';
             $compressedFooter->save(public_path('storage/images/company/' . $urlfooterlogo));
 
             if ($this->empresa->logofooter) {
@@ -446,7 +458,7 @@ class ShowEmpresa extends Component
     {
         $this->validate([
             'logoimpresion' =>
-            ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/'],
+            ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg|webp);base64,([A-Za-z0-9+\/=]+)$/'],
             'extencionlogoimpresion' =>
             ['nullable', 'string', 'in:jpg,png,jpeg']
         ]);
@@ -465,13 +477,18 @@ class ShowEmpresa extends Component
                 Storage::makeDirectory('images/company/');
             }
 
-            $compressedPrint = Image::make($imageImpresion)->orientate()->encode('jpg', 70);
+            $compressedPrint = Image::make($imageImpresion)
+                ->resize(400, null, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('webp', 90);
+
             if ($compressedPrint->filesize() > 1048576) { //1MB
                 $compressedPrint->destroy();
                 $this->addError('logoimpresion', 'La imagen excede el tamaño máximo permitido.');
                 return false;
             }
-            $urlimpresionlogo = uniqid('logoprint_') . '.' . $this->extencionlogoimpresion;
+            $urlimpresionlogo = uniqid('logoprint_') . '.webp';
             $compressedPrint->save(public_path('storage/images/company/' . $urlimpresionlogo));
 
             if ($this->empresa->logoimpresion) {

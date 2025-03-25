@@ -14,10 +14,9 @@
                 <div style="display: inline-block">
                     <div class="content-price">
                         <h1 class="text-price">
-                            {{-- <small class="text-10 font-normal">
-                                {{ $pricetype->name }} : S/.</small> --}}
-                            S/.
-                            <br>
+                            <small style="font-size: 10px;font-weight:500; position:absolute;top:10px;left:45%;">
+                                S/.</small>
+
                             {{ number_format($item->getPrecioVenta($pricetype), 2, '.', ', ') }}
                         </h1>
                     </div>

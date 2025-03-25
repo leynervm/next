@@ -24,7 +24,7 @@ class CreateCategory extends Component
         return [
             'name' => ['required', 'string', 'min:1', 'max:100', new CampoUnique('categories', 'name', null, true)],
             'icon' => ['nullable', 'string'],
-            'image' => ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/']
+            'image' => ['nullable', 'string', 'regex:/^data:image\/(png|jpg|jpeg|webp);base64,([A-Za-z0-9+\/=]+)$/']
         ];
     }
 
@@ -82,17 +82,23 @@ class CreateCategory extends Component
                     Storage::makeDirectory('images/categories/');
                 }
 
-                $compressedImage = Image::make($imageLogo)->resize(300, 300, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })->orientate()->encode('jpg', 30);
+                $compressedImage = Image::make($imageLogo)
+                    ->resize(100, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate()->encode('webp', 90);
+
+                // $compressedImage = Image::make($imageLogo)->resize(300, 300, function ($constraint) {
+                //     $constraint->aspectRatio();
+                //     $constraint->upsize();
+                // })->orientate()->encode('jpg', 30);
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
                     $this->addError('image', 'La imagen excede el tamaño máximo permitido.');
                     return false;
                 }
-                $urlimage = uniqid('category_') . '.' . $this->extensionimage;
+                $urlimage = uniqid('category_') . '.webp';
                 $compressedImage->save(public_path('storage/images/categories/' . $urlimage));
                 $category->image()->create([
                     'url' => $urlimage,

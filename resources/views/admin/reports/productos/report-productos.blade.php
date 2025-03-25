@@ -7,7 +7,7 @@
             @php
                 $image = $item->imagen;
                 if (!empty($image)) {
-                    $image = $item->imagen->url;
+                    $image = $item->imagen->urlmobile;
                 }
             @endphp
             <tr class="">
@@ -15,7 +15,7 @@
                     @if ($detallado)
                         @if (!empty($image))
                             <img src="{{ imageBase64($image, 'app/public/images/productos/') }}"
-                                alt="{{ $item->imagen->url }}" class="img-fluid img-xs">
+                                alt="{{ $item->imagen->urlmobile }}" class="img-fluid img-xs">
                         @else
                             <p class="text-10 text-10" style="color:#000;">IMÁGEN NO DISPONIBLE</p>
                         @endif

@@ -318,12 +318,14 @@ class ShowProducto extends Component
         // $ofertasdisponibles = $this->producto->promocions()->availables()->disponibles()->count();
         $tvitems = $this->producto->tvitems()->count();
         $compraitems = $this->producto->compraitems()->count();
+        $kardexes = $this->producto->kardexes()->count();
         $cadena = extraerMensaje([
             'Items_Venta' => $tvitems,
             'Items_Compra' => $compraitems,
+            'Kardex' => $kardexes,
         ]);
 
-        if ($tvitems > 0 || $compraitems > 0) {
+        if ($tvitems > 0 || $compraitems > 0 || $kardexes > 0) {
             $mensaje = response()->json([
                 'title' => 'No se puede eliminar registro, ' . $this->producto->name,
                 'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
@@ -338,7 +340,6 @@ class ShowProducto extends Component
                 // $this->producto->pricetypes()->delete();
                 $this->producto->kardexes()->delete();
                 $this->producto->images()->delete();
-                $this->producto->carshoops()->delete();
                 // $this->producto->almacens()->detach();
                 $this->producto->series()->forceDelete();
                 $this->producto->promocions()->forceDelete();
@@ -348,6 +349,9 @@ class ShowProducto extends Component
                     foreach ($images as $image) {
                         if (Storage::exists('productos/' . $image->url)) {
                             Storage::delete('productos/' . $image->url);
+                        }
+                        if (Storage::exists('productos/' . $image->urlmobile)) {
+                            Storage::delete('productos/' . $image->urlmobile);
                         }
                     }
                 }

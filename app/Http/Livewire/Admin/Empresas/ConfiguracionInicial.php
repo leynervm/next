@@ -373,13 +373,18 @@ class ConfiguracionInicial extends Component
                 Storage::makeDirectory('images/company/');
             }
 
-            $compressedMark = Image::make($imageMark)->orientate()->encode('jpg', 70);
+            $compressedMark = Image::make($imageMark)
+                ->resize(400, 400, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                })->orientate()->encode('webp', 90);
+
             if ($compressedMark->filesize() > 1048576) { //1MB
                 $compressedMark->destroy();
                 $this->addError('markagua', 'La imagen excede el tamaño máximo permitido.');
                 return false;
             }
-            $markURL = uniqid('markagua_') . '.' . $this->extencionmarkagua;
+            $markURL = uniqid('markagua_') . '.webp';
             $compressedMark->save(public_path('storage/images/company/' . $markURL));
         }
 
@@ -439,14 +444,18 @@ class ConfiguracionInicial extends Component
                 $imageLogo = base64_decode($imageLogo);
 
                 $compressedImage = Image::make($imageLogo)
-                    ->orientate()->encode('jpg', 30);
+                    ->resize(400, null, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })->orientate()->encode('webp', 90);
 
-                $urlLogo = uniqid() . '.' . $this->extencionimage;
+                $urlLogo = uniqid() . '.webp';
                 $compressedImage->save(public_path('storage/images/company/' . $urlLogo));
 
                 if ($compressedImage->filesize() > 1048576) { //1MB
                     $compressedImage->destroy();
-                    $this->addError('logo', 'La imagen excede el tamaño máximo permitido.');
+                    $this->addError('image', "La imagen excede el tamaño permitido 1MB, tamaño actual " . $compressedImage->filesize());
+                    return false;
                 }
 
                 $empresa->image()->create([

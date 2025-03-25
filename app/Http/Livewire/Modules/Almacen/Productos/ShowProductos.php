@@ -89,14 +89,9 @@ class ShowProductos extends Component
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->with(['unit', 'almacens', 'compraitems.compra.proveedor'])
+            ->with(['unit', 'almacens', 'imagen', 'compraitems.compra.proveedor'])
             ->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
-            }])->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
             }]);
 
         if (Module::isEnabled('Almacen')) {
@@ -228,13 +223,13 @@ class ShowProductos extends Component
                 // $tvitems = $producto->tvitems()->count();
                 // $compraitems = $producto->compraitems()->count();
                 $producto->loadCount([
+                    'kardexes as totalkardexes' => function ($query) {
+                        $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
+                    },
                     'tvitems as totaltvitems' => function ($query) {
                         $query->select(DB::raw('COALESCE(SUM(cantidad),0)'));
                     },
                     'compraitems as totaltvcompras' => function ($query) {
-                        $query->select(DB::raw('COALESCE(COUNT(*),0)'));
-                    },
-                    'carshoops as totalcarshoops' => function ($query) {
                         $query->select(DB::raw('COALESCE(COUNT(*),0)'));
                     },
                     'series as totaloutseries' => function ($query) {
@@ -243,13 +238,14 @@ class ShowProductos extends Component
                 ]);
 
                 $cadena = extraerMensaje([
+                    'Items_Kardex' => $producto->totalkardexes,
                     'Items_Venta' => $producto->totaltvitems,
                     'Items_Compra' => $producto->totaltvcompras,
                     'Items_Carrito_Venta' => $producto->totalcarshoops,
                     'Items_Series_Salientes' => $producto->totaloutseries,
                 ]);
 
-                if ($producto->totaltvitems > 0 || $producto->totaltvcompras > 0 || $producto->totalcarshoops > 0 || $producto->totaloutseries > 0) {
+                if ($producto->totalkardexes > 0 || $producto->totaltvitems > 0 || $producto->totaltvcompras > 0 || $producto->totalcarshoops > 0 || $producto->totaloutseries > 0) {
                     $mensaje = response()->json([
                         'title' => 'NO SE PUEDE ELIMINAR EL PRODUCTO ' . $producto->name,
                         'text' => "Existen registros vinculados $cadena, eliminarlo causaría un conflicto en la base de datos."
@@ -262,7 +258,6 @@ class ShowProductos extends Component
                         $images = $producto->images;
                         $producto->kardexes()->delete();
                         $producto->images()->delete();
-                        $producto->carshoops()->delete();
                         $producto->series()->forceDelete();
                         $producto->promocions()->forceDelete();
                         $producto->forceDelete();
@@ -271,6 +266,9 @@ class ShowProductos extends Component
                             foreach ($images as $image) {
                                 if (Storage::exists('productos/' . $image->url)) {
                                     Storage::delete('productos/' . $image->url);
+                                }
+                                if (Storage::exists('productos/' . $image->urlmobile)) {
+                                    Storage::delete('productos/' . $image->urlmobile);
                                 }
                             }
                         }

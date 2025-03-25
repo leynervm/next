@@ -30,12 +30,12 @@
 
 
     .content-price {
-        width: 90px;
-        height: 90px;
+        width: 80px;
+        height: 80px;
         border-radius: 50%;
         background: #0fb9b9;
         text-align: center;
-        padding: 8px;
+        padding: 5px;
         display: table;
         /* float: right; */
     }
@@ -43,6 +43,7 @@
     .text-price {
         color: #ffffff;
         display: table-cell;
+        position: relative;
         vertical-align: middle;
         font-size: 14px;
         font-weight: 700;
@@ -117,12 +118,14 @@
         text-shadow: 3px 3px 0 #0fb9b9, -1px -1px 0 #0fb9b9, 1px -1px 0 #0fb9b9,
             -1px 1px 0 #0fb9b9, 1px 1px 0 #0fb9b9;
         width: auto !important;
-        max-width: 200px;
+        /* max-width: 200px; */
+        max-width: 100%;
         background: #fff;
         /* border-radius: .5rem 0 .5rem 0.85rem; */
         /* box-shadow: -3px 3px 0px #0fb9b9; */
         padding: 1rem;
         position: relative;
+        display: block;
         border-radius: .025rem;
         border: 1px solid #0fb9b9;
         display: inline-block;

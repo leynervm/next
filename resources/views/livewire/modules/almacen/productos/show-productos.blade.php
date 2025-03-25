@@ -200,10 +200,9 @@
                             <div class="inline-flex gap-2 items-start justify-start">
                                 <button
                                     class="block rounded overflow-hidden w-16 h-16 flex-shrink-0 shadow relative hover:shadow-lg cursor-pointer">
-                                    @if ($item->image && pathURLProductImage($item->image))
-                                        <img src="{{ pathURLProductImage($item->image) }}"
-                                            alt="{{ pathURLProductImage($item->image) }}"
-                                            class="w-full h-full object-cover">
+                                    @if ($item->imagen)
+                                        <img src="{{ pathURLProductImage($item->imagen->urlmobile) }}"
+                                            alt="{{ $item->imagen->urlmobile }}" class="w-full h-full object-cover">
                                     @else
                                         <x-icon-image-unknown class="w-full h-full" />
                                     @endif

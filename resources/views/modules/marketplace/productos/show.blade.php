@@ -759,7 +759,7 @@
                             @endphp
 
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image) : null" :promocion="$promocion_relacionados"
+                                :partnumber="$item->partnumber" :image="$item->imagen ? pathURLProductImage($item->imagen->urlmobile) : null" :promocion="$promocion_relacionados"
                                 wire:key="cardproduct{{ $item->id }}"
                                 class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] xs:p-1 sm:p-3 transition ease-in-out duration-150">
 
@@ -829,7 +829,7 @@
                             @endphp
 
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
-                                :partnumber="$item->partnumber" :image="$item->image ? pathURLProductImage($item->image) : null" :promocion="$promocion_interesantes"
+                                :partnumber="$item->partnumber" :image="$item->imagen ? pathURLProductImage($item->imagen->urlmobile) : null" :promocion="$promocion_interesantes"
                                 wire:key="cardproduct{{ $item->id }}"
                                 class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] xs:p-1 sm:p-3 transition ease-in-out duration-150">
 
@@ -1008,7 +1008,7 @@
             });
         })
 
-        function zoom(e, zoomLevel = 130) {
+        function zoom(e, zoomLevel = 180) {
             var zoomer = e.currentTarget;
             e.offsetX ? offsetX = e.offsetX : offsetX = e.touches ? e.touches[0].pageX : 0
             e.offsetY ? offsetY = e.offsetY : offsetX = e.touches ? e.touches[0].pageX : 0

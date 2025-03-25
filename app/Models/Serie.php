@@ -60,11 +60,6 @@ class Serie extends Model
         return $this->hasMany(Itemserie::class);
     }
 
-    // public function itemserie(): HasOne
-    // {
-    //     return $this->hasOne(Itemserie::class);
-    // }
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withTrashed();

@@ -7,17 +7,17 @@
         @php
             $image = $item->imagen;
             if (!empty($image)) {
-                $image = $item->imagen->url;
+                $image = $item->imagen->urlmobile;
             }
         @endphp
 
-        <table class="table border-dark text-10 font-normal">
-            <tr>
+        <table class="table table-bordered border-dark text-10 font-normal">
+            <tr class="border border-dark">
                 <th colspan="4" style="width: 5cm;">
                     @if (!empty($image))
                         <div class="picture-producto">
                             <img src="{{ imageBase64($image, 'app/public/images/productos/') }}"
-                                alt="{{ $item->imagen->url }}" class="img-fluid">
+                                alt="{{ $item->imagen->urlmobile }}" class="img-fluid">
                         </div>
                     @else
                         <p class="text-10 text-10" style="color:#000;">IMÁGEN NO DISPONIBLE</p>
@@ -27,23 +27,23 @@
                     {{ $item->name }}
                 </th>
             </tr>
-            <tr>
+            <tr class="border border-dark">
                 <th>
                     MARCA
                 </th>
-                <td>
+                <td class="border-end border-dark">
                     {{ $item->marca->name }}
                 </td>
                 <th>
                     MODELO
                 </th>
-                <td>
+                <td class="border-end border-dark">
                     {{ $item->modelo }}
                 </td>
                 <th>
                     CATEGORÍA
                 </th>
-                <td>
+                <td class="border-end border-dark">
                     {{ $item->category->name }}
                 </td>
                 <th>
@@ -56,11 +56,11 @@
         </table>
 
         @if (count($item->compraitems))
-            <table class="table border-dark  text-10 font-normal mt-5">
-                <tr style="background: #f1f1f1;">
+            <table class="table table-bordered border-dark  text-10 font-normal mt-5">
+                <tr class="border border-dark" style="background: #f1f1f1;">
                     <th colspan="6">ENTRADAS</th>
                 </tr>
-                <tr>
+                <tr class="border border-dark">
                     <th>FECHA</th>
                     <th>CANTIDAD</th>
                     <th>ALMACÉN</th>
@@ -70,46 +70,48 @@
                 </tr>
 
                 @foreach ($item->compraitems as $compraitem)
-                    @if (count($compraitem->almacencompras) > 0)
-                        @foreach ($compraitem->almacencompras as $almacencompra)
-                            <tr>
-                                <td style="width:120px;">
+                    @if (count($compraitem->kardexes) > 0)
+                        @foreach ($compraitem->kardexes as $kardex)
+                            <tr class="border border-dark">
+                                <td class="text-center" style="width:120px;">
                                     {{ formatDate($compraitem->compra->date, 'DD/MM/Y') }}</td>
-                                <td style="width:120px;">
-                                    {{ $almacencompra->cantidad }}
+                                <td class="text-center" style="width:120px;">
+                                    {{ decimalOrInteger($kardex->cantidad) }}
                                     {{ $item->unit->name }}
                                 </td>
-                                <td style="width:120px;">
-                                    {{ $almacencompra->almacen->name }}</td>
+                                <td class="text-center" style="width:120px;">
+                                    {{ $kardex->almacen->name }}</td>
                                 <td class="text-center">
                                     {{ $compraitem->price }}</td>
                                 <td class="text-center">
                                     {{ $compraitem->compra->referencia }}</td>
-                                <td class="text-end">
+                                <td class="text-justify">
                                     {{ $compraitem->compra->proveedor->name }}</td>
                             </tr>
-                            @if (count($almacencompra->series))
-                                @php
-                                    $series = $almacencompra->series->chunk(6);
-                                @endphp
-                                {{-- <tr style="background: #f1f1f1;">
-                                    <th colspan="8">SERIES ENTRANTES</th>
-                                </tr> --}}
+                        @endforeach
+                    @endif
 
-                                @foreach ($series as $chunk)
-                                    <tr>
-                                        @foreach ($chunk as $serie)
-                                            <td style="word-break: break-all; width:120px;"
-                                                class="border-end border-dark text-center">
-                                                {{ $serie->serie }}</td>
-                                        @endforeach
+                    @if (count($compraitem->series))
+                        @php
+                            $series = $compraitem->series->chunk(6);
+                        @endphp
 
-                                        @for ($i = count($chunk); $i < 6; $i++)
-                                            <td class=""></td>
-                                        @endfor
-                                    </tr>
+                        <tr class="border border-dark" style="background: #f1f1f1;">
+                            <th colspan="6">SERIES ENTRANTES</th>
+                        </tr>
+
+                        @foreach ($series as $chunk)
+                            <tr class="border border-dark">
+                                @foreach ($chunk as $serie)
+                                    <td style="word-break: break-all; width:120px;"
+                                        class="border-end border-dark text-center">
+                                        {{ $serie->serie }}</td>
                                 @endforeach
-                            @endif
+
+                                @for ($i = count($chunk); $i < 6; $i++)
+                                    <td class=""></td>
+                                @endfor
+                            </tr>
                         @endforeach
                     @endif
                 @endforeach
@@ -117,11 +119,11 @@
         @endif
 
         @if (count($item->kardexes))
-            <table class="table border-dark text-10 font-normal mt-5">
-                <tr style="background: #f1f1f1;">
+            <table class="table table-bordered border-dark text-10 font-normal mt-5">
+                <tr class="border border-dark" style="background: #f1f1f1;">
                     <th colspan="6">RESUMEN DE MOVIMIENTOS</th>
                 </tr>
-                <tr>
+                <tr class="border border-dark">
                     <th>FECHA</th>
                     <th>CANTIDAD</th>
                     <th>ALMACÉN</th>
@@ -130,7 +132,7 @@
                     <th class="text-end">REFERENCIA</th>
                 </tr>
                 @foreach ($item->kardexes as $kardex)
-                    <tr>
+                    <tr class="border border-dark">
                         <td style="width: 120px;">
                             {{ formatDate($kardex->date, 'DD/MM/Y') }}</td>
                         <td class="text-center" style="width: 120px;">
@@ -156,11 +158,11 @@
 
 
         @if (count($item->series))
-            <table class="table border-dark text-10 font-normal mt-5">
-                <tr style="background: #f1f1f1;">
+            <table class="table table-bordered border-dark text-10 font-normal mt-5">
+                <tr class="border border-dark" style="background: #f1f1f1;">
                     <th colspan="5">SERIES</th>
                 </tr>
-                <tr>
+                <tr class="border border-dark">
                     <th>REGISTRADO</th>
                     <th>SERIE</th>
                     <th>ALMACÉN</th>
@@ -168,7 +170,7 @@
                     <th>SALIDA</th>
                 </tr>
                 @foreach ($item->series as $serie)
-                    <tr>
+                    <tr class="border border-dark">
                         <td style="width:120px;" class=" align-middle">
                             {{ formatDate($serie->created_at, 'DD/MM/Y') }}</td>
                         <td class="text-center align-middle" style="width:120px; word-wrap: break-word;">
@@ -176,21 +178,23 @@
                         <td class="text-center align-middle" style="width:120px;">
                             {{ $serie->almacen->name }}</td>
                         <td class="text-center align-middle" style="width:120px;">
-                            @if ($serie->almacencompra)
-                                @if ($serie->almacencompra->compraitem)
-                                    @if ($serie->almacencompra->compraitem->compra)
-                                        {{ $serie->almacencompra->compraitem->compra->referencia }}
-                                    @endif
+                            @if ($serie->compraitem)
+                                @if ($serie->compraitem->compra)
+                                    {{ $serie->compraitem->compra->referencia }}
                                 @endif
                             @endif
                         </td>
                         <td class="text-center align-middle" style="width:120px;">
-                            @if ($serie->itemserie)
-                                @if ($serie->itemserie->tvitem)
-                                    {{ formatDate($serie->itemserie->tvitem->date, 'DD/MM/Y') }}
-                                    <br>
-                                    <b>{{ $serie->itemserie->tvitem->tvitemable->seriecompleta }}</b>
-                                @endif
+                            @if (count($serie->itemseries) > 0)
+                                @foreach ($serie->itemseries as $itemserie)
+                                    @if ($itemserie->seriable)
+                                        @if (isset($itemserie->seriable->date))
+                                            {{ formatDate($itemserie->seriable->date, 'DD/MM/Y') }}
+                                            <br>
+                                            <b>{{ $itemserie->seriable->tvitemable->seriecompleta }}</b>
+                                        @endif
+                                    @endif
+                                @endforeach
                             @endif
                         </td>
                     </tr>

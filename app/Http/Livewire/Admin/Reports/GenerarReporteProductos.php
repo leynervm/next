@@ -117,7 +117,7 @@ class GenerarReporteProductos extends Component
             //     $query->where('sucursal_id', $this->sucursal_id);
             // });
         })->whereHas('sucursal')->get();
-        $almacens = Almacen::whereHas('tvitems')->get();
+        $almacens = Almacen::whereHas('kardexes')->get();
         $years = range(date('Y'), 1900);
         $productos = Producto::query()->select('productos.id', 'productos.name', 'marca_id', 'category_id', 'subcategory_id')
             ->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
