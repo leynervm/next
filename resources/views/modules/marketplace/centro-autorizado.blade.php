@@ -62,18 +62,18 @@
                     <div class="block w-full relative">
                         <picture>
                             <source media="(min-width : 640px)"
-                                srcset="{{ asset('images/home/recursos/home_brother.jpg') }}">
-                            <source srcset="{{ asset('images/home/recursos/home_brother_mobile.jpg') }}">
-                            <img src="{{ asset('images/home/recursos/home_brother_mobile.jpg') }}"
-                                alt="{{ asset('images/home/recursos/home_brother_mobile.jpg') }}"
+                                srcset="{{ asset('images/home/recursos/home_brother.webp') }}">
+                            <source srcset="{{ asset('images/home/recursos/home_brother_mobile.webp') }}">
+                            <img src="{{ asset('images/home/recursos/home_brother_mobile.webp') }}"
+                                alt="{{ asset('images/home/recursos/home_brother_mobile.webp') }}"
                                 class="w-full h-full object-center lg:object-[30%] object-cover xl:min-h-[400px] max-h-[400px]">
                         </picture>
 
                         <div class="absolute h-full max-h-[68%] sm:max-h-full bottom-0 right-0">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/cebra.gif') }}">
-                                <img src="{{ asset('images/home/recursos/cebra.gif') }}"
-                                    alt="{{ asset('images/home/recursos/cebra.gif') }}"
+                                <source srcset="{{ asset('images/home/recursos/cebra.webp') }}">
+                                <img src="{{ asset('images/home/recursos/cebra.webp') }}"
+                                    alt="{{ asset('images/home/recursos/cebra.webp') }}"
                                     class="w-full h-full max-h-full object-right-bottom object-scale-down">
                             </picture>
                         </div>
@@ -89,10 +89,10 @@
                     <div class="block w-full">
                         <picture>
                             <source media="(min-width : 640px)"
-                                srcset="{{ asset('images/home/recursos/home_lenovo.jpg') }}">
-                            <source srcset="{{ asset('images/home/recursos/home_lenovo_mobile.jpg') }}">
-                            <img src="{{ asset('images/home/recursos/home_lenovo_mobile.jpg') }}"
-                                alt="{{ asset('images/home/recursos/home_lenovo_mobile.jpg') }}"
+                                srcset="{{ asset('images/home/recursos/home_lenovo.webp') }}">
+                            <source srcset="{{ asset('images/home/recursos/home_lenovo_mobile.webp') }}">
+                            <img src="{{ asset('images/home/recursos/home_lenovo_mobile.webp') }}"
+                                alt="{{ asset('images/home/recursos/home_lenovo_mobile.webp') }}"
                                 class="w-full h-full object-center xl:object-left object-cover xl:min-h-[400px] max-h-[400px]">
                         </picture>
                     </div>
@@ -107,10 +107,10 @@
                     <div class="block w-full h-full">
                         <picture>
                             <source media="(min-width : 640px)"
-                                srcset="{{ asset('images/home/recursos/home_asus.jpg') }}">
-                            <source srcset="{{ asset('images/home/recursos/home_asus_mobile.jpg') }}">
-                            <img src="{{ asset('images/home/recursos/home_asus_mobile.jpg') }}"
-                                alt="{{ asset('images/home/recursos/home_asus_mobile.jpg') }}"
+                                srcset="{{ asset('images/home/recursos/home_asus.webp') }}">
+                            <source srcset="{{ asset('images/home/recursos/home_asus_mobile.webp') }}">
+                            <img src="{{ asset('images/home/recursos/home_asus_mobile.webp') }}"
+                                alt="{{ asset('images/home/recursos/home_asus_mobile.webp') }}"
                                 class="w-full h-full object-center xl:object-left object-cover xl:min-h-[400px] max-h-[400px]">
                         </picture>
                     </div>
@@ -143,9 +143,9 @@
                         class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8">
                         <div class="block w-full h-full">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/tintas_brother.jpg') }}">
-                                <img src="{{ asset('images/home/recursos/tintas_brother.jpg') }}"
-                                    alt="{{ asset('images/home/recursos/tintas_brother.jpg') }}"
+                                <source srcset="{{ asset('images/home/recursos/tintas_brother.webp') }}">
+                                <img src="{{ asset('images/home/recursos/tintas_brother.webp') }}"
+                                    alt="{{ asset('images/home/recursos/tintas_brother.webp') }}"
                                     class="block w-full max-w-full h-auto max-h-[340px] object-center md:object-left object-scale-down">
                             </picture>
                         </div>
@@ -305,9 +305,9 @@
                         class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8">
                         <div class="block w-full">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/lenovo_presentacion.jpg') }}">
-                                <img src="{{ asset('images/home/recursos/lenovo_presentacion.jpg') }}"
-                                    alt="{{ asset('images/home/recursos/lenovo_presentacion.jpg') }}"
+                                <source srcset="{{ asset('images/home/recursos/lenovo_presentacion.webp') }}">
+                                <img src="{{ asset('images/home/recursos/lenovo_presentacion.webp') }}"
+                                    alt="{{ asset('images/home/recursos/lenovo_presentacion.webp') }}"
                                     class="block w-full max-w-full h-auto max-h-[340px] object-center md:object-left object-scale-down">
                             </picture>
                         </div>
@@ -360,9 +360,9 @@
                     </div>
                     <div class="w-full h-full">
                         <picture>
-                            <source srcset="{{ asset('images/home/recursos/lenovo_requisitos.jpg') }}">
-                            <img src="{{ asset('images/home/recursos/lenovo_requisitos.jpg') }}"
-                                alt="{{ asset('images/home/recursos/lenovo_requisitos.jpg') }}"
+                            <source srcset="{{ asset('images/home/recursos/lenovo_requisitos.webp') }}">
+                            <img src="{{ asset('images/home/recursos/lenovo_requisitos.webp') }}"
+                                alt="{{ asset('images/home/recursos/lenovo_requisitos.webp') }}"
                                 class="block w-full max-w-full h-full max-h-[350px] lg:max-h-full object-cover">
                         </picture>
                     </div>
@@ -393,9 +393,9 @@
                         class="w-full grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-5 py-3 sm:py-5 md:py-8">
                         <div class="block w-full">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/asus_presentacion.jpg') }}">
-                                <img src="{{ asset('images/home/recursos/asus_presentacion.jpg') }}"
-                                    alt="{{ asset('images/home/recursos/asus_presentacion.jpg') }}"
+                                <source srcset="{{ asset('images/home/recursos/asus_presentacion.webp') }}">
+                                <img src="{{ asset('images/home/recursos/asus_presentacion.webp') }}"
+                                    alt="{{ asset('images/home/recursos/asus_presentacion.webp') }}"
                                     class="block w-full max-w-full h-auto max-h-[340px] object-center md:object-left object-scale-down">
                             </picture>
                         </div>
@@ -449,9 +449,9 @@
                     </div>
                     <div class="w-full lg:max-w-[40%]">
                         <picture>
-                            <source srcset="{{ asset('images/home/recursos/asus_requisitos.jpg') }}">
-                            <img src="{{ asset('images/home/recursos/asus_requisitos.jpg') }}"
-                                alt="{{ asset('images/home/recursos/asus_requisitos.jpg') }}"
+                            <source srcset="{{ asset('images/home/recursos/asus_requisitos.webp') }}">
+                            <img src="{{ asset('images/home/recursos/asus_requisitos.webp') }}"
+                                alt="{{ asset('images/home/recursos/asus_requisitos.webp') }}"
                                 class="block w-full max-w-full h-full max-h-[350px] lg:max-h-full object-cover">
                         </picture>
                     </div>

@@ -5826,9 +5826,6 @@ select {
 .min-h-28 {
   min-height: 7rem;
 }
-.min-h-40 {
-  min-height: 10rem;
-}
 .min-h-\[24rem\] {
   min-height: 24rem;
 }
@@ -9868,6 +9865,10 @@ select {
     padding-bottom: 2rem;
   }
 
+  .sm\:pb-10 {
+    padding-bottom: 2.5rem;
+  }
+
   .sm\:pb-3 {
     padding-bottom: 0.75rem;
   }
@@ -9906,6 +9907,10 @@ select {
 
   .sm\:pt-5 {
     padding-top: 1.25rem;
+  }
+
+  .sm\:pt-6 {
+    padding-top: 1.5rem;
   }
 
   .sm\:text-left {
@@ -10696,11 +10701,6 @@ select {
 
   .lg\:rounded-tl-2xl {
     border-top-left-radius: 1rem;
-  }
-
-  .lg\:object-scale-down {
-    -o-object-fit: scale-down;
-       object-fit: scale-down;
   }
 
   .lg\:object-\[30\%\] {

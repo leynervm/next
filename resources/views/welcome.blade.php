@@ -13,7 +13,7 @@
                 $chunks = $categories->chunk(5);
             @endphp
             <section
-                class="w-full py-6 pb-10 flex flex-col gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+                class="w-full py-3 sm:py-6 pb-3 sm:pb-10 flex flex-col gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
                 @foreach ($chunks as $chunk)
                     <div class="w-full flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
                         @foreach ($chunk as $item)
@@ -50,15 +50,15 @@
         <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">
             Nuestros Servicios</h1>
         <section
-            class="w-full pt-6 pb-10 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
+            class="w-full pt-3 sm:pt-6 pb-3 sm:pb-10 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
             <a href="{{ route('tic') }}"
                 class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
-                        <source srcset="{{ asset('images/home/recursos/soluciones_integrales.png') }}">
-                        <img src="{{ asset('images/home/recursos/soluciones_integrales.png') }}"
-                            alt="{{ asset('images/home/recursos/soluciones_integrales.png') }}"
+                        <source srcset="{{ asset('images/home/recursos/soluciones_integrales.webp') }}">
+                        <img src="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
+                            alt="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
                             class="w-full h-full object-scale-down overflow-hidden">
                     </picture>
                 </div>
@@ -71,9 +71,9 @@
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
-                        <source srcset="{{ asset('images/home/recursos/internet.png') }}">
-                        <img src="{{ asset('images/home/recursos/internet.png') }}"
-                            alt="{{ asset('images/home/recursos/internet.png') }}"
+                        <source srcset="{{ asset('images/home/recursos/internet.webp') }}">
+                        <img src="{{ asset('images/home/recursos/internet.webp') }}"
+                            alt="{{ asset('images/home/recursos/internet.webp') }}"
                             class="w-full h-full object-scale-down overflow-hidden">
                     </picture>
                 </div>
@@ -86,9 +86,9 @@
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
-                        <source srcset="{{ asset('images/home/recursos/centro_autorizado.png') }}">
-                        <img src="{{ asset('images/home/recursos/centro_autorizado.png') }}"
-                            alt="{{ asset('images/home/recursos/centro_autorizado.png') }}"
+                        <source srcset="{{ asset('images/home/recursos/centro_autorizado.webp') }}">
+                        <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
+                            alt="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
                             class="w-full h-full object-scale-down overflow-hidden">
                     </picture>
                 </div>
@@ -101,9 +101,9 @@
                 <div
                     class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
-                        <source srcset="{{ asset('images/home/recursos/orders.png') }}">
-                        <img src="{{ asset('images/home/recursos/orders.png') }}"
-                            alt="{{ asset('images/home/recursos/orders.png') }}"
+                        <source srcset="{{ asset('images/home/recursos/orders.webp') }}">
+                        <img src="{{ asset('images/home/recursos/orders.webp') }}"
+                            alt="{{ asset('images/home/recursos/orders.webp') }}"
                             class="w-full h-full object-scale-down overflow-hidden">
                     </picture>
                 </div>
@@ -116,64 +116,104 @@
         <section class="w-full">
             <a href="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}"
                 class="w-full block rounded-lg overflow-hidden">
-                <img class="block sm:hidden w-full h-full max-h-full object-center object-cover"
-                    src="{{ asset('images/home/mobile/section_1.jpg') }}" alt="">
-
-                <img class="hidden sm:block w-full h-full min-h-40 object-cover object-center lg:object-scale-down"
-                    src="{{ asset('images/home/desk/section_1.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/section_1.webp') }}" media="(min-width: 640px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/section_1.webp') }}" media="(max-width: 640px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-cover sm:object-scale-down object-center"
+                        src="{{ asset('images/home/desk/section_1.webp') }}" alt="NEXT TECHNOLOGIES">
+                </picture>
             </a>
         </section>
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
+        <section class="grid grid-cols-1 xs:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
             <a class="w-full rounded-lg overflow-hidden"
                 href="{{ route('productos') . '/case-gamemax-contact-coc-turbo-rojo-gamer' }}">
-                <img class="block w-full h-min-h-40 h-full max-h-full object-center object-cover"
-                    src="{{ asset('images/home/desk/case_gamer_3.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/case_gamer_3.webp') }}" media="(min-width: 768px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/case_gamer_3.webp') }}" media="(max-width: 768px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-scale-down object-center"
+                        src="{{ asset('images/home/desk/case_gamer_3.webp') }}" alt="">
+                </picture>
             </a>
             <a class="w-full rounded-lg overflow-hidden"
                 href="{{ route('productos') . '/audifono-halion-s2-monkey-negro-verde' }}">
-                <img class="block w-full h-min-h-40 h-full max-h-full object-scale-down object-center"
-                    src="{{ asset('images/home/desk/audifono_gamer_1.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/audifono_1.webp') }}" media="(min-width: 768px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/audifono_1.webp') }}" media="(max-width: 768px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-scale-down object-center"
+                        src="{{ asset('images/home/desk/audifono_1.webp') }}" alt="">
+                </picture>
             </a>
         </section>
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
+        <section class="grid grid-cols-1 xs:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
             <a class="w-full rounded-lg overflow-hidden"
                 href="{{ route('productos') . '/laptop-gamer-lenovo-legion-pro-5-16arx8-amd-ryzen-7-7745hx-3-6ghz-ram-ddr5-32gb-ssd-1tb-t-video-rtx-8gb-16-s-o-windows-11' }}">
-                <img class="block w-full h-min-h-40 h-full max-h-full object-scale-down object-center"
-                    src="{{ asset('images/home/desk/laptop_5.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/laptop_5.webp') }}" media="(min-width: 768px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/laptop_5.webp') }}" media="(max-width: 768px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-scale-down object-center"
+                        src="{{ asset('images/home/desk/laptop_5.webp') }}" alt="">
+                </picture>
             </a>
             <a class="w-full rounded-lg overflow-hidden" href="{{ route('productos') . '?subcategorias=camaras' }}">
-                <img class="block w-full h-min-h-40 h-full max-h-full object-scale-down object-center"
-                    src="{{ asset('images/home/desk/camaras_2.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/camaras_2.webp') }}" media="(min-width: 768px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/camaras_2.webp') }}" media="(max-width: 768px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-scale-down object-center"
+                        src="{{ asset('images/home/desk/camaras_2.webp') }}" alt="">
+                </picture>
             </a>
         </section>
 
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
+        <section class="grid grid-cols-1 xs:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
             <a class="w-full rounded-lg overflow-hidden"
                 href="{{ route('productos') . '/parlante-maxtron-hertz-mx-334v-bateria-recargable-rgb' }}">
-                <img class="block w-full h-min-h-40 h-full max-h-full object-cover sm:object-scale-down object-center"
-                    src="{{ asset('images/home/desk/parlante_6.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/parlante_6.webp') }}" media="(min-width: 768px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/parlante_6.webp') }}" media="(max-width: 768px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-scale-down object-center"
+                        src="{{ asset('images/home/desk/parlante_6.webp') }}" alt="">
+                </picture>
             </a>
             <a class="w-full rounded-lg overflow-hidden"
                 href="{{ route('productos') . '/control-de-asistencia-hikvision-hk-ds-k1t320mfwx-b-wi-fi-reconocimiento-facial-huellas-tarjeta' }}">
-                <img class="block w-full h-min-h-40 h-full max-h-full object-cover sm:object-scale-down object-center"
-                    src="{{ asset('images/home/desk/control_acceso_4.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/home/desk/control_acceso_4.webp') }}" media="(min-width: 768px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/home/mobile/control_acceso_4.webp') }}"
+                        media="(max-width: 768px)" type="image/webp" />
+                    <img class="block w-full h-auto object-scale-down object-center"
+                        src="{{ asset('images/home/desk/control_acceso_4.webp') }}" alt="">
+                </picture>
             </a>
         </section>
 
-        <section class="w-full">
+        <section class="w-full mt-2 lg:mt-3">
             <a href="{{ route('productos') . '?subcategorias=teclados' }}"
                 class="w-full block rounded-lg overflow-hidden">
-                <img class="block sm:hidden w-full h-full max-h-full object-center object-cover"
-                    src="{{ asset('images/ofertas/mobile/ofertas_1.jpg') }}" alt="">
-
-                <img class="hidden sm:block w-full h-full min-h-40 object-cover object-center lg:object-scale-down"
-                    src="{{ asset('images/ofertas/desk/ofertas_1.jpg') }}" alt="">
+                <picture>
+                    <source srcset="{{ asset('images/ofertas/desk/ofertas_1.webp') }}" media="(min-width: 640px)"
+                        type="image/webp" />
+                    <source srcset="{{ asset('images/ofertas/mobile/ofertas_1.webp') }}" media="(max-width: 640px)"
+                        type="image/webp" />
+                    <img class="block w-full h-auto object-cover sm:object-scale-down object-center"
+                        src="{{ asset('images/ofertas/desk/ofertas_1.webp') }}" alt="NEXT TECHNOLOGIES">
+                </picture>
             </a>
         </section>
-
-
 
 
         {{-- <section class="my-8">

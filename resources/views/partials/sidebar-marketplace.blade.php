@@ -184,8 +184,8 @@
                     <div class="title-category-sidebar">
                         <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/soluciones_integrales.png') }}">
-                                <img src="{{ asset('images/home/recursos/soluciones_integrales.png') }}"
+                                <source srcset="{{ asset('images/home/recursos/soluciones_integrales.webp') }}">
+                                <img src="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
                                     alt="Soluciones Integrales"
                                     class="w-full h-full object-scale-down overflow-hidden">
                             </picture>
@@ -256,8 +256,8 @@
                     <div class="title-category-sidebar group-hover:text-hovercolorlinknav">
                         <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/internet.png') }}">
-                                <img src="{{ asset('images/home/recursos/internet.png') }}"
+                                <source srcset="{{ asset('images/home/recursos/internet.webp') }}">
+                                <img src="{{ asset('images/home/recursos/internet.webp') }}"
                                     alt="Servicio de Internet"
                                     class="w-full h-full object-scale-down overflow-hidden">
                             </picture>
@@ -273,8 +273,8 @@
                     <div class="title-category-sidebar group-hover:text-hovercolorlinknav">
                         <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/centro_autorizado.png') }}">
-                                <img src="{{ asset('images/home/recursos/centro_autorizado.png') }}"
+                                <source srcset="{{ asset('images/home/recursos/centro_autorizado.webp') }}">
+                                <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
                                     alt="Centro Autorizado" class="w-full h-full object-scale-down overflow-hidden">
                             </picture>
                         </div>
@@ -289,8 +289,8 @@
                     <div class="title-category-sidebar">
                         <div class="absolute w-12 h-12 p-1 flex-shrink-0 overflow-hidden">
                             <picture>
-                                <source srcset="{{ asset('images/home/recursos/centro_autorizado.png') }}">
-                                <img src="{{ asset('images/home/recursos/centro_autorizado.png') }}"
+                                <source srcset="{{ asset('images/home/recursos/centro_autorizado.webp') }}">
+                                <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
                                     alt="Centro Autorizado" class="w-full h-full object-scale-down overflow-hidden">
                             </picture>
                         </div>
