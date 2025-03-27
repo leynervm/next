@@ -9,22 +9,22 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="default-theme" content="{{ config('app.theme') }}">
+    <meta name="description"
+        content="⭐ NEXT PERÚ - #1 en Venta de Productos Premium ⚡ Envío Rápido a Todo el Perú ✅ Garantía de 2 Años 💡 Tecnología, Hogar y Más. ¡Compra 100% Segura en www.next.net.pe!">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
-
     <!-- Fonts -->
-    {{-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap"> --}}
-    {{-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300&display=swap"> --}}
-
+    <link rel="preload" href="{{ asset('assets/fonts/Ubuntu/ubuntu-normal-normal.woff2') }}" as="font"
+        type="font/woff2" crossorigin>
     <!-- Styles -->
     @livewireStyles
 
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" fetchpriority="high" />
+    <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/select2/select2.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}" />
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}" fetchpriority="high" />
 
     <!-- Scripts -->
 </head>
@@ -65,7 +65,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
                             @if ($empresa->logo)
                                 <img class="w-full h-full object-scale-down object-center"
                                     src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}"
-                                    alt="">
+                                    alt="" fetchpriority="low">
                             @endif
                         </div>
                         <button type="button" id="sidebar-toggle"

@@ -226,14 +226,14 @@
 
                 @if (module::isEnabled('Marketplace'))
                     @if ($user)
-                        <p class="text-xs text-colorsubtitleform my-2 mt-8">
+                        <p class="text-xs text-colorsubtitleform">
                             Actualmente el cliente está registrado en nuestra tienda web...</p>
                         <x-simple-card class="w-48 mt-3 flex flex-col gap-1 rounded-xl cursor-default p-3 py-5">
                             <h1 class="font-semibold text-sm leading-4 text-primary text-center">
                                 {{ $user->name }}</h1>
 
                             <x-label class="font-semibold text-center" value="EMAIL" />
-                            <p class="text-xs text-center">{{ $user->email }}</p>
+                            <p class="text-xs text-center text-colorsubtitleform">{{ $user->email }}</p>
                         </x-simple-card>
                     @endif
                 @endif

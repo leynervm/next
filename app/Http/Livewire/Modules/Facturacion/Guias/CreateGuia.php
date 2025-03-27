@@ -293,7 +293,7 @@ class CreateGuia extends Component
 
         $tvitems = Tvitem::with(['itemseries.serie', 'kardexes.almacen', 'producto' => function ($query) {
             $query->with(['imagen', 'unit', 'marca']);
-        }])->guias()->micart()->orderBy('id', 'asc')->paginate();
+        }])->guias()->micart()->orderBy('id', 'asc')->get();
 
         return view('livewire.modules.facturacion.guias.create-guia', compact('modalidadtransportes', 'motivotraslados', 'seriecomprobantes', 'almacens', 'ubigeos', 'productos', 'tvitems'));
     }

@@ -1,4 +1,4 @@
-<button {{ $attributes->merge(['class' => 'favorito']) }}>
+<button {{ $attributes->merge(['role' => 'button', 'aria-label' => 'Agregar a favoritos', 'class' => 'favorito']) }}>
     <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" stroke="currentColor" fill-rule="evenodd" stroke-width="0.5"
         class="w-6 h-6 block duration-100" viewBox="0 0 48 48">
         <path

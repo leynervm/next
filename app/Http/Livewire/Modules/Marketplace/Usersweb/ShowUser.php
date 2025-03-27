@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Usersweb;
 
+use App\Models\Client;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
@@ -15,7 +16,18 @@ class ShowUser extends Component
 {
 
     use AuthorizesRequests;
-    public User $user;
+    public $user, $client;
+
+    public function mount(User $user)
+    {
+        $this->user = $user;
+        if (empty($user->client)) {
+            $client = Client::where('document', $user->document)->orWhere('email', $user->email)->first();
+            if ($client) {
+                $this->client = $client;
+            }
+        }
+    }
 
     protected function rules()
     {
@@ -85,6 +97,21 @@ class ShowUser extends Component
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
+        }
+    }
+
+    public function sincronizeclient()
+    {
+        if (empty($this->user->client)) {
+            $cliente = Client::whereNull('user_id')->where('document', $this->user->document)->first();
+            if ($cliente) {
+                $cliente->user_id = $this->user->id;
+                $cliente->save();
+                $this->user->refresh();
+                $this->resetValidation();
+                $this->reset(['client']);
+                $this->dispatchBrowserEvent('updated');
+            }
         }
     }
 }

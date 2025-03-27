@@ -3,6 +3,7 @@
 namespace App\Http\Livewire\Modules\Marketplace\Usersweb;
 
 use App\Actions\Fortify\PasswordValidationRules;
+use App\Models\Client;
 use App\Models\User;
 use App\Rules\CampoUnique;
 use App\Rules\ValidateDocument;
@@ -19,7 +20,7 @@ class CreateUserweb extends Component
     public $open = false;
     public $exists = false;
 
-    public $document, $name, $email, $password, $password_confirmation;
+    public $client, $document, $name, $email, $password, $password_confirmation;
 
     protected function rules()
     {
@@ -61,13 +62,21 @@ class CreateUserweb extends Component
         $this->validate();
         DB::beginTransaction();
         try {
-            User::create([
+            $user = User::create([
                 'document' => $this->document,
                 'name' => $this->name,
                 'email' => $this->email,
                 'password' => bcrypt($this->password),
                 'password_confirmation' => $this->password_confirmation,
             ]);
+
+            if (!empty($this->client)) {
+                $cliente = Client::find($this->client->id);
+                if (empty($cliente->user_id)) {
+                    $cliente->user_id = $user->id;
+                    $cliente->save();
+                }
+            }
             DB::commit();
             if ($closemodal) {
                 $this->reset();
@@ -115,8 +124,16 @@ class CreateUserweb extends Component
                 if ($cliente->birthday) {
                     $this->dispatchBrowserEvent('birthday', $cliente->name);
                 }
+
+                $this->client = Client::whereNull('user_id')->where('document', $this->document)->first();
+                if ($this->client) {
+                    if (!empty($client->email)) {
+                        $this->email = $this->client->email;
+                    }
+                }
             } else {
                 $this->name = '';
+                $this->reset(['client', 'email']);
                 $this->exists = false;
                 $this->addError('document', $cliente->error);
             }
@@ -125,6 +142,7 @@ class CreateUserweb extends Component
                 'title' => 'Error:' . $response->status() . ' ' . $response->json(),
                 'text' => null
             ])->getData();
+            $this->reset(['client', 'email']);
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
         }

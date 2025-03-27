@@ -20,8 +20,8 @@ class CreateSlider extends Component
     use AuthorizesRequests;
     use WithFileUploads;
 
-    public $image, $extencionimage, $imagemobile, $extencionimagemobile;
-    public $identificador;
+    public $image, $imagemobile;
+    public $iddesk, $idmobile;
     public $orden, $link, $start, $end;
 
     protected function rules()
@@ -39,20 +39,19 @@ class CreateSlider extends Component
                 // 'dimensions:min_width=1920,min_height=560'
                 new ValidateImageBase64(1920, 560, ['JPG', 'JPEG', 'PNG', 'WEBP'])
             ],
-            'extencionimage' => ['in:jpg,jpeg,png,gif,webp'],
             'imagemobile' => [
                 'required',
                 'string',
-                'regex:/^data:image\/(png|jpg|jpeg);base64,([A-Za-z0-9+\/=]+)$/',
+                'regex:/^data:image\/(png|jpg|jpeg|webp);base64,([A-Za-z0-9+\/=]+)$/',
                 new ValidateImageBase64(720, 833, ['JPG', 'JPEG', 'PNG', 'WEBP'])
             ],
-            'extencionimagemobile' => ['in:jpg,jpeg,png,gif,webp']
         ];
     }
 
     public function mount()
     {
-        $this->identificador = rand();
+        $this->iddesk = rand();
+        $this->idmobile = rand();
         $this->start = now('America/Lima')->format('Y-m-d');
     }
 
@@ -64,8 +63,10 @@ class CreateSlider extends Component
     public function updatingOpen()
     {
         if (!$this->open) {
-            $this->reset(['image', 'link']);
+            $this->reset(['image', 'imagemobile', 'link']);
             $this->resetValidation();
+            $this->iddesk = rand();
+            $this->idmobile = rand();
             $this->start = now('America/Lima')->format('Y-m-d');
         }
     }
@@ -78,8 +79,8 @@ class CreateSlider extends Component
             $this->orden = Slider::exists() ? Slider::max('orden') + 1 : '1';
             $this->validate();
 
-            $urlslider = $this->savepicture('image', 1920, 560, 'webp', 'desk_');
-            $urlslidermobile = $this->savepicture('imagemobile', 720, 833, 'webp', 'mobile_');
+            $urlslider = $this->savepicture('image', 1920, 560, 'desk_');
+            $urlslidermobile = $this->savepicture('imagemobile', 720, 833, 'mobile_');
 
             Slider::create([
                 'url' => $urlslider,
@@ -97,6 +98,8 @@ class CreateSlider extends Component
             } else {
                 $this->resetExcept('open');
             }
+            $this->iddesk = rand();
+            $this->idmobile = rand();
             $this->start = now('America/Lima')->format('Y-m-d');
             $this->resetValidation();
         } catch (\Exception $e) {
@@ -108,15 +111,26 @@ class CreateSlider extends Component
         }
     }
 
-    public function savepicture($attribute, $width, $height, $extencionimage, $responsive)
+    public function savepicture($attribute, $width, $height, $responsive)
     {
 
+        $allowedMimes = ['jpeg' => 'image/jpeg', 'jpg' => 'image/jpeg', 'png' => 'image/png', 'webp' => 'image/webp'];
         $imageSlider = $this->{$attribute};
-        list($type, $imageSlider) = explode(';', $imageSlider);
-        list(, $imageSlider) = explode(',', $imageSlider);
-        $imageSlider = base64_decode($imageSlider);
+        $imageData = explode(',', $imageSlider)[1] ?? $imageSlider;
+        $decodedImage = base64_decode($imageData);
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($decodedImage);
 
-        $compressedSlider = ImageIntervention::make($imageSlider)
+        if (!in_array($mime, $allowedMimes)) {
+            $this->addError('imagen', 'Formato no soportado (solo JPEG, PNG, WebP)');
+            return false;
+        }
+
+        // list($type, $imageSlider) = explode(';', $imageSlider);
+        // list(, $imageSlider) = explode(',', $imageSlider);
+        // $imageSlider = base64_decode($imageSlider);
+
+        $compressedSlider = ImageIntervention::make($decodedImage)
             ->resize($width, $height, function ($constraint) {
                 $constraint->aspectRatio();
                 $constraint->upsize();
@@ -143,17 +157,19 @@ class CreateSlider extends Component
         return $urlslider;
     }
 
-    // public function updatedImage($file)
-    // {
-    //     try {
-    //         $url = $file->temporaryUrl();
-    //         $this->resetValidation();
-    //     } catch (\Exception $e) {
-    //         $this->reset(['image']);
-    //         $this->addError('image', $e->getMessage());
-    //         return;
-    //     }
-    // }
+    public function clearimgdesk()
+    {
+        $this->reset(['image', 'iddesk']);
+        $this->resetValidation();
+        $this->image = rand();
+    }
+
+    public function clearimgmobile()
+    {
+        $this->reset(['imagemobile', 'idmobile']);
+        $this->resetValidation();
+        $this->imagemobile = rand();
+    }
 
     public function updated($propertyName)
     {

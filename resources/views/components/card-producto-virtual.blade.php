@@ -34,7 +34,8 @@
                             class="absolute opacity-0 top-0 object-scale-down w-full h-full group-hover:scale-105 group-hover:opacity-100 transition-all ease-in duration-700">
                     @endif
                 @else
-                    <x-icon-image-unknown class="w-full h-full text-colorsubtitleform" />
+                    <x-icon-image-unknown
+                        class="w-full h-full text-colorsubtitleform group-hover:text-hoverlinktable transition ease-in-out duration-150" />
                 @endif
             </div>
 

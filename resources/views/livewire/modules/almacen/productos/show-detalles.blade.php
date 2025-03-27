@@ -74,14 +74,15 @@
         <x-form-card titulo="IMÁGENES" subtitulo="Agregar múltiples images para una mejor visualización del producto."
             class="flex-1 justify-between">
             <div class="w-full flex h-full flex-1 flex-col justify-between gap-3">
-                <div class="w-full flex flex-wrap gap-1" id="drag_images">
+                <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-1 self-start"
+                    id="drag_images">
                     @if (count($producto->images) > 0)
                         @foreach ($producto->images as $item)
-                            <div class="w-48 group border border-borderminicard rounded-lg relative overflow-hidden"
+                            <div class="w-full flex flex-col justify-between group border border-borderminicard rounded-lg relative"
                                 data-id="{{ $item->id }}">
-                                <div class="w-full h-32 block">
+                                <div class="w-full max-w-full overflow-hidden">
                                     <img src="{{ pathURLProductImage($item->urlmobile) }}" alt=""
-                                        class="w-full h-full object-scale-down object-center">
+                                        class="block w-full rounded-lg h-auto max-h-20 sm:max-h-28 object-scale-down object-center">
                                 </div>
                                 <div class="w-full flex gap-1 justify-between p-1">
                                     <x-span-text :text="$item->urlmobile" class="truncate leading-3 flex-1" />

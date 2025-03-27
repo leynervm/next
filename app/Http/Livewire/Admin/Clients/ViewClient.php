@@ -416,17 +416,15 @@ class ViewClient extends Component
 
     public function sincronizeuser()
     {
-        if (!$this->client->user) {
-            if (Module::isEnabled('Marketplace')) {
-                $user = User::where('document', $this->client->document)->first();
-                if ($user) {
-                    $this->client->user_id = $user->id;
-                    $this->client->save();
-                    $this->client->refresh();
-                    $this->resetValidation();
-                    $this->reset(['user']);
-                    $this->dispatchBrowserEvent('updated');
-                }
+        if (Module::isEnabled('Marketplace') && empty($this->client->user)) {
+            $user = User::doesntHave('client')->where('document', $this->client->document)->first();
+            if ($user) {
+                $this->client->user_id = $user->id;
+                $this->client->save();
+                $this->client->refresh();
+                $this->resetValidation();
+                $this->reset(['user']);
+                $this->dispatchBrowserEvent('updated');
             }
         }
     }

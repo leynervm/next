@@ -40,7 +40,7 @@
         <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1 self-start relative">
             @foreach ($promociones as $item)
                 @php
-                    $image = !empty($item->producto->imagen) ? pathURLProductImage($item->producto->imagen->url) : null;
+                    $image = !empty($item->producto->imagen) ? pathURLProductImage($item->producto->imagen->urlmobile) : null;
                     $empresa = view()->shared('empresa');
                     $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
                     $descuento = $item->descuento;

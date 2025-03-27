@@ -1,12 +1,11 @@
 <x-app-layout>
     <div class="w-full relative overflow-hidden">
         <picture>
-            {{-- <source media="(width >= 900px)" srcset="logo-large.png"> --}}
-            <source media="(min-width : 768px)" srcset="{{ asset('images/home/recursos/home_network.jpg') }}">
-            <source srcset="{{ asset('images/home/recursos/home_network_mobile.jpg') }}">
-            <img src="{{ asset('images/home/recursos/home_network_mobile.jpg') }}"
-                alt="{{ asset('images/home/recursos/home_network_mobile.jpg') }}"
-                class="block w-full h-full max-w-full max-h-full object-cover">
+            <source srcset="{{ asset('images/home/recursos/home_network.webp') }}" media="(min-width : 768px)">
+            <source srcset="{{ asset('images/home/recursos/home_network_mobile.webp') }}">
+            <img src="{{ asset('images/home/recursos/home_network_mobile.webp') }}"
+                alt="{{ asset('images/home/recursos/home_network_mobile.webp') }}"
+                class="block w-full h-auto max-w-full object-cover">
         </picture>
     </div>
 
@@ -381,14 +380,13 @@
         </section>
     </div>
 
-    <div class="w-full relative max-h-[500px] opacity-80 overflow-hidden">
+    <div class="w-full relative opacity-80 overflow-hidden">
         <picture>
-            {{-- <source media="(width >= 900px)" srcset="logo-large.png"> --}}
-            <source media="(min-width : 768px)" srcset="{{ asset('images/home/recursos/network.jpg') }}">
-            <source srcset="{{ asset('images/home/recursos/network_mobile.jpg') }}">
-            <img src="{{ asset('images/home/recursos/network_mobile.jpg') }}"
-                alt="{{ asset('images/home/recursos/network_mobile.jpg') }}"
-                class="block w-full h-full max-w-full max-h-full object-cover">
+            <source srcset="{{ asset('images/home/recursos/network.webp') }}" media="(min-width : 768px)">
+            <source srcset="{{ asset('images/home/recursos/network_mobile.webp') }}">
+            <img src="{{ asset('images/home/recursos/network_mobile.webp') }}"
+                alt="{{ asset('images/home/recursos/network_mobile.webp') }}"
+                class="block w-full h-auto max-w-full object-cover">
         </picture>
     </div>
 

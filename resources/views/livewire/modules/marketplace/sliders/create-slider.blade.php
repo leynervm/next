@@ -30,9 +30,9 @@
                         Resolución Mínima : 1920x560px</p>
 
                     <div class="w-full flex items-center justify-center flex-wrap gap-1">
-                        <x-input-file for="fileInput" titulo="SELECCIONAR IMAGEN" class="disabled:opacity-25"
+                        <x-input-file for="{{ $iddesk }}" titulo="SELECCIONAR IMAGEN" class="disabled:opacity-25"
                             wire:loading.attr="disabled">
-                            <input type="file" class="hidden" @change="loadimage" id="fileInput" name="photo"
+                            <input type="file" class="hidden" @change="loadimage" id="{{ $iddesk }}" name="photo"
                                 accept="image/*" />
                         </x-input-file>
 
@@ -73,9 +73,9 @@
                             Resolución Mínima : 720x833px</p>
 
                         <div class="w-full flex items-center justify-center flex-wrap gap-1">
-                            <x-input-file for="filemobile" titulo="SELECCIONAR IMAGEN MOBILE"
+                            <x-input-file for="{{ $idmobile }}" titulo="SELECCIONAR IMAGEN MOBILE"
                                 class="disabled:opacity-25" wire:loading.attr="disabled">
-                                <input type="file" class="hidden" @change="loadimagemobile" id="filemobile"
+                                <input type="file" class="hidden" @change="loadimagemobile" id="{{ $idmobile }}"
                                     name="photomobile" accept="image/*" />
                             </x-input-file>
 
@@ -132,50 +132,40 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('fileUpload', () => ({
-                image: null,
-                imagemobile: null,
-                extencionimage: null,
-                extencionimagemobile: null,
-                init() {
-                    window.addEventListener('created', event => {
-                        this.image = null;
-                    })
-                },
+                image: @entangle('image').defer,
+                imagemobile: @entangle('imagemobile').defer,
+                iddesk: @entangle('iddesk').defer,
+                idmobile: @entangle('idmobile').defer,
+
                 loadimage() {
-                    let file = document.getElementById('fileInput').files[0];
-                    var reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.image = e.target.result;
-                        this.$wire.image = reader.result;
-                    };
-                    reader.readAsDataURL(file);
-                    if (file) {
-                        let imageExtension = file.name.split('.').pop();
-                        this.$wire.extencionimage = imageExtension;
+                    const input = document.getElementById(this.iddesk);
+                    if (!input || !input.files || !input.files[0]) {
+                        console.log('No se seleccionó ningún archivo');
+                        return;
                     }
+                    const file = input.files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.image = e.target.result;
+                    reader.readAsDataURL(file);
                 },
                 loadimagemobile() {
-                    let file = document.getElementById('filemobile').files[0];
-                    var reader = new FileReader();
-                    reader.onload = (e) => {
-                        this.imagemobile = e.target.result;
-                        this.$wire.imagemobile = reader.result;
-                    };
-                    reader.readAsDataURL(file);
-                    if (file) {
-                        let imageExtension = file.name.split('.').pop();
-                        this.$wire.extencionimagemobile = imageExtension;
+                    const input = document.getElementById(this.idmobile);
+                    if (!input || !input.files || !input.files[0]) {
+                        console.log('No se seleccionó ningún archivo para mobile');
+                        return;
                     }
+                    const file = input.files[0];
+                    var reader = new FileReader();
+                    reader.onload = (e) => this.imagemobile = e.target.result;
+                    reader.readAsDataURL(file);
                 },
                 reset() {
                     this.image = null;
-                    this.$wire.image = null;
-                    this.$wire.extencionimage = null;
+                    this.$wire.clearimgdesk();
                 },
                 resetmobile() {
                     this.imagemobile = null;
-                    this.$wire.imagemobile = null;
-                    this.$wire.extencionimagemobile = null;
+                    this.$wire.clearimgmobile();
                 }
             }))
         })

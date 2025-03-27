@@ -63,7 +63,7 @@
                                     class="zoom relative w-full h-full bg-no-repeat object-scale-down overflow-hidden"
                                     :style="'background-image: url(\'' + currentImage + '\');'" @mousemove="zoom"
                                     @mouseover="showesp = false" @mouseleave="showesp = true" @touchmove="zoom">
-                                    <img :src="currentImage" x-ref="image"
+                                    <img :src="currentImage" x-ref="image" alt="{{ $producto->name }}"
                                         class="zoom-hover block w-full h-full object-scale-down transition ease-linear duration-300">
                                 </figure>
                             </template>
@@ -79,7 +79,7 @@
                             @if ($producto->marca->image && $empresa->verLogomarca())
                                 <div class="absolute top-1 right-1 w-28 h-12 rounded overflow-hidden">
                                     <img src="{{ getMarcaURL($producto->marca->image->url) }}"
-                                        class="block w-full h-full object-scale-down">
+                                        class="block w-full h-full object-scale-down" alt="Marca">
                                 </div>
                             @endif
                         @endif
@@ -120,34 +120,36 @@
                     </div>
 
                     @if ($image)
-                        <div class="w-full relative px-10 mt-2">
-                            <button id="previusthumbnail" @click="changeImage('prev')"
-                                class="absolute text-colorsubtitleform top-1/2 left-0 -translate-y-1/2 h-10 w-6 shadow flex items-center justify-center disabled:opacity-25">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                    stroke-linejoin="round" class="w-6 h-6 block">
-                                    <path d="M15 7L10 12L15 17" />
-                                </svg>
-                            </button>
-                            <div class="w-full flex gap-1 overflow-hidden p-1" id="imagethumbs">
+                        <div class="w-full overflow-hidden relative mt-2" id="imagethumbs">
+                            <div class="w-full relative swiper-wrapper">
                                 @foreach ($producto->images as $item)
-                                    <div class="w-20 h-20 flex-shrink-0 border-2 thumbnail cursor-pointer bg-white rounded-md"
+                                    <div class="swiper-slide size-20 flex-shrink-0 border-2 thumbnail cursor-pointer bg-white overflow-hidden rounded-md"
                                         :class="{
                                             'ring-1 border-primary ring-primary active': currentImage ==
                                                 '{{ pathURLProductImage($item->url) }}',
                                             'hover:ring-1 border-borderminicard ring-borderminicard opacity-70': currentImage !=
                                                 '{{ pathURLProductImage($item->url) }}'
                                         }">
-                                        <img class="w-full h-full object-scale-down object-center"
-                                            src="{{ pathURLProductImage($item->url) }}"
-                                            @click="currentImage = '{{ pathURLProductImage($item->url) }}'">
+                                        <img class="block w-full h-full object-cover object-center"
+                                            src="{{ pathURLProductImage($item->urlmobile) }}"
+                                            alt="{{ $item->urlmobile }}"
+                                            x-on:click="currentImage = '{{ pathURLProductImage($item->url) }}'">
                                     </div>
                                 @endforeach
                             </div>
-                            <button id="nextthumbnail" @click="changeImage('next')"
-                                class="absolute text-colorsubtitleform top-1/2 right-0 -translate-y-1/2 h-10 w-6 shadow flex items-center justify-center disabled:opacity-25">
+
+                            <button id="previusthumbnail" role="button" aria-label="Boton deslizar izquierda"
+                                class="bg-fondominicard z-10 opacity-90 disabled:opacity-25 disabled:shadow-none absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke="currentColor" stroke-width="3" stroke-linecap="round"
+                                    stroke-linejoin="round" class="w-6 h-6 block">
+                                    <path d="M15 7L10 12L15 17" />
+                                </svg>
+                            </button>
+                            <button id="nextthumbnail" role="button" aria-label="Boton deslizar derecha"
+                                class="bg-fondominicard z-10 opacity-90 disabled:opacity-25 disabled:shadow-none absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="3" stroke-linecap="round"
                                     stroke-linejoin="round" class="w-6 h-6 block">
                                     <path d="M10 7L15 12L10 17" />
                                 </svg>
@@ -489,8 +491,8 @@
         </div>
 
         @if (count($combos) > 0)
-            <div class="w-full" id="combos" style="scroll-margin-top: 80px;">
-                <h1 class="font-semibold text-lg sm:text-2xl py-3 text-colorsubtitleform">
+            <div class="w-full" id="combos" style="scroll-margin-top: 110px;">
+                <h1 class="font-semibold text-lg sm:text-xl pt-1 text-colorsubtitleform">
                     Combos sugeridos para tí</h1>
 
                 <div
@@ -499,7 +501,8 @@
                         <div
                             class="w-full flex flex-col justify-between border border-borderminicard shadow-md shadow-shadowminicard p-1 md:p-2 rounded-lg md:rounded-2xl">
                             <div class="w-full">
-                                <h1 class="text-colorlabel font-medium text-xs md:text-[1rem] !leading-none pb-2">
+                                <h1
+                                    class="text-colorlabel font-medium text-[10px] xs:text-xs md:text-[1rem] !leading-none pb-2">
                                     {{ $item->promocion->titulo }}</h1>
 
                                 <div class="w-full flex items-center flex-wrap gap-1">
@@ -613,41 +616,62 @@
             </div>
         @endif
 
+        <div class="w-full bg-fondominicard box-shadow rounded-lg sm:rounded-xl px-2 pb-2 mt-3 sm:mt-10"
+            id="especificacions">
+            <h1 class="font-semibold text-lg sm:text-xl pt-1 text-colorsubtitleform">
+                Especificaciones</h1>
+            <table class="w-full text-[10px]">
+                <tbody class="odd:bg-fondohovertable">
 
-        @if (count($producto->especificacions) > 0 || !empty(trim($producto->comentario)))
-            <div class="w-full sm:mt-8 xl:mt-10" id="especificacions">
-                <h1 class="font-semibold text-lg sm:text-2xl text-colorsubtitleform">
-                    Especificaciones</h1>
-                <table class="w-full text-[10px] sm:mt-5">
-                    <tbody class="odd:bg-fondohovertable">
+                    @if (!empty($producto->marca))
+                        <tr class="text-textbodytable bg-body">
+                            <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
+                                MARCA
+                            </th>
+                            <td class="p-1.5 sm:py-3 text-left">{{ $producto->marca->name }}</td>
+                        </tr>
+                    @endif
+
+                    @if (!empty($producto->modelo))
+                        <tr class="text-textbodytable">
+                            <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
+                                MODELO
+                            </th>
+                            <td class="p-1.5 sm:py-3 text-left">{{ $producto->modelo }}</td>
+                        </tr>
+                    @endif
+
+                    @if (count($producto->especificacions) > 0 || !empty(trim($producto->comentario)))
                         @foreach ($producto->especificacions as $item)
                             <tr
                                 class="text-textbodytable {{ $loop->index % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
                                 <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
                                     {{ $item->caracteristica->name }}
                                 </th>
-                                <td class="p-2 py-3 text-left">{!! nl2br($item->name) !!}</td>
+                                <td class="p-1.5 sm:py-3 text-left">{!! nl2br($item->name) !!}</td>
                             </tr>
                         @endforeach
-                        @if (!empty(trim($producto->comentario)))
-                            <tr
-                                class="text-textbodytable {{ count($producto->especificacions) % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
-                                <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
-                                    OTROS
-                                </th>
-                                <td class="p-2 py-3 text-left">{!! nl2br($producto->comentario) !!}</td>
-                            </tr>
-                        @endif
-                    </tbody>
-                </table>
-            </div>
-        @endif
+                    @endif
+                    @if (!empty(trim($producto->comentario)))
+                        <tr
+                            class="text-textbodytable {{ count($producto->especificacions) % 2 == 0 ? 'bg-body' : 'bg-fondobodytable' }}">
+                            <th class="py-1.5 sm:py-3 px-2 text-left max-w-xs md:w-80">
+                                OTROS
+                            </th>
+                            <td class="p-1.5 sm:py-3 text-left">{!! nl2br($producto->comentario) !!}</td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+
 
         @if ($producto->verDetalles())
             @if ($producto->detalleproducto)
                 @if (!empty($producto->detalleproducto->descripcion))
-                    <div class="w-full mt-8 overflow-x-auto">
-                        <h1 class="font-semibold text-lg sm:text-2xl py-3 text-colorsubtitleform">
+                    <div
+                        class="w-full bg-fondominicard box-shadow rounded-lg sm:rounded-xl px-2 mt-3 sm:mt-10 overflow-x-auto">
+                        <h1 class="font-semibold text-lg sm:text-xl pt-1 text-colorsubtitleform">
                             Descripcion del producto</h1>
 
                         <div class="w-full block overflow-x-auto">
@@ -740,12 +764,12 @@
         </div> --}}
 
         @if (count($relacionados) > 0)
-            <div class="w-full mt-10">
-                <h1 class="font-semibold text-lg sm:text-2xl py-3 text-colorsubtitleform">
+            <div class="w-full bg-fondominicard box-shadow rounded-lg sm:rounded-xl px-2 mt-3 sm:mt-10">
+                <h1 class="font-semibold text-lg sm:text-xl pt-1 text-colorsubtitleform">
                     Productos relacionados</h1>
 
-                <div class="w-full relative px-6 md:px-0">
-                    <div class="w-full flex overflow-x-hidden" id="relacionados">
+                <div class="w-full relative overflow-x-hidden" id="relacionados">
+                    <div class="w-full swiper-wrapper py-2">
                         @foreach ($relacionados as $item)
                             @php
                                 $pricesale = $item->getPrecioVenta($pricetype);
@@ -757,11 +781,10 @@
                                         ->first();
                                 }
                             @endphp
-
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                                 :partnumber="$item->partnumber" :image="$item->imagen ? pathURLProductImage($item->imagen->urlmobile) : null" :promocion="$promocion_relacionados"
-                                wire:key="cardproduct{{ $item->id }}"
-                                class="card-sugerencias flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] xs:p-1 sm:p-3 transition ease-in-out duration-150">
+                                wire:key="cardproduct{{ $item->id }}" style="height: auto !important;"
+                                class="swiper-slide card-sugerencias bg-fondominicard shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard rounded-lg w-full overflow-hidden xs:p-1 sm:p-3 transition ease-in-out duration-150">
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())
@@ -790,16 +813,16 @@
                             </x-card-producto-virtual>
                         @endforeach
                     </div>
-                    <button id="leftrelacionados"
-                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                    <button id="leftrelacionados" role="button" aria-label="Boton deslizar izquierda"
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
                             <path d="M15 7L10 12L15 17" />
                         </svg>
                     </button>
-                    <button id="rightrelacionados"
-                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                    <button id="rightrelacionados" role="button" aria-label="Boton deslizar derecha"
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
@@ -811,12 +834,12 @@
         @endif
 
         @if (count($interesantes) > 0)
-            <div class="w-full mt-10 pb-10">
-                <h1 class="font-semibold text-lg sm:text-2xl py-3 text-colorsubtitleform">
+            <div class="w-full bg-fondominicard box-shadow rounded-lg sm:rounded-xl px-2 my-3 sm:my-10">
+                <h1 class="font-semibold text-lg sm:text-xl pt-1 text-colorsubtitleform">
                     También podría interesarte</h1>
 
-                <div class="w-full relative px-6 md:px-0">
-                    <div class="w-full flex overflow-x-hidden" id="interesantes">
+                <div class="w-full relative overflow-x-hidden" id="interesantes">
+                    <div class="w-full swiper-wrapper py-2">
                         @foreach ($interesantes as $item)
                             @php
                                 $pricesale = $item->getPrecioVenta($pricetype);
@@ -827,11 +850,10 @@
                                         ->first();
                                 }
                             @endphp
-
                             <x-card-producto-virtual :route="route('productos.show', $item)" :name="$item->name" :marca="$item->marca->name"
                                 :partnumber="$item->partnumber" :image="$item->imagen ? pathURLProductImage($item->imagen->urlmobile) : null" :promocion="$promocion_interesantes"
-                                wire:key="cardproduct{{ $item->id }}"
-                                class="card-similares flex-shrink-0 overflow-hidden xs:w-[calc(100%/2)] sm:w-[calc(100%/3)] md:w-[calc(100%/4)] lg:w-[calc(100%/6)] xl:w-[calc(100%/7)] xs:p-1 sm:p-3 transition ease-in-out duration-150">
+                                wire:key="cardproduct{{ $item->id }}" style="height: auto !important;"
+                                class="swiper-slide card-similares bg-fondominicard shadow shadow-shadowminicard hover:shadow-md hover:shadow-shadowminicard rounded-lg w-full overflow-hidden xs:p-1 sm:p-3 transition ease-in-out duration-150">
 
                                 @if ($pricesale > 0)
                                     @if ($empresa->verDolar())
@@ -858,16 +880,16 @@
                             </x-card-producto-virtual>
                         @endforeach
                     </div>
-                    <button id="leftinteresantes"
-                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
+                    <button id="leftinteresantes" role="button" aria-label="Boton deslizar izquierda"
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
                             <path d="M15 7L10 12L15 17" />
                         </svg>
                     </button>
-                    <button id="rightinteresantes"
-                        class="bg-fondominicard opacity-60 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
+                    <button id="rightinteresantes" role="button" aria-label="Boton deslizar derecha"
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
@@ -879,13 +901,14 @@
         @endif
     </div>
 
+    @push('scripts')
+        <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}" defer></script>
+    @endpush
+
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('showproducto', () => ({
                 open: false,
-                init() {
-
-                },
                 openModal() {
                     this.open = true;
                     document.body.style.overflow = 'hidden';
@@ -893,118 +916,135 @@
                 closeModal() {
                     this.open = false;
                     document.body.style.overflow = 'auto';
-                },
-                changeImage(direction) {
-                    let imagethumbs = $("#imagethumbs");
-                    let thumbnail = $(".thumbnail");
-                    var index = $('.thumbnail.active').index();
-                    let left = $('#previusthumbnail');
-                    let right = $('#nextthumbnail');
-                    let moveX = Math.round($(imagethumbs).get(0).scrollWidth / $('.thumbnail').length);
-
-                    if (direction === 'next') {
-                        index = index < $('.thumbnail').length - 1 ? index + 1 : index;
-                        thumbnail = thumbnail.get(index);
-
-                        if (thumbnail.offsetLeft >= Math.round($(imagethumbs).outerWidth(true))) {
-                            $(imagethumbs).animate({
-                                scrollLeft: '+=' + moveX
-                            }, 'fast');
-
-                            if (thumbnail.offsetLeft + moveX >= $(imagethumbs).get(0).scrollWidth) {
-                                $(left).prop('disabled', false);
-                                $(right).prop('disabled', true);
-                            }
-                        }
-                        $(left).prop('disabled', false);
-
-                    } else if (direction === 'prev') {
-                        index = index > 0 ? index - 1 : index;
-                        thumbnail = thumbnail.get(index);
-
-                        $(imagethumbs).animate({
-                            scrollLeft: '-=' + moveX
-                        }, 'fast');
-
-                        if (thumbnail.offsetLeft < $(imagethumbs).get(0).scrollWidth) {
-                            $(right).prop('disabled', false);
-                        }
-
-                        if (thumbnail.offsetLeft <= $(".thumbnail")[0].offsetLeft) {
-                            $(left).prop('disabled', true);
-                        }
-                    }
-
-                    this.currentImage = $(".thumbnail")[index].querySelector('img').getAttribute(
-                        'src');
                 }
             }))
         })
 
         document.addEventListener('DOMContentLoaded', function() {
-
-            let relacionados = $("#relacionados");
-            $("#rightrelacionados").click(() => hacerScroll(relacionados));
-            $("#leftrelacionados").click(() => hacerScroll(relacionados, '-'));
-            // disabledButtons(relacionados, '#leftrelacionados', '#rightrelacionados');
-
-            let interesantes = $("#interesantes");
-            $("#rightinteresantes").click(() => hacerScroll(interesantes));
-            $("#leftinteresantes").click(() => hacerScroll(interesantes, '-'));
-            // disabledButtons(interesantes, '#leftinteresantes', '#rightinteresantes');
-
-
-            function hacerScroll(contenedor, type = "+") {
-                $(contenedor).animate({
-                    scrollLeft: type + '=' + Math.round($(contenedor).width())
-                }, 'slow');
-            }
-
-            function disabledButtons(contenedor, left, right) {
-                $(contenedor).scroll(function() {
-                    if ($(contenedor).scrollLeft() <= 0) {
-                        $(left).prop('disabled', true);
-                        $(right).prop('disabled', false);
-                    }
-
-                    if ($(contenedor).scrollLeft() >= $(contenedor).get(0).scrollWidth - $(contenedor)
-                        .width()) {
-                        $(right).prop('disabled', true);
-                        $(left).prop('disabled', false);
-                    }
-                });
-            }
-
-            function changeSlide(e) {
-                let left = $('#previusthumbnail');
-                let right = $('#nextthumbnail');
-                let start = $(".thumbnail")[0].offsetLeft;
-                let end = $(".thumbnail")[$('.thumbnail').length - 1].offsetLeft;
-                let offset = $(".thumbnail")[e.index()].offsetLeft;
-
-                if (offset == start) {
-                    $(left).prop('disabled', true);
-                    $(right).prop('disabled', false);
-                } else {
-                    $(left).prop('disabled', false);
+            const slider_thumbs = document.getElementById('imagethumbs');
+            const container = slider_thumbs.parentElement;
+            const swiper_thumbs = new Swiper(slider_thumbs, {
+                navigation: {
+                    prevEl: container.querySelector('#previusthumbnail'),
+                    nextEl: container.querySelector('#nextthumbnail'),
+                },
+                breakpoints: {
+                    0: {
+                        slidesPerView: 3,
+                        spaceBetween: 4,
+                    },
+                    300: {
+                        slidesPerView: 4,
+                        spaceBetween: 4,
+                    },
+                    480: {
+                        slidesPerView: 6,
+                        spaceBetween: 4,
+                    },
+                    640: {
+                        slidesPerView: 7,
+                        spaceBetween: 4,
+                    },
+                    768: {
+                        slidesPerView: 5,
+                        spaceBetween: 4,
+                    },
+                    1024: {
+                        slidesPerView: 7,
+                        spaceBetween: 4,
+                    },
+                    1280: {
+                        slidesPerView: 8,
+                        spaceBetween: 4,
+                    },
                 }
+            });
 
-                if (offset == end) {
-                    $(left).prop('disabled', false);
-                    $(right).prop('disabled', true);
-                } else {
-                    $(right).prop('disabled', false);
-                }
 
-                // if (offset == start || offset == end) {
-                //     $(left).prop('disabled', false);
-                //     $(right).prop('disabled', false);
-                // }
+            const slider_relacionados = document.getElementById('relacionados');
+            const container_relacionados = slider_relacionados.parentElement;
+            const swiper_relacionados = new Swiper(slider_relacionados, {
+                navigation: {
+                    prevEl: container_relacionados.querySelector('#leftrelacionados'),
+                    nextEl: container_relacionados.querySelector('#rightrelacionados'),
+                },
+                breakpoints: {
+                    0: {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                    },
+                    340: {
+                        slidesPerView: 2,
+                        spaceBetween: 8,
+                    },
+                    480: {
+                        slidesPerView: 3,
+                        spaceBetween: 8,
+                    },
+                    640: {
+                        slidesPerView: 4,
+                        spaceBetween: 8,
+                    },
+                    768: {
+                        slidesPerView: 4,
+                        spaceBetween: 8,
+                    },
+                    870: {
+                        slidesPerView: 5,
+                        spaceBetween: 8,
+                    },
+                    1170: {
+                        slidesPerView: 6,
+                        spaceBetween: 8,
+                    },
+                    1280: {
+                        slidesPerView: 7,
+                        spaceBetween: 8,
+                    },
+                },
+            });
 
-            }
-
-            $(".thumbnail").click(function() {
-                changeSlide($(this));
+            const slider_interesantes = document.getElementById('interesantes');
+            const container_interesantes = slider_interesantes.parentElement;
+            const swiper_interesantes = new Swiper(slider_interesantes, {
+                navigation: {
+                    prevEl: container_interesantes.querySelector('#leftinteresantes'),
+                    nextEl: container_interesantes.querySelector('#rightinteresantes'),
+                },
+                breakpoints: {
+                    0: {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                    },
+                    340: {
+                        slidesPerView: 2,
+                        spaceBetween: 8,
+                    },
+                    480: {
+                        slidesPerView: 3,
+                        spaceBetween: 8,
+                    },
+                    640: {
+                        slidesPerView: 4,
+                        spaceBetween: 8,
+                    },
+                    768: {
+                        slidesPerView: 4,
+                        spaceBetween: 8,
+                    },
+                    870: {
+                        slidesPerView: 5,
+                        spaceBetween: 8,
+                    },
+                    1170: {
+                        slidesPerView: 6,
+                        spaceBetween: 8,
+                    },
+                    1280: {
+                        slidesPerView: 7,
+                        spaceBetween: 8,
+                    },
+                },
             });
         })
 

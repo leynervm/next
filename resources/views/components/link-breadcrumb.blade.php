@@ -20,7 +20,7 @@
 
     </span>
 @else
-    <a href="{{ route($route) }}"
+    <a href="{{ route($route) }}" aria-label="{{ $text }}"
         class="flex items-center gap-1 bg-fondominicard {{ $colorText }} hover:text-next-400 rounded py-1 px-2">
         {{ $icon }}
         @if ($text)

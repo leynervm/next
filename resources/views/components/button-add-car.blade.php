@@ -1,6 +1,6 @@
 @props(['classIcon' => null])
 <button
-    {{ $attributes->merge(['type' => 'button', 'class' => ' block group relative font-medium tracking-widest bg-next-500 text-white p-2 rounded-lg disabled:opacity-25 hover:bg-next-700 focus:bg-next-700 hover:border-next-700 focus:border-next-700 hover:ring-2 hover:ring-next-300 focus:ring-2 focus:ring-next-300 transition ease-in duration-150']) }}>
+    {{ $attributes->merge(['type' => 'button', 'role' => 'button', 'aria-label' => 'Agregar al carrito', 'class' => ' block group relative font-medium tracking-widest bg-next-500 text-white p-2 rounded-lg disabled:opacity-25 hover:bg-next-700 focus:bg-next-700 hover:border-next-700 focus:border-next-700 hover:ring-2 hover:ring-next-300 focus:ring-2 focus:ring-next-300 transition ease-in duration-150']) }}>
 
     @if (isset($slot))
         <span>{{ $slot }}</span>

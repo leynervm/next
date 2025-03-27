@@ -9,24 +9,23 @@
         @if (count($categories))
             <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">
                 Nuestros Productos</h1>
-            @php
-                $chunks = $categories->chunk(5);
-            @endphp
-            <section
-                class="w-full py-3 sm:py-6 pb-3 sm:pb-10 flex flex-col gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
-                @foreach ($chunks as $chunk)
-                    <div class="w-full flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
-                        @foreach ($chunk as $item)
+
+            <div class="w-full overflow-hidden relative" id="swiper-categories">
+                <div class="w-full relative py-5 swiper-wrapper">
+                    @foreach ($categories as $item)
+                        <div class="swiper-slide">
                             <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
-                                class="w-full aspect-square max-w-16 xs:max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-1 xs:p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                                class="w-full card-category-marketplace flex flex-col justify-center items-center self-center hover:shadow-primary hover:shadow-md p-2 md:p-3 ring-borderminicard rounded-full ring-1 hover:ring-primary aspect-square transition duration-300 ease-in-out"
+                                aria-label="{{ route('productos') . '?categorias=' . $item->slug }}">
                                 <div
-                                    class="w-full h-5 xs:h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                                    class="block w-full max-w-[70%] xs:max-w-[60%] h-auto overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                                     @if ($item->image)
                                         <picture>
                                             <source srcset="{{ getCategoryURL($item->image->url) }}">
                                             <img src="{{ getCategoryURL($item->image->url) }}"
-                                                alt="{{ getCategoryURL($item->image->url) }}"
-                                                class="w-full h-full object-scale-down overflow-hidden">
+                                                alt="{{ $item->image->url }}"
+                                                class="w-full h-auto max-h-10 sm:max-h-10 lg:max-h-12 xl:max-h-16 object-scale-down overflow-hidden"
+                                                fetchpriority="low">
                                         </picture>
                                     @else
                                         <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -36,25 +35,40 @@
                                         </svg>
                                     @endif
                                 </div>
-                                <h1
-                                    class="pt-1 sm:pt-3 text-[7px] xs:text-[8px] sm:text-[9px] md:text-[10px] !leading-none text-colorsubtitleform font-semibold text-center group-hover:text-primary transition ease-in-out duration-300">
-                                    {{ $item->name }}</h1>
+                                <p
+                                    class="pt-1 sm:pt-3 text-[9px] sm:text-[10px] font-semibold !leading-none text-colorsubtitleform text-center group-hover:text-primary transition ease-in-out duration-300">
+                                    {{ $item->name }}</p>
                             </a>
-                        @endforeach
-                    </div>
-                @endforeach
-            </section>
+                        </div>
+                    @endforeach
+                </div>
 
+                <button id="swiperCatPrev" role="button" aria-label="Boton deslizar izquierda"
+                    class="bg-fondominicard z-10 opacity-90 disabled:opacity-25 disabled:shadow-none absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
+                        <path d="M15 7L10 12L15 17" />
+                    </svg>
+                </button>
+                <button id="swiperCatNext" role="button" aria-label="Boton deslizar derecha"
+                    class="bg-fondominicard z-10 opacity-90 disabled:opacity-25 disabled:shadow-none absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6 block">
+                        <path d="M10 7L15 12L10 17" />
+                    </svg>
+                </button>
+            </div>
         @endif
 
         <h1 class="text-center font-semibold text-lg sm:text-3xl text-colorsubtitleform">
             Nuestros Servicios</h1>
+
         <section
             class="w-full pt-3 sm:pt-6 pb-3 sm:pb-10 flex flex-wrap gap-2 sm:gap-3 md:gap-5 justify-center items-center self-center">
             <a href="{{ route('tic') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                class="w-full card-category-marketplace aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-md hover:shadow-primary hover:ring-primary transition ease-in-out duration-300">
                 <div
-                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    class="w-full image-category-marketplace h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
                         <source srcset="{{ asset('images/home/recursos/soluciones_integrales.webp') }}">
                         <img src="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
@@ -63,13 +77,13 @@
                     </picture>
                 </div>
                 <h1
-                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-1 sm:pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     SOLUCIONES INTEGRALES EN TI</h1>
             </a>
             <a href="{{ route('servicesnetwork') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                class="w-full card-category-marketplace aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-md hover:shadow-primary hover:ring-primary transition ease-in-out duration-300">
                 <div
-                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    class="w-full image-category-marketplace h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
                         <source srcset="{{ asset('images/home/recursos/internet.webp') }}">
                         <img src="{{ asset('images/home/recursos/internet.webp') }}"
@@ -78,13 +92,13 @@
                     </picture>
                 </div>
                 <h1
-                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-1 sm:pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     SERVICIO DE INTERNET</h1>
             </a>
             <a x-on:click="localStorage.setItem('activeTabCE', 1);" href="{{ route('centroautorizado') }}"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                class="w-full card-category-marketplace aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-md hover:shadow-primary hover:ring-primary transition ease-in-out duration-300">
                 <div
-                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    class="w-full image-category-marketplace h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
                         <source srcset="{{ asset('images/home/recursos/centro_autorizado.webp') }}">
                         <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
@@ -93,13 +107,13 @@
                     </picture>
                 </div>
                 <h1
-                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-1 sm:pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     CENTRO AUTORIZADO</h1>
             </a>
             <a href="https://soporte.next.net.pe/buscar" target="_blank"
-                class="w-full aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-lg hover:shadow-shadowminicard hover:ring-primary transition ease-in-out duration-300">
+                class="w-full card-category-marketplace aspect-square max-w-20 sm:max-w-28 md:max-w-32 sm:max-h-28 group max-h-24 md:max-h-32 flex flex-col items-center justify-center self-center rounded-full p-2.5 sm:p-4 md:p-5 ring-1 ring-borderminicard hover:shadow-md hover:shadow-primary hover:ring-primary transition ease-in-out duration-300">
                 <div
-                    class="w-full h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
+                    class="w-full image-category-marketplace h-6 sm:h-10 md:h-12 block text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                     <picture>
                         <source srcset="{{ asset('images/home/recursos/orders.webp') }}">
                         <img src="{{ asset('images/home/recursos/orders.webp') }}"
@@ -108,14 +122,15 @@
                     </picture>
                 </div>
                 <h1
-                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
+                    class="text-[8px] sm:text-[9px] md:text-[10px] text-colorsubtitleform pt-1 sm:pt-3 font-semibold leading-none text-center group-hover:text-primary transition ease-in-out duration-300">
                     ORDEN DE TRABAJO</h1>
             </a>
         </section>
 
         <section class="w-full">
             <a href="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}"
-                class="w-full block rounded-lg overflow-hidden">
+                class="w-full block rounded-lg overflow-hidden"
+                aria-label="{{ route('productos') . '?subcategorias=pc-s-escritorio' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/section_1.webp') }}" media="(min-width: 640px)"
                         type="image/webp" />
@@ -129,7 +144,8 @@
 
         <section class="grid grid-cols-1 xs:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
             <a class="w-full rounded-lg overflow-hidden"
-                href="{{ route('productos') . '/case-gamemax-contact-coc-turbo-rojo-gamer' }}">
+                href="{{ route('productos') . '/case-gamemax-contact-coc-turbo-rojo-gamer' }}"
+                aria-label="{{ route('productos') . '/case-gamemax-contact-coc-turbo-rojo-gamer' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/case_gamer_3.webp') }}" media="(min-width: 768px)"
                         type="image/webp" />
@@ -140,7 +156,8 @@
                 </picture>
             </a>
             <a class="w-full rounded-lg overflow-hidden"
-                href="{{ route('productos') . '/audifono-halion-s2-monkey-negro-verde' }}">
+                href="{{ route('productos') . '/audifono-halion-s2-monkey-negro-verde' }}"
+                aria-label="{{ route('productos') . '/audifono-halion-s2-monkey-negro-verde' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/audifono_1.webp') }}" media="(min-width: 768px)"
                         type="image/webp" />
@@ -154,7 +171,8 @@
 
         <section class="grid grid-cols-1 xs:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
             <a class="w-full rounded-lg overflow-hidden"
-                href="{{ route('productos') . '/laptop-gamer-lenovo-legion-pro-5-16arx8-amd-ryzen-7-7745hx-3-6ghz-ram-ddr5-32gb-ssd-1tb-t-video-rtx-8gb-16-s-o-windows-11' }}">
+                href="{{ route('productos') . '/laptop-gamer-lenovo-legion-pro-5-16arx8-amd-ryzen-7-7745hx-3-6ghz-ram-ddr5-32gb-ssd-1tb-t-video-rtx-8gb-16-s-o-windows-11' }}"
+                aria-label="{{ route('productos') . '/laptop-gamer-lenovo-legion-pro-5-16arx8-amd-ryzen-7-7745hx-3-6ghz-ram-ddr5-32gb-ssd-1tb-t-video-rtx-8gb-16-s-o-windows-11' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/laptop_5.webp') }}" media="(min-width: 768px)"
                         type="image/webp" />
@@ -164,7 +182,8 @@
                         src="{{ asset('images/home/desk/laptop_5.webp') }}" alt="">
                 </picture>
             </a>
-            <a class="w-full rounded-lg overflow-hidden" href="{{ route('productos') . '?subcategorias=camaras' }}">
+            <a class="w-full rounded-lg overflow-hidden" href="{{ route('productos') . '?subcategorias=camaras' }}"
+                aria-label="{{ route('productos') . '?subcategorias=camaras' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/camaras_2.webp') }}" media="(min-width: 768px)"
                         type="image/webp" />
@@ -178,7 +197,8 @@
 
         <section class="grid grid-cols-1 xs:grid-cols-2 gap-2 lg:gap-3 mt-2 lg:mt-3">
             <a class="w-full rounded-lg overflow-hidden"
-                href="{{ route('productos') . '/parlante-maxtron-hertz-mx-334v-bateria-recargable-rgb' }}">
+                href="{{ route('productos') . '/parlante-maxtron-hertz-mx-334v-bateria-recargable-rgb' }}"
+                aria-label="{{ route('productos') . '/parlante-maxtron-hertz-mx-334v-bateria-recargable-rgb' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/parlante_6.webp') }}" media="(min-width: 768px)"
                         type="image/webp" />
@@ -189,7 +209,8 @@
                 </picture>
             </a>
             <a class="w-full rounded-lg overflow-hidden"
-                href="{{ route('productos') . '/control-de-asistencia-hikvision-hk-ds-k1t320mfwx-b-wi-fi-reconocimiento-facial-huellas-tarjeta' }}">
+                href="{{ route('productos') . '/control-de-asistencia-hikvision-hk-ds-k1t320mfwx-b-wi-fi-reconocimiento-facial-huellas-tarjeta' }}"
+                aria-label="{{ route('productos') . '/control-de-asistencia-hikvision-hk-ds-k1t320mfwx-b-wi-fi-reconocimiento-facial-huellas-tarjeta' }}">
                 <picture>
                     <source srcset="{{ asset('images/home/desk/control_acceso_4.webp') }}" media="(min-width: 768px)"
                         type="image/webp" />
@@ -203,7 +224,8 @@
 
         <section class="w-full mt-2 lg:mt-3">
             <a href="{{ route('productos') . '?subcategorias=teclados' }}"
-                class="w-full block rounded-lg overflow-hidden">
+                class="w-full block rounded-lg overflow-hidden"
+                aria-label="{{ route('productos') . '?subcategorias=teclados' }}">
                 <picture>
                     <source srcset="{{ asset('images/ofertas/desk/ofertas_1.webp') }}" media="(min-width: 640px)"
                         type="image/webp" />
@@ -359,4 +381,56 @@
         </section> --}}
 
     </div>
+
+    @push('scripts')
+        <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}" defer></script>
+    @endpush
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const slider = document.getElementById('swiper-categories');
+            const container = slider.parentElement;
+            const swiper = new Swiper(slider, {
+                navigation: {
+                    nextEl: container.querySelector('#swiperCatNext'),
+                    prevEl: container.querySelector('#swiperCatPrev'),
+                },
+                slidesPerView: 'auto',
+                // centeredSlides: true,
+                centerInsufficientSlides: true,
+                // slidesOffsetBefore: 0,
+                // slidesOffsetAfter: 0,
+                breakpoints: {
+                    0: {
+                        slidesPerView: 1,
+                        spaceBetween: 0,
+                    },
+                    280: {
+                        slidesPerView: 3,
+                        spaceBetween: 8,
+                    },
+                    380: {
+                        slidesPerView: 4,
+                        spaceBetween: 8,
+                    },
+                    480: {
+                        slidesPerView: 5,
+                        spaceBetween: 16,
+                    },
+                    768: {
+                        slidesPerView: 7,
+                        spaceBetween: 16,
+                    },
+                    1024: {
+                        slidesPerView: 8,
+                        spaceBetween: 16,
+                    },
+                    1280: {
+                        slidesPerView: 9,
+                        spaceBetween: 16,
+                    },
+                },
+            })
+        })
+    </script>
 </x-app-layout>

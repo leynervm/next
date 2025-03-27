@@ -68,6 +68,20 @@
                     <x-jet-input-error for="password_confirmation" />
                 </div>
 
+                @if ($client)
+                    <p class="text-xs text-colorsubtitleform">
+                        Actualmente el usuario está registrado en nuestra base de clientes...</p>
+                    <x-simple-card class="w-48 flex flex-col gap-1 rounded-xl cursor-default p-3 py-5">
+                        <h1 class="font-semibold text-sm leading-4 text-primary text-center">
+                            {{ $client->name }}</h1>
+
+                        <x-label class="font-semibold text-center" value="DOCUMENTO" />
+                        <p class="text-xs text-center text-colorsubtitleform">{{ $client->document }}</p>
+                    </x-simple-card>
+                @endif
+
+
+
                 <div class="w-full flex flex-wrap gap-1 pt-4 justify-end">
                     <x-button type="submit" wire:loading.attr="disabled">
                         {{ __('Save') }}</x-button>

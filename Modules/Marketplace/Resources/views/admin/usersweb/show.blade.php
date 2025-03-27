@@ -32,7 +32,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-full mx-auto xl:max-w-lg lg:px-3">
+    <div class="w-full mx-auto xl:max-w-7xl">
         <livewire:modules.marketplace.usersweb.show-user :user="$user" />
     </div>
 </x-admin-layout>

@@ -7,16 +7,17 @@
                     <div class="h-full flex relative efecto-slider">
                         <div class="lazyload-wrapper">
                             <picture>
-                                {{-- <source media="(width >= 900px)" srcset="logo-large.png"> --}}
-                                <source media="(min-width : 768px)" srcset="{{ pathURLSlider($item->url) }}">
-                                <source srcset="{{ pathURLSlider($item->urlmobile) }}">
-                                <img src="{{ pathURLSlider($item->url) }}" alt="{{ pathURLSlider($item->url) }}"
-                                    class="absolute w-full h-full object-cover">
+                                <source srcset="{{ pathURLSlider($item->url) }}" media="(min-width : 768px)"
+                                    type="image/webp">
+                                <source srcset="{{ pathURLSlider($item->urlmobile) }}" media="(max-width: 768px)"
+                                    type="image/webp">
+                                <img src="{{ pathURLSlider($item->url) }}" alt="{{ $item->url }}"
+                                    class="absolute w-full h-full object-cover" fetchpriority="low">
                             </picture>
                         </div>
                         <div class="carousel-item-link">
                             @if ($item->link)
-                                <a href="{{ $item->link }}"></a>
+                                <a href="{{ $item->link }}" aria-label="{{ $item->link }}"></a>
                             @endif
                         </div>
                     </div>

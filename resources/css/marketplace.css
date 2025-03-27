@@ -17,6 +17,7 @@
 #slider {
     @apply mt-[108px] xl:mt-24;
 }
+
 .content {
     @apply mt-[108px] xl:mt-24;
 }
@@ -37,7 +38,7 @@
     @apply flex flex-wrap justify-center px-5 divide-x-2 divide-colorlinkfooter w-full font-semibold text-colorlinkfooter;
 }
 
-.nav-marketplace > li > a {
+.nav-marketplace>li>a {
     @apply inline-block relative px-5 py-1 rounded hover:text-hoverlinkfooter text-sm tracking-wide transition duration-300;
 }
 
@@ -118,7 +119,7 @@
 .card-recents::before,
 .card-similares::before,
 .card-sugerencias::before {
-    @apply block top-[50%] left-0 z-10 absolute xs:bg-borderminicard xs:w-[0.25px] h-[70%] content-[''] -translate-y-[50%];
+    /* @apply block top-[50%] left-0 z-10 absolute xs:bg-borderminicard xs:w-[0.25px] h-[70%] content-[''] -translate-y-[50%]; */
 }
 
 .card-not-unknown::before:first-child,
@@ -147,6 +148,7 @@
 .button-sidebar.open {
     @apply opacity-90;
 }
+
 .button-sidebar.open .icon-button-menu {
     @apply rotate-45;
 }
@@ -188,17 +190,11 @@
     @apply block w-full;
 }
 
-.footer-marketplace
-    .list-footer-marketplace
-    .item-footer-marketplace
-    .item-link-footer {
+.footer-marketplace .list-footer-marketplace .item-footer-marketplace .item-link-footer {
     @apply block p-1.5 font-light text-xs sm:text-sm text-center transition duration-300;
 }
 
-.footer-marketplace
-    .list-footer-marketplace
-    .item-footer-marketplace
-    .item-link-footer,
+.footer-marketplace .list-footer-marketplace .item-footer-marketplace .item-link-footer,
 .footer-social .social-footer {
     @apply p-1 w-full hover:text-hoverlinkfooter text-left tracking-wide transition duration-300;
 }
@@ -245,14 +241,12 @@
 
 .footer-social .instagram:hover {
     @apply bg-white text-white;
-    background: radial-gradient(
-        circle at 30% 107%,
-        #fdf497 0%,
-        #fdf497 5%,
-        #fd5949 45%,
-        #d6249f 60%,
-        #285aeb 90%
-    );
+    background: radial-gradient(circle at 30% 107%,
+            #fdf497 0%,
+            #fdf497 5%,
+            #fd5949 45%,
+            #d6249f 60%,
+            #285aeb 90%);
 }
 
 .footer-social .tiktok {
@@ -331,11 +325,11 @@
     @apply block p-3 px-5 max-w-xs font-light text-white text-xs lg:text-lg text-center !leading-none md:-skew-x-[8deg];
 }
 
-.flip3D:hover > .front {
+.flip3D:hover>.front {
     transform: rotateY(-180deg);
 }
 
-.flip3D:hover > .card.back {
+.flip3D:hover>.card.back {
     transform: rotateY(0deg);
 }
 
@@ -429,11 +423,7 @@
     }
 }
 
-.slider.desvanecer
-    .carrusel-contenedor
-    .carrusel-contenido
-    ul.carrusel-lista
-    .carousel-item {
+.slider.desvanecer .carrusel-contenedor .carrusel-contenido ul.carrusel-lista .carousel-item {
     height: 100%;
     transition: 1s;
     transition-property: opacity, visibility;
@@ -608,6 +598,7 @@
 .btn-increment-cart.disabled {
     @apply opacity-75 ring-0 hover:ring-0 text-colorhoverbuttonincrement;
 }
+
 /* END */
 
 /* BADGE ESPECIFICACIONES */
@@ -615,6 +606,7 @@
     @apply bg-next-800 p-1 rounded-md max-w-36 font-medium text-[9px];
     box-shadow: 2px 2px 1px 1px #095555;
 }
+
 /* END */
 
 /* MARQUEE */
@@ -733,6 +725,7 @@
     margin-bottom: 1rem;
     position: relative;
 }
+
 .heading:after {
     display: block;
     content: '';
@@ -807,21 +800,15 @@
     height: 100%;
     width: 100%;
     background: rgb(255, 255, 255);
-    background: -moz-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.9) 15%,
-        rgba(255, 255, 255, 0) 45%
-    );
-    background: -webkit-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.9) 15%,
-        rgba(255, 255, 255, 0) 45%
-    );
-    background: linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.9) 15%,
-        rgba(255, 255, 255, 0) 45%
-    );
+    background: -moz-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.9) 15%,
+            rgba(255, 255, 255, 0) 45%);
+    background: -webkit-linear-gradient(0deg,
+            rgba(255, 255, 255, 0.9) 15%,
+            rgba(255, 255, 255, 0) 45%);
+    background: linear-gradient(0deg,
+            rgba(255, 255, 255, 0.9) 15%,
+            rgba(255, 255, 255, 0) 45%);
 }
 
 .list-datacenter li {
@@ -846,7 +833,7 @@
 }
 
 .paginator-marketplace-productos .text-descripcion-paginator {
-    @apply sm:!text-center;
+    @apply text-center;
 }
 
 [x-cloak] {
@@ -858,7 +845,9 @@
 }
 
 .card-network {
-    @apply w-full flex flex-col gap-3 sm:gap-5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-fondominicard hover:shadow-md hover:shadow-shadowminicard border border-borderminicard hover:border-primary transition ease-in-out duration-150 /* bg-gradient-to-br from-next-800 to-next-400 */;
+    @apply w-full flex flex-col gap-3 sm:gap-5 p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-fondominicard hover:shadow-md hover:shadow-shadowminicard border border-borderminicard hover:border-primary transition ease-in-out duration-150
+    /* bg-gradient-to-br from-next-800 to-next-400 */
+    ;
 }
 
 .card-network .header-card-network,
@@ -874,6 +863,7 @@
 .card-network .footer-card-network .title-footer-card-network {
     @apply font-semibold text-primary text-sm sm:text-xl text-center sm:leading-none;
 }
+
 .card-network .header-card-network .title-header-card-network {
     @apply text-white;
 }
@@ -885,6 +875,11 @@
 .card-network .footer-card-network {
     @apply border border-primary rounded-tl-xl sm:rounded-tl-2xl rounded-br-xl sm:rounded-br-2xl font-semibold;
 }
+
+.box-shadow {
+    box-shadow: 0px 0px 5px var(--shadow-minicard);
+}
+
 /* .btn-float-whatsapp:before {
     content: "";
     position: absolute;
@@ -902,9 +897,34 @@
     0% {
         box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.5);
     }
+
     80% {
         box-shadow: 0 0 0 14px rgba(37, 211, 102, 0);
     }
 }
 
 /* EBD MARQUEE */
+.card-category-marketplace:hover .image-category-marketplace {
+    animation: bouncing 1s;
+}
+
+@keyframes bouncing {
+
+    from,
+    to {
+        transform: scale(1, 1);
+    }
+
+    25% {
+        transform: scale(0.9, 1.1) translateY(-15px);
+    }
+
+    50% {
+        transform: scale(1.1, 0.9);
+    }
+
+    75% {
+        transform: scale(0.95, 1.05);
+    }
+
+}

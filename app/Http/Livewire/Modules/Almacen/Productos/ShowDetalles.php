@@ -166,6 +166,13 @@ class ShowDetalles extends Component
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 })->orientate()->encode('webp', 90);
+
+
+            if ($compressedImage->width() < 800 || $compressedImage->height() < 800) {
+                $this->addError('imagen', "La :imagen debe tener dimensiones de 800x800 píxeles.");
+                return false;
+            }
+
             // Generar Imagen Responsive
             $compressImageMobile = ImageIntervention::make($decodedImage)
                 ->resize(320, null, function ($constraint) {

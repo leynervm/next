@@ -114,7 +114,8 @@
                                             <source srcset="{{ getCategoryURL($item->image->url) }}">
                                             <img src="{{ getCategoryURL($item->image->url) }}"
                                                 alt="{{ getCategoryURL($item->image->url) }}"
-                                                class="w-full h-full object-scale-down overflow-hidden">
+                                                class="w-full h-full object-scale-down overflow-hidden"
+                                                fetchpriority="low">
                                         </picture>
                                     @else
                                         <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -171,10 +172,11 @@
             @endif
 
             <div class="item-sidebar group">
-                <div class="itemlink-sidebar-principal hover:!bg-inherit hover:!text-colorsubtitleform !cursor-default">
+                <div
+                    class="itemlink-sidebar-principal hover:!bg-inherit hover:!text-colorsubtitleform !cursor-default">
                     <div class="title-category-sidebar !justify-center">
                         <span class="inline-block relative tracking-widest text-sm font-medium title-channel-sidebar">
-                           NUESTROS SERVICIOS</span>
+                            NUESTROS SERVICIOS</span>
                     </div>
                 </div>
             </div>
@@ -187,7 +189,7 @@
                                 <source srcset="{{ asset('images/home/recursos/soluciones_integrales.webp') }}">
                                 <img src="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
                                     alt="Soluciones Integrales"
-                                    class="w-full h-full object-scale-down overflow-hidden">
+                                    class="w-full h-full object-scale-down overflow-hidden" fetchpriority="low">
                             </picture>
                         </div>
                         <span class="inline-block pl-14">SOLUCIONES INTEGRALES TI</span>
@@ -258,8 +260,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/home/recursos/internet.webp') }}">
                                 <img src="{{ asset('images/home/recursos/internet.webp') }}"
-                                    alt="Servicio de Internet"
-                                    class="w-full h-full object-scale-down overflow-hidden">
+                                    alt="Servicio de Internet" class="w-full h-full object-scale-down overflow-hidden"
+                                    fetchpriority="low">
                             </picture>
                         </div>
                         <span class="inline-block pl-14">SERVICIO DE INTERNET</span>
@@ -275,7 +277,8 @@
                             <picture>
                                 <source srcset="{{ asset('images/home/recursos/centro_autorizado.webp') }}">
                                 <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
-                                    alt="Centro Autorizado" class="w-full h-full object-scale-down overflow-hidden">
+                                    alt="Centro Autorizado" class="w-full h-full object-scale-down overflow-hidden"
+                                    fetchpriority="low">
                             </picture>
                         </div>
                         <span class="inline-block pl-14">CENTRO AUTORIZADO</span>

@@ -11,20 +11,23 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="default-theme" content="{{ config('app.theme') }}">
+    <meta name="description"
+        content="⭐ NEXT PERÚ - #1 en Venta de Productos Premium ⚡ Envío Rápido a Todo el Perú ✅ Garantía de 2 Años 💡 Tecnología, Hogar y Más. ¡Compra 100% Segura en www.next.net.pe!">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="title" content="{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}">
     <title>{{ config('app.name', $empresa->name ?? 'MI SITIO WEB') }}</title>
 
     <!-- Styles -->
+    <link rel="preload" href="{{ asset('assets/fonts/Ubuntu/ubuntu-normal-normal.woff2') }}" as="font"
+        type="font/woff2" crossorigin>
     @livewireStyles
 
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" fetchpriority="high" />
     <link rel="stylesheet" href="{{ asset('assets/select2/select2.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-
-    <!-- Scripts -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}" fetchpriority="high">
+    <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" async />
+    <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" async />
+    <link rel="stylesheet" href="{{ asset('assets/swiper/swiper-bundle.min.css') }}" async />
 </head>
 
 <style>
@@ -33,8 +36,7 @@
     }
 </style>
 
-<body class="bg-body animate__animated animate__fadeIn animate__faster"
-    :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, isXL: window.innerWidth >= 1280, isSM: window.innerWidth <= 640, subcategories: [], category: '' }"
+<body class="bg-body" :class="openSidebar || sidebar || backdrop ? 'overflow-hidden' : ''" x-data="{ sidebar: false, backdrop: false, openSidebar: false, isXL: window.innerWidth >= 1280, isSM: window.innerWidth <= 640, subcategories: [], category: '' }"
     @resize.window="isXL = window.innerWidth >= 1280, isSM = window.innerWidth <= 640" x-init="$watch('openSidebar', (value) => {
         if (value) {
             document.body.style.overflow = 'hidden';
@@ -82,7 +84,7 @@
             {{-- FOOTER --}}
             @include('partials.footer-marketplace')
             @if ($empresa->whatsapp)
-                <a href="{{ $empresa->whatsapp }}" target=”_blank” class="btn-float-whatsapp">
+                <a href="{{ $empresa->whatsapp }}" target=”_blank” class="btn-float-whatsapp" aria-label="WhatsApp">
                     <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 308.00 308.00"
                         stroke="currentColor" transform="matrix(1, 0, 0, 1, 0, 0)" class="block w-6 md:w-9 h-6 md:h-9">
                         <path
@@ -117,24 +119,23 @@
     @endif
 
     <x-cookies class="" />
-    <x-loading-web-next x-cloak x-ref="loadingnext" {{-- id="loading-next" --}} />
+    <x-loading-web-next x-cloak x-ref="loadingnext" />
+
+
+    <div x-cloak x-show="backdrop"
+        x-on:click="openSidebar= false;subMenu=false;backdrop=false; if (!isXL) {sidebar=false}; document.body.style.overflow = 'auto';"
+        class="bg-neutral-900 bg-opacity-70 content-[''] fixed z-[100] w-full h-full top-0 left-0 lg:fixed transition-all ease-in-out duration-200">
+    </div>
 
     @stack('modals')
     @livewireScripts
 
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
-    <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
+    <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}" defer></script>
     <script src="{{ asset('js/app.js') }}"></script>
-
-    <div x-cloak x-show="backdrop"
-        @click="openSidebar= false;subMenu=false;backdrop=false; if (!isXL) {sidebar=false}; document.body.style.overflow = 'auto';"
-        class="bg-neutral-900 bg-opacity-70 content-[''] fixed z-[100] w-full h-full top-0 left-0 lg:fixed transition-all ease-in-out duration-200">
-    </div>
-
     @stack('scripts')
 </body>
-
 
 <script>
     const componentloading = document.querySelector('[x-ref="loadingnext"]');
@@ -189,41 +190,6 @@
                 }
             });
         });
-    })
-
-    var toastMixin = Swal.mixin({
-        toast: true,
-        icon: "success",
-        title: "Mensaje",
-        position: "top-right",
-        showConfirmButton: false,
-        timer: 1500,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener("mouseenter", Swal.stopTimer);
-            toast.addEventListener("mouseleave", Swal.resumeTimer);
-        },
-    });
-
-    window.addEventListener('toast', event => {
-        let timer = event.detail.timer ? event.detail.timer : 1000;
-        toastMixin.fire({
-            title: event.detail.title,
-            icon: event.detail.icon,
-            timer: timer,
-        });
-    })
-
-    window.addEventListener('validation', data => {
-        var icon = data.detail.icon ? data.detail.icon : 'info';
-        swal.fire({
-            title: data.detail.title,
-            text: data.detail.text,
-            html: data.detail.text,
-            icon: icon,
-            confirmButtonColor: '#0FB9B9',
-            confirmButtonText: 'Aceptar',
-        })
     })
 
     // SI FUNCIONA PROVADO EN ONKEYPRERSS DEL INPUT
@@ -294,7 +260,6 @@
         input.dispatchEvent(new Event("input"));
         return true;
     }
-
 
     function addproductocart(producto_id = null, promocion_id = null, cantidad = 1, open_modal = false) {
         const data = {
@@ -407,7 +372,7 @@
                 title: response.mensaje,
                 icon: 'success',
             });
-            
+
             if (response.favorito) {
                 event.classList.add('activo');
             } else {
@@ -461,18 +426,55 @@
             .finally(() => onFinally());
     }
 
-    const buttons = document.querySelectorAll('.button-add-to-cart');
-    if (buttons.length > 0) {
-        buttons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                const promocion_id = e.currentTarget.getAttribute(
-                    'data-promocion-id');
-                const producto_id = e.currentTarget.getAttribute(
-                    'data-producto-id');
-                addproductocart(producto_id, promocion_id);
-            })
+    document.addEventListener('DOMContentLoaded', function() {
+        var toastMixin = Swal.mixin({
+            toast: true,
+            icon: "success",
+            title: "Mensaje",
+            position: "top-right",
+            showConfirmButton: false,
+            timer: 1500,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener("mouseenter", Swal.stopTimer);
+                toast.addEventListener("mouseleave", Swal.resumeTimer);
+            },
         });
-    }
+
+        window.addEventListener('toast', event => {
+            let timer = event.detail.timer ? event.detail.timer : 1000;
+            toastMixin.fire({
+                title: event.detail.title,
+                icon: event.detail.icon,
+                timer: timer,
+            });
+        })
+
+        window.addEventListener('validation', data => {
+            var icon = data.detail.icon ? data.detail.icon : 'info';
+            swal.fire({
+                title: data.detail.title,
+                text: data.detail.text,
+                html: data.detail.text,
+                icon: icon,
+                confirmButtonColor: '#0FB9B9',
+                confirmButtonText: 'Aceptar',
+            })
+        })
+
+        const buttons = document.querySelectorAll('.button-add-to-cart');
+        if (buttons.length > 0) {
+            buttons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const promocion_id = e.currentTarget.getAttribute(
+                        'data-promocion-id');
+                    const producto_id = e.currentTarget.getAttribute(
+                        'data-producto-id');
+                    addproductocart(producto_id, promocion_id);
+                })
+            });
+        }
+    })
 </script>
 
 </html>

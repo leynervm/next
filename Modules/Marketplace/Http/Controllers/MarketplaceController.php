@@ -84,7 +84,7 @@ class MarketplaceController extends Controller
             ->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
             }])->addSelect(['image_2' => function ($query) {
-                $query->select('url')->from('images')
+                $query->select('urlmobile')->from('images')
                     ->whereColumn('images.imageable_id', 'productos.id')
                     ->where('images.imageable_type', Producto::class)
                     ->orderBy('orden', 'asc')->orderBy('id', 'asc')->offset(1)->limit(1);
@@ -885,7 +885,7 @@ class MarketplaceController extends Controller
             ->visibles()->publicados()->limit(30);
 
         $products = $products->get()->transform(function ($item) {
-            $item->image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
+            $item->image = !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null;
             return $item;
         });
 

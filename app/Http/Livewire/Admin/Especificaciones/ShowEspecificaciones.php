@@ -22,7 +22,7 @@ class ShowEspecificaciones extends Component
     public $open = false;
     public $openespecificacion = false;
     public $openeditespecificacion = false;
-    public $search = '';
+    public $search = '', $searchespecificacion = '';
 
     public $name;
 
@@ -30,7 +30,11 @@ class ShowEspecificaciones extends Component
     protected $queryString = [
         'search' => [
             'except' => '',
-            'as' => 'search'
+            'as' => 'buscar'
+        ],
+        'searchespecificacion' => [
+            'except' => '',
+            'as' => 'especificacion'
         ],
     ];
 
@@ -57,16 +61,25 @@ class ShowEspecificaciones extends Component
 
     public function render()
     {
-        $caracteristicas = Caracteristica::with(['especificacions' => function ($query) {
-            $query->orderBy('id', 'asc');
-            // $query->where('name', 'ilike', '%' . $this->search . '%');
-        }]);
+
+        if (empty(trim($this->search)) && trim($this->searchespecificacion) != '') {
+            $caracteristicas = Caracteristica::withWhereHas('especificacions', function ($query) {
+                if (trim($this->searchespecificacion) != '') {
+                    $query->where('name', 'ilike', '%' . $this->searchespecificacion . '%');
+                }
+                $query->orderBy('name', 'asc');
+            });
+        } else {
+            $caracteristicas = Caracteristica::with(['especificacions' => function ($query) {
+                if (trim($this->searchespecificacion) != '') {
+                    $query->where('name', 'ilike', '%' . $this->searchespecificacion . '%');
+                }
+                $query->orderBy('name', 'asc');
+            }]);
+        }
 
         if (trim($this->search) != '') {
-            $caracteristicas->where('name', 'ilike', '%' . $this->search . '%')
-                ->orWhereHas('especificacions', function ($query) {
-                    $query->where('name', 'ilike', '%' . $this->search . '%');
-                });
+            $caracteristicas->where('name', 'ilike', '%' . $this->search . '%');
         }
 
         $caracteristicas = $caracteristicas->orderBy('orden', 'asc')->paginate();
@@ -74,6 +87,11 @@ class ShowEspecificaciones extends Component
     }
 
     public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchespecificacion()
     {
         $this->resetPage();
     }

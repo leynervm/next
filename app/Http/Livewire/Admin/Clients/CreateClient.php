@@ -108,6 +108,13 @@ class CreateClient extends Component
                 $client->pricetype_id = $this->pricetype_id;
                 $client->save();
             } else {
+                $user_id = null;
+                if (Module::isEnabled('Marketplace')) {
+                    $user = User::with('client')->find($this->user->id);
+                    if (empty($user->client)) {
+                        $user_id = $user->id;
+                    }
+                }
                 $client = Client::create([
                     'date' => now('America/Lima'),
                     'document' => $this->document,
@@ -116,7 +123,7 @@ class CreateClient extends Component
                     'nacimiento' => $this->nacimiento,
                     'sexo' => $this->sexo,
                     'pricetype_id' => $this->pricetype_id,
-                    'user_id' =>  Module::isEnabled('Marketplace') ? $this->user->id ?? null : null,
+                    'user_id' => $user_id,
                 ]);
             }
 
@@ -249,9 +256,10 @@ class CreateClient extends Component
                     }
 
                     if (Module::isEnabled('Marketplace')) {
-                        $user = User::where('document', $this->document)->first();
+                        $user = User::doesntHave('client')->where('document', $this->document)->first();
                         if ($user) {
                             $this->user = $user;
+                            $this->email = $user->email;
                         }
                     }
                 } else {

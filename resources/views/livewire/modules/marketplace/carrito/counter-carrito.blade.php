@@ -12,7 +12,8 @@
             }
         })">
             <button x-on:click="cartOpen = !cartOpen" wire:loading.attr="disabled"
-                class="flex p-3 px-1 sm:px-3 w-full h-full justify-start items-center hover:opacity-80 disabled:opacity-75 disabled:bg-opacity-75 transition ease-in-out duration-150">
+                class="flex p-3 px-1 sm:px-3 w-full h-full justify-start items-center hover:opacity-80 disabled:opacity-75 disabled:bg-opacity-75 transition ease-in-out duration-150"
+                id="button-counter-cart" role="button" aria-label="Carrito de compras">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="block w-8 h-8">
                     <circle cx="8" cy="21" r="1" />
@@ -35,7 +36,9 @@
                     class="w-full bg-fondominicard sm:rounded-tl-xl md:shadow-inner md:shadow-shadowminicard h-full flex-1 overflow-y-auto items-center justify-between p-1 sm:p-2">
                     <div class="w-full flex justify-between items-center gap-2 pb-3">
                         <h1 class="text-2xl font-medium text-primary">Mi carrito</h1>
-                        <button @click="cartOpen = !cartOpen" class="text-colorsubtitleform focus:outline-none">
+                        <button @click="cartOpen = !cartOpen" id="button-toggle-cart" role="button"
+                            aria-label="Boton Mostrar / ocutar carrito"
+                            class="text-colorsubtitleform focus:outline-none">
                             <svg class="h-5 w-5" fill="none" stroke-linecap="round" stroke-linejoin="round"
                                 stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
                                 <path d="M6 18L18 6M6 6l12 12"></path>
@@ -154,14 +157,15 @@
                                         if ( $el.value != {{ $item->qty }}) {
                                             updateqty($el, '{{ $item->rowId }}', $el.value)
                                         }"
-                                                onpaste="return validarPasteNumero(event, 12)" />
+                                                onpaste="return validarPasteNumero(event, 12)" aria-label="cantidad" />
                                             <button onclick="updatecart(this, '{{ $item->rowId }}')" type="button"
                                                 data-function="increment" wire:loading.attr="disabled"
-                                                class="btn-increment-cart">+</button>
+                                                class="btn-increment-cart" role="button"
+                                                aria-label="Incrementar">+</button>
                                         </div>
 
                                         <button onclick="deleteitemcart(this, '{{ $item->rowId }}')"
-                                            wire:loading.attr="disabled"
+                                            wire:loading.attr="disabled" role="button" aria-label="Eliminar carrito"
                                             class="btn-outline-secondary !p-2 !text-[10px] ring-2 font-semibold hover:bg-red-700 hover:text-white hover:ring-red-300">
                                             ELIMINAR</button>
                                     </div>
@@ -174,7 +178,8 @@
                                         <span class="btn-outline-secondary bg-inherit inline-block text-center">
                                             {{ !empty($item->options->promocion_id) ? 'PROMOCIÓN NO DISPONIBLE' : 'PRODUCTO NO DISPONIBLE' }}</span>
                                         <x-button-secondary onclick="deleteitemcart(this, '{{ $item->rowId }}')"
-                                            wire:loading.attr="disabled" class="inline-block text-center">
+                                            wire:loading.attr="disabled" class="inline-block text-center"
+                                            role="button" aria-label="Eliminar carrito">
                                             ELIMINAR</x-button-secondary>
                                     </div>
                                 @endif

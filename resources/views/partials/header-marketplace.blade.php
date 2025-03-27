@@ -2,7 +2,7 @@
     <div class="w-full mx-auto flex items-center relative">
         @if ($empresa->logo)
             <div class="hidden xl:flex w-72 items-center h-full">
-                <a href="/" class="w-full p-1 xl:p-2 h-[90%]">
+                <a href="/" class="w-full p-1 xl:p-2 h-[90%]" aria-label="INICIO">
                     <img class="mx-auto h-full w-full object-scale-down"
                         src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}" alt="">
                     {{-- <x-isotipo-next class="text-black h-full mx-auto" /> --}}
@@ -11,8 +11,9 @@
         @endif
 
         <div class="flex-shrink-0 @if (empty($empresa->logo)) pl-4 @endif xl:pr-5">
-            <button class="button-sidebar hidden xl:flex items-center" type="button"
-                @click="openSidebar=!openSidebar;backdrop=openSidebar;if(!openSidebar) {document.body.style.overflow = 'auto';}"
+            <button class="button-sidebar hidden xl:flex items-center" type="button" id="button-menu-desk"
+                role="button" aria-label="button-menu-desk"
+                x-on:click="openSidebar=!openSidebar;backdrop=openSidebar;if(!openSidebar) {document.body.style.overflow = 'auto';}"
                 :class="openSidebar ? 'open' : ''">
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
@@ -20,7 +21,8 @@
                 <span class="pl-2 text-inherit text-start flex-1 font-semibold text-xl">
                     Menú</span>
             </button>
-            <button class="button-sidebar xl:hidden px-2" type="button"
+            <button class="button-sidebar xl:hidden px-2" type="button" id="button-menu-mobile" role="button"
+                aria-label="button-menu-mobile"
                 @click="openSidebar=!openSidebar;backdrop=openSidebar;if(!openSidebar) {document.body.style.overflow = 'auto';}">
                 <div class="scale-[.5] relative h-8 w-8 z-10 transition ease-in-out duration-150">
                     <span class="icon-button-menu"></span>
@@ -49,7 +51,7 @@
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                         placeholder="Buscar en Next" id="search">
                 </div>
-                <button type="submit" @click.prevent="handleEnter;"
+                <button type="submit" id="button-search-desk" role="button" aria-label="button-search-desk" @click.prevent="handleEnter;"
                     class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -100,7 +102,7 @@
                         class="group relative h-[68%] flex self-center min-w-[50px] w-auto flex-shrink-0 transition ease-out duration-150">
                         <div
                             class="p-3 px-1 sm:px-3 h-ful flex gap-1 xs:gap-2 sm:gap-3 w-full theme-switcher justify-center items-center">
-                            <button title="Light" theme="theme-next" type="button"
+                            <button role="button" title="Light" theme="theme-next" type="button"
                                 class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
@@ -117,7 +119,7 @@
                                 </svg>
                             </button>
 
-                            <button title="Dark" theme="theme-darknext" type="button"
+                            <button role="button" title="Dark" theme="theme-darknext" type="button"
                                 class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -134,7 +136,7 @@
                     <li class="group relative h-[68%] self-center hidden xs:block">
                         <a x-data="{ counterwishlist: ' {{ Cart::instance('wishlist')->count() }}' }"
                             class="flex w-full h-full justify-center items-center p-3 px-1 sm:px-3 text-inherit cursor-pointer group-hover:opacity-80 transition ease-out duration-150"
-                            href="{{ route('wishlist') }}">
+                            href="{{ route('wishlist') }}" aria-label="Mis favoritos">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                                 class="block w-8 h-8">
@@ -159,7 +161,7 @@
                 <li class="relative h-[68%] flex items-center self-center">
                     @auth
                         <div @click.away="login=false">
-                            <button @click="login=!login"
+                            <button @click="login=!login" id="button-info-user" role="button" aria-label="Información del usuario"
                                 class="h-full flex justify-center items-center px-1 py-3 sm:px-3 cursor-pointer text-inherit group-hover:opacity-80 transition ease-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     class="block w-8 h-8" stroke="currentColor" stroke-width="1.5"
@@ -179,7 +181,7 @@
                                 <div class="w-full">
                                     <div
                                         class="flex gap-2 w-full theme-switcher justify-end items-center bg-fondominicard">
-                                        <button title="Light" theme="theme-next"
+                                        <button role="button" title="Light" theme="theme-next"
                                             class="inline-block theme-switcher-button rounded-full bg-transparent text-white">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -196,7 +198,7 @@
                                             </svg>
                                         </button>
 
-                                        <button title="Dark" theme="theme-darknext"
+                                        <button role="button" title="Dark" theme="theme-darknext"
                                             class="inline-block theme-switcher-button rounded-full bg-transparent text-neutral-900">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                                 stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
@@ -288,7 +290,8 @@
                     class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                     placeholder="Buscar en Next">
             </div>
-            <button type="submit" @click.prevent="handleEnter"
+            <button type="submit" id="button-search-mobile" role="button" aria-label="button-search-mobile"
+                @click.prevent="handleEnter"
                 class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-0 h-10 w-10 flex justify-center items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"

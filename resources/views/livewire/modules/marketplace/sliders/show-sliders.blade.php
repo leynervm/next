@@ -5,15 +5,15 @@
         </div>
     @endif
 
-    <div class="flex gap-2 flex-wrap justify-start" id="sliders">
+    <div class="w-full grid grid-cols-1 xs:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))] gap-1 self-start" id="sliders">
         @if (count($sliders))
             @foreach ($sliders as $item)
                 <x-simple-card class="flex flex-col justify-between rounded overflow-hidden"
                     data-id="{{ $item->id }}">
                     <div class="w-full">
-                        <div class="w-full max-w-md h-36">
+                        <div class="w-full overflow-hidden">
                             <img src="{{ pathURLSlider($item->url) }}" alt=""
-                                class="w-full h-full {{ $item->isActivo() ? '' : 'grayscale' }}">
+                                class="block w-full h-auto {{ $item->isActivo() ? '' : 'grayscale' }}">
                         </div>
 
                         <p class="text-xs leading-3 px-1 mt-2 text-colorsubtitleform">

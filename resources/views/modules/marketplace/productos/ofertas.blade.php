@@ -26,7 +26,7 @@
                 @foreach ($ofertas as $item)
                     @if (count($item->combos) > 0 || $item->descuento > 0 || $item->liquidacion)
                         @php
-                            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
+                            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null;
                             $secondimage = !empty($item->image_2) ? pathURLProductImage($item->image_2) : null;
                             $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
                             $pricesale = $item->getPrecioVenta($pricetype);

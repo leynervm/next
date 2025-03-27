@@ -118,7 +118,7 @@
         </ul>
         <div class="col-span-2 xs:col-span-3 md:col-span-3 lg:col-span-2">
             <div class="w-full max-w-sm mx-auto lg:mr-0 lg:ml-auto h-48 sm:h-52">
-                <iframe
+                <iframe title="mapa-sitio-web"
                     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1985.024222362466!2d-78.80980694270073!3d-5.706141436028993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91b4fbc87b6535f7%3A0x7b9aa3d2c1e84bd1!2sNEXT%20TECHNOLOGIES!5e0!3m2!1ses-419!2spe!4v1725493222836!5m2!1ses-419!2spe"
                     class="w-full h-full rounded-md" style="border:0;" allowfullscreen="" loading="lazy"
                     referrerpolicy="no-referrer-when-downgrade"></iframe>
@@ -134,7 +134,8 @@
     <div class="w-full contenedor text-center py-3 lg:py-5">
         <div class="footer-social w-full flex flex-wrap justify-center items-center gap-3">
             @if ($empresa->whatsapp)
-                <a class="social-footer whatsapp" target="_blank" href="{{ $empresa->whatsapp }}">
+                <a class="social-footer whatsapp" target="_blank" href="{{ $empresa->whatsapp }}"
+                    aria-label="{{ $empresa->whatsapp }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" color="currentColor" fill="currentColor"
                         stroke="currentColor" stroke-width="0.7" stroke-linejoin="round" class="block w-full h-full">
                         <path
@@ -144,16 +145,19 @@
             @endif
 
             @if ($empresa->facebook)
-                <a href="{{ $empresa->facebook }}" target="_blank" class="social-footer facebook">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="currentColor"
-                        stroke="currentColor" stroke-width="0" stroke-linejoin="round" class="block w-full h-full">
+                <a href="{{ $empresa->facebook }}" target="_blank" class="social-footer facebook"
+                    aria-label="{{ $empresa->facebook }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor"
+                        fill="currentColor" stroke="currentColor" stroke-width="0" stroke-linejoin="round"
+                        class="block w-full h-full">
                         <path
                             d="M6.18182 10.3333C5.20406 10.3333 5 10.5252 5 11.4444V13.1111C5 14.0304 5.20406 14.2222 6.18182 14.2222H8.54545V20.8889C8.54545 21.8081 8.74951 22 9.72727 22H12.0909C13.0687 22 13.2727 21.8081 13.2727 20.8889V14.2222H15.9267C16.6683 14.2222 16.8594 14.0867 17.0631 13.4164L17.5696 11.7497C17.9185 10.6014 17.7035 10.3333 16.4332 10.3333H13.2727V7.55556C13.2727 6.94191 13.8018 6.44444 14.4545 6.44444H17.8182C18.7959 6.44444 19 6.25259 19 5.33333V3.11111C19 2.19185 18.7959 2 17.8182 2H14.4545C11.191 2 8.54545 4.48731 8.54545 7.55556V10.3333H6.18182Z" />
                     </svg>
                 </a>
             @endif
             @if ($empresa->youtube)
-                <a href="{{ $empresa->youtube }}" target="_blank" class="social-footer youtube">
+                <a href="{{ $empresa->youtube }}" target="_blank" class="social-footer youtube"
+                    aria-label="{{ $empresa->youtube }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 310" color="currentColor"
                         fill="currentColor" stroke="currentColor" stroke-width="0" stroke-linejoin="round"
                         class="block w-full h-full p-1">
@@ -164,7 +168,8 @@
             @endif
 
             @if ($empresa->instagram)
-                <a href="{{ $empresa->instagram }}" target="_blank" class="social-footer instagram">
+                <a href="{{ $empresa->instagram }}" target="_blank" class="social-footer instagram"
+                    aria-label="{{ $empresa->instagram }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linejoin="round" class="block w-full h-full">
                         <path
@@ -178,7 +183,8 @@
             @endif
 
             @if ($empresa->tiktok)
-                <a href="{{ $empresa->tiktok }}" target="_blank" class="social-footer tiktok">
+                <a href="{{ $empresa->tiktok }}" target="_blank" class="social-footer tiktok"
+                    aria-label="{{ $empresa->tiktok }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" color="currentColor" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linejoin="round" class="block w-full h-full">
                         <path
@@ -190,7 +196,8 @@
             @endif
 
             @if ($empresa->email)
-                <a class="social-footer email" target="_blank" href="{{ route('contactanos') }}">
+                <a class="social-footer email" target="_blank" href="{{ route('contactanos') }}"
+                    aria-label="{{ route('contactanos') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" fill="currentColor"
                         stroke="currentColor" stroke-width="2.5" stroke-linejoin="round">
                         <path

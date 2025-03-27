@@ -36,7 +36,7 @@
                     <x-simple-card class="w-full text-colorsubtitleform p-2.5 relative flex flex-col gap-1">
                         <small class="font-medium text-colorsubtitleform text-sm flex justify-between">
                             Filtros aplicados
-                            <button wire:click="resetfilters"
+                            <button wire:click="resetfilters" type="button" id="reset-button-filters" role="button" aria-label="Resetear filtros"
                                 class="bg-fondospancardproduct text-textspancardproduct p-1 rounded-lg">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill-rule="evenodd"
                                     clip-rule="evenodd" fill="currentColor" class="size-5 block text-colorsubtitleform">
@@ -401,7 +401,7 @@
                                                     type="number" step="1" min="1"
                                                     onpaste="return validarPasteNumero(event, 12)"
                                                     onkeypress="return validarNumero(event, 5)"
-                                                    x-on:blur="if (!qty || qty === '0') qty = '1'" />
+                                                    x-on:blur="if (!qty || qty === '0') qty = '1'" aria-label="price"/>
 
                                                 <button class="btn-increment-cart" x-on:click="parseFloat(qty++)"
                                                     type="button" wire:loading.attr="disabled">+</button>

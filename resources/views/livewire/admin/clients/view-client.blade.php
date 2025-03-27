@@ -227,7 +227,7 @@
 
                         <x-label :value="$client->user->document" class="font-semibold text-center" />
 
-                        <p class="text-xs text-center">{{ $client->user->email }}</p>
+                        <p class="text-xs text-center text-colorsubtitleform">{{ $client->user->email }}</p>
                     </x-simple-card>
                 </div>
             </x-form-card>

@@ -12,7 +12,7 @@
                     </div>
                     @foreach ($productos as $item)
                         @php
-                            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null;
+                            $image = !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null;
                         @endphp
                         <div class="w-full flex p-1 text-[10px] border border-borderminicard gap-2">
                             <div class="w-20 h-20 flex-shrink-0 overflow-hidden">

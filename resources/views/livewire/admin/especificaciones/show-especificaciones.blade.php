@@ -1,19 +1,50 @@
 <div>
-    <div class="w-full lg:max-w-sm">
-        <x-label value="Buscar :" />
-        <div class="relative">
-            <x-input class="block w-full disabled:bg-gray-200 pr-6" wire:model.lazy="search" placeholder="Buscar..." />
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                class="block p-1 w-auto h-full text-next-300 absolute right-1 top-0 bottom-0">
-                <path
-                    d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
-            </svg>
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 self-end">
+        <div class="w-full">
+            <x-label value="Característica :" />
+            <div class="relative">
+                <x-input class="block w-full disabled:bg-gray-200 pr-6" wire:model.lazy="search" placeholder="Buscar..." />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    class="block p-1 w-auto h-full text-next-300 absolute right-1 top-0 bottom-0">
+                    <path
+                        d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
+                </svg>
+            </div>
+            <x-jet-input-error for="search" />
         </div>
-        <x-jet-input-error for="searchespecificacion" />
+
+        <div class="w-full">
+            <x-label value="Especificación :" />
+            <div class="relative">
+                <x-input class="block w-full disabled:bg-gray-200 pr-6" wire:model.lazy="searchespecificacion"
+                    placeholder="Buscar..." />
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    class="block p-1 w-auto h-full text-next-300 absolute right-1 top-0 bottom-0">
+                    <path
+                        d="M11 6C13.7614 6 16 8.23858 16 11M16.6588 16.6549L21 21M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" />
+                </svg>
+            </div>
+            <x-jet-input-error for="searchespecificacion" />
+        </div>
+
+        @if (!empty($search) || !empty($searchespecificacion))
+            <div class="inline-flex items-end">
+                <button x-on:click="$wire.searchespecificacion = '';$wire.search = ''" id="reset-filters" role="button"
+                    aria-label="Resetear filtros"
+                    class="bg-fondospancardproduct text-textspancardproduct p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill-rule="evenodd" clip-rule="evenodd"
+                        fill="currentColor" class="size-5 block text-colorsubtitleform">
+                        <path
+                            d="M21.4356 2.5218C21.8377 2.90032 21.8569 3.53319 21.4784 3.93537L14.8289 11.0004L13.4141 9.58556L20.022 2.56464C20.4005 2.16246 21.0334 2.14329 21.4356 2.5218ZM11.1141 9.8569C11.4092 9.67983 11.787 9.72634 12.0303 9.96969L14.5303 12.4697C14.671 12.6103 14.75 12.8011 14.75 13C14.75 15.6795 13.814 17.8177 12.8877 19.2772C12.4241 20.0075 11.9599 20.573 11.6089 20.9585C11.4396 21.1445 11.1279 21.4442 11.0102 21.5573L11.01 21.5575L11.01 21.5575L10.9977 21.5693C10.8136 21.7275 10.5643 21.7869 10.3287 21.7285C8.22723 21.2085 6.31516 20.2792 4.86851 18.5743C4.55974 18.2104 4.27528 17.8148 4.01631 17.3852C4.46585 17.4158 5.01987 17.425 5.62737 17.3722C7.1693 17.2381 9.14788 16.694 10.5761 14.9802C10.8412 14.662 10.7982 14.189 10.48 13.9239C10.1618 13.6587 9.6889 13.7017 9.42373 14.0199C8.35191 15.3061 6.83049 15.7619 5.49742 15.8778C4.83657 15.9353 4.24455 15.9066 3.81796 15.8632C3.76922 15.8583 3.72288 15.8545 3.67748 15.8508H3.67747H3.67746C3.53541 15.8392 3.40251 15.8283 3.23357 15.7848C2.72636 14.4883 2.39274 12.9551 2.25226 11.1471C2.23306 10.9001 2.33712 10.6595 2.5303 10.5043C2.72348 10.3491 2.98083 10.2994 3.21793 10.3714C6.09614 11.2454 8.85755 11.2108 11.1141 9.8569ZM5 6.5C5 5.67157 5.67157 5 6.5 5C7.32843 5 8 5.67157 8 6.5C8 7.32843 7.32843 8 6.5 8C5.67157 8 5 7.32843 5 6.5ZM12 3.95238C12 3.4264 11.5523 3 11 3C10.4477 3 10 3.4264 10 3.95238V4.04762C10 4.5736 10.4477 5 11 5C11.5523 5 12 4.5736 12 4.04762V3.95238Z" />
+                    </svg>
+                </button>
+            </div>
+        @endif
     </div>
 
-    <div class="w-full mt-1 grid grid-cols-1 relative xl:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5"
+    <div class="w-full mt-1 grid grid-cols-1 relative xl:grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-2"
         id="caracteristicas">
         @if (count($caracteristicas) > 0)
             @foreach ($caracteristicas as $item)
