@@ -5801,9 +5801,6 @@ select {
 .h-screen {
   height: 100vh;
 }
-.max-h-10 {
-  max-height: 2.5rem;
-}
 .max-h-16 {
   max-height: 4rem;
 }
@@ -8482,10 +8479,6 @@ select {
   --tw-shadow-color: #f97316;
   --tw-shadow: var(--tw-shadow-colored);
 }
-.hover\:shadow-primary:hover {
-  --tw-shadow-color: var(--color-primary);
-  --tw-shadow: var(--tw-shadow-colored);
-}
 .hover\:shadow-shadowminicard:hover {
   --tw-shadow-color: var(--shadow-minicard);
   --tw-shadow: var(--tw-shadow-colored);
@@ -8523,9 +8516,6 @@ select {
 .hover\:ring-orange-300:hover {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(253 186 116 / var(--tw-ring-opacity));
-}
-.hover\:ring-primary:hover {
-  --tw-ring-color: var(--color-primary);
 }
 .hover\:ring-red-300:hover {
   --tw-ring-opacity: 1;
@@ -9066,11 +9056,6 @@ select {
     height: 2rem;
   }
 
-  .xs\:size-11 {
-    width: 2.75rem;
-    height: 2.75rem;
-  }
-
   .xs\:h-14 {
     height: 3.5rem;
   }
@@ -9149,10 +9134,6 @@ select {
 
   .xs\:max-w-\[220px\] {
     max-width: 220px;
-  }
-
-  .xs\:max-w-\[60\%\] {
-    max-width: 60%;
   }
 
   .xs\:max-w-\[80\%\] {
@@ -9450,21 +9431,6 @@ select {
     height: 2rem;
   }
 
-  .sm\:size-16 {
-    width: 4rem;
-    height: 4rem;
-  }
-
-  .sm\:size-14 {
-    width: 3.5rem;
-    height: 3.5rem;
-  }
-
-  .sm\:size-11 {
-    width: 2.75rem;
-    height: 2.75rem;
-  }
-
   .sm\:h-1 {
     height: 0.25rem;
   }
@@ -9515,10 +9481,6 @@ select {
 
   .sm\:h-\[165\%\] {
     height: 165%;
-  }
-
-  .sm\:max-h-10 {
-    max-height: 2.5rem;
   }
 
   .sm\:max-h-28 {
@@ -9587,10 +9549,6 @@ select {
 
   .sm\:max-w-24 {
     max-width: 6rem;
-  }
-
-  .sm\:max-w-28 {
-    max-width: 7rem;
   }
 
   .sm\:max-w-2xl {
@@ -9925,10 +9883,6 @@ select {
     padding-bottom: 2rem;
   }
 
-  .sm\:pb-10 {
-    padding-bottom: 2.5rem;
-  }
-
   .sm\:pb-3 {
     padding-bottom: 0.75rem;
   }
@@ -9967,10 +9921,6 @@ select {
 
   .sm\:pt-5 {
     padding-top: 1.25rem;
-  }
-
-  .sm\:pt-6 {
-    padding-top: 1.5rem;
   }
 
   .sm\:text-left {
@@ -10015,10 +9965,6 @@ select {
   .sm\:text-\[40px\]\/\[48px\] {
     font-size: 40px;
     line-height: 48px;
-  }
-
-  .sm\:text-\[9px\] {
-    font-size: 9px;
   }
 
   .sm\:text-lg {
@@ -10112,6 +10058,11 @@ select {
     display: none;
   }
 
+  .md\:size-12 {
+    width: 3rem;
+    height: 3rem;
+  }
+
   .md\:size-52 {
     width: 13rem;
     height: 13rem;
@@ -10120,16 +10071,6 @@ select {
   .md\:size-56 {
     width: 14rem;
     height: 14rem;
-  }
-
-  .md\:size-14 {
-    width: 3.5rem;
-    height: 3.5rem;
-  }
-
-  .md\:size-12 {
-    width: 3rem;
-    height: 3rem;
   }
 
   .md\:h-10 {
@@ -10158,10 +10099,6 @@ select {
 
   .md\:h-auto {
     height: auto;
-  }
-
-  .md\:max-h-32 {
-    max-height: 8rem;
   }
 
   .md\:max-h-\[calc\(100vh-4rem\)\] {
@@ -10226,10 +10163,6 @@ select {
 
   .md\:max-w-2xl {
     max-width: 42rem;
-  }
-
-  .md\:max-w-32 {
-    max-width: 8rem;
   }
 
   .md\:max-w-3xl {
@@ -10499,10 +10432,6 @@ select {
     line-height: 1;
   }
 
-  .md\:text-\[10px\] {
-    font-size: 10px;
-  }
-
   .md\:text-\[11px\] {
     font-size: 11px;
   }
@@ -10624,10 +10553,6 @@ select {
 
   .lg\:h-\[calc\(100vh-4rem\)\] {
     height: calc(100vh - 4rem);
-  }
-
-  .lg\:max-h-12 {
-    max-height: 3rem;
   }
 
   .lg\:max-h-full {
@@ -10950,14 +10875,14 @@ select {
     display: none;
   }
 
-  .xl\:size-28 {
-    width: 7rem;
-    height: 7rem;
-  }
-
   .xl\:size-16 {
     width: 4rem;
     height: 4rem;
+  }
+
+  .xl\:size-28 {
+    width: 7rem;
+    height: 7rem;
   }
 
   .xl\:h-\[calc\(100vh-100px\)\] {
@@ -10966,10 +10891,6 @@ select {
 
   .xl\:h-\[calc\(100vh-150px\)\] {
     height: calc(100vh - 150px);
-  }
-
-  .xl\:max-h-16 {
-    max-height: 4rem;
   }
 
   .xl\:max-h-96 {

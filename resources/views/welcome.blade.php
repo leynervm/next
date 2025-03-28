@@ -21,7 +21,7 @@
                                     class="block size-10 md:size-12 lg:size-14 xl:size-16 overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                                     @if ($item->image)
                                         <img src="{{ getCategoryURL($item->image->url) }}" alt="{{ $item->image->url }}"
-                                            class="block w-full h-full object-scale-down" fetchpriority="low">
+                                            class="block w-full h-full object-scale-down">
                                     @else
                                         <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" fill="none"
                                             viewBox="0 0 24 24" stroke="currentColor" stroke-linecap="round"

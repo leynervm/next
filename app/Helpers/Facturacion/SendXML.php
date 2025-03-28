@@ -190,28 +190,23 @@ class SendXML
                 // $token_type = json_decode($response->body())->token_type;
                 // $expires_in = json_decode($response->body())->expires_in;
                 if ($token) {
-                    $json = response()->json([
+                    $json = [
                         'archivo' => [
                             'nomArchivo' => $nombrezip,
                             'arcGreZip' => base64_encode(file_get_contents($rutazip)),
-                            'hashZip' => hash('sha256', file_get_contents($rutazip))
+                            'hashZip' => hash_file('sha256', $rutazip)
                         ]
-                    ]);
+                    ];
 
-                    $http = Http::withToken($token)->acceptJson()
-                        ->withOptions([
-                            'verify' => true,
-                            'timeout' => 30,
-                            'curl' => [
-                                // CURLOPT_CAINFO => storage_path('app/company/cert/cacert.pem'),
-                            ],
-                        ])->post($ws1, $json);
-                    // dd($http, $ws1, $json->getContent());
+                    $http = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $token,
+                        'Content-Type' => 'application/json',
+                        'Accept' => 'application/json',
+                    ])->post($ws1, $json);
 
                     if ($http->status() == 200) {
                         $ticket = json_decode($http->body())->numTicket ?? null;
                         // $fecRecepcion = json_decode($http->body())->fecRecepcion;
-
                         $consulta = Http::withToken($token)->acceptJson()->get($ws2 . $ticket);
 
                         if ($consulta->status() == 200) {
