@@ -12,7 +12,7 @@
                                 <source srcset="{{ pathURLSlider($item->urlmobile) }}" media="(max-width: 768px)"
                                     type="image/webp">
                                 <img src="{{ pathURLSlider($item->url) }}" alt="{{ $item->url }}"
-                                    class="absolute w-full h-full object-cover" fetchpriority="low">
+                                    class="absolute w-full h-full object-cover" fetchpriority="high">
                             </picture>
                         </div>
                         <div class="carousel-item-link">
