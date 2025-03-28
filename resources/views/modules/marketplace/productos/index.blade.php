@@ -14,13 +14,10 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    {{-- <div class="flex flex-wrap gap-2">
-    </div> --}}
-
     @if ($empresa && $empresa->isDefault())
         <div class="w-full p-1">
-            <livewire:modules.marketplace.productos.show-productos :empresa="$empresa" :moneda="$moneda"
-                :pricetype="$pricetype" id="show_productos_marketplace" />
+            <livewire:modules.marketplace.productos.show-productos :empresa="$empresa" :moneda="$moneda" :pricetype="$pricetype"
+                id="show_productos_marketplace" />
         </div>
     @endif
 </x-app-layout>

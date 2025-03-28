@@ -1,5 +1,5 @@
 <div
-    class="w-full grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
+    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
     @foreach ($productos as $item)
         @php
             $almacen = null;

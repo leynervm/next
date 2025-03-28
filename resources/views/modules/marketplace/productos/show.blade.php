@@ -1,4 +1,21 @@
 <x-app-layout>
+    @php
+        $image = count($producto->images) ? pathURLProductImage($producto->images->first()->url) : null;
+        $pricesale = $producto->getPrecioVenta($pricetype);
+        $priceold = $producto->getPrecioVentaDefault($pricetype);
+        $promocion_producto = null;
+
+        if ($producto->descuento > 0 || $producto->liquidacion) {
+            $promocion_producto = $producto->promocions
+                ->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)
+                ->first();
+        }
+    @endphp
+
+    @if ($image)
+        <link fetchpriority="low" rel="preload" href="{{ $image }}" as="image">
+    @endif
+
     <x-slot name="breadcrumb">
         <x-link-breadcrumb text="TIENDA WEB" route="productos">
             <x-slot name="icon">
@@ -38,19 +55,6 @@
         }
     </style>
 
-    @php
-        $image = count($producto->images) ? pathURLProductImage($producto->images->first()->url) : null;
-        $pricesale = $producto->getPrecioVenta($pricetype);
-        $priceold = $producto->getPrecioVentaDefault($pricetype);
-        $promocion_producto = null;
-
-        if ($producto->descuento > 0 || $producto->liquidacion) {
-            $promocion_producto = $producto->promocions
-                ->where('type', '<>', \App\Enums\PromocionesEnum::COMBO->value)
-                ->first();
-        }
-    @endphp
-
     <div class="contenedor w-full relative" x-data="showproducto">
         <div class="flex flex-col gap-5" x-data="{ currentImage: '{{ $image }}', showesp: true }">
             <div class="w-full md:flex">
@@ -60,11 +64,11 @@
                         @if ($image)
                             <template x-if="currentImage">
                                 <figure id="imageproducto" x-ref="figure"
-                                    class="zoom relative w-full h-full bg-no-repeat object-scale-down overflow-hidden"
+                                    class="zoom relative h-full bg-no-repeat object-scale-down overflow-hidden"
                                     :style="'background-image: url(\'' + currentImage + '\');'" @mousemove="zoom"
                                     @mouseover="showesp = false" @mouseleave="showesp = true" @touchmove="zoom">
                                     <img :src="currentImage" x-ref="image" alt="{{ $producto->name }}"
-                                        class="zoom-hover block w-full h-full object-scale-down transition ease-linear duration-300">
+                                        fetchpriority="high" class="zoom-hover block w-full h-full object-scale-down">
                                 </figure>
                             </template>
 
@@ -130,10 +134,10 @@
                                             'hover:ring-1 border-borderminicard ring-borderminicard opacity-70': currentImage !=
                                                 '{{ pathURLProductImage($item->url) }}'
                                         }">
-                                        <img class="block w-full h-full object-cover object-center"
+                                        <img class="block w-full h-full object-scale-down object-center"
                                             src="{{ pathURLProductImage($item->urlmobile) }}"
                                             alt="{{ $item->urlmobile }}"
-                                            x-on:click="currentImage = '{{ pathURLProductImage($item->url) }}'">
+                                            x-on:click="currentImage = '{{ pathURLProductImage($item->url) }}'" />
                                     </div>
                                 @endforeach
                             </div>
@@ -169,7 +173,6 @@
                                 <x-icon-novedad class="size-6" />
                             </div>
                         @endif
-
 
                         <p class="text-[10px] text-colorsubtitleform font-medium">
                             {{ $producto->category->name }} | {{ $producto->subcategory->name }}</p>
@@ -508,8 +511,10 @@
                                 <div class="w-full flex items-center flex-wrap gap-1">
                                     <div class="w-16 xs:w-20 flex flex-col justify-center items-center">
                                         <div class="w-full block rounded-lg relative">
-                                            @if ($image)
-                                                <img src="{{ $image }}" alt="{{ $image }}"
+                                            @if ($producto->imagen)
+                                                <img src="{{ pathURLProductImage($producto->imagen->urlmobile) }}"
+                                                    alt="{{ $producto->imagen->urlmobile }}" fetchpriority="low"
+                                                    loading="lazy"
                                                     class="block w-full h-auto max-h-20 object-scale-down overflow-hidden rounded-lg">
                                             @else
                                                 <x-icon-image-unknown
@@ -538,7 +543,8 @@
                                                 @if ($itemcombo->imagen)
                                                     <img src="{{ $itemcombo->imagen }}"
                                                         alt="{{ $itemcombo->producto_slug }}"
-                                                        class="{{ $opacidad }} block w-full h-auto max-h-20 object-scale-down overflow-hidden rounded-lg">
+                                                        class="{{ $opacidad }} block w-full h-auto max-h-20 object-scale-down overflow-hidden rounded-lg"
+                                                        fetchpriority="low" loading="lazy">
                                                 @else
                                                     <x-icon-image-unknown
                                                         class="w-full h-full max-h-20 text-colorsubtitleform {{ $opacidad }}" />
@@ -814,7 +820,7 @@
                         @endforeach
                     </div>
                     <button id="leftrelacionados" role="button" aria-label="Boton deslizar izquierda"
-                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center disabled:opacity-25 disabled:shadow-none">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
@@ -822,7 +828,7 @@
                         </svg>
                     </button>
                     <button id="rightrelacionados" role="button" aria-label="Boton deslizar derecha"
-                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center">
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow shadow-shadowminicard rounded-sm flex items-center justify-center disabled:opacity-25 disabled:shadow-none">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
@@ -881,7 +887,7 @@
                         @endforeach
                     </div>
                     <button id="leftinteresantes" role="button" aria-label="Boton deslizar izquierda"
-                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 left-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center disabled:opacity-25 disabled:shadow-none">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
@@ -889,7 +895,7 @@
                         </svg>
                     </button>
                     <button id="rightinteresantes" role="button" aria-label="Boton deslizar derecha"
-                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center">
+                        class="bg-fondominicard opacity-60 z-10 absolute text-colortitleform top-1/2 right-0 -translate-y-1/2 h-12 w-6 shadow flex items-center justify-center disabled:opacity-25 disabled:shadow-none">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
                             class="w-6 h-6 block">
@@ -901,10 +907,7 @@
         @endif
     </div>
 
-    @push('scripts')
-        <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}" defer></script>
-    @endpush
-
+    <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}"></script>
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('showproducto', () => ({
@@ -920,133 +923,133 @@
             }))
         })
 
-        document.addEventListener('DOMContentLoaded', function() {
-            const slider_thumbs = document.getElementById('imagethumbs');
-            const container = slider_thumbs.parentElement;
-            const swiper_thumbs = new Swiper(slider_thumbs, {
-                navigation: {
-                    prevEl: container.querySelector('#previusthumbnail'),
-                    nextEl: container.querySelector('#nextthumbnail'),
+        // document.addEventListener('DOMContentLoaded', function() {
+        const slider_thumbs = document.getElementById('imagethumbs');
+        const container = slider_thumbs.parentElement;
+        const swiper_thumbs = new Swiper(slider_thumbs, {
+            navigation: {
+                prevEl: container.querySelector('#previusthumbnail'),
+                nextEl: container.querySelector('#nextthumbnail'),
+            },
+            breakpoints: {
+                0: {
+                    slidesPerView: 3,
+                    spaceBetween: 4,
                 },
-                breakpoints: {
-                    0: {
-                        slidesPerView: 3,
-                        spaceBetween: 4,
-                    },
-                    300: {
-                        slidesPerView: 4,
-                        spaceBetween: 4,
-                    },
-                    480: {
-                        slidesPerView: 6,
-                        spaceBetween: 4,
-                    },
-                    640: {
-                        slidesPerView: 7,
-                        spaceBetween: 4,
-                    },
-                    768: {
-                        slidesPerView: 5,
-                        spaceBetween: 4,
-                    },
-                    1024: {
-                        slidesPerView: 7,
-                        spaceBetween: 4,
-                    },
-                    1280: {
-                        slidesPerView: 8,
-                        spaceBetween: 4,
-                    },
-                }
-            });
+                300: {
+                    slidesPerView: 4,
+                    spaceBetween: 4,
+                },
+                480: {
+                    slidesPerView: 6,
+                    spaceBetween: 4,
+                },
+                640: {
+                    slidesPerView: 7,
+                    spaceBetween: 4,
+                },
+                768: {
+                    slidesPerView: 5,
+                    spaceBetween: 4,
+                },
+                1024: {
+                    slidesPerView: 7,
+                    spaceBetween: 4,
+                },
+                1280: {
+                    slidesPerView: 8,
+                    spaceBetween: 4,
+                },
+            }
+        });
 
 
-            const slider_relacionados = document.getElementById('relacionados');
-            const container_relacionados = slider_relacionados.parentElement;
-            const swiper_relacionados = new Swiper(slider_relacionados, {
-                navigation: {
-                    prevEl: container_relacionados.querySelector('#leftrelacionados'),
-                    nextEl: container_relacionados.querySelector('#rightrelacionados'),
+        const slider_relacionados = document.getElementById('relacionados');
+        const container_relacionados = slider_relacionados.parentElement;
+        const swiper_relacionados = new Swiper(slider_relacionados, {
+            navigation: {
+                prevEl: container_relacionados.querySelector('#leftrelacionados'),
+                nextEl: container_relacionados.querySelector('#rightrelacionados'),
+            },
+            breakpoints: {
+                0: {
+                    slidesPerView: 1,
+                    spaceBetween: 0,
                 },
-                breakpoints: {
-                    0: {
-                        slidesPerView: 1,
-                        spaceBetween: 0,
-                    },
-                    340: {
-                        slidesPerView: 2,
-                        spaceBetween: 8,
-                    },
-                    480: {
-                        slidesPerView: 3,
-                        spaceBetween: 8,
-                    },
-                    640: {
-                        slidesPerView: 4,
-                        spaceBetween: 8,
-                    },
-                    768: {
-                        slidesPerView: 4,
-                        spaceBetween: 8,
-                    },
-                    870: {
-                        slidesPerView: 5,
-                        spaceBetween: 8,
-                    },
-                    1170: {
-                        slidesPerView: 6,
-                        spaceBetween: 8,
-                    },
-                    1280: {
-                        slidesPerView: 7,
-                        spaceBetween: 8,
-                    },
+                340: {
+                    slidesPerView: 2,
+                    spaceBetween: 8,
                 },
-            });
+                480: {
+                    slidesPerView: 3,
+                    spaceBetween: 8,
+                },
+                640: {
+                    slidesPerView: 4,
+                    spaceBetween: 8,
+                },
+                768: {
+                    slidesPerView: 4,
+                    spaceBetween: 8,
+                },
+                870: {
+                    slidesPerView: 5,
+                    spaceBetween: 8,
+                },
+                1170: {
+                    slidesPerView: 6,
+                    spaceBetween: 8,
+                },
+                1280: {
+                    slidesPerView: 7,
+                    spaceBetween: 8,
+                },
+            },
+        });
 
-            const slider_interesantes = document.getElementById('interesantes');
-            const container_interesantes = slider_interesantes.parentElement;
-            const swiper_interesantes = new Swiper(slider_interesantes, {
-                navigation: {
-                    prevEl: container_interesantes.querySelector('#leftinteresantes'),
-                    nextEl: container_interesantes.querySelector('#rightinteresantes'),
+        const slider_interesantes = document.getElementById('interesantes');
+        const container_interesantes = slider_interesantes.parentElement;
+        const swiper_interesantes = new Swiper(slider_interesantes, {
+            navigation: {
+                prevEl: container_interesantes.querySelector('#leftinteresantes'),
+                nextEl: container_interesantes.querySelector('#rightinteresantes'),
+            },
+            breakpoints: {
+                0: {
+                    slidesPerView: 1,
+                    spaceBetween: 0,
                 },
-                breakpoints: {
-                    0: {
-                        slidesPerView: 1,
-                        spaceBetween: 0,
-                    },
-                    340: {
-                        slidesPerView: 2,
-                        spaceBetween: 8,
-                    },
-                    480: {
-                        slidesPerView: 3,
-                        spaceBetween: 8,
-                    },
-                    640: {
-                        slidesPerView: 4,
-                        spaceBetween: 8,
-                    },
-                    768: {
-                        slidesPerView: 4,
-                        spaceBetween: 8,
-                    },
-                    870: {
-                        slidesPerView: 5,
-                        spaceBetween: 8,
-                    },
-                    1170: {
-                        slidesPerView: 6,
-                        spaceBetween: 8,
-                    },
-                    1280: {
-                        slidesPerView: 7,
-                        spaceBetween: 8,
-                    },
+                340: {
+                    slidesPerView: 2,
+                    spaceBetween: 8,
                 },
-            });
-        })
+                480: {
+                    slidesPerView: 3,
+                    spaceBetween: 8,
+                },
+                640: {
+                    slidesPerView: 4,
+                    spaceBetween: 8,
+                },
+                768: {
+                    slidesPerView: 4,
+                    spaceBetween: 8,
+                },
+                870: {
+                    slidesPerView: 5,
+                    spaceBetween: 8,
+                },
+                1170: {
+                    slidesPerView: 6,
+                    spaceBetween: 8,
+                },
+                1280: {
+                    slidesPerView: 7,
+                    spaceBetween: 8,
+                },
+            },
+        });
+        // })
 
         function zoom(e, zoomLevel = 180) {
             var zoomer = e.currentTarget;

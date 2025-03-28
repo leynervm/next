@@ -20,14 +20,16 @@
     <!-- Styles -->
     <link rel="preload" href="{{ asset('assets/fonts/Ubuntu/ubuntu-normal-normal.woff2') }}" as="font"
         type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('assets/fonts/Ubuntu/ubuntu-semibold-normal.woff2') }}" as="font"
+        type="font/woff2" crossorigin>
     @livewireStyles
 
-    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" fetchpriority="high" />
+    <link rel="stylesheet" href="{{ asset('css/ubuntu.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/select2/select2.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" />
+    <link rel="stylesheet" href="{{ asset('assets/swiper/swiper-bundle.min.css') }}" />
     <link rel="stylesheet" href="{{ asset('css/app.css') }}" fetchpriority="high">
-    <link rel="stylesheet" href="{{ asset('assets/sweetAlert2/sweetalert2.min.css') }}" async />
-    <link rel="stylesheet" href="{{ asset('assets/animate/animate.min.css') }}" async />
-    <link rel="stylesheet" href="{{ asset('assets/swiper/swiper-bundle.min.css') }}" async />
 </head>
 
 <style>
@@ -132,13 +134,47 @@
 
     <script src="{{ asset('assets/select2/jquery-3.4.1.min.js') }}"></script>
     <script src="{{ asset('assets/select2/select2.min.js') }}"></script>
-    <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}" defer></script>
+    <script src="{{ asset('assets/sweetAlert2/sweetalert2.all.min.js') }}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     @stack('scripts')
 </body>
 
 <script>
     const componentloading = document.querySelector('[x-ref="loadingnext"]');
+    var toastMixin = Swal.mixin({
+        toast: true,
+        icon: "success",
+        title: "Mensaje",
+        position: "top-right",
+        showConfirmButton: false,
+        timer: 1500,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+        },
+    });
+
+    window.addEventListener('toast', event => {
+        let timer = event.detail.timer ? event.detail.timer : 1000;
+        toastMixin.fire({
+            title: event.detail.title,
+            icon: event.detail.icon,
+            timer: timer,
+        });
+    })
+
+    window.addEventListener('validation', data => {
+        var icon = data.detail.icon ? data.detail.icon : 'info';
+        swal.fire({
+            title: data.detail.title,
+            text: data.detail.text,
+            html: data.detail.text,
+            icon: icon,
+            confirmButtonColor: '#0FB9B9',
+            confirmButtonText: 'Aceptar',
+        })
+    })
 
     document.addEventListener('readystatechange', () => {
         // console.log(document.readyState)
@@ -148,11 +184,20 @@
         }
     });
 
-    // document.body.style.overflow = 'hidden';
-    // document.addEventListener("DOMContentLoaded", () => {
-    //     document.body.style.overflow = 'auto';
-    //     $('#loading-next').fadeOut();
-    // })
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.button-add-to-cart');
+        if (buttons.length > 0) {
+            buttons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const promocion_id = e.currentTarget.getAttribute(
+                        'data-promocion-id');
+                    const producto_id = e.currentTarget.getAttribute(
+                        'data-producto-id');
+                    addproductocart(producto_id, promocion_id);
+                })
+            });
+        }
+    })
 
     let boxCookies = document.getElementById('cookies');
     cookies();
@@ -425,56 +470,6 @@
             })
             .finally(() => onFinally());
     }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var toastMixin = Swal.mixin({
-            toast: true,
-            icon: "success",
-            title: "Mensaje",
-            position: "top-right",
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-            didOpen: (toast) => {
-                toast.addEventListener("mouseenter", Swal.stopTimer);
-                toast.addEventListener("mouseleave", Swal.resumeTimer);
-            },
-        });
-
-        window.addEventListener('toast', event => {
-            let timer = event.detail.timer ? event.detail.timer : 1000;
-            toastMixin.fire({
-                title: event.detail.title,
-                icon: event.detail.icon,
-                timer: timer,
-            });
-        })
-
-        window.addEventListener('validation', data => {
-            var icon = data.detail.icon ? data.detail.icon : 'info';
-            swal.fire({
-                title: data.detail.title,
-                text: data.detail.text,
-                html: data.detail.text,
-                icon: icon,
-                confirmButtonColor: '#0FB9B9',
-                confirmButtonText: 'Aceptar',
-            })
-        })
-
-        const buttons = document.querySelectorAll('.button-add-to-cart');
-        if (buttons.length > 0) {
-            buttons.forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const promocion_id = e.currentTarget.getAttribute(
-                        'data-promocion-id');
-                    const producto_id = e.currentTarget.getAttribute(
-                        'data-producto-id');
-                    addproductocart(producto_id, promocion_id);
-                })
-            });
-        }
-    })
 </script>
 
 </html>

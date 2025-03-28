@@ -52,7 +52,7 @@
                                 $combo = getAmountCombo($item->options->promocion, $pricetype);
                                 $image =
                                     !is_null($item->model) && !empty($item->model->imagen)
-                                        ? pathURLProductImage($item->model->imagen->url)
+                                        ? pathURLProductImage($item->model->imagen->urlmobile)
                                         : null;
                             @endphp
 

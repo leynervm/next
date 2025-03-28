@@ -51,7 +51,8 @@
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                         placeholder="Buscar en Next" id="search">
                 </div>
-                <button type="submit" id="button-search-desk" role="button" aria-label="button-search-desk" @click.prevent="handleEnter;"
+                <button type="submit" id="button-search-desk" role="button" aria-label="button-search-desk"
+                    @click.prevent="handleEnter;"
                     class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -105,8 +106,8 @@
                             <button role="button" title="Light" theme="theme-next" type="button"
                                 class="block theme-switcher-button rounded-full bg-transparent text-inherit">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                                    class="block w-8 h-8 p-1">
+                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                    stroke-linejoin="round" class="block w-8 h-8 p-1">
                                     <path
                                         d="M6.08938 14.9992C5.71097 14.1486 5.5 13.2023 5.5 12.2051C5.5 8.50154 8.41015 5.49921 12 5.49921C15.5899 5.49921 18.5 8.50154 18.5 12.2051C18.5 13.2023 18.289 14.1486 17.9106 14.9992" />
                                     <path d="M12 1.99921V2.99921" />
@@ -161,7 +162,8 @@
                 <li class="relative h-[68%] flex items-center self-center">
                     @auth
                         <div @click.away="login=false">
-                            <button @click="login=!login" id="button-info-user" role="button" aria-label="Información del usuario"
+                            <button @click="login=!login" id="button-info-user" role="button"
+                                aria-label="Información del usuario"
                                 class="h-full flex justify-center items-center px-1 py-3 sm:px-3 cursor-pointer text-inherit group-hover:opacity-80 transition ease-out duration-150">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     class="block w-8 h-8" stroke="currentColor" stroke-width="1.5"

@@ -73,7 +73,7 @@
                         <source srcset="{{ asset('images/home/recursos/soluciones_integrales.webp') }}">
                         <img src="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
                             alt="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
-                            class="w-full h-full object-scale-down overflow-hidden">
+                            class="w-full h-full object-scale-down overflow-hidden" fetchpriority="low">
                     </picture>
                 </div>
                 <h1
@@ -88,7 +88,7 @@
                         <source srcset="{{ asset('images/home/recursos/internet.webp') }}">
                         <img src="{{ asset('images/home/recursos/internet.webp') }}"
                             alt="{{ asset('images/home/recursos/internet.webp') }}"
-                            class="w-full h-full object-scale-down overflow-hidden">
+                            class="w-full h-full object-scale-down overflow-hidden" fetchpriority="low">
                     </picture>
                 </div>
                 <h1
@@ -103,7 +103,7 @@
                         <source srcset="{{ asset('images/home/recursos/centro_autorizado.webp') }}">
                         <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
                             alt="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
-                            class="w-full h-full object-scale-down overflow-hidden">
+                            class="w-full h-full object-scale-down overflow-hidden" fetchpriority="low">
                     </picture>
                 </div>
                 <h1
@@ -118,7 +118,7 @@
                         <source srcset="{{ asset('images/home/recursos/orders.webp') }}">
                         <img src="{{ asset('images/home/recursos/orders.webp') }}"
                             alt="{{ asset('images/home/recursos/orders.webp') }}"
-                            class="w-full h-full object-scale-down overflow-hidden">
+                            class="w-full h-full object-scale-down overflow-hidden" fetchpriority="low">
                     </picture>
                 </div>
                 <h1
@@ -382,10 +382,7 @@
 
     </div>
 
-    @push('scripts')
-        <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}" defer></script>
-    @endpush
-
+    <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const slider = document.getElementById('swiper-categories');

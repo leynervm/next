@@ -470,10 +470,10 @@
         </div>
     </div>
 
-    @if (count($productos) == 0)
+    {{-- @if ($lazyload && count($productos) == 0)
         <p class="text-xs py-12 block w-full text-colorlabel">
             NO SE ENCONTRARON REGISTROS DE PRODUCTOS...</p>
-    @endif
+    @endif --}}
 
     <x-jet-dialog-modal wire:model="open" maxWidth="5xl" footerAlign="justify-end">
         <x-slot name="title">

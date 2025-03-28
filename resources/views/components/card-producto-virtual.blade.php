@@ -30,7 +30,7 @@
                         x-on:load="imageLoaded = true" x-show="imageLoaded" style="display: none;"
                         class="w-full h-full object-scale-down group-hover:scale-105 {{ $secondimage ? 'group-hover:opacity-0 duration-700' : 'scale-90 duration-1000' }} transition-all ease-in">
                     @if ($secondimage)
-                        <img src="{{ $secondimage }}" alt="{{ $secondimage }}"
+                        <img src="{{ $secondimage }}" alt="{{ $secondimage }}" fetchpriority="low" loading="lazy"
                             class="absolute opacity-0 top-0 object-scale-down w-full h-full group-hover:scale-105 group-hover:opacity-100 transition-all ease-in duration-700">
                     @endif
                 @else
@@ -40,7 +40,7 @@
             </div>
 
             <div class="flex-1 flex flex-col">
-                <div class="w-full flex flex-wrap gap-3 justify-between px-1">
+                <div class="w-full flex flex-wrap gap-3 justify-between p-1">
                     <span class="inline-block text-colorsubtitleform text-[11px] sm:text-xs font-medium">
                         {{ $marca }}</span>
 

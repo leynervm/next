@@ -22,7 +22,7 @@
             </div>
 
             <div
-                class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-1 self-start">
+                class="grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-1 self-start">
                 @foreach ($ofertas as $item)
                     @if (count($item->combos) > 0 || $item->descuento > 0 || $item->liquidacion)
                         @php

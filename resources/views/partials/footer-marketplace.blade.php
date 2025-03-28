@@ -1,16 +1,17 @@
 <footer class="w-full footer-marketplace">
     <div class="w-full flex flex-col sm:flex-row gap-2 items-center contenedor py-3 sm:py-6">
         @if (!empty($empresa->logo) || !empty($empresa->logofooter))
-            <div class="max-w-sm h-10 mx-auto sm:mx-0">
+            <a class="max-w-sm h-10 mx-auto sm:mx-0" href="/" aria-label="INICIO">
                 @if (!empty($empresa->logofooter))
                     <img class="w-auto max-w-sm h-full object-scale-down object-left"
                         src="{{ getLogoEmpresa($empresa->logofooter, request()->isSecure() ? true : false) }}"
-                        alt="">
+                        alt="{{ $empresa->logofooter }}" fetchpriority="low" loading="lazy">
                 @else
                     <img class="w-auto max-w-sm h-full object-scale-down object-left"
-                        src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}" alt="">
+                        src="{{ getLogoEmpresa($empresa->logo, request()->isSecure() ? true : false) }}"
+                        alt="{{ $empresa->logo }}" fetchpriority="low" loading="lazy">
                 @endif
-            </div>
+            </a>
         @else
             <h1 class="text-center max-w-sm p-3 font-bold tracking-widest text-xl leading-none">
                 {{ $empresa->name }}</h1>
@@ -126,7 +127,8 @@
 
             <div class="w-full max-w-sm h-auto mx-auto lg:mr-0 lg:ml-auto mt-2">
                 <img class="w-full h-full object-scale-down object-center"
-                    src="{{ asset('images/niubiz_header.png') }}" alt="paga-con-niubiz" title="paga-con-niubiz">
+                    src="{{ asset('images/niubiz_header.png') }}" alt="paga-con-niubiz" title="paga-con-niubiz"
+                    fetchpriority="low" loading="lazy">
             </div>
         </div>
     </div>
