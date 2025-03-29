@@ -203,6 +203,7 @@ class SendXML
                         'Content-Type' => 'application/json',
                         'Accept' => 'application/json',
                     ])->post($ws1, $json);
+                    // dd($http->body(), $response->body(), $ws);
 
                     if ($http->status() == 200) {
                         $ticket = json_decode($http->body())->numTicket ?? null;

@@ -392,7 +392,7 @@ class ShowGuia extends Component
     public function enviarsunat($id)
     {
 
-        $guia =  Guia::with('tvitems')->find($id);
+        $guia =  Guia::with(['sucursal.empresa','tvitems'])->find($id);
 
         if ($guia && !$guia->isSendSunat()) {
             $response = $guia->enviarGuiaRemision();

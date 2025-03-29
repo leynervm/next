@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Modules\Facturacion\Entities\Comprobante;
 use Modules\Ventas\Entities\Venta;
+use Illuminate\Support\Str;
 
 class Guia extends Model
 {
@@ -42,6 +43,19 @@ class Guia extends Model
     const NAME_IND_REG_VEHIC_COND_TRANSP = 'Registrar vehículos y conductores del transportista';
 
     const ENVIADO_SUNAT = '0';
+
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($guia) {
+            do {
+                $uuid = Str::uuid();
+            } while (Guia::where('uuid', $uuid)->exists()); // Si existe, genera otro
+
+            $guia->uuid = $uuid;
+        });
+    }
 
     public function getDatetrasladoAttribute($value)
     {
