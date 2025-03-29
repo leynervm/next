@@ -165,7 +165,7 @@
         <div class="w-full text-colortitleform">
             @if (count($venta->cajamovimientos) > 0)
                 <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
                     @foreach ($venta->cajamovimientos as $item)
                         <x-card-payment-box :cajamovimiento="$item" :moneda="$venta->moneda">
                             <x-slot name="footer">
@@ -200,7 +200,7 @@
             @if (count($venta->cuotas) > 0)
                 <div class="w-full flex flex-col gap-2">
                     <div
-                        class="w-full grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
+                        class="w-full grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
                         @foreach ($venta->cuotas as $item)
                             <x-simple-card class="w-full p-1 flex flex-col justify-between gap-1">
                                 <div class="w-full">
@@ -343,11 +343,11 @@
         <x-form-card titulo="RESUMEN PRODUCTOS">
             @if (count($venta->tvitems))
                 <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1 mt-1">
                     @foreach ($venta->tvitems as $item)
                         @php
                             $image = !empty($item->producto->imagen)
-                                ? pathURLProductImage($item->producto->imagen->url)
+                                ? pathURLProductImage($item->producto->imagen->urlmobile)
                                 : null;
                         @endphp
                         <x-card-producto :image="$image" :name="$item->producto->name" :marca="$item->producto->marca->name" :category="$item->producto->category->name"
@@ -437,9 +437,9 @@
                                 </div>
                             @else
                                 <div
-                                    class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-3 xs:grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
+                                    class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
                                     @foreach ($item->kardexes as $kardex)
-                                        <div class="w-full p-1.5 flex flex-col items-center justify-start">
+                                        <div class="w-full xs:p-1.5 flex flex-col items-center justify-start">
                                             <h1 class="text-colorsubtitleform text-sm font-semibold !leading-none">
                                                 {{ decimalOrInteger($kardex->cantidad) }}
                                                 <small class="text-[10px] font-normal">

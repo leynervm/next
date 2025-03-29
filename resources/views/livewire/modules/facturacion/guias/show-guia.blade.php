@@ -495,7 +495,7 @@
             <div class="w-full">
                 @if (count($guia->tvitems) > 0)
                     <div
-                        class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
+                        class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                         @foreach ($guia->tvitems as $item)
                             @php
                                 $class = '';
@@ -532,7 +532,7 @@
 
                                 @if (count($item->kardexes) > 0  && count($item->itemseries) == 0)
                                     <div
-                                        class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-3 xs:grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
+                                        class="w-full grid {{ count($item->kardexes) > 1 ? 'grid-cols-2' : 'grid-cols-1' }} gap-1 mt-2 divide-x divide-borderminicard">
                                         @foreach ($item->kardexes as $kardex)
                                             <div class="w-full p-1.5 flex flex-col items-center justify-start">
                                                 <h1 class="text-colorsubtitleform text-sm font-semibold !leading-none">

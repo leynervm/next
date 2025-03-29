@@ -77,16 +77,10 @@ class CreatePromocion extends Component
             'marcas.name as name_marca',
             'categories.name as name_category',
             'subcategories.name as name_subcategory',
-        )->addSelect(['image' => function ($query) {
-            $query->select('url')->from('images')
-                ->whereColumn('images.imageable_id', 'productos.id')
-                ->where('images.imageable_type', Producto::class)
-                ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-        }])->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
+        )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->with(['unit'])
-            ->withWhereHas('almacens')->visibles()->orderByDesc('novedad')
+            ->with(['unit', 'imagen'])->withWhereHas('almacens')->visibles()->orderByDesc('novedad')
             ->orderBy('subcategories.orden')->orderBy('categories.orden')->get();
 
         $typepromociones = response()->json(PromocionesEnum::all())->getData();

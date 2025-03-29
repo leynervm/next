@@ -1,5 +1,9 @@
+/* .select2-container {
+    @apply !w-full;
+} */
+
 .select2.select2-container {
-    @apply w-full overflow-hidden !important;
+    @apply block !w-full overflow-hidden;
 }
 
 .select2-search--dropdown {
@@ -157,7 +161,7 @@
 }
 
 .custom-list-select .image-custom-select {
-    @apply flex-shrink-0 rounded-lg w-20 h-20 overflow-hidden;
+    @apply flex-shrink-0 rounded-lg size-16 sm:size-20 overflow-hidden;
 }
 
 .custom-list-select .content-custom-select {
@@ -165,11 +169,11 @@
 }
 
 .custom-list-select .title-custom-select {
-    @apply block w-full font-medium text-textselect2 text-xs;
+    @apply block w-full font-medium text-[10px] text-textselect2 !leading-tight;
 }
 
 .custom-list-select .marca-custom-select {
-    @apply block w-full font-medium text-colorsubtitleform text-xs;
+    @apply block w-full font-medium text-[10px] text-colorsubtitleform;
 }
 
 .custom-list-select .category-custom-select {

@@ -112,12 +112,7 @@ class CreateCotizacion extends Component
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('orden', 'asc')->orderBy('id', 'asc')->limit(1);
-            }])->with('almacens')->visibles()->orderByDesc('novedad')
+            ->with(['almacens', 'imagen'])->visibles()->orderByDesc('novedad')
             ->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->get();
 

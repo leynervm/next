@@ -1,26 +1,24 @@
 <div x-data="data">
-    <div class="w-full flex flex-wrap gap-2 mb-3">
-        @if ($empresa->usarlista())
-            @if (count($pricetypes) > 0)
-                <div class="w-full mb-3 max-w-60">
-                    <x-label value="Lista precios :" />
-                    <div id="parentventapricetype_id" class="relative" x-init="selectPricetype" wire:ignore>
-                        <x-select class="block w-full" id="ventapricetype_id" x-ref="selectp">
-                            <x-slot name="options">
-                                @foreach ($pricetypes as $item)
-                                    <option value="{{ $item->id }}">
-                                        {{ $item->name }}</option>
-                                @endforeach
-                            </x-slot>
-                        </x-select>
-                        <x-icon-select />
-                    </div>
-                    <x-jet-input-error for="pricetype_id" />
+    <div class="w-full grid grid-cols-1 xs:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 mb-2">
+        @if ($empresa->usarlista() && count($pricetypes) > 0)
+            <div class="w-full">
+                <x-label value="Lista precios :" />
+                <div id="parentventapricetype_id" class="relative" x-init="selectPricetype" wire:ignore>
+                    <x-select class="block w-full" id="ventapricetype_id" x-ref="selectp">
+                        <x-slot name="options">
+                            @foreach ($pricetypes as $item)
+                                <option value="{{ $item->id }}">
+                                    {{ $item->name }}</option>
+                            @endforeach
+                        </x-slot>
+                    </x-select>
+                    <x-icon-select />
                 </div>
-            @endif
+                <x-jet-input-error for="pricetype_id" />
+            </div>
         @endif
 
-        <div class="w-full max-w-60">
+        <div class="w-full">
             <x-label value="Filtrar estado :" />
             <div class="relative" id="parentselectestado" x-init="selectEstado">
                 <x-select class="block w-full" id="selectestado" x-ref="selectestado">
@@ -37,10 +35,13 @@
     </div>
 
     @if (count($promociones) > 0)
-        <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1 self-start relative">
+        <div
+            class="w-full grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-1 self-start relative">
             @foreach ($promociones as $item)
                 @php
-                    $image = !empty($item->producto->imagen) ? pathURLProductImage($item->producto->imagen->urlmobile) : null;
+                    $image = !empty($item->producto->imagen)
+                        ? pathURLProductImage($item->producto->imagen->urlmobile)
+                        : null;
                     $empresa = view()->shared('empresa');
                     $tipocambio = $empresa->usarDolar() ? $empresa->tipocambio : null;
                     $descuento = $item->descuento;

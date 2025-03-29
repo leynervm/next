@@ -282,7 +282,7 @@
             <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div class="w-full">
                     <x-label value="Lugar emisión :" />
-                    <div class="relative" id="parentuborig" x-init="SelectUbigeoOrigen" wire:ignore>
+                    <div class="relative" id="parentuborig" x-init="SelectUbigeoOrigen">
                         <x-select class="block w-full" id="uborig" x-ref="selectubigeoorigen"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
@@ -322,7 +322,7 @@
                 <div class="w-full">
                     <x-label value="Lugar destino :" />
                     <div class="relative" id="parentubdest" x-data="{ ubigeodestino_id: @entangle('ubigeodestino_id').defer }" x-init="SelectUbigeoDestino"
-                        wire:ignore>
+                    >
                         <x-select class="block w-full" id="ubdest" x-ref="selectubigeodest"
                             data-minimum-results-for-search="3">
                             <x-slot name="options">
@@ -493,10 +493,10 @@
     <x-form-card titulo="RESUMEN PRODUCTOS" class="mt-3">
         <div class="w-full relative rounded flex flex-col gap-3">
             <div class="w-full flex flex-col gap-2">
-                <div class="w-full grid sm:grid-cols-3 xl:grid-cols-5 gap-2">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-2">
                     <div class="w-full sm:col-span-2">
                         <x-label value="Seleccionar producto :" />
-                        <div class="w-full relative" x-init="select2Producto" id="parentguiaproducto_id">
+                        <div class="relative" x-init="select2Producto" id="parentguiaproducto_id">
                             <x-select class="block w-full uppercase" x-ref="selectprod"
                                 data-minimum-results-for-search="3" id="guiaproducto_id">
                                 <x-slot name="options">
@@ -505,7 +505,7 @@
                                             <option data-marca="{{ $item->name_marca }}"
                                                 data-category="{{ $item->name_category }}"
                                                 data-subcategory="{{ $item->name_subcategory }}"
-                                                data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->url) : null }}"
+                                                data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null }}"
                                                 value="{{ $item->id }}">
                                                 {{ $item->name }}
                                             </option>
@@ -518,37 +518,9 @@
                         <x-jet-input-error for="producto_id" />
                     </div>
 
-                    {{-- @if (count($series) > 0 && in_array($mode, ['1', '3']))
-                        <div class="w-full">
-                            <x-label value="Seleccionar serie :" />
-                            <div class="w-full relative" id="parentguiaserie_id" x-init="select2Serie">
-                                <x-select class="block w-full" x-ref="selectserie"
-                                    data-minimum-results-for-search="3" id="guiaserie_id">
-                                    <x-slot name="options">
-                                        @foreach ($series as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->serie }}
-                                            </option>
-                                        @endforeach
-                                    </x-slot>
-                                </x-select>
-                                <x-icon-select />
-                            </div>
-                            <x-jet-input-error for="serie_id" />
-                        </div>
-                    @else
-                        <div class="w-full">
-                            <x-label value="Cantidad :" />
-                            <x-input class="block w-full input-number-none" wire:key="{{ rand() }}"
-                                wire:model.defer="cantidad" placeholder="0" type="number" min="1"
-                                step="1" onkeypress="return validarNumero(event, 11)" />
-                            <x-jet-input-error for="cantidad" />
-                        </div>
-                    @endif --}}
-
                     <div class="w-full">
                         <x-label value="ALterar stock :" />
-                        <div class="relative" x-init="select2Stock" id="parentstock" wire:ignore>
+                        <div class="relative" x-init="select2Stock" id="parentstock">
                             <x-select class="block w-full uppercase" id="stock" x-ref="selectstock">
                                 <x-slot name="options">
                                     <option value="0">NO ALTERAR STOCK</option>
@@ -561,25 +533,6 @@
                         </div>
                         <x-jet-input-error for="mode" />
                     </div>
-                    {{-- <div class="w-full">
-                        <x-label value="Almacén :" />
-                        <div class="relative" x-init="select2Almacen" id="parentalmacenguia_id">
-                            <x-select class="block w-full uppercase" id="almacenguia_id" x-ref="selectalmacen"
-                                data-placeholder="null">
-                                <x-slot name="options">
-                                    @if (count($almacens))
-                                        @foreach ($almacens as $item)
-                                            <option value="{{ $item->id }}">
-                                                {{ $item->name }}
-                                            </option>
-                                        @endforeach
-                                    @endif
-                                </x-slot>
-                            </x-select>
-                            <x-icon-select />
-                        </div>
-                        <x-jet-input-error for="almacen_id" />
-                    </div> --}}
                 </div>
 
                 @if ($producto)
@@ -654,7 +607,7 @@
 
             @if (count($tvitems) > 0)
                 <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                     @foreach ($tvitems as $item)
                         <x-card-producto :name="$item->producto->name" :image="!empty($item->producto->imagen)
                             ? pathURLProductImage($item->producto->imagen->url)
@@ -779,7 +732,6 @@
 
                 alterstock: null,
                 mode: @entangle('mode').defer,
-                // disponibles: @entangle('disponibles'),
                 serie_id: @entangle('serie_id').defer,
                 almacen_id: @entangle('almacen_id'),
                 producto_id: @entangle('producto_id'),
@@ -976,7 +928,6 @@
                 this.selectTC.val(value).trigger("change");
             });
             Livewire.hook('message.processed', () => {
-                this.selectTC.select2('destroy');
                 this.selectTC.select2().val(this.seriecomprobante_id).trigger('change');
             });
         }
@@ -996,7 +947,6 @@
                 this.selectMOT.val(value).trigger("change");
             });
             Livewire.hook('message.processed', () => {
-                this.selectMOT.select2('destroy');
                 this.selectMOT.select2().val(this.motivotraslado_id).trigger('change');
             });
         }
@@ -1016,7 +966,6 @@
                 this.selectMT.val(value).trigger("change");
             });
             Livewire.hook('message.processed', () => {
-                this.selectMT.select2('destroy');
                 this.selectMT.select2().val(this.modalidadtransporte_id).trigger('change');
             });
         }
@@ -1034,6 +983,9 @@
             this.$watch("mode", (value) => {
                 this.selectSTK.val(value).trigger("change");
             });
+            Livewire.hook('message.processed', () => {
+                this.selectSTK.select2().val(this.mode).trigger('change');
+            });
         }
 
         function SelectUbigeoDestino() {
@@ -1049,10 +1001,9 @@
             this.$watch("ubigeodestino_id", (value) => {
                 this.selectUD.val(value).trigger("change");
             });
-            // Livewire.hook('message.processed', () => {
-            //     this.selectUD.select2('destroy');
-            //     this.selectUD.select2().val(this.ubigeodestino_id).trigger('change');
-            // });
+            Livewire.hook('message.processed', () => {
+                this.selectUD.select2().val(this.ubigeodestino_id).trigger('change');
+            });
         }
 
         function SelectUbigeoOrigen() {
@@ -1068,10 +1019,9 @@
             this.$watch("ubigeoorigen_id", (value) => {
                 this.selectUO.val(value).trigger("change");
             });
-            // Livewire.hook('message.processed', () => {
-            //     this.selectUO.select2('destroy');
-            //     this.selectUO.select2().val(this.ubigeoorigen_id).trigger('change');
-            // });
+            Livewire.hook('message.processed', () => {
+                this.selectUO.select2().val(this.ubigeoorigen_id).trigger('change');
+            });
         }
 
         function select2Almacen() {
@@ -1089,7 +1039,6 @@
                 this.selectA.val(value).trigger("change");
             });
             Livewire.hook('message.processed', () => {
-                this.selectA.select2('destroy');
                 this.selectA.select2().val(this.almacen_id).trigger('change');
             });
         }
@@ -1122,7 +1071,6 @@
                 this.selectS.val(value).trigger("change");
             });
             Livewire.hook('message.processed', () => {
-                this.selectS.select2('destroy');
                 this.selectS.select2().val(this.serie_id).trigger('change');
             });
         }

@@ -32,7 +32,7 @@
         @endif
     </button>
 
-    <div class="fixed z-[99] inset-0 overflow-y-auto ransition-opacity" x-show="open" x-cloak style="display: none"
+    <div class="fixed z-[99] inset-0 overflow-y-auto transition-opacity" x-show="open" x-cloak style="display: none"
         {{-- @keydown.escape.window="open = true" --}}>
         <div class="absolute inset-0 bg-neutral-800 opacity-75"></div>
         <div class="w-full p-2 flex items-center justify-center min-h-screen">
@@ -396,8 +396,6 @@
                     </div>
                 @endif
             </div>
-
-
         </div>
     </div>
 </div>

@@ -3,7 +3,7 @@
 <x-jet-modal :id="$id" :maxWidth="$maxWidth" {{ $attributes }}>
     <div class="flex gap-2 items-center justify-between p-2 py-3">
         <div class="text-left w-full flex-1">
-            <h3 class="text-xs sm:text-lg !leading-none font-medium text-colorheadermodal">
+            <h3 class="text-sm sm:text-lg !leading-none font-medium text-colorheadermodal">
                 {{ $title }}</h3>
         </div>
         <span

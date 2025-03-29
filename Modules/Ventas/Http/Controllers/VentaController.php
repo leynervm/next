@@ -585,7 +585,7 @@ class VentaController extends Controller
                 DB::commit();
                 return response()->json([
                     'success' => true,
-                    'mensaje' => 'AGREGADO AL CARRITO CORRECTAMENTE'
+                    'mensaje' => 'AGREGADO AL CARRITO'
                 ])->getData();
             } else {
                 // sino envio producto_id es porque estoy agregando un combo
@@ -794,7 +794,7 @@ class VentaController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'mensaje' => 'COMBO AGREGADO CORRECTAMENTE !',
+                    'mensaje' => 'COMBO AGREGADO !',
                     'promocion_id' => $promocion->id ?? null
                 ])->getData();
                 return false;
@@ -1081,7 +1081,7 @@ class VentaController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'mensaje' => 'AGREGADO AL CARRITO CORRECTAMENTE',
+                'mensaje' => 'AGREGADO AL CARRITO',
             ])->getData();
             return false;
         } catch (\Exception $e) {
@@ -1145,7 +1145,7 @@ class VentaController extends Controller
             DB::commit();
             return response()->json([
                 'success' => true,
-                'mensaje' => 'CARRITO ACTUALIZADO CORRECTAMENTE',
+                'mensaje' => 'CARRITO ACTUALIZADO',
                 // 'totales'   => self::total(),
             ]);
         } catch (\Exception $e) {

@@ -58,7 +58,7 @@
             @endif
 
             @if (isset($name))
-                <h1 class="text-colorlabel text-[10px] font-semibold leading-[.8rem] text-center mt-1 mb-2">
+                <h1 class="text-colorlabel text-sm font-medium !leading-[1rem] text-center mt-1 mb-2">
                     {{ $name }}</h1>
             @endif
 

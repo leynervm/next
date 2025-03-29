@@ -135,15 +135,9 @@ class ShowCompra extends Component
         )->leftJoin('marcas', 'productos.marca_id', '=', 'marcas.id')
             ->leftJoin('subcategories', 'productos.subcategory_id', '=', 'subcategories.id')
             ->leftJoin('categories', 'productos.category_id', '=', 'categories.id')
-            ->addSelect(['image' => function ($query) {
-                $query->select('url')->from('images')
-                    ->whereColumn('images.imageable_id', 'productos.id')
-                    ->where('images.imageable_type', Producto::class)
-                    ->orderBy('default', 'desc')->limit(1);
-            }])
             ->withCount(['almacens as stock' => function ($query) {
                 $query->select(DB::raw('COALESCE(SUM(almacen_producto.cantidad),0)')); // Suma de la cantidad en la tabla pivote
-            }])->with(['unit', 'almacens'])->visibles()->orderByDesc('novedad')
+            }])->with(['unit', 'imagen', 'almacens'])->visibles()->orderByDesc('novedad')
             ->orderBy('subcategories.orden', 'ASC')
             ->orderBy('categories.orden', 'ASC')->get();
 

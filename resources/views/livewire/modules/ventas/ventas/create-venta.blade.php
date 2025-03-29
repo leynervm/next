@@ -1,8 +1,8 @@
-<div class="w-full flex flex-col lg:flex-row gap-2 lg:h-[calc(100vh-4rem)]" x-data="loader">
+<div class="w-full flex flex-col lg:flex-row gap-1 lg:gap-2 lg:h-[calc(100vh-4rem)]" x-data="loader">
 
     <x-loading-web-next wire:key="loadingcreateventa" wire:loading />
 
-    <div class="w-full flex flex-col gap-5 lg:flex-shrink-0 lg:w-80 lg:overflow-y-auto soft-scrollbar h-full">
+    <div class="w-full flex flex-col gap-2 lg:gap-3 lg:flex-shrink-0 lg:w-80 lg:overflow-y-auto soft-scrollbar h-full">
         <x-form-card titulo="GENERAR NUEVA VENTA">
             <form wire:submit.prevent="save" class="w-full flex flex-col gap-2" autocomplete="off">
                 <div class="w-full flex flex-col gap-1">
@@ -47,7 +47,7 @@
                 </div>
             </form>
         </x-form-card>
-        
+
         <x-form-card titulo="RESUMEN DE VENTA" class="text-colorlabel">
             <div class="w-full">
                 <table class="w-full table text-[10px]">
@@ -152,11 +152,12 @@
             </div>
         </x-form-card>
 
-        <div class="w-full" x-data="{ showcart: true }">
-            <div class="text-end px-3">
-                <button class="text-amber-500 relative inline-block w-6 h-6 cursor-pointer" @click="showcart=!showcart">
+        @if (count($tvitems) > 0)
+            <div class="text-end px-3 sticky bottom-0 right-0">
+                <button class="bg-amber-500 text-white p-2 rounded-lg relative inline-block cursor-pointer"
+                    x-on:click="showcart=!showcart" wire:key="buttoncart">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" class="w-full h-full block">
+                        stroke-width="2" stroke-linecap="round" class="block size-5">
                         <path d="M8 16L16.7201 15.2733C19.4486 15.046 20.0611 14.45 20.3635 11.7289L21 6" />
                         <path d="M6 6H22" />
                         <circle cx="6" cy="20" r="2" />
@@ -166,106 +167,126 @@
                             d="M2 2H2.966C3.91068 2 4.73414 2.62459 4.96326 3.51493L7.93852 15.0765C8.08887 15.6608 7.9602 16.2797 7.58824 16.7616L6.63213 18" />
                     </svg>
                     <small
-                        class="bg-amber-500 text-white font-semibold absolute -top-3 -right-1 flex items-center justify-center w-4 h-4 p-0.5 leading-3 rounded-full text-[8px]">
+                        class="bg-amber-500 text-white font-medium absolute border border-white ring-1 ring-amber-500 -top-2 -right-1 flex items-center justify-center size-5 p-0.5 leading-3 rounded-full text-[8px]">
                         {{ count($tvitems) }}</small>
                 </button>
             </div>
-            @if (count($tvitems) > 0)
-                <div class="w-full" x-show="showcart" x-transition>
-                    <div class="flex gap-2 flex-wrap justify-start">
-                        @foreach ($tvitems as $item)
-                            <x-simple-card wire:key="cardtvitem_{{ $item->id }}"
-                                class="w-full flex flex-col gap-1 border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
 
-                                @if ($item->promocion)
-                                    <span
-                                        class="bg-red-600 mr-auto inline-block rounded-md text-white text-[9px] font-medium p-1 leading-3">
-                                        @if ($empresa->isTitlePromocion())
-                                            PROMOCIÓN
-                                        @elseif($empresa->isTitleOferta())
-                                            OFERTA
-                                        @elseif($empresa->isTitleLiquidacion())
-                                            LIQUIDACIÓN
-                                        @else
-                                            @if ($item->promocion->isDescuento())
-                                                - {{ decimalOrInteger($item->promocion->descuento) }}%
-                                            @endif
-                                            {{ getTextPromocion($item->promocion->type) }}
+            <div class="w-full" x-show="showcart" x-transition>
+                <div
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
+                    @foreach ($tvitems as $item)
+                        <x-simple-card wire:key="cardtvitem_{{ $item->id }}"
+                            class="w-full flex flex-col gap-1 border border-borderminicard justify-between lg:max-w-sm xl:w-full group p-1 text-xs relative overflow-hidden">
+
+                            @if ($item->promocion)
+                                <span
+                                    class="bg-red-600 mr-auto inline-block rounded-md text-white text-[9px] font-medium p-1 leading-3">
+                                    @if ($empresa->isTitlePromocion())
+                                        PROMOCIÓN
+                                    @elseif($empresa->isTitleOferta())
+                                        OFERTA
+                                    @elseif($empresa->isTitleLiquidacion())
+                                        LIQUIDACIÓN
+                                    @else
+                                        @if ($item->promocion->isDescuento())
+                                            - {{ decimalOrInteger($item->promocion->descuento) }}%
                                         @endif
-                                    </span>
-                                @endif
+                                        {{ getTextPromocion($item->promocion->type) }}
+                                    @endif
+                                </span>
+                            @endif
 
-                                <h1 class="text-colorlabel w-full text-[10px] leading-none text-left z-[1] pt-1">
-                                    <span class="font-semibold">
-                                        {{ decimalOrInteger($item->cantidad) }}{{ $item->producto->unit->name }}
-                                    </span>
-                                    {{ $item->producto->name }}
+                            <div class="w-full lg:flex gap-1">
+                                <div class="w-full h-20 sm:h-28 lg:size-20 flex-shrink-0">
+                                    @if ($item->producto->imagen)
+                                        <img src="{{ pathURLProductImage($item->producto->imagen->urlmobile) }}"
+                                            class="block w-full h-full object-scale-down"
+                                            alt="{{ $item->producto->imagen->urlmobile }}">
+                                    @else
+                                        <x-icon-file-upload type="unknown" class="max-h-full" />
+                                    @endif
+                                </div>
+
+                                <div class="flex-1 flex flex-col gap-1 w-full">
+                                    <h1 class="text-colorlabel w-full text-[10px] leading-none text-left z-[1] pt-1">
+                                        <small class="font-semibold text-sm">
+                                            {{ decimalOrInteger($item->cantidad) }}
+                                            {{ $item->producto->unit->name }}
+                                        </small>
+                                        {{ $item->producto->name }}
+                                    </h1>
+
+                                    @include('modules.ventas.forms.modal-carshoopitems', [
+                                        'moneda' => $moneda,
+                                        'viewloading' => false,
+                                    ])
+                                </div>
+                            </div>
+
+                            <div class="w-full flex gap-1 items-end">
+                                <h1 class="text-colorlabel whitespace-nowrap text-xs text-right">
+                                    <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
+                                    {{ number_format($item->price + $item->igv, 2, '.', ', ') }}
                                 </h1>
 
-                                <div class="w-full flex gap-1 items-end">
-                                    <h1 class="text-colorlabel whitespace-nowrap text-xs text-right">
-                                        <small class="text-[10px] font-medium">{{ $item->moneda->simbolo }}</small>
-                                        {{ number_format($item->price + $item->igv, 2, '.', ', ') }}
-                                    </h1>
+                                <h1
+                                    class="flex-1 w-full text-colorlabel whitespace-nowrap leading-3 text-lg font-semibold text-right">
+                                    <small class="text-[9px] font-medium">IMPORTE <br>
+                                        {{ $item->moneda->simbolo }}</small>
+                                    {{ number_format($item->total, 2, '.', ', ') }}
+                                </h1>
+                            </div>
 
-                                    <h1
-                                        class="flex-1 w-full text-colorlabel whitespace-nowrap leading-3 text-lg font-semibold text-right">
-                                        <small class="text-[9px] font-medium">IMPORTE <br>
-                                            {{ $item->moneda->simbolo }}</small>
-                                        {{ number_format($item->total, 2, '.', ', ') }}
-                                    </h1>
-                                </div>
-
-                                <small class="block w-full text-colorerror">
-                                    @if ($item->isNoAlterStock())
-                                        NO ALTERA STOCK
-                                    @elseif ($item->isReservedStock())
-                                        STOCK RESERVADO
-                                    @elseif ($item->isIncrementStock())
-                                        INCREMENTA STOCK
-                                    @elseif($item->isDiscountStock())
-                                        DISMINUYE STOCK
-                                    @endif
-                                </small>
-
-                                @if (count($item->carshoopitems) > 0)
-                                    <h1 class="text-primary w-full text-[10px] leading-none text-center">
-                                        {{ strtoupper($item->promocion->titulo) }}</h1>
+                            <small class="block w-full text-colorerror">
+                                @if ($item->isNoAlterStock())
+                                    NO ALTERA STOCK
+                                @elseif ($item->isReservedStock())
+                                    STOCK RESERVADO
+                                @elseif ($item->isIncrementStock())
+                                    INCREMENTA STOCK
+                                @elseif($item->isDiscountStock())
+                                    DISMINUYE STOCK
                                 @endif
+                            </small>
 
-                                @include('modules.ventas.forms.modal-carshoopitems', [
+                            @if (count($item->carshoopitems) > 0)
+                                <h1 class="text-primary w-full text-[10px] leading-none text-center">
+                                    {{ strtoupper($item->promocion->titulo) }}</h1>
+                            @endif
+
+                            {{-- @include('modules.ventas.forms.modal-carshoopitems', [
                                     'moneda' => $moneda,
                                     'viewloading' => false,
-                                ])
+                                ]) --}}
 
-                                <div
-                                    class="w-full flex items-end gap-2 {{ is_null($item->promocion_id) ? 'justify-between' : 'justify-end' }} mt-2">
-                                    @if (is_null($item->promocion_id))
-                                        @can('admin.ventas.create.gratuito')
-                                            <div>
-                                                <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
-                                                    <x-input wire:change="updategratis({{ $item->id }})"
-                                                        value="1" type="checkbox" id="gratuito_{{ $item->id }}"
-                                                        :checked="$item->isGratuito()" />
-                                                    GRATUITO</x-label-check>
-                                            </div>
-                                        @endcan
-                                    @endif
-                                    <x-button-delete wire:loading.attr="disabled"
-                                        wire:key="deletetvitem_{{ $item->id }}"
-                                        x-on:click="confirmDeleteTVItem({{ $item->id }})" />
-                                </div>
-                            </x-simple-card>
-                        @endforeach
-                    </div>
-
-                    <div class="w-full flex mt-2">
-                        <x-button-secondary wire:loading.attr="disabled" class="inline-block"
-                            x-on:click="confirmDeleteAllTVItems">ELIMINAR TODO</x-button-secondary>
-                    </div>
+                            <div
+                                class="w-full flex items-end gap-2 {{ is_null($item->promocion_id) ? 'justify-between' : 'justify-end' }} mt-2">
+                                @if (is_null($item->promocion_id))
+                                    @can('admin.ventas.create.gratuito')
+                                        <div>
+                                            <x-label-check textSize="[9px]" for="gratuito_{{ $item->id }}">
+                                                <x-input wire:change="updategratis({{ $item->id }})" value="1"
+                                                    type="checkbox" id="gratuito_{{ $item->id }}"
+                                                    :checked="$item->isGratuito()" />
+                                                GRATUITO</x-label-check>
+                                        </div>
+                                    @endcan
+                                @endif
+                                <x-button-delete wire:loading.attr="disabled"
+                                    wire:key="deletetvitem_{{ $item->id }}"
+                                    x-on:click="confirmDeleteTVItem({{ $item->id }})" />
+                            </div>
+                        </x-simple-card>
+                    @endforeach
                 </div>
-            @endif
-        </div>
+
+                <div class="w-full flex mt-2">
+                    <x-button-secondary wire:loading.attr="disabled" class="inline-block"
+                        x-on:click="confirmDeleteAllTVItems">ELIMINAR TODO</x-button-secondary>
+                </div>
+            </div>
+        @endif
     </div>
 
     <div class="w-full flex-1 lg:overflow-y-auto soft-scrollbar h-full lg:pr-2">
@@ -709,6 +730,7 @@
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('loader', () => ({
+                showcart: true,
                 vehiculosml: false,
                 loadingprivate: false,
                 loadingpublic: false,

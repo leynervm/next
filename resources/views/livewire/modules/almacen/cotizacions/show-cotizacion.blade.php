@@ -356,7 +356,7 @@
                                             data-category="{{ $item->name_category }}"
                                             data-subcategory="{{ $item->name_subcategory }}"
                                             data-requireserie="{{ $item->isRequiredserie() }}"
-                                            data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                            data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null }}"
                                             value="{{ $item->id }}">
                                             {{ $item->name }}
                                         </option>
@@ -402,7 +402,7 @@
                     @php
                         $imgtvitem = null;
                         if (!empty($item->producto->imagen)) {
-                            $imgtvitem = pathURLProductImage($item->producto->imagen->url);
+                            $imgtvitem = pathURLProductImage($item->producto->imagen->urlmobile);
                         }
                     @endphp
                     <x-card-producto :image="$imgtvitem" :name="$item->producto->name" id="cardprodcot_{{ $item->id }}"
@@ -578,7 +578,7 @@
                                                         data-category="{{ $item->name_category }}"
                                                         data-subcategory="{{ $item->name_subcategory }}"
                                                         data-requireserie="{{ $item->isRequiredserie() }}"
-                                                        data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                                        data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null }}"
                                                         value="{{ $item->id }}">
                                                         {{ $item->name }}
                                                     </option>

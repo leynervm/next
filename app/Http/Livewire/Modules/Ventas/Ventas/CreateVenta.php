@@ -1058,7 +1058,7 @@ class CreateVenta extends Component
                 'modalidadtransporte',
                 'carshoopPage'
             ]);
-            $this->dispatchBrowserEvent('toast', toastJSON('Venta registrado correctamente'));
+            $this->dispatchBrowserEvent('toast', toastJSON('VENTA REGISTRADA'));
             if (auth()->user()->hasPermissionTo('admin.ventas.edit')) {
                 return redirect()->route('admin.ventas.edit', $venta);
             }
@@ -1205,7 +1205,7 @@ class CreateVenta extends Component
                 }
             }
             DB::commit();
-            $this->dispatchBrowserEvent('toast', toastJSON('Items de GRE agregados correctamente'));
+            $this->dispatchBrowserEvent('toast', toastJSON('ITEMS DE GUÍA AGREGADOS'));
             $this->setTotal();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -1310,7 +1310,7 @@ class CreateVenta extends Component
         self::setTotal();
         $this->resetValidation();
         $this->resetPage();
-        $this->dispatchBrowserEvent('toast', toastJSON('VENTA LIMPIADA CORRECTAMENTE'));
+        $this->dispatchBrowserEvent('toast', toastJSON('VENTA RESETEADA'));
     }
 
     public function delete(Tvitem $tvitem)
@@ -1368,7 +1368,7 @@ class CreateVenta extends Component
         try {
             DB::beginTransaction();
             $tvitems = Tvitem::with(['itemseries.serie', 'kardexes.almacen', 'producto.almacens'])->ventas()->micart()->orderBy('id', 'asc')->get();
-            $mensaje = count($tvitems) . " ITEMS ELIMINADOS CORRECTAMENTE";
+            $mensaje = count($tvitems) . " ITEMS ELIMINADOS";
             $tvitems->map(function ($tvitem) {
                 Self::delete($tvitem);
             });
@@ -1604,7 +1604,7 @@ class CreateVenta extends Component
                 $this->tvitem->producto->descontarStockProducto($key, $cantidad);
             }
             DB::commit();
-            $this->dispatchBrowserEvent('toast', toastJSON('STOCK ACTUALIZADO CORRECTAMENTE'));
+            $this->dispatchBrowserEvent('toast', toastJSON('STOCK ACTUALIZADO'));
             $this->tvitem->refresh();
             // if ($this->tvitem->kardexes->sum('cantidad') == $this->tvitem->cantidad) {
             //     $this->openstock = false;
@@ -1882,7 +1882,7 @@ class CreateVenta extends Component
                 $carshoopitem->producto->descontarStockProducto($key, $cantidad);
             }
             DB::commit();
-            $this->dispatchBrowserEvent('toast', toastJSON('STOCK ACTUALIZADO CORRECTAMENTE'));
+            $this->dispatchBrowserEvent('toast', toastJSON('STOCK ACTUALIZADO'));
             foreach ($carshoopitem->tvitem->carshoopitems as $item) {
                 foreach ($item->producto->almacens as $almacen) {
                     $this->almacenitem[$item->id]['almacens'][$almacen->id]['id'] = $almacen->id;

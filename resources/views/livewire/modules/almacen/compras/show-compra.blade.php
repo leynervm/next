@@ -1,7 +1,7 @@
 <div class="flex flex-col gap-8" x-data="showcompra">
     <x-loading-web-next wire:key="showcompra" wire:loading />
 
-    <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-3">
+    <x-simple-card class="flex flex-col gap-1 rounded-md cursor-default p-1 sm:p-3">
         <form wire:submit.prevent="update" class="w-full flex flex-col gap-2">
             <div class="w-full grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 <div class="w-full">
@@ -184,12 +184,12 @@
 
             @if (count($compra->compraitems) > 0)
                 <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(170px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-1">
                     @foreach ($compra->compraitems as $item)
                         @php
                             $image =
                                 !empty($item->producto->imagen) > 0
-                                    ? pathURLProductImage($item->producto->imagen->url)
+                                    ? pathURLProductImage($item->producto->imagen->urlmobile)
                                     : null;
                             $promocion = verifyPromocion($item->producto->promocions->first());
                             $descuento = getDscto($promocion);
@@ -214,7 +214,7 @@
                                     @if (count($seriesfilter) > 0)
                                         <div class="w-full flex flex-wrap gap-1 items-start">
                                             @foreach ($seriesfilter as $ser)
-                                                <x-span-text :text="$ser->serie" />
+                                                <x-span-text :text="$ser->serie" class="text-[8px] sm:text-[10px]" />
                                             @endforeach
                                         </div>
                                     @endif
@@ -299,7 +299,7 @@
         <x-form-card titulo="PAGOS" subtitulo="Control de pagos de su compra.">
             @if (count($compra->cajamovimientos) > 0)
                 <div
-                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
+                    class="w-full grid grid-cols-[repeat(auto-fill,minmax(7rem,1fr))] xs:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-2">
                     @foreach ($compra->cajamovimientos as $item)
                         <x-card-payment-box :cajamovimiento="$item" :moneda="$compra->moneda">
                             <x-slot name="footer">
@@ -329,7 +329,6 @@
             @endcan
         </x-form-card>
     @endif
-
 
     <x-jet-dialog-modal wire:model="openproducto" maxWidth="3xl" footerAlign="justify-end">
         <x-slot name="title">
@@ -659,7 +658,7 @@
                                             data-category="{{ $item->name_category }}"
                                             data-subcategory="{{ $item->name_subcategory }}"
                                             data-requireserie="{{ $item->isRequiredserie() }}"
-                                            data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                            data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null }}"
                                             value="{{ $item->id }}">
                                             {{ $item->name }}
                                         </option>

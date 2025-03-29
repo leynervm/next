@@ -154,7 +154,7 @@
                                         data-category="{{ $item->name_category }}"
                                         data-subcategory="{{ $item->name_subcategory }}"
                                         data-requireserie="{{ $item->isRequiredserie() }}"
-                                        data-image="{{ !empty($item->image) ? pathURLProductImage($item->image) : null }}"
+                                        data-image="{{ !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null }}"
                                         value="{{ $item->id }}">
                                         {{ $item->name }}
                                     </option>

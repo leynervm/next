@@ -162,8 +162,8 @@
                     @endif
                 </div>
 
-                <div class="w-full flex-1 sm:py-2 px-1 md:pl-8">
-                    <div class="w-full md:border-b border-b-borderminicard pb-2 md:pb-5">
+                <div class="w-full flex-1 sm:py-2 px-1 md:pl-3 lg:pl-5">
+                    <div class="w-full lg:border-b border-b-borderminicard pb-2 lg:pb-5">
                         @if ($producto->isNovedad())
                             <div class="inline-block">
                                 @if (!empty($empresa->textnovedad))
@@ -174,11 +174,11 @@
                             </div>
                         @endif
 
-                        <p class="text-[10px] text-colorsubtitleform font-medium">
+                        <p class="text-[10px] text-colorsubtitleform font-medium py-2">
                             {{ $producto->category->name }} | {{ $producto->subcategory->name }}</p>
                         <div class="w-full flex gap-2 justify-between items-center flex-wrap">
                             <div>
-                                <p class="text-colorsubtitleform font-semibold">
+                                <p class="text-colorsubtitleform font-semibold text-xs">
                                     {{ $producto->marca->name }}</p>
                             </div>
                             <div class="text-[10px] text-colorsubtitleform flex gap-3">
@@ -191,19 +191,19 @@
                                 @endif
                             </div>
                         </div>
-                        <p class="text-colorlabel text-[10px] leading-3 xs:text-sm xs:leading-5">
+                        <p class="text-colorlabel text-[1rem] font-semibold !leading-tight text-center md:text-start">
                             {{ $producto->name }}</p>
-                        @if (!empty($producto->modelo))
+                        {{-- @if (!empty($producto->modelo))
                             <span class="text-[10px] text-colorsubtitleform inline-block">
                                 MODELO : {{ $producto->modelo }}</span>
-                        @endif
+                        @endif --}}
 
                         @if (count($combos) > 0)
-                            <div class="w-full block sm:hidden md:block xl:hidden">
-                                <a class="text-primary inline-flex gap-2 sm:gap-3 items-center text-xs font-medium p-2.5 rounded-lg shadow shadow-shadowminicard"
+                            <div class="w-full flex justify-center lg:hidden">
+                                <a class="text-primary mt-2 inline-flex gap-1 items-center text-xs font-medium p-2.5 rounded-lg ring-1 ring-primary"
                                     href="#combos">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="currentColor"
-                                        stroke="currentColor" stroke-width=".5" class="block size-5 text-primary">
+                                        stroke="currentColor" stroke-width=".5" class="block size-4 text-primary">
                                         <path
                                             d="m19.534 11.063.88-1.253L24 4.709c.21-.297.418-.599.64-.887a1 1 0 0 1 .576-.411 1.28 1.28 0 0 1 1.065.224l2.336 1.717 3.694 2.715 4.071 2.994q1.371 1.006 2.738 2.016a.9.9 0 0 0 .562.178c.464-.002.93-.025 1.39.025 1.611.183 2.798 1.481 2.896 2.891q.082 1.207.174 2.414c.114 1.513.238 3.022.343 4.533.082 1.131.142 2.261.219 3.39.069 1.01.151 2.021.226 3.031l.217 2.944q.091 1.211.171 2.43.119 1.81.215 3.625c.041.791.053 1.582.089 2.373.021.443.069.882.091 1.326q.009.336-.034.672a7 7 0 0 1-.142.768 2.22 2.22 0 0 1-.974 1.342c-.64.434-1.351.686-2.135.688q-2.011.005-4.025 0l-10.745.005H15.223c-3.129 0-6.256-.009-9.385.005a3.7 3.7 0 0 1-2.528-.901c-.759-.654-1.074-1.495-1.017-2.482q.062-1.031.133-2.062c.053-.754.114-1.511.167-2.267q.039-.613.069-1.223l.133-2.24q.064-1.243.137-2.489.069-1.193.153-2.386l.169-2.443q.105-1.495.199-2.99c.057-.928.103-1.856.16-2.784q.126-2.011.258-4.023c.03-.45.03-.907.096-1.353.185-1.255.894-2.11 2.066-2.59q.64-.256 1.328-.235c.439.009.88-.002 1.319.005.133 0 .174-.037.174-.174q-.009-2.56-.009-5.125c0-1.509.016-3.022-.002-4.533-.009-.663.443-1.12 1.109-1.129q1.063-.01 2.13-.007l6.245.007c.279 0 .539.053.766.224a.91.91 0 0 1 .389.667q.023.183.025.366v7.504zm4.537 32.482h18.087c.233 0 .469 0 .693-.041.491-.094.882-.633.843-1.131l-.032-.265q-.151-2.002-.293-4.002c-.075-1.125-.139-2.249-.21-3.374q-.089-1.474-.185-2.949c-.069-.976-.155-1.95-.222-2.926-.096-1.429-.181-2.857-.274-4.286l-.261-3.961-.304-4.418c-.034-.48-.423-.93-.907-.965-.539-.037-1.083-.016-1.623-.011-.263 0-.523.032-.784.03-.24-.002-.48-.046-.72-.046q-9.029-.007-18.057 0c-.315 0-.629.046-.944.064-.215.011-.43.023-.645.011-.295-.016-.587-.075-.882-.075q-3.271-.007-6.54-.005a2 2 0 0 0-.279.018 4.6 4.6 0 0 1-1.131.023 18 18 0 0 0-2.039-.027 1.2 1.2 0 0 0-1.143 1.127q-.082 1.287-.176 2.576l-.265 3.845-.265 4.034-.208 3.093q-.133 1.874-.261 3.755c-.085 1.287-.16 2.571-.245 3.858l-.315 4.699a1.37 1.37 0 0 0 .094.722c.229.455.608.626 1.099.624l7.623.002h10.775ZM10.997 13.236q.069.009.13.011h6.069c.107 0 .13-.034.13-.137l.005-2.805q0-2.841.009-5.685c0-.139-.037-.183-.183-.183q-3.003.007-6.009.005l-.151.007zm9.653 0h15.054l-9.897-7.278z" />
                                         <path
@@ -214,7 +214,7 @@
                                     <span class="flex-1 block tracking-widest">VER COMBOS</span>
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                         stroke="currentColor" stroke-width="2" stroke-miterlimit="16"
-                                        stroke-linecap="round" stroke-linejoin="round" class="block size-5">
+                                        stroke-linecap="round" stroke-linejoin="round" class="block size-4">
                                         <path d="M5.99977 9.00005L11.9998 15L17.9998 9" />
                                     </svg>
                                 </a>
@@ -226,28 +226,29 @@
                         <div class="w-full sm:pt-3 flex items-center justify-between gap-2">
                             @if ($pricesale > 0)
                                 <div class="w-full flex-1">
-                                    <h1
-                                        class="font-semibold text-2xl sm:text-3xl text-center md:text-start text-colorlabel">
-                                        <small class="text-lg"> {{ $moneda->simbolo }}</small>
-                                        {{ decimalOrInteger($pricesale, 2, ', ') }}
-                                    </h1>
-
-                                    @if ($priceold > $pricesale && $empresa->verOldprice())
-                                        <h1
-                                            class="text-colorsubtitleform text-[10px] sm:text-xs text-red-600 text-center md:text-start !leading-none">
-                                            {{ $moneda->simbolo }}
-                                            <small class="text-sm sm:text-lg inline-block line-through">
-                                                {{ decimalOrInteger($priceold, 2, ', ') }}</small>
-                                        </h1>
-                                    @endif
-
                                     @if ($empresa->verDolar())
-                                        <h1 class="text-blue-700 font-medium text-xs text-center md:text-start">
-                                            <small class="text-[10px]">$. </small>
+                                        <h1 class="text-blue-700 font-medium text-sm text-center md:text-start">
                                             {{ convertMoneda($pricesale, 'USD', $empresa->tipocambio, 2, ', ') }}
                                             <small class="text-[10px]">USD</small>
                                         </h1>
                                     @endif
+
+                                    <h1
+                                        class="font-semibold text-2xl sm:text-3xl text-center md:text-start text-colorlabel !leading-none">
+                                        <small class="text-lg"> {{ $moneda->simbolo }}</small>
+                                        {{ decimalOrInteger($pricesale, 2, ', ') }}
+
+                                        @if ($priceold > $pricesale && $empresa->verOldprice())
+                                            <small
+                                                class="text-colorsubtitleform font-medium text-[10px] text-red-600 text-center md:text-start !leading-none">
+                                                {{ $moneda->simbolo }}
+                                                <span class="text-sm inline-block line-through">
+                                                    {{ decimalOrInteger($priceold, 2, ', ') }}</span>
+                                            </small>
+                                        @endif
+                                    </h1>
+
+
                                 </div>
                                 @auth
                                     <div class="flex-shrink-0">
@@ -284,22 +285,22 @@
                                         </template>
 
                                         <x-input x-model="qty"
-                                            class="w-20 rounded-xl text-center text-colorlabel input-number-none"
+                                            class="max-w-16 rounded-xl text-center text-colorlabel input-number-none"
                                             type="number" step="1" min="1"
                                             onpaste="return validarPasteNumero(event, 12)"
                                             onkeypress="return validarNumero(event, 5)"
-                                            x-on:blur="if (!qty || qty === '0') qty = '1'" />
+                                            x-on:blur="if (!qty || qty === '0') qty = '1'" aria-label="cantidad" />
 
                                         <button class="btn-increment-cart" x-on:click="parseFloat(qty++)"
                                             type="button" wire:loading.attr="disabled">+</button>
                                     </div>
 
                                     @if (count($combos) > 0)
-                                        <a class="hidden sm:inline-flex md:hidden xl:inline-flex text-primary gap-2 sm:gap-3 items-center text-xs font-medium p-2.5 rounded-lg shadow-md shadow-shadowminicard"
+                                        <a class="hidden lg:inline-flex lg:inline-flex text-primary gap-1 items-center text-xs font-medium p-2.5 rounded-lg ring-1 ring-primary"
                                             href="#combos">
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"
                                                 fill="currentColor" stroke="currentColor" stroke-width=".5"
-                                                class="block size-5 text-primary">
+                                                class="block size-4 text-primary">
                                                 <path
                                                     d="m19.534 11.063.88-1.253L24 4.709c.21-.297.418-.599.64-.887a1 1 0 0 1 .576-.411 1.28 1.28 0 0 1 1.065.224l2.336 1.717 3.694 2.715 4.071 2.994q1.371 1.006 2.738 2.016a.9.9 0 0 0 .562.178c.464-.002.93-.025 1.39.025 1.611.183 2.798 1.481 2.896 2.891q.082 1.207.174 2.414c.114 1.513.238 3.022.343 4.533.082 1.131.142 2.261.219 3.39.069 1.01.151 2.021.226 3.031l.217 2.944q.091 1.211.171 2.43.119 1.81.215 3.625c.041.791.053 1.582.089 2.373.021.443.069.882.091 1.326q.009.336-.034.672a7 7 0 0 1-.142.768 2.22 2.22 0 0 1-.974 1.342c-.64.434-1.351.686-2.135.688q-2.011.005-4.025 0l-10.745.005H15.223c-3.129 0-6.256-.009-9.385.005a3.7 3.7 0 0 1-2.528-.901c-.759-.654-1.074-1.495-1.017-2.482q.062-1.031.133-2.062c.053-.754.114-1.511.167-2.267q.039-.613.069-1.223l.133-2.24q.064-1.243.137-2.489.069-1.193.153-2.386l.169-2.443q.105-1.495.199-2.99c.057-.928.103-1.856.16-2.784q.126-2.011.258-4.023c.03-.45.03-.907.096-1.353.185-1.255.894-2.11 2.066-2.59q.64-.256 1.328-.235c.439.009.88-.002 1.319.005.133 0 .174-.037.174-.174q-.009-2.56-.009-5.125c0-1.509.016-3.022-.002-4.533-.009-.663.443-1.12 1.109-1.129q1.063-.01 2.13-.007l6.245.007c.279 0 .539.053.766.224a.91.91 0 0 1 .389.667q.023.183.025.366v7.504zm4.537 32.482h18.087c.233 0 .469 0 .693-.041.491-.094.882-.633.843-1.131l-.032-.265q-.151-2.002-.293-4.002c-.075-1.125-.139-2.249-.21-3.374q-.089-1.474-.185-2.949c-.069-.976-.155-1.95-.222-2.926-.096-1.429-.181-2.857-.274-4.286l-.261-3.961-.304-4.418c-.034-.48-.423-.93-.907-.965-.539-.037-1.083-.016-1.623-.011-.263 0-.523.032-.784.03-.24-.002-.48-.046-.72-.046q-9.029-.007-18.057 0c-.315 0-.629.046-.944.064-.215.011-.43.023-.645.011-.295-.016-.587-.075-.882-.075q-3.271-.007-6.54-.005a2 2 0 0 0-.279.018 4.6 4.6 0 0 1-1.131.023 18 18 0 0 0-2.039-.027 1.2 1.2 0 0 0-1.143 1.127q-.082 1.287-.176 2.576l-.265 3.845-.265 4.034-.208 3.093q-.133 1.874-.261 3.755c-.085 1.287-.16 2.571-.245 3.858l-.315 4.699a1.37 1.37 0 0 0 .094.722c.229.455.608.626 1.099.624l7.623.002h10.775ZM10.997 13.236q.069.009.13.011h6.069c.107 0 .13-.034.13-.137l.005-2.805q0-2.841.009-5.685c0-.139-.037-.183-.183-.183q-3.003.007-6.009.005l-.151.007zm9.653 0h15.054l-9.897-7.278z" />
                                                 <path
@@ -311,7 +312,7 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                                                 fill="none" stroke="currentColor" stroke-width="2"
                                                 stroke-miterlimit="16" stroke-linecap="round" stroke-linejoin="round"
-                                                class="block size-5">
+                                                class="block size-4">
                                                 <path d="M5.99977 9.00005L11.9998 15L17.9998 9" />
                                             </svg>
                                         </a>
@@ -377,7 +378,8 @@
                     @endif --}}
 
                     @if (count($shipmenttypes) > 0)
-                        <div class="w-full grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2 mt-2">
+                        <div
+                            class="w-full grid grid-cols-[repeat(auto-fill,minmax(170px,1fr))] lg:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-2 mt-2">
                             @foreach ($shipmenttypes as $item)
                                 <div
                                     class="w-full border border-colorlinknav rounded-lg xl:rounded-xl text-colorlinknav p-2">
@@ -399,8 +401,8 @@
                                                 </svg>
                                             @endif
                                         </span>
-                                        <h1 class="w-full flex-1 font-semibold text-xs md:text-sm">{{ $item->name }}
-                                        </h1>
+                                        <h1 class="w-full flex-1 font-semibold text-xs md:text-sm !leading-none">
+                                            {{ $item->name }}</h1>
                                     </div>
                                     <p class="w-full block text-[10px] leading-tight text-colorsubtitleform mt-1">
                                         {{ $item->descripcion }}</p>
@@ -411,7 +413,7 @@
 
                     @if ($empresa->viewAlmacensDetalle())
                         @if (count($producto->almacens) > 0)
-                            <div class="w-full flex flex-wrap gap-2 pt-2 md:pt-5">
+                            <div class="w-full flex flex-wrap gap-2 pt-3">
                                 @foreach ($producto->almacens as $item)
                                     <x-minicard :title="null" size="sm" class="text-colorsubtitleform">
                                         <small class="text-[9px]">STOCK</small>
@@ -433,62 +435,6 @@
                             </div>
                         @endif
                     @endif
-
-                    @if (count($producto->garantiaproductos) > 0)
-                        <div class="w-full block pt-3" x-data="{ opengarantias: true }">
-                            <button class="flex gap-1 items-center text-xs py-2"
-                                @click="opengarantias = !opengarantias">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
-                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                                    color="currentColor" fill="none"
-                                    class="block w-6 h-6 text-colortitleform flex-shrink-0">
-                                    <path
-                                        d="M11.9982 2C8.99043 2 7.04018 4.01899 4.73371 4.7549C3.79589 5.05413 3.32697 5.20374 3.1372 5.41465C2.94743 5.62556 2.89186 5.93375 2.78072 6.55013C1.59143 13.146 4.1909 19.244 10.3903 21.6175C11.0564 21.8725 11.3894 22 12.0015 22C12.6135 22 12.9466 21.8725 13.6126 21.6175C19.8116 19.2439 22.4086 13.146 21.219 6.55013C21.1078 5.93364 21.0522 5.6254 20.8624 5.41449C20.6726 5.20358 20.2037 5.05405 19.2659 4.75499C16.9585 4.01915 15.0061 2 11.9982 2Z" />
-                                    <path d="M9 13C9 13 10 13 11 15C11 15 14.1765 10 17 9" />
-                                </svg>
-                                <h1 class="font-medium text-colortitleform text-xs sm:text-sm flex-1 w-full">
-                                    GARANTÍA DEL PRODUCTO</h1>
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="block flex-shrink-0 w-6 h-6 text-colortitleform duration-200"
-                                    :class="!opengarantias ? ' -rotate-180' : ' rotate-0'">
-                                    <path d="M5.99977 9.00005L11.9998 15L17.9998 9" />
-                                </svg>
-                            </button>
-                            <div class="w-full pt-1 flex flex-wrap gap-2" x-cloak x-show="opengarantias" x-transition>
-                                @foreach ($producto->garantiaproductos as $item)
-                                    <div
-                                        class="size-24 rounded-xl md:rounded-2xl border border-green-500 p-2 sm:p-3 flex flex-col justify-center items-center gap-1">
-                                        <p class="text-[10px] text-green-600 text-center font-medium leading-none">
-                                            {{ $item->typegarantia->name }}</p>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                            stroke-width="0.7" stroke-linecap="round" stroke="currentColor"
-                                            class="block size-6 sm:size-8 mx-auto text-green-600">
-                                            <path opacity="1" fill-rule="evenodd" clip-rule="evenodd"
-                                                d="M21 8.28029V11.1833C21 16.8085 15.9372 20.1835 13.406 21.5194C12.7989 21.8398 12.4954 22 12 22C11.5046 22 11.2011 21.8398 10.594 21.5194C8.06277 20.1835 3 16.8085 3 11.1833V8.28029C3 6.64029 3 5.82028 3.40411 5.28529C3.80822 4.75029 4.72192 4.49056 6.54932 3.9711C7.79783 3.6162 8.89839 3.18863 9.77771 2.79829C10.9766 2.2661 11.576 2 12 2C12.424 2 13.0234 2.2661 14.2223 2.79829C15.1016 3.18863 16.2022 3.6162 17.4507 3.9711C19.2781 4.49056 20.1918 4.75029 20.5959 5.28529C21 5.82028 21 6.64029 21 8.28029ZM13.126 10.1279H11.376C10.5606 10.1279 10.1529 10.1279 9.83128 10.2706C9.40248 10.4609 9.06181 10.8259 8.88419 11.2854C8.75098 11.6299 8.75098 12.0668 8.75098 12.9404C8.75098 13.814 8.75098 14.2509 8.88419 14.5954C9.06181 15.0549 9.40248 15.4199 9.83128 15.6102C10.1529 15.7529 10.5606 15.7529 11.376 15.7529H13.126C13.9414 15.7529 14.3491 15.7529 14.6707 15.6102C15.0995 15.4199 15.4402 15.0549 15.6178 14.5954C15.751 14.2509 15.751 13.814 15.751 12.9404C15.751 12.0669 15.751 11.6299 15.6178 11.2854C15.4402 10.8259 15.0995 10.4609 14.6707 10.2706C14.3491 10.1279 13.9414 10.1279 13.126 10.1279Z" />
-                                            <path
-                                                d="M10.5871 10.1309C9.50714 10.1309 8.96714 10.9109 8.84714 11.3909C8.72714 11.8709 8.72714 13.6109 8.79914 14.3309C9.03914 15.2309 9.63914 15.6029 10.2271 15.7229C10.7671 15.7709 13.0471 15.7529 13.7071 15.7529C14.6671 15.7709 15.3871 15.4109 15.6871 14.3309C15.7471 13.9709 15.8071 11.9909 15.6571 11.3909C15.3391 10.4309 14.5471 10.1309 13.9471 10.1309H10.5871Z" />
-                                            <path
-                                                d="M10.5 9.7085C10.5 9.6485 10.5082 9.3031 10.5096 8.86854C10.5108 8.47145 10.476 8.08854 10.6656 7.73814C11.376 6.32454 13.416 6.46854 13.92 7.90854C14.0073 8.14562 14.0125 8.52146 14.01 8.86854C14.0067 9.312 14.016 9.7085 14.016 9.7085" />
-                                            <path
-                                                d="M21 11.1833V8.28029C21 6.64029 21 5.82028 20.5959 5.28529C20.1918 4.75029 19.2781 4.49056 17.4507 3.9711C16.2022 3.6162 15.1016 3.18863 14.2223 2.79829C13.0234 2.2661 12.424 2 12 2C11.576 2 10.9766 2.2661 9.77771 2.79829C8.89839 3.18863 7.79784 3.61619 6.54933 3.9711C4.72193 4.49056 3.80822 4.75029 3.40411 5.28529C3 5.82028 3 6.64029 3 8.28029V11.1833C3 16.8085 8.06277 20.1835 10.594 21.5194C11.2011 21.8398 11.5046 22 12 22C12.4954 22 12.7989 21.8398 13.406 21.5194C15.9372 20.1835 21 16.8085 21 11.1833Z" />
-                                        </svg>
-                                        @if ($item->time > 0)
-                                            <p class="text-[10px] text-colorsubtitleform text-center leading-tight">
-                                                {{ $item->time }}
-                                                @if ($item->typegarantia->datecode == 'YYYY')
-                                                    {{ $item->time == 1 ? ' AÑO' : ' AÑOS' }}
-                                                @else
-                                                    {{ $item->time == 1 ? ' MES' : ' MESES' }}
-                                                @endif
-                                            </p>
-                                        @endif
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
                 </div>
             </div>
         </div>
@@ -504,8 +450,7 @@
                         <div
                             class="w-full flex flex-col justify-between border border-borderminicard shadow-md shadow-shadowminicard p-1 md:p-2 rounded-lg md:rounded-2xl">
                             <div class="w-full">
-                                <h1
-                                    class="text-colorlabel font-medium text-[10px] xs:text-xs md:text-[1rem] !leading-none pb-2">
+                                <h1 class="text-colorlabel font-semibold text-sm !leading-none pb-2">
                                     {{ $item->promocion->titulo }}</h1>
 
                                 <div class="w-full flex items-center flex-wrap gap-1">
@@ -617,6 +562,47 @@
                             </div>
                         </div>
                         {{-- @endif --}}
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
+
+        @if (count($producto->garantiaproductos) > 0)
+            <div class="w-full bg-fondominicard box-shadow rounded-lg sm:rounded-xl px-2 pb-2 mt-3 sm:mt-10"
+                id="especificacions">
+                <h1 class="font-semibold text-lg sm:text-xl pt-1 text-colorsubtitleform">
+                    Garantías del producto</h1>
+
+                <div class="w-full pt-1 flex flex-wrap gap-2">
+                    @foreach ($producto->garantiaproductos as $item)
+                        <x-simple-card
+                            class="size-24 md:rounded-2xl p-2 sm:p-3 flex flex-col justify-center items-center gap-1">
+                            <p class="text-xs text-colorsubtitleform text-center font-medium !leading-none">
+                                {{ $item->typegarantia->name }}</p>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                stroke-width="0.7" stroke-linecap="round" stroke="currentColor"
+                                class="block size-8 mx-auto text-colorsubtitleform">
+                                <path opacity="1" fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M21 8.28029V11.1833C21 16.8085 15.9372 20.1835 13.406 21.5194C12.7989 21.8398 12.4954 22 12 22C11.5046 22 11.2011 21.8398 10.594 21.5194C8.06277 20.1835 3 16.8085 3 11.1833V8.28029C3 6.64029 3 5.82028 3.40411 5.28529C3.80822 4.75029 4.72192 4.49056 6.54932 3.9711C7.79783 3.6162 8.89839 3.18863 9.77771 2.79829C10.9766 2.2661 11.576 2 12 2C12.424 2 13.0234 2.2661 14.2223 2.79829C15.1016 3.18863 16.2022 3.6162 17.4507 3.9711C19.2781 4.49056 20.1918 4.75029 20.5959 5.28529C21 5.82028 21 6.64029 21 8.28029ZM13.126 10.1279H11.376C10.5606 10.1279 10.1529 10.1279 9.83128 10.2706C9.40248 10.4609 9.06181 10.8259 8.88419 11.2854C8.75098 11.6299 8.75098 12.0668 8.75098 12.9404C8.75098 13.814 8.75098 14.2509 8.88419 14.5954C9.06181 15.0549 9.40248 15.4199 9.83128 15.6102C10.1529 15.7529 10.5606 15.7529 11.376 15.7529H13.126C13.9414 15.7529 14.3491 15.7529 14.6707 15.6102C15.0995 15.4199 15.4402 15.0549 15.6178 14.5954C15.751 14.2509 15.751 13.814 15.751 12.9404C15.751 12.0669 15.751 11.6299 15.6178 11.2854C15.4402 10.8259 15.0995 10.4609 14.6707 10.2706C14.3491 10.1279 13.9414 10.1279 13.126 10.1279Z" />
+                                <path
+                                    d="M10.5871 10.1309C9.50714 10.1309 8.96714 10.9109 8.84714 11.3909C8.72714 11.8709 8.72714 13.6109 8.79914 14.3309C9.03914 15.2309 9.63914 15.6029 10.2271 15.7229C10.7671 15.7709 13.0471 15.7529 13.7071 15.7529C14.6671 15.7709 15.3871 15.4109 15.6871 14.3309C15.7471 13.9709 15.8071 11.9909 15.6571 11.3909C15.3391 10.4309 14.5471 10.1309 13.9471 10.1309H10.5871Z" />
+                                <path
+                                    d="M10.5 9.7085C10.5 9.6485 10.5082 9.3031 10.5096 8.86854C10.5108 8.47145 10.476 8.08854 10.6656 7.73814C11.376 6.32454 13.416 6.46854 13.92 7.90854C14.0073 8.14562 14.0125 8.52146 14.01 8.86854C14.0067 9.312 14.016 9.7085 14.016 9.7085" />
+                                <path
+                                    d="M21 11.1833V8.28029C21 6.64029 21 5.82028 20.5959 5.28529C20.1918 4.75029 19.2781 4.49056 17.4507 3.9711C16.2022 3.6162 15.1016 3.18863 14.2223 2.79829C13.0234 2.2661 12.424 2 12 2C11.576 2 10.9766 2.2661 9.77771 2.79829C8.89839 3.18863 7.79784 3.61619 6.54933 3.9711C4.72193 4.49056 3.80822 4.75029 3.40411 5.28529C3 5.82028 3 6.64029 3 8.28029V11.1833C3 16.8085 8.06277 20.1835 10.594 21.5194C11.2011 21.8398 11.5046 22 12 22C12.4954 22 12.7989 21.8398 13.406 21.5194C15.9372 20.1835 21 16.8085 21 11.1833Z" />
+                            </svg>
+                            @if ($item->time > 0)
+                                <p class="text-[10px] text-colorsubtitleform text-center leading-tight">
+                                    {{ $item->time }}
+                                    @if ($item->typegarantia->datecode == 'YYYY')
+                                        {{ $item->time == 1 ? ' AÑO' : ' AÑOS' }}
+                                    @else
+                                        {{ $item->time == 1 ? ' MES' : ' MESES' }}
+                                    @endif
+                                </p>
+                            @endif
+                        </x-simple-card>
                     @endforeach
                 </div>
             </div>
@@ -1051,7 +1037,7 @@
         });
         // })
 
-        function zoom(e, zoomLevel = 180) {
+        function zoom(e, zoomLevel = 170) {
             var zoomer = e.currentTarget;
             e.offsetX ? offsetX = e.offsetX : offsetX = e.touches ? e.touches[0].pageX : 0
             e.offsetY ? offsetY = e.offsetY : offsetX = e.touches ? e.touches[0].pageX : 0

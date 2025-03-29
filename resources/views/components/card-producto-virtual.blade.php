@@ -65,7 +65,7 @@
                 @endif
 
                 <p
-                    class="px-1 text-colorlabel text-[9px] sm:text-[10px] tracking-wide xl:mt-2 pb-2 text-center block font-semibold leading-3 xs:text-center group-hover:text-hoverlinktable transition ease-in-out duration-150">
+                    class="px-1 text-colorlabel text-[11px] font-semibold !leading-tight tracking-wide xl:mt-2 pb-2 text-center block xs:text-center group-hover:text-hoverlinktable transition ease-in-out duration-150">
                     {{ $name }}</p>
 
                 {{ $slot }}
