@@ -146,17 +146,17 @@ class GenerarReporteCaja extends Component
         if ($this->typereporte !== FilterReportsEnum::RANGO_DIAS->value) {
             $this->reset(['dateto']);
         }
-        if ($this->typereporte !== FilterReportsEnum::RANGO_MESES->value) {
-            $this->reset(['monthto']);
-        }
         if ($this->typereporte == FilterReportsEnum::SEMANA_ACTUAL->value) {
             $this->reset(['week']);
         }
         if ($this->typereporte !== FilterReportsEnum::ANUAL->value) {
             $this->reset(['year']);
         }
-        if ($this->typereporte !== FilterReportsEnum::MENSUAL->value || $this->typereporte == !FilterReportsEnum::RANGO_MESES->value) {
-            $this->reset(['month']);
+        if ($this->typereporte !== FilterReportsEnum::RANGO_MESES->value) {
+            $this->reset(['monthto']);
+        }
+        if (!in_array($this->typereporte, [FilterReportsEnum::MENSUAL->value, FilterReportsEnum::RANGO_MESES->value])) {
+            $this->reset(['month', 'monthto']);
         }
         if ($this->typereporte !== FilterReportsEnum::DEFAULT->value) {
             $this->reset(['monthbox_id', 'openbox_id']);

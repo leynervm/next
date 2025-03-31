@@ -152,9 +152,9 @@ class ReportController extends Controller
                     FilterReportsEnum::RANGO_MESES->value,
                 ];
                 if (in_array($typereportvalue, $arrmensual)) {
-                    return \Carbon\Carbon::parse($date)->isoFormat('MMMM Y');
+                    return strtoupper(Carbon::parse($date)->isoFormat('MMMM Y'));
                 } else {
-                    return \Carbon\Carbon::parse($date)->isoFormat('DD MMM Y');
+                    return strtoupper(Carbon::parse($date)->isoFormat('DD MMM Y'));
                 }
             })->unique()->sort()->values();
 
@@ -345,16 +345,20 @@ class ReportController extends Controller
             "months" => [],
         ];
 
+        $hiddencolums = [];
         $detallado =  false;
         $empresa = view()->shared('empresa');
         $typereportvalue = FilterReportsEnum::getValue(Str::upper($request->input('typereporte')));
 
         if ($typereportvalue === null) {
-            $titulo = FilterReportsEnum::getLabel($typereportvalue);
+            $namePDF = FilterReportsEnum::getLabel($typereportvalue);
+            $titulo = $namePDF;
             $ventas = [];
             $sumatorias = [];
         } else {
-            $titulo = 'REPORTE DE VENTA ' . FilterReportsEnum::getLabel($typereportvalue);
+            $namePDF = 'REPORTE DE VENTA ' . FilterReportsEnum::getLabel($typereportvalue);
+            $titulo = $namePDF;
+
             foreach (array_keys($request->input()) as $param) {
                 if (in_array($param, array_keys($filters))) {
                     if ($param == "typereporte") {
@@ -363,6 +367,21 @@ class ReportController extends Controller
                         $filters[$param] = $request->input($param);
                     }
                 }
+            }
+
+            // dd($filters['typereporte']);
+            if (in_array($filters['typereporte'], [FilterReportsEnum::ANUAL->value, FilterReportsEnum::ANIO_ACTUAL->value, FilterReportsEnum::ULTIMO_ANIO->value])) {
+
+                if ($filters['typereporte'] == FilterReportsEnum::ANIO_ACTUAL->value) {
+                    $anio = Carbon::now('America/Lima')->year;
+                } elseif ($filters['typereporte'] == FilterReportsEnum::ULTIMO_ANIO->value) {
+                    $anio = Carbon::now('America/Lima')->subYear()->year;
+                } else {
+                    $anio = $filters['year'];
+                }
+
+                $namePDF = "REPORTE DE VENTA - $anio" /*  FilterReportsEnum::getLabel($typereportvalue) . */;
+                $titulo = $namePDF;
             }
 
             $ventas = Venta::query()->select('ventas.*')
@@ -398,10 +417,49 @@ class ReportController extends Controller
                 return (object) $amounts;
             })->sortBy('moneda_id')->values();
             $detallado = (bool) $filters['viewreporte'];
+
+
+            $sucursales = $ventas->pluck('sucursal')->unique()->values();
+            $typepayments = $ventas->pluck('typepayment')->unique()->values();
+            $clientes = $ventas->pluck('client')->unique()->values();
+            $monedas = $ventas->pluck('moneda')->unique()->values();
+            $fechas = $ventas->pluck('date')->map(function ($date) use ($typereportvalue) {
+                $arrmensual = [
+                    FilterReportsEnum::MES_ACTUAL->value,
+                    FilterReportsEnum::MENSUAL->value,
+                    FilterReportsEnum::RANGO_MESES->value,
+                ];
+                if (in_array($typereportvalue, $arrmensual)) {
+                    return strtoupper(Carbon::parse($date)->isoFormat('MMMM Y'));
+                } else {
+                    return strtoupper(Carbon::parse($date)->isoFormat('DD MMM Y'));
+                }
+            })->unique()->sort()->values();
+
+            if (count($sucursales) == 1) {
+                $titulo .= ' [' . $sucursales->first()->name . ']';
+                $hiddencolums[] = 'sucursal';
+            }
+            if (count($fechas) == 1) {
+                $titulo .= "\n " . $fechas->first();
+                $hiddencolums[] = 'date';
+            }
+            if (count($typepayments) == 1) {
+                $titulo .=  count($fechas) == 1 ? ' - ' . $typepayments->first()->name : "\n " . $typepayments->first()->name;
+                $hiddencolums[] = 'typepayment';
+            }
+            if (count($clientes) == 1) {
+                $titulo .=  count($fechas) == 1 ? ' - ' . $clientes->first()->document : " - " . $clientes->first()->document;
+                $hiddencolums[] = 'cliente';
+            }
+            if (count($monedas) == 1) {
+                $titulo .=  count($fechas) == 1 || count($typepayments) == 1 ? ' - ' . $monedas->first()->currency : "\n " . $monedas->first()->currency;
+                $hiddencolums[] = 'moneda';
+            }
         }
 
-        $pdf = Pdf::loadView('admin.reports.report-ventas', compact('ventas', 'sumatorias', 'empresa', 'titulo', 'detallado'));
-        return $pdf->stream("$titulo.pdf");
+        $pdf = Pdf::loadView('admin.reports.report-ventas', compact('ventas', 'sumatorias', 'empresa', 'titulo', 'hiddencolums', 'detallado'));
+        return $pdf->stream("$namePDF.pdf");
         // return $pdf->download('reporte_movimientos.pdf');
     }
 

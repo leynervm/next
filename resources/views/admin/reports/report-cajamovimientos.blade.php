@@ -369,7 +369,7 @@
                 </tr>
                 <tr>
                     <th class="align-bottom">
-                        <p class="font-bold text-14 leading-4 text-end p-0" style="text-transform: uppercase;">
+                        <p class="font-bold text-14 leading-4 text-end p-0">
                             {{-- {{ $titulo }} --}}
                             {!! nl2br($titulo) !!}
                         </p>
@@ -515,6 +515,7 @@
                                 <td class="p-2 text-center" style="width: 90px;">
                                     {{ $item->moneda->simbolo }}
                                     {{ number_format($item->amount, 2, '.', ', ') }}</td>
+                                    
                                 <td class="p-2 text-center" style="width: 50px;">
                                     @if ($item->tipocambio > 0)
                                         {{ decimalOrInteger($item->tipocambio) }}

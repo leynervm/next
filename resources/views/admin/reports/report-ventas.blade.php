@@ -109,16 +109,11 @@
     }
 
     .image {
-        width: auto;
-        max-width: 100%;
-        height: 2cm;
-    }
-
-    .image img {
         display: block;
-        width: auto;
-        max-width: 8cm;
-        height: 100%;
+        width: 100%;
+        max-width: 6cm;
+        height: auto;
+        max-height: 2cm;
         object-fit: scale-down;
         object-position: center;
     }
@@ -348,11 +343,9 @@
         <table class="table" style="padding: 0.25cm 1cm">
             <thead>
                 <tr class="align-middle text-start">
-                    <th class="text-start" rowspan="2">
+                    <th class="text-start" style="width: 6cm;" rowspan="2">
                         @if (!empty($url_logo))
-                            <div class="image">
-                                <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" class="" />
-                            </div>
+                            <img class="image" src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}" />
                         @endif
                     </th>
                     <th class="align-top">
@@ -377,7 +370,8 @@
                 <tr>
                     <th class="align-bottom">
                         <p class="font-bold text-14 leading-4 text-end p-0">
-                            {{ $titulo }}</p>
+                            {!! nl2br($titulo) !!}
+                        </p>
                     </th>
                 </tr>
             </thead>
@@ -407,35 +401,50 @@
                             <th class="font-bold p-2 text-center">FECHA</th>
                             <th class="font-bold p-2 text-center">COMPROBANTE</th>
                             <th class="font-bold p-2 text-center">CLIENTE</th>
-                            <th class="font-bold p-2 text-center leading-none">TIPO DE PAGO</th>
+
+                            @if (!in_array('typepayment', $hiddencolums))
+                                <th class="font-bold p-2 text-center leading-none">TIPO DE PAGO</th>
+                            @endif
+
                             @if (!isset($sumatorias->first()->saldos))
                                 <th class="font-bold p-2 text-center">IGV</th>
                             @endif
 
                             <th class="font-bold p-2 text-center">TOTAL</th>
+
                             @if (isset($sumatorias->first()->saldos))
                                 <th class="font-bold p-2 text-center">SALDO</th>
                             @endif
-                            <th class="font-bold p-2 text-center">SUCURSAL</th>
+
+                            @if (!in_array('sucursal', $hiddencolums))
+                                <th class="font-bold p-2 text-center">SUCURSAL</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($ventas as $item)
                             <tr class="border-table row-striped font-normal text-10">
-                                <td class="p-2 text-center align-middle leading-none" style="width: 50px;">
+                                <td class="p-2 text-center align-middle leading-none" style="width: 90px;">
                                     {{ formatDate($item->date, 'DD MMMM Y') }}
                                 </td>
-                                <td class="p-2 text-center align-middle leading-none" style="width: 70px;">
+                                <td class="p-2 text-center align-middle leading-none" style="width: 100px;">
                                     {{ $item->seriecompleta }} <br>
                                     {{ $item->seriecomprobante->typecomprobante->name }}
                                 </td>
                                 <td class="p-2 text-justify align-middle leading-none">
-                                    {{ $item->client->document }} - {{ $item->client->name }} <br>
+                                    @if (!in_array('cliente', $hiddencolums))
+                                        {{ $item->client->document }} -
+                                    @endif
+                                    {{ $item->client->name }} <br>
                                     {{ $item->direccion }}
                                 </td>
-                                <td class="p-2 text-center align-middle leading-none" style="width: 70px;">
-                                    {{ $item->typepayment->name }}
-                                </td>
+
+                                @if (!in_array('typepayment', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none" style="width: 70px;">
+                                        {{ $item->typepayment->name }}
+                                    </td>
+                                @endif
+
                                 @if (!isset($sumatorias->first()->saldos))
                                     <td class="p-3 text-center align-middle" style="width: 60px;">
                                         {{ $item->moneda->simbolo }}
@@ -452,8 +461,11 @@
                                         {{ number_format($item->total - $item->paymentactual, 2, '.', ', ') }}
                                     </td>
                                 @endif
-                                <td class="p-2 text-center align-middle leading-none" style="width: 120px;">
-                                    {{ $item->sucursal->name }}</td>
+
+                                @if (!in_array('sucursal', $hiddencolums))
+                                    <td class="p-2 text-center align-middle leading-none" style="width: 120px;">
+                                        {{ $item->sucursal->name }}</td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -470,18 +482,27 @@
                                                 {{ $item->seriecomprobante->typecomprobante->name }}
                                             </th>
                                             <th class="p-2 font-normal leading-none text-start">
-                                                {{ $item->client->document }} -
+                                                @if (!in_array('cliente', $hiddencolums))
+                                                    {{ $item->client->document }} -
+                                                @endif
                                                 {{ $item->client->name }}
                                                 <br>
                                                 {{ $item->direccion }}
                                             </th>
                                             <th class="p-2 font-normal leading-none" style="width: 90px;">
                                                 {{ formatDate($item->date, 'DD MMMM Y') }}</th>
-                                            <th class="p-2 font-normal" style="width: 50px;">
-                                                {{ $item->typepayment->name }}</th>
+
+
+                                            @if (!in_array('typepayment', $hiddencolums))
+                                                <th class="p-2 font-normal" style="width: 50px;">
+                                                    {{ $item->typepayment->name }}</th>
+                                            @endif
+
                                             <th class="p-2 leading-none text-end font-medium" style="width: 150px;">
-                                                {{ $item->sucursal->name }}
-                                                <br>
+                                                @if (!in_array('sucursal', $hiddencolums))
+                                                    {{ $item->sucursal->name }}
+                                                    <br>
+                                                @endif
                                                 {{ $item->user->name }}
                                             </th>
                                         </thead>
@@ -490,11 +511,12 @@
                                                 <td colspan="5">
                                                     <table class="table">
                                                         <thead class="font-medium">
-                                                            <th class="text-start font-medium">CANT.</th>
-                                                            <th class="font-medium">DESCRIPCION</th>
-                                                            <th class="font-medium">ALMACÉN</th>
-                                                            <th class="font-medium text-end">PRECIO</th>
-                                                            <th class="font-medium text-end">IMPORTE</th>
+                                                            <tr style="border-bottom: 0.25px solid #222">
+                                                                <th class="p-2 text-start font-medium">CANT.</th>
+                                                                <th class="p-2 font-medium">DESCRIPCION</th>
+                                                                <th class="p-2 font-medium text-end">PRECIO</th>
+                                                                <th class="p-2 font-medium text-end">IMPORTE</th>
+                                                            </tr>
                                                         </thead>
                                                         <tbody>
                                                             @foreach ($item->tvitems as $tvitem)
@@ -504,9 +526,6 @@
                                                                         {{ $tvitem->producto->unit->name }}</td>
                                                                     <td class="text-10 leading-none p-1">
                                                                         {{ $tvitem->producto->name }}</td>
-                                                                    <td class="text-10 text-center p-1"
-                                                                        style="width: 60px">
-                                                                        {{ $tvitem->almacen->name }}</td>
                                                                     <td class="text-10 text-end p-1"
                                                                         style="width: 60px">
                                                                         {{ number_format($tvitem->price, 2, '.', ', ') }}
