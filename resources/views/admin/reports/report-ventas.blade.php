@@ -508,7 +508,7 @@
                                         </thead>
                                         <tbody>
                                             <tr class="">
-                                                <td colspan="5">
+                                                <td colspan="{{ !in_array('typepayment', $hiddencolums) ? 5 : 4 }}">
                                                     <table class="table">
                                                         <thead class="font-medium">
                                                             <tr style="border-bottom: 0.25px solid #222">
@@ -541,16 +541,16 @@
                                                 </td>
                                             </tr>
                                             <tr class="">
-                                                <td colspan="5" class="p-2 leading-none text-12 font-bold text-end"
-                                                    style="">
+                                                <td colspan="{{ !in_array('typepayment', $hiddencolums) ? 5 : 4 }}"
+                                                    class="p-2 leading-none text-12 font-bold text-end" style="">
                                                     <small class="text-10">
                                                         IGV : {{ $item->moneda->simbolo }}</small>
                                                     {{ number_format($item->igv + $item->igvgratuito, 2, '.', ', ') }}
                                                 </td>
                                             </tr>
                                             <tr class="">
-                                                <td colspan="5" class="p-2 leading-none text-12 font-bold text-end"
-                                                    style="">
+                                                <td colspan="{{ !in_array('typepayment', $hiddencolums) ? 5 : 4 }}"
+                                                    class="p-2 leading-none text-12 font-bold text-end" style="">
                                                     <small class="text-10">
                                                         TOTAL : {{ $item->moneda->simbolo }}</small>
                                                     {{ number_format($item->total, 2, '.', ', ') }}

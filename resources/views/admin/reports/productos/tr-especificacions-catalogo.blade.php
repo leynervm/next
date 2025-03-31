@@ -1,5 +1,5 @@
 <td class="align-top text-center p-3" style="padding-left: 2rem !important;">
-    <table class="table table-responsive p-0 align-top">
+    <table class="table border-white table-responsive p-0 align-top">
         <thead>
             <tr>
                 <th colspan="3" class="px-0 text-start leading-none"

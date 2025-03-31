@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ $titulo }}</title>
     <link rel="stylesheet" href="{{ asset('assets/snappyPDF/snappy.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ asset('assets/snappyPDF/bootstrap.min.css') }}" rel="stylesheet">
 
     <style>
         @font-face {

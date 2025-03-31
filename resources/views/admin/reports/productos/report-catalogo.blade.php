@@ -181,7 +181,7 @@
     }
 @endphp
 
-<table class="table table-responsive">
+<table class="table border-white table-responsive">
     <tbody>
         <tr>
             <td class="align-middle p-5" style="background: #0fb9b9;height: 350px;border-bottom-right-radius: 3rem;"
@@ -190,7 +190,7 @@
                 <h1 class="catalogo text-end">NEXT</h1>
             </td>
             <td class="align-top text-center p-0" align="center">
-                <table class="table text-center p-5" style="width:200px;margin: auto;background: #222222;"
+                <table class="table border-white text-center p-5" style="width:200px;margin: auto;background: #222222;"
                     width="100px" align="center">
                     <tbody>
                         <tr>
@@ -223,19 +223,13 @@
 </table>
 
 @if (!empty($titulo))
-    <table class="table table-responsive mt-5 p-5">
+    <table class="table border-white table-responsive mt-5 p-5">
         <tbody>
             <tr>
-                {{-- <td>
-
-                </td> --}}
                 <td class="p-0 text-center">
                     <h1 class="catalogo titulo">
                         {{ $titulo }}</h1>
                 </td>
-                {{-- <td>
-
-                </td> --}}
             </tr>
         </tbody>
     </table>
@@ -255,10 +249,10 @@
             $rowspan = $rowspan + 1;
         }
     @endphp
-    <table class="table table-responsive">
+    <table class="table border-white table-responsive">
         <tr class="">
             <td class="p-5">
-                <table class="table text-10 font-normal card-producto box-image"
+                <table class="table border-white text-10 font-normal card-producto box-image"
                     style="margin-left:{{ $loop->index % 2 ? 'auto !important;' : '0' }}">
                     <tbody>
                         <tr class="">

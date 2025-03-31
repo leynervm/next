@@ -12,13 +12,11 @@
             @endphp
             <tr class="">
                 <td class="p-2 border border-dark text-center align-middle leading-none text-10">
-                    @if ($detallado)
-                        @if (!empty($image))
-                            <img src="{{ imageBase64($image, 'app/public/images/productos/') }}"
-                                alt="{{ $item->imagen->urlmobile }}" class="img-fluid img-xs">
-                        @else
-                            <p class="text-10 text-10" style="color:#000;">IMÁGEN NO DISPONIBLE</p>
-                        @endif
+                    @if (!empty($image))
+                        <img src="{{ imageBase64($image, 'app/public/images/productos/') }}" alt="{{ $image }}"
+                            class="img-fluid img-xs">
+                    @else
+                        <p class="text-10 text-10" style="color:#000;">IMÁGEN NO DISPONIBLE</p>
                     @endif
                     <br>
                     <p class="font-normal text-justify">{{ $item->name }}</p> <br>

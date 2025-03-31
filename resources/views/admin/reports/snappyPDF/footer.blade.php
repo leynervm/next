@@ -19,11 +19,14 @@
             var css_selector_classes = ['page', 'frompage', 'topage', 'webpage', 'section', 'subsection', 'date', 'isodate',
                 'time', 'title', 'doctitle', 'sitepage', 'sitepages'
             ];
+
+            var footer = document.querySelector('.footer-snapy');
+
             for (var css_class in css_selector_classes) {
                 if (css_selector_classes.hasOwnProperty(css_class)) {
-                    var element = document.getElementsByClassName(css_selector_classes[css_class]);
+                    var element = footer.getElementsByClassName(css_selector_classes[css_class]);
                     for (var j = 0; j < element.length; ++j) {
-                        element[j].textContent = vars[css_selector_classes[css_class]];
+                        element[j].textContent = vars[css_selector_classes[css_class]] || '';
                     }
                 }
             }
@@ -32,9 +35,9 @@
 </head>
 
 <body onload="subst()">
-    <table class="footer">
+    <table class="footer footer-snapy">
         <tr>
-            <td class="section"></td>
+            {{-- <td class="section"></td> --}}
             <td class="text-center font-medium">
                 Página <span class="page"></span> de <span class="topage"> </span>
             </td>
