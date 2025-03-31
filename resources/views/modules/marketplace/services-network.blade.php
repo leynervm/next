@@ -401,7 +401,7 @@
                         <div
                             class="flex flex-col justify-center items-center gap-3 sm:gap-5 p-2.5 sm:p-3 md:p-5 rounded-3xl size-28 sm:size-40 md:size-52 shadow-lg shadow-shadowminicard bg-fondominicard">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 62.306 48" stroke-width="0"
-                                stroke="none"
+                                stroke="currentColor" fill="currentColor"
                                 class="block w-auto max-w-full h-10 xs:h-14 sm:h-24 mx-auto text-colorlabel">
                                 <path
                                     d="M31.885 0c10.704.152 20.632 4.012 28.993 11.829 1.73 1.619 1.915 4.006.44 5.566-1.59 1.684-3.941 1.694-5.732.029-8.415-7.827-18.35-10.83-29.689-9.338-7.513.988-13.87 4.365-19.375 9.474-1.511 1.406-3.627 1.489-5.116.209C-.17 16.416-.49 14.203.822 12.556c.775-.974 1.785-1.781 2.751-2.584C11.562 3.328 20.806.13 31.885 0" />
@@ -419,7 +419,7 @@
                         </div>
                         <div
                             class="flex flex-col justify-center items-center gap-3 sm:gap-5 p-2.5 sm:p-3 md:p-5 rounded-3xl size-28 sm:size-40 md:size-52 shadow-lg shadow-shadowminicard bg-fondominicard">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.017 48" stroke="currentColor"
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48.017 48" stroke="currentColor" fill="currentColor"
                                 stroke-width="0.25"
                                 class="block w-auto max-w-full h-10 xs:h-14 sm:h-24 mx-auto text-colorlabel">
                                 <path
@@ -438,7 +438,7 @@
                         </div>
                         <div
                             class="flex flex-col justify-center items-center gap-3 sm:gap-5 p-2.5 sm:p-3 md:p-5 rounded-3xl size-28 sm:size-40 md:size-52 shadow-lg shadow-shadowminicard bg-fondominicard">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76.883 48" stroke-width="0"
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76.883 48" stroke-width="0" stroke="currentColor" fill="currentColor"
                                 class="block w-auto max-w-full h-10 xs:h-14 sm:h-24 mx-auto text-colorlabel">
                                 <path
                                     d="M13.361 26.339V1.606c0-.261-.019-.528.033-.78A1.005 1.005 0 0 1 14.397 0c.49 0 .906.317 1.004.822.061.331.056.677.056 1.013v24.439h45.974V1.723c0-.285-.005-.579.042-.859.098-.546.523-.882 1.046-.864a1 1 0 0 1 .971.859c.047.252.028.523.028.78v24.696h.934c1.751 0 3.501-.009 5.252 0 4.066.023 7.147 3.1 7.161 7.157.009 2.456.009 4.916 0 7.371-.014 3.963-3.081 7.063-7.04 7.124-1.046.014-2.091 0-3.137 0H7.325c-2.502 0-4.514-.966-6.003-2.974a6.6 6.6 0 0 1-1.316-3.954 478 478 0 0 1 0-7.763c.037-3.814 3.151-6.918 6.961-6.961 1.83-.019 3.66 0 5.49 0h.896Zm25.167 2.087q-15.644-.001-31.283.005c-2.946 0-5.117 2.147-5.14 5.084-.019 2.456-.037 4.916.019 7.371.019.71.173 1.475.476 2.115.943 1.993 2.61 2.908 4.794 2.908h61.235c.392 0 .784.014 1.176 0 2.787-.093 4.934-2.194 4.981-4.939.042-2.535.047-5.07-.005-7.605-.037-1.993-1.008-3.478-2.773-4.412-.803-.425-1.681-.532-2.582-.532H38.537Z" />

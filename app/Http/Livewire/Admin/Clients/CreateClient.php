@@ -109,7 +109,7 @@ class CreateClient extends Component
                 $client->save();
             } else {
                 $user_id = null;
-                if (Module::isEnabled('Marketplace')) {
+                if (Module::isEnabled('Marketplace') && !empty($this->user)) {
                     $user = User::with('client')->find($this->user->id);
                     if (empty($user->client)) {
                         $user_id = $user->id;
@@ -138,6 +138,7 @@ class CreateClient extends Component
                 $client->direccions()->firstOrCreate([
                     'name' => $item['direccion'],
                     'ubigeo_id' => $ubigeo_id ?? null,
+                ], [
                     'default' => $item['principal'] ? Direccion::DEFAULT : 0,
                 ]);
             }
@@ -304,7 +305,9 @@ class CreateClient extends Component
         }
 
         $ubigeo = Ubigeo::find($this->ubigeo_id);
-        $principal = count($this->direccions) > 0 ? true : false;
+        $principal = count(array_filter($this->direccions, function ($direccion) {
+            return $direccion['principal'] == true;
+        })) ? false : true;
 
         $direccions =  $this->direccions;
         $direccions[] = [

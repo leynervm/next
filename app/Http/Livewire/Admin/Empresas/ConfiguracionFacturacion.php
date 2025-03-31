@@ -17,25 +17,42 @@ class ConfiguracionFacturacion extends Component
     use WithFileUploads;
 
     public $empresa;
-    public $cert, $idcert;
+    public $cert, $idcert, $usuariosol, $clavesol, $passwordcert, $clientid, $clientsecret;
 
     protected function rules()
     {
         return [
-            'empresa.usuariosol' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string'],
-            'empresa.clavesol' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string'],
-            'empresa.passwordcert' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string', 'min:3'],
-            'empresa.clientid' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string', 'min:3'],
-            'empresa.clientsecret' => ['nullable', Rule::requiredIf($this->empresa->isProduccion()), 'string', 'min:3'],
+            'empresa.sendmode' => ['required', 'integer', Rule::in([Empresa::PRUEBA, Empresa::PRODUCCION])],
+            'empresa.afectacionigv' => ['required', 'integer', 'min:0', 'max:1'],
             'cert' => ['nullable', 'file', new ValidateFileKey("pfx")],
-            'empresa.sendmode' => ['integer', 'min:0', 'max:1'],
-            'empresa.afectacionigv' => ['integer', 'min:0', 'max:1'],
+
+            'usuariosol' => $this->empresa->sendmode == Empresa::PRODUCCION ?
+                ['string'] : ['nullable'],
+            'clavesol' => $this->empresa->sendmode == Empresa::PRODUCCION ?
+                ['string'] : ['nullable'],
+            'passwordcert' => $this->empresa->sendmode == Empresa::PRODUCCION ?
+                ['string', 'min:3'] : ['nullable'],
+            'clientid' => $this->empresa->sendmode == Empresa::PRODUCCION ?
+                ['string', 'min:3'] : ['nullable'],
+            'clientsecret' => $this->empresa->sendmode == Empresa::PRODUCCION ?
+                ['string', 'min:3'] : ['nullable'],
+
+            'empresa.usuariosol' => ['required', 'string'],
+            'empresa.clavesol' => ['required', 'string'],
+            'empresa.passwordcert' => ['required', 'string', 'min:3'],
+            'empresa.clientid' => ['required', 'string', 'min:3'],
+            'empresa.clientsecret' => ['required', 'string', 'min:3'],
         ];
     }
 
     public function mount(Empresa $empresa)
     {
         $this->empresa = $empresa;
+        $this->usuariosol = $this->empresa->usuariosol;
+        $this->clavesol = $this->empresa->clavesol;
+        $this->passwordcert =  $this->empresa->passwordcert;
+        $this->clientid = $this->empresa->clientid;
+        $this->clientsecret = $this->empresa->clientsecret;
     }
 
     public function render()
@@ -69,8 +86,13 @@ class ConfiguracionFacturacion extends Component
             }
 
             $this->empresa->cert = $urlcert;
-            $this->empresa->usuariosol = $this->empresa->usuariosol;
-            $this->empresa->clavesol = $this->empresa->clavesol;
+            if ($this->empresa->isProduccion()) {
+                $this->empresa->usuariosol = $this->usuariosol;
+                $this->empresa->clavesol = $this->clavesol;
+                $this->empresa->passwordcert = $this->passwordcert;
+                $this->empresa->clientid = $this->clientid;
+                $this->empresa->clientsecret = $this->clientsecret;
+            }
             $this->empresa->save();
             DB::commit();
             $this->resetValidation();
@@ -119,16 +141,26 @@ class ConfiguracionFacturacion extends Component
         }
     }
 
-    // public function updatedEmpresaSendmode()
-    // {
-
-    //     if ($this->empresa->isProduccion()) {
-    //         //Quiere decir que cambio a produccion
-    //     }
-    //     $usuariosol = Empresa::USER_SOL_PRUEBA;
-    //     $clavesol = Empresa::PASSWORD_SOL_PRUEBA;
-    //     $clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
-    //     $clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
-    //     $passwordcert = Empresa::PASSWORD_CERT_PRUEBA;
-    // }
+    public function updatedEmpresaSendmode($value)
+    {
+        $this->resetValidation();
+        if ($value == Empresa::PRODUCCION) {
+            $this->usuariosol = null;
+            $this->clavesol = null;
+            $this->passwordcert = null;
+            $this->clientid = null;
+            $this->clientsecret = null;
+            // $this->empresa->usuariosol = $this->usuariosol;
+            // $this->empresa->clavesol = $this->clavesol;
+            // $this->empresa->passwordcert = $this->passwordcert;
+            // $this->empresa->clientid = $this->clientid;
+            // $this->empresa->clientsecret = $this->clientsecret;
+        } else {
+            $this->empresa->usuariosol = Empresa::USER_SOL_PRUEBA;
+            $this->empresa->clavesol = Empresa::PASSWORD_SOL_PRUEBA;
+            $this->empresa->clientid = Empresa::CLIENT_ID_GRE_PRUEBA;
+            $this->empresa->clientsecret = Empresa::CLIENT_SECRET_GRE_PRUEBA;
+            $this->empresa->passwordcert = Empresa::PASSWORD_CERT_PRUEBA;
+        }
+    }
 }

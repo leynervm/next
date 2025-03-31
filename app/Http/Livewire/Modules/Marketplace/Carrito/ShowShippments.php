@@ -90,15 +90,16 @@ class ShowShippments extends Component
             'document' => auth()->user()->document,
         ];
         Self::searchclient('document');
+        $this->direccionenvio_id = auth()->user()->direccions()->default()->first()->id ?? null;
     }
 
     public function render()
     {
         $ubigeos = Ubigeo::query()->select('id', 'region', 'provincia', 'distrito', 'ubigeo_reniec')
             ->orderBy('region', 'asc')->orderBy('provincia', 'asc')->orderBy('distrito', 'asc')->get();
-        $direccions = auth()->user()->direccions()->with('ubigeo')->orderBy('default', 'desc')->orderBy('name', 'asc')->get();
+        $direccions = auth()->user()->direccions()->with('ubigeo')->orderByDesc('default')->orderBy('name', 'asc')->get();
         $shipmenttypes = Shipmenttype::orderBy('name', 'asc')->get();
-        $locals = mi_empresa()->sucursals()->with('ubigeo')->orderBy('default', 'desc')->orderBy('codeanexo', 'asc')->get();
+        $locals = mi_empresa()->sucursals()->with('ubigeo')->orderByDesc('default')->orderBy('codeanexo', 'asc')->get();
         $shoppings = getCartRelations('shopping', true);
 
         return view('livewire.modules.marketplace.carrito.show-shippments', compact('shoppings', 'shipmenttypes', 'direccions', 'ubigeos', 'locals'));
@@ -158,7 +159,6 @@ class ShowShippments extends Component
             return false;
         }
 
-        $this->direccionenvio_id = auth()->user()->direccions()->default()->first()->id ?? null;
         $direccion_envio = $this->shipmenttype->isEnviodomicilio() ? Direccion::with('ubigeo')->find($this->direccionenvio_id) : null;
         $local_entrega = $this->shipmenttype->isRecojotienda() ? Sucursal::with('ubigeo')->find($this->local_id) : null;
 
@@ -227,6 +227,8 @@ class ShowShippments extends Component
                 'default' => $item->id == $direccion_id ? Direccion::DEFAULT : 0,
             ]);
         });
+
+        $this->direccionenvio_id = $direccion_id;
     }
 
     public function deletedireccion($direccion_id)

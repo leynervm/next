@@ -190,7 +190,7 @@
                             class="w-full max-w-[95%] md:max-w-[85%] mx-auto grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-5">
                             @foreach ($data->desarrollo->content as $item)
                                 <div
-                                    class="w-full flex flex-col gap-1 md:gap-5 bg-white rounded-2xl md:rounded-3xl p-2 sm:p-3 md:p-5 py-3 md:py-8">
+                                    class="w-full flex flex-col gap-1 md:gap-5 bg-fondominicard rounded-2xl md:rounded-3xl p-2 sm:p-3 md:p-5 py-3 md:py-8">
                                     <h1
                                         class="text-lg xs:text-xl md:text-3xl text-center font-semibold text-colorlabel !leading-none">
                                         {{ $item->title }}</h1>
@@ -594,7 +594,7 @@
                             class="w-full max-w-[95%] md:max-w-[85%] mx-auto grid grid-cols-1 xs:grid-cols-2 gap-3 md:gap-5">
                             @foreach ($data->electricidad->content as $item)
                                 <div
-                                    class="w-full flex flex-col gap-1 md:gap-5 bg-white rounded-2xl md:rounded-3xl p-2 sm:p-3 md:p-5 py-3 md:py-8">
+                                    class="w-full flex flex-col gap-1 md:gap-5 bg-fondominicard rounded-2xl md:rounded-3xl p-2 sm:p-3 md:p-5 py-3 md:py-8">
                                     <h1
                                         class="text-lg xs:text-xl md:text-3xl text-center font-semibold text-colorlabel !leading-none">
                                         {{ $item->title }}</h1>
