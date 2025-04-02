@@ -7,22 +7,26 @@
 <meta name="color-scheme" content="light">
 <meta name="supported-color-schemes" content="light">
 <style>
+* {
+font-family: 'Roboto', 'DM Sans', Arial, sans-serif;
+}
+
 .body {
-    background-color: #fff !important;
+ background-color: #fff !important;
 }
 
 .content-cell {
-    padding: 0 !important;
-    border: 1px solid #edeff2;
+padding: 0 !important;
+border: 1px solid #edeff2;
 }
 
 .inner-body {
-    width: 450px !important;
+width: 450px !important;
 }
 
 .content-ticket .table {
-    padding-left: 10px !important;
-    padding-right: 10px !important;
+padding-left: 10px !important;
+padding-right: 10px !important;
 }
 
 @media only screen and (max-width: 600px) {
@@ -111,7 +115,7 @@ DOCUMENTO NACIONAL IDENTIDAD (DNI)
 |CANT. | DESCRIPCIÓN | P. UNIT | IMPORTE |
 |:---- |:------------| -------:| -------:|
 @foreach ($comprobante->facturableitems as $item)
-| {{ decimalOrInteger($item->cantidad) }} {{ $item->unit }} | {{ $item->descripcion }} | {{ number_format($item->price, 2, '.', ', ') }} | {{ number_format($item->subtotal, 2, '.', ', ') }} |
+| {{ decimalOrInteger($item->cantidad) }} {{ $item->unit == 'NIU' ? 'UND' : $item->unit }} | {{ $item->descripcion }} | {{ number_format($item->price, 2, '.', ', ') }} | {{ number_format($item->subtotal, 2, '.', ', ') }} |
 @endforeach
 </x-mail::table>
 

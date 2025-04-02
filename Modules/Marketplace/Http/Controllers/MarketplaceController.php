@@ -3,7 +3,6 @@
 namespace Modules\Marketplace\Http\Controllers;
 
 use App\Enums\PromocionesEnum;
-use App\Mail\EnviarResumenOrder;
 use App\Models\Category;
 use App\Models\Employer;
 use App\Models\Producto;
@@ -13,7 +12,6 @@ use CodersFree\Shoppingcart\Facades\Cart;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Shipmenttype;
 use Nwidart\Modules\Facades\Module;
@@ -1532,16 +1530,4 @@ class MarketplaceController extends Controller
         $producto = Producto::find($producto_id);
         return $producto->addfavorito();
     }
-
-    // Funcion para pruebas de envio de resumen order
-    // public function sendemailorder(Order $order)
-    // {
-    //     $order->load(['shipmenttype', 'user',  'entrega.sucursal.ubigeo', 'client', 'moneda', 'direccion.ubigeo', 'transaccion', 'tvitems' => function ($query) {
-    //         $query->with(['promocion', 'producto' => function ($q) {
-    //             $q->with(['unit', 'imagen']);
-    //         }]);
-    //     }]);
-    //     // return $order;
-    //     $mail = Mail::to('lvegam0413@gmail.com')->send(new EnviarResumenOrder($order));
-    // }
 }

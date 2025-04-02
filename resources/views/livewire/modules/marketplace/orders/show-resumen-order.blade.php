@@ -156,6 +156,14 @@
                             <x-jet-input-error for="trackingstate_id" />
                         </div>
 
+                        <div>
+                            <x-label-check for="sendemail">
+                                <x-input wire:model.defer="sendemail" name="sendemail" type="checkbox"
+                                    id="sendemail" />ENVIAR CORREO DE NOTIFICACIÓN
+                            </x-label-check>
+                            <x-jet-input-error for="sendemail" />
+                        </div>
+
                         <div class="w-full flex justify-end">
                             <x-button type="submit" wire:loading.attr="disabled">
                                 {{ __('Save') }}</x-button>
@@ -205,7 +213,7 @@
             </ol>
         @endif
     </div>
-    
+
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('showorder', () => ({

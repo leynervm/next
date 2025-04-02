@@ -194,13 +194,16 @@ class ShowShippments extends Component
                 DB::beginTransaction();
                 try {
                     $default = auth()->user()->direccions()->default()->count();
-                    auth()->user()->direccions()->create([
+                    $direccion = auth()->user()->direccions()->create([
                         'name' => $this->direccion,
                         'referencia' => $this->referencia,
                         'default' => $default > 0 ? 0 : Direccion::DEFAULT,
                         'ubigeo_id' => $this->lugar_id
                     ]);
                     DB::commit();
+                    if ($direccion->isDefault()) {
+                        $this->direccionenvio_id = $direccion->id;
+                    }
                     $this->reset(['direccion', 'referencia', 'lugar_id', 'showaddadress']);
                 } catch (\Exception $e) {
                     DB::rollBack();

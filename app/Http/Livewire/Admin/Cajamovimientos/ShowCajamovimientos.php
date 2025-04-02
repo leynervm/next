@@ -73,7 +73,7 @@ class ShowCajamovimientos extends Component
         })->get();
         $monthboxes = Monthbox::whereHas('cajamovimientos', function ($query) {
             $query->where('sucursal_id', auth()->user()->sucursal_id);
-        })->get();
+        })->orderByDesc('month')->get();
         $users = User::whereHas('cajamovimientos', function ($query) {
             $query->where('sucursal_id', auth()->user()->sucursal_id);
         })->orderBy('name', 'asc')->get();
@@ -124,5 +124,45 @@ class ShowCajamovimientos extends Component
     {
         $cajamovimiento->forceDelete();
         $this->dispatchBrowserEvent('deleted');
+    }
+
+    public function updatedDate()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateto()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchtype()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchmethodpayment()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchconcept()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchuser()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchcaja()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearchmonthbox()
+    {
+        $this->resetPage();
     }
 }

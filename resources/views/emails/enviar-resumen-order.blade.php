@@ -3,21 +3,21 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 
 <head>
-    <title>{{ config('app.name') }}</title>
+    <title>{{ $empresa->name }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="color-scheme" content="light">
     <meta name="supported-color-schemes" content="light">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
-        rel="stylesheet">
     <style>
+        * {
+            /* font-family: "Ubuntu" !important; */
+            font-family: 'Roboto', 'DM Sans', Arial, sans-serif;
+        }
+
         body,
         body *:not(html):not(style):not(br):not(tr):not(code) {
             box-sizing: border-box;
-            font-family: "Ubuntu";
+            font-family: 'Roboto', 'DM Sans', Arial, sans-serif;
             position: relative;
         }
 
@@ -113,12 +113,12 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            max-width: 890px;
+            max-width: 680px;
             margin: 0 auto;
         }
 
         .content-box {
-            max-width: 890px;
+            max-width: 680px;
             margin: 0 auto;
         }
 
@@ -149,6 +149,37 @@
 
         .info-contact {
             color: #718096;
+        }
+
+        .button-tracking {
+            cursor: pointer;
+            background-color: #0fb9b9;
+            border-bottom: 0px solid #0fb9b9;
+            border-left: 0px solid #0fb9b9;
+            border-radius: 0.625rem;
+            border-right: 0px solid #0fb9b9;
+            border-top: 0px solid #0fb9b9;
+            color: #ffffff;
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            mso-border-alt: none;
+            padding-bottom: 10px;
+            padding-top: 10px;
+            padding-left: 16px;
+            padding-right: 16px;
+            text-align: center;
+            width: auto;
+            word-break: keep-all;
+            letter-spacing: 0.0625rem;
+        }
+
+        .button-tracking:hover {
+            background-color: #008b8b;
+            border-bottom: 0px solid #008b8b;
+            border-left: 0px solid #008b8b;
+            border-right: 0px solid #008b8b;
+            border-top: 0px solid #008b8b;
         }
 
         .shippmentype,
@@ -339,25 +370,29 @@
         }
 
         .col-image {
-            width: 100px;
+            width: 180px;
         }
 
         .image-producto {
             display: block;
             outline: 0;
-            line-height: 100%;
-            width: 100px;
-            height: 100px;
-            object-position: center;
+            width: 100%;
+            height: auto;
+            object-position: cover;
             border-radius: 0.75rem;
+            display: block;
+            height: auto;
+            border: 0;
         }
 
         .description-item {
-            padding-left: 10px;
+            padding: 8px;
+            padding-left: 20px;
         }
 
         .description-item p {
-            font-size: 12px;
+            font-size: 16px;
+            text-align: end;
         }
 
         .description-producto {
@@ -365,9 +400,8 @@
             font-size: 16px;
             font-weight: 700;
             color: #001942;
-            text-align: left;
             text-transform: uppercase;
-            text-align-last: left;
+            text-align-last: end;
         }
 
         .body-content-details .price-item {
@@ -481,51 +515,6 @@
             padding: 8px 0;
         }
 
-        .table-button {
-            width: 100%;
-            max-width: 320px;
-        }
-
-        /* Buttons */
-        .button {
-            border-radius: 0.65rem;
-            color: #fff !important;
-            display: inline-block;
-            outline: 0;
-            font-weight: 500;
-            padding: 3px;
-            font-size: 10px;
-            letter-spacing: 0.075rem;
-            text-transform: uppercase;
-            text-decoration: none;
-            overflow: hidden;
-            transition: 1s ease-in-out 300ms;
-        }
-
-        .button-next {
-            /* background-color: #0fb9b9;
-            border-bottom: 8px solid #0fb9b9;
-            border-left: 18px solid #0fb9b9;
-            border-right: 18px solid #0fb9b9;
-            border-top: 8px solid #0fb9b9; */
-        }
-
-        /* .button-next:hover {
-            background-color: #0fb9b9;
-            border-bottom: 8px solid #0fb9b9;
-            border-left: 18px solid #0fb9b9;
-            border-right: 18px solid #0fb9b9;
-            border-top: 8px solid #0fb9b9;
-            box-shadow: 0 0 0 3px #0fb9b9;
-        } */
-
-        .button-next {
-            letter-spacing: 0.025rem;
-            margin: 0 auto;
-            display: inline-block;
-            text-align: center;
-        }
-
         /* Utilities */
         .break-all {
             word-break: break-all;
@@ -601,14 +590,17 @@
                 font-size: 14px;
             }
 
-            .table-button {
-                max-width: 100%;
+            .col-image {
+                width: 120px;
             }
-        }
 
-        @media only screen and (max-width: 500px) {
-            .button {
-                width: 100% !important;
+            .description-item {
+                padding: 16px;
+            }
+
+            .description-item p {
+                letter-spacing: 0.025em;
+                font-size: 14px;
             }
         }
     </style>
@@ -634,8 +626,7 @@
                             <td align="center">
                                 <a href="{{ env('APP_URL') }}" class="enlace-logo" title="{{ $url_logo }}">
                                     @if (!empty($url_logo))
-                                        <img class="logo" src="{{ $url_logo }}" class="logo"
-                                            alt="">
+                                        <img class="logo" src="{{ $url_logo }}" alt="{{ $empresa->name }}">
                                     @else
                                         {{ $empresa->name }}
                                     @endif
@@ -656,29 +647,25 @@
                                         <tr>
                                             <td>
                                                 <p class="info-tracking" style="text-justify: ">
-                                                    Estamos preparando tu pedido para realizar su corespondiente entrega.
-                                                     Para más información del estado de seguimiento, haga click en el
+                                                    Estamos preparando tu pedido para realizar su corespondiente
+                                                    entrega.
+                                                    Para más información del estado de seguimiento, haga click en el
                                                     enlace "SEGUIMIENTO DE PEDIDO".
                                                 </p>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td align="center">
-                                                <table align="center" class="mt-8 table-button" width="100%"
-                                                    border="0" cellpadding="0" cellspacing="0" role="presentation">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td align="center" valign="center" class="rounded p-2"
-                                                                bgcolor="#0fb9b9">
-                                                                <a class="button button-next"
-                                                                    style="display: block; padding: 6px 10px; text-align: center;"
-                                                                    href="{{ route('orders.payment', $order) }}"
-                                                                    target="_blank" style="color:#fff !important;">
-                                                                    Seguimiento del pedido</a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
+                                                <div class="mt-8" align="center">
+                                                    <a href="{{ route('orders.payment', $order) }}"" target="_blank"
+                                                        style="color:#ffffff;text-decoration:none;">
+                                                        <span class="button-tracking">
+                                                            <span style="word-break: break-word; line-height: 1.15rem;">
+                                                                SEGUIMIENTO DEL PEDIDO
+                                                            </span>
+                                                        </span>
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
 
@@ -893,20 +880,15 @@
                                     <table class="p-content" width="100%" cellpadding="0" cellspacing="0"
                                         role="presentation">
                                         <tbody>
-                                            <tr>
-                                                <td colspan="3">
-                                                    <h1 class="m-0 p-0">Resumen de compra</h1>
-                                                </td>
-                                            </tr>
                                             @foreach ($order->tvitems as $item)
                                                 @php
                                                     $image = !empty($item->producto->imagen)
-                                                        ? pathURLProductImage($item->producto->imagen->url)
+                                                        ? pathURLProductImage($item->producto->imagen->urlmobile)
                                                         : null;
                                                 @endphp
 
                                                 <tr>
-                                                    <td valign="top" class="col-image p-2">
+                                                    <td valign="top" class="col-image">
                                                         <img class="image-producto" src="{{ $image }}"
                                                             alt="{{ $image }}">
                                                     </td>
@@ -918,45 +900,35 @@
                                                                 {{ $item->producto->name }}
                                                             @endif
                                                         </p>
-                                                        <p class="p-0 m-0 mt-1">CANT:
-                                                            {{ decimalOrInteger($item->cantidad) }}
-                                                            {{ $item->producto->unit->name }}</p>
 
-                                                        @if (!$item->isGratuito())
-                                                            @if (!empty($item->promocion))
+                                                        <p class="mt-2">
+                                                            {{ $order->moneda->simbolo }}
+                                                            {{ number_format($item->isGratuito() ? 0 : $item->price, 2, '.', ', ') }}
+                                                            x <b class="price-item">{{ decimalOrInteger($item->cantidad) }} {{ $item->producto->unit->name }}</b>
+                                                        </p>
+
+                                                        @if (!empty($item->promocion))
+                                                            <div class="mt-1">
                                                                 @if ($item->promocion->isCombo())
-                                                                    <p class="p-0 m-0 mt-1">
-                                                                        PRECIO: {{ $order->moneda->simbolo }}
-                                                                        {{ number_format($item->price, 2, '.', ', ') }}
-                                                                    </p>
-                                                                    <div>
-                                                                        <span class="free">COMBO</span>
-                                                                    </div>
+                                                                    <span
+                                                                        style="display: inline-block;background: red;color:white;">COMBO</span>
                                                                 @elseif($item->promocion->isLiquidacion())
-                                                                    <p class="p-0 m-0 mt-1">
-                                                                        PRECIO: {{ $order->moneda->simbolo }}
-                                                                        {{ number_format($item->price, 2, '.', ', ') }}
-                                                                    </p>
-                                                                    <div>
-                                                                        <span class="free"
-                                                                            style="background: red !important;">LIQUIDACIÓN</span>
-                                                                    </div>
+                                                                    <span
+                                                                        style="display: inline-block;background: red;color:white;">LIQUIDACIÓN</span>
+                                                                @elseif($item->promocion->isDescuento())
+                                                                    <span
+                                                                        style="display: inline-block;background: red;color:white;">
+                                                                        {{ decimalOrInteger($item->promocion->descuento) }}
+                                                                        % DSCTO</span>
                                                                 @else
-                                                                    <p class="p-0 m-0 mt-1">
-                                                                        PRECIO: {{ $order->moneda->simbolo }}
-                                                                        {{ number_format($item->price, 2, '.', ', ') }}
-                                                                        <span style="display: inline-block;color:red">
-                                                                            {{ number_format(getPriceAntes($item->price, $item->promocion->descuento), 2, '.', ', ') }}</span>
-                                                                    </p>
+                                                                    <span
+                                                                        style="display: inline-block;background:red;color:white;">
+                                                                        OFERTA</span>
                                                                 @endif
-                                                            @else
-                                                                <p class="p-0 m-0 mt-1">
-                                                                    PRECIO: {{ $order->moneda->simbolo }}
-                                                                    {{ number_format($item->price, 2, '.', ', ') }}</p>
-                                                            @endif
+                                                            </div>
                                                         @endif
 
-                                                        <p class="mobile mt-2">
+                                                        <p class="mt-1">
                                                             @if ($item->isGratuito())
                                                                 <span class="free">GRATIS</span>
                                                             @else
@@ -966,16 +938,6 @@
                                                                 </b>
                                                             @endif
                                                         </p>
-                                                    </td>
-                                                    <td class="desk p-2" align="right" valign="center"
-                                                        style="min-width: 120px;">
-                                                        @if ($item->isGratuito())
-                                                            <span class="free">GRATIS</span>
-                                                        @else
-                                                            <b class="price-item">
-                                                                {{ $order->moneda->simbolo }}
-                                                                {{ number_format($item->total, 2, '.', ', ') }}</b>
-                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -1165,6 +1127,27 @@
                                                         cellpadding="0" cellspacing="0" role="presentation">
                                                         <tbody>
                                                             <tr>
+                                                                @if (!empty($empresa->whatsapp))
+                                                                    <td class="social" valign="top">
+                                                                        <a class="social-icon"
+                                                                            href="{{ $empresa->whatsapp }}"
+                                                                            target="_blank">
+                                                                            <img src="{{ asset('assets/settings/icon-whatsapp.png') }}"
+                                                                                alt="icon-whatsapp">
+                                                                        </a>
+                                                                    </td>
+                                                                @endif
+
+                                                                @if (!empty($empresa->facebook))
+                                                                    <td class="social" valign="top">
+                                                                        <a class="social-icon"
+                                                                            href="{{ $empresa->facebook }}"
+                                                                            target="_blank">
+                                                                            <img src="{{ asset('assets/settings/icon-facebook.png') }}"
+                                                                                alt="{{ asset('assets/settings/icon-facebook.png') }}"></a>
+                                                                    </td>
+                                                                @endif
+
                                                                 @if (!empty($empresa->instagram))
                                                                     <td class="social" valign="top">
                                                                         <a class="social-icon"
@@ -1182,15 +1165,6 @@
                                                                         <img src="https://s1.designmodo.com/postcards/e931e54b1bf5c1e0cac743c437478e90.png"
                                                                             alt=""></a>
                                                                 </td> --}}
-                                                                @if (!empty($empresa->facebook))
-                                                                    <td class="social" valign="top">
-                                                                        <a class="social-icon"
-                                                                            href="{{ $empresa->facebook }}"
-                                                                            target="_blank">
-                                                                            <img src="{{ asset('assets/settings/icon-facebook.png') }}"
-                                                                                alt="{{ asset('assets/settings/icon-facebook.png') }}"></a>
-                                                                    </td>
-                                                                @endif
 
                                                                 @if (!empty($empresa->tiktok))
                                                                     <td class="social" valign="top">

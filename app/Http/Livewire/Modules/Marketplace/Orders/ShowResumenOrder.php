@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Modules\Marketplace\Orders;
 
+use App\Mail\TrackingOrderMailable;
 use App\Models\Almacen;
 use App\Models\Carshoopitem;
 use App\Models\Itemserie;
@@ -17,6 +18,7 @@ use Livewire\Component;
 use Modules\Marketplace\Entities\Order;
 use Modules\Marketplace\Entities\Tracking;
 use Modules\Marketplace\Entities\Trackingstate;
+use Illuminate\Support\Facades\Mail;
 
 class ShowResumenOrder extends Component
 {
@@ -28,9 +30,7 @@ class ShowResumenOrder extends Component
     public $order;
     public $tvitem;
     public $open = false;
-    // public $almacen_id;
-    // public $almacen = [];
-    // public $serie_id = '';
+    public $sendemail = false;
     public $trackingstate_id = '';
 
     public $almacens = [], $almacenitem = [];
@@ -425,10 +425,13 @@ class ShowResumenOrder extends Component
             'trackingstate_id' => $this->trackingstate_id,
             'user_id' => auth()->user()->id
         ]);
-        $this->reset(['trackingstate_id']);
         $this->resetValidation();
         $this->order->refresh();
         $this->dispatchBrowserEvent('toast', toastJSON('Tracking actualizado correctamente'));
+        if ($this->sendemail) {
+            $mail = Mail::to($this->order->user->email)->queue(new TrackingOrderMailable($this->order));
+        }
+        $this->reset(['trackingstate_id', 'sendemail']);
     }
 
     public function delete(Tracking $tracking)

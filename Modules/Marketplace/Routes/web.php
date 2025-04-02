@@ -14,6 +14,8 @@
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Mail\EnviarResumenOrder;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Client;
 use App\Models\Sucursal;
 use App\Models\Tvitem;
@@ -73,7 +75,16 @@ Route::middleware(['web', 'auth:sanctum', config('jetstream.auth_session')])->gr
     Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile');
 
     // Ruta para pruebas de envio de resumen order
-    // Route::get('/send-email-order/{order}/send', [MarketplaceController::class, 'sendemailorder'])->name('sendemailorder');
+    Route::get('/send-email-order/{order:purchase_number}/send', function (Order $order) {
+        // $order->load(['shipmenttype', 'user',  'entrega.sucursal.ubigeo', 'client', 'moneda', 'direccion.ubigeo', 'transaccion', 'tvitems' => function ($query) {
+        //     $query->with(['promocion', 'producto' => function ($q) {
+        //         $q->with(['unit', 'imagen']);
+        //     }]);
+        // }]);
+        // return $order;
+        $mail = Mail::to('lvegam0413@gmail.com')->send(new EnviarResumenOrder($order));
+        return $mail;
+    })->name('sendemailorder');
 });
 
 

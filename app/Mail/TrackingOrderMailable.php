@@ -3,21 +3,22 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Mail\Mailables\Address;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Mail\Mailables\Address;
 use Modules\Marketplace\Entities\Order;
 
-class EnviarResumenOrder extends Mailable implements ShouldQueue
+
+class TrackingOrderMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
-
     public $order, $empresa;
+
     /**
      * Create a new message instance.
      *
@@ -29,24 +30,9 @@ class EnviarResumenOrder extends Mailable implements ShouldQueue
             'shipmenttype',
             'user',
             'entrega.sucursal.ubigeo',
-            'client',
-            'moneda',
             'direccion.ubigeo',
-            'transaccion',
-            'tvitems' => function ($query) {
-                $query->with(['promocion', 'producto' => function ($subq) {
-                    $subq->with(['unit', 'imagen', 'marca', 'category']);
-                }, 'carshoopitems' => function ($q) {
-                    $q->with(['itempromo', 'producto' => function ($db) {
-                        $db->with(['unit', 'imagen', 'marca', 'category']);
-                    }]);
-                }]);
-            },
             'trackings' => function ($query) {
                 $query->with('trackingstate')->orderBy('date', 'asc');
-            },
-            'comprobante' => function ($query) {
-                $query->with(['client', 'facturableitems', 'seriecomprobante.typecomprobante']);
             }
         ]);
         $this->order = $order;
@@ -62,7 +48,7 @@ class EnviarResumenOrder extends Mailable implements ShouldQueue
     {
         return new Envelope(
             from: new Address(Config::get('mail.mailers.smtp.username'), $this->empresa->name),
-            subject: 'CONFIRMACIÓN DEL PEDIDO #' . $this->order->purchase_number,
+            subject: 'ACTUALIZACIÓN DE ESTADO DEL PEDIDO #' . $this->order->purchase_number,
         );
     }
 
@@ -74,11 +60,8 @@ class EnviarResumenOrder extends Mailable implements ShouldQueue
     public function content()
     {
         return new Content(
-            view: 'emails.enviar-resumen-order',
+            view: 'emails.tracking-order-mailable',
         );
-        // return new Content(
-        //     markdown: 'emails.enviar-claimbook',
-        // );
     }
 
     /**

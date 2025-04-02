@@ -592,7 +592,7 @@
                 save() {
                     document.body.style.overflow = 'hidden';
                     this.$wire.validateorder().then(async (data) => {
-                        console.log(data);
+                        // console.log(data);
                         if (data) {
                             this.processpay = true;
                             const result = data;
@@ -603,7 +603,7 @@
                                     alert(JSON.stringify(params));
                                 }
                             }
-                            console.log(config);
+                            // console.log(config);
                             if (config.sessiontoken) {
                                 VisanetCheckout.configure(config);
                                 VisanetCheckout.open();
