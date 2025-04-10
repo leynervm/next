@@ -850,6 +850,7 @@ class MarketplaceController extends Controller
                 "ts_rank(to_tsvector('spanish', 
                     COALESCE(productos.name, '') || ' ' || 
                     COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(subcategories.name, '') || ' ' || 
                     COALESCE(categories.name, '')
                 ), plainto_tsquery('spanish', '" . $search . "')) AS rank"
             )
@@ -867,15 +868,32 @@ class MarketplaceController extends Controller
             "to_tsvector('spanish', 
             COALESCE(productos.name, '') || ' ' || 
             COALESCE(marcas.name, '') || ' ' || 
+            COALESCE(subcategories.name, '') || ' ' || 
             COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $search . "')",
         )->orWhereRaw(
-            "similarity(productos.name, '" . $search . "') > 0.5 
-            OR similarity(marcas.name, '" . $search . "') > 0.5 
-            OR similarity(categories.name, '" . $search . "') > 0.5",
-        )->orderByDesc('novedad')->orderBy('subcategories.orden')
-            ->orderBy('categories.orden')->orderByDesc('rank')
+            "similarity(productos.name, '" . $search . "') > 0.3 
+            OR similarity(marcas.name, '" . $search . "') > 0.3 
+            OR similarity(subcategories.name, '" . $search . "') > 0.3 
+            OR similarity(categories.name, '" . $search . "') > 0.3",
+        )->orderByDesc('novedad')->orderByDesc('rank')
+            ->orderByRaw("ts_rank(to_tsvector('spanish', productos.name || ' ' || marcas.name || ' ' || subcategories.name || ' ' || categories.name), plainto_tsquery('spanish', ?)) DESC", [$search])
             ->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
+            ->orderBy('categories.orden')->orderBy('subcategories.orden')
             ->visibles()->publicados()->limit(30);
+
+        // $products->whereRaw(
+        //     "to_tsvector('spanish', 
+        //     COALESCE(productos.name, '') || ' ' || 
+        //     COALESCE(marcas.name, '') || ' ' || 
+        //     COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $search . "')",
+        // )->orWhereRaw(
+        //     "similarity(productos.name, '" . $search . "') > 0.5 
+        //     OR similarity(marcas.name, '" . $search . "') > 0.5 
+        //     OR similarity(categories.name, '" . $search . "') > 0.5",
+        // )->orderByDesc('novedad')->orderBy('subcategories.orden')
+        //     ->orderBy('categories.orden')->orderByDesc('rank')
+        //     ->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
+        //     ->visibles()->publicados()->limit(30);
 
         $products = $products->get()->transform(function ($item) {
             $item->image = !empty($item->imagen) ? pathURLProductImage($item->imagen->urlmobile) : null;

@@ -75,16 +75,16 @@ Route::middleware(['web', 'auth:sanctum', config('jetstream.auth_session')])->gr
     Route::get('/perfil', [MarketplaceController::class, 'profile'])->name('profile');
 
     // Ruta para pruebas de envio de resumen order
-    Route::get('/send-email-order/{order:purchase_number}/send', function (Order $order) {
-        // $order->load(['shipmenttype', 'user',  'entrega.sucursal.ubigeo', 'client', 'moneda', 'direccion.ubigeo', 'transaccion', 'tvitems' => function ($query) {
-        //     $query->with(['promocion', 'producto' => function ($q) {
-        //         $q->with(['unit', 'imagen']);
-        //     }]);
-        // }]);
-        // return $order;
-        $mail = Mail::to('lvegam0413@gmail.com')->send(new EnviarResumenOrder($order));
-        return $mail;
-    })->name('sendemailorder');
+    // Route::get('/send-email-order/{order:purchase_number}/send', function (Order $order) {
+    //     // $order->load(['shipmenttype', 'user',  'entrega.sucursal.ubigeo', 'client', 'moneda', 'direccion.ubigeo', 'transaccion', 'tvitems' => function ($query) {
+    //     //     $query->with(['promocion', 'producto' => function ($q) {
+    //     //         $q->with(['unit', 'imagen']);
+    //     //     }]);
+    //     // }]);
+    //     // return $order;
+    //     $mail = Mail::to('lvegam0413@gmail.com')->send(new EnviarResumenOrder($order));
+    //     return $mail;
+    // })->name('sendemailorder');
 });
 
 

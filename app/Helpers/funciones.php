@@ -862,6 +862,9 @@ function getNameTime($abrev)
         case 'YY':
             $name = 'AÑOS';
             break;
+        case 'YYYY':
+            $name = 'AÑOS';
+            break;
         default:
             $name = '';
             break;

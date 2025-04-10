@@ -15,7 +15,7 @@
                     @foreach ($categories as $item)
                         <div class="swiper-slide">
                             <a href="{{ route('productos') . '?categorias=' . $item->slug }}"
-                                class="card-category-marketplace"
+                                class="card-category-marketplace group"
                                 aria-label="{{ route('productos') . '?categorias=' . $item->slug }}">
                                 <div
                                     class="block size-10 md:size-12 lg:size-14 xl:size-16 overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
@@ -61,7 +61,7 @@
         <div class="w-full overflow-hidden relative" id="swiper-servicios">
             <div class="w-full relative py-5 swiper-wrapper">
                 <div class="swiper-slide">
-                    <a href="{{ route('tic') }}" class="card-category-marketplace">
+                    <a href="{{ route('tic') }}" class="card-category-marketplace group">
                         <div
                             class="block size-10 md:size-12 lg:size-14 xl:size-16 overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                             <img src="{{ asset('images/home/recursos/soluciones_integrales.webp') }}"
@@ -74,7 +74,7 @@
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a href="{{ route('servicesnetwork') }}" class="card-category-marketplace">
+                    <a href="{{ route('servicesnetwork') }}" class="card-category-marketplace group">
                         <div
                             class="block size-10 md:size-12 lg:size-14 xl:size-16 overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                             <img src="{{ asset('images/home/recursos/internet.webp') }}" alt="SERVICIO DE INTERNET"
@@ -87,7 +87,7 @@
                 </div>
                 <div class="swiper-slide">
                     <a x-on:click="localStorage.setItem('activeTabCE', 1);" href="{{ route('centroautorizado') }}"
-                        class="card-category-marketplace">
+                        class="card-category-marketplace group">
                         <div
                             class="block size-10 md:size-12 lg:size-14 xl:size-16 overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                             <img src="{{ asset('images/home/recursos/centro_autorizado.webp') }}"
@@ -100,7 +100,8 @@
                     </a>
                 </div>
                 <div class="swiper-slide">
-                    <a href="https://soporte.next.net.pe/buscar" target="_blank" class="card-category-marketplace">
+                    <a href="https://soporte.next.net.pe/buscar" target="_blank"
+                        class="card-category-marketplace group">
                         <div
                             class="block size-10 md:size-12 lg:size-14 xl:size-16 overflow-hidden image-category-marketplace text-colorsubtitleform group-hover:text-primary transition ease-in-out duration-300">
                             <img src="{{ asset('images/home/recursos/orders.webp') }}" alt=" ORDEN DE TRABAJO"

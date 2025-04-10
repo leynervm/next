@@ -307,6 +307,7 @@ class CreateVenta extends Component
                 "ts_rank(to_tsvector('spanish', 
                     COALESCE(productos.name, '') || ' ' || 
                     COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(subcategories.name, '') || ' ' || 
                     COALESCE(categories.name, '')
                 ), plainto_tsquery('spanish', '" . $this->search . "')) AS rank"
             )
@@ -334,14 +335,17 @@ class CreateVenta extends Component
                 "to_tsvector('spanish', 
                 COALESCE(productos.name, '') || ' ' || 
                 COALESCE(marcas.name, '') || ' ' || 
+                COALESCE(subcategories.name, '') || ' ' || 
                 COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $this->search . "')",
             )->orWhereRaw(
-                "similarity(productos.name, '" . $this->search . "') > 0.5 
-                OR similarity(marcas.name, '" . $this->search . "') > 0.5 
-                OR similarity(categories.name, '" . $this->search . "') > 0.5",
-            )->orderByDesc('novedad')->orderBy('subcategories.orden')
-                ->orderBy('categories.orden')->orderByDesc('rank')
-                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
+                "similarity(productos.name, '" . $this->search . "') > 0.3 
+                OR similarity(marcas.name, '" . $this->search . "') > 0.3 
+                OR similarity(subcategories.name, '" . $this->search . "') > 0.3 
+                OR similarity(categories.name, '" . $this->search . "') > 0.3",
+            )->orderByDesc('novedad')->orderByDesc('rank')
+                ->orderByRaw("ts_rank(to_tsvector('spanish', productos.name || ' ' || marcas.name || ' ' || subcategories.name || ' ' || categories.name), plainto_tsquery('spanish', ?)) DESC", [$this->search])
+                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"))
+                ->orderBy('categories.orden')->orderBy('subcategories.orden');
         }
 
         if (trim($this->searchmarca) !== "") {

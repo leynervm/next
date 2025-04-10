@@ -1,12 +1,12 @@
 <x-admin-layout>
-    <div class="w-full flex gap-2 sm:gap-5">
-        <div class="flex-1">
+    <div class="w-full flex flex-col lg:flex-row gap-2 sm:gap-5">
+        <div class="flex-1 md:max-w-sm">
             <div class="w-full h-[400px] mx-auto rounded-xl" id="movimientoschart"></div>
             {{-- <div class="w-full h-[400px] mx-auto rounded-xl" id="main"></div> --}}
         </div>
         @can('admin.almacen.productos.agotados')
             @if (count($productos) > 0)
-                <div class="w-full pb-20 ml-auto max-w-lg md:max-h-[calc(100vh-4rem)] overflow-y-auto">
+                <div class="w-full md:pb-20 md:ml-auto lg:max-w-lg xl:max-h-[calc(100vh-4rem)] overflow-y-auto">
                     <div class="text-xs font-medium text-primary py-1">
                         PRODUCTOS AGOTADOS & PRÓXIMOS AGOTAR
                     </div>

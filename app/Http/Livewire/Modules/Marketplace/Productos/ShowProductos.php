@@ -41,10 +41,6 @@ class ShowProductos extends Component
             'except' => '',
             'as' => 'coincidencias'
         ],
-        'term' => [
-            'except' => '',
-            'as' => 'filtrar'
-        ],
         'filterselected' => [
             'except' => 'name_asc',
             'as' => 'ordenar'
@@ -59,7 +55,7 @@ class ShowProductos extends Component
     public $qty = 1;
 
     public $producto;
-    public $search = '', $term = '', $searchcategorias = '', $searchsubcategorias = '',
+    public $search = '', $searchcategorias = '', $searchsubcategorias = '',
         $searchmarcas = '', $searchespecificaciones = '';
     public $selectedcategorias = [];
     public $selectedsubcategorias = [];
@@ -227,6 +223,7 @@ class ShowProductos extends Component
                 "ts_rank(to_tsvector('spanish', 
                     COALESCE(productos.name, '') || ' ' || 
                     COALESCE(marcas.name, '') || ' ' || 
+                    COALESCE(subcategories.name, '') || ' ' || 
                     COALESCE(categories.name, '')
                 ), plainto_tsquery('spanish', '" . $this->search . "')) AS rank"
             )
@@ -296,14 +293,17 @@ class ShowProductos extends Component
                 "to_tsvector('spanish', 
                 COALESCE(productos.name, '') || ' ' || 
                 COALESCE(marcas.name, '') || ' ' || 
+                COALESCE(subcategories.name, '') || ' ' || 
                 COALESCE(categories.name, '')) @@ plainto_tsquery('spanish', '" . $this->search . "')",
             )->orWhereRaw(
-                "similarity(productos.name, '" . $this->search . "') > 0.5 
-                OR similarity(marcas.name, '" . $this->search . "') > 0.5 
-                OR similarity(categories.name, '" . $this->search . "') > 0.5",
-            )->orderByDesc('novedad')->orderBy('subcategories.orden')
-                ->orderBy('categories.orden')->orderByDesc('rank')
-                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"));
+                "similarity(productos.name, '" . $this->search . "') > 0.3 
+                OR similarity(marcas.name, '" . $this->search . "') > 0.3 
+                OR similarity(subcategories.name, '" . $this->search . "') > 0.3 
+                OR similarity(categories.name, '" . $this->search . "') > 0.3",
+            )->orderByDesc('novedad')->orderByDesc('rank')
+                ->orderByRaw("ts_rank(to_tsvector('spanish', productos.name || ' ' || marcas.name || ' ' || subcategories.name || ' ' || categories.name), plainto_tsquery('spanish', ?)) DESC", [$this->search])
+                ->orderByDesc(DB::raw("similarity(productos.name, '" . $this->search . "')"))
+                ->orderBy('categories.orden')->orderBy('subcategories.orden');
         }
 
         $productos->visibles()->publicados();
@@ -340,6 +340,14 @@ class ShowProductos extends Component
     {
         $this->resetPage();
         Self::resetfilterorder();
+        $this->reset([
+            'searchsubcategorias',
+            'selectedsubcategorias',
+            'searchmarcas',
+            'selectedmarcas',
+            'searchespecificaciones',
+            'selectedespecificacions'
+        ]);
     }
 
     public function resetfilters()
@@ -352,6 +360,7 @@ class ShowProductos extends Component
     public function updatedSelectedcategorias()
     {
         $this->resetPage();
+        $this->reset('search');
         $this->subcategories = Subcategory::whereHas('categories', function ($query) {
             $query->whereIn('categories.slug', $this->selectedcategorias);
         })->orderBy('orden', 'asc')->get();
@@ -393,6 +402,7 @@ class ShowProductos extends Component
 
     public function updatedSelectedsubcategorias()
     {
+        $this->reset('search');
         $this->resetPage();
         $this->searchsubcategorias = implode(',', $this->selectedsubcategorias);
 
@@ -469,6 +479,7 @@ class ShowProductos extends Component
 
     public function updatedSelectedmarcas()
     {
+        $this->reset('search');
         $this->resetPage();
         $this->searchmarcas = implode(',', $this->selectedmarcas);
         Self::resetfilterorder();
@@ -476,6 +487,7 @@ class ShowProductos extends Component
 
     public function updatedSelectedespecificacions()
     {
+        $this->reset('search');
         $this->resetPage();
         $this->searchespecificaciones = implode(',', $this->selectedespecificacions);
         Self::resetfilterorder();

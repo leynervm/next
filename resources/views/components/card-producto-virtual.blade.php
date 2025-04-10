@@ -15,7 +15,7 @@
     'novedad' => false,
 ])
 <div {{ $attributes->merge(['class' => 'w-full group flex flex-col relative']) }}>
-    <a class="w-full group flex flex-1 flex-col xl:gap-2 justify-between text-xs relative cursor-pointer"
+    <a class="w-full group flex flex-1 flex-col justify-between text-xs relative cursor-pointer"
         href="{{ $route }}">
         <div class="w-full">
             <div x-data="{ imageLoaded: false }" x-init="const img = document.getElementById('{{ $id }}');
@@ -74,7 +74,8 @@
         </div>
 
         @if (isset($footer))
-            <div class="w-full {{ isset($promocion) ? '' : 'xl:pt-9' }} {{-- md:mt-6 lg:mt-4 --}}">
+            {{-- {{ isset($promocion) ? '' : 'xl:pt-9' }} --}}
+            <div class="w-full">
                 {{ $footer }}
             </div>
         @endif

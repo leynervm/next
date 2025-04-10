@@ -287,7 +287,7 @@
                 :class="products.length ? 'rounded-b-none' : ''">
                 <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                     Barra de búsqueda</label>
-                <input type="text" name="search" autocomplete="off" x-model="search"
+                <input type="text" name="search" autocomplete="off" x-ref="searchmobile" x-model="search"
                     @input.debounce.300ms="fetchProducts" @keydown.enter.prevent="handleEnter"{{--  @blur="handleBlur" --}}
                     class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                     placeholder="Buscar en Next">

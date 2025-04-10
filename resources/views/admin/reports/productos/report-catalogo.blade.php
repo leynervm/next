@@ -2,6 +2,11 @@
 @section('titulo', $titulo)
 
 <style>
+    * {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
     .img-product {
         position: relative;
     }
@@ -98,14 +103,14 @@
     }
 
     .catalogo {
-        font-size: 8rem;
+        font-size: 7rem;
         letter-spacing: 10px;
         margin: 0;
         padding: 0;
-        -webkit-text-stroke: 1px #fff;
-        color: #0fb9b9;
-        text-shadow: 3px 3px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff,
-            -1px 1px 0 #fff, 1px 1px 0 #fff;
+        /* -webkit-text-stroke: 1px #fff; */
+        color: #fff;
+        /* text-shadow: 3px 3px 0 #fff, -1px -1px 0 #fff, 1px -1px 0 #fff,
+            -1px 1px 0 #fff, 1px 1px 0 #fff; */
     }
 
     .titulo {
@@ -184,39 +189,14 @@
 <table class="table border-white table-responsive">
     <tbody>
         <tr>
-            <td class="align-middle p-5" style="background: #0fb9b9;height: 350px;border-bottom-right-radius: 3rem;"
-                width="520px">
+            <td width="100"></td>
+            <td class="align-middle p-3" style="background: #0fb9b9;height: 350px;border-radius: 3rem;">
                 <h1 class="catalogo">CATÁLOGO</h1>
-                <h1 class="catalogo text-end">NEXT</h1>
+                <h1 class="catalogo text-end">
+                    {{ now('America/Lima')->year }}
+                </h1>
             </td>
-            <td class="align-top text-center p-0" align="center">
-                <table class="table border-white text-center p-5" style="width:200px;margin: auto;background: #222222;"
-                    width="100px" align="center">
-                    <tbody>
-                        <tr>
-                            <td class="align-top text-center p-3" style="">
-                                @if (!empty($url_logo))
-                                    <img src="{{ imageBase64($url_logo) }}" alt="{{ $empresa->name }}"
-                                        class="img-fluid" />
-                                @endif
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="p-2 py-5">
-                                @php
-                                    $year = now('America/Lima')->year;
-                                @endphp
-
-                                <span class="year">
-                                    {{ substr($year, 0, 2) }}</span>
-                                <br>
-                                <span class="year">
-                                    {{ substr($year, -2) }}</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </td>
+            <td width="100"></td>
         </tr>
 
     </tbody>
@@ -249,9 +229,52 @@
             $rowspan = $rowspan + 1;
         }
     @endphp
-    <table class="table border-white table-responsive">
+    <table class="table border-white">
+        {{-- <tbody>
+            <tr>
+                <td>
+                    <table class="table"
+                        style="border-radius: 1.5rem;width: 90%;margin:auto;box-shadow: 0px 0px 5px #ccc;">
+                        <tr>
+                            <td class="border border-dark" colspan="3"
+                                style="text-align-last: center;font-size: 16px;color:#444444;">
+                                {{ $item->name }}
+                            </td>
+                            <td class="border border-primary" width="450px"
+                                rowspan="{{ count($especificacions) + 1 }}">
+                                @if (!empty($image) && Storage::exists('images/productos/' . $image))
+                                    <img src="{{ imageBase64($image, 'app/public/images/productos/') }}" alt=""
+                                        class=""
+                                        style="display: block;width:auto !important;max-width:100% !important;height: auto;max-height: 450px;object-fit: scale-down !important;border:2px solid rgb(14, 117, 14)">
+                                @endif
+                            </td>
+                        </tr>
+
+                        @if (count($especificacions) > 0)
+                            @foreach ($especificacions as $chunk)
+                                @php
+                                    $clase = $loop->last ? '' : 'especificacion';
+                                    $clase = !empty($item->comentario) ? 'especificacion' : $clase;
+                                @endphp
+                                <tr class="">
+                                    @foreach ($chunk as $esp)
+                                        <td class="text-center align-top {{ $clase }}" width="70px">
+                                            <h1 class="text-13 font-bold" style="color:#494949;">
+                                                {{ $esp->caracteristica->name }}</h1>
+
+                                            <p class="text-10 m-0" style="color:#5f5f5f;padding-bottom: 2px;">
+                                                {{ $esp->name }}</p>
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        @endif
+                    </table>
+                </td>
+            </tr>
+        </tbody> --}}
         <tr class="">
-            <td class="p-5">
+            <td class="p-3 px-5">
                 <table class="table border-white text-10 font-normal card-producto box-image"
                     style="margin-left:{{ $loop->index % 2 ? 'auto !important;' : '0' }}">
                     <tbody>
