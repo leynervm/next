@@ -610,7 +610,7 @@ class ReportController extends Controller
 
             $productos = Producto::query()->select('id', 'name', 'modelo', 'sku', 'partnumber', 'slug', 'marca_id', 'category_id', 'subcategory_id', 'unit_id')
                 ->with(['category', 'marca', 'subcategory', 'unit'])
-                ->withWhereHas('tvitems', function ($query) use ($filters) {
+                ->withWhereHas('tvitems.kardexes', function ($query) use ($filters) {
                     $query->with(['almacen'])->when($filters['almacen_id'], function ($q, $almacen_id) {
                         $q->where('almacen_id', $almacen_id);
                     })->when($filters['user_id'], function ($q, $user_id) {
@@ -618,11 +618,13 @@ class ReportController extends Controller
                     });
                 })
                 ->withSum(['tvitems as vendidos' => function ($query) use ($filters) {
-                    $query->with(['almacen'])->when($filters['almacen_id'], function ($q, $almacen_id) {
-                        $q->where('almacen_id', $almacen_id);
-                    })->when($filters['user_id'], function ($q, $user_id) {
-                        $q->where('user_id', $user_id);
-                    });
+                    $query->with(['kardexes' => function ($subq) use ($filters) {
+                        $subq->when($filters['almacen_id'], function ($q, $almacen_id) {
+                            $q->where('almacen_id', $almacen_id);
+                        })->when($filters['user_id'], function ($q, $user_id) {
+                            $q->where('user_id', $user_id);
+                        });
+                    }]);
                 }], 'cantidad')
                 ->orderByDesc('vendidos')->take(10)->get();
 

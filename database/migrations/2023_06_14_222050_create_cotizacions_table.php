@@ -29,10 +29,10 @@ class CreateCotizacionsTable extends Migration
             $table->decimal('total', 12, 2)->nullable()->default(0);
             $table->integer('status')->default(Cotizacion::DEFAULT);
             $table->text('detalle')->nullable();
-            $table->bigInteger('moneda_id')->nullable();
-            $table->bigInteger('typepayment_id')->nullable();
+            $table->unsignedTinyInteger('moneda_id')->nullable();
+            $table->unsignedTinyInteger('typepayment_id')->nullable();
             $table->bigInteger('client_id')->nullable();
-            $table->bigInteger('sucursal_id')->nullable();
+            $table->unsignedTinyInteger('sucursal_id')->nullable();
             $table->bigInteger('user_id')->nullable();
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('typepayment_id')->on('typepayments')->references('id');

@@ -32,12 +32,12 @@ class CreateVentasTable extends Migration
             $table->decimal('increment', 4, 2)->default(0);
             $table->decimal('paymentactual', 18, 4);
             $table->text('observaciones')->nullable();
-            $table->bigInteger('moneda_id');
+            $table->unsignedTinyInteger('moneda_id');
             $table->unsignedTinyInteger('typepayment_id');
-            $table->bigInteger('seriecomprobante_id');
+            $table->unsignedTinyInteger('seriecomprobante_id');
             $table->bigInteger('client_id')->nullable();
             // $table->unsignedSmallInteger('shipmenttype_id')->nullable();
-            $table->bigInteger('user_id');
+            $table->unsignedBigInteger('user_id');
             $table->unsignedTinyInteger('sucursal_id')->nullable();
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('typepayment_id')->on('typepayments')->references('id');

@@ -17,7 +17,7 @@
             </li> --}}
 
             <li class="">
-                <x-nav-link href="/admin" class="">
+                <x-nav-link href="/admin" :active="request()->routeIs('admin')">
                     <x-slot name="titulo">Inicio</x-slot>
                     {{-- <span class="hidden md:block">Inicio</span> --}}
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
