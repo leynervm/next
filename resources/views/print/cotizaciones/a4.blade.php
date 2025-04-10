@@ -7,11 +7,12 @@
     $garantias = $cotizacion->cotizaciongarantias->chunk(5);
 @endphp
 
-<table class="table table-responsive text-12 font-normal">
+<table class="table border-white table-responsive text-12 font-normal">
     <thead>
         @if (!empty($cotizacion->detalle))
             <tr>
-                <th class="p-1 text-end text-14" colspan="2" align="right">
+                <th></th>
+                <th class="p-1 text-end text-14 pb-5" colspan="2" align="right">
                     {!! nl2br($cotizacion->detalle) !!}
                     <div style="height: 3px; max-width:200px;background: #0fb9b9; margin-left: auto;"></div>
                 </th>
@@ -19,15 +20,15 @@
         @endif
         <tr>
             <th class="p-1 text-start">
-                FECHA : </th>
+                FECHA</th>
             <td class="p-1 text-start">
-                {{ FormatDate($cotizacion->date, 'DD/MM/Y') }}</td>
+                : {{ FormatDate($cotizacion->date, 'DD/MM/Y') }}</td>
         </tr>
         <tr>
             <th class="p-1 align-top text-start">
-                CLIENTE : </th>
+                CLIENTE</th>
             <td class="p-1 text-start align-top">
-                {{ $cotizacion->client->name }} -
+                : {{ $cotizacion->client->name }} -
                 <b>[{{ $cotizacion->client->document }}]</b>
 
                 @if (!empty($cotizacion->direccion))
@@ -39,9 +40,9 @@
         @if ($cotizacion->lugar)
             <tr>
                 <th class="p-1 align-top text-start">
-                    LUGAR DE ENTREGA: </th>
+                    LUGAR DE ENTREGA</th>
                 <td class="p-1 text-start align-top">
-                    {{ $cotizacion->lugar->name }} <br>
+                    : {{ $cotizacion->lugar->name }} <br>
                     {{ $cotizacion->lugar->ubigeo->region }}
                     - {{ $cotizacion->lugar->ubigeo->provincia }}
                     - {{ $cotizacion->lugar->ubigeo->distrito }}
@@ -50,10 +51,10 @@
         @endif
 
         <tr>
-            <th class="p-1 align-top text-start" width="100px">
-                TIEMPO DE ENTREGA : </th>
+            <th class="p-1 align-top text-start" style="width: 170px">
+                TIEMPO DE ENTREGA</th>
             <td class="p-1 text-start align-top">
-                {{ $cotizacion->entrega }} {{ getNameTime($cotizacion->datecode) }}
+                : {{ $cotizacion->entrega }} {{ getNameTime($cotizacion->datecode) }}
             </td>
         </tr>
     </thead>
@@ -91,13 +92,13 @@
                     style="width: 560px;border-color: #0fb9b9 !important;">
                     <table class="table p-0 m-0 border-0 font-normal text-10">
                         <tbody>
-                            <tr class="border-start-0" style="border-color: #0fb9b9 !important;">
+                            <tr style="border-color: #0fb9b9 !important;">
                                 <th colspan="2" class="p-2 leading-none text-center border-end border-bottom"
                                     style="background: #0fb9b9;color:#ffffff;border-color: #0fb9b9 !important;">
                                     ESPECIFICACIONES
                                 </th>
                             </tr>
-                            <tr class="border-start-0">
+                            <tr style="border: 0px solid #fff;">
                                 <th style="width:120px;border-color: #0fb9b9 !important;"
                                     class="p-2 py-3 leading-none text-start border-end border-bottom">
                                     MARCA
@@ -112,7 +113,7 @@
                                 @php
                                     $rowspan = $rowspan + 1;
                                 @endphp
-                                <tr class="border-start-0">
+                                <tr style="border: 0px solid #fff;">
                                     <th style="width:120px;border-color: #0fb9b9 !important;"
                                         class="p-2 py-3 leading-none text-start border-end border-bottom ">
                                         MODELO
@@ -129,7 +130,7 @@
                                     $rowspan = $rowspan + count($item->producto->especificacions);
                                 @endphp
                                 @foreach ($item->producto->especificacions as $esp)
-                                    <tr class="">
+                                    <tr style="border: 0px solid #fff;">
                                         <th style="width:120px;border-color: #0fb9b9 !important;"
                                             class="p-2 py-3 leading-none text-start border-bottom border-end">
                                             {{ $esp->caracteristica->name }}
@@ -143,7 +144,7 @@
                             @endif
 
                             @if (!empty($item->producto->comentario))
-                                <tr class="">
+                                <tr style="border: 0px solid #fff;">
                                     <th style="width:120px;border-color: #0fb9b9 !important;"
                                         class="p-2 py-3 leading-none align-middle text-start border-bottom border-end">
                                         OTROS
@@ -356,7 +357,7 @@
     </table>
 @endif
 
-<table class="table table-responsive text-16 font-normal mt-5">
+<table class="table table-responsive text-16 font-normal mt-5" style="border-color:#0fb9b9 !important;">
     <thead>
         <tr>
             <td class="text-10 p-2 text-center" style="">
