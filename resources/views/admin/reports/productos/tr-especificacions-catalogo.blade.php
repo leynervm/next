@@ -8,19 +8,31 @@
                     {{ $item->name }}
                 </th>
             </tr>
-            <tr>
-                <td class="text-12 p-0" style="color:#555;" colspan="3">
-                    {{ $item->modelo }}
-                </td>
-            </tr>
-            <tr>
-                <th colspan="3" class="px-0 text-start leading-none">
-                    <span class="marca" style="color:#0fb9b9;font-size: 16px;">
-                        {{ $item->name_marca }}</span>
-                </th>
-            </tr>
         </thead>
         <tbody>
+            @if (!empty($item->marca) || !empty($item->modelo))
+                <tr class="">
+                    <td class="text-center align-top especificacion" width="50px" colspan="2">
+                        <h1 class="text-13 font-bold" style="color:#494949;">
+                            MARCA</h1>
+
+                        <p class="text-10 m-0" style="color:#5f5f5f;padding-bottom: 2px;">
+                            {{ $item->name_marca }}</p>
+                    </td>
+
+                    @if (!empty($item->modelo))
+                        <td class="text-center align-top especificacion" width="50px">
+                            <h1 class="text-13 font-bold" style="color:#494949;">
+                                MODELO</h1>
+
+                            <p class="text-10 m-0" style="color:#5f5f5f;padding-bottom: 2px;">
+                                {{ $item->modelo }}</p>
+                        </td>
+                    @endif
+                </tr>
+            @endif
+
+
             @if (count($especificacions) > 0)
                 @foreach ($especificacions as $chunk)
                     @php

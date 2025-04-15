@@ -543,7 +543,7 @@ class ReportController extends Controller
                 //         $q->where('almacens.id', $almacen_id);
                 //     });
                 // }], 'almacen_producto.cantidad')
-                ->with(['unit', 'imagen', 'series' => function ($query) {
+                ->with(['unit', 'marca', 'imagen', 'series' => function ($query) {
                     $query->when($filters['almacen_id'] ?? null, function ($q, $almacen_id) {
                         $q->where('almacen_id', $almacen_id);
                     });

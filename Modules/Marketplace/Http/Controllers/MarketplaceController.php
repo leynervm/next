@@ -875,11 +875,13 @@ class MarketplaceController extends Controller
             OR similarity(marcas.name, '" . $search . "') > 0.3 
             OR similarity(subcategories.name, '" . $search . "') > 0.3 
             OR similarity(categories.name, '" . $search . "') > 0.3",
-        )->orderByDesc('novedad')->orderByDesc('rank')
+        )->visibles()->publicados()->orderByDesc('rank')
+            ->orderBy('categories.orden')
             ->orderByRaw("ts_rank(to_tsvector('spanish', productos.name || ' ' || marcas.name || ' ' || subcategories.name || ' ' || categories.name), plainto_tsquery('spanish', ?)) DESC", [$search])
             ->orderByDesc(DB::raw("similarity(productos.name, '" . $search . "')"))
-            ->orderBy('categories.orden')->orderBy('subcategories.orden')
-            ->visibles()->publicados()->limit(30);
+            ->orderBy('subcategories.orden')
+            ->orderByDesc('novedad')
+            ->limit(30);
 
         // $products->whereRaw(
         //     "to_tsvector('spanish', 

@@ -1,5 +1,5 @@
-<div @getcombos.window ="(data) => $wire.getcombos(data.detail.producto_id)" wire:init="loadProductos"
-    x-data="carshoop">
+<div x-data="show_productos" @getcombos.window ="(data) => $wire.getcombos(data.detail.producto_id)"
+    wire:init="loadProductos">
 
     <x-loading-web-next wire:key="loadingproductosweb" wire:loading />
 
@@ -32,7 +32,8 @@
                 @if (count($selectedcategorias) > 0 ||
                         count($selectedsubcategorias) > 0 ||
                         count($selectedmarcas) > 0 ||
-                        count($selectedespecificacions) > 0)
+                        count($selectedespecificacions) > 0 ||
+                        $filterselected !== 'name_asc')
                     <x-simple-card class="w-full text-colorsubtitleform p-2.5 relative flex flex-col gap-1">
                         <small class="font-medium text-colorsubtitleform text-sm flex justify-between">
                             Filtros aplicados
@@ -48,6 +49,18 @@
                         </small>
 
                         <div class="w-full flex flex-wrap gap-1">
+
+                            @if ($filterselected !== 'name_asc')
+                                <span
+                                    class="px-1 py-0.5 !leading-none uppercase text-[10px] font-semibold inline-flex gap-1 items-center justify-center rounded bg-fondospancardproduct text-colorsubtitleform">
+                                    {{ str_replace('_', ' ', $filterselected) }}
+                                    <button type="button" wire:click="$set('filterselected', 'name_asc')"
+                                        class="text-xs text-textspancardproduct p-0.5 rounded cursor-pointer outline-none shadow-none shadow-0 border ring-0 focus:ring-0">
+                                        ✕
+                                    </button>
+                                </span>
+                            @endif
+
                             @foreach ($selectedcategorias as $item)
                                 <span
                                     class="px-1 py-0.5 !leading-none uppercase text-[10px] font-semibold inline-flex gap-1 items-center justify-center rounded bg-fondospancardproduct text-colorsubtitleform">
@@ -110,7 +123,8 @@
                 @endif
 
                 <x-simple-card class="w-full text-colorsubtitleform relative">
-                    <x-input class="w-full block p-2.5 pr-8" wire:model.lazy="search" {{-- x-model="search.value" --}}
+                    <x-input class="w-full block p-2.5 pr-8" id="search-productos" {{-- wire:model.lazy="search" --}}
+                        x-model.lazy="buscar" x-on:input="verifyFilters($event.target.value)"
                         placeholder="Buscar en {{ count($selectedcategorias) > 0 ? str_replace('-', ' ', mb_strtoupper(implode(', ', $selectedcategorias), 'UTF-8')) : ' Next' }}" />
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -366,7 +380,7 @@
                                         @endauth
 
                                         <div class="w-full bg-body p-1 flex flex-col items-end gap-1 justify-end"
-                                            x-data="carshoop">
+                                            x-data="{ qty: 1 }">
                                             <div
                                                 class="w-full flex-1 flex justify-center xl:justify-start gap-0.5 gap-x-1">
                                                 <template x-if="parseFloat(qty)>1">
@@ -770,11 +784,30 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('carshoop', () => ({
-                ordenfilter: false,
-                qty: 1,
+            Alpine.data('show_productos', () => ({
+                buscar: @entangle('search'),
+                selectedcategorias: @entangle('selectedcategorias'),
+                selectedsubcategorias: @entangle('selectedsubcategorias'),
+                selectedmarcas: @entangle('selectedmarcas'),
+                selectedespecificacions: @entangle('selectedespecificacions'),
                 isSticky: false,
                 init() {
+                    // this.$watch('buscar', (value, oldvalue) => {
+                    //     if (value == '') {
+                    //         this.updatedValueAlpine(value)
+                    //     }
+                    // })
+                    Livewire.hook('message.processed', () => {
+                        if (this.selectedcategorias.length > 0 ||
+                            this.selectedsubcategorias.length > 0 ||
+                            this.selectedmarcas.length > 0 ||
+                            this.selectedespecificacions.length > 0) {
+                            this.updatedValueAlpine('')
+                        } else {
+                            this.verifyFilters(this.buscar)
+                        }
+                    })
+
                     if (this.isXL) {
                         this.sidebar = true;
                     }
@@ -796,25 +829,35 @@
                         // console.log(window.scrollY);
                     });
                 },
+                verifyFilters(value) {
+                    if (this.selectedcategorias.length == 0 && this.selectedsubcategorias
+                        .length == 0 && this.selectedmarcas.length == 0 && this
+                        .selectedespecificacions.length == 0) {
+                        this.updatedValueAlpine(value);
+                    }
+                },
+                updatedValueAlpine(value) {
+                    // console.log(this.search);
+                    const input = document.querySelector('[x-ref=searchdesk]');
+                    const inputmobile = document.querySelector('[x-ref=searchmobile]');
+
+                    if (input) {
+                        const componentEl = input.closest('[x-data]');
+                        if (componentEl) {
+                            const component = Alpine.$data(componentEl);
+                            component.search = value;
+                        }
+
+                        input.value = value;
+                        input.dispatchEvent(new Event('input'));
+                    }
+
+                    if (inputmobile) {
+                        inputmobile.value = value;
+                        inputmobile.dispatchEvent(new Event('input'));
+                    }
+                }
             }))
-        })
-
-
-        document.addEventListener('livewire:load', () => {
-            Livewire.hook('message.processed', () => {
-                let value = @this.search;
-                const input = document.querySelector('[x-ref=search]');
-                const inputmobile = document.querySelector('[x-ref=searchmobile]');
-                // console.log(value, $(input))
-                if (input) {
-                    input.value = value;
-                    // input.dispatchEvent(new Event('input'));
-                }
-
-                if (inputmobile) {
-                    inputmobile.value = value;
-                }
-            })
         })
 
         document.addEventListener('DOMContentLoaded', function() {

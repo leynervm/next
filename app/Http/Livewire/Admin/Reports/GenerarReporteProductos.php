@@ -45,54 +45,10 @@ class GenerarReporteProductos extends Component
             'producto_id' => ['nullable', Rule::requiredIf($this->typereporte == FilterReportsEnum::KARDEX_PRODUCTOS->value), 'integer', 'min:1', 'exists:productos,id'],
             'almacen_id' => ['nullable', 'integer', 'min:1', 'exists:almacens,id'],
             'client_id' => ['nullable', 'integer', 'min:1', 'exists:clients,id'],
-            // 'methodpayment_id' => ['nullable', 'integer', 'min:1', 'exists:methodpayments,id'],
-            // 'monthbox_id' => ['nullable', 'integer', 'min:1', 'exists:monthboxes,id'],
-            // 'openbox_id' => ['nullable', 'integer', 'min:1', 'exists:openboxes,id'],
-            'user_id' => ['nullable', 'integer', 'min:1', 'exists:users,id'],
+             'user_id' => ['nullable', 'integer', 'min:1', 'exists:users,id'],
             'serie' => ['nullable', 'string', 'min:6'],
-            'pricetype_id' => ['nullable', 'integer', 'min:1', 'exists:pricetypes,id'],
-            // 'date' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::DIARIO->value ||
-            //         $this->typereporte == FilterReportsEnum::RANGO_DIAS->value),
-            //     'date',
-            //     'date_format:Y-m-d',
-            //     'before_or_equal:today'
-            // ],
-            // 'dateto' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::RANGO_DIAS->value),
-            //     'date',
-            //     'after:date',
-            //     'before_or_equal:today'
-            // ],
-            // 'week' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::SEMANAL->value),
-            //     'before_or_equal:today'
-            // ],
-            // 'month' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::MENSUAL->value ||
-            //         $this->typereporte == FilterReportsEnum::RANGO_MESES->value),
-            //     'date_format:Y-m',
-            //     'before_or_equal:today'
-            // ],
-            // 'monthto' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::RANGO_MESES->value),
-            //     'date_format:Y-m',
-            //     'after:month',
-            //     'before_or_equal:today'
-            // ],
-            // 'year' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::ANUAL->value),
-            //     'date_format:Y',
-            //     'before_or_equal:today'
-            // ],
-            // 'days' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::DIAS_SELECCIONADOS->value),
-            //     'array',
-            // ],
-            // 'months' => [
-            //     Rule::requiredIf($this->typereporte == FilterReportsEnum::MESES_SELECCIONADOS->value),
-            //     'array',
-            // ],
+            'pricetype_id' => ['nullable', Rule::requiredIf($this->typereporte == FilterReportsEnum::CATALOGO_PRODUCTOS->value), 'integer', 'min:1', 'exists:pricetypes,id'],
+          
         ];
     }
 
@@ -150,41 +106,6 @@ class GenerarReporteProductos extends Component
 
     public function validateFilters()
     {
-        // if (!in_array($this->typereporte, [FilterReportsEnum::DIARIO->value, FilterReportsEnum::RANGO_DIAS->value])) {
-        //     $this->reset(['date']);
-        // }
-        // if ($this->typereporte == FilterReportsEnum::ANUAL->value) {
-        //     $this->reset(['date', 'dateto']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::RANGO_DIAS->value) {
-        //     $this->reset(['dateto']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::RANGO_MESES->value) {
-        //     $this->reset(['monthto']);
-        // }
-        // if ($this->typereporte == FilterReportsEnum::SEMANA_ACTUAL->value) {
-        //     $this->reset(['week']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::ANUAL->value) {
-        //     $this->reset(['year']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::MENSUAL->value || $this->typereporte == !FilterReportsEnum::RANGO_MESES->value) {
-        //     $this->reset(['month']);
-        // }
-
-        // if ($this->typereporte !== FilterReportsEnum::MESES_SELECCIONADOS->value) {
-        //     $this->reset(['months']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::DIAS_SELECCIONADOS->value) {
-        //     $this->reset(['days']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::MESES_SELECCIONADOS->value) {
-        //     $this->reset(['months']);
-        // }
-        // if ($this->typereporte !== FilterReportsEnum::DIAS_SELECCIONADOS->value) {
-        //     $this->reset(['days']);
-        // }
-
         if ($this->typereporte == FilterReportsEnum::TOP_TEN_PRODUCTOS->value || $this->typereporte == FilterReportsEnum::MIN_STOCK->value || $this->typereporte == FilterReportsEnum::PRODUCTOS_PROMOCIONADOS->value) {
             $this->reset(['producto_id', 'category_id', 'subcategory_id', 'subcategories', 'serie']);
         }

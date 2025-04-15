@@ -44,15 +44,16 @@
                     :class="products.length ? 'rounded-b-none' : ''">
                     <label for="searchheader-xl" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                         Barra de búsqueda</label>
-                    <input type="search" name="search" autocomplete="off" x-ref="search" x-model="search"
-                        @input.debounce.300ms="fetchProducts" @keydown.enter.prevent="handleEnter"
-                        @keydown.arrow-down.prevent="navigate(1)" {{-- @blur="handleBlur" --}}
+                    <input type="search" name="search" autocomplete="off" x-ref="searchdesk" x-model="search"
+                        @keydown.debounce.300ms="fetchProducts(true)" @keydown.enter.prevent="handleEnter"
+                        @keydown.arrow-down.prevent="navigate(1)" x-on:input="updateValueLivewire($event.target.value)"
+                        x-on:focus="searchfocus = search" x-on:blur="checkBlurHandler"
                         @keydown.arrow-up.prevent="navigate(-1)"
                         class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                         placeholder="Buscar en Next" id="search">
                 </div>
                 <button type="submit" id="button-search-desk" role="button" aria-label="button-search-desk"
-                    @click.prevent="handleEnter;"
+                    @click.prevent="handleEnter"
                     class="bg-fondobuttonsearchmarketplace rounded-3xl focus:ring focus:ring-ringbuttonsearchmarketplace absolute right-0 box-border border-2 border-fondosearchmarketplace z-10 h-[46px] w-[46px] flex justify-center items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -288,7 +289,8 @@
                 <label for="searchheader-sm" class="absolute w-[1px] h-[1px] p-0 overflow-hidden">
                     Barra de búsqueda</label>
                 <input type="text" name="search" autocomplete="off" x-ref="searchmobile" x-model="search"
-                    @input.debounce.300ms="fetchProducts" @keydown.enter.prevent="handleEnter"{{--  @blur="handleBlur" --}}
+                    @keydown.debounce.300ms="fetchProducts(true)" @keydown.enter.prevent="handleEnter"
+                    x-on:focus="searchfocus = search" x-on:blur="checkBlurHandler"
                     class="bg-transparent border-0 border-none w-full text-lg h-full leading-5 text-colorsearchmarketplace tracking-wide ring-0 focus:border-0 focus:ring-0 outline-none outline-0 focus:outline-none focus:border-none focus:shadow-none shadow-none"
                     placeholder="Buscar en Next">
             </div>
@@ -332,11 +334,16 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('searchnext', () => ({
+                searchfocus: '',
                 search: '',
                 products: [],
                 error: '',
                 selectedIndex: -1,
                 coincidencias: '',
+                selectedcategorias: [],
+                selectedsubcategorias: [],
+                selectedmarcas: [],
+                selectedespecificacions: [],
                 init() {
                     const url = new URL(window.location.href);
                     if (url.searchParams.get('coincidencias')) {
@@ -347,8 +354,20 @@
                             this.coincidencias = value
                         }
                     })
+
+                    // this.$watch('search', (value, oldvalue) => {
+                    //     const input = document.getElementById('search-productos');
+
+                    //     if (input) {
+                    //         input.value = value;
+                    //         input.dispatchEvent(new Event('input'));
+                    //     }
+                    // })
                 },
-                fetchProducts() {
+                fetchProducts(viewresults) {
+                    if (viewresults !== true) {
+                        return;
+                    }
                     this.openSidebar = false;
                     this.error = '',
                         fetch(`{{ route('api.producto.search') }}`, {
@@ -460,6 +479,33 @@
                     }
                     window.history.replaceState(null, '', url);
                     return url;
+                },
+                updateValueLivewire(value) {
+                    const input = document.getElementById('search-productos');
+                    if (input) {
+                        const componentEl = input.closest('[x-data]');
+                        if (componentEl) {
+                            const component = Alpine.$data(componentEl);
+                            if (component) {
+                                this.selectedcategorias = component.selectedcategorias
+                                this.selectedsubcategorias = component.selectedsubcategorias
+                                this.selectedmarcas = component.selectedmarcas
+                                this.selectedespecificacions = component.selectedespecificacions
+                                // console.log(component.selectedcategorias);
+                                // component.buscar = value;
+                                if (this.selectedcategorias.length == 0 &&
+                                    this.selectedsubcategorias.length == 0 &&
+                                    this.selectedmarcas.length == 0 &&
+                                    this.selectedespecificacions.length == 0) {
+                                    input.value = value;
+                                    // input.dispatchEvent(new Event('input'));
+                                }
+                            }
+                        }
+                    }
+                },
+                checkBlurHandler() {
+                    this.searchfocus !== this.search && this.handleBlur();
                 }
             }))
         })

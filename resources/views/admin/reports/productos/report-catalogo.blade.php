@@ -35,8 +35,8 @@
 
 
     .content-price {
-        width: 80px;
-        height: 80px;
+        width: 90px;
+        height: 90px;
         border-radius: 50%;
         background: #0fb9b9;
         text-align: center;
@@ -46,15 +46,15 @@
     }
 
     .text-price {
+        padding-top: 5px;
         color: #ffffff;
         display: table-cell;
-        position: relative;
         vertical-align: middle;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 700;
         word-break: wrap;
         white-space: wrap;
-
+        line-height: 2rem;
     }
 
     .especificacions {
@@ -191,8 +191,9 @@
         <tr>
             <td width="100"></td>
             <td class="align-middle p-3" style="background: #0fb9b9;height: 350px;border-radius: 3rem;">
-                <h1 class="catalogo">CATÁLOGO</h1>
-                <h1 class="catalogo text-end">
+                <h1 class="catalogo text-center">CATÁLOGO</h1>
+                <h1 class="catalogo text-center">
+                    {{ formatDate(now('America/Lima'), 'MMMM') }}
                     {{ now('America/Lima')->year }}
                 </h1>
             </td>
