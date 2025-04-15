@@ -76,11 +76,22 @@
         height: 1px;
     }
 
+    .especificacion.name:before {
+        width: 15%;
+        height: 5px;
+        border-radius: .825rem;
+    }
+
     .especificacion:before {
         bottom: 0;
         left: 35%;
         /* border-bottom: 1px solid #0fb9b9 !important; */
         background: #0fb9b9;
+    }
+
+    .especificacion.name:before {
+        bottom: -3px;
+        left: 0;
     }
 
     .container-snappy-pdf {

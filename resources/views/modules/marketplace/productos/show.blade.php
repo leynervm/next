@@ -425,16 +425,9 @@
 
                     @if (count($producto->garantiaproductos) > 0)
                         <div class="w-full pt-1 flex flex-wrap gap-2 mt-3">
-                            <x-simple-card
-                                class="size-24 md:rounded-2xl p-2 sm:p-3 flex flex-col justify-center items-center gap-1">
-                                <h1
-                                    class="font-semibold text-center text-sm sm:text-lg pt-1 text-green-600 !leading-none">
-                                    Garantías del producto</h1>
-                            </x-simple-card>
-
                             @foreach ($producto->garantiaproductos as $item)
                                 <x-simple-card
-                                    class="size-24 md:rounded-2xl p-2 sm:p-3 flex flex-col justify-center items-center gap-1">
+                                    class="size-24 bg-fondominicard md:rounded-2xl border-green-500 p-2 sm:p-3 flex flex-col justify-center items-center gap-1 shadow-md !shadow-green-100">
                                     <p class="text-xs text-green-600 text-center font-medium !leading-none">
                                         {{ $item->typegarantia->name }}</p>
 

@@ -33,12 +33,10 @@
     </div>
 
     @if ($item->marca && $item->marca->image && Storage::exists('images/marcas/' . $item->marca->image->url))
-        <div style="position: absolute;right:5px;top:5px;width:90px;height:90px;">
-
-            <img src="{{ imageBase64($item->marca->image->url, 'app/public/images/marcas/') }}" alt=""
-                class=""
-                style="width:auto;max-width:100%;height:auto;max-height:90px;object-fit: scale-down !important;">
-
+        <div style="position: absolute;right:5px;top:5px;width:90px;height:80px;">
+            <img src="{{ imageBase64($item->marca->image->url, 'app/public/images/marcas/') }}"
+                alt="{{ $item->marca->name }}" class=""
+                style="width:auto;max-width:100%;height:auto;max-height:80px;object-fit: scale-down !important;">
         </div>
     @endif
 </td>

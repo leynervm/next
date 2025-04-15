@@ -2,7 +2,7 @@
     <table class="table border-white table-responsive p-0 align-top">
         <thead>
             <tr>
-                <th colspan="3" class="px-0 text-start leading-none"
+                <th colspan="3" class="px-0 text-start leading-none especificacion name"
                     style="text-align-last: center;font-size: 16px;color:#444444;">
                     {{-- {!! nl2br($item->name) !!} --}}
                     {{ $item->name }}
@@ -10,9 +10,19 @@
             </tr>
         </thead>
         <tbody>
-            @if (!empty($item->marca) || !empty($item->modelo))
+            @if (!empty($item->marca) || !empty($item->modelo) || !empty($item->sku))
                 <tr class="">
-                    <td class="text-center align-top especificacion" width="50px" colspan="2">
+                    @if (!empty($item->sku))
+                        <td class="text-center align-top especificacion" width="50px">
+                            <h1 class="text-13 font-bold" style="color:#494949;">
+                                SKU</h1>
+
+                            <p class="text-10 m-0" style="color:#5f5f5f;padding-bottom: 2px;">
+                                {{ $item->sku }}</p>
+                        </td>
+                    @endif
+
+                    <td class="text-center align-top especificacion" width="50px">
                         <h1 class="text-13 font-bold" style="color:#494949;">
                             MARCA</h1>
 
