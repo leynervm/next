@@ -18,15 +18,13 @@ class CreateProcesosTable extends Migration
             $table->dateTime('date');
             $table->text('descripcion');
             $table->text('confidencial')->nullable();
-            $table->integer('public')->default(0);
-            $table->integer('delete')->default(0);
-            $table->bigInteger('estate_id')->nullable();
-            $table->bigInteger('order_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->char('public', 1)->default(0);
+            $table->unsignedInteger('estate_id');
+            $table->unsignedInteger('ticket_id');
+            $table->unsignedInteger('user_id');
             $table->foreign('estate_id')->on('estates')->references('id');
-            $table->foreign('order_id')->on('orders')->references('id');
+            $table->foreign('ticket_id')->on('tickets')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
             $table->softDeletes();
         });
     }

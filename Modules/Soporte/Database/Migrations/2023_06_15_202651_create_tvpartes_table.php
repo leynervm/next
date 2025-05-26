@@ -15,25 +15,24 @@ class CreateTvpartesTable extends Migration
     public function up()
     {
         Schema::create('tvpartes', function (Blueprint $table) {
-            $table->id();
+           $table->id();
             $table->dateTime('date');
-            $table->decimal('cantidad', 10, 2);
-            $table->decimal('pricebuy', 10, 2);
-            $table->decimal('price', 10, 2);
-            $table->decimal('igv', 10, 2);
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('total', 10, 2);
-            $table->integer('status')->default(0);
-            $table->decimal('increment', 10, 2)->default(0);
-            $table->integer('delete')->default(0);
-            $table->bigInteger('parte_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->unsignedDecimal('cantidad', 18, 2);
+            $table->unsignedDecimal('pricebuy', 18, 3)->default(0);
+            $table->unsignedDecimal('price', 18, 3);
+            $table->unsignedDecimal('igv', 18, 3);
+            $table->unsignedDecimal('subtotaligv', 18, 3);
+            $table->unsignedDecimal('subtotal', 18, 3);
+            $table->unsignedDecimal('total', 18, 3);
+            $table->decimal('increment', 5, 2)->default(0);
+            $table->char('status', 1)->default(0);
+            $table->char('gratuito', 1)->default(0);
+            $table->unsignedBigInteger('parte_id');
+            $table->bigInteger('user_id');
             $table->integer('tvparteable_id');
             $table->string('tvparteable_type', 255);
             $table->foreign('parte_id')->on('partes')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

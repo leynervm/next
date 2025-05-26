@@ -18,12 +18,10 @@ class CreateLicenciasTable extends Migration
             $table->dateTime('date');
             $table->string('serie', 255)->nullable();
             $table->string('url', 100);
-            $table->bigInteger('order_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
-            $table->foreign('order_id')->on('orders')->references('id');
+            $table->bigInteger('ticket_id');
+            $table->bigInteger('user_id');
+            $table->foreign('ticket_id')->on('tickets')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

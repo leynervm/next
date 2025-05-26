@@ -17,11 +17,9 @@ class CreateEstatesTable extends Migration
             $table->id();
             $table->string('name', 255);
             $table->string('descripcion', 255)->nullable();
-            $table->integer('finish')->default(0);
-            $table->string('color', 7);
-            $table->integer('default')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
+            $table->char('finish', 1)->default(0);
+            $table->string('color', 9);
+            $table->char('default', 1)->default(0);
             $table->softDeletes();
         });
     }

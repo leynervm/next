@@ -16,12 +16,7 @@ class CreateGroupsTable extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->bigInteger('cajamovimiento_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
-            $table->foreign('cajamovimiento_id')->on('cajamovimientos')->references('id');
-            $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
+            $table->string('name')->nullable();
         });
     }
 

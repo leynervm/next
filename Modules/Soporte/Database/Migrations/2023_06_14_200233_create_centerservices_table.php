@@ -18,20 +18,14 @@ class CreateCenterservicesTable extends Migration
             $table->dateTime('date');
             $table->string('document', 11);
             $table->string('name', 255);
-            $table->string('direccion', 255);
             $table->string('email', 255)->nullable();
-            $table->unsignedBigInteger('marca_id')->nullable();
-            $table->unsignedBigInteger('ubigeo_id')->nullable();
-            $table->tinyInteger('moneda_id')->nullable();
-            $table->unsignedBigInteger('condition_id')->nullable();
+            $table->integer('paymentday')->nullable();
+            $table->unsignedInteger('marca_id')->nullable();
+            $table->unsignedInteger('condition_id')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
-
             $table->foreign('marca_id')->on('marcas')->references('id');
-            $table->foreign('ubigeo_id')->on('ubigeos')->references('id');
-            $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('condition_id')->on('conditions')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

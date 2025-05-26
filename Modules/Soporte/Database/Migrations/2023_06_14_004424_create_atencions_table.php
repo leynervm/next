@@ -16,9 +16,7 @@ class CreateAtencionsTable extends Migration
         Schema::create('atencions', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->integer('equipamentrequire')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
+            $table->char('equipamentrequire', 1)->default(0);
             $table->softDeletes();
         });
     }

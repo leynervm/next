@@ -22,7 +22,6 @@ class CreateAtencionConditionTable extends Migration
             $table->foreign('atencion_id')->on('atencions')->references('id');
             $table->foreign('condition_id')->on('conditions')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

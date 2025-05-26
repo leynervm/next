@@ -16,9 +16,7 @@ class CreatePrioritiesTable extends Migration
         Schema::create('priorities', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->string('color', 20);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
+            $table->string('color', 9);
             $table->softDeletes();
         });
     }

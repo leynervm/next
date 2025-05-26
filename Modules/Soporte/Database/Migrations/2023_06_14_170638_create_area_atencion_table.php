@@ -22,7 +22,6 @@ class CreateAreaAtencionTable extends Migration
             $table->foreign('area_id')->on('areas')->references('id');
             $table->foreign('atencion_id')->on('atencions')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

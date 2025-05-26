@@ -224,7 +224,7 @@
 
 
             @if (Module::isEnabled('Soporte'))
-                {{-- <li class="">
+                <li class="">
                     <x-nav-link href="{{ route('admin.soporte') }}" class="" :active="request()->routeIs('admin.soporte*')">
                         <x-slot name="titulo">Soporte Técnico</x-slot>
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 p-1.5" viewBox="0 0 24 24"
@@ -236,7 +236,7 @@
                             <path d="M8 21h8" />
                         </svg>
                     </x-nav-link>
-                </li> --}}
+                </li>
             @endif
 
             {{-- <li>

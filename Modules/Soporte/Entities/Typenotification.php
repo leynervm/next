@@ -9,7 +9,7 @@ class Typenotification extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['name'];
 
     public function setNameAttribute($value)
     {

@@ -15,21 +15,22 @@ class CreateServicegarantiasTable extends Migration
     {
         Schema::create('servicegarantias', function (Blueprint $table) {
             $table->id();
-            $table->decimal('price', 8, 2);
-            $table->decimal('priceus', 8, 2);
+            $table->dateTime('date');
+            $table->dateTime('startperiod');
+            $table->dateTime('endperiod');
+            $table->unsignedDecimal('igv', 18, 3);
+            $table->unsignedDecimal('subtotal', 18, 3);
+            $table->unsignedDecimal('total', 18, 3);
+            $table->decimal('tipocambio', 5, 2);
+            $table->decimal('totaltickets', 8, 2);
             $table->bigInteger('entorno_id')->nullable();
-            $table->bigInteger('marca_id')->nullable();
-            $table->bigInteger('condition_id')->nullable();
-            $table->bigInteger('moneda_id')->nullable();
-            $table->bigInteger('service_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->bigInteger('centerservice_id')->nullable();
+            $table->bigInteger('moneda_id');
+            $table->bigInteger('user_id');
             $table->foreign('entorno_id')->on('entornos')->references('id');
-            $table->foreign('marca_id')->on('marcas')->references('id');
-            $table->foreign('condition_id')->on('conditions')->references('id');
+            $table->foreign('centerservice_id')->on('centerservices')->references('id');
             $table->foreign('moneda_id')->on('monedas')->references('id');
-            $table->foreign('service_id')->on('services')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

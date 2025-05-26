@@ -22,7 +22,6 @@ class CreateAtencionEntornoTable extends Migration
             $table->foreign('atencion_id')->on('atencions')->references('id');
             $table->foreign('entorno_id')->on('entornos')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

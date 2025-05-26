@@ -300,7 +300,7 @@
                     <td class="font-medium align-baseline" style="width: 50px;text-align: left;">
                         CLIENTE </td>
                     <td class="font-bold leading-5" style="text-align: left;">
-                        : {{ $comprobante->client->name }} - {{ $comprobante->client->document }}</td>
+                        : {{ $comprobante->client->document }} - {{ $comprobante->client->name }}</td>
                 </tr>
                 @if (!empty($comprobante->direccion))
                     <tr>

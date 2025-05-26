@@ -22,7 +22,6 @@ class CreateAreaEntornoTable extends Migration
             $table->foreign('area_id')->on('areas')->references('id');
             $table->foreign('entorno_id')->on('entornos')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

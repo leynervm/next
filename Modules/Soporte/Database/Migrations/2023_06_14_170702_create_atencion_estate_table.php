@@ -22,7 +22,6 @@ class CreateAtencionEstateTable extends Migration
             $table->foreign('atencion_id')->on('atencions')->references('id');
             $table->foreign('estate_id')->on('estates')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

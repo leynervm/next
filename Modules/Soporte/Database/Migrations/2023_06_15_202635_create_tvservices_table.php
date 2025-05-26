@@ -17,22 +17,22 @@ class CreateTvservicesTable extends Migration
         Schema::create('tvservices', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->decimal('cantidad', 10, 2);
-            $table->decimal('price', 10, 2);
-            $table->decimal('igv', 10, 2);
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('total', 10, 2);
-            $table->integer('status')->default(0);
-            $table->decimal('increment', 10, 2)->default(0);
-            $table->integer('delete')->default(0);
-            $table->bigInteger('service_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->unsignedDecimal('cantidad', 18, 2);
+            $table->unsignedDecimal('pricebuy', 18, 3)->default(0);
+            $table->unsignedDecimal('price', 18, 3);
+            $table->unsignedDecimal('igv', 18, 3);
+            $table->unsignedDecimal('subtotaligv', 18, 3);
+            $table->unsignedDecimal('subtotal', 18, 3);
+            $table->unsignedDecimal('total', 18, 3);
+            $table->decimal('increment', 5, 2)->default(0);
+            $table->char('status', 1)->default(0);
+            $table->char('gratuito', 1)->default(0);
+            $table->unsignedInteger('service_id');
+            $table->unsignedInteger('user_id');
             $table->integer('tvserviceable_id');
             $table->string('tvserviceable_type', 255);
             $table->foreign('service_id')->on('services')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 

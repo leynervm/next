@@ -15,11 +15,9 @@ class CreateEntornosTable extends Migration
     {
         Schema::create('entornos', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 100);
-            $table->integer('requiredirection')->default(0);
-            $table->integer('default')->default(0);
-            $table->integer('delete')->default(0);
-            $table->timestamps();
+            $table->string('name', 255);
+            $table->char('requiredirection', 1)->default(0);
+            $table->char('default', 1)->default(0);
             $table->softDeletes();
         });
     }

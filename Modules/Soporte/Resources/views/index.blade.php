@@ -9,7 +9,7 @@
                 <line x1="5" x2="19" y1="12" y2="12" />
             </svg>
         </x-link-next>
-        <x-link-next href="#" titulo="Listado de Ordenes">
+        <x-link-next href="#" titulo="Tickets">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m8 11 2 2 4-4" />

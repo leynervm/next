@@ -15,12 +15,10 @@ class CreateResponsablesTable extends Migration
     {
         Schema::create('responsables', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('contact_id')->nullable();
+            $table->bigInteger('employer_id')->nullable();
+            $table->foreign('employer_id')->on('employers')->references('id');
             $table->integer('responsable_id');
             $table->string('responsable_type');
-            $table->foreign('contact_id')->on('contacts')->references('id');
-            $table->timestamps();
-            $table->softDeletes();
         });
     }
 
