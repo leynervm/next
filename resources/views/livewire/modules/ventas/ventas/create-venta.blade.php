@@ -809,14 +809,6 @@
                     });
 
                     Livewire.hook('message.processed', () => {
-                        this.selectTC.select2({
-                            data: this.seriecomprobantes
-                        }).val(this.seriecomprobante_id).trigger('change');
-
-                        this.selectMP.select2({
-                            data: this.methodpayments
-                        }).val(this.methodpayment_id).trigger('change');
-
                         const componentloading = document.querySelector(
                             '[x-ref="loadingnext"]');
                         $(componentloading).fadeOut();
@@ -1117,7 +1109,7 @@
                 confirmDeleteAllTVItems() {
                     swal.fire({
                         title: 'ELIMINAR TODOS LOS ITEMS DEL CARRITO DE COMPRAS ?',
-                        text: "Se eliminarán todos los productos del carrito de ventas y se actualizará su stock correspondientes.",
+                        text: null,
                         icon: 'question',
                         showCancelButton: true,
                         confirmButtonColor: '#0FB9B9',
@@ -1250,6 +1242,12 @@
                             this.istransferencia = false;
                         }
                     }).val(this.methodpayment_id).trigger("change");
+
+                    Livewire.hook('message.processed', () => {
+                        this.selectMP.select2({
+                            data: this.methodpayments
+                        }).val(this.methodpayment_id).trigger('change');
+                    });
                 },
                 selectPayment() {
                     this.selectTP = $(this.$refs.selectpayment).select2({
@@ -1331,6 +1329,12 @@
                         $(window).off(evt);
                     }).val(this.seriecomprobante_id).trigger("change");
 
+                    Livewire.hook('message.processed', () => {
+                        this.selectTC.select2({
+                            data: this.seriecomprobantes
+                        }).val(this.seriecomprobante_id).trigger('change');
+                    });
+
                 }
                 // getSelectedData(ref, propiedad, nameData) {
                 //     const selectData = $(this.$refs[ref]).select2('data')[0];
@@ -1341,8 +1345,8 @@
 
         function confirmDeleteSerie(serie) {
             swal.fire({
-                title: 'ELIMINAR SERIE ' + serie.serie.serie + ' DE LA VENTA ?',
-                text: "Se eliminará un registro de la base de datos.",
+                title: `ELIMINAR SERIE "${serie.serie.serie}" DE LA VENTA ?`,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',
