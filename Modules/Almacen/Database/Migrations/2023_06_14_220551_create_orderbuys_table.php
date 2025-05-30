@@ -23,14 +23,12 @@ class CreateOrderbuysTable extends Migration
             $table->decimal('total', 8, 2);
             $table->decimal('pricedolar', 8, 2);
             $table->integer('status')->default(0);
-            $table->integer('delete')->default(0);
             $table->bigInteger('moneda_id')->nullable();
             $table->bigInteger('proveedor_id')->nullable();
             $table->bigInteger('user_id')->nullable();
             $table->foreign('moneda_id')->on('monedas')->references('id');
             $table->foreign('proveedor_id')->on('proveedors')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
             $table->softDeletes();
         });
     }

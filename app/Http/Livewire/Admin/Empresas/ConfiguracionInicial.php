@@ -3,18 +3,17 @@
 namespace App\Http\Livewire\Admin\Empresas;
 
 use App\Helpers\FormatoPersonalizado;
-use App\Helpers\GetClient;
 use App\Models\Acceso;
 use App\Models\Almacen;
 use App\Models\Empresa;
 use App\Models\Producto;
 use App\Models\Sucursal;
 use App\Models\Typecomprobante;
-use App\Models\Typesucursal;
 use App\Models\Ubigeo;
 use App\Rules\CampoUnique;
 use App\Rules\DefaultValue;
 use App\Rules\ValidateFileKey;
+use App\Traits\ManageArrayTrait;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
@@ -24,11 +23,12 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Intervention\Image\ImageManagerStatic as Image;
 use Nwidart\Modules\Facades\Module;
+use Illuminate\Support\Str;
 
 class ConfiguracionInicial extends Component
 {
 
-    use WithFileUploads;
+    use WithFileUploads, ManageArrayTrait;
 
     public $open = false;
     public $step = 1;
@@ -227,8 +227,9 @@ class ConfiguracionInicial extends Component
                 'selectedsucursals.required' => 'Por favor seleccione sucursales a registrar',
             ]);
 
-            if (!$acceso->unlimit()) {
-                if ($this->document !== '20538954099' && count($this->selectedsucursals) > $acceso->limitsucursals) {
+            if (!$acceso->unlimit() || $this->document != '20538954099') {
+                // dd(count($this->selectedsucursals), $this->selectedsucursals, $this->sucursals);
+                if (count($this->selectedsucursals) > $acceso->limitsucursals) {
                     $mensaje = response()->json([
                         'title' => "SOLO PUEDE SELECCIONR UN MÁXIMO DE " . $acceso->limitsucursals . " SUCURSALES",
                         'icon' => 'warning',
@@ -241,6 +242,11 @@ class ConfiguracionInicial extends Component
             $mensaje = null;
             foreach ($this->sucursals as $item) {
                 if (in_array($item['codigo'], $this->selectedsucursals)) {
+                    if (strlen(trim($item['codigo'])) !== 4 || !is_numeric(trim($item['codigo']))) {
+                        $mensaje = "CÓDIGO DE SUCURSAL " . $item['descripcion'] . " CON DIRECCIÓN " . $item['direccion'] . " ES INVÁLIDO.";
+                        break;
+                    }
+
                     if (count($item['boxes']) == 0) {
                         $mensaje = "SUCURSAL " . $item['descripcion'] . " NO CONTIENE CAJAS DE PAGO AGREGADAS.";
                         break;
@@ -563,6 +569,7 @@ class ConfiguracionInicial extends Component
 
         if ($response->ok()) {
             $cliente = json_decode($response->body());
+            //  dd($cliente);
             if (isset($cliente->success) && $cliente->success) {
                 $this->name = $cliente->name;
                 $this->direccion = $cliente->direccion;
@@ -574,7 +581,8 @@ class ConfiguracionInicial extends Component
                 $this->distrito = $cliente->distrito;
 
                 $establecimientos = [];
-                $principal = [
+                $principal[] = [
+                    'id' => Str::uuid(),
                     'descripcion' => 'TIENDA PRINCIPAL ' . $cliente->name,
                     'direccion' => $cliente->direccion,
                     'ubigeo_id' => $cliente->ubigeo_id,
@@ -590,36 +598,25 @@ class ConfiguracionInicial extends Component
                     'seriecomprobantes' => [],
                 ];
 
-                if (is_array($cliente->establecimientos)) {
-                    $establecimientos = array_map(function ($object) {
-                        $array = (array) $object;
-                        $array['default'] = false;
-                        $array['descripcion'] = $array['tipo'] . ' ' . $array['codigo'];
+                $locales = json_decode(json_encode($cliente->establecimientos), true) ?? [];
+                $arrLocales = $this->mapToArrayEstablecimientos($locales, true);
+                $establecimientos = array_map(function ($item) {
+                    $others = [
+                        'id' => Str::uuid(),
+                        'default' => false,
+                        'descripcion' => $item['codigo'],
+                        'typesucursal_id' => null,
+                        'boxes' => [],
+                        'seriecomprobantes' => [],
+                    ];
+                    return array_merge($item, $others);
+                }, $arrLocales);
 
-                        $ubigeo_id = null;
-                        if (!empty($array['distrito'])) {
-                            $ubigeo_id = Ubigeo::where('distrito', 'ilike', trim($array['distrito']))
-                                ->where('provincia', 'ilike', trim($array['provincia']))
-                                ->first()->id ?? null;
-                        }
-                        $array['ubigeo_id'] = $ubigeo_id;
-
-                        $typesucursal_id = null;
-                        if ($array['cod_tipo']) {
-                            $typesucursal_id = Typesucursal::where('code', $array['cod_tipo'])->first()->id ?? null;
-                        }
-
-                        $array['typesucursal_id'] = $typesucursal_id;
-                        $array['boxes'] = [];
-                        $array['seriecomprobantes'] = [];
-                        return $array;
-                        // return (array) $object;
-                    }, $cliente->establecimientos);
-                }
-                $establecimientos[] = $principal;
-                $collect = collect($establecimientos);
+                // $establecimientos[] = $principal;
+                $collect = collect(array_values(array_merge_recursive($principal, $establecimientos)));
                 $this->selectedsucursals[] = '0000';
                 $this->sucursals = $collect->sortBy('codigo')->values()->toArray();
+                // dd($this->sucursals);
             } else {
                 $this->name = '';
                 $this->direccion = '';
@@ -716,7 +713,6 @@ class ConfiguracionInicial extends Component
 
     public function addbox()
     {
-
         $this->boxname = mb_strtoupper(trim($this->boxname), "UTF-8");
         $this->apertura = number_format($this->apertura, 2, '.', '');
         $this->validate([
@@ -725,8 +721,7 @@ class ConfiguracionInicial extends Component
         ]);
 
         if (count($this->boxes) > 0) {
-            $boxes = collect($this->boxes);
-            $existscode = $boxes->pluck('name')->contains($this->boxname);
+            $existscode = $this->existsInArrayByKey($this->boxes, 'name', $this->boxname);
             if ($existscode) {
                 $this->addError('boxname', 'Ya existe una caja de pago con el mismo nombre');
                 return false;
@@ -735,43 +730,43 @@ class ConfiguracionInicial extends Component
 
         $box = [
             'name' => $this->boxname,
-            'apertura' => $this->apertura
+            'apertura' => $this->apertura,
+            'id' => Str::uuid()
         ];
         $this->boxes[] = $box;
         $this->reset(['boxname', 'apertura']);
         $this->resetValidation();
     }
 
-    public function removebox($indice)
+    public function removebox(string $id)
     {
-        if ($indice >= 0) {
-            unset($this->boxes[$indice]);
-            $this->boxes = array_values($this->boxes);
-
-            if (!is_null($this->editindex)) {
-                $this->sucursals[$this->editindex]["boxes"] = array_values($this->boxes);
-            }
+        $this->boxes = $this->removeFromArrayByKey($this->boxes, 'id', $id);
+        if ($this->editindex) {
+            $this->sucursals = array_values(array_map(function ($item) {
+                if (toStrLowercase($item['id']) == toStrLowercase($this->editindex)) {
+                    $item['boxes'] = $this->boxes;
+                }
+                return $item;
+            }, $this->sucursals));
         }
         $this->resetValidation();
     }
 
-    public function editsucursal($codigo)
+    public function editsucursal(string $id)
     {
+        // dd($id);
         $this->resetValidation();
         $this->reset(['typecomprobante_id', 'serie', 'indicio', 'seriecompleta', 'contador', 'boxname', 'apertura']);
         if (count($this->selectedsucursals) > 0) {
-            // $sucursal = array_filter($this->sucursals, function ($sucursal) use ($codigo) {
-            //     return $sucursal['codigo'] == $codigo;
-            // });
-            $indice = array_search($codigo, array_column($this->sucursals, 'codigo'));
-            if ($indice >= 0) {
-                $this->editindex = $indice;
-                $this->namesucursal =  mb_strtoupper(trim($this->sucursals[$this->editindex]["descripcion"]), "UTF-8");
-                $this->direccionsucursal =  mb_strtoupper(trim($this->sucursals[$this->editindex]["direccion"]), "UTF-8");
-                $this->ubigeosucursal_id = $this->sucursals[$this->editindex]["ubigeo_id"];
-                $this->codeanexo = $this->sucursals[$this->editindex]["codigo"];
-                $this->boxes = $this->sucursals[$this->editindex]["boxes"];
-                $this->seriecomprobantes = $this->sucursals[$this->editindex]["seriecomprobantes"];
+            $sucursal = $this->findInArrayByKey($this->sucursals, 'id', $id);
+            if ($sucursal) {
+                $this->editindex = $id;
+                $this->namesucursal =  mb_strtoupper(trim($sucursal["descripcion"]), "UTF-8");
+                $this->direccionsucursal =  mb_strtoupper(trim($sucursal["direccion"]), "UTF-8");
+                $this->ubigeosucursal_id = $sucursal["ubigeo_id"];
+                $this->codeanexo = $sucursal["codigo"];
+                $this->boxes = $sucursal["boxes"];
+                $this->seriecomprobantes = $sucursal["seriecomprobantes"];
                 $this->open = true;
             }
         }
@@ -789,7 +784,7 @@ class ConfiguracionInicial extends Component
             'direccionsucursal' => ['required', 'string', 'min:3', 'max:255'],
             'typesucursal_id' => ['nullable', 'integer', 'min:1', 'exists:typesucursals,id',],
             'ubigeosucursal_id' => ['required', 'integer', 'min:1', 'exists:ubigeos,id',],
-            'codeanexo' => ['required', 'string', 'min:4', 'max:4', new CampoUnique('sucursals', 'codeanexo', null, true),],
+            'codeanexo' => ['required', 'numeric', 'digits:4', new CampoUnique('sucursals', 'codeanexo', null, true),],
             'defaultsucursal' => ['required', 'boolean', 'min:0', 'max:1', new DefaultValue('sucursals', 'default', null, true)],
             'seriecomprobantes' => ['required', 'array', 'min:1'],
             'boxes' => ['required', 'array', 'min:1'],
@@ -799,28 +794,21 @@ class ConfiguracionInicial extends Component
         ]);
 
         if (count($this->sucursals) > 0) {
-            $sucursals = collect($this->sucursals);
+            $sucursals = array_filter($this->sucursals, function ($item) {
+                return (toStrLowercase($this->editindex) !== toStrLowercase($item['id']));
+            });
 
-            if (!is_null($this->editindex)) {
-                $sucursals = $sucursals->except($this->editindex);
-            }
-
-            $existscode = $sucursals->pluck('codigo')->contains($this->codeanexo);
+            $existscode = $this->existsInArrayByKey($sucursals, 'codigo', $this->codeanexo);
             if ($existscode) {
                 $this->addError('codeanexo', 'El valor de código de anexo ya está agregado.');
+                return false;
             }
 
-            $existsname = $sucursals->pluck('descripcion')->contains($this->namesucursal);
-            // if ($existscode) {
-            //     $this->addError('codeanexo', 'El valor de código de anexo ya está agregado.');
-            // }
-
-            // Convertimos todos los nombres del array a mayusuclas para hacer la comparación
-            // $nombres = array_map('strtoupper', $sucursals->pluck('descripcion')->toArray());
-            // $existsname = in_array(trim(mb_strtoupper($this->namesucursal, "UTF-8")), $nombres);
+            $existsname = $this->existsInArrayByKey($sucursals, 'descripcion', $this->namesucursal);
 
             if ($existsname) {
                 $this->addError('namesucursal', 'El nombre de sucursal ya está agregado.');
+                return false;
             }
 
             if ($existscode || $existsname) {
@@ -828,15 +816,13 @@ class ConfiguracionInicial extends Component
             }
 
             if ($this->defaultsucursal) {
-                $existsdefault = $sucursals->contains('default', true);
+                $existsdefault = $this->existsInArrayByKey($sucursals, 'default', true, false);
                 if ($existsdefault) {
-                    $sucursals->transform(function ($sucursal, $key) {
-                        if ($sucursal['default']) {
-                            $sucursal['default'] = false;
-                        }
-                        return $sucursal;
-                    });
-                    $this->sucursals = $sucursals->toArray();
+                    $updatedSucursals = array_values(array_map(function ($item) {
+                        return array_merge($item, ['default' => false]);
+                    }, $sucursals));
+
+                    $this->sucursals = $updatedSucursals;
                 }
             }
         }
@@ -851,13 +837,8 @@ class ConfiguracionInicial extends Component
             $distrito = $ubigeo->distrito;
         }
 
-        $codesucursal = '';
-        $typesucursal = '';
-        // if ($this->typesucursal_id) {
-        //     $typesucursal = Typesucursal::find($this->typesucursal_id);
-        //     $codesucursal = $typesucursal->code;
-        //     $typesucursal = $typesucursal->name;
-        // }
+        $editSucursal = $this->editindex ? $this->findInArrayByKey($this->sucursals, 'id', $this->editindex) : null;
+        $default = !empty($editSucursal) ? (bool) $editSucursal['default'] : $this->defaultsucursal;
         $sucursal_updated = [
             'descripcion' => $this->namesucursal,
             'direccion' => $this->direccionsucursal,
@@ -866,44 +847,46 @@ class ConfiguracionInicial extends Component
             'departamento' => $departamento,
             'provincia' => $provincia,
             'distrito' => $distrito,
-            'cod_tipo' => $codesucursal,
-            'tipo' => $typesucursal,
+            'cod_tipo' => '',
+            'tipo' => '',
             'codigo' => $this->codeanexo,
-            'default' => !is_null($this->editindex) ? $this->sucursals[$this->editindex]['default'] : $this->defaultsucursal,
-            'boxes' => $this->boxes,
-            'seriecomprobantes' => $this->seriecomprobantes
+            'default' => $default,
+            'boxes' => array_values($this->boxes),
+            'seriecomprobantes' => array_values($this->seriecomprobantes)
         ];
 
-        if (is_null($this->editindex)) {
+        if (empty($this->editindex)) {
+            $sucursal_updated['id'] = Str::uuid();
             $this->sucursals[] = $sucursal_updated;
         } else {
-            $this->sucursals[$this->editindex]["descripcion"] = $this->namesucursal;
-            $this->sucursals[$this->editindex]["direccion"] = $this->direccionsucursal;
-            $this->sucursals[$this->editindex]["codigo"] = $this->codeanexo;
-            $this->sucursals[$this->editindex]["boxes"] = array_values($this->boxes);
-            $this->sucursals[$this->editindex]["seriecomprobantes"] = array_values($this->seriecomprobantes);
-
-            if ($this->sucursals[$this->editindex]["ubigeo_id"] != $this->ubigeosucursal_id) {
-                $this->sucursals[$this->editindex]["ubigeo_id"] = $this->ubigeosucursal_id;
-                $this->sucursals[$this->editindex]["departamento"] = $this->departamento;
-                $this->sucursals[$this->editindex]["provincia"] = $this->provincia;
-                $this->sucursals[$this->editindex]["distrito"] = $this->distrito;
+            $this->sucursals = array_values(array_map(function ($item) use ($sucursal_updated) {
+                return $item['id'] == $this->editindex
+                    ? array_merge($item, $sucursal_updated)
+                    : $item;
+            }, $this->sucursals));
+        }
+        if ($editSucursal) {
+            $selecteds = $this->selectedsucursals ?? [];
+            if (!in_array($this->codeanexo, $selecteds)) {
+                $selecteds[] = $this->codeanexo;
+                $this->selectedsucursals = array_values(array_filter($selecteds, function ($codigo) use ($editSucursal) {
+                    return ($editSucursal['codigo'] != $codigo);
+                }));
             }
         }
-        $this->sucursals = collect($this->sucursals)->sortBy('codigo')->values()->toArray();
         $this->reset(['open', 'editindex', 'boxes', 'seriecomprobantes', 'defaultsucursal', 'typesucursal_id', 'namesucursal', 'direccionsucursal', 'codeanexo', 'ubigeosucursal_id']);
     }
 
-    public function removesucursal($index)
+    public function removesucursal(string $id)
     {
-        if (count($this->selectedsucursals) > 0) {
-            if (in_array($this->sucursals[$index]['codigo'], $this->selectedsucursals)) {
-                unset($this->selectedsucursals[array_search($this->sucursals[$index]['codigo'], $this->selectedsucursals)]);
-                $this->selectedsucursals = array_values($this->selectedsucursals);
-            }
+        $selecteds = $this->selectedsucursals ?? [];
+        $sucursal = $this->findInArrayByKey($this->sucursals, 'id', $id);
+        if (in_array($sucursal['codigo'], $this->selectedsucursals)) {
+            $this->selectedsucursals = array_values(array_filter($selecteds, function ($codigo) use ($sucursal) {
+                return ($sucursal['codigo'] != $codigo);
+            }));
         }
-        unset($this->sucursals[$index]);
-        $this->sucursals = array_values($this->sucursals);
+        $this->sucursals = $this->removeFromArrayByKey($this->sucursals, 'id', $id);
         $this->resetValidation();
     }
 

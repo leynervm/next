@@ -30,7 +30,7 @@ class ShowTipoNotificaciones extends Component
 
     public function render()
     {
-        $typenotifications = Typenotification::where('delete', 0)->orderBy('name', 'asc')->paginate();
+        $typenotifications = Typenotification::orderBy('name', 'asc')->paginate();
         return view('soporte::livewire.tiponotificaciones.show-tipo-notificaciones', compact('typenotifications'));
     }
 

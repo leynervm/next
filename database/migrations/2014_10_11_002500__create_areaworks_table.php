@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::create('areaworks', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->integer('visible')->default(0);
+            $table->text('slug')->unique();
+            $table->char('addtickets', 1)->default(0);
             $table->softDeletes();
         });
     }

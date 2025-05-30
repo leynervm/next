@@ -657,7 +657,7 @@
                         <x-jet-input-error for="selectedsucursals" />
                         <div class="w-full flex flex-col gap-2 mt-3">
                             @foreach ($sucursals as $index => $item)
-                                <x-simple-card x-data="{ rowselected: false }" wire:key="{{ $item['codigo'] }}"
+                                <x-simple-card x-data="{ rowselected: false }" wire:key="cardsuc_{{ $item['id'] }}"
                                     class="w-full cursor-default text-xs flex flex-col gap-2 p-1 sm:p-3 rounded-xl {{ $item['default'] > 0 ? 'bg-fondominicard !border-next-600' : '' }}">
                                     @if ($item['default'] > 0)
                                         <div
@@ -668,12 +668,12 @@
                                     @else
                                         <div class="inline-block py-1">
                                             <x-input class="cursor-pointer" type="checkbox" x-model="rowselected"
-                                                name="selectedsucursals[]" wire:model.defer="selectedsucursals"
-                                                id="{{ $item['codigo'] }}" value="{{ $item['codigo'] }}"
-                                                wire:key="{{ $item['codigo'] }}" />
+                                                name="selectedsucursals" wire:model.defer="selectedsucursals"
+                                                id="showsucursal_{{ $item['id'] }}" value="{{ $item['codigo'] }}"
+                                                wire:key="showsucursal_{{ $item['id'] }}" />
                                             <x-label
                                                 class="inline-block pl-2 cursor-pointer font-semibold text-colortitleform"
-                                                value="SELECCIONAR" for="{{ $item['codigo'] }}" />
+                                                value="SELECCIONAR" for="showsucursal_{{ $item['id'] }}" />
                                         </div>
                                     @endif
 
@@ -758,18 +758,18 @@
 
                                     <div class="w-full flex items-end gap-2 justify-end">
                                         @if ($item['default'] > 0)
-                                            <x-button-edit wire:click="editsucursal({{ $item['codigo'] }})"
+                                            <x-button-edit wire:click="editsucursal('{{ $item['id'] }}')"
                                                 wire:loading.attr="disabled"
-                                                wire:key="editsucursaldefault_{{ $item['codigo'] }}" />
+                                                wire:key="editsucursaldefault_{{ $item['id'] }}" />
                                         @else
                                             <x-button-edit x-cloak x-show="rowselected"
-                                                wire:click="editsucursal({{ $item['codigo'] }})"
+                                                wire:click="editsucursal('{{ $item['id'] }}')"
                                                 wire:loading.attr="disabled"
-                                                wire:key="editsuc_{{ $item['codigo'] }}" />
+                                                wire:key="editsuc_{{ $item['id'] }}" />
                                             <x-button-delete x-cloak x-show="rowselected"
-                                                wire:click="removesucursal({{ $item['codigo'] }})"
+                                                wire:click="removesucursal('{{ $item['id'] }}')"
                                                 wire:loading.attr="disabled"
-                                                wire:key="deletesuc_{{ $item['codigo'] }}" />
+                                                wire:key="deletesuc_{{ $item['id'] }}" />
                                         @endif
                                     </div>
                                 </x-simple-card>
@@ -875,11 +875,9 @@
                             </div>
                             <div x-cloak x-show="sendmode == 1" class="relative w-full xs:max-w-xs text-center">
                                 @if (isset($cert))
-                                    <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()"
-                                        class="w-40 h-full" />
+                                    <x-icon-file-upload type="filesuccess" :uploadname="$cert->getClientOriginalName()" class="w-40 h-full" />
                                 @else
-                                    <x-icon-file-upload type="code" text="PFX"
-                                        class="w-40 h-full" />
+                                    <x-icon-file-upload type="code" text="PFX" class="w-40 h-full" />
                                 @endif
 
                                 <div class="w-full flex gap-1 flex-wrap justify-center">
@@ -1399,8 +1397,8 @@
         <div class="sticky bottom-0 left-0 right-0 bg-fondominicard rounded-t-lg">
             <div class="w-full py-2 md:pt-3 px-3 md:px-0 grid grid-cols-2 gap-2 justify-between">
                 <div class="">
-                    <x-button wire:loading.attr="disabled" class="inline-flex items-center gap-2" x-show="step > 1" x-cloak
-                        @click="step--">
+                    <x-button wire:loading.attr="disabled" class="inline-flex items-center gap-2" x-show="step > 1"
+                        x-cloak @click="step--">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
                             color="currentColor" fill="none" class="w-6 h-6 inline-block">
@@ -1412,8 +1410,8 @@
                 </div>
 
                 <div class=" text-right">
-                    <x-button class="inline-flex items-center gap-2" wire:loading.attr="disabled" x-show="step < 6"
-                        @click="$wire.validatestep(step)">
+                    <x-button class="inline-flex items-center gap-2" wire:loading.attr="disabled"
+                        x-show="step < 6" @click="$wire.validatestep(step)">
                         {{ __('Next') }}
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor"
                             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
@@ -1571,14 +1569,14 @@
                         <div class="w-full">
                             <x-label value="Nombre caja :" />
                             <x-input wire:keydown.enter.prevent="addbox" class="block w-full"
-                                wire:model.defer="boxname" placeholder="Nombre de caja..." tabindex="8" />
+                                wire:model.defer="boxname" placeholder="Nombre de caja..." tabindex="99" />
                             <x-jet-input-error for="boxname" />
                         </div>
                         <div class="w-full">
                             <x-label value="Monto predeterminado apertura :" />
                             <x-input wire:keydown.enter.prevent="addbox" class="block w-full input-number-none"
                                 wire:model.defer="apertura" type="number"
-                                onkeypress="return validarDecimal(event, 8)" tabindex="9" />
+                                onkeypress="return validarDecimal(event, 8)" tabindex="100" />
                             <x-jet-input-error for="apertura" />
                             <x-jet-input-error for="boxes" />
                         </div>
@@ -1600,8 +1598,8 @@
                                 </h1>
 
                                 <x-slot name="buttons">
-                                    <x-button-delete wire:key="removeboxmodal_{{ $index }}"
-                                        wire:click="removebox({{ $index }})"
+                                    <x-button-delete wire:key="removeboxmodal_{{ $value['id'] }}"
+                                        wire:click="removebox('{{ $value['id'] }}')"
                                         wire:loading.attr="disabled" />
                                 </x-slot>
                             </x-minicard>

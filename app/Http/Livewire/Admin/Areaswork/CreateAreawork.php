@@ -14,7 +14,7 @@ class CreateAreawork extends Component
     use AuthorizesRequests;
 
     public $open = false;
-    public $name, $visible = 0;
+    public $name, $addtickets = 0;
 
     protected function rules()
     {
@@ -26,7 +26,7 @@ class CreateAreawork extends Component
                 'max:255',
                 new CampoUnique('areaworks', 'name', null),
             ],
-            'visible' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'addtickets' => ['nullable', 'integer', 'min:0', 'max:1'],
         ];
     }
 
@@ -48,14 +48,14 @@ class CreateAreawork extends Component
     {
         $this->authorize('admin.administracion.areaswork.create');
         $this->name = trim(mb_strtoupper($this->name, "UTF-8"));
-        $this->visible = $this->visible > 0 ? 1 : 0;
+        $this->addtickets = $this->addtickets > 0 ? 1 : 0;
         $validateData = $this->validate();
         DB::beginTransaction();
         try {
             $areawork = Areawork::onlyTrashed()->where('name', $this->name)->first();
             if ($areawork) {
                 $areawork->restore();
-                $areawork->visible = $this->visible;
+                $areawork->addtickets = $this->addtickets;
                 $areawork->save();
             } else {
                 Areawork::create($validateData);

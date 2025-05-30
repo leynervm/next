@@ -2,7 +2,7 @@
 
 namespace App\Http\Livewire\Admin\Areas;
 
-use App\Models\Area;
+use App\Models\Areawork;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Illuminate\Support\Facades\Auth;
@@ -62,7 +62,7 @@ class CreateArea extends Component
         $this->slug = trim($this->slug);
         $this->validate();
 
-        $area = Area::where('name', mb_strtoupper($this->name, "UTF-8"))
+        $area = Areawork::where('name', mb_strtoupper($this->name, "UTF-8"))
             ->where('delete', 1)->first();
 
         if ($area) {
@@ -70,7 +70,7 @@ class CreateArea extends Component
             $area->visible =  $this->visible;
             $area->save();
         } else {
-            $area = Area::create([
+            $area = Areawork::create([
                 'name' => $this->name,
                 'slug' => $this->slug,
                 'visible' => $this->visible,

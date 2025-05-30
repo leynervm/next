@@ -388,7 +388,17 @@
     <script src="{{ asset('assets/swiper/swiper-bundle.min.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            initSwiperCategories();
+            initSwiperServices();
+        })
+
+
+        function initSwiperCategories() {
             const slider = document.getElementById('swiper-categories');
+            if (!slider) {
+                return;
+            }
+
             const container = slider.parentElement;
             const swiper = new Swiper(slider, {
                 navigation: {
@@ -465,8 +475,13 @@
                 //     },
                 // },
             })
+        }
 
+        function initSwiperServices() {
             const slider_servicios = document.getElementById('swiper-servicios');
+            if (!slider_servicios) {
+                return;
+            }
             const container_servicios = slider_servicios.parentElement;
             const swiper_servicios = new Swiper(slider_servicios, {
                 navigation: {
@@ -513,6 +528,6 @@
                     },
                 },
             })
-        })
+        }
     </script>
 </x-app-layout>

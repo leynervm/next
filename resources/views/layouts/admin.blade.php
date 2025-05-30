@@ -113,7 +113,7 @@ $watch('openSidebar', value => console.log(openSidebar))">
                                                     class="font-medium text-[10px] text-colorsubtitleform w-full max-w-full block truncate">
                                                     {{ Auth::user()->sucursal->name }}</small>
                                             @else
-                                                <small class="font-medium text-[10px] text-next-500">
+                                                <small class="block font-medium text-[10px] !leading-3 text-colorerror">
                                                     SUCURSAL NO ASIGNADA</small>
                                             @endif
                                         </div>

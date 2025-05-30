@@ -243,14 +243,14 @@ class ShowVenta extends Component
         $this->resetValidation(['cuotas']);
         $this->amountcuotas = number_format(array_sum($arrayamountcuotas), 3, '.', '');
         // $this->amountcuotas = number_format($this->venta->total - $this->venta->paymentactual, 3, '.', '');
-        $amountcuotas = number_format($this->venta->total - ($this->venta->gratuito + $this->venta->igvgratuito), 3, '.', '');
+        $amountcuotas = number_format($this->venta->total - ($this->venta->gratuito + $this->venta->igvgratuito + $this->venta->cajamovimientos->sum('amount')), 3, '.', '');
 
         $data = $this->validate([
             'venta.id' => ['required', 'integer', 'min:1', 'exists:ventas,id'],
             'cuotas' => ['required', 'array', 'min:1'],
             'cuotas.*.id' => ['nullable', 'integer', 'min:1', 'exists:cuotas,id'],
             'cuotas.*.cuota' => ['required', 'integer', 'min:1'],
-            'cuotas.*.date' => ['required', 'date'],
+            'cuotas.*.date' => ['required', 'date', 'date_format:Y-m-d', 'after_or_equal:today'],
             'cuotas.*.amount' => ['required', 'min:0', 'gt:0', 'numeric', 'decimal:0,3'],
             'cuotas.*.cajamovimiento_id' => ['nullable', 'integer', 'min:1', 'exists:cajamovimientos,id'],
             'amountcuotas' => [
@@ -267,7 +267,6 @@ class ShowVenta extends Component
         DB::beginTransaction();
 
         try {
-
             foreach ($responseCuotas as $key => $item) {
                 if (count($item->cajamovimientos) == 0) {
                     if (Carbon::parse($item->date)->isBefore(Carbon::now()->format('Y-m-d'))) {
@@ -315,7 +314,7 @@ class ShowVenta extends Component
         $amountcuotas = number_format($this->venta->total - $this->venta->paymentactual, 3, '.', '');
         $amountCuota = number_format($amountcuotas / $this->countcuotas, 3, '.', '');
 
-        if ((!empty(trim($this->countcuotas))) || $this->countcuotas > 0) {
+        if ($this->countcuotas > 0) {
 
             $date = Carbon::now('America/Lima')->addMonth()->format('Y-m-d');
             $sumaCuotas = 0.00;
@@ -332,10 +331,11 @@ class ShowVenta extends Component
                     'cuota' => $i,
                     'amount' => number_format($amountCuota, 3, '.', ''),
                     'date' => $date,
-                    'cajamovimiento_id' => null,
+                    'cajamovimientos' => [],
                 ];
                 $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
             }
+            // dd($this->cuotas);
         } else {
             $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
         }

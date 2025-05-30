@@ -15,9 +15,9 @@ class CreateAtencionConditionTable extends Migration
     {
         Schema::create('atencion_condition', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('atencion_id')->nullable();
-            $table->bigInteger('condition_id')->nullable();
-            $table->bigInteger('user_id')->nullable();
+            $table->unsignedInteger('atencion_id');
+            $table->unsignedInteger('condition_id');
+            $table->unsignedInteger('user_id');
 
             $table->foreign('atencion_id')->on('atencions')->references('id');
             $table->foreign('condition_id')->on('conditions')->references('id');

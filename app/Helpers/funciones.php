@@ -877,3 +877,15 @@ function getTextPromocion($value)
 {
     return PromocionesEnum::getText($value);
 }
+
+
+
+function toStrLowercase($value)
+{
+    return mb_strtolower(trim($value), "UTF-8");
+}
+
+function toStrUppercase($value)
+{
+    return mb_strtoupper(trim($value), "UTF-8");
+}

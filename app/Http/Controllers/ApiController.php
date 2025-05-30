@@ -116,11 +116,11 @@ class ApiController extends Controller
 
         try {
             if (strlen(trim($document)) == 11) {
-                $cliente = self::consulta_solo_ruc($document, $obtenerlista,  $autosaved, $savedireccions);
+                $cliente = self::consulta_solo_ruc($document, $obtenerlista, $autosaved, $savedireccions);
                 if ($cliente->success) {
                     return $cliente;
                 }
-                return self::consulta_ruc($document, $obtenerlista,  $autosaved);
+                return self::consulta_ruc($document, $obtenerlista, $autosaved);
             }
 
             return response()->json([
@@ -187,8 +187,12 @@ class ApiController extends Controller
                         'id' => $cliente->id,
                         'name' => $cliente->name,
                         'pricetype' => $cliente->pricetype,
+                        'contacts' => [],
+                        'telefonos' => [],
                         'telefono' => null,
                         'direccion' => null,
+                        'estado' => null,
+                        'condicion' => null,
                         'ubigeo_id' => null,
                         'distrito' => null,
                         'provincia' => null,
@@ -201,8 +205,12 @@ class ApiController extends Controller
                     'success' => true,
                     'name' => $name,
                     'pricetype' => $pricetype,
+                    'contacts' => [],
+                    'telefonos' => [],
                     'telefono' => null,
                     'direccion' => null,
+                    'estado' => null,
+                    'condicion' => null,
                     'ubigeo_id' => null,
                     'distrito' => null,
                     'provincia' => null,
@@ -296,27 +304,40 @@ class ApiController extends Controller
                         'id' => $cliente->id,
                         'name' => $cliente->name,
                         'pricetype' => $cliente->pricetype,
+                        'contacts' => [],
+                        'telefonos' => [],
                         'telefono' => null,
+                        'estado' => $result['estado'] ?? null,
+                        'condicion' => $result['condicion'] ?? null,
                         'direccion' => empty($direccion) ? $direccion->name : $direccion_name,
                         'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
                         'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
                         'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
                         'region' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->region : null,
-                        'birthday' => false
+                        'establecimientos' => array_key_exists('localesAnexos', $result) ? $result['localesAnexos'] : [],
+                        'birthday' => false,
+                        'function' => __FUNCTION__
                     ])->getData();
                 }
 
                 return response()->json([
+                    'data' => $result,
                     'success' => true,
                     'name' => $name,
                     'pricetype' => $pricetype,
+                    'contacts' => [],
+                    'telefonos' => [],
                     'telefono' => null,
+                    'estado' => $result['estado'] ?? null,
+                    'condicion' => $result['condicion'] ?? null,
                     'direccion' => isset($result['direccion']) && !empty($result['direccion']) ? $result['direccion'] : null,
                     'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
                     'distrito' => !empty($ubigeo) ? $ubigeo->distrito : null,
                     'provincia' => !empty($ubigeo) ? $ubigeo->provincia : null,
                     'region' => !empty($ubigeo) ? $ubigeo->region : null,
-                    'birthday' => false
+                    'establecimientos' => array_key_exists('localesAnexos', $result) ? $result['localesAnexos'] : [],
+                    'birthday' => false,
+                    'function' => __FUNCTION__
                 ])->getData();
             }
 
@@ -346,7 +367,7 @@ class ApiController extends Controller
             $pricetype = null;
             $birthday = false;
 
-            $cliente = Client::withTrashed()->with(['direccions' => function ($query) {
+            $cliente = Client::withTrashed()->with(['telephones', 'contacts.phones', 'direccions' => function ($query) {
                 $query->with('ubigeo')->orderByDesc('default');
             }])->where('document', $document)->first();
 
@@ -380,13 +401,18 @@ class ApiController extends Controller
                     'id' => $cliente->id,
                     'name' => $cliente->name,
                     'pricetype' => $cliente->pricetype,
+                    'contacts' => $cliente->contacts ?? [],
+                    'telefonos' => $cliente->telephones ?? [],
                     'telefono' => count($cliente->telephones) > 0 ? $cliente->telephones->first()->phone : null,
                     'direccion' => !empty($direccion) ? $direccion->name : null,
+                    'estado' => null,
+                    'condicion' => null,
                     'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
                     'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
                     'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
                     'region' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->region : null,
-                    'birthday' => $birthday
+                    'birthday' => $birthday,
+                    'function' => __FUNCTION__
                 ])->getData();
             }
             return null;
@@ -407,7 +433,6 @@ class ApiController extends Controller
 
     public function consulta_solo_ruc($ruc, $obtenerlista = false, $autosaved = false, $savedireccions = false)
     {
-
         $empresa = view()->shared('empresa');
         $pricetype = null;
         $config = [
@@ -420,7 +445,6 @@ class ApiController extends Controller
         $sunat = new ruc($config);
         $response = $sunat->consulta($ruc);
         // return json_decode($response, true);
-
         if (isset($response->success) && $response->success) {
             $direccion_name = null;
             $ubigeo = null;
@@ -482,6 +506,8 @@ class ApiController extends Controller
                     'id' => $cliente->id,
                     'name' => $cliente->name,
                     'pricetype' => $cliente->pricetype,
+                    'contacts' => [],
+                    'telefonos' => [],
                     'telefono' => null,
                     'estado' => $response->result->estado ?? null,
                     'condicion' => $response->result->condicion ?? null,
@@ -492,6 +518,7 @@ class ApiController extends Controller
                     'region' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->region : null,
                     'birthday' => false,
                     'establecimientos' => $response->result->establecimientos,
+                    'function' => __FUNCTION__
                 ])->getData();
             }
 
@@ -499,6 +526,8 @@ class ApiController extends Controller
                 'success' => true,
                 'name' => $response->result->razon_social,
                 'pricetype' => $pricetype,
+                'contacts' => [],
+                'telefonos' => [],
                 'telefono' => null,
                 'estado' => $response->result->estado ?? null,
                 'condicion' => $response->result->condicion ?? null,
@@ -509,6 +538,7 @@ class ApiController extends Controller
                 'region' => !empty($ubigeo) ? $ubigeo->region : null,
                 'birthday' => false,
                 'establecimientos' => $response->result->establecimientos,
+                'function' => __FUNCTION__
             ])->getData();
 
             // return response()->json([

@@ -2,7 +2,7 @@
 
 namespace Modules\Soporte\Entities;
 
-use App\Models\Area;
+use App\Models\Areawork;
 use App\Models\Direccion;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -48,7 +48,7 @@ class Ticket extends Model
 
     public function area(): BelongsTo
     {
-        return $this->belongsTo(Area::class);
+        return $this->belongsTo(Areawork::class);
     }
 
     public function entorno(): BelongsTo

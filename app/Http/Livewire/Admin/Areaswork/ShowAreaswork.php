@@ -28,7 +28,7 @@ class ShowAreaswork extends Component
                 'max:255',
                 new CampoUnique('areaworks', 'name', $this->areawork->id),
             ],
-            'areawork.visible' => ['nullable', 'integer', 'min:0', 'max:1'],
+            'areawork.addtickets' => ['nullable', 'integer', 'min:0', 'max:1'],
         ];
     }
 
@@ -54,7 +54,7 @@ class ShowAreaswork extends Component
     public function save()
     {
         $this->authorize('admin.administracion.areaswork.edit');
-        $this->areawork->visible = $this->areawork->visible > 0 ? 1 : 0;
+        $this->areawork->addtickets = $this->areawork->addtickets > 0 ? 1 : 0;
         $this->validate();
         $this->areawork->save();
         $this->resetValidation();

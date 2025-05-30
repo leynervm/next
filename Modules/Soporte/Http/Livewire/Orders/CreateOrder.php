@@ -4,7 +4,6 @@ namespace Modules\Soporte\Http\Livewire\Orders;
 
 use App\Models\Caracteristica;
 use App\Models\Client;
-use App\Models\Equipo;
 use App\Models\Marca;
 use App\Models\Moneda;
 use App\Rules\ValidateContacto;
@@ -14,9 +13,10 @@ use Livewire\Component;
 use Modules\Soporte\Entities\Atencion;
 use Modules\Soporte\Entities\Condition;
 use Modules\Soporte\Entities\Entorno;
+use Modules\Soporte\Entities\Equipo;
 use Modules\Soporte\Entities\Estate;
-use Modules\Soporte\Entities\Order;
 use Modules\Soporte\Entities\Priority;
+use Modules\Soporte\Entities\Ticket;
 
 class CreateOrder extends Component
 {
@@ -174,7 +174,7 @@ class CreateOrder extends Component
         $this->moneda = Moneda::where('default', 1)->first();
         $this->validate();
 
-        $order = Order::create([
+        $order = Ticket::create([
             'date' => now('America/Lima'),
             // 'code' => '1',
             'detalle' => $this->detalle,

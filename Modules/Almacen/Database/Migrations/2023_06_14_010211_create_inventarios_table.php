@@ -20,10 +20,8 @@ class CreateInventariosTable extends Migration
             $table->decimal('precio',  8, 2);
             $table->integer('referencia')->default(0);
             $table->integer('status')->default(0);
-            $table->integer('delete')->default(0);
             $table->bigInteger('user_id')->nullable();
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

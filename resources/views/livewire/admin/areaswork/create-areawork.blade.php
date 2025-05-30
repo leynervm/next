@@ -21,11 +21,11 @@
 
                 @if (Module::isEnabled('Soporte'))
                     <div class="w-full">
-                        <x-label-check for="visible">
-                            <x-input wire:model.defer="visible" name="visible" value="1" type="checkbox"
-                                id="visible" />MOSTRAR AREA AL REGISTRAR ORDEN DE TRABAJO
+                        <x-label-check for="addtickets">
+                            <x-input wire:model.defer="addtickets" name="addtickets" value="1" type="checkbox"
+                                id="addtickets" />MOSTRAR AREA AL REGISTRAR ORDEN DE TRABAJO
                         </x-label-check>
-                        <x-jet-input-error for="visible" />
+                        <x-jet-input-error for="addtickets" />
                     </div>
                 @endif
 

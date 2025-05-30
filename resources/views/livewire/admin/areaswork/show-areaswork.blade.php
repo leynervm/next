@@ -8,7 +8,11 @@
     <div class="flex gap-2 flex-wrap justify-around md:justify-start mt-2">
         @if (count($areaswork))
             @foreach ($areaswork as $item)
-                <x-minicard :title="$item->name" size="lg">
+                <x-minicard class="" :title="$item->name" size="lg">
+                    @if ($item->addTickets())
+                        <x-toast>Disponible para agregar Tickets</x-toast>
+                    @endif
+
                     @canany(['admin.administracion.areaswork.edit', 'admin.administracion.areaswork.delete'])
                         <x-slot name="buttons">
                             @can('admin.administracion.areaswork.edit')
@@ -40,11 +44,11 @@
 
                 @if (Module::isEnabled('Soporte'))
                     <div class="w-full">
-                        <x-label-check for="visible">
-                            <x-input wire:model.defer="areawork.visible" name="visible" value="1" type="checkbox"
-                                id="visible" />MOSTRAR AREA AL REGISTRAR ORDEN DE TRABAJO
+                        <x-label-check for="editaddtickets ">
+                            <x-input wire:model.defer="areawork.addtickets" name="addtickets" value="1"
+                                type="checkbox" id="editaddtickets" />MOSTRAR AREA AL REGISTRAR ORDEN DE TRABAJO
                         </x-label-check>
-                        <x-jet-input-error for="areawork.visible" />
+                        <x-jet-input-error for="areawork.addtickets" />
                     </div>
                 @endif
 

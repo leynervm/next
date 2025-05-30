@@ -1,7 +1,5 @@
 @props(['text', 'type' => null])
-
 @php
-
     switch ($type) {
         case 'next':
             $class = 'bg-next-500 text-white';
@@ -33,6 +31,7 @@
     }
 @endphp
 
+
 <small
-    {{ $attributes->merge(['class' => 'text-[10px] inline-block p-1 rounded-md tracking-normal font-medium ' . $class]) }}>
+    {{ $attributes->merge(['class' => 'text-[10px] text-center inline-block p-1 !leading-none rounded-md tracking-normal font-medium ' . $class]) }}>
     {{ $text }}</small>

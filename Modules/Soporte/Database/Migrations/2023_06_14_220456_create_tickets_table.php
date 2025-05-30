@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedInteger('condition_id');
             $table->unsignedInteger('centerservice_id')->nullable();
             $table->unsignedInteger('priority_id')->nullable();
-            $table->unsignedInteger('area_id')->nullable();
+            $table->unsignedInteger('areawork_id')->nullable();
             $table->unsignedInteger('entorno_id')->nullable();
             $table->unsignedInteger('estate_id')->nullable();
             $table->unsignedBigInteger('client_id')->nullable();
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->foreign('condition_id')->on('conditions')->references('id');
             $table->foreign('centerservice_id')->on('centerservices')->references('id');
             $table->foreign('priority_id')->on('priorities')->references('id');
-            $table->foreign('area_id')->on('areas')->references('id');
+            $table->foreign('areawork_id')->on('areaworks')->references('id');
             $table->foreign('entorno_id')->on('entornos')->references('id');
             $table->foreign('estate_id')->on('estates')->references('id');
             $table->foreign('client_id')->on('clients')->references('id');

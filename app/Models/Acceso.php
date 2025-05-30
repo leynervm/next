@@ -9,7 +9,6 @@ class Acceso extends Model
 {
     use HasFactory;
 
-
     const SUSPENDIDO = '0';
     const ACTIVO = '1';
     const LIMIT_SUCURSALS = '2';

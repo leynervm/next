@@ -118,14 +118,13 @@
                         <td class="sm:text-end">PENDIENTE :</td>
                         <td class="sm:text-end">
                             <span class="font-semibold text-xl text-red-600">
-                                {{ number_format($venta->total - $venta->cajamovimientos()->sum('amount'), 2, '.', ', ') }}</span>
+                                {{ number_format($venta->total - ($venta->paymentactual), 2, '.', ', ') }}</span>
                             <small>{{ $venta->moneda->currency }}</small>
                         </td>
                     </tr>
                 </table>
             </div>
         </div>
-
 
         <div class="w-full flex flex-col xs:flex-row gap-1 items-end justify-between mt-4">
             <div class="flex flex-wrap gap-1">
@@ -185,7 +184,7 @@
             @endif
         </div>
 
-        @if ($venta->typepayment->isContado() && $venta->sucursal_id == auth()->user()->sucursal_id)
+        @if ( $venta->sucursal_id == auth()->user()->sucursal_id)
             @if ($venta->cajamovimientos()->sum('amount') < $venta->total)
                 <div class="w-full flex gap-2 pt-4 justify-end">
                     <x-button type="button" wire:loading.attr="disabled" wire:click="openmodal" @click="reset">
@@ -306,7 +305,7 @@
                                                 </div>
                                                 <div class="block w-full">
                                                     <x-label value="Monto Cuota :" />
-                                                    <x-input class="block w-full" type="number" min="0.001"
+                                                    <x-input class="block w-full input-number-none" type="number" min="0.001"
                                                         step="0.001"
                                                         wire:model.defer="cuotas.{{ $loop->iteration - 1 }}.amount" />
                                                 </div>
@@ -698,7 +697,7 @@
 
                 <div class="w-full" x-show="istransferencia" x-cloak style="display: none;" x-transition>
                     <x-label value="Otros (N° operación , descripción, etc) :" />
-                    <x-input class="block w-full" x-model="detallepaycuota" />
+                    <x-text-area class="block w-full" x-model="detallepaycuota"></x-text-area>
                     <x-jet-input-error for="detalle" />
                 </div>
 
@@ -760,8 +759,8 @@
                                     @if (count($item['cajamovimientos']) == 0)
                                         <div class="w-full">
                                             <x-label value="Monto Cuota :" />
-                                            <x-input class="block w-full" type="number" min="1"
-                                                step="0.001"
+                                            <x-input class="block w-full input-number-none" type="number"
+                                                min="1" step="0.001"
                                                 wire:model.lazy="cuotas.{{ $loop->iteration - 1 }}.amount" />
                                         </div>
                                     @endif
@@ -890,7 +889,7 @@
 
                 <div class="w-full" x-show="istransferencia" x-cloak style="display: none;" x-transition>
                     <x-label value="Otros (N° operación , Banco, etc) :" />
-                    <x-input class="block w-full" x-model="detalle" />
+                    <x-text-area class="block w-full" x-model="detalle"></x-text-area>
                     <x-jet-input-error for="detalle" />
                 </div>
 
@@ -1087,8 +1086,8 @@
         function confirmDeletePaycuota(cuota, cajamovimiento_id) {
             const cuotastr = '000' + cuota.cuota;
             swal.fire({
-                title: 'Desea anular el pago de la Cuota' + cuotastr.substr(-3) + '?',
-                text: "Se eliminará un registro de pago de la base de datos.",
+                title: `ANULAR PAGO DE CUOTA "${cuotastr.substr(-3)}" ?`,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',
@@ -1105,8 +1104,8 @@
         function confirmDeleteCuota(cuota) {
             const cuotastr = '000' + cuota.cuota;
             swal.fire({
-                title: 'Desea eliminar la Cuota' + cuotastr.substr(-3) + '?',
-                text: "Se eliminará un registro de la base de datos.",
+                title: `ELIMINAR "CUOTA${cuotastr.substr(-3)}" ?`,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',
@@ -1123,7 +1122,7 @@
         function confirmDeletePayment(payment_id) {
             swal.fire({
                 title: 'ELIMINAR PAGO DE VENTA ?',
-                text: "Se eliminará un registro de pago de la base de datos.",
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

@@ -20,7 +20,6 @@ class CreateEquipamentsTable extends Migration
             $table->decimal('price', 10, 2);
             $table->integer('alterstock')->default(0);
             $table->integer('condicion');
-            $table->integer('delete')->default(0);
             $table->bigInteger('producto_id')->nullable();
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('user_id')->nullable();
@@ -29,7 +28,6 @@ class CreateEquipamentsTable extends Migration
             $table->foreign('producto_id')->on('productos')->references('id');
             $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
-            $table->timestamps();
         });
     }
 

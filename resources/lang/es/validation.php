@@ -414,5 +414,9 @@ return [
         'marcaother'                => 'marca',
         'priceother'                => 'precio',
         'others'                    => 'otros',
+        'selectedareaworks'         =>  'áreas de trabajo',
+        'selectedentornos'          =>  'entornos de atención',
+        'requiredirection'          =>  'requiere dirección',
+        'phonenumber'               =>  'número telefónico'
     ],
 ];

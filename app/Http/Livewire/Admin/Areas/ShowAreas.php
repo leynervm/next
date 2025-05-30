@@ -2,7 +2,7 @@
 
 namespace App\Http\Livewire\Admin\Areas;
 
-use App\Models\Area;
+use App\Models\Areawork;
 use App\Rules\CampoUnique;
 use App\Rules\Letter;
 use Illuminate\Support\Facades\Auth;
@@ -23,35 +23,41 @@ class ShowAreas extends Component
     {
         return [
             'area.name' => [
-                'required', 'min:3', 'max:100', new Letter,
+                'required',
+                'min:3',
+                'max:100',
+                new Letter,
                 new CampoUnique('areas', 'name', $this->area->id),
             ],
             'area.slug' => [
-                'required', 'min:3', 'max:100',
+                'required',
+                'min:3',
+                'max:100',
                 new CampoUnique('areas', 'slug', $this->area->id),
             ],
             'area.visible' => [
                 'nullable',
             ],
             'selectedEntornos' => [
-                'required', 'min:1'
+                'required',
+                'min:1'
             ]
         ];
     }
 
     public function mount()
     {
-        $this->area = new Area();
+        $this->area = new Areawork();
         $this->entornos = Entorno::where('delete', 0)->orderBy('name', 'asc')->get();
     }
 
     public function render()
     {
-        $areas = Area::where('delete', 0)->orderBy('name', 'asc')->paginate();
+        $areas = Areawork::where('delete', 0)->orderBy('name', 'asc')->paginate();
         return view('livewire.admin.areas.show-areas', compact('areas'));
     }
 
-    public function edit(Area $area)
+    public function edit(Areawork $area)
     {
         $this->area = $area;
         $this->selectedEntornos = $area->entornos()->pluck('entorno_id')->toArray();
@@ -70,12 +76,12 @@ class ShowAreas extends Component
         $this->reset(['open']);
     }
 
-    public function confirmDelete(Area $area)
+    public function confirmDelete(Areawork $area)
     {
         $this->dispatchBrowserEvent('areas.confirmDelete', $area);
     }
 
-    public function delete(Area $area)
+    public function delete(Areawork $area)
     {
         $area->delete = 1;
         $area->visible = 0;
