@@ -218,7 +218,9 @@ class SendXML
 
                                 if ($codRespuesta == '98') {
                                     $mensaje = response()->json([
+                                        'cdr' => false,
                                         'codRespuesta' => $codRespuesta,
+                                        'code' => $codRespuesta,
                                         'descripcion' => "Envío en proceso"
                                     ]);
                                     return $mensaje->getData();
