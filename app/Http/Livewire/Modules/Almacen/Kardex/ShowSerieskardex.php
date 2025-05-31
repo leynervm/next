@@ -48,7 +48,7 @@ class ShowSerieskardex extends Component
 
         $sucursals = Sucursal::withTrashed()->whereHas('almacens')->get();
         $almacens = Almacen::whereHas('series')->get();
-        $serieskardex = Serie::with(['almacen', 'producto', 'almacencompra.compraitem.compra.proveedor', 'user', 'itemseries' => function ($query) {
+        $serieskardex = Serie::with(['almacen', 'producto', 'compraitem.compra.proveedor', 'user', 'itemseries' => function ($query) {
             $query->with(['seriable' => function ($subq) {
                 // $subq->when(Tvitem::class, fn($q) => $q->with(['tvitem']))
                 //     ->when(Carshoopitem::class, fn($q) => $q->with([

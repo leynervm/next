@@ -1,6 +1,6 @@
 <x-admin-layout>
     <x-slot name="breadcrumb">
-        <x-link-breadcrumb text="CLIENTES" route="admin.proveedores">
+        <x-link-breadcrumb text="CLIENTES" route="admin.clientes">
             <x-slot name="icon">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" stroke-width="1"
                     stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -29,7 +29,7 @@
             @foreach ($sumatorias as $item)
                 <x-minicard :title="null" size="lg" class="cursor-pointer">
                     <div class="text-xs font-medium text-center">
-                        <small>TOTAL COMPRAS</small>
+                        <small>TOTAL VENTAS</small>
                         <h3 class="font-semibold text-lg">
                             {{ number_format($item->total, 2, '.', ', ') }}</h3>
                         <small>{{ $item->moneda->currency }}</small>

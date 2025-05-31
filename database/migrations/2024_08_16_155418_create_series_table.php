@@ -20,11 +20,11 @@ class CreateSeriesTable extends Migration
             $table->integer('status')->default(0);
             $table->bigInteger('almacen_id')->nullable();
             $table->bigInteger('producto_id')->nullable();
-            $table->bigInteger('almacencompra_id')->nullable();
+            $table->bigInteger('compraitem_id')->nullable();
             $table->bigInteger('user_id')->nullable();
             $table->foreign('almacen_id')->on('almacens')->references('id');
             $table->foreign('producto_id')->on('productos')->references('id');
-            $table->foreign('almacencompra_id')->on('almacencompras')->references('id');
+            $table->foreign('compraitem_id')->on('compraitems')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
             $table->timestamps();
             $table->softDeletes();

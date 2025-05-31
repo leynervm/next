@@ -145,10 +145,12 @@
                                 @endif
                             </td> --}}
                             <td class="p-2 text-center">
+                                {{-- {{ $item->cuotas()->whereHas('cajamovimientos')->sum('amount') }}
+                                <br> --}}
                                 @if ($item->typepayment->isCredito())
-                                    {{ number_format($item->cuotas()->sum('amount') - $item->cuotas()->whereHas('cajamovimiento')->sum('amount') ?? 0, 2, '.', '') }}
+                                    {{ number_format($item->cuotas()->sum('amount') - $item->cuotas->flatMap->cajamovimientos->sum('amount') ?? 0, 2, '.', '') }}
                                 @else
-                                   {{ number_format($item->total - $item->cajamovimientos()->sum('amount') ?? 0, 2, '.', '')}}
+                                    {{ number_format($item->total - $item->cajamovimientos()->sum('amount') ?? 0, 2, '.', '') }}
                                 @endif
                             </td>
                             <td class="p-2 text-center">

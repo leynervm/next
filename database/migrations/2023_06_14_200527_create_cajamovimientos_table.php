@@ -22,7 +22,7 @@ class CreateCajamovimientosTable extends Migration
             $table->decimal('totalamount', 18, 4);
             $table->string('typemovement', 7);
             $table->string('referencia', 255)->nullable();
-            $table->string('detalle', 255)->nullable();
+            $table->text('detalle')->nullable();
             $table->unsignedTinyInteger('moneda_id');
             $table->unsignedTinyInteger('methodpayment_id');
             $table->unsignedTinyInteger('concept_id');

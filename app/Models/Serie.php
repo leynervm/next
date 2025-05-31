@@ -38,21 +38,9 @@ class Serie extends Model
         return $this->belongsTo(Producto::class);
     }
 
-    // Eliminar en futuro
-    public function almacencompra(): BelongsTo
-    {
-        return $this->belongsTo(Almacencompra::class);
-    }
-    // 
-
     public function compraitem(): BelongsTo
     {
         return $this->belongsTo(Compraitem::class);
-    }
-
-    public function carshoopserie(): HasOne
-    {
-        return $this->hasOne(Carshoopserie::class);
     }
 
     public function itemseries(): HasMany

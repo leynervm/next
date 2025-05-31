@@ -314,31 +314,32 @@ class ShowVenta extends Component
         $amountcuotas = number_format($this->venta->total - $this->venta->paymentactual, 3, '.', '');
         $amountCuota = number_format($amountcuotas / $this->countcuotas, 3, '.', '');
 
-        if ($this->countcuotas > 0) {
-
-            $date = Carbon::now('America/Lima')->addMonth()->format('Y-m-d');
-            $sumaCuotas = 0.00;
-
-            for ($i = 1; $i <= $this->countcuotas; $i++) {
-                $sumaCuotas = number_format($sumaCuotas + $amountCuota, 3, '.', '');
-                if ($i == $this->countcuotas) {
-                    $result = number_format($amountcuotas - $sumaCuotas, 3, '.', '');
-                    $amountCuota = number_format($amountCuota + ($result), 3, '.', '');
-                }
-
-                $this->cuotas[] = [
-                    'id' => null,
-                    'cuota' => $i,
-                    'amount' => number_format($amountCuota, 3, '.', ''),
-                    'date' => $date,
-                    'cajamovimientos' => [],
-                ];
-                $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
-            }
-            // dd($this->cuotas);
-        } else {
+        if ($this->countcuotas <= 0) {
             $this->addError('countcuotas', 'Ingrese cantidad válida de cuotas');
+            return false;
         }
+
+        $date = Carbon::now('America/Lima')->addMonth()->format('Y-m-d');
+        $sumaCuotas = 0.00;
+        $cuotas = [];
+
+        for ($i = 1; $i <= $this->countcuotas; $i++) {
+            $sumaCuotas = number_format($sumaCuotas + $amountCuota, 3, '.', '');
+            if ($i == $this->countcuotas) {
+                $result = number_format($amountcuotas - $sumaCuotas, 3, '.', '');
+                $amountCuota = number_format($amountCuota + ($result), 3, '.', '');
+            }
+
+            $cuotas[] = [
+                'id' => null,
+                'cuota' => $i,
+                'amount' => number_format($amountCuota, 3, '.', ''),
+                'date' => $date,
+                'cajamovimientos' => [],
+            ];
+            $date = Carbon::parse($date)->addMonth()->format('Y-m-d');
+        }
+        $this->cuotas = $cuotas;
     }
 
     public function saveserie(Tvitem $tvitem)
