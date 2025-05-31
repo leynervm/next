@@ -114,24 +114,27 @@ trait EnviarGuiaRemisionSunat
 
             $response = $objApi->enviarGuia($subdomain === 'demo' ? false : $this->isProduccion(), $this->sucursal->empresa, $nombreXML, $this->sucursal->empresa->isProduccion() ? storage_path('app/company/cert/' . $this->sucursal->empresa->cert) : storage_path('app/company/cert/demo.pfx'), storage_path('app/' . $ruta), storage_path('app/' . $ruta));
 
-            if ($response->codRespuesta == '0') {
+            if (in_array($response->codRespuesta, ['0', '99'])) {
+                $errors = key_exists('errors', (array) $response) ? $response->errors : '';
+                $notes = key_exists('notes', (array) $response) ? $response->notes : '';
                 $this->descripcion = $response->descripcion;
                 $this->codesunat = $response->code;
-                if ($response->notes !== '') {
-                    $this->notasunat = $response->notes;
+
+                if (!empty($notes)) {
+                    $this->notasunat = $notes;
                     $this->save();
                     $mensaje = response()->json([
-                        'success' => true,
+                        'success' => $response->cdr,
                         'title' => $response->descripcion,
-                        'mensaje' => $response->notes,
+                        'mensaje' => $notes,
                     ])->getData();
                     return $mensaje;
                 } else {
                     $this->save();
                     $mensaje = response()->json([
-                        'success' => true,
+                        'success' => $response->cdr,
                         'title' => $response->descripcion,
-                        'mensaje' => 'success'
+                        'mensaje' => $errors
                     ])->getData();
                     return $mensaje;
                 }

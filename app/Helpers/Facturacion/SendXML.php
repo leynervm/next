@@ -212,34 +212,59 @@ class SendXML
 
                         if ($consulta->status() == 200) {
                             // dd($consulta->body());
-                            $codRespuesta = json_decode($consulta->body())->codRespuesta;
-                            $indCdrGenerado = json_decode($consulta->body())->indCdrGenerado;
+                            $responseBody = json_decode($consulta->body());
+                            $codRespuesta = $responseBody->codRespuesta ?? '';
+                            if (in_array($codRespuesta, ['0', '98', '99'])) {
 
-                            if ($indCdrGenerado) {
-
-                                $cdr = base64_decode(json_decode($consulta->body())->arcCdr);
-                                file_put_contents($ruta_archivo_cdr . "R-" . $nombrezip, $cdr); //ZIP DE MEMORIA A DISCO LOCAL
-                                $zip = new ZipArchive();
-                                if ($zip->open($ruta_archivo_cdr . 'R-' . $nombrezip) == TRUE) {
-                                    $zip->extractTo($ruta_archivo_cdr, 'R-' . $nombre . '.xml');
-                                    $zip->close();
+                                if ($codRespuesta == '98') {
+                                    $mensaje = response()->json([
+                                        'codRespuesta' => $codRespuesta,
+                                        'descripcion' => "Envío en proceso"
+                                    ]);
+                                    return $mensaje->getData();
                                 }
 
-                                $codeResponse = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'ResponseCode');
-                                $descripcion = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'Description');
-                                $notes = getNotesNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml');
+                                $indCdrGenerado = $responseBody->indCdrGenerado;
+                                $errorBody = key_exists('error', (array) $responseBody) ? $responseBody->error->desError  : '';
+                                $codErrorBody = key_exists('error',  (array)$responseBody) ? $responseBody->error->numError : '';
 
-                                $mensaje = response()->json([
-                                    'codRespuesta' => $codRespuesta,
-                                    'code' => $codeResponse,
-                                    'descripcion' => $descripcion,
-                                    'notes' => $notes
-                                ]);
+                                if ((string) $indCdrGenerado == '1') {
+
+                                    $cdr = base64_decode($responseBody->arcCdr);
+                                    file_put_contents($ruta_archivo_cdr . "R-" . $nombrezip, $cdr); //ZIP DE MEMORIA A DISCO LOCAL
+                                    $zip = new ZipArchive();
+                                    if ($zip->open($ruta_archivo_cdr . 'R-' . $nombrezip) == TRUE) {
+                                        $zip->extractTo($ruta_archivo_cdr, 'R-' . $nombre . '.xml');
+                                        $zip->close();
+                                    }
+
+                                    $codeResponse = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'ResponseCode');
+                                    $descripcion = getValueNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml', 'Description');
+                                    $notes = getNotesNode($ruta_archivo_cdr . 'R-' . $nombre . '.xml');
+
+                                    $dataMensaje = [
+                                        'cdr' => true,
+                                        'codRespuesta' => $codRespuesta,
+                                        'code' => $codeResponse,
+                                        'descripcion' => $descripcion,
+                                        'notes' => $notes
+                                    ];
+                                    if (!empty($errorBody)) {
+                                        $dataMensaje["errors"] = $codErrorBody . " : " . $errorBody;
+                                    }
+                                } else {
+                                    $dataMensaje = [
+                                        'cdr' => false,
+                                        'codRespuesta' => $codRespuesta,
+                                        'code' => $codErrorBody,
+                                        'descripcion' => $errorBody
+                                    ];
+                                }
+                                $mensaje = response()->json($dataMensaje);
                             } else {
                                 $mensaje = response()->json([
                                     'codRespuesta' => $codRespuesta,
-                                    'code' => json_decode($consulta->body())->error->numError,
-                                    'descripcion' => json_decode($consulta->body())->error->desError
+                                    'descripcion' => "Código de respuesta desconocido"
                                 ]);
                             }
                         } else {
