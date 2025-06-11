@@ -126,7 +126,7 @@
                                     <br>
                                     {{ $item->seriecomprobante->typecomprobante->descripcion }}
                                 </p>
-                                <x-span-text :text="'ELIMINADO ' . formatDate($item->deleted_at, 'DD MMMM YYYY')" type="red" class="leading-3 !tracking-normal" />
+                                <x-span-text :text="formatDate($item->deleted_at, 'DD MMM Y hh:mm A')" type="red" class="leading-3 !tracking-normal inline-block text-[9px]" />
                             @else
                                 @can('admin.ventas.edit')
                                     <a href="{{ route('admin.ventas.edit', $item) }}"
@@ -245,8 +245,8 @@
     <script>
         function confirmDelete(venta) {
             swal.fire({
-                title: 'Desea anular venta con serie ' + venta.seriecompleta + ' ?',
-                text: "Se eliminará un registro de la base de datos, incluyendo sus items del registro.",
+                title: `ANULAR REGISTRO DE VENTA ${venta.seriecompleta} ?`,
+                text: null,
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonColor: '#0FB9B9',

@@ -4,6 +4,8 @@ namespace Modules\Soporte\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Soporte\Entities\Estate;
+use Nwidart\Modules\Facades\Module;
 
 class SoporteDatabaseSeeder extends Seeder
 {
@@ -16,7 +18,15 @@ class SoporteDatabaseSeeder extends Seeder
     {
         Model::unguard();
 
-        // $this->call("OthersTableSeeder");
-        $this->call(SeedAtencionsTableSeeder::class);
+        if (Module::isEnabled('Facturacion')) {
+            // Con data
+            // $this->call(SeedAtencionsTableSeeder::class);
+
+            Estate::firstOrCreate([
+                'name' => 'REGISTRADO',
+                'color' => '#ff2323',
+                'default' => 1
+            ]);
+        }
     }
 }

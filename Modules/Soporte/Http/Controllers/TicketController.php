@@ -15,14 +15,14 @@ class TicketController extends Controller
      */
     public function index()
     {
-        return view('soporte::tickets.index');
+        return view('modules.soporte.tickets.index');
     }
 
 
     public function selectarea()
     {
         $areas = Areawork::tickets()->orderBy('id', 'asc')->get();
-        return view('soporte::tickets.select-area', compact('areas'));
+        return view('modules.soporte.tickets.select-area', compact('areas'));
     }
 
 
@@ -34,28 +34,6 @@ class TicketController extends Controller
 
         $areawork->load(['entornos', 'atencions']);
 
-        return view('soporte::tickets.create', compact('areawork'));
-    }
-
-
-
-    /**
-     * Show the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function show($id)
-    {
-        return view('soporte::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     * @param int $id
-     * @return Renderable
-     */
-    public function edit($id)
-    {
-        return view('soporte::edit');
+        return view('modules.soporte.tickets.create', compact('areawork'));
     }
 }

@@ -55,7 +55,7 @@ class Client extends Model
 
     public function contacts(): MorphMany
     {
-        return $this->morphMany(Contact::class, 'contactable')->orderBy('name', 'asc');
+        return $this->morphMany(Contact::class, 'contactable');
     }
 
     public function pricetype(): BelongsTo

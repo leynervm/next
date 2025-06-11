@@ -419,11 +419,11 @@
                                                             <td class="align-middle text-center" width="40px">
                                                                 @if ($itemserie->serie)
                                                                     <x-button-delete wire:loading.attr="disabled"
-                                                                        wire:key="deleteitemserie_{{ $itemserie->id }}"
+                                                                        wire:key="deletevtitemserie_{{ $itemserie->id }}"
                                                                         x-on:click="confirmDeleteSerie({{ $itemserie->id }}, '{{ $itemserie->serie->serie }}')" />
                                                                 @else
                                                                     <x-button-delete wire:loading.attr="disabled"
-                                                                        wire:key="deleteitemserie_{{ $itemserie->id }}"
+                                                                        wire:key="deletevtitemnotserie_{{ $itemserie->id }}"
                                                                         x-on:click="confirmDeleteSerie({{ $itemserie->id }})" />
                                                                 @endif
                                                             </td>

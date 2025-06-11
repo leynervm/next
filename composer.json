@@ -29,6 +29,7 @@
         "mhmiton/laravel-modules-livewire": "^2.0",
         "nwidart/laravel-modules": "^8.3",
         "simplesoftwareio/simple-qrcode": "^4.2",
+        "spatie/browsershot": "^5.0",
         "spatie/laravel-permission": "^6.3"
     },
     "require-dev": {

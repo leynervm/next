@@ -77,7 +77,7 @@
                 reset() {
                     this.image = null;
                     @this.clearImage();
-                },
+                }
             }
         }
     </script>

@@ -13,6 +13,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Soporte\Http\Controllers\CenterserviceController;
+use Modules\Soporte\Http\Controllers\PrintTicketController;
 use Modules\Soporte\Http\Controllers\SoporteController;
 use Modules\Soporte\Http\Controllers\TicketController;
 
@@ -24,16 +25,17 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'),])
         Route::get('/tickets', [TicketController::class, 'index'])->name('.tickets');
         Route::get('/create-ticket', [TicketController::class, 'selectarea'])->name('.tickets.selectarea');
         Route::get('/{areawork:slug}/create-ticket', [TicketController::class, 'create'])->name('.tickets.create');
+        Route::get('/tickets/print/{seriecompleta:ticket}/registro', [PrintTicketController::class, 'registro'])->name('.tickets.print.registro');
 
         Route::get('/marcas-autorizadas', [CenterserviceController::class, 'index'])->name('.centerservices');
 
         Route::get('/tipos-equipos', [SoporteController::class, 'typeequipos'])->name('.typeequipos');
 
         Route::get('/status', [SoporteController::class, 'status'])->name('.status');
-        
+
         Route::get('/tipos-atencion', [SoporteController::class, 'atenciones'])->name('.atenciones');
         Route::get('/condiciones-atencion', [SoporteController::class, 'conditions'])->name('.conditions');
-        
+
         Route::get('/tipo-atenciones', [SoporteController::class, 'typeatencions'])->name('.typeatencions');
         Route::get('/entornos-atencion', [SoporteController::class, 'entornos'])->name('.entornos');
         Route::get('/prioridades-atencion', [SoporteController::class, 'priorities'])->name('.priorities');

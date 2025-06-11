@@ -10,6 +10,7 @@ use Modules\Facturacion\Database\Seeders\FacturacionDatabaseSeeder;
 use Modules\Marketplace\Database\Seeders\MarketplaceDatabaseSeeder;
 use Modules\Ventas\Database\Seeders\VentasDatabaseSeeder;
 use Database\Seeders\UbigeoSeeder;
+use Modules\Soporte\Database\Seeders\SoporteDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -42,6 +43,7 @@ class DatabaseSeeder extends Seeder
         $this->call(VentasDatabaseSeeder::class); //Requerido
         $this->call(EmployerDatabaseSeeder::class); //Requerido
         $this->call(MarketplaceDatabaseSeeder::class);
+        $this->call(SoporteDatabaseSeeder::class);
 
         // USUARIO, ROLES, TYPESUCURSAL 100% OBLIGATORIO
         $this->call(AccesoSeeder::class);

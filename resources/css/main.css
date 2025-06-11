@@ -316,6 +316,7 @@
 .btn-combos {
     @apply flex justify-center items-center gap-3 hover:bg-fondohoverbutton shadow shadow-shadowminicard p-2.5 ring-borderminicard rounded-lg ring-1 text-[10px] text-colorsubtitleform hover:text-colorhoverbutton transition duration-150 ease-in-out;
 }
+
 .btn-combos:hover svg {
     @apply !text-colorhoverbutton;
 }
@@ -337,24 +338,13 @@ input[type='radio']:checked {
     @apply p-2 rounded-lg;
 }
 
-#form-configuracion
-    .select2.select2-container
-    .select2-selection
-    .select2-selection__rendered {
+#form-configuracion .select2.select2-container .select2-selection .select2-selection__rendered {
     @apply !leading-normal;
 }
 
 #form-configuracion .select2-container .select2-dropdown .select2-results ul,
-#form-configuracion
-    .select2.select2-container
-    .select2-selection
-    .select2-selection__rendered,
-#form-configuracion
-    .select2-container
-    .select2-container
-    .select2-dropdown
-    .select2-search
-    input {
+#form-configuracion .select2.select2-container .select2-selection .select2-selection__rendered,
+#form-configuracion .select2-container .select2-container .select2-dropdown .select2-search input {
     @apply text-colorsubtitleform;
 }
 
@@ -401,6 +391,10 @@ input[type='number'].input-number-none {
     @apply disabled:opacity-25 p-2.5 rounded-lg ring-1 ring-red-500 font-medium text-red-500 text-xs tracking-widest;
 }
 
+.input-radio-button {
+    @apply gap-1 bg-body checked:bg-fondohoverbutton hover:bg-fondohoverbutton peer-checked:bg-fondohoverbutton peer-disabled:opacity-25 p-2.5 px-3 border hover:border-fondobutton border-ringbutton rounded-lg ring-ringbutton hover:ring-fondohoverbutton peer-checked:ring-2 peer-checked:ring-ringbutton font-medium text-colorlabel hover:text-colorhoverbutton peer-checked:text-colorhoverbutton text-center transition duration-150 ease-in-out cursor-pointer;
+}
+
 /* 20600129997 */
 
 /* .label-checkbox input[type="checkbox"]{
@@ -426,11 +420,9 @@ input[type='number'].input-number-none {
 
 .favorito.activo {
     background: rgb(255, 20, 20);
-    background: linear-gradient(
-        180deg,
-        rgba(255, 20, 20, 1) 30%,
-        rgba(156, 20, 0, 1) 100%
-    );
+    background: linear-gradient(180deg,
+            rgba(255, 20, 20, 1) 30%,
+            rgba(156, 20, 0, 1) 100%);
     color: white;
 }
 
@@ -461,7 +453,12 @@ input[type='number'].input-number-none {
 }
 
 .button-export-pdf {
-    @apply !bg-red-800 hover:!bg-red-900 focus:!bg-red-900 hover:!ring-red-200 focus:!ring-red-200;
+    @apply !bg-red-800 !ring-red-200;
+}
+
+.button-export-pdf:hover,
+.button-export-pdf:focus {
+    @apply !bg-red-900 !ring-red-200;
 }
 
 .spinner {
@@ -493,29 +490,23 @@ input[type='number'].input-number-none {
     -webkit-transform: translateX(-100%);
     -ms-transform: translateX(-100%);
     transform: translateX(-100%);
-    background-image: -webkit-gradient(
-        linear,
-        left top,
-        right top,
-        color-stop(0, rgba(255, 255, 255, 0)),
-        color-stop(20%, rgba(255, 255, 255, 0.2)),
-        color-stop(60%, rgba(255, 255, 255, 0.5)),
-        to(rgba(255, 255, 255, 0))
-    );
-    background-image: -o-linear-gradient(
-        left,
-        rgba(255, 255, 255, 0) 0,
-        rgba(255, 255, 255, 0.2) 20%,
-        rgba(255, 255, 255, 0.5) 60%,
-        rgba(255, 255, 255, 0)
-    );
-    background-image: linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0) 0,
-        rgba(255, 255, 255, 0.2) 20%,
-        rgba(255, 255, 255, 0.5) 60%,
-        rgba(255, 255, 255, 0)
-    );
+    background-image: -webkit-gradient(linear,
+            left top,
+            right top,
+            color-stop(0, rgba(255, 255, 255, 0)),
+            color-stop(20%, rgba(255, 255, 255, 0.2)),
+            color-stop(60%, rgba(255, 255, 255, 0.5)),
+            to(rgba(255, 255, 255, 0)));
+    background-image: -o-linear-gradient(left,
+            rgba(255, 255, 255, 0) 0,
+            rgba(255, 255, 255, 0.2) 20%,
+            rgba(255, 255, 255, 0.5) 60%,
+            rgba(255, 255, 255, 0));
+    background-image: linear-gradient(90deg,
+            rgba(255, 255, 255, 0) 0,
+            rgba(255, 255, 255, 0.2) 20%,
+            rgba(255, 255, 255, 0.5) 60%,
+            rgba(255, 255, 255, 0));
     -webkit-animation: shimmer 3s infinite;
     animation: shimmer 3s infinite;
     content: '';
@@ -543,6 +534,7 @@ input[type='number'].input-number-none {
     width: 8em;
     height: 8em;
 }
+
 .pl1__g,
 .pl1__rect,
 .pl2__rect,
@@ -550,42 +542,54 @@ input[type='number'].input-number-none {
 .pl3__rect {
     animation: pl1-a 1.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
+
 .pl1__g {
     transform-origin: 64px 64px;
 }
+
 .pl1__rect:first-child {
     animation-name: pl1-b;
 }
+
 .pl1__rect:nth-child(2) {
     animation-name: pl1-c;
 }
+
 .pl2__rect,
 .pl2__rect-g {
     animation-name: pl2-a;
 }
+
 .pl2__rect {
     animation-name: pl2-b;
 }
+
 .pl2__rect-g .pl2__rect {
     transform-origin: 20px 128px;
 }
+
 .pl2__rect-g:first-child,
 .pl2__rect-g:first-child .pl2__rect {
     animation-delay: -0.25s;
 }
+
 .pl2__rect-g:nth-child(2),
 .pl2__rect-g:nth-child(2) .pl2__rect {
     animation-delay: -0.125s;
 }
+
 .pl2__rect-g:nth-child(2) .pl2__rect {
     transform-origin: 64px 128px;
 }
+
 .pl2__rect-g:nth-child(3) .pl2__rect {
     transform-origin: 108px 128px;
 }
+
 .pl3__rect {
     animation-name: pl3;
 }
+
 .pl3__rect-g {
     transform-origin: 64px 64px;
 }
@@ -595,34 +599,40 @@ input[type='number'].input-number-none {
     from {
         transform: rotate(0);
     }
+
     80%,
     to {
         animation-timing-function: steps(1, start);
         transform: rotate(90deg);
     }
 }
+
 @keyframes pl1-b {
     from {
         animation-timing-function: cubic-bezier(0.33, 0, 0.67, 0);
         width: 40px;
         height: 40px;
     }
+
     20% {
         animation-timing-function: steps(1, start);
         width: 40px;
         height: 0;
     }
+
     60% {
         animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
         width: 0;
         height: 40px;
     }
+
     80%,
     to {
         width: 40px;
         height: 40px;
     }
 }
+
 @keyframes pl1-c {
     from {
         animation-timing-function: cubic-bezier(0.33, 0, 0.67, 0);
@@ -630,24 +640,28 @@ input[type='number'].input-number-none {
         height: 40px;
         transform: translate(0, 48px);
     }
+
     20% {
         animation-timing-function: cubic-bezier(0.33, 1, 0.67, 1);
         width: 40px;
         height: 88px;
         transform: translate(0, 0);
     }
+
     40% {
         animation-timing-function: cubic-bezier(0.33, 0, 0.67, 0);
         width: 40px;
         height: 40px;
         transform: translate(0, 0);
     }
+
     60% {
         animation-timing-function: cubic-bezier(0.33, 1, 0.67, 1);
         width: 88px;
         height: 40px;
         transform: translate(0, 0);
     }
+
     80%,
     to {
         width: 40px;
@@ -655,19 +669,24 @@ input[type='number'].input-number-none {
         transform: translate(48px, 0);
     }
 }
+
 @keyframes pl2-a {
+
     from,
     25%,
     66.67%,
     to {
         transform: translateY(0);
     }
+
     50% {
         animation-timing-function: cubic-bezier(0.33, 0, 0.67, 0);
         transform: translateY(-80px);
     }
 }
+
 @keyframes pl2-b {
+
     from,
     to {
         animation-timing-function: cubic-bezier(0.33, 0, 0.67, 0);
@@ -675,12 +694,14 @@ input[type='number'].input-number-none {
         height: 24px;
         transform: rotate(180deg) translateX(0);
     }
+
     33.33% {
         animation-timing-function: cubic-bezier(0.33, 1, 0.67, 1);
         width: 20px;
         height: 64px;
         transform: rotate(180deg) translateX(10px);
     }
+
     66.67% {
         animation-timing-function: cubic-bezier(0.33, 1, 0.67, 1);
         width: 28px;
@@ -688,27 +709,32 @@ input[type='number'].input-number-none {
         transform: rotate(180deg) translateX(6px);
     }
 }
+
 @keyframes pl3 {
     from {
         transform: translate(64px, 0);
         width: 64px;
         height: 64px;
     }
+
     25% {
         transform: translate(0, 0);
         width: 128px;
         height: 32px;
     }
+
     50% {
         transform: translate(0, 0);
         width: 64px;
         height: 64px;
     }
+
     75% {
         transform: translate(0, 0);
         width: 32px;
         height: 128px;
     }
+
     to {
         transform: translate(0, 64px);
         width: 64px;

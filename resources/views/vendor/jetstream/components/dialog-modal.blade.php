@@ -1,4 +1,4 @@
-@props(['id' => null, 'maxWidth' => null, 'footerAlign' => 'justify-end'])
+@props(['id' => null, 'maxWidth' => null, 'footerAlign' => 'justify-end', 'closeButton' => true])
 
 <x-jet-modal :id="$id" :maxWidth="$maxWidth" {{ $attributes }}>
     <div class="flex gap-2 items-center justify-between p-2 py-3">
@@ -6,9 +6,11 @@
             <h3 class="text-sm sm:text-lg !leading-none font-medium text-colorheadermodal">
                 {{ $title }}</h3>
         </div>
-        <span
-            class="cursor-pointer flex-shrink-0 min-w-6 text-center font-semibold text-sm hover:text-red-600 disabled:opacity-25 transition ease-in duration-150"
-            @click="show = false">✕</span>
+        @if ($closeButton)
+            <span
+                class="cursor-pointer flex-shrink-0 min-w-6 text-center font-semibold text-sm hover:text-red-600 disabled:opacity-25 transition ease-in duration-150"
+                @click="show = false">✕</span>
+        @endif
     </div>
 
     <div class="px-2 py-3 text-colorlabel">

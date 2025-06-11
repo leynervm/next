@@ -51,7 +51,7 @@ class CreatePriority extends Component
 
     public function save($closemodal = false)
     {
-        $this->name = mb_strtoupper(trim($this->name), "UTF-8");
+        $this->name = toStrUppercase($this->name);
         $this->color = trim($this->color);
         $this->validate();
         $priority = Priority::withTrashed()->where('name', $this->name)->first();

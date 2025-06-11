@@ -18,7 +18,8 @@ class CreateEquiposTable extends Migration
             $table->id();
             $table->string('modelo', 100);
             $table->string('serie', 50)->nullable();
-            $table->text('descripcion')->nullable();
+            $table->text('descripcion');
+            $table->text('servicio');
             $table->integer('stateinicial')->default(Equipo::ACTIVO);
             $table->integer('statefinal')->default(Equipo::ACTIVO);
             $table->unsignedInteger('typeequipo_id');

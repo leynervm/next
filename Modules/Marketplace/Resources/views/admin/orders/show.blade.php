@@ -138,7 +138,7 @@
                             </tr>
                             <tr>
                                 <td class="w-full text-end align-middle">
-                                    <x-span-text :text="$order->transaccion->action_description" class="text-xs inline-block" type="green" />
+                                    <x-span-text :text="__($order->transaccion->action_description)" class="text-xs inline-block" type="green" />
                                 </td>
                             </tr>
                         </tbody>

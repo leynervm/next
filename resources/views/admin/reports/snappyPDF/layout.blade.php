@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{ $titulo }}</title>
+    <title>{{ str_replace("<br/>", " ", $titulo) }}</title>
     <link rel="stylesheet" href="{{ asset('assets/snappyPDF/snappy.css') }}">
     <link href="{{ asset('assets/snappyPDF/bootstrap.min.css') }}" rel="stylesheet">
 

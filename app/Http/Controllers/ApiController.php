@@ -197,7 +197,8 @@ class ApiController extends Controller
                         'distrito' => null,
                         'provincia' => null,
                         'region' => null,
-                        'birthday' => false
+                        'birthday' => false,
+                        'function' => __FUNCTION__
                     ])->getData();
                 }
 
@@ -215,23 +216,27 @@ class ApiController extends Controller
                     'distrito' => null,
                     'provincia' => null,
                     'region' => null,
-                    'birthday' => false
+                    'birthday' => false,
+                    'function' => __FUNCTION__
                 ])->getData();
             }
 
             return response()->json([
                 'success' => false,
-                'error' => "No se encontraron resultados"
+                'error' => "No se encontraron resultados",
+                'function' => __FUNCTION__
             ])->getData();
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
+                'function' => __FUNCTION__
             ])->getData();
             return false;
             throw $e;
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage(),
+                'function' => __FUNCTION__
             ])->getData();
             return false;
             throw $e;
@@ -262,7 +267,8 @@ class ApiController extends Controller
                 if (empty(trim($name))) {
                     return response()->json([
                         'success' => false,
-                        'error' => "No se encontraron resultados"
+                        'error' => "No se encontraron resultados",
+                        'function' => __FUNCTION__
                     ])->getData();
                 }
 
@@ -281,19 +287,19 @@ class ApiController extends Controller
                     $cliente = Client::firstOrCreate(['document' => $ruc], [
                         'name' => $name,
                         'sexo' => Client::EMPRESA,
-                        'pricetype_id' => $empresa->usarLista() ? $pricetype->id : null
+                        'pricetype_id' => $empresa->usarLista() ? $pricetype->id ?? null : null
                     ]);
 
                     if (isset($result['direccion']) && !empty($result['direccion'])) {
-                        $direccion_name = mb_strtoupper($result['direccion'], "UTF-8");
-                        $direccion = $cliente->direccions()->create([
-                            'name' => mb_strtoupper($result['direccion'], "UTF-8"),
+                        $direccion_name = toStrUppercase($result['direccion']);
+                        $direccion = $cliente->direccions()->updateOrCreate([
+                            'name' => trim($direccion_name)
+                        ], [
                             'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
                             'default' => Direccion::DEFAULT,
                         ]);
                     }
                     $cliente->load(['pricetype', 'direccions.ubigeo']);
-
                     $direccion = null;
                     if (count($cliente->direccions) > 0) {
                         $direccion = $cliente->direccions->first();
@@ -309,7 +315,7 @@ class ApiController extends Controller
                         'telefono' => null,
                         'estado' => $result['estado'] ?? null,
                         'condicion' => $result['condicion'] ?? null,
-                        'direccion' => empty($direccion) ? $direccion->name : $direccion_name,
+                        'direccion' => empty($direccion) ? trim($direccion->name) : trim($direccion_name),
                         'ubigeo_id' => !empty($direccion) ? $direccion->ubigeo_id : null,
                         'distrito' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->distrito : null,
                         'provincia' => !empty($direccion) && !is_null($direccion->ubigeo_id) ? $direccion->ubigeo->provincia : null,
@@ -321,8 +327,8 @@ class ApiController extends Controller
                 }
 
                 return response()->json([
-                    'data' => $result,
                     'success' => true,
+                    'id' => null,
                     'name' => $name,
                     'pricetype' => $pricetype,
                     'contacts' => [],
@@ -330,7 +336,7 @@ class ApiController extends Controller
                     'telefono' => null,
                     'estado' => $result['estado'] ?? null,
                     'condicion' => $result['condicion'] ?? null,
-                    'direccion' => isset($result['direccion']) && !empty($result['direccion']) ? $result['direccion'] : null,
+                    'direccion' => isset($result['direccion']) && !empty($result['direccion']) ? trim($result['direccion']) : null,
                     'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
                     'distrito' => !empty($ubigeo) ? $ubigeo->distrito : null,
                     'provincia' => !empty($ubigeo) ? $ubigeo->provincia : null,
@@ -343,20 +349,19 @@ class ApiController extends Controller
 
             return response()->json([
                 'success' => false,
-                'error' => "No se encontraron resultados"
+                'error' => "No se encontraron resultados",
+                'function' => __FUNCTION__
             ])->getData();
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage() . " - Line:" . $e->getLine(),
+                'function' => __FUNCTION__
             ])->getData();
-            return false;
-            throw $e;
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage() . " - Line:" . $e->getLine(),
+                'function' => __FUNCTION__
             ])->getData();
-            return false;
-            throw $e;
         }
     }
 
@@ -367,7 +372,7 @@ class ApiController extends Controller
             $pricetype = null;
             $birthday = false;
 
-            $cliente = Client::withTrashed()->with(['telephones', 'contacts.phones', 'direccions' => function ($query) {
+            $cliente = Client::withTrashed()->with(['telephones', 'contacts.telephones', 'direccions' => function ($query) {
                 $query->with('ubigeo')->orderByDesc('default');
             }])->where('document', $document)->first();
 
@@ -383,7 +388,7 @@ class ApiController extends Controller
                 }
 
                 if ($autosaved && is_null($cliente->pricetype_id)) {
-                    $cliente->pricetype_id = $empresa->usarLista() ? $pricetype->id : null;
+                    $cliente->pricetype_id = $empresa->usarLista() ? $pricetype->id ?? null : null;
                     $cliente->save();
                 }
                 if ($cliente->nacimiento) {
@@ -418,13 +423,15 @@ class ApiController extends Controller
             return null;
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage() . " - Line:" . $e->getLine(),
+                'function' => __FUNCTION__
             ])->getData();
             return false;
             throw $e;
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage() . " - Line:" . $e->getLine(),
+                'function' => __FUNCTION__
             ])->getData();
             return false;
             throw $e;
@@ -468,12 +475,12 @@ class ApiController extends Controller
                 ]);
 
                 if (array_key_exists('direccion', (array) $response->result) && !empty($response->result->direccion)) {
-                    $direccion_name = $response->result->direccion;
+                    $direccion_name = toStrUppercase($response->result->direccion);
                     $cliente->direccions()->firstOrCreate([
-                        'name' => mb_strtoupper($response->result->direccion, "UTF-8")
+                        'name' => trim($response->result->direccion)
                     ], [
-                        'default' => $cliente->direccions()->default()->exists() ? 0 : Direccion::DEFAULT,
                         'ubigeo_id' => !empty($ubigeo) ? $ubigeo->id : null,
+                        'default' => Direccion::DEFAULT,
                     ]);
                 }
 
@@ -488,7 +495,7 @@ class ApiController extends Controller
                         }
 
                         $cliente->direccions()->firstOrCreate([
-                            'name' => mb_strtoupper($local->direccion, "UTF-8")
+                            'name' => trim(toStrUppercase($local->direccion))
                         ], [
                             'ubigeo_id' => !empty($ubigeolocal) ? $ubigeolocal->id : null,
                         ]);
@@ -561,6 +568,7 @@ class ApiController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => $response->message ?? 'No se encontraron resultados',
+                'function' => __FUNCTION__
             ])->getData();
         }
 

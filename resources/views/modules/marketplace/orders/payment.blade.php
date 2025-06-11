@@ -145,7 +145,7 @@
                             <tr>
                                 <td class="w-full text-end align-middle">
                                     <div class="w-full flex items-center justify-end">
-                                        <x-span-text :text="$order->transaccion->action_description" class="text-xs" type="green" />
+                                        <x-span-text :text="__($order->transaccion->action_description)" class="text-xs" type="green" />
                                     </div>
                                 </td>
                             </tr>

@@ -417,6 +417,16 @@ return [
         'selectedareaworks'         =>  'áreas de trabajo',
         'selectedentornos'          =>  'entornos de atención',
         'requiredirection'          =>  'requiere dirección',
-        'phonenumber'               =>  'número telefónico'
+        'phonenumber'               =>  'número telefónico',
+        'selectedphones'            =>  'teléfonos',
+        'priority_id'               =>  'prioridad',
+        'entorno_id'                =>  'prioridad',
+        'atencion_id'               =>  'condición',
+        'condition_id'              =>  'condición',
+        'typeequipo_id'             =>  'tipo de equipo',
+        'stateinicial'              =>  'estado inicial',
+        'statefinal'                =>  'estado final',
+        'direccionasistencia'       =>  'dirección',
+        'dateasistencia'            =>  'fecha'
     ],
 ];

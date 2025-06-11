@@ -46,6 +46,15 @@ function formatDate($date, $format = "DD MMMM YYYY hh:mm A")
     return !is_null($date) ? Str::upper(Carbon::parse($date)->locale('es')->isoformat($format)) : null;
 }
 
+function formatHuman($date)
+{
+    $fecha = Carbon::make($date);
+    $dateHuman = $fecha->calendar();
+    $hour = $fecha->format('A');
+
+    return !is_null($date) ? Str::upper("$dateHuman $hour") : null;
+}
+
 function formatTelefono($numero, $group = 3, $prefijo = '')
 {
     return $prefijo . chunk_split($numero, $group);
@@ -503,6 +512,14 @@ function getMarcaURL($filename = null)
 {
     if (!is_null($filename)) {
         return asset('storage/images/marcas/' . $filename);
+    }
+    return null;
+}
+
+function getTypeequipoURL($filename = null)
+{
+    if (!is_null($filename)) {
+        return asset('storage/images/typeequipos/' . $filename);
     }
     return null;
 }

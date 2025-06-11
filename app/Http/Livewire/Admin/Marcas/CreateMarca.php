@@ -14,8 +14,7 @@ use Intervention\Image\ImageManagerStatic as Image;
 class CreateMarca extends Component
 {
 
-    use AuthorizesRequests;
-    use WithFileUploads;
+    use AuthorizesRequests, WithFileUploads;
 
     public $open = false;
     public $logo;
@@ -25,18 +24,8 @@ class CreateMarca extends Component
     protected function rules()
     {
         return [
-            'name' => [
-                'required',
-                'min:2',
-                'max:100',
-                new CampoUnique('marcas', 'name', null, true),
-            ],
-            'logo' => [
-                'nullable',
-                'file',
-                'mimes:jpeg,png,gif,webp',
-                'max:5120'
-            ]
+            'name' => ['required', 'min:2', 'max:100', new CampoUnique('marcas', 'name', null, true)],
+            'logo' => ['nullable', 'file', 'mimes:jpeg,png,gif,webp', 'max:5120']
         ];
     }
 
@@ -70,7 +59,7 @@ class CreateMarca extends Component
         DB::beginTransaction();
         try {
             $marca = Marca::onlyTrashed()
-                ->where('name', mb_strtoupper(trim($this->name), "UTF-8"))
+                ->where('name', toStrUppercase(trim($this->name)))
                 ->first();
 
             if ($marca) {

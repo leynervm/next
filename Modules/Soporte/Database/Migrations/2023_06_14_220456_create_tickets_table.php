@@ -16,21 +16,21 @@ return new class extends Migration
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
             $table->dateTime('date');
-            $table->string('seriecompleta');
+            $table->string('seriecompleta', 25);
             $table->dateTime('dateasigned')->nullable();
-            $table->string('detalle', 255);
+            $table->text('detalle')->nullable();
             $table->decimal('total', 10, 2)->default(0);
-            $table->string('qr', 100);
             $table->unsignedInteger('atencion_id');
             $table->unsignedInteger('condition_id');
             $table->unsignedInteger('centerservice_id')->nullable();
-            $table->unsignedInteger('priority_id')->nullable();
-            $table->unsignedInteger('areawork_id')->nullable();
-            $table->unsignedInteger('entorno_id')->nullable();
+            $table->unsignedInteger('priority_id');
+            $table->unsignedInteger('areawork_id');
+            $table->unsignedInteger('entorno_id');
             $table->unsignedInteger('estate_id')->nullable();
-            $table->unsignedBigInteger('client_id')->nullable();
+            $table->unsignedBigInteger('client_id');
             $table->unsignedInteger('userasigned_id')->nullable();
-            $table->unsignedInteger('user_id')->nullable();
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('sucursal_id');
             $table->foreign('atencion_id')->on('atencions')->references('id');
             $table->foreign('condition_id')->on('conditions')->references('id');
             $table->foreign('centerservice_id')->on('centerservices')->references('id');
@@ -41,6 +41,7 @@ return new class extends Migration
             $table->foreign('client_id')->on('clients')->references('id');
             $table->foreign('userasigned_id')->on('users')->references('id');
             $table->foreign('user_id')->on('users')->references('id');
+            $table->foreign('sucursal_id')->on('sucursals')->references('id');
             $table->softDeletes();
         });
     }

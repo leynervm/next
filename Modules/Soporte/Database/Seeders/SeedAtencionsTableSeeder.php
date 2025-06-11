@@ -21,102 +21,81 @@ class SeedAtencionsTableSeeder extends Seeder
     {
         Model::unguard();
 
-        Priority::create([
+        Priority::firstOrCreate([
             'name' => 'BAJA',
             'color' => '#0bcb92',
-            'delete' => 0
         ]);
-
-        Priority::create([
+        Priority::firstOrCreate([
             'name' => 'MEDIA',
             'color' => '#8a8a8a',
-            'delete' => 0
         ]);
-
-        Priority::create([
+        Priority::firstOrCreate([
             'name' => 'ALTA',
             'color' => '#ff4242',
-            'delete' => 0
         ]);
 
 
-        Entorno::create([
+        Entorno::firstOrCreate([
             'name' => 'DOA',
             'requiredirection' => 1,
             'default' => 0
         ]);
-
-        Entorno::create([
-            'name' => 'TALLER',
-            'requiredirection' => 0,
+        Entorno::firstOrCreate([
+            'name' => 'IN SITE',
             'default' => 1
         ]);
 
 
-        Estate::create([
-            'name' => 'PENDIENTE',
-            'finish' => 0,
+        Estate::firstOrCreate([
+            'name' => 'REGISTRADO',
             'color' => '#CCCCCC',
             'default' => 1
         ]);
 
-        Estate::create([
-            'name' => 'DIAGNOSTICO',
-            'finish' => 0,
-            'color' => '#AAAAAA',
-            'default' => 0
-        ]);
 
-        
-        $servicioTecnico = Atencion::create([
+
+        $servicioTecnico = Atencion::firstOrCreate([
             'name' => 'SERVICIO TECNICO',
             'equipamentrequire' => 1,
         ]);
-        $servicioTecnico->areas()->attach([1, 2]);
+        $servicioTecnico->areaworks()->attach([1, 2]);
         $servicioTecnico->entornos()->attach([1]);
 
-        $averia = Atencion::create([
+        $averia = Atencion::firstOrCreate([
             'name' => 'AVERÍA',
             'equipamentrequire' => 0,
         ]);
         $averia->entornos()->attach([1, 2]);
-        $averia->areas()->attach([1, 2]);
+        $averia->areaworks()->attach([1, 2]);
 
-        $seguridad = Atencion::create([
+        $seguridad = Atencion::firstOrCreate([
             'name' => 'SEGURIDAD ELECTRÓNICA',
             'equipamentrequire' => 0,
         ]);
         $seguridad->entornos()->attach([1]);
-        $seguridad->areas()->attach([2]);
+        $seguridad->areaworks()->attach([2]);
 
-        $redes = Atencion::create([
+        $redes = Atencion::firstOrCreate([
             'name' => 'REDES Y TELECOMUNICACIONES',
             'equipamentrequire' => 0,
         ]);
         $redes->entornos()->attach([1]);
-        $redes->areas()->attach([2]);
+        $redes->areaworks()->attach([2]);
 
-        Condition::create([
+        Condition::firstOrCreate([
             'name' => 'GARANTIA MARCA',
-            'flagpagable' => 0,
         ]);
-
-        Condition::create([
+        Condition::firstOrCreate([
             'name' => 'GARANTIA TIENDA',
-            'flagpagable' => 0,
         ]);
-
-        Condition::create([
+        Condition::firstOrCreate([
             'name' => 'FACTURABLE',
             'flagpagable' => 1,
         ]);
-
-        Condition::create([
+        Condition::firstOrCreate([
             'name' => 'CONTRATO',
             'flagpagable' => 1,
         ]);
-
         // $this->call("OthersTableSeeder");
-
     }
 }

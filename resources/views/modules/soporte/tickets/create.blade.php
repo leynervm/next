@@ -49,7 +49,7 @@
         </x-link-breadcrumb>
     </x-slot>
 
-    <div class="w-ful">
+    <div class="w-full mx-auto xl:max-w-7xl">
         <h1 class="text-lg sm:text-xl md:text-3xl text-center text-primary font-semibold mb-3 !leading-none">
             {{ $areawork->name }}</h1>
 

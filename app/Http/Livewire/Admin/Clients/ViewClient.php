@@ -360,6 +360,19 @@ class ViewClient extends Component
         if ($response->ok()) {
             $cliente = json_decode($response->body());
             if (isset($cliente->success) && $cliente->success) {
+                if (!empty($cliente->direccion)) {
+                    $others = [
+                        'ubigeo_id' => !empty($cliente->ubigeo_id) ? $cliente->ubigeo_id : null,
+                    ];
+                    if ($this->client->direccions()->default()->count() == 0) {
+                        $others['default'] =  Direccion::DEFAULT;
+                    }
+                    $this->client->direccions()->updateOrCreate([
+                        'name' => trim($cliente->direccion)
+                    ], $others);
+                    $this->client->refresh();
+                }
+
                 $this->client->name = $cliente->name;
                 if (view()->shared('empresa')->usarLista() && !empty($cliente->pricetype)) {
                     $this->client->pricetype_id = $cliente->pricetype->id;

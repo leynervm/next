@@ -98,12 +98,16 @@ class ShowVentas extends Component
     public function delete(Venta $venta)
     {
         $this->authorize('admin.ventas.delete');
-        $cuotas = $venta->cuotas()->withWhereHas('cajamovimientos')->count();
+        $venta->load(['cajamovimientos', 'cuotas', 'tvitems' => function ($q) {
+            $q->with(['kardexes.producto', 'itemseries.serie', 'promocion']);
+        }])->loadCount(['cuotas as payment_cuotas' => function ($q) {
+            $q->withWhereHas('cajamovimientos');
+        }]);
 
-        if ($cuotas > 0) {
+        if ($venta->payment_cuotas > 0) {
             $mensaje = response()->json([
-                'title' => 'No se puede eliminar comprobante ' . $venta->code,
-                'text' => "La venta contiene cuotas de pago realizadas, eliminar pagos manualmente e inténtelo nuevamente."
+                'title' => "VENTA $venta->seriecompleta : \n PRIMERO ELIMINAR LOS PAGOS DE CUOTAS MANUALMENTE, Y VUELVA A INTENTARLO",
+                'text' => null
             ])->getData();
             $this->dispatchBrowserEvent('validation', $mensaje);
             return false;
@@ -223,53 +227,29 @@ class ShowVentas extends Component
                 }
             }
 
-            if (count($venta->cajamovimientos) > 0) {
-                $venta->cajamovimientos->each(function ($cajamovimiento) {
-                    $cajamovimiento->delete();
-                });
-            }
-
-            $venta->cuotas()->delete();
-            $venta->tvitems()->each(function ($tvitem) {
-                // dd($tvitem, $tvitem->tvitemable);
-                //SI ALTER STOCK REPONER ALMACEN SINO VERIFICAR KARDEX Y ELIMINAR ITEM
-
-                if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
-                    $stock = $tvitem->producto->almacens()->find($tvitem->almacen_id);
-                    $tvitem->producto->almacens()->updateExistingPivot($tvitem->almacen_id, [
-                        'cantidad' => $stock->pivot->cantidad + $tvitem->cantidad,
-                    ]);
-
-                    $tvitem->itemseries()->each(function ($itemserie) {
-                        $itemserie->serie->dateout = null;
-                        $itemserie->serie->status = 0;
-                        $itemserie->serie->save();
-                        $itemserie->delete();
-                    });
-
-                    if ($tvitem->kardex) {
-                        if ($tvitem->kardex->promocion) {
-                            $tvitem->kardex->promocion->outs = $tvitem->kardex->promocion->outs - $tvitem->cantidad;
-                            $tvitem->kardex->promocion->save();
-                        }
+            $venta->tvitems->each(function ($tvitem) {
+                // dd($tvitem);
+                $tvitem->incrementOrDecrementPromocion($tvitem->cantidad, true);
+                $tvitem->itemseries->each(function ($itemserie) use ($tvitem) {
+                    if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                        $tvitem->updateSerieDisponible($itemserie->serie);
                     }
-                }
+                    $itemserie->delete();
+                });
 
-                if ($tvitem->kardex) {
-                    $tvitem->kardex->delete();
-                }
+                $tvitem->kardexes->each(function ($kardex) use ($tvitem) {
+                    if ($tvitem->isDiscountStock() || $tvitem->isReservedStock()) {
+                        $kardex->producto->incrementarStockProducto($kardex->almacen_id, $kardex->cantidad);
+                    }
+                    $kardex->delete();
+                });
                 $tvitem->delete();
-                // $tvitem->saveKardex(
-                //     $tvitem->producto_id,
-                //     $tvitem->almacen_id,
-                //     $stockPivot->pivot->cantidad,
-                //     $stockPivot->pivot->cantidad + $tvitem->cantidad,
-                //     $tvitem->cantidad,
-                //     '+',
-                //     Kardex::REPOSICION_ANULACION,
-                //     $tvitem->tvitemable->code
-                // );
             });
+
+            $venta->cajamovimientos->each(function ($cajamovimiento) {
+                $cajamovimiento->delete();
+            });
+            $venta->cuotas()->delete();
             $venta->delete();
             DB::commit();
             $this->resetValidation();
