@@ -1,15 +1,14 @@
 <div class="">
-
-    @if (count($status))
+    @if (count($estates))
         <div class="pb-2">
-            {{ $status->links() }}
+            {{ $estates->links() }}
         </div>
     @endif
 
     <div class="flex gap-2 flex-wrap justify-start">
 
-        @if (count($status))
-            @foreach ($status as $item)
+        @if (count($estates))
+            @foreach ($estates as $item)
                 {{-- <div class="flex text-[10px] w-full sm:w-80 font-semibold shadow rounded-xl bg-fondominicard p-2 gap-2">
                     <div class="w-2/6 flex gap-2 flex-col justify-between">
                         <div class="flex flex-wrap gap-2 justify-center items-center h-full">
@@ -105,13 +104,6 @@
     <x-jet-dialog-modal wire:model="open" maxWidth="lg" footerAlign="justify-end">
         <x-slot name="title">
             {{ __('Actualizar status') }}
-            <x-button-add wire:click="$toggle('open')" wire:loading.attr="disabled">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 6 6 18" />
-                    <path d="m6 6 12 12" />
-                </svg>
-            </x-button-add>
         </x-slot>
 
         <x-slot name="content">

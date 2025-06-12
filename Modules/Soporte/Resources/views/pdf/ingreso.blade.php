@@ -127,7 +127,7 @@
         bottom: 0;
         left: 0;
         /* background: #ccc; */
-        background: #05040f;
+        /* background: #05040f; */
         color: #fff;
     }
 
@@ -301,6 +301,10 @@
         text-align: center !important;
     }
 
+    .text-justify {
+        text-align: justify !important;
+    }
+
     .text-end {
         text-align: right !important;
     }
@@ -361,17 +365,42 @@
             </tr>
             <tr>
                 <th class="align-bottom font-bold p-0">
-                   <p class="text-13 leading-3 text-end p-0">
-                     <span class="text-10">{{ $ticket->entorno->name }}</span>
-                    {{ $ticket->seriecompleta }}
-                   </p>
+                    <p class="text-13 leading-3 text-end p-0">
+                        <span class="text-10">{{ $ticket->entorno->name }}</span>
+                        {{ $ticket->seriecompleta }}
+                    </p>
                 </th>
             </tr>
         </thead>
     </table>
 
     <div class="footer">
-        <table class="table" style="padding: 0 2.5px; border-collapse: separate;">
+        <table class="table" style="padding:0.25cm 0.75cm;color:#222;">
+            <thead>
+                <tr>
+                    <td></td>
+                    <td class="p-0" style="border-bottom: 1.5px solid #222 !important;padding: 3.5rem 0rem;"></td>
+                    <td></td>
+                    <td class="p-0" style="border-bottom: 1.5px solid #222 !important;padding: 3.5rem 0rem;"></td>
+                    <td></td>
+                    <td class="p-0" align="right" valign="bottom" style="width: 110px;padding:0 !important;">
+                        <img style="padding:1mm;border:1.5px solid #222;background: #fff;"
+                            src="data:image/svg;base64, {!! base64_encode(QrCode::format('svg')->size(90)->generate($qr)) !!} ">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="" style="padding:0 !important;"></td>
+                    <td class="text-center text-10 font-bold" style="width: 200px;padding:0 !important;">
+                        FIRMA TÉCNICO RESPONSABLE</td>
+                    <td class="" style="padding:0 !important;"></td>
+                    <td class="text-center text-10 font-bold" style="width: 200px;padding:0 !important;">
+                        FIRMA CLIENTE</td>
+                    <td class="" style="padding:0 !important;"></td>
+                    {{-- <td></td> --}}
+                </tr>
+            </thead>
+        </table>
+        <table class="table" style="background: #05040f;padding: 0 2.5px; border-collapse: separate;">
             <thead>
                 <tr class="align-middle">
                     <td class="" style="">
@@ -401,16 +430,16 @@
                     <table class="table border-white table-responsive p-0 m-0 text-10 font-normal">
                         <thead>
                             <tr>
-                                <th class="p-1 align-top text-start" style="width: 100px;">
+                                <th class="p-0 align-top text-start" style="width: 100px;">
                                     CLIENTE</th>
-                                <td class="p-1 text-start align-top">
+                                <td class="p-0 text-start align-top text-9">
                                     : {{ $ticket->client->name }} -
                                     <b>{{ substr($ticket->client->document, 0, strlen(trim($ticket->client->document)) - 3) }}***</b>
                                 </td>
 
-                                <th class="p-1 align-top text-end" style="width: 70px;">
+                                <th class="p-0 align-top text-end" style="width: 70px;">
                                     TELÉFONOS :</th>
-                                <td class="p-1 text-end align-top" style="width: 220px;">
+                                <td class="p-0 text-end align-top text-9" style="width: 220px;">
                                     {{ implode(
                                         ', ',
                                         array_map(function ($item) {
@@ -422,23 +451,23 @@
 
                             @if ($ticket->contact)
                                 <tr>
-                                    <th class="p-1 align-top text-start">
+                                    <th class="p-0 align-top text-start">
                                         CONTACTO</th>
-                                    <td class="p-1 text-start align-top" colspan="3">
+                                    <td class="p-0 text-start align-top text-9" colspan="3">
                                         : {{ $ticket->contact->name }}
                                     </td>
                                 </tr>
                             @endif
 
                             <tr>
-                                <th class="p-1 text-start">
+                                <th class="p-0 text-start">
                                     REGISTRO</th>
-                                <td class="p-1 text-start">
+                                <td class="p-0 text-start text-9">
                                     : {{ FormatDate($ticket->date) }}</td>
 
-                                <th class="p-1 align-top text-end">
+                                <th class="p-0 align-top text-end">
                                     CONDICIÓN :</th>
-                                <td class="p-1 text-end align-top">
+                                <td class="p-0 text-end align-top text-9">
                                     : {{ $ticket->condition->name }}
                                 </td>
                             </tr>
@@ -453,9 +482,9 @@
                 <td class="p-0 m-0">
                     <table class="table border-white table-responsive text-10 p-0 m-0 font-normal">
                         <tr>
-                            <th class="p-1 align-top text-start" style="width: 100px;line-height: 10px;">
+                            <th class="p-0 align-top text-start" style="width: 100px;line-height: 10px;">
                                 DETALLES DE ATENCIÓN</th>
-                            <td class="p-1 text-start align-top">
+                            <td class="p-0 text-justify text-9" valign="top">
                                 : {{ $ticket->detalle }}</td>
                         </tr>
                     </table>
@@ -470,32 +499,32 @@
                         <table class="table border-white table-responsive p-0 m-0 text-10 font-normal">
                             <thead>
                                 <tr>
-                                    <th class="p-1 align-top text-start" style="width: 80px;">
+                                    <th class="p-0 align-top text-start" style="width: 80px;">
                                         EQUIPO</th>
-                                    <td class="p-1 text-start align-top">
+                                    <td class="p-0 text-start align-top text-9">
                                         : {{ $ticket->equipo->typeequipo->name }}</td>
 
-                                    <th class="p-1 align-top text-end" style="width: 120px;">
+                                    <th class="p-0 align-top text-end" style="width: 50px;">
                                         MARCA :</th>
-                                    <td class="p-1 text-start align-top">
+                                    <td class="p-0 text-start align-top text-9" style="width: 80px;">
                                         {{ $ticket->equipo->marca->name }}</td>
 
-                                    <th class="p-1 align-top text-end" style="width: 70px;">
+                                    <th class="p-0 align-top text-end" style="width: 60px;">
                                         MODELO :</th>
-                                    <td class="p-1 text-start align-top" style="width: 120px;">
+                                    <td class="p-0 text-start align-top text-9" style="width: 120px;">
                                         {{ $ticket->equipo->modelo }}</td>
 
                                     @if (!empty($ticket->equipo->serie))
-                                        <th class="p-1 align-top text-end" style="width: 60px;">
+                                        <th class="p-0 align-top text-end" style="width: 40px;">
                                             SERIE :</th>
-                                        <td class="p-1 text-end align-top" style="width: 140px;">
+                                        <td class="p-0 text-end align-top text-9" style="width: 120px;">
                                             {{ $ticket->equipo->serie }}</td>
                                     @endif
                                 </tr>
                                 <tr>
-                                    <th class="p-1 align-top text-start" style="width: 100px;line-height: 10px;">
+                                    <th class="p-0 text-start" valign="top" style="width: 100px;line-height: 10px;">
                                         DESCRIPCIÓN DEL EQUIPO</th>
-                                    <td class="p-1 text-justify align-top"
+                                    <td class="p-0 text-justify align-top text-9"
                                         colspan="{{ empty($ticket->equipo->serie) ? 5 : 7 }}">
                                         : {{ $ticket->equipo->descripcion }}</td>
                                 </tr>
@@ -513,12 +542,13 @@
                         <table class="table border-white table-responsive p-0 m-0 text-10 font-normal">
                             <thead>
                                 <tr>
-                                    <th class="p-1 align-top text-start" style="width: 100px;line-height: 10px;">
+                                    <th class="p-0 align-top text-start" style="width: 100px;line-height: 10px;">
                                         LUGAR DE ATENCIÓN</th>
-                                    <td class="p-1 text-start align-top" colspan="3">
+                                    <td class="p-0 text-start align-top text-9" colspan="3">
                                         : {{ $ticket->direccion->name }}
                                         @if ($ticket->direccion->referencia)
-                                            <p class="p-0 m-0" style="padding: 0;">{{ $ticket->direccion->referencia }}
+                                            <p class="p-0 m-0 text-9" style="padding: 0;">
+                                                {{ $ticket->direccion->referencia }}
                                             </p>
                                         @endif
                                         {{ $ticket->direccion->ubigeo->distrito }},
@@ -533,34 +563,29 @@
             </table>
         @endif
 
-        <p class="text-center font-light p-0 m-0 mt-1" style="font-size:8px;">
-            *** IMPORTANTE: LA EMPRESA SE HACE RESPONSABLE POR LA TENENCIA DE SU EQUIPO SOLO POR 45 DIAS A PARTIR DE LA
-            FECHA DE INGRESO ***
-        </p>
-        <p class="text-center font-light p-0 m-0 mt-1" style="font-size:8px;">
-            *** CONDICIONES DEL SERVICIO BRINDADO, VISITA NUESTRA PAGINA WEB ***
-        </p>
-
-        <table class="table border-white">
+        {{-- <table class="table mt-5">
             <tr>
                 <td></td>
-                <td style="border-bottom: 1.5px solid #222 !important;padding: 3.5rem 0rem;"></td>
+                <td class="p-0" style="border-bottom: 1.5px solid #222 !important;padding: 3.5rem 0rem;"></td>
                 <td></td>
-                <td style="border-bottom: 1.5px solid #222 !important;padding: 3.5rem 0rem;"></td>
+                <td class="p-0" style="border-bottom: 1.5px solid #222 !important;padding: 3.5rem 0rem;"></td>
                 <td></td>
-                <td class="p-0 m-0 text-end" rowspan="2" style="width: 120px;">
-                    <img style="padding:1mm;display: block;border:1.5px solid #222;"
-                        src="data:image/svg;base64, {!! base64_encode(QrCode::format('svg')->size(80)->generate($qr)) !!} ">
+                <td class="p-0 m-0" align="right" valign="bottom" style="width: 120px;padding:0 !important;">
+                    <img style="padding:1mm;border:1.5px solid #222;"
+                        src="data:image/svg;base64, {!! base64_encode(QrCode::format('svg')->size(100)->generate($qr)) !!} ">
                 </td>
             </tr>
             <tr>
-                <td></td>
-                <td class="text-center text-10 font-semibold" style="width: 200px;">FIRMA TECNICO RESPONSABLE</td>
-                <td></td>
-                <td class="text-center text-10 font-semibold" style="width: 200px;">FIRMA CLIENTE</td>
+                <td class="" style="padding:0 !important;"></td>
+                <td class="text-center text-10 font-bold" style="width: 200px;padding:0 !important;">
+                    FIRMA TÉCNICO RESPONSABLE</td>
+                <td class="" style="padding:0 !important;"></td>
+                <td class="text-center text-10 font-bold" style="width: 200px;padding:0 !important;">
+                    FIRMA CLIENTE</td>
+                <td class="" style="padding:0 !important;"></td>
                 <td></td>
             </tr>
-        </table>
+        </table> --}}
     </div>
 </body>
 

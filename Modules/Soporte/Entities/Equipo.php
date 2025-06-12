@@ -4,6 +4,7 @@ namespace Modules\Soporte\Entities;
 
 use App\Enums\EstadoEquipoEnum;
 use App\Models\Marca;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,12 +43,17 @@ class Equipo extends Model
 
     public function typeequipo(): BelongsTo
     {
-        return $this->belongsTo(Typeequipo::class);
+        return $this->belongsTo(Typeequipo::class)->withTrashed();
     }
 
     public function marca(): BelongsTo
     {
-        return $this->belongsTo(Marca::class);
+        return $this->belongsTo(Marca::class)->withTrashed();
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class)->withTrashed();
     }
 
     public function ticket(): BelongsTo

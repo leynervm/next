@@ -4,6 +4,10 @@ namespace Modules\Soporte\Entities;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Estate extends Model
@@ -12,7 +16,7 @@ class Estate extends Model
     use SoftDeletes;
 
     public $timestamps = false;
-    protected $guarded = ['created_at', 'updated_at'];
+    protected $fillable = ['name', 'descripcion', 'finish', 'color', 'default'];
     const DEFAULT = '1';
 
     public function setNameAttribute($value)
@@ -25,9 +29,19 @@ class Estate extends Model
         $this->attributes['descripcion'] = trim(mb_strtoupper($value, "UTF-8"));
     }
 
-    public function atencions()
+    public function atencions(): BelongsToMany
     {
         return $this->belongsToMany(Atencion::class);
+    }
+
+    public function tickets(): HasMany
+    {
+        return $this->hasMany(Ticket::class);
+    }
+
+    public function procesos(): HasMany
+    {
+        return $this->hasMany(Proceso::class);
     }
 
     public function scopeDefault($query)

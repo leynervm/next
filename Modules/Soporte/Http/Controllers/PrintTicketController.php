@@ -2,14 +2,11 @@
 
 namespace Modules\Soporte\Http\Controllers;
 
-use Barryvdh\Snappy\Facades\SnappyPdf;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Modules\Soporte\Entities\Ticket;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
-use Spatie\Browsershot\Browsershot;
 
 class PrintTicketController extends Controller
 {

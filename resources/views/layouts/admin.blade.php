@@ -534,6 +534,13 @@ $watch('openSidebar', value => console.log(openSidebar))">
                 })
             }).finally(() => {});
     }
+
+    document.addEventListener('livewire:load', () => {
+        Livewire.onPageExpired((response, message) => {
+            console.log('Session Expirada');
+            console.log(response, message);
+        })
+    })
 </script>
 
 </html>

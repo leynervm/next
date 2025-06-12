@@ -22,7 +22,6 @@
     },
     "dependencies": {
         "@alpinejs/focus": "^3.14.1",
-        "@alpinejs/mask": "^3.14.0",
-        "puppeteer": "^24.10.0"
+        "@alpinejs/mask": "^3.14.0"
     }
 }

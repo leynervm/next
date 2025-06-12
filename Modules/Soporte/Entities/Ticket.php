@@ -149,8 +149,8 @@ class Ticket extends Model
         return $this->belongsTo(Estate::class)->withTrashed();
     }
 
-    public function estates(): HasMany
+    public function procesos(): HasMany
     {
-        return $this->hasMany(Estate::class);
+        return $this->hasMany(Proceso::class);
     }
 }
